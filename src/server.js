@@ -15,7 +15,8 @@ dotenv.config();
 // ---------- config ----------
 
 // Use dedicated env var so it doesn't clash with other projects
-const PORT = Number(process.env.AURA_CORE_API_PORT) || 4999;
+const PORT = Number(process.env.PORT || process.env.AURA_CORE_API_PORT || 4999);
+
 
 // Map of toolId -> tool module
 // Each tool module exports: { key, run(input, ctx) } and can also export: { meta }
