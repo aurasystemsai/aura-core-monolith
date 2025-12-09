@@ -1,94 +1,108 @@
 // src/tools/product-seo/index.js
 // ===============================================
-// AURA • Product SEO Engine  (dummy implementation)
-// - Takes product info and returns SEO copy
-// - No OpenAI required (pure template logic)
+// AURA • Product SEO Engine (rule-based)
 // ===============================================
 
-function safeArray(value) {
-  if (!value) return [];
-  if (Array.isArray(value)) return value;
-  if (typeof value === "string") return [value];
-  return [];
+function slugify(str = "") {
+  return String(str)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
 
-module.exports = {
-  key: "product-seo",
-  name: "AURA • Product SEO Engine",
+function truncate(str = "", max = 155) {
+  const s = String(str).trim();
+  if (s.length <= max) return s;
+  return s.slice(0, max - 1).trimEnd() + "…";
+}
 
-  /**
-   * run(input, ctx)
-   * input: {
-   *   product_name,
-   *   collection,
-   *   features: string[] | string,
-   *   tone,
-   *   target_keywords: string[] | string
-   * }
-   */
-  async run(input = {}, ctx = {}) {
-    const productName = (input.product_name || input.name || "").trim() || "Your Product";
-    const collection = (input.collection || "").trim();
-    const tone = (input.tone || "neutral, ecommerce").trim();
+const key = "product-seo";
 
-    const features = safeArray(input.features);
-    const keywords = safeArray(input.target_keywords);
+async function run(input = {}, ctx = {}) {
+  const env = ctx.environment || process.env.NODE_ENV || "development";
+  const now = new Date().toISOString();
 
-    const titleParts = [productName];
-    if (keywords[0]) titleParts.push(`– ${keywords[0]}`);
-    const metaTitle = titleParts.join(" ");
+  const title =
+    input.productTitle || input.title || input.name || "Untitled product";
+  const brand = input.brand || "Your brand";
+  const collection = input.collection || input.category || "";
+  const baseDesc =
+    input.productDescription ||
+    input.description ||
+    "High quality product from " + brand + ".";
+  const handle =
+    input.handle ||
+    input.productHandle ||
+    slugify(`${brand} ${title}`) ||
+    "product";
 
-    const metaDescription = [
-      collection ? `${collection}:` : "",
-      productName,
-      features.length ? `featuring ${features.join(", ")}.` : "",
-      keywords.length ? ` Optimised for: ${keywords.join(", ")}.` : "",
-    ]
-      .join(" ")
-      .replace(/\s+/g, " ")
-      .trim();
+  // SEO title (keep ~60 chars)
+  let seoTitle = `${title} | ${brand}`;
+  if (seoTitle.length > 60) seoTitle = `${title} – ${brand}`;
 
-    const h1 = productName;
+  // Meta description (~155 chars)
+  const benefitKeywords =
+    (input.keywords && input.keywords.join(", ")) ||
+    [collection, brand, "online"].filter(Boolean).join(", ");
 
-    const bulletPoints = [
-      ...features.map((f) => `• ${f}`),
-      keywords.length ? `• Optimised for searches like: ${keywords.join(", ")}` : null,
-      `• Tone: ${tone}`,
-    ].filter(Boolean);
+  const metaDescription = truncate(
+    `${baseDesc.replace(/\s+/g, " ")} ` +
+      (benefitKeywords ? `Perfect for ${benefitKeywords}.` : ""),
+    155
+  );
 
-    const bodyCopy = [
-      `${productName} is designed for modern customers who expect style **and** performance.`,
-      features.length
-        ? `Key benefits include ${features
-            .map((f) => f.toLowerCase())
-            .join(", ")} – making this an ideal choice for daily wear.`
-        : "",
-      keywords.length
-        ? `This description is tuned around search phrases such as ${keywords.join(", ")} to help you attract more qualified traffic.`
-        : "",
-      "Update your product gallery with lifestyle imagery and clear close-ups to maximise conversion.",
-    ]
-      .filter(Boolean)
-      .join(" ");
+  const canonicalUrl =
+    input.url ||
+    input.productUrl ||
+    `https://example.com/products/${handle}`;
 
-    return {
-      ok: true,
-      engine: "product-seo",
-      meta: {
-        title: metaTitle,
-        description: metaDescription,
-        h1,
-        tone,
+  const searchKeywords = Array.from(
+    new Set(
+      (input.keywords || [])
+        .concat([
+          title,
+          brand,
+          collection,
+          "buy online",
+          "free shipping",
+          "best price",
+        ])
+        .filter(Boolean)
+        .map((k) => String(k).toLowerCase())
+    )
+  );
+
+  return {
+    ok: true,
+    tool: key,
+    environment: env,
+    message: "Product SEO recommendations generated (rule-based).",
+    input,
+    output: {
+      handle,
+      seoTitle,
+      metaTitle: seoTitle,
+      metaDescription,
+      h1: title,
+      canonicalUrl,
+      searchKeywords,
+      breadcrumb: [
+        "Home",
+        collection || "Collection",
+        title,
+      ].filter(Boolean),
+      schema: {
+        "@type": "Product",
+        "name": title,
+        "brand": brand,
+        "url": canonicalUrl,
       },
-      seo: {
-        title: metaTitle,
-        description: metaDescription,
-        h1,
-        keywords,
-      },
-      bullets: bulletPoints,
-      body: bodyCopy,
-      raw_input: input,
-    };
-  },
-};
+    },
+    meta: {
+      engine: "internal-rule-engine-v1",
+      generatedAt: now,
+    },
+  };
+}
+
+module.exports = { key, run };

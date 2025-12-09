@@ -1,53 +1,43 @@
 // src/tools/finance-autopilot/index.js
-// =====================================================
-// AURA • Finance Autopilot
-// Automates eCommerce financial insights, KPIs, and reports
-// =====================================================
+// ===============================================
+// AURA • Finance Autopilot (rule-based)
+// ===============================================
 
-module.exports = {
-  key: "finance-autopilot",
+const key = "finance-autopilot";
 
-  async run(input = {}, ctx = {}) {
-    try {
-      const { store_name, revenue, expenses, period = "30d" } = input;
+async function run(input = {}, ctx = {}) {
+  const env = ctx.environment || process.env.NODE_ENV || "development";
+  const now = new Date().toISOString();
 
-      // --- Basic validation ---
-      if (!store_name || revenue === undefined || expenses === undefined) {
-        return {
-          ok: false,
-          error:
-            "Missing required fields: 'store_name', 'revenue', or 'expenses'.",
-        };
-      }
+  const revenue = Number(input.revenue || 10000);
+  const cogs = Number(input.cogs || revenue * 0.4);
+  const marketing = Number(input.marketing || revenue * 0.15);
+  const overheads = Number(input.overheads || revenue * 0.2);
 
-      // --- Financial logic ---
-      const profit = revenue - expenses;
-      const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+  const grossProfit = revenue - cogs;
+  const operatingProfit = grossProfit - marketing - overheads;
+  const margin = revenue ? Math.round((operatingProfit / revenue) * 100) : 0;
 
-      // --- Mock insight generation ---
-      const trend =
-        profit > 0
-          ? "Profitable — maintain cost discipline and scale marketing gradually."
-          : "Negative margin — optimize ad spend and renegotiate supplier rates.";
+  return {
+    ok: true,
+    tool: key,
+    environment: env,
+    message: "Finance snapshot generated.",
+    input,
+    output: {
+      revenue,
+      cogs,
+      marketing,
+      overheads,
+      grossProfit,
+      operatingProfit,
+      operatingMarginPercent: margin,
+    },
+    meta: {
+      engine: "internal-rule-engine-v1",
+      generatedAt: now,
+    },
+  };
+}
 
-      // --- Structured response ---
-      return {
-        ok: true,
-        data: {
-          store_name,
-          period,
-          revenue,
-          expenses,
-          profit,
-          margin: `${margin.toFixed(2)}%`,
-          insight: trend,
-        },
-      };
-    } catch (err) {
-      return {
-        ok: false,
-        error: err.message || "Finance Autopilot tool error",
-      };
-    }
-  },
-};
+module.exports = { key, run };

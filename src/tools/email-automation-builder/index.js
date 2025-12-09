@@ -1,49 +1,51 @@
 // src/tools/email-automation-builder/index.js
-// -------------------------------------------
-// Simple flow blueprint generator
-// -------------------------------------------
+// ===============================================
+// AURA • Email Automation Builder (rule-based)
+// ===============================================
 
-function safe(v) {
-  if (v === undefined || v === null) return "";
-  return String(v).trim();
+const key = "email-automation-builder";
+
+async function run(input = {}, ctx = {}) {
+  const env = ctx.environment || process.env.NODE_ENV || "development";
+  const now = new Date().toISOString();
+
+  const brand = input.brand || input.storeName || "your brand";
+
+  const flows = [
+    {
+      id: "welcome-series",
+      name: "Welcome Series",
+      steps: [
+        {
+          step: 1,
+          delayHours: 0,
+          subject: `Welcome to ${brand}`,
+          angle: "brand story + first-purchase incentive",
+        },
+        {
+          step: 2,
+          delayHours: 48,
+          subject: `Our most-loved products`,
+          angle: "social proof + education",
+        },
+      ],
+    },
+  ];
+
+  return {
+    ok: true,
+    tool: key,
+    environment: env,
+    message: "Email flow blueprints generated.",
+    input,
+    output: {
+      flows,
+    },
+    meta: {
+      engine: "internal-rule-engine-v1",
+      generatedAt: now,
+    },
+  };
 }
 
-module.exports = {
-  key: "email-automation-builder",
-  name: "Email Automation Builder",
-
-  async run(input = {}, ctx = {}) {
-    const flowType = safe(input.flow_type || input.type || "welcome");
-    const brand = safe(input.brand || input.store_name || "Brand");
-
-    const flows = {
-      welcome: [
-        "Email 1: Welcome + brand story + key offer.",
-        "Email 2: Social proof and bestsellers.",
-        "Email 3: Objection handling and FAQ.",
-        "Email 4: Last chance to use welcome discount.",
-      ],
-      abandoned_cart: [
-        "Email 1: Friendly reminder with cart contents.",
-        "Email 2: Social proof and urgency.",
-        "Email 3: Final reminder + small incentive.",
-      ],
-      post_purchase: [
-        "Email 1: Order confirmation and what to expect.",
-        "Email 2: How to get the most from the product.",
-        "Email 3: Review request.",
-        "Email 4: Cross-sell or next-step offer.",
-      ],
-    };
-
-    const key = flows[flowType] ? flowType : "welcome";
-
-    return {
-      ok: true,
-      tool: "email-automation-builder",
-      flow_type: key,
-      brand,
-      sequence: flows[key],
-    };
-  },
-};
+module.exports = { key, run };

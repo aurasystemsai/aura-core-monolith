@@ -1,33 +1,44 @@
 // src/tools/multi-channel-optimizer/index.js
-// ------------------------------------------
-// Basic channel budget recommendations
-// ------------------------------------------
+// ===============================================
+// AURA • Multi-Channel Optimiser (rule-based)
+// ===============================================
 
-module.exports = {
-  key: "multi-channel-optimizer",
-  name: "Multi-Channel Optimizer",
+const key = "multi-channel-optimizer";
 
-  async run(input = {}, ctx = {}) {
-    const channels = Array.isArray(input.channels) ? input.channels : [];
+async function run(input = {}, ctx = {}) {
+  const env = ctx.environment || process.env.NODE_ENV || "development";
+  const now = new Date().toISOString();
 
-    const recommendations = channels.map((ch) => {
-      const roas = Number(ch.roas || 0);
-      let action = "hold";
-      if (roas < 1) action = "decrease";
-      else if (roas > 2) action = "increase";
+  const budget = Number(input.budget || 1000);
+  const channels = input.channels || ["email", "sms", "ads", "social"];
 
-      return {
-        name: ch.name,
-        spend: Number(ch.spend || 0),
-        roas,
-        action,
-      };
-    });
+  const perChannel = budget / channels.length || 0;
 
-    return {
-      ok: true,
-      tool: "multi-channel-optimizer",
-      recommendations,
-    };
-  },
-};
+  const plan = channels.map((ch) => ({
+    channel: ch,
+    budget: Math.round(perChannel),
+    objective: ch === "email"
+      ? "drive repeat purchases"
+      : ch === "ads"
+      ? "cold acquisition"
+      : "engagement",
+  }));
+
+  return {
+    ok: true,
+    tool: key,
+    environment: env,
+    message: "Multi-channel budget split generated.",
+    input,
+    output: {
+      totalBudget: budget,
+      allocation: plan,
+    },
+    meta: {
+      engine: "internal-rule-engine-v1",
+      generatedAt: now,
+    },
+  };
+}
+
+module.exports = { key, run };

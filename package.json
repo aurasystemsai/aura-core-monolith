@@ -1,29 +1,42 @@
 {
-  "name": "aura-core-api",
+  "name": "aura-core-monolith",
   "version": "1.0.0",
-  "description": "AURA Core API – single gateway for all ecommerce automation tools (monolith).",
+  "description": "AURA Systems • Core Monolith API and Automation Console — unified gateway for all AURA tools.",
   "main": "src/server.js",
+  "type": "commonjs",
   "scripts": {
+    "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "test:tools": "node src/test-all-tools.js",
+    "console": "npm run dev",
+    "lint": "eslint . --ext .js,.jsx"
   },
   "keywords": [
     "aura",
-    "ecommerce",
+    "aura-systems",
+    "aura-core",
     "automation",
-    "shopify"
+    "ai",
+    "shopify",
+    "seo",
+    "nodejs",
+    "express"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "AURA Systems AI",
+  "license": "MIT",
   "dependencies": {
-    "axios": "^1.7.0",
-    "body-parser": "^1.20.2",
+    "axios": "^1.7.4",
+    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.0",
-    "express": "^4.19.0",
-    "openai": "^4.0.0"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "openai": "^4.56.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "eslint": "^9.14.0",
+    "nodemon": "^3.1.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

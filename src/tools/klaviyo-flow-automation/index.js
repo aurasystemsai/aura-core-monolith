@@ -1,30 +1,29 @@
 // src/tools/klaviyo-flow-automation/index.js
-// ------------------------------------------
-// Returns basic Klaviyo-style flow metadata
-// ------------------------------------------
+// ===============================================
+// AURA • Klaviyo Flow Automation (rule-based)
+// ===============================================
 
-module.exports = {
-  key: "klaviyo-flow-automation",
-  name: "Klaviyo Flow Automation",
+const key = "klaviyo-flow-automation";
 
-  async run(input = {}, ctx = {}) {
-    const flow = input.flow || "welcome";
+async function run(input = {}, ctx = {}) {
+  const env = ctx.environment || process.env.NODE_ENV || "development";
+  const now = new Date().toISOString();
 
-    const triggers = {
-      welcome: "Subscribed to newsletter",
-      abandoned_cart: "Started checkout but did not purchase",
-      post_purchase: "Placed order",
-    };
+  return {
+    ok: true,
+    tool: key,
+    environment: env,
+    message: "Klaviyo-ready flow outline generated.",
+    input,
+    output: {
+      exportFormat: "json",
+      notes: "Use this structure as a blueprint for building flows in Klaviyo.",
+    },
+    meta: {
+      engine: "internal-rule-engine-v1",
+      generatedAt: now,
+    },
+  };
+}
 
-    const trigger = triggers[flow] || triggers.welcome;
-
-    return {
-      ok: true,
-      tool: "klaviyo-flow-automation",
-      flow,
-      trigger,
-      note:
-        "Use this metadata to configure a Klaviyo flow – this tool does not call Klaviyo directly.",
-    };
-  },
-};
+module.exports = { key, run };

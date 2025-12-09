@@ -1,61 +1,45 @@
 // src/tools/creative-automation-engine/index.js
-// ---------------------------------------------
-// Generates simple ad creative outlines
-// ---------------------------------------------
+// ===============================================
+// AURA • Creative Automation Engine (rule-based)
+// ===============================================
 
-function safe(v) {
-  if (v === undefined || v === null) return "";
-  return String(v).trim();
+const key = "creative-automation-engine";
+
+async function run(input = {}, ctx = {}) {
+  const env = ctx.environment || process.env.NODE_ENV || "development";
+  const now = new Date().toISOString();
+
+  const product = input.productTitle || input.offer || "your offer";
+  const audience = input.targetAudience || "your ideal customer";
+
+  const hooks = [
+    `Stop scrolling if you love ${product}`,
+    `${product} without the usual compromise`,
+    `The ${product} upgrade ${audience} have been asking for`,
+  ];
+
+  const angles = [
+    "Pain / problem focused",
+    "Lifestyle / aspiration",
+    "Proof / results driven",
+  ];
+
+  return {
+    ok: true,
+    tool: key,
+    environment: env,
+    message: "Creative hooks & angles generated.",
+    input,
+    output: {
+      hooks,
+      angles,
+      shortCaptions: hooks.map((h) => h + ". Tap to learn more."),
+    },
+    meta: {
+      engine: "internal-rule-engine-v1",
+      generatedAt: now,
+    },
+  };
 }
 
-module.exports = {
-  key: "creative-automation-engine",
-  name: "Creative Automation Engine",
-
-  async run(input = {}, ctx = {}) {
-    const product = safe(input.product_name || "your product");
-    const angle = safe(input.angle || "conversion");
-    const platform = safe(input.platform || "facebook");
-
-    const hooks = [
-      `Struggling with ${safe(input.problem || "X")}?`,
-      `What if ${product} could solve it in 24 hours?`,
-      `Why ${product} customers don’t worry about ${safe(
-        input.problem || "that problem"
-      )} anymore.`,
-    ];
-
-    const structures = [
-      {
-        format: "UGC talking head",
-        steps: [
-          "Hook line in first 3 seconds.",
-          "Short problem story.",
-          `Introduce ${product} as the solution.`,
-          "Show 2–3 quick benefits.",
-          "Strong CTA with offer.",
-        ],
-      },
-      {
-        format: "Product demo",
-        steps: [
-          "Visual before/after.",
-          `Close-up of ${product} in use.`,
-          "Overlay key benefits.",
-          "Social proof (review screenshot).",
-          "CTA frame.",
-        ],
-      },
-    ];
-
-    return {
-      ok: true,
-      tool: "creative-automation-engine",
-      product_name: product,
-      angle,
-      platform,
-      hooks,
-      structures,
-    };
-  },
-};
+module.exports = { key, run };

@@ -1,53 +1,44 @@
 // src/tools/aura-operations-ai/index.js
-// -------------------------------------
-// Simple weekly operations checklist
-// -------------------------------------
+// ===============================================
+// AURA • Operations AI Copilot (rule-based)
+// ===============================================
 
-module.exports = {
-  key: "aura-operations-ai",
-  name: "AURA Operations Assistant",
+const key = "aura-operations-ai";
 
-  async run(input = {}, ctx = {}) {
-    const timezone = input.timezone || "UTC";
-    const store = input.store_name || "Store";
+async function run(input = {}, ctx = {}) {
+  const env = ctx.environment || process.env.NODE_ENV || "development";
+  const now = new Date().toISOString();
 
-    const checklist = [
-      {
-        area: "Inventory",
-        tasks: [
-          "Review low-stock SKUs and create purchase orders.",
-          "Check inbound shipments vs expected delivery dates.",
-        ],
-      },
-      {
-        area: "Customer Experience",
-        tasks: [
-          "Reply to all open tickets > 24h old.",
-          "Review negative reviews and tag recurring issues.",
-        ],
-      },
-      {
-        area: "Marketing",
-        tasks: [
-          "Check performance of top 5 campaigns by spend.",
-          "Pause obvious losers and reallocate budget.",
-        ],
-      },
-      {
-        area: "Finance",
-        tasks: [
-          "Export weekly sales vs ad spend summary.",
-          "Update cash-flow forecast for the next 4 weeks.",
-        ],
-      },
-    ];
+  const topic = input.topic || "inventory & fulfilment";
+  const timeframe = input.timeframe || "last 30 days";
 
-    return {
-      ok: true,
-      tool: "aura-operations-ai",
-      store_name: store,
-      timezone,
-      checklist,
-    };
-  },
-};
+  const insights = [
+    `Monitor stock-outs across key SKUs over ${timeframe}.`,
+    `Highlight orders delayed more than 48 hours.`,
+    `Flag suppliers with repeat late deliveries.`,
+  ];
+
+  return {
+    ok: true,
+    tool: key,
+    environment: env,
+    message: "Ops AI checklist generated.",
+    input,
+    output: {
+      topic,
+      timeframe,
+      insights,
+      suggestedDashboards: [
+        "Inventory health",
+        "Fulfilment SLAs",
+        "Supplier performance",
+      ],
+    },
+    meta: {
+      engine: "internal-rule-engine-v1",
+      generatedAt: now,
+    },
+  };
+}
+
+module.exports = { key, run };

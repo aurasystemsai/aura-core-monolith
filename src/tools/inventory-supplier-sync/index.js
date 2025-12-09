@@ -1,35 +1,34 @@
 // src/tools/inventory-supplier-sync/index.js
-// ------------------------------------------
-// Simple diff between store stock and supplier stock
-// ------------------------------------------
+// ===============================================
+// AURA • Inventory / Supplier Sync (rule-based)
+// ===============================================
 
-module.exports = {
-  key: "inventory-supplier-sync",
-  name: "Inventory & Supplier Sync",
+const key = "inventory-supplier-sync";
 
-  async run(input = {}, ctx = {}) {
-    const storeItems = Array.isArray(input.store) ? input.store : [];
-    const supplierItems = Array.isArray(input.supplier) ? input.supplier : [];
+async function run(input = {}, ctx = {}) {
+  const env = ctx.environment || process.env.NODE_ENV || "development";
+  const now = new Date().toISOString();
 
-    const supplierMap = new Map();
-    supplierItems.forEach((i) => supplierMap.set(i.sku, i));
+  const sku = input.sku || "SKU-123";
+  const supplier = input.supplier || "Default supplier";
 
-    const diffs = storeItems.map((item) => {
-      const sup = supplierMap.get(item.sku) || {};
-      const storeQty = Number(item.qty || item.quantity || 0);
-      const supQty = Number(sup.qty || sup.quantity || 0);
-      return {
-        sku: item.sku,
-        store_qty: storeQty,
-        supplier_qty: supQty,
-        delta: supQty - storeQty,
-      };
-    });
+  return {
+    ok: true,
+    tool: key,
+    environment: env,
+    message: "Inventory sync payload generated (template).",
+    input,
+    output: {
+      sku,
+      supplier,
+      action: input.action || "sync",
+      quantity: input.quantity || 0,
+    },
+    meta: {
+      engine: "internal-rule-engine-v1",
+      generatedAt: now,
+    },
+  };
+}
 
-    return {
-      ok: true,
-      tool: "inventory-supplier-sync",
-      diffs,
-    };
-  },
-};
+module.exports = { key, run };

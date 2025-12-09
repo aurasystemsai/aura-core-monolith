@@ -1,29 +1,43 @@
 // src/tools/internal-link-optimizer/index.js
-// ------------------------------------------
-// Suggests basic internal linking opportunities
-// ------------------------------------------
+// ===============================================
+// AURA • Internal Link Optimiser (rule-based)
+// ===============================================
 
-module.exports = {
-  key: "internal-link-optimizer",
-  name: "Internal Link Optimizer",
+const key = "internal-link-optimizer";
 
-  async run(input = {}, ctx = {}) {
-    const pages = Array.isArray(input.pages) ? input.pages : [];
+async function run(input = {}, ctx = {}) {
+  const env = ctx.environment || process.env.NODE_ENV || "development";
+  const now = new Date().toISOString();
 
-    const suggestions = pages.map((p) => {
-      const slug = p.slug || p.url || "";
-      const targetKeyword = p.keyword || p.topic || "";
-      return {
-        from: "blog posts about the same collection",
-        to: slug,
-        anchor_hint: targetKeyword || "view collection",
-      };
-    });
+  const pageUrl = input.url || input.pageUrl || "https://example.com/page";
+  const related = Array.isArray(input.relatedUrls)
+    ? input.relatedUrls
+    : [];
 
-    return {
-      ok: true,
-      tool: "internal-link-optimizer",
-      suggestions,
-    };
-  },
-};
+  const links = related.slice(0, 10).map((url) => ({
+    url,
+    anchor: input.topic
+      ? `${input.topic} – learn more`
+      : "Related product",
+    position: "body",
+  }));
+
+  return {
+    ok: true,
+    tool: key,
+    environment: env,
+    message: "Internal link suggestions generated.",
+    input,
+    output: {
+      pageUrl,
+      suggestedLinks: links,
+      summary: `Suggest linking to ${links.length} related pages from this page.`,
+    },
+    meta: {
+      engine: "internal-rule-engine-v1",
+      generatedAt: now,
+    },
+  };
+}
+
+module.exports = { key, run };
