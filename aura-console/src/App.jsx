@@ -1,3 +1,5 @@
+// At the very top of App.jsx
+const HARD_CODED_BASE_URL = "https://aura-core-monolith-api.onrender.com";
 import React, { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 
