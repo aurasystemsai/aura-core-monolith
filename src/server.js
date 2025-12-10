@@ -111,7 +111,7 @@ app.post("/run/:toolId", async (req, res) => {
 // ---------- serve Console build ----------
 
 // Built console output (Vite outDir = "dist")
-const consolePath = path.join(__dirname, "..", "aura-console", "dist");
+const consolePath = path.join(process.cwd(), "aura-console", "dist");
 
 // Serve static assets from the console build
 app.use(express.static(consolePath));
