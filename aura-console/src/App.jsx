@@ -1,112 +1,314 @@
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import clsx from "clsx";
 
-const DEFAULT_BASE_URL =
-  typeof window !== "undefined"
-    ? `${window.location.origin}`
-    : "http://localhost:4999";
+// ---- Tool metadata (names, categories, default payloads) ----
 
-export default function App() {
-  const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URL);
-  const [tools, setTools] = useState([]);
-  const [loadingMeta, setLoadingMeta] = useState(false);
-  const [metaError, setMetaError] = useState("");
-  const [selectedTool, setSelectedTool] = useState(null);
-  const [inputJson, setInputJson] = useState("{\n  \n}");
-  const [running, setRunning] = useState(false);
-  const [runResult, setRunResult] = useState(null);
-  const [runError, setRunError] = useState("");
-  const [search, setSearch] = useState("");
-
-  // ---- load tools ----
-  async function fetchTools() {
-    setLoadingMeta(true);
-    setMetaError("");
-    try {
-      const url = `${baseUrl.replace(/\/+$/, "")}/meta/tools`;
-      const res = await axios.get(url);
-      if (!res.data.ok) {
-        throw new Error(res.data.error || "Unknown meta/tools error");
+const TOOL_DEFS = [
+  {
+    id: "product-seo",
+    name: "Product SEO Engine",
+    category: "SEO",
+    description: "Optimise product titles, descriptions and tags for search.",
+    defaultPayload: {
+      path: "/run",
+      payload: {
+        storeUrl: "https://example-shop.myshopify.com",
+        productHandle: "example-product",
+        language: "en",
+        depth: "full"
       }
-      setTools(res.data.tools || []);
-    } catch (err) {
-      console.error("meta/tools error", err);
-      setMetaError(err.message || "Failed to load tools");
-    } finally {
-      setLoadingMeta(false);
+    }
+  },
+  {
+    id: "review-ugc-engine",
+    name: "Review & UGC Engine",
+    category: "Retention",
+    description: "Turn reviews and UGC into conversion-focused assets.",
+    defaultPayload: {
+      path: "/run",
+      payload: {
+        storeUrl: "https://example-shop.myshopify.com",
+        productHandle: "example-product",
+        reviewText: "Customer review text goes here"
+      }
+    }
+  },
+  {
+    id: "image-alt-media-seo",
+    name: "Image Alt & Media SEO",
+    category: "SEO",
+    description: "Generate SEO-friendly alt text and media descriptions.",
+    defaultPayload: {
+      path: "/run",
+      payload: {
+        imageUrl: "https://example.com/image.jpg",
+        context: "Gold waterproof bracelet on model"
+      }
+    }
+  },
+  {
+    id: "internal-link-optimizer",
+    name: "Internal Link Optimiser",
+    category: "SEO",
+    description: "Recommend internal links between products, blogs and collections.",
+    defaultPayload: {
+      path: "/run",
+      payload: {
+        storeUrl: "https://example-shop.myshopify.com",
+        targetUrl: "/products/example-product",
+        maxSuggestions: 10
+      }
+    }
+  },
+  {
+    id: "technical-seo-auditor",
+    name: "Technical SEO Auditor",
+    category: "Technical",
+    description: "Lightweight crawl of a URL to highlight technical SEO issues.",
+    defaultPayload: {
+      path: "/run",
+      payload: {
+        url: "https://example-shop.myshopify.com",
+        depth: 1
+      }
+    }
+  },
+  {
+    id: "schema-rich-results-engine",
+    name: "Schema & Rich Results Engine",
+    category: "Technical",
+    description: "Generate JSON-LD for products, FAQ, articles and more.",
+    defaultPayload: {
+      path: "/run",
+      payload: {
+        type: "product",
+        url: "https://example-shop.myshopify.com/products/example-product"
+      }
+    }
+  },
+  {
+    id: "email-automation-builder",
+    name: "Email Automation Builder",
+    category: "Retention",
+    description: "Draft automated Klaviyo / email journeys from store events.",
+    defaultPayload: {
+      path: "/run",
+      payload: {
+        flowType: "post_purchase",
+        brandName: "Example Brand",
+        tone: "friendly"
+      }
+    }
+  },
+  {
+    id: "ai-alt-text-engine",
+    name: "AI Alt-Text Engine",
+    category: "SEO",
+    description: "Generate alt text for product imagery at scale.",
+    defaultPayload: {
+      path: "/run",
+      payload: {
+        imageUrl: "https://example.com/image.jpg",
+        brand: "Example Brand"
+      }
     }
   }
+  // Any remaining tools from /tools will still show,
+  // they’ll just fall back to generic descriptions.
+];
 
+// ---- Helpers ----
+
+const storageKey = "aura-console-base-url";
+
+function getInitialBaseUrl() {
+  const envDefault = import.meta.env.VITE_CORE_API_BASE_URL || "";
+  if (typeof window === "undefined") return envDefault;
+  const stored = window.localStorage.getItem(storageKey);
+  return stored || envDefault;
+}
+
+function prettyJson(value) {
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return "";
+  }
+}
+
+// ---- Main Component ----
+
+export default function App() {
+  const [baseUrl, setBaseUrl] = useState(getInitialBaseUrl);
+  const [tools, setTools] = useState([]);
+  const [isLoadingTools, setIsLoadingTools] = useState(false);
+  const [toolsError, setToolsError] = useState("");
+  const [coreStatus, setCoreStatus] = useState("idle"); // idle | online | offline
+
+  const [selectedToolId, setSelectedToolId] = useState(null);
+  const [inputJson, setInputJson] = useState("{\n  \"path\": \"/run\",\n  \"payload\": {}\n}");
+  const [outputJson, setOutputJson] = useState("");
+  const [runnerError, setRunnerError] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
+
+  const [search, setSearch] = useState("");
+
+  // Persist base URL
   useEffect(() => {
-    fetchTools();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ---- filtered tools ----
-  const filteredTools = useMemo(() => {
-    if (!search.trim()) return tools;
-    const q = search.toLowerCase();
-    return tools.filter((t) => {
-      return (
-        (t.name || "").toLowerCase().includes(q) ||
-        (t.id || "").toLowerCase().includes(q) ||
-        (t.category || "").toLowerCase().includes(q)
-      );
-    });
-  }, [tools, search]);
-
-  const groupedByCategory = useMemo(() => {
-    const map = new Map();
-    for (const t of filteredTools) {
-      const cat = t.category || "Other";
-      if (!map.has(cat)) map.set(cat, []);
-      map.get(cat).push(t);
+    if (typeof window !== "undefined" && baseUrl) {
+      window.localStorage.setItem(storageKey, baseUrl);
     }
-    return Array.from(map.entries()).sort(([a], [b]) =>
-      a.localeCompare(b)
-    );
-  }, [filteredTools]);
+  }, [baseUrl]);
 
-  // ---- run a tool ----
-  async function runTool(toolId) {
-    setRunning(true);
-    setRunResult(null);
-    setRunError("");
-
-    let parsed;
-    try {
-      parsed = inputJson.trim() ? JSON.parse(inputJson) : {};
-    } catch (err) {
-      setRunError("Input JSON is invalid. Please fix and try again.");
-      setRunning(false);
+  // Fetch tools from Core API
+  async function refreshTools() {
+    if (!baseUrl) {
+      setToolsError("Enter a Core API base URL first.");
+      setCoreStatus("offline");
       return;
     }
 
+    setIsLoadingTools(true);
+    setToolsError("");
+    setCoreStatus("idle");
+
     try {
-      const url = `${baseUrl.replace(/\/+$/, "")}/run/${toolId}`;
-      const res = await axios.post(url, parsed);
-      setRunResult(res.data);
-      if (!res.data.ok) {
-        setRunError(res.data.error || "Tool returned ok:false");
-      }
+      const res = await fetch(`${baseUrl.replace(/\/+$/, "")}/tools`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      const list = Array.isArray(data.tools) ? data.tools : [];
+      setTools(list);
+      setCoreStatus("online");
     } catch (err) {
-      console.error("run error", err);
-      setRunError(err.message || "Failed to run tool");
+      setTools([]);
+      setToolsError(`Failed to fetch tools: ${err.message || String(err)}`);
+      setCoreStatus("offline");
     } finally {
-      setRunning(false);
+      setIsLoadingTools(false);
     }
   }
 
-  function handleSelectTool(t) {
-    setSelectedTool(t);
-    setRunResult(null);
-    setRunError("");
+  // Auto-refresh on first load if baseUrl exists
+  useEffect(() => {
+    if (baseUrl) {
+      refreshTools();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Map API tools → with local metadata
+  const mergedTools = useMemo(() => {
+    return tools.map((t) => {
+      const local = TOOL_DEFS.find((d) => d.id === t.id);
+      return {
+        ...t,
+        displayName: local?.name || t.id,
+        category: local?.category || "Uncategorised",
+        description: local?.description || "No description yet.",
+        defaultPayload: local?.defaultPayload || {
+          path: "/run",
+          payload: { example: "value" }
+        }
+      };
+    });
+  }, [tools]);
+
+  const groupedTools = useMemo(() => {
+    const filtered = mergedTools.filter((t) => {
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return (
+        t.id.toLowerCase().includes(q) ||
+        t.displayName.toLowerCase().includes(q) ||
+        t.category.toLowerCase().includes(q)
+      );
+    });
+
+    const map = new Map();
+    for (const tool of filtered) {
+      const cat = tool.category || "Uncategorised";
+      if (!map.has(cat)) map.set(cat, []);
+      map.get(cat).push(tool);
+    }
+    return Array.from(map.entries());
+  }, [mergedTools, search]);
+
+  const selectedTool = useMemo(
+    () => mergedTools.find((t) => t.id === selectedToolId) || null,
+    [mergedTools, selectedToolId]
+  );
+
+  function handleSelectTool(tool) {
+    setSelectedToolId(tool.id);
+    setRunnerError("");
+    setOutputJson("");
+    setInputJson(prettyJson(tool.defaultPayload));
   }
 
-  // ---- render ----
+  async function handleRunTool() {
+    if (!baseUrl) {
+      setRunnerError("Enter a Core API base URL first.");
+      return;
+    }
+    if (!selectedTool) {
+      setRunnerError("Select a tool from the left first.");
+      return;
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(inputJson);
+    } catch (err) {
+      setRunnerError(`Invalid JSON input: ${err.message}`);
+      return;
+    }
+
+    setIsRunning(true);
+    setRunnerError("");
+    setOutputJson("");
+
+    try {
+      const res = await fetch(
+        `${baseUrl.replace(/\/+$/, "")}/tools/${encodeURIComponent(selectedTool.id)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(parsed)
+        }
+      );
+
+      const text = await res.text();
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        json = { raw: text };
+      }
+
+      if (!res.ok) {
+        setRunnerError(
+          `Tool returned ${res.status}. See response payload for details.`
+        );
+      }
+
+      setOutputJson(prettyJson(json));
+    } catch (err) {
+      setRunnerError(`Request failed: ${err.message || String(err)}`);
+    } finally {
+      setIsRunning(false);
+    }
+  }
+
+  const coreStatusLabel =
+    coreStatus === "online"
+      ? "Core API online"
+      : coreStatus === "offline"
+      ? "Core API offline"
+      : "Status unknown";
+
   return (
     <div className="app">
+      {/* Header */}
       <header className="app-header">
         <div className="branding">
           <div className="logo">AURA SYSTEMS</div>
@@ -117,29 +319,39 @@ export default function App() {
         </div>
 
         <div className="core-status">
-          <label className="label">Core API Base URL</label>
+          <div className="label">Core API Base URL</div>
+
           <div className="base-row">
             <input
+              type="text"
+              placeholder="https://aura-core-monolith.onrender.com"
               value={baseUrl}
               onChange={(e) => setBaseUrl(e.target.value)}
             />
-            <button onClick={fetchTools}>Refresh</button>
+            <button type="button" onClick={refreshTools} disabled={isLoadingTools}>
+              {isLoadingTools ? "Refreshing…" : "Refresh"}
+            </button>
           </div>
+
           <div className="status-row">
             <span
               className={clsx("status-dot", {
-                online: tools.length > 0 && !metaError
+                online: coreStatus === "online"
               })}
             />
             <span>
-              Core API {metaError ? "offline" : "online"} •{" "}
-              {tools.length ? `${tools.length} tools available` : "no tools"}
+              {coreStatusLabel}
+              {mergedTools.length > 0
+                ? ` • ${mergedTools.length} tools available`
+                : ""}
             </span>
           </div>
         </div>
       </header>
 
+      {/* Main layout */}
       <main className="layout">
+        {/* Tools panel */}
         <section className="tools-panel">
           <div className="tools-toolbar">
             <div className="toolbar-title">Tools</div>
@@ -151,92 +363,101 @@ export default function App() {
             />
           </div>
 
-          {loadingMeta && <div className="notice">Loading tools…</div>}
-          {metaError && <div className="error">{metaError}</div>}
+          {toolsError && <div className="error">{toolsError}</div>}
+          {!toolsError && coreStatus !== "online" && (
+            <div className="notice">
+              Enter your Core API URL, hit Refresh and select a tool to begin.
+            </div>
+          )}
 
-          {!loadingMeta &&
-            !metaError &&
-            groupedByCategory.map(([cat, list]) => (
-              <div key={cat} className="category-block">
-                <div className="category-title">{cat}</div>
-                <div className="tool-grid">
-                  {list.map((t) => (
-                    <button
-                      key={t.id}
-                      className={clsx("tool-card", {
-                        selected: selectedTool && selectedTool.id === t.id
-                      })}
-                      onClick={() => handleSelectTool(t)}
-                    >
-                      <div className="tool-name">{t.name}</div>
-                      <div className="tool-meta">
-                        <span className="pill">{t.category || "Tool"}</span>
-                      </div>
-                      <div className="tool-desc">
-                        {t.description || "No description yet."}
-                      </div>
-                      <div className="tool-id">id: {t.id}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-        </section>
-
-        <section className="runner-panel">
-          {!selectedTool ? (
+          {groupedTools.length === 0 && coreStatus === "online" && !toolsError && (
             <div className="empty-state">
-              <div className="empty-title">Select a tool to get started</div>
+              <div className="empty-title">No tools found</div>
               <div className="empty-text">
-                Pick any tool from the left, customise the JSON input, then hit
-                <strong> Run Tool</strong>.
+                Your Core API responded but didn&apos;t return any tools from
+                <code> /tools</code>.
               </div>
             </div>
-          ) : (
+          )}
+
+          {groupedTools.map(([category, list]) => (
+            <div key={category} className="category-block">
+              <div className="category-title">{category}</div>
+              <div className="tool-grid">
+                {list.map((tool) => (
+                  <button
+                    key={tool.id}
+                    type="button"
+                    className={clsx("tool-card", {
+                      selected: selectedToolId === tool.id
+                    })}
+                    onClick={() => handleSelectTool(tool)}
+                  >
+                    <div className="tool-meta">
+                      <div className="tool-name">{tool.displayName}</div>
+                      <div className="pill">{tool.category}</div>
+                    </div>
+                    <div className="tool-desc">{tool.description}</div>
+                    <div className="tool-id">id: {tool.id}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </section>
+
+        {/* Runner panel */}
+        <section className="runner-panel">
+          {selectedTool ? (
             <>
               <div className="runner-header">
                 <div>
                   <div className="runner-tool-name">
-                    {selectedTool.name || selectedTool.id}
+                    {selectedTool.displayName}
                   </div>
-                  <div className="runner-tool-id">
-                    id: {selectedTool.id} • category:{" "}
-                    {selectedTool.category || "Tool"}
-                  </div>
+                  <div className="runner-tool-id">id: {selectedTool.id}</div>
                 </div>
                 <button
+                  type="button"
                   className="run-button"
-                  disabled={running}
-                  onClick={() => runTool(selectedTool.id)}
+                  onClick={handleRunTool}
+                  disabled={isRunning}
                 >
-                  {running ? "Running…" : "Run Tool"}
+                  {isRunning ? "Running…" : "Run Tool"}
                 </button>
               </div>
 
               <div className="split">
                 <div className="pane">
-                  <div className="pane-title">Input JSON</div>
+                  <div className="pane-title">Request JSON</div>
                   <textarea
                     value={inputJson}
                     onChange={(e) => setInputJson(e.target.value)}
-                    spellCheck="false"
+                    spellCheck={false}
                   />
                 </div>
                 <div className="pane">
                   <div className="pane-title">Response</div>
-                  {runError && <div className="error mb-8">{runError}</div>}
-                  {runResult ? (
-                    <pre className="json-output">
-{JSON.stringify(runResult, null, 2)}
-                    </pre>
+                  {outputJson ? (
+                    <pre className="json-output">{outputJson}</pre>
                   ) : (
                     <div className="placeholder">
-                      No response yet. Run the tool to see output here.
+                      Run the tool to see the response JSON here.
                     </div>
                   )}
                 </div>
               </div>
+
+              {runnerError && <div className="error" style={{ marginTop: 10 }}>{runnerError}</div>}
             </>
+          ) : (
+            <div className="empty-state">
+              <div className="empty-title">Select a tool to get started</div>
+              <div className="empty-text">
+                Pick any tool from the left, customise the JSON input, then hit{" "}
+                <strong>Run Tool</strong>.
+              </div>
+            </div>
           )}
         </section>
       </main>
