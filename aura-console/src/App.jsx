@@ -1,429 +1,243 @@
-// src/App.jsx
-// ===============================================
-// AURA Systems • Automation Console
-// Run and test AURA Core tools from a single UI.
-// ===============================================
-
 import React, { useEffect, useMemo, useState } from "react";
-import { TOOLS_METADATA } from "./core/tools-metadata";
-import "./App.css";
+import axios from "axios";
+import clsx from "clsx";
 
-// -------- helpers --------
-
-function normaliseBaseUrl(raw) {
-  if (!raw) return "";
-  return String(raw).trim().replace(/\/+$/, "");
-}
-
-function buildRunUrl(baseUrl, toolId) {
-  const clean = normaliseBaseUrl(baseUrl || "http://localhost:4999");
-  return `${clean}/run/${toolId}`;
-}
-
-// pretty-print JSON safely
-function formatJson(obj) {
-  try {
-    return JSON.stringify(obj, null, 2);
-  } catch {
-    return String(obj);
-  }
-}
-
-function parseJsonOrThrow(text) {
-  if (!text || !text.trim()) return {};
-  return JSON.parse(text);
-}
+const DEFAULT_BASE_URL =
+  typeof window !== "undefined"
+    ? `${window.location.origin}`
+    : "http://localhost:4999";
 
 export default function App() {
-  // -------- state --------
-
-  const [coreBaseUrl, setCoreBaseUrl] = useState("http://localhost:4999");
-  const [coreStatus, setCoreStatus] = useState({
-    online: true,
-    toolsAvailable: TOOLS_METADATA.length,
-  });
-
-  const [searchTerm, setSearchTerm] = useState("");
+  const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URL);
+  const [tools, setTools] = useState([]);
+  const [loadingMeta, setLoadingMeta] = useState(false);
+  const [metaError, setMetaError] = useState("");
   const [selectedTool, setSelectedTool] = useState(null);
-  const [requestJson, setRequestJson] = useState("{\n  \"example\": \"value\"\n}");
-  const [responseJson, setResponseJson] = useState(
-    "// Run a tool to see the response here."
-  );
-  const [isRunning, setIsRunning] = useState(false);
+  const [inputJson, setInputJson] = useState("{\n  \n}");
+  const [running, setRunning] = useState(false);
+  const [runResult, setRunResult] = useState(null);
+  const [runError, setRunError] = useState("");
+  const [search, setSearch] = useState("");
 
-  const [favourites, setFavourites] = useState([]);
-
-  // -------- favourites (persist to localStorage) --------
-
-  useEffect(() => {
+  // ---- load tools ----
+  async function fetchTools() {
+    setLoadingMeta(true);
+    setMetaError("");
     try {
-      const raw = window.localStorage.getItem("aura_console_favourites");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) setFavourites(parsed);
+      const url = `${baseUrl.replace(/\/+$/, "")}/meta/tools`;
+      const res = await axios.get(url);
+      if (!res.data.ok) {
+        throw new Error(res.data.error || "Unknown meta/tools error");
       }
-    } catch {
-      // ignore
+      setTools(res.data.tools || []);
+    } catch (err) {
+      console.error("meta/tools error", err);
+      setMetaError(err.message || "Failed to load tools");
+    } finally {
+      setLoadingMeta(false);
     }
-  }, []);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(
-        "aura_console_favourites",
-        JSON.stringify(favourites)
-      );
-    } catch {
-      // ignore
-    }
-  }, [favourites]);
-
-  function toggleFavourite(key) {
-    setFavourites((prev) =>
-      prev.includes(key) ? prev.filter((id) => id !== key) : [...prev, key]
-    );
   }
 
-  // -------- tool grouping + filtering --------
-
-  const groupedTools = useMemo(() => {
-    const groups = {};
-
-    TOOLS_METADATA.forEach((tool) => {
-      const cat = tool.category || "General";
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(tool);
-    });
-
-    Object.keys(groups).forEach((cat) => {
-      groups[cat].sort((a, b) => a.name.localeCompare(b.name));
-    });
-
-    return groups;
+  useEffect(() => {
+    fetchTools();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const allTools = TOOLS_METADATA;
-
+  // ---- filtered tools ----
   const filteredTools = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) return allTools;
-
-    return allTools.filter((tool) => {
-      const haystack = [
-        tool.name,
-        tool.id,
-        tool.category,
-        tool.tag,
-        tool.description,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      return haystack.includes(term);
+    if (!search.trim()) return tools;
+    const q = search.toLowerCase();
+    return tools.filter((t) => {
+      return (
+        (t.name || "").toLowerCase().includes(q) ||
+        (t.id || "").toLowerCase().includes(q) ||
+        (t.category || "").toLowerCase().includes(q)
+      );
     });
-  }, [allTools, searchTerm]);
+  }, [tools, search]);
 
-  const filteredToolsByCategory = useMemo(() => {
-    const groups = {};
-
-    filteredTools.forEach((tool) => {
-      const cat = tool.category || "General";
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(tool);
-    });
-
-    Object.keys(groups).forEach((cat) => {
-      groups[cat].sort((a, b) => a.name.localeCompare(b.name));
-    });
-
-    return groups;
+  const groupedByCategory = useMemo(() => {
+    const map = new Map();
+    for (const t of filteredTools) {
+      const cat = t.category || "Other";
+      if (!map.has(cat)) map.set(cat, []);
+      map.get(cat).push(t);
+    }
+    return Array.from(map.entries()).sort(([a], [b]) =>
+      a.localeCompare(b)
+    );
   }, [filteredTools]);
 
-  const visibleCount = filteredTools.length;
-  const totalCount = allTools.length;
+  // ---- run a tool ----
+  async function runTool(toolId) {
+    setRunning(true);
+    setRunResult(null);
+    setRunError("");
 
-  // -------- selection + run --------
-
-  function handleSelectTool(tool) {
-    setSelectedTool(tool);
-
-    const payload =
-      tool.examplePayload && Object.keys(tool.examplePayload).length
-        ? tool.examplePayload
-        : { example: "value" };
-
-    setRequestJson(formatJson(payload));
-    setResponseJson("// Run this tool to see the response here.");
-  }
-
-  async function handleRunTool() {
-    if (!selectedTool) return;
-
-    setIsRunning(true);
+    let parsed;
+    try {
+      parsed = inputJson.trim() ? JSON.parse(inputJson) : {};
+    } catch (err) {
+      setRunError("Input JSON is invalid. Please fix and try again.");
+      setRunning(false);
+      return;
+    }
 
     try {
-      const url = buildRunUrl(coreBaseUrl, selectedTool.id);
-      const body = parseJsonOrThrow(requestJson);
-
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const text = await res.text();
-      let json;
-
-      try {
-        json = JSON.parse(text);
-      } catch {
-        json = { ok: false, error: "Response was not valid JSON", raw: text };
+      const url = `${baseUrl.replace(/\/+$/, "")}/run/${toolId}`;
+      const res = await axios.post(url, parsed);
+      setRunResult(res.data);
+      if (!res.data.ok) {
+        setRunError(res.data.error || "Tool returned ok:false");
       }
-
-      setResponseJson(formatJson(json));
-
-      setCoreStatus((prev) => ({
-        ...prev,
-        online: res.ok,
-      }));
     } catch (err) {
-      setResponseJson(
-        formatJson({
-          ok: false,
-          error: err?.message || String(err),
-        })
-      );
-      setCoreStatus((prev) => ({ ...prev, online: false }));
+      console.error("run error", err);
+      setRunError(err.message || "Failed to run tool");
     } finally {
-      setIsRunning(false);
+      setRunning(false);
     }
   }
 
-  // -------- UI --------
+  function handleSelectTool(t) {
+    setSelectedTool(t);
+    setRunResult(null);
+    setRunError("");
+  }
 
+  // ---- render ----
   return (
-    <div className="app-shell">
-      <main className="app-inner">
-        {/* left: tools + categories */}
-        <section className="tools-panel">
-          <header className="app-header">
-            <div className="app-header-main">
-              <h1 className="app-kicker">AURA SYSTEMS</h1>
-              <h2 className="app-title">Automation Console</h2>
-              <p className="app-subtitle">
-                Run and test AURA tools locally from a single interface.
-              </p>
-            </div>
-
-            <div className="app-header-side">
-              <label className="base-url-label">
-                <span className="base-url-caption">Core API Base URL</span>
-                <div className="base-url-row">
-                  <input
-                    className="base-url-input"
-                    value={coreBaseUrl}
-                    onChange={(e) => setCoreBaseUrl(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() =>
-                      setCoreStatus((prev) => ({
-                        ...prev,
-                        online: true,
-                        toolsAvailable: TOOLS_METADATA.length,
-                      }))
-                    }
-                  >
-                    Refresh
-                  </button>
-                </div>
-              </label>
-
-              <div className="core-status-row">
-                <span
-                  className={`status-dot ${
-                    coreStatus.online ? "status-dot--ok" : "status-dot--down"
-                  }`}
-                />
-                <span className="status-text">
-                  {coreStatus.online ? "Core API online" : "Core API offline"} •{" "}
-                  {coreStatus.toolsAvailable} tools available
-                </span>
-              </div>
-            </div>
-          </header>
-
-          <div className="tools-header-row">
-            <div>
-              <h3 className="section-title">Tools</h3>
-              <p className="section-subtitle">
-                Grouped by category. Use search or favourites to jump quickly.
-              </p>
-            </div>
-
-            <div className="tools-search-meta">
-              <div className="search-field">
-                <span className="search-icon">🔍</span>
-                <input
-                  className="search-input"
-                  placeholder="Search by name, id or category…"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="tools-count">
-                {visibleCount} of {totalCount} tools visible
-              </div>
-            </div>
+    <div className="app">
+      <header className="app-header">
+        <div className="branding">
+          <div className="logo">AURA SYSTEMS</div>
+          <div className="title">Automation Console</div>
+          <div className="subtitle">
+            Run and test AURA tools from a single interface.
           </div>
+        </div>
 
-          <div className="tools-category-list">
-            {Object.keys(filteredToolsByCategory).length === 0 && (
-              <p className="empty-state">
-                No tools match that search. Clear the search to see everything.
-              </p>
-            )}
-
-            {Object.entries(filteredToolsByCategory).map(
-              ([category, tools]) => (
-                <section key={category} className="tools-category-block">
-                  <h4 className="tools-category-title">{category} tools</h4>
-                  <p className="tools-category-subtitle">
-                    {category} related automations and utilities.
-                  </p>
-
-                  <div className="tools-grid">
-                    {tools.map((tool) => {
-                      const isSelected =
-                        selectedTool && selectedTool.id === tool.id;
-                      const isFav = favourites.includes(tool.key);
-
-                      return (
-                        <div
-                          key={tool.key}
-                          className={`tool-card ${
-                            isSelected ? "tool-card--selected" : ""
-                          }`}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => handleSelectTool(tool)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              handleSelectTool(tool);
-                            }
-                          }}
-                        >
-                          <div className="tool-head">
-                            <div className="tool-head-main">
-                              <div className="tool-name">{tool.name}</div>
-                              {tool.category && (
-                                <span className="tool-badge">
-                                  {tool.category.toUpperCase()}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* star: span, not button, to avoid nested button issue */}
-                            <span
-                              className={`fav-toggle ${
-                                isFav ? "is-favourite" : ""
-                              }`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleFavourite(tool.key);
-                              }}
-                              role="button"
-                              aria-label="Toggle favourite"
-                              tabIndex={0}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  toggleFavourite(tool.key);
-                                }
-                              }}
-                            >
-                              ★
-                            </span>
-                          </div>
-
-                          <p className="tool-desc tool-desc--clamp">
-                            {tool.description || "No description yet."}
-                          </p>
-
-                          <div className="tool-meta">
-                            <span className="tool-meta-id">
-                              id: <span>{tool.id}</span>
-                            </span>
-                            <span className="tool-meta-category">
-                              • category:{" "}
-                              <span>{tool.category || "General"}</span>
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              )
-            )}
+        <div className="core-status">
+          <label className="label">Core API Base URL</label>
+          <div className="base-row">
+            <input
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+            />
+            <button onClick={fetchTools}>Refresh</button>
           </div>
-        </section>
-
-        {/* right: request + response */}
-        <section className="request-panel">
-          <header className="panel-header">
-            <div>
-              <h3 className="panel-title">Request</h3>
-              <p className="panel-subtitle">
-                Configure the JSON payload for the selected tool.
-              </p>
-            </div>
-            <div className="selected-tool-label">
-              {selectedTool ? selectedTool.name : "No tool selected"}
-            </div>
-          </header>
-
-          <div className="request-meta">
-            <span className="http-verb">POST</span>
-            <span className="request-url">
-              {selectedTool
-                ? buildRunUrl(coreBaseUrl, selectedTool.id)
-                : `${normaliseBaseUrl(coreBaseUrl)}/run/<tool-id>`}
+          <div className="status-row">
+            <span
+              className={clsx("status-dot", {
+                online: tools.length > 0 && !metaError
+              })}
+            />
+            <span>
+              Core API {metaError ? "offline" : "online"} •{" "}
+              {tools.length ? `${tools.length} tools available` : "no tools"}
             </span>
           </div>
+        </div>
+      </header>
 
-          <textarea
-            className="request-editor"
-            spellCheck={false}
-            value={requestJson}
-            onChange={(e) => setRequestJson(e.target.value)}
-          />
-
-          <div className="request-actions">
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleRunTool}
-              disabled={!selectedTool || isRunning}
-            >
-              {isRunning ? "Running…" : "Run Tool"}
-            </button>
+      <main className="layout">
+        <section className="tools-panel">
+          <div className="tools-toolbar">
+            <div className="toolbar-title">Tools</div>
+            <input
+              type="text"
+              placeholder="Search by name, id or category"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
 
-          <header className="panel-header response-header">
-            <div>
-              <h3 className="panel-title">Response</h3>
-              <p className="panel-subtitle">
-                Output from the last tool run.
-              </p>
-            </div>
-          </header>
+          {loadingMeta && <div className="notice">Loading tools…</div>}
+          {metaError && <div className="error">{metaError}</div>}
 
-          <pre className="response-view">{responseJson}</pre>
+          {!loadingMeta &&
+            !metaError &&
+            groupedByCategory.map(([cat, list]) => (
+              <div key={cat} className="category-block">
+                <div className="category-title">{cat}</div>
+                <div className="tool-grid">
+                  {list.map((t) => (
+                    <button
+                      key={t.id}
+                      className={clsx("tool-card", {
+                        selected: selectedTool && selectedTool.id === t.id
+                      })}
+                      onClick={() => handleSelectTool(t)}
+                    >
+                      <div className="tool-name">{t.name}</div>
+                      <div className="tool-meta">
+                        <span className="pill">{t.category || "Tool"}</span>
+                      </div>
+                      <div className="tool-desc">
+                        {t.description || "No description yet."}
+                      </div>
+                      <div className="tool-id">id: {t.id}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+        </section>
+
+        <section className="runner-panel">
+          {!selectedTool ? (
+            <div className="empty-state">
+              <div className="empty-title">Select a tool to get started</div>
+              <div className="empty-text">
+                Pick any tool from the left, customise the JSON input, then hit
+                <strong> Run Tool</strong>.
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="runner-header">
+                <div>
+                  <div className="runner-tool-name">
+                    {selectedTool.name || selectedTool.id}
+                  </div>
+                  <div className="runner-tool-id">
+                    id: {selectedTool.id} • category:{" "}
+                    {selectedTool.category || "Tool"}
+                  </div>
+                </div>
+                <button
+                  className="run-button"
+                  disabled={running}
+                  onClick={() => runTool(selectedTool.id)}
+                >
+                  {running ? "Running…" : "Run Tool"}
+                </button>
+              </div>
+
+              <div className="split">
+                <div className="pane">
+                  <div className="pane-title">Input JSON</div>
+                  <textarea
+                    value={inputJson}
+                    onChange={(e) => setInputJson(e.target.value)}
+                    spellCheck="false"
+                  />
+                </div>
+                <div className="pane">
+                  <div className="pane-title">Response</div>
+                  {runError && <div className="error mb-8">{runError}</div>}
+                  {runResult ? (
+                    <pre className="json-output">
+{JSON.stringify(runResult, null, 2)}
+                    </pre>
+                  ) : (
+                    <div className="placeholder">
+                      No response yet. Run the tool to see output here.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </section>
       </main>
     </div>

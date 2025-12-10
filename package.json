@@ -1,19 +1,15 @@
 {
   "name": "aura-core-monolith",
   "version": "1.0.0",
-  "description": "AURA Systems • Core Monolith API and Automation Console — unified gateway for all AURA tools.",
+  "description": "AURA Systems • Core Monolith API and Automation Console — unified gateway for all AURA tools",
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-
     "test:tools": "node src/test-all-tools.js",
-
     "console": "npm run dev --prefix aura-console",
-
     "build:console": "npm install --prefix aura-console --include=dev && npm run build --prefix aura-console",
-
     "lint": "eslint --ext .js,.jsx src"
   },
   "keywords": [
@@ -33,9 +29,7 @@
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.0",
-    "express": "^4.19.0",
-    "morgan": "^1.10.0",
-    "path": "^0.12.7"
+    "express": "^4.19.0"
   },
   "devDependencies": {
     "eslint": "^8.57.0",

@@ -2,7 +2,7 @@
 // ===============================================
 // AURA Core Monolith
 // - Single gateway in front of all AURA tools
-// - Shopify app, Framer, Console talk ONLY to this
+// - Also serves the Automation Console (Vite build)
 // ===============================================
 
 const express = require("express");
@@ -16,32 +16,44 @@ dotenv.config();
 // ---------- config ----------
 
 // Dedicated env var so it doesn't clash with other projects
-const PORT = Number(
-  process.env.AURA_CORE_API_PORT || process.env.PORT || 4999
-);
+const PORT = Number(process.env.PORT || process.env.AURA_CORE_API_PORT || 4999);
 
 // Map of toolId -> tool module
-// Each tool module exports: { key, run(input, ctx) }
+// Each module exports: { key, run(input, ctx) }
 const toolsRegistry = require("./core/tools-registry");
-
-// ---------- app setup ----------
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json({ limit: "1mb" }));
+app.use(bodyParser.json());
 
-// Simple health check
-app.get("/healthz", (req, res) => {
-  res.json({
-    ok: true,
-    service: "aura-core-monolith",
-    port: PORT,
-    tools: Object.keys(toolsRegistry),
-  });
+// Simple request logger (handy on Render logs)
+app.use((req, _res, next) => {
+  console.log(`[core-api] ${req.method} ${req.url}`);
+  next();
 });
 
-// ---------- meta route: list tools ----------
+// ---------- helpers ----------
 
+function getTool(toolId) {
+  if (!toolId) return null;
+  return toolsRegistry[toolId] || null;
+}
+
+// Shared context we pass to tools
+function buildCtx(req) {
+  return {
+    ip: req.ip,
+    userAgent: req.get("user-agent") || "",
+    requestId: req.get("x-request-id") || "",
+    now: new Date().toISOString()
+  };
+}
+
+// ===============================================
+// API routes
+// ===============================================
+
+// Meta route: list all registered AURA tools
 app.get("/meta/tools", (req, res) => {
   try {
     const tools = Object.keys(toolsRegistry).map((id) => {
@@ -49,68 +61,64 @@ app.get("/meta/tools", (req, res) => {
       return {
         id,
         key: mod.key || id,
-        stub: Boolean(mod.stub),
+        name: mod.name || mod.key || id,
+        category: mod.category || "Uncategorised",
+        description: mod.description || ""
       };
     });
 
     res.json({
       ok: true,
       count: tools.length,
-      tools,
+      tools
     });
   } catch (err) {
     console.error("[core-api] /meta/tools error:", err);
     res.status(500).json({
       ok: false,
-      error: err.message || "Unexpected error in /meta/tools",
+      error: err.message || "Unexpected error in /meta/tools"
     });
   }
 });
 
-// ---------- run route: /run/:toolId ----------
-
+// Run a specific tool
 app.post("/run/:toolId", async (req, res) => {
   const toolId = req.params.toolId;
-  const input = req.body || {};
-
-  const tool = toolsRegistry[toolId];
+  const tool = getTool(toolId);
 
   if (!tool) {
-    return res.status(400).json({
+    const known = Object.keys(toolsRegistry);
+    return res.status(404).json({
       ok: false,
       error: `Unknown AURA tool '${toolId}'.`,
-      knownTools: Object.keys(toolsRegistry),
-      input,
+      knownTools: known
     });
   }
 
   try {
-    const ctx = {
-      env: process.env,
-      toolId,
-      now: new Date().toISOString(),
-    };
-
-    const result = await tool.run(input, ctx);
+    const ctx = buildCtx(req);
+    const result = await tool.run(req.body || {}, ctx);
 
     res.json({
       ok: true,
-      tool: toolId,
-      result,
+      tool: tool.key || toolId,
+      result
     });
   } catch (err) {
-    console.error(`[core-api] /run/${toolId} error:`, err);
+    console.error(`[core-api] Error while running tool '${toolId}':`, err);
     res.status(500).json({
       ok: false,
-      tool: toolId,
-      error: err.message || "Unexpected error while running tool",
+      tool: tool.key || toolId,
+      error: err.message || "Unexpected error while running tool"
     });
   }
 });
 
-// ---------- serve Console build ----------
+// ===============================================
+// Serve Automation Console (Vite build)
+// ===============================================
 
-// Built console output (Vite outDir = "dist")
+// Built console output (Vite build.outDir = "dist")
 const consolePath = path.join(process.cwd(), "aura-console", "dist");
 
 // Serve static assets from the console build
@@ -118,24 +126,21 @@ app.use(express.static(consolePath));
 
 // SPA fallback: for any GET that isn't an API route, send index.html
 app.get("*", (req, res, next) => {
-  // Let explicit API routes handle their paths
-  if (
-    req.path.startsWith("/meta/") ||
-    req.path.startsWith("/run/") ||
-    req.path === "/healthz"
-  ) {
+  // Let explicit API routes handle their own paths
+  if (req.path.startsWith("/meta/") || req.path.startsWith("/run/")) {
     return next();
   }
 
-  return res.sendFile(path.join(consolePath, "index.html"));
+  res.sendFile(path.join(consolePath, "index.html"));
 });
 
-// ---------- start server ----------
+// ===============================================
+// Start server
+// ===============================================
 
 app.listen(PORT, () => {
+  const count = Object.keys(toolsRegistry).length;
   console.log(
-    `[core-api] AURA Core Monolith listening on http://localhost:${PORT} (tools: ${Object.keys(
-      toolsRegistry
-    ).length})`
+    `[core-api] AURA Core Monolith listening on http://localhost:${PORT} (tools: ${count})`
   );
 });
