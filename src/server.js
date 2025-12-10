@@ -1,60 +1,55 @@
 // src/server.js
 // ===============================================
-// AURA Core Monolith API
+// AURA Core Monolith
 // - Single gateway in front of all AURA tools
-// - Shopify app, Framer, anything else talks ONLY to this
+// - Shopify app, Framer, Console talk ONLY to this
 // ===============================================
 
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
+const path = require("path");
 
 dotenv.config();
 
 // ---------- config ----------
 
-// Dedicated env var for core API so it doesn't clash with other projects
+// Dedicated env var so it doesn't clash with other projects
 const PORT = Number(
   process.env.AURA_CORE_API_PORT || process.env.PORT || 4999
 );
 
 // Map of toolId -> tool module
-// Each module exports: { key, run(input, ctx) }
+// Each tool module exports: { key, run(input, ctx) }
 const toolsRegistry = require("./core/tools-registry");
+
+// ---------- app setup ----------
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: "1mb" }));
 
-// ---------- simple helpers ----------
-
-function getTool(toolId) {
-  if (!toolId) return null;
-  const id = String(toolId).trim();
-  return toolsRegistry[id] || null;
-}
-
-// ---------- routes ----------
-
-// Root – simple health/info endpoint
-app.get("/", (req, res) => {
+// Simple health check
+app.get("/healthz", (req, res) => {
   res.json({
     ok: true,
-    service: "AURA Core Monolith API",
-    metaEndpoint: "/meta/tools",
-    runEndpoint: "/run/:toolId",
+    service: "aura-core-monolith",
+    port: PORT,
+    tools: Object.keys(toolsRegistry),
   });
 });
 
-// Meta route – list all registered tools
+// ---------- meta route: list tools ----------
+
 app.get("/meta/tools", (req, res) => {
   try {
     const tools = Object.keys(toolsRegistry).map((id) => {
       const mod = toolsRegistry[id] || {};
       return {
         id,
-        name: mod.key || id,
+        key: mod.key || id,
+        stub: Boolean(mod.stub),
       };
     });
 
@@ -72,50 +67,75 @@ app.get("/meta/tools", (req, res) => {
   }
 });
 
-// Run a tool
+// ---------- run route: /run/:toolId ----------
+
 app.post("/run/:toolId", async (req, res) => {
-  const { toolId } = req.params;
+  const toolId = req.params.toolId;
   const input = req.body || {};
 
-  const tool = getTool(toolId);
+  const tool = toolsRegistry[toolId];
 
   if (!tool) {
     return res.status(400).json({
       ok: false,
       error: `Unknown AURA tool '${toolId}'.`,
       knownTools: Object.keys(toolsRegistry),
+      input,
     });
   }
 
-  const ctx = {
-    env: process.env,
-    now: new Date().toISOString(),
-  };
-
   try {
+    const ctx = {
+      env: process.env,
+      toolId,
+      now: new Date().toISOString(),
+    };
+
     const result = await tool.run(input, ctx);
+
     res.json({
       ok: true,
       tool: toolId,
       result,
     });
   } catch (err) {
-    console.error(`[core-api] Error running tool '${toolId}':`, err);
+    console.error(`[core-api] /run/${toolId} error:`, err);
     res.status(500).json({
       ok: false,
       tool: toolId,
-      error: err.message || "Unexpected error running tool",
+      error: err.message || "Unexpected error while running tool",
     });
   }
+});
+
+// ---------- serve Console build ----------
+
+// Built console output (Vite outDir = "dist")
+const consolePath = path.join(__dirname, "..", "aura-console", "dist");
+
+// Serve static assets from the console build
+app.use(express.static(consolePath));
+
+// SPA fallback: for any GET that isn't an API route, send index.html
+app.get("*", (req, res, next) => {
+  // Let explicit API routes handle their paths
+  if (
+    req.path.startsWith("/meta/") ||
+    req.path.startsWith("/run/") ||
+    req.path === "/healthz"
+  ) {
+    return next();
+  }
+
+  return res.sendFile(path.join(consolePath, "index.html"));
 });
 
 // ---------- start server ----------
 
 app.listen(PORT, () => {
-  const count = Object.keys(toolsRegistry).length;
   console.log(
-    `[core-api] AURA Core Monolith listening on http://localhost:${PORT} (tools: ${count})`
+    `[core-api] AURA Core Monolith listening on http://localhost:${PORT} (tools: ${Object.keys(
+      toolsRegistry
+    ).length})`
   );
 });
-
-module.exports = app;
