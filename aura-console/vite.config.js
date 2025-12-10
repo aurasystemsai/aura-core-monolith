@@ -1,13 +1,14 @@
-// aura-console/vite.config.js
+// vite.config.js
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react-swc";
 
-// Vite config for AURA Automation Console
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    port: 5173,
+  },
   build: {
-    // Where the built console goes. server.js serves from here.
     outDir: "dist",
-    emptyOutDir: true,
   },
 });
