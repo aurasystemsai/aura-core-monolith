@@ -2,11 +2,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// https://vitejs.dev/config/
+// Vite config for AURA Automation Console
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: "dist",       // server.js points here
-    emptyOutDir: true
-  }
+    // Where the built console goes. server.js serves from here.
+    outDir: "dist",
+    emptyOutDir: true,
+  },
 });
