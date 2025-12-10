@@ -5,13 +5,15 @@
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {
-    "dev": "nodemon src/server.js",
-    "start": "node src/server.js",
-    "test:tools": "node src/test-all-tools.js",
-    "console": "npm run dev --prefix aura-console",
-    "build:console": "npm install --prefix aura-console && npm run build --prefix aura-console",
-    "lint": "eslint --ext .js,.jsx src"
-  },
+  "dev": "nodemon src/server.js",
+  "start": "node src/server.js",
+  "test:tools": "node src/test-all-tools.js",
+  "console": "npm run dev --prefix aura-console",
+  "build:console": "npm install --prefix aura-console --include=dev && cd aura-console && npm install vite && npx vite build",
+
+
+  "lint": "eslint --ext .js,.jsx src"
+},
   "keywords": [
     "aura",
     "aura-systems",
