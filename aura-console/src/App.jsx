@@ -113,20 +113,9 @@ const TOOL_DEFS = [
       }
     }
   }
-  // Any remaining tools from /tools will still show,
-  // they’ll just fall back to generic descriptions.
 ];
 
 // ---- Helpers ----
-
-const storageKey = "aura-console-base-url";
-
-function getInitialBaseUrl() {
-  const envDefault = import.meta.env.VITE_CORE_API_BASE_URL || "";
-  if (typeof window === "undefined") return envDefault;
-  const stored = window.localStorage.getItem(storageKey);
-  return stored || envDefault;
-}
 
 function prettyJson(value) {
   try {
@@ -136,10 +125,16 @@ function prettyJson(value) {
   }
 }
 
+function getSameOriginBaseUrl() {
+  if (typeof window === "undefined") return "";
+  return window.location.origin;
+}
+
 // ---- Main Component ----
 
 export default function App() {
-  const [baseUrl, setBaseUrl] = useState(getInitialBaseUrl);
+  // Base URL is always the same server the console is running on
+  const [baseUrl] = useState(() => getSameOriginBaseUrl());
   const [tools, setTools] = useState([]);
   const [isLoadingTools, setIsLoadingTools] = useState(false);
   const [toolsError, setToolsError] = useState("");
@@ -153,27 +148,20 @@ export default function App() {
 
   const [search, setSearch] = useState("");
 
-  // Persist base URL
-  useEffect(() => {
-    if (typeof window !== "undefined" && baseUrl) {
-      window.localStorage.setItem(storageKey, baseUrl);
-    }
-  }, [baseUrl]);
-
-  // Fetch tools from Core API
+  // Fetch tools from Core API at same origin
   async function refreshTools() {
-    if (!baseUrl) {
-      setToolsError("Enter a Core API base URL first.");
-      setCoreStatus("offline");
-      return;
-    }
-
     setIsLoadingTools(true);
     setToolsError("");
     setCoreStatus("idle");
 
     try {
-      const res = await fetch(`${baseUrl.replace(/\/+$/, "")}/tools`);
+      const sameOrigin = baseUrl || "";
+      const url =
+        sameOrigin === ""
+          ? "/tools"
+          : `${sameOrigin.replace(/\/+$/, "")}/tools`;
+
+      const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
@@ -189,12 +177,11 @@ export default function App() {
     }
   }
 
-  // Auto-refresh on first load if baseUrl exists
+  // Auto-refresh on first load
   useEffect(() => {
-    if (baseUrl) {
-      refreshTools();
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    refreshTools();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Map API tools → with local metadata
   const mergedTools = useMemo(() => {
@@ -246,10 +233,6 @@ export default function App() {
   }
 
   async function handleRunTool() {
-    if (!baseUrl) {
-      setRunnerError("Enter a Core API base URL first.");
-      return;
-    }
     if (!selectedTool) {
       setRunnerError("Select a tool from the left first.");
       return;
@@ -268,14 +251,18 @@ export default function App() {
     setOutputJson("");
 
     try {
-      const res = await fetch(
-        `${baseUrl.replace(/\/+$/, "")}/tools/${encodeURIComponent(selectedTool.id)}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(parsed)
-        }
-      );
+      const sameOrigin = baseUrl || "";
+      const urlBase =
+        sameOrigin === ""
+          ? ""
+          : sameOrigin.replace(/\/+$/, "");
+      const url = `${urlBase}/tools/${encodeURIComponent(selectedTool.id)}`;
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed)
+      });
 
       const text = await res.text();
       let json;
@@ -306,6 +293,8 @@ export default function App() {
       ? "Core API offline"
       : "Status unknown";
 
+  const displayBaseUrl = baseUrl || "(same origin)";
+
   return (
     <div className="app">
       {/* Header */}
@@ -322,13 +311,12 @@ export default function App() {
           <div className="label">Core API Base URL</div>
 
           <div className="base-row">
-            <input
-              type="text"
-              placeholder="https://aura-core-monolith.onrender.com"
-              value={baseUrl}
-              onChange={(e) => setBaseUrl(e.target.value)}
-            />
-            <button type="button" onClick={refreshTools} disabled={isLoadingTools}>
+            <input type="text" value={displayBaseUrl} readOnly />
+            <button
+              type="button"
+              onClick={refreshTools}
+              disabled={isLoadingTools}
+            >
               {isLoadingTools ? "Refreshing…" : "Refresh"}
             </button>
           </div>
@@ -366,7 +354,8 @@ export default function App() {
           {toolsError && <div className="error">{toolsError}</div>}
           {!toolsError && coreStatus !== "online" && (
             <div className="notice">
-              Enter your Core API URL, hit Refresh and select a tool to begin.
+              This console automatically uses the same server it is hosted on
+              for the Core API. Click <strong>Refresh</strong> to fetch tools.
             </div>
           )}
 
@@ -448,7 +437,11 @@ export default function App() {
                 </div>
               </div>
 
-              {runnerError && <div className="error" style={{ marginTop: 10 }}>{runnerError}</div>}
+              {runnerError && (
+                <div className="error" style={{ marginTop: 10 }}>
+                  {runnerError}
+                </div>
+              )}
             </>
           ) : (
             <div className="empty-state">
