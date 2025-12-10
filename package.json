@@ -1,7 +1,7 @@
 {
   "name": "aura-core-monolith",
   "version": "1.0.0",
-  "description": "AURA Systems • Core Monolith API and Automation Console — unified gateway for all AURA tools",
+  "description": "AURA Systems • Core Monolith API and Automation Console — unified gateway for all AURA tools.",
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {
@@ -9,7 +9,7 @@
     "start": "node src/server.js",
     "test:tools": "node src/test-all-tools.js",
     "console": "npm run dev --prefix aura-console",
-    "build:console": "npm install --prefix aura-console --include=dev && npm run build --prefix aura-console",
+    "build:console": "npm install --prefix aura-console && npm run build --prefix aura-console",
     "lint": "eslint --ext .js,.jsx src"
   },
   "keywords": [
@@ -20,21 +20,22 @@
     "ai",
     "shopify",
     "seo",
-    "nodejs"
+    "nodejs",
+    "api"
   ],
   "author": "Darren Prince",
   "license": "MIT",
   "dependencies": {
-    "axios": "^1.7.0",
-    "body-parser": "^1.20.2",
+    "axios": "^1.7.9",
+    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.0",
-    "express": "^4.19.0"
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
-    "eslint": "^8.57.0",
-    "nodemon": "^3.1.0",
+    "eslint": "^9.13.0",
+    "nodemon": "^3.1.7",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13"
   }
