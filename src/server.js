@@ -1,6 +1,7 @@
-// src/server.js
 // ===============================================
-// AURA Core API (monolith) + Automation Console
+// AURA Core API (Monolith)
+// - Unified gateway for all AURA tools
+// - Console / Shopify / Framer connect only here
 // ===============================================
 
 import express from "express";
@@ -10,34 +11,24 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import toolsRegistry from "./aura-core-monolith/src/core/tools-registry.js";
+import toolsRegistry from "./core/tools-registry.js";
+
+// ---------- setup ----------
 
 dotenv.config();
-
-// ----- paths / env -----
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// PORT: prefer explicit AURA_CORE_API_PORT, then generic PORT, then 4999
-const PORT = Number(
-  process.env.AURA_CORE_API_PORT || process.env.PORT || 4999
-);
+const PORT = Number(process.env.PORT || process.env.AURA_CORE_API_PORT || 4999);
 
-// Where the built console lives (Vite output)
-const consoleBuildPath = path.join(__dirname, "..", "aura-console", "dist");
-
-// ----- app setup -----
+// ---------- app ----------
 
 const app = express();
-
 app.use(cors());
 app.use(bodyParser.json());
 
-// Serve static files for the console
-app.use(express.static(consoleBuildPath));
-
-// ---------- Core API routes ----------
+// ---------- routes ----------
 
 // Health check
 app.get("/health", (req, res) => {
@@ -45,11 +36,11 @@ app.get("/health", (req, res) => {
     ok: true,
     status: "ok",
     env: process.env.NODE_ENV || "development",
-    tools: Object.keys(toolsRegistry).length
+    tools: Object.keys(toolsRegistry).length,
   });
 });
 
-// List tools for the console
+// List all tools for the Console UI
 app.get("/tools", (req, res) => {
   const tools = Object.entries(toolsRegistry).map(([id, mod]) => {
     const meta = (mod && mod.meta) || {};
@@ -57,14 +48,14 @@ app.get("/tools", (req, res) => {
       id,
       name: meta.name || mod.key || id,
       category: meta.category || "General",
-      description: meta.description || "No description yet."
+      description: meta.description || "No description yet.",
     };
   });
 
   res.json({
     ok: true,
     count: tools.length,
-    tools
+    tools,
   });
 });
 
@@ -79,14 +70,13 @@ app.post("/run/:tool", async (req, res) => {
     return res.status(404).json({
       ok: false,
       error: `Unknown AURA tool '${toolKey}'.`,
-      knownTools: Object.keys(toolsRegistry)
+      knownTools: Object.keys(toolsRegistry),
     });
   }
 
   try {
     const ctx = {
-      env: process.env
-      // later: auth, user, etc.
+      env: process.env,
     };
 
     const result = await tool.run(input, ctx);
@@ -94,19 +84,22 @@ app.post("/run/:tool", async (req, res) => {
     res.json({
       ok: true,
       tool: toolKey,
-      result
+      result,
     });
   } catch (err) {
     console.error("Unhandled error in AURA tool:", toolKey, err);
     res.status(500).json({
       ok: false,
-      error: err.message || "Unhandled error in AURA Core API tool."
+      error: err.message || "Unhandled error in AURA Core API tool.",
     });
   }
 });
 
-// ---------- Catch-all for console UI ----------
-// Any non-API route returns the console index.html
+// ---------- serve console build ----------
+
+const consoleBuildPath = path.join(__dirname, "aura-console", "dist");
+app.use(express.static(consoleBuildPath));
+
 app.get("*", (req, res) => {
   res.sendFile(path.join(consoleBuildPath, "index.html"));
 });
@@ -120,5 +113,5 @@ app.listen(PORT, () => {
     }`
   );
 });
-cd
+
 export default app;
