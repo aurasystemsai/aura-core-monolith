@@ -1,3 +1,244 @@
-/* aura-console/src/App.css */
-/* Delegate all styling to index.css */
-@import "./index.css";
+/* AURA SYSTEMS • Console UI — Neon Cyber Style */
+
+:root {
+  --bg-dark: #050b11;
+  --bg-panel: rgba(14, 24, 36, 0.85);
+  --border-glow: #00f0ff;
+  --text-main: #eafcff;
+  --text-dim: #a0b5c0;
+  --accent: #00f0ff;
+  --error: #ff4b4b;
+  --radius-xl: 16px;
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --shadow-glow: 0 0 16px rgba(0, 240, 255, 0.25);
+}
+
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: "Inter", sans-serif;
+  height: 100%;
+  overflow: hidden;
+}
+
+.app-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+  background: rgba(10, 18, 28, 0.7);
+  backdrop-filter: blur(12px);
+}
+
+.brand-kicker {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+
+.brand-title {
+  margin: 4px 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.brand-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+.core-panel {
+  text-align: right;
+}
+
+.core-url-input {
+  background: transparent;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: var(--radius-md);
+  padding: 0.3rem 0.6rem;
+  color: var(--text-main);
+  width: 300px;
+}
+
+.core-refresh-btn {
+  margin-left: 0.5rem;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #000;
+  font-weight: 600;
+  padding: 0.3rem 0.8rem;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+.status-pill.ok {
+  background: rgba(0, 240, 255, 0.2);
+  color: var(--accent);
+}
+.status-pill.error {
+  background: rgba(255, 75, 75, 0.2);
+  color: var(--error);
+}
+.status-pill.checking {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-dim);
+}
+
+.console-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.tools-pane {
+  background: var(--bg-panel);
+  padding: 1.25rem;
+  overflow-y: auto;
+  border-right: 1px solid rgba(0, 240, 255, 0.1);
+}
+
+.tools-header h2 {
+  font-size: 1rem;
+  margin: 0;
+  color: var(--accent);
+  letter-spacing: 1px;
+}
+
+.tools-list {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tool-card {
+  background: rgba(15, 25, 35, 0.7);
+  border: 1px solid rgba(0, 240, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: 0.8rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.tool-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-glow);
+}
+.tool-card--active {
+  background: rgba(0, 240, 255, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+}
+
+.tool-name {
+  font-weight: 600;
+}
+.tool-category, .tool-id {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+/* Workbench */
+.workbench {
+  background: linear-gradient(180deg, #071016, #050b11);
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+}
+
+.workspace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.workspace-header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.json-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.json-column {
+  background: rgba(10, 20, 30, 0.85);
+  border: 1px solid rgba(0, 240, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.json-editor,
+.json-output {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-family: "Courier New", monospace;
+  font-size: 0.9rem;
+  resize: none;
+  flex: 1;
+  margin-top: 0.5rem;
+  white-space: pre-wrap;
+}
+
+.json-output {
+  overflow-y: auto;
+}
+
+.run-btn {
+  background: var(--accent);
+  border: none;
+  color: #000;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  align-self: flex-end;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+  transition: all 0.2s ease;
+}
+.run-btn:hover {
+  background: #4dffff;
+}
+
+.error-box {
+  background: rgba(255, 75, 75, 0.1);
+  border: 1px solid rgba(255, 75, 75, 0.3);
+  color: var(--error);
+  font-size: 0.85rem;
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.placeholder {
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: 2rem;
+}
