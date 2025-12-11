@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "description": "AURA Systems • Core Monolith API and Automation Console — unified gateway for all AURA tools",
   "private": true,
-  "type": "module",
+  "type": "commonjs",
+
   "scripts": {
-    "dev": "node src/server.js",
-    "start": "node src/server.js",
-    "build:console": "cd aura-console && npm install --include=dev && npm run build"
-  },
+  "start": "node src/server.js",
+  "dev": "NODE_ENV=development node src/server.js",
+  "build:console": "cd aura-console && npm install --include=dev && npm run build"
+
+ },
   "dependencies": {
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
