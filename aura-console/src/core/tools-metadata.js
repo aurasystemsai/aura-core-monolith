@@ -1,4 +1,4 @@
-// src/core/tools-metadata.js
+// aura-console/src/core/tools-metadata.js
 // ------------------------------------------
 // Static metadata for AURA tools used by the
 // Automation Console UI.
@@ -301,3 +301,7 @@ export const TOOLS_METADATA = [
     },
   },
 ];
+
+// Convenience exports for the console UI
+export const toolsMetadata = TOOLS_METADATA;
+export default toolsMetadata;
