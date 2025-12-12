@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import toolsMeta from "./toolMeta";
 
+
 const DEFAULT_CORE_API =
   import.meta.env.VITE_CORE_API_BASE_URL ||
   "https://aura-core-monolith.onrender.com";
