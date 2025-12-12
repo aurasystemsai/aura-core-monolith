@@ -1,5 +1,7 @@
 // src/tools/product-seo/index.js
-import OpenAI from "openai";
+// CommonJS version (for servers using "type": "commonjs")
+
+const OpenAI = require("openai");
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -8,15 +10,8 @@ const openai = new OpenAI({
 /**
  * Product SEO Engine
  * Generate SEO title, description, slug, and keywords for a product.
- * Input example:
- * {
- *   "productTitle": "Waterproof layered necklace",
- *   "brand": "DTP Jewellry",
- *   "collections": ["Necklaces", "Gold", "Waterproof"],
- *   "toneOfVoice": "confident, modern, UK English"
- * }
  */
-export async function run(input) {
+async function run(input) {
   const {
     productTitle = "",
     brand = "",
@@ -69,3 +64,5 @@ Return a valid JSON object with keys:
     };
   }
 }
+
+module.exports = { run };
