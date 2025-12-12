@@ -1,108 +1,71 @@
 // src/tools/product-seo/index.js
-// ===============================================
-// AURA • Product SEO Engine (rule-based)
-// ===============================================
+import OpenAI from "openai";
 
-function slugify(str = "") {
-  return String(str)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+/**
+ * Product SEO Engine
+ * Generate SEO title, description, slug, and keywords for a product.
+ * Input example:
+ * {
+ *   "productTitle": "Waterproof layered necklace",
+ *   "brand": "DTP Jewellry",
+ *   "collections": ["Necklaces", "Gold", "Waterproof"],
+ *   "toneOfVoice": "confident, modern, UK English"
+ * }
+ */
+export async function run(input) {
+  const {
+    productTitle = "",
+    brand = "",
+    collections = [],
+    toneOfVoice = "professional, UK English"
+  } = input || {};
+
+  const prompt = `
+Generate SEO content for a Shopify product page in ${toneOfVoice} tone.
+Product: ${productTitle}
+Brand: ${brand}
+Collections: ${collections.join(", ")}
+
+Return a valid JSON object with keys:
+- "title": 70–80 characters max, keyword-rich and compelling
+- "description": around 150–160 characters, persuasive and natural
+- "slug": a short SEO-friendly slug (lowercase, hyphen-separated)
+- "keywords": a comma-separated list of top SEO keywords
+`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are an expert SEO content generator for Shopify products." },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 300
+    });
+
+    const text = completion.choices[0]?.message?.content?.trim() || "{}";
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { raw: text };
+    }
+
+    return {
+      ok: true,
+      input,
+      output: data
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err.message || "OpenAI request failed"
+    };
+  }
 }
-
-function truncate(str = "", max = 155) {
-  const s = String(str).trim();
-  if (s.length <= max) return s;
-  return s.slice(0, max - 1).trimEnd() + "…";
-}
-
-const key = "product-seo";
-
-async function run(input = {}, ctx = {}) {
-  const env = ctx.environment || process.env.NODE_ENV || "development";
-  const now = new Date().toISOString();
-
-  const title =
-    input.productTitle || input.title || input.name || "Untitled product";
-  const brand = input.brand || "Your brand";
-  const collection = input.collection || input.category || "";
-  const baseDesc =
-    input.productDescription ||
-    input.description ||
-    "High quality product from " + brand + ".";
-  const handle =
-    input.handle ||
-    input.productHandle ||
-    slugify(`${brand} ${title}`) ||
-    "product";
-
-  // SEO title (keep ~60 chars)
-  let seoTitle = `${title} | ${brand}`;
-  if (seoTitle.length > 60) seoTitle = `${title} – ${brand}`;
-
-  // Meta description (~155 chars)
-  const benefitKeywords =
-    (input.keywords && input.keywords.join(", ")) ||
-    [collection, brand, "online"].filter(Boolean).join(", ");
-
-  const metaDescription = truncate(
-    `${baseDesc.replace(/\s+/g, " ")} ` +
-      (benefitKeywords ? `Perfect for ${benefitKeywords}.` : ""),
-    155
-  );
-
-  const canonicalUrl =
-    input.url ||
-    input.productUrl ||
-    `https://example.com/products/${handle}`;
-
-  const searchKeywords = Array.from(
-    new Set(
-      (input.keywords || [])
-        .concat([
-          title,
-          brand,
-          collection,
-          "buy online",
-          "free shipping",
-          "best price",
-        ])
-        .filter(Boolean)
-        .map((k) => String(k).toLowerCase())
-    )
-  );
-
-  return {
-    ok: true,
-    tool: key,
-    environment: env,
-    message: "Product SEO recommendations generated (rule-based).",
-    input,
-    output: {
-      handle,
-      seoTitle,
-      metaTitle: seoTitle,
-      metaDescription,
-      h1: title,
-      canonicalUrl,
-      searchKeywords,
-      breadcrumb: [
-        "Home",
-        collection || "Collection",
-        title,
-      ].filter(Boolean),
-      schema: {
-        "@type": "Product",
-        "name": title,
-        "brand": brand,
-        "url": canonicalUrl,
-      },
-    },
-    meta: {
-      engine: "internal-rule-engine-v1",
-      generatedAt: now,
-    },
-  };
-}
-
-module.exports = { key, run };
