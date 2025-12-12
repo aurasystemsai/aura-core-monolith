@@ -1,255 +1,212 @@
+// src/App.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import toolsMeta from "./toolMeta";
 
+const CORE_API_BASE = "https://aura-core-monolith.onrender.com";
 
-const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
+const DEFAULT_STATUS = {
+  ok: false,
+  environment: "unknown",
+  tools: null
+};
 
 function App() {
-  const [coreApiBaseUrl, setCoreApiBaseUrl] = useState(DEFAULT_CORE_API);
-  const [coreHealth, setCoreHealth] = useState({
-    loading: true,
-    ok: false,
-    env: null,
-    tools: null,
-    error: null,
-  });
+  // Core status
+  const [coreStatus, setCoreStatus] = useState(DEFAULT_STATUS);
+  const [coreStatusLoading, setCoreStatusLoading] = useState(false);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("all");
+  // Tools + filters
+  const [search, setSearch] = useState("");
+  const [activeTag, setActiveTag] = useState("All tools");
+  const [selectedToolId, setSelectedToolId] = useState(toolsMeta[0]?.id);
 
-  const [selectedToolId, setSelectedToolId] = useState(
-    toolsMeta[0]?.id || null
-  );
-  const [requestJson, setRequestJson] = useState("");
-  const [responseJson, setResponseJson] = useState(
-    "// Run the tool to see the response here."
-  );
-
-  const [isRunning, setIsRunning] = useState(false);
+  // JSON + run state
+  const [requestJson, setRequestJson] = useState(toolsMeta[0]?.exampleInput || "{\n\n}");
+  const [outputJson, setOutputJson] = useState("// Run the tool to see the response here.");
   const [runStatus, setRunStatus] = useState("idle"); // idle | running | ok | error
+  const [runMessage, setRunMessage] = useState("");
 
-  // ---- Derive current tool ----
-  const selectedTool = useMemo(
-    () => toolsMeta.find((t) => t.id === selectedToolId) || null,
-    [selectedToolId]
+  const selectedTool =
+    toolsMeta.find((t) => t.id === selectedToolId) || toolsMeta[0];
+
+  // ---------------------------------------------------------------------------
+  // Core API status
+  // ---------------------------------------------------------------------------
+
+  useEffect(() => {
+    refreshCoreStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function refreshCoreStatus() {
+    try {
+      setCoreStatusLoading(true);
+      const res = await fetch(`${CORE_API_BASE}/status`);
+      const data = await res.json();
+      setCoreStatus({
+        ok: Boolean(data.ok),
+        environment: data.environment || "production",
+        tools: Array.isArray(data.tools) ? data.tools.length : data.tools || null
+      });
+    } catch (err) {
+      console.error("Error fetching Core status", err);
+      setCoreStatus(DEFAULT_STATUS);
+    } finally {
+      setCoreStatusLoading(false);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Tool filtering
+  // ---------------------------------------------------------------------------
+
+  const tags = useMemo(
+    () => ["All tools", "SEO", "CRO / Social Proof", "Ops / Finance", "Email / Flows", "Support", "Developers"],
+    []
   );
 
-  // ---- Category filters shown as chips ----
-  const CATEGORY_FILTERS = [
-    { id: "all", label: "All tools" },
-    { id: "SEO", label: "SEO" },
-    { id: "CRO / Social Proof", label: "CRO / Social Proof" },
-    { id: "Ops / Finance", label: "Ops / Finance" },
-    { id: "Email / Flows", label: "Email / Flows" },
-    { id: "Support", label: "Support" },
-    { id: "Developers", label: "Developers" },
-  ];
-
-  // ---- Filter tools from meta ----
   const filteredTools = useMemo(() => {
+    const q = search.trim().toLowerCase();
+
     return toolsMeta.filter((tool) => {
-      const matchesSearch =
-        !searchQuery.trim() ||
-        tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (tool.category &&
-          tool.category.toLowerCase().includes(searchQuery.toLowerCase()));
+      const inTag =
+        activeTag === "All tools" ||
+        tool.category === activeTag ||
+        tool.shortTag === activeTag;
 
-      const matchesCategory =
-        activeCategory === "all" ||
-        (tool.tags && tool.tags.includes(activeCategory));
+      if (!inTag) return false;
 
-      return matchesSearch && matchesCategory;
+      if (!q) return true;
+
+      const haystack = (
+        tool.name +
+        " " +
+        tool.description +
+        " " +
+        (tool.meta?.id || "")
+      ).toLowerCase();
+
+      return haystack.includes(q);
     });
-  }, [searchQuery, activeCategory]);
+  }, [activeTag, search]);
 
-  // ---- Load example payload whenever tool changes ----
+  // When the selected tool changes, reset request JSON to that tool’s example
   useEffect(() => {
+    if (selectedTool) {
+      setRequestJson(selectedTool.exampleInput || "{\n\n}");
+      setOutputJson("// Run the tool to see the response here.");
+      setRunStatus("idle");
+      setRunMessage("");
+    }
+  }, [selectedToolId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ---------------------------------------------------------------------------
+  // Run tool
+  // ---------------------------------------------------------------------------
+
+  async function handleRunTool() {
     if (!selectedTool) return;
 
-    const example =
-      selectedTool.exampleInput ||
-      selectedTool.sampleInput ||
-      selectedTool.example ||
-      null;
-
-    if (!example) {
-      setRequestJson("{\n  \n}");
-      return;
-    }
-
-    if (typeof example === "string") {
-      setRequestJson(example);
-    } else {
-      setRequestJson(JSON.stringify(example, null, 2));
-    }
-
-    setResponseJson("// Run the tool to see the response here.");
-    setRunStatus("idle");
-  }, [selectedTool]);
-
-  // ---- Ping /health whenever base URL changes ----
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function checkHealth() {
-      setCoreHealth((prev) => ({ ...prev, loading: true, error: null }));
-      try {
-        const res = await fetch(
-          `${coreApiBaseUrl.replace(/\/$/, "")}/health`,
-          { signal: controller.signal }
-        );
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(
-            `HTTP ${res.status} while calling /health: ${text || "no body"}`
-          );
-        }
-        const data = await res.json();
-        setCoreHealth({
-          loading: false,
-          ok: Boolean(data.ok),
-          env: data.env || "unknown",
-          tools: data.tools ?? null,
-          error: null,
-        });
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        setCoreHealth({
-          loading: false,
-          ok: false,
-          env: null,
-          tools: null,
-          error: err.message || "Unable to reach Core API",
-        });
-      }
-    }
-
-    checkHealth();
-    return () => controller.abort();
-  }, [coreApiBaseUrl]);
-
-  // ---- Handlers ----
-
-  const handleCoreUrlChange = (e) => {
-    setCoreApiBaseUrl(e.target.value);
-  };
-
-  const handleRefreshHealth = () => {
-    // Force re-run of useEffect by tweaking the URL to trimmed version
-    setCoreApiBaseUrl((prev) => prev.trim());
-  };
-
-  const handleSelectTool = (toolId) => {
-    setSelectedToolId(toolId);
-  };
-
-  const handleLoadExample = () => {
-    if (!selectedTool) return;
-
-    const example =
-      selectedTool.exampleInput ||
-      selectedTool.sampleInput ||
-      selectedTool.example ||
-      null;
-
-    if (!example) {
-      setRequestJson("{\n  \n}");
-      return;
-    }
-
-    if (typeof example === "string") {
-      setRequestJson(example);
-    } else {
-      setRequestJson(JSON.stringify(example, null, 2));
-    }
-
-    setResponseJson("// Run the tool to see the response here.");
-    setRunStatus("idle");
-  };
-
-  const handleRunTool = async () => {
-    if (!selectedTool || !coreApiBaseUrl) return;
-
-    let parsedBody;
-    try {
-      parsedBody = requestJson.trim()
-        ? JSON.parse(requestJson)
-        : {};
-    } catch (err) {
-      setRunStatus("error");
-      setResponseJson(
-        JSON.stringify(
-          { ok: false, error: `Invalid JSON: ${err.message}` },
-          null,
-          2
-        )
-      );
-      return;
-    }
-
-    setIsRunning(true);
     setRunStatus("running");
+    setRunMessage("Running…");
 
+    let parsed;
     try {
-      const res = await fetch(
-        `${coreApiBaseUrl.replace(/\/$/, "")}/run/${selectedTool.id}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(parsedBody),
-        }
-      );
-
-      const text = await res.text();
-      let data = text;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        // keep raw text if it isn't JSON
-      }
-
-      const ok =
-        res.ok &&
-        typeof data === "object" &&
-        data !== null
-          ? data.ok !== false
-          : res.ok;
-
-      setRunStatus(ok ? "ok" : "error");
-      setResponseJson(
-        typeof data === "string"
-          ? data
-          : JSON.stringify(data, null, 2)
-      );
+      parsed = JSON.parse(requestJson);
     } catch (err) {
+      console.error("Invalid JSON", err);
       setRunStatus("error");
-      setResponseJson(
+      setRunMessage("Invalid JSON. Please check your request and try again.");
+      setOutputJson(
         JSON.stringify(
-          { ok: false, error: err.message || "Request failed" },
+          {
+            ok: false,
+            error: "Invalid JSON input",
+            details: String(err.message || err)
+          },
           null,
           2
         )
       );
-    } finally {
-      setIsRunning(false);
+      return;
     }
-  };
 
-  // ---- Helpers for UI bits ----
+    try {
+      const res = await fetch(`${CORE_API_BASE}/run/${selectedTool.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(parsed)
+      });
 
-  const renderCoreStatusLabel = () => {
-    if (coreHealth.loading) return "Checking Core API…";
-    if (!coreHealth.ok) return "Core API offline";
-    const env =
-      coreHealth.env === "production" ? "production" : coreHealth.env || "env";
-    const toolCount =
-      typeof coreHealth.tools === "number"
-        ? `tools=${coreHealth.tools}`
-        : "";
-    return `Core API online · ${env}${toolCount ? ` · ${toolCount}` : ""}`;
-  };
+      const data = await res.json();
+
+      if (data.ok === false || data.error) {
+        setRunStatus("error");
+        setRunMessage(data.error || "Tool returned an error.");
+      } else {
+        setRunStatus("ok");
+        setRunMessage("Success.");
+      }
+
+      setOutputJson(JSON.stringify(data, null, 2));
+    } catch (err) {
+      console.error("Error calling Core API", err);
+      setRunStatus("error");
+      setRunMessage("Network or server error. Please try again.");
+      setOutputJson(
+        JSON.stringify(
+          {
+            ok: false,
+            error: "Network or server error when calling Core API.",
+            details: String(err.message || err)
+          },
+          null,
+          2
+        )
+      );
+    }
+  }
+
+  function handleLoadExample() {
+    if (selectedTool?.exampleInput) {
+      setRequestJson(selectedTool.exampleInput);
+      setRunStatus("idle");
+      setRunMessage("");
+      setOutputJson("// Run the tool to see the response here.");
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Render helpers
+  // ---------------------------------------------------------------------------
+
+  function statusChipClass() {
+    if (coreStatusLoading) return "core-status-chip core-status-chip--loading";
+    if (coreStatus.ok) return "core-status-chip core-status-chip--ok";
+    return "core-status-chip core-status-chip--error";
+  }
+
+  function statusChipLabel() {
+    if (coreStatusLoading) return "Checking Core API…";
+    if (coreStatus.ok) {
+      const env = coreStatus.environment || "production";
+      const tools = coreStatus.tools != null ? ` · tools: ${coreStatus.tools}` : "";
+      return `Core API online · ${env}${tools}`;
+    }
+    return "Core API offline";
+  }
+
+  function runChipClass() {
+    if (runStatus === "running") return "run-status-chip run-status-chip--running";
+    if (runStatus === "ok") return "run-status-chip run-status-chip--ok";
+    if (runStatus === "error") return "run-status-chip run-status-chip--error";
+    return "run-status-chip";
+  }
+
+  // ---------------------------------------------------------------------------
 
   return (
     <div className="app-shell">
@@ -258,77 +215,66 @@ function App() {
         <div className="app-header-left">
           <div className="brand-mark">A</div>
           <div className="brand-copy">
-            <div className="brand-name">AURA SYSTEMS</div>
-            <div className="brand-subtitle">
-              Automation Console · Live Core API
-            </div>
+            <span className="brand-name">AURA Systems AI</span>
+            <span className="brand-subtitle">Automation Console · Live Core API</span>
           </div>
         </div>
 
         <div className="app-header-right">
           <div className="core-url-input">
-            <label className="label">Core API</label>
+            <div className="label">Core API</div>
             <div className="core-url-row">
               <input
-                type="text"
-                value={coreApiBaseUrl}
-                onChange={handleCoreUrlChange}
                 className="core-url-field"
-                spellCheck="false"
+                type="text"
+                value={CORE_API_BASE}
+                readOnly
               />
               <button
                 type="button"
                 className="button button--ghost"
-                onClick={handleRefreshHealth}
+                onClick={refreshCoreStatus}
+                disabled={coreStatusLoading}
               >
                 Refresh
               </button>
             </div>
           </div>
 
-          <div
-            className={`core-status-chip ${
-              coreHealth.loading
-                ? "core-status-chip--loading"
-                : coreHealth.ok
-                ? "core-status-chip--ok"
-                : "core-status-chip--error"
-            }`}
-          >
+          <div className={statusChipClass()}>
             <span className="core-status-indicator" />
-            <span className="core-status-label">
-              {renderCoreStatusLabel()}
-            </span>
+            <span className="core-status-label">{statusChipLabel()}</span>
           </div>
         </div>
       </header>
 
       {/* MAIN LAYOUT */}
-      <main className="console-layout">
-        {/* LEFT: TOOL LIST */}
+      <div className="console-layout">
+        {/* LEFT: tools list */}
         <aside className="tools-pane">
           <div className="tools-pane-header">
             <div className="tools-title-row">
               <h2 className="section-title">Tools</h2>
             </div>
+
             <input
-              type="text"
-              placeholder="Search by name, id or tag…"
               className="tools-search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by name, id or tag…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
+
             <div className="filter-chips">
-              {CATEGORY_FILTERS.map((filter) => (
+              {tags.map((tag) => (
                 <button
-                  key={filter.id}
+                  key={tag}
                   type="button"
-                  className={`chip ${
-                    activeCategory === filter.id ? "chip--active" : ""
-                  }`}
-                  onClick={() => setActiveCategory(filter.id)}
+                  className={
+                    "chip" + (activeTag === tag ? " chip--active" : "")
+                  }
+                  onClick={() => setActiveTag(tag)}
                 >
-                  {filter.label}
+                  {tag}
                 </button>
               ))}
             </div>
@@ -341,48 +287,41 @@ function App() {
                 <button
                   key={tool.id}
                   type="button"
-                  className={`tool-card ${
-                    isActive ? "tool-card--active" : ""
-                  }`}
-                  onClick={() => handleSelectTool(tool.id)}
+                  className={
+                    "tool-card" + (isActive ? " tool-card--active" : "")
+                  }
+                  onClick={() => setSelectedToolId(tool.id)}
                 >
                   <div className="tool-card-header">
                     <div className="tool-name">{tool.name}</div>
-                    {tool.primaryTag && (
-                      <span className="tool-tag">{tool.primaryTag}</span>
-                    )}
+                    <div className="tool-tag">{tool.shortTag}</div>
                   </div>
-                  {tool.description && (
-                    <p className="tool-description">{tool.description}</p>
-                  )}
+                  <p className="tool-description">{tool.description}</p>
                   <div className="tool-meta-row">
-                    <span className="tool-id">id: {tool.id}</span>
-                    {tool.category && (
-                      <span className="tool-category">{tool.category}</span>
-                    )}
+                    <span>id: {tool.meta?.id || tool.id}</span>
+                    <span>{tool.category}</span>
                   </div>
                 </button>
               );
             })}
+
+            {filteredTools.length === 0 && (
+              <div style={{ fontSize: 12, color: "#64748b" }}>
+                No tools match that search yet.
+              </div>
+            )}
           </div>
         </aside>
 
-        {/* RIGHT: RUN TOOL */}
-        <section className="tool-runner">
-          {/* Tool overview + toolbar */}
+        {/* RIGHT: tool runner */}
+        <main className="tool-runner">
           <div className="tool-runner-header">
             <div className="tool-summary">
-              <div className="tool-summary-eyebrow">
-                {selectedTool?.category || "Selected tool"}
-              </div>
-              <h1 className="tool-summary-title">
-                {selectedTool?.name || "Choose a tool to begin"}
-              </h1>
-              {selectedTool?.description && (
-                <p className="tool-summary-description">
-                  {selectedTool.description}
-                </p>
-              )}
+              <div className="tool-summary-eyebrow">{selectedTool.category}</div>
+              <h1 className="tool-summary-title">{selectedTool.name}</h1>
+              <p className="tool-summary-description">
+                {selectedTool.description}
+              </p>
             </div>
 
             <div className="run-toolbar">
@@ -390,7 +329,6 @@ function App() {
                 type="button"
                 className="button button--ghost"
                 onClick={handleLoadExample}
-                disabled={!selectedTool}
               >
                 Load example payload
               </button>
@@ -398,65 +336,53 @@ function App() {
                 type="button"
                 className="button button--primary"
                 onClick={handleRunTool}
-                disabled={!selectedTool || isRunning}
+                disabled={runStatus === "running"}
               >
-                {isRunning ? "Running…" : "Run tool"}
+                Run tool
               </button>
+              <div className={runChipClass()}>
+                {runStatus === "idle" ? "Ready" : runMessage}
+              </div>
             </div>
           </div>
 
-          {/* JSON panels */}
           <div className="json-columns">
-            <div className="json-panel">
+            <section className="json-panel">
               <div className="json-panel-header">
-                <h3 className="json-panel-title">Request JSON</h3>
-                <span className="json-panel-subtitle">
-                  Must be valid JSON. Sent as tool input.
-                </span>
+                <div>
+                  <div className="json-panel-title">Request JSON</div>
+                  <div className="json-panel-subtitle">
+                    Must be valid JSON. We send this as the tool input.
+                  </div>
+                </div>
               </div>
               <textarea
                 className="json-editor"
                 value={requestJson}
                 onChange={(e) => setRequestJson(e.target.value)}
-                spellCheck="false"
+                spellCheck={false}
               />
-            </div>
+            </section>
 
-            <div className="json-panel">
+            <section className="json-panel">
               <div className="json-panel-header">
-                <h3 className="json-panel-title">Core API response</h3>
-                <span className="json-panel-subtitle">
-                  Raw response from{" "}
-                  {selectedTool
-                    ? `/run/${selectedTool.id}`
-                    : "/run/<tool-id>"}
-                </span>
-                <div
-                  className={`run-status-chip ${
-                    runStatus === "ok"
-                      ? "run-status-chip--ok"
-                      : runStatus === "error"
-                      ? "run-status-chip--error"
-                      : runStatus === "running"
-                      ? "run-status-chip--running"
-                      : ""
-                  }`}
-                >
-                  {runStatus === "idle" && "Ready"}
-                  {runStatus === "running" && "Running…"}
-                  {runStatus === "ok" && "Success"}
-                  {runStatus === "error" && "Error"}
+                <div>
+                  <div className="json-panel-title">Core API response</div>
+                  <div className="json-panel-subtitle">
+                    Raw response from <code>/run/{selectedTool.id}</code>.
+                  </div>
                 </div>
               </div>
-              <pre className="json-output">{responseJson}</pre>
-            </div>
+              <pre className="json-output">{outputJson}</pre>
+            </section>
           </div>
 
           <div className="footer-note">
-            Ready. Results will appear on the right.
+            These tools run directly against your live AURA Core API. Use test
+            products and content first before wiring into production workflows.
           </div>
-        </section>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
