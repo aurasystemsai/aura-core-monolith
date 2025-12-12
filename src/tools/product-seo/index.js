@@ -1,9 +1,8 @@
 // src/tools/product-seo/index.js
-// Product SEO Engine (CommonJS + OpenAI v4 via dynamic import)
+// CommonJS version with global OpenAI client and no project context
 
 let cachedClient = null;
 
-// Lazy-load the ESM OpenAI client so it works in CommonJS
 async function getOpenAIClient() {
   if (cachedClient) return cachedClient;
 
@@ -11,62 +10,47 @@ async function getOpenAIClient() {
 
   cachedClient = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
+    // Force to global endpoint (avoids proj_ scoping issues)
+    baseURL: "https://api.openai.com/v1",
+    defaultHeaders: {
+      "OpenAI-Beta": "",
+    },
   });
 
   return cachedClient;
 }
 
-/**
- * Product SEO Engine
- * Generate SEO title, description, slug, and keywords for a product.
- *
- * Expected input JSON:
- * {
- *   "productTitle": "Waterproof layered necklace",
- *   "brand": "DTP Jewellry",
- *   "collections": ["Necklaces", "Waterproof"],
- *   "toneOfVoice": "confident, modern, UK English"
- * }
- */
 async function run(input = {}) {
   const {
     productTitle = "",
+    productDescription = "",
     brand = "",
-    collections = [],
-    toneOfVoice = "confident, modern, UK English",
+    tone = "elevated, modern, UK English",
   } = input;
 
   const openai = await getOpenAIClient();
 
   const prompt = `
-Generate SEO content for a Shopify jewellery product in ${toneOfVoice} tone.
+Generate SEO metadata for the following Shopify product.
 
 Product: ${productTitle}
+Description: ${productDescription}
 Brand: ${brand}
-Collections: ${collections.join(", ") || "none specified"}
+Tone: ${tone}
 
-Return a VALID JSON object ONLY, with these keys:
-
-- "title": 65–70 chars max, keyword-rich but natural
-- "description": around 150–160 chars, persuasive, UK English
-- "slug": short, lowercase, hyphen-separated, no brand name
-- "keywords": array of 6–10 short SEO keyword phrases
-
-DO NOT include any extra commentary or text outside the JSON.
+Return ONLY valid JSON with these keys:
+- title
+- description
+- slug
+- keywords (array)
 `;
 
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        {
-          role: "system",
-          content: "You are an expert ecommerce SEO copywriter for Shopify stores.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
+        { role: "system", content: "You are an expert Shopify SEO assistant." },
+        { role: "user", content: prompt },
       ],
       temperature: 0.7,
       max_tokens: 400,
@@ -78,15 +62,10 @@ DO NOT include any extra commentary or text outside the JSON.
     try {
       parsed = JSON.parse(raw);
     } catch (err) {
-      // If model didn’t give perfect JSON, fall back but still return something
-      parsed = { parseError: err.message, raw };
+      parsed = { raw, parseError: err.message };
     }
 
-    return {
-      ok: true,
-      input,
-      output: parsed,
-    };
+    return { ok: true, input, output: parsed };
   } catch (err) {
     return {
       ok: false,
