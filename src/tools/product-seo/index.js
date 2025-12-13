@@ -6,7 +6,7 @@
 const OpenAI = require("openai");
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 exports.meta = {
@@ -14,7 +14,7 @@ exports.meta = {
   name: "Product SEO Engine",
   category: "SEO",
   description:
-    "Generate SEO titles, descriptions, slugs and keyword sets for products."
+    "Generate SEO titles, descriptions, slugs and keyword sets for products.",
 };
 
 /**
@@ -38,7 +38,7 @@ exports.run = async function run(input, ctx = {}) {
     productDescription = "",
     brand = "",
     tone = "",
-    useCases = []
+    useCases = [],
   } = input || {};
 
   if (!productTitle || !productDescription) {
@@ -70,10 +70,12 @@ Return STRICT JSON only in this shape:
 }
 `.trim();
 
+  // IMPORTANT:
+  // - No `response_format` here. The Responses API now rejects that param.
+  // - We force JSON via the prompt and parse the plain text ourselves.
   const response = await client.responses.create({
     model: "gpt-4.1-mini",
     input: prompt,
-    response_format: { type: "json_object" }
   });
 
   const raw =
@@ -88,11 +90,23 @@ Return STRICT JSON only in this shape:
     throw new Error("OpenAI response missing text payload");
   }
 
+  // Clean up common formatting (```json ... ``` etc.) before JSON.parse
+  let cleaned = raw.trim();
+  if (cleaned.startsWith("```")) {
+    // Strip ```json or ``` from the start and ``` from the end
+    cleaned = cleaned.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+  }
+
   let parsed;
   try {
-    parsed = JSON.parse(raw);
+    parsed = JSON.parse(cleaned);
   } catch (err) {
-    throw new Error("Failed to parse JSON from OpenAI response");
+    throw new Error(
+      `Failed to parse JSON from OpenAI response. Got: ${cleaned.slice(
+        0,
+        200
+      )}`
+    );
   }
 
   return {
@@ -102,9 +116,9 @@ Return STRICT JSON only in this shape:
       description: parsed.metaDescription || "",
       metaDescription: parsed.metaDescription || "",
       slug: parsed.slug || parsed.handle || "",
-      keywords: Array.isArray(parsed.keywords) ? parsed.keywords : []
+      keywords: Array.isArray(parsed.keywords) ? parsed.keywords : [],
     },
     model: "gpt-4.1-mini",
-    environment: ctx.environment || "unknown"
+    environment: ctx.environment || "unknown",
   };
 };
