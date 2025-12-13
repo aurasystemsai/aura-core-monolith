@@ -1,77 +1,110 @@
 // src/tools/product-seo/index.js
-// CommonJS version with global OpenAI client and no project context
+// ----------------------------------------
+// Product SEO Engine tool for AURA Core
+// ----------------------------------------
 
-let cachedClient = null;
+const OpenAI = require("openai");
 
-async function getOpenAIClient() {
-  if (cachedClient) return cachedClient;
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
-  const OpenAI = (await import("openai")).default;
+exports.meta = {
+  id: "product-seo",
+  name: "Product SEO Engine",
+  category: "SEO",
+  description:
+    "Generate SEO titles, descriptions, slugs and keyword sets for products."
+};
 
-  cachedClient = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-    // Force to global endpoint (avoids proj_ scoping issues)
-    baseURL: "https://api.openai.com/v1",
-    defaultHeaders: {
-      "OpenAI-Beta": "",
-    },
-  });
+/**
+ * input: {
+ *   productTitle: string
+ *   productDescription: string
+ *   brand: string
+ *   tone: string
+ *   useCases: string[]
+ * }
+ */
+exports.run = async function run(input, ctx = {}) {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error(
+      "OPENAI_API_KEY is not set. Add it in your Render environment."
+    );
+  }
 
-  return cachedClient;
-}
-
-async function run(input = {}) {
   const {
     productTitle = "",
     productDescription = "",
     brand = "",
-    tone = "elevated, modern, UK English",
-  } = input;
+    tone = "",
+    useCases = []
+  } = input || {};
 
-  const openai = await getOpenAIClient();
+  if (!productTitle || !productDescription) {
+    throw new Error("productTitle and productDescription are required");
+  }
 
   const prompt = `
-Generate SEO metadata for the following Shopify product.
+You are an ecommerce SEO specialist for a jewellery brand.
 
-Product: ${productTitle}
+Write:
+1) A product SEO title (max ~60 chars)
+2) A meta description (130–155 chars)
+3) A URL slug/handle
+4) A focused keyword set (5–10 phrases, comma-separated)
+
+Product title: ${productTitle}
 Description: ${productDescription}
-Brand: ${brand}
-Tone: ${tone}
+Brand: ${brand || "N/A"}
+Tone of voice: ${tone || "modern, confident, UK English"}
+Use cases: ${Array.isArray(useCases) ? useCases.join(", ") : useCases}
 
-Return ONLY valid JSON with these keys:
-- title
-- description
-- slug
-- keywords (array)
-`;
+Return STRICT JSON only in this shape:
 
-  try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
-      messages: [
-        { role: "system", content: "You are an expert Shopify SEO assistant." },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.7,
-      max_tokens: 400,
-    });
-
-    const raw = completion.choices[0]?.message?.content?.trim() || "{}";
-
-    let parsed;
-    try {
-      parsed = JSON.parse(raw);
-    } catch (err) {
-      parsed = { raw, parseError: err.message };
-    }
-
-    return { ok: true, input, output: parsed };
-  } catch (err) {
-    return {
-      ok: false,
-      error: err.message || "OpenAI request failed",
-    };
-  }
+{
+  "title": "…",
+  "metaDescription": "…",
+  "slug": "…",
+  "keywords": ["…", "…"]
 }
+`.trim();
 
-module.exports = { run };
+  const response = await client.responses.create({
+    model: "gpt-4.1-mini",
+    input: prompt,
+    response_format: { type: "json_object" }
+  });
+
+  const raw =
+    response.output &&
+    response.output[0] &&
+    response.output[0].content &&
+    response.output[0].content[0] &&
+    response.output[0].content[0].text &&
+    response.output[0].content[0].text.value;
+
+  if (!raw) {
+    throw new Error("OpenAI response missing text payload");
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (err) {
+    throw new Error("Failed to parse JSON from OpenAI response");
+  }
+
+  return {
+    input,
+    output: {
+      title: parsed.title || "",
+      description: parsed.metaDescription || "",
+      metaDescription: parsed.metaDescription || "",
+      slug: parsed.slug || parsed.handle || "",
+      keywords: Array.isArray(parsed.keywords) ? parsed.keywords : []
+    },
+    model: "gpt-4.1-mini",
+    environment: ctx.environment || "unknown"
+  };
+};
