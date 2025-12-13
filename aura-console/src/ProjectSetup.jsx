@@ -1,116 +1,137 @@
+// src/ProjectSetup.jsx
 import React, { useState } from "react";
-import "./App.css"; // keep using your main console styling
 
-// This component:
-// - Shows the big "Connect your store" card
-// - Saves project to localStorage
-// - Calls onConnected(project) so App.jsx can show the dashboard
-export default function ProjectSetup({ onConnected }) {
-  const [projectName, setProjectName] = useState("");
-  const [storefrontDomain, setStorefrontDomain] = useState("");
-  const [platform, setPlatform] = useState("Other / Manual (default)");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const [loading, setLoading] = useState(false);
+const PLATFORMS = [
+  { value: "other", label: "Other / Manual (default)" },
+  { value: "shopify", label: "Shopify" },
+  { value: "woocommerce", label: "WooCommerce" },
+];
 
-  const handleConnect = () => {
-    setError("");
+function ProjectSetup({ coreUrl, onConnected }) {
+  const [name, setName] = useState("");
+  const [domain, setDomain] = useState("");
+  const [platform, setPlatform] = useState("other");
 
-    const name = projectName.trim();
-    const domain = storefrontDomain.trim();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
-    if (!name || !domain) {
-      setError("Please enter both a project name and storefront domain.");
-      return;
-    }
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (isSubmitting) return;
 
-    setLoading(true);
+    setIsSubmitting(true);
+    setError(null);
 
-    // Build the project object we’ll use everywhere
-    const project = {
-      name,
-      domain,
-      platform,
-    };
-
-    // Persist for future visits (same as your previous behaviour)
     try {
+      const body = {
+        name: name.trim() || "aura",
+        domain: domain.trim(),
+        platform,
+      };
+
+      const res = await fetch(`${coreUrl}/projects`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(
+          text || `Failed to create project (status ${res.status})`
+        );
+      }
+
+      const data = await res.json();
+
+      const project = {
+        id: data.id,
+        name: data.name || body.name,
+        domain: data.domain || body.domain,
+        platform: data.platform || body.platform,
+      };
+
+      // Persist for auto-reconnect in the console
+      localStorage.setItem("auraProjectId", project.id);
       localStorage.setItem("auraProjectName", project.name);
       localStorage.setItem("auraProjectDomain", project.domain);
       localStorage.setItem("auraPlatform", project.platform);
-      localStorage.setItem("auraProjectId", project.domain); // simple id for now
-    } catch (e) {
-      console.error("Failed to write project to localStorage", e);
+
+      onConnected(project);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Failed to create project");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setSuccess(true);
-
-    // Tiny delay so the green success state can flash, then hand off to App
-    setTimeout(() => {
-      setLoading(false);
-      if (typeof onConnected === "function") {
-        onConnected(project);
-      }
-    }, 600);
   };
 
   return (
-    <div className="connect-container">
-      <div className="connect-card">
-        <h2 className="connect-heading">Connect your store</h2>
-        <p className="connect-description">
+    <div className="project-setup-screen">
+      <div className="project-setup-card">
+        <div className="side-nav-eyebrow">AURA SYSTEMS AI</div>
+        <h1>Connect your store</h1>
+        <p className="subtitle">
           AURA works with Shopify and all other ecommerce platforms. For
-          non-Shopify stores, you’ll paste product details manually into the SEO tools.
+          non-Shopify stores, you’ll paste product details manually into the SEO
+          tools.
         </p>
 
-        <div className="form-group">
-          <label>Project / Brand name</label>
-          <input
-            type="text"
-            value={projectName}
-            placeholder="e.g. DTP Jewellery"
-            onChange={(e) => setProjectName(e.target.value)}
-          />
-        </div>
+        <form className="project-setup-form" onSubmit={handleSubmit}>
+          <label>
+            <span>Project / Brand name</span>
+            <input
+              type="text"
+              placeholder="e.g. DTP Jewellery"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </label>
 
-        <div className="form-group">
-          <label>Storefront domain</label>
-          <input
-            type="text"
-            value={storefrontDomain}
-            placeholder="e.g. dtpjewellry.com"
-            onChange={(e) => setStorefrontDomain(e.target.value)}
-          />
-        </div>
+          <label>
+            <span>Storefront domain</span>
+            <input
+              type="text"
+              placeholder="e.g. dtpjewellry.com"
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+            />
+          </label>
 
-        <div className="form-group">
-          <label>Platform</label>
-          <select
-            value={platform}
-            onChange={(e) => setPlatform(e.target.value)}
+          <label>
+            <span>Platform</span>
+            <select
+              value={platform}
+              onChange={(e) => setPlatform(e.target.value)}
+            >
+              {PLATFORMS.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {error && (
+            <div className="error-banner">
+              <span className="error-dot" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="button button--primary"
+            disabled={isSubmitting}
           >
-            <option>Other / Manual (default)</option>
-            <option>Shopify</option>
-            <option>WooCommerce</option>
-            <option>Wix</option>
-            <option>Squarespace</option>
-            <option>BigCommerce</option>
-          </select>
-        </div>
-
-        {error && <div className="error-banner">{error}</div>}
-        {success && (
-          <div className="success-banner">✅ Connected successfully!</div>
-        )}
-
-        <button
-          className="connect-btn gradient-btn"
-          onClick={handleConnect}
-          disabled={loading}
-        >
-          {loading ? "Connecting..." : "Connect Store"}
-        </button>
+            {isSubmitting ? "Connecting…" : "Connect Store"}
+          </button>
+        </form>
       </div>
     </div>
   );
 }
+
+export default ProjectSetup;
