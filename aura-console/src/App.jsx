@@ -11,7 +11,7 @@ const PRODUCT_SEO_TOOL = {
     "Generate SEO titles, descriptions, slugs and keyword sets for products.",
 };
 
-// For Render we talk to the Core API at the Render URL
+// For production console we talk to the Render Core API
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
 function App() {
@@ -50,6 +50,9 @@ function App() {
   const [activeDevice, setActiveDevice] = useState("Desktop");
   const [timeRange, setTimeRange] = useState("30d"); // 30d / 180d / all
   const [pageTab, setPageTab] = useState("Overview");
+
+  // History chart mode: score vs meta length
+  const [historyMode, setHistoryMode] = useState("score"); // "score" | "meta"
 
   // Simple run history for the chart + table
   const [runHistory, setRunHistory] = useState([]);
@@ -235,6 +238,27 @@ function App() {
       : runHistory;
 
   const latestRun = runHistory[runHistory.length - 1];
+
+  const viewingLabel = (() => {
+    const rangeLabel =
+      timeRange === "30d"
+        ? "Last 5 runs"
+        : timeRange === "180d"
+        ? "Last 8 runs"
+        : "All runs";
+    return `${activeMarket} · ${activeDevice} · ${rangeLabel}`;
+  })();
+
+  const getHistoryMetric = (run) => {
+    if (historyMode === "score") {
+      return run.score ?? 0;
+    }
+    // For meta length view, normalise against 160 chars
+    return run.metaLength ?? 0;
+  };
+
+  const historyModeLabel =
+    historyMode === "score" ? "Score trend" : "Meta length trend";
 
   // -------------------------------------------------
   // Onboarding screen: no project yet
@@ -507,108 +531,45 @@ function App() {
             </div>
           </section>
 
-          {/* COACHING CARD – HOW TO REACH 100/100 */}
-          <section className="coaching-row" style={{ marginTop: 10 }}>
-            <div className="card">
-              <div className="card-header">
-                <div className="card-title-row">
-                  <h2 className="card-title">How to reach 100/100</h2>
-                </div>
-                <p className="card-subtitle">
-                  You do not need to be an SEO expert. Follow these steps,
-                  change the text on the right, then click{" "}
-                  <strong>Run Product SEO</strong> again.
-                </p>
-              </div>
+          {/* "HOW TO REACH 100/100" – still driven by lengths */}
+          <section className="card" style={{ marginTop: 10 }}>
+            <div className="card-header">
+              <h2 className="card-title">How to reach 100/100</h2>
+              <p className="card-subtitle">
+                You do not need to be an SEO expert. Follow these steps, change
+                the text on the right, then click <strong>Run Product SEO</strong>{" "}
+                again.
+              </p>
+            </div>
 
-              <div className="kpi-footnote" style={{ marginTop: 8 }}>
+            <div style={{ fontSize: 12, lineHeight: 1.5 }}>
+              <p>
                 <strong>1. Tidy up your product title</strong>
                 <br />
-                Your current title is{" "}
-                <strong>{currentTitleLength || 0}</strong> characters. Aim for{" "}
-                <strong>45–60</strong>.
-                {currentTitleLength === 0 && (
-                  <>
-                    {" "}
-                    Start with a clear name plus one key benefit.
-                    <br />
-                    <em>Example you can copy:</em>{" "}
-                    <span>
-                      {brand || "Your brand"} {productTitle || "Gold huggie earrings"} – Waterproof &amp; adjustable
-                    </span>
-                  </>
-                )}
-                {currentTitleLength > 0 && currentTitleLength < 45 && (
-                  <>
-                    {" "}
-                    It is a bit short – add one small extra detail like the
-                    material or benefit.
-                    <br />
-                    <em>Example pattern:</em>{" "}
-                    <span>
-                      {brand || "Your brand"} {productTitle} – Adjustable, waterproof
-                    </span>
-                  </>
-                )}
-                {currentTitleLength > 60 && (
-                  <>
-                    {" "}
-                    It is a bit long – remove extra words like “beautiful”,
-                    “stunning”, or repeated brand names so it is easier to read.
-                    <br />
-                    <em>Example pattern:</em>{" "}
-                    <span>{productTitle} – 1 main benefit only</span>
-                  </>
-                )}
-                {currentTitleLength >= 45 && currentTitleLength <= 60 && (
-                  <>
-                    {" "}
-                    You are already in the perfect range – only tweak it if it
-                    feels clunky or hard to read.
-                  </>
-                )}
-              </div>
-
-              <div className="kpi-footnote" style={{ marginTop: 10 }}>
+                Your current title is <strong>{currentTitleLength}</strong>{" "}
+                characters. Aim for <strong>45–60</strong>.
+              </p>
+              <p>
                 <strong>2. Tidy up your meta description</strong>
                 <br />
                 Your meta description is{" "}
-                <strong>{currentMetaLength || 0}</strong> characters. Aim for{" "}
+                <strong>{currentMetaLength}</strong> characters. Aim for{" "}
                 <strong>130–155</strong>.
-                {currentMetaLength === 0 && (
-                  <>
-                    {" "}
-                    Start with one clear sentence about what it is, then add 1–2
-                    benefits and when to wear it.
-                  </>
-                )}
-                {currentMetaLength > 0 && currentMetaLength < 130 && (
-                  <>
-                    {" "}
-                    It is short – add 1–2 short benefits or use cases (for
-                    example: gym, everyday wear, gifting).
-                  </>
-                )}
-                {currentMetaLength > 155 && (
-                  <>
-                    {" "}
-                    It is long – remove filler words or repeated phrases until
-                    it fits into the range.
-                  </>
-                )}
+              </p>
+              <p>
+                <strong>Simple formula you can follow:</strong>
                 <br />
-                <em>Simple formula you can follow:</em>
-                <br />
-                <span>
+                <code>
                   [What it is] + [1–2 big benefits] + [when to use it]
-                </span>
+                </code>
                 <br />
-                <span>
-                  Example: “Waterproof paperclip bracelet with sweat-proof
-                  coating. Adjustable fit for any wrist, perfect for gym,
-                  everyday wear and gifting.”
-                </span>
-              </div>
+                Example:{" "}
+                <em>
+                  “Waterproof paperclip bracelet with sweat-proof coating.
+                  Adjustable fit for any wrist, perfect for gym, everyday wear
+                  and gifting.”
+                </em>
+              </p>
             </div>
           </section>
 
@@ -622,13 +583,32 @@ function App() {
                   <div className="card-title-row">
                     <h2 className="card-title">SEO run history</h2>
                     <div className="card-toggle-tabs">
-                      <button className="tab tab--active">Score trend</button>
-                      <button className="tab">Meta length</button>
+                      <button
+                        className={
+                          "tab" +
+                          (historyMode === "score" ? " tab--active" : "")
+                        }
+                        onClick={() => setHistoryMode("score")}
+                      >
+                        Score trend
+                      </button>
+                      <button
+                        className={
+                          "tab" +
+                          (historyMode === "meta" ? " tab--active" : "")
+                        }
+                        onClick={() => setHistoryMode("meta")}
+                      >
+                        Meta length
+                      </button>
                     </div>
                   </div>
                   <p className="card-subtitle">
                     Every time you re-run the engine, we plot a new point here.
                     Works like SEMrush charts, but for your product SEO quality.
+                  </p>
+                  <p className="card-subtitle" style={{ fontSize: 11 }}>
+                    Viewing: {viewingLabel} • {historyModeLabel}
                   </p>
                 </div>
 
@@ -636,14 +616,22 @@ function App() {
                   {sparkRuns.length ? (
                     <div className="run-history-spark">
                       {sparkRuns.map((run) => {
-                        const score = run.score ?? 0;
-                        const height = 20 + (score / 100) * 60;
+                        const metric = getHistoryMetric(run);
+                        const normalised =
+                          historyMode === "score"
+                            ? metric / 100
+                            : Math.min(metric, 160) / 160;
+                        const height = 20 + normalised * 60;
+                        const tooltip =
+                          historyMode === "score"
+                            ? `Run ${run.id} • ${run.score ?? "n/a"}/100`
+                            : `Run ${run.id} • ${run.metaLength ?? "n/a"} meta chars`;
                         return (
                           <div
                             key={run.id}
                             className="run-history-bar"
                             style={{ height: `${height}%` }}
-                            title={`Run ${run.id} • ${score || "n/a"}/100`}
+                            title={tooltip}
                           />
                         );
                       })}
@@ -807,6 +795,15 @@ function App() {
                     the engine. Step 3: copy the SEO fields from the left-hand
                     table.
                   </p>
+                  {pageTab !== "Overview" && (
+                    <p className="card-subtitle" style={{ fontSize: 11 }}>
+                      You are currently on{" "}
+                      <strong>{pageTab}</strong>. Analytics views are in
+                      development – for now, editing the product on the right
+                      and re-running will always use the <strong>Overview</strong>{" "}
+                      data.
+                    </p>
+                  )}
                 </div>
 
                 <div className="inspector-field-group presets-row">
@@ -852,7 +849,10 @@ function App() {
                 </div>
 
                 <div className="inspector-field-group">
-                  <label className="inspector-label" htmlFor="description">
+                  <label
+                    className="inspector-label"
+                    htmlFor="description"
+                  >
                     Product description
                   </label>
                   <textarea
