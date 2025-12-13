@@ -99,10 +99,10 @@ Return STRICT JSON only in this exact shape:
 `.trim();
 
   const response = await client.responses.create({
-    model: "gpt-4.1-mini",
-    input: prompt,
-    response_format: { type: "json_object" },
-  });
+  model: "gpt-4.1-mini",
+  input: prompt,
+  text_format: "json", // updated parameter name
+});
 
   const raw =
     response.output &&
