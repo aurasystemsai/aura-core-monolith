@@ -1,116 +1,84 @@
 import React, { useState } from "react";
+import "./App.css";
 
-export default function ProjectSetup({ coreUrl, onConnected }) {
+export default function ProjectSetup({ onConnected }) {
   const [name, setName] = useState("");
   const [domain, setDomain] = useState("");
-  const [platform, setPlatform] = useState("other");
+  const [platform, setPlatform] = useState("Other / Manual (default)");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
+  const handleConnect = async () => {
+    setError("");
     setLoading(true);
-
     try {
-      const res = await fetch(`${coreUrl}/projects`, {
+      const res = await fetch("https://aura-core-monolith.onrender.com/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, domain, platform }),
+        body: JSON.stringify({ name, domain, platform })
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(
-          `Failed to create project (${res.status}): ${
-            text || res.statusText
-          }`
-        );
-      }
-
       const data = await res.json();
-      const project = data.project || data;
+      if (!res.ok || !data.ok) throw new Error(data.error || "Connection failed");
 
-      localStorage.setItem("auraProjectId", project.id);
-      localStorage.setItem("auraProjectName", project.name);
-      localStorage.setItem("auraProjectDomain", project.domain);
-      localStorage.setItem("auraPlatform", project.platform);
-
-      onConnected(project);
+      setSuccess(true);
+      setTimeout(() => {
+        onConnected(data.project);
+      }, 1000);
     } catch (err) {
-      setError(err.message || "Failed to create project");
+      console.error("❌ Connect failed:", err);
+      setError("Failed to connect to AURA Core API. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="project-setup-screen">
-      <div className="project-setup-card">
-        <h1>Connect your store</h1>
-        <p className="subtitle">
-          AURA works with Shopify and all other ecommerce platforms.
-          For non-Shopify stores, you’ll paste product details manually into
-          the SEO tools.
+    <div className="setup-wrapper">
+      <div className="setup-card">
+        <h2>Connect your store</h2>
+        <p>
+          AURA works with Shopify and all other ecommerce platforms. For non-Shopify stores,
+          you’ll paste product details manually into the SEO tools.
         </p>
 
-        <form onSubmit={handleSubmit} className="project-setup-form">
-          <label>
-            Project / Brand name
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="e.g. DTP Jewellery"
-            />
-          </label>
+        <label>Project / Brand name</label>
+        <input
+          type="text"
+          value={name}
+          placeholder="e.g. DTP Jewellery"
+          onChange={(e) => setName(e.target.value)}
+        />
 
-          <label>
-            Storefront domain
-            <input
-              type="text"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              required
-              placeholder="e.g. dtpjewellery.com"
-            />
-          </label>
+        <label>Storefront domain</label>
+        <input
+          type="text"
+          value={domain}
+          placeholder="e.g. dtpjewellry.com"
+          onChange={(e) => setDomain(e.target.value)}
+        />
 
-          <label>
-            Platform
-            <select
-              value={platform}
-              onChange={(e) => setPlatform(e.target.value)}
-            >
-              <option value="other">Other / Manual (default)</option>
-              <option value="shopify" disabled>
-                Shopify (coming soon)
-              </option>
-              <option value="woocommerce" disabled>
-                WooCommerce (coming soon)
-              </option>
-              <option value="etsy" disabled>
-                Etsy (coming soon)
-              </option>
-            </select>
-          </label>
+        <label>Platform</label>
+        <select value={platform} onChange={(e) => setPlatform(e.target.value)}>
+          <option>Other / Manual (default)</option>
+          <option>Shopify</option>
+          <option>WooCommerce</option>
+          <option>Wix</option>
+          <option>Squarespace</option>
+          <option>BigCommerce</option>
+        </select>
 
-          {error && (
-            <div className="error-banner">
-              <span className="error-dot" />
-              {error}
-            </div>
-          )}
+        {error && <div className="error-banner">{error}</div>}
+        {success && <div className="success-banner">✅ Connected successfully!</div>}
 
-          <button
-            type="submit"
-            className="button button--primary"
-            disabled={loading}
-          >
-            {loading ? "Connecting…" : "Connect Store"}
-          </button>
-        </form>
+        <button
+          className="connect-btn"
+          onClick={handleConnect}
+          disabled={loading}
+        >
+          {loading ? "Connecting..." : "Connect Store"}
+        </button>
       </div>
     </div>
   );

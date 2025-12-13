@@ -1,5 +1,8 @@
 // ===============================================
-// AURA Core Monolith - Render Fixed (CORS + Logging)
+// AURA Core Monolith - Final Render Build
+// - Fully open CORS
+// - Logs all connect requests
+// - Ready for hosted frontend
 // ===============================================
 
 const path = require("path");
@@ -10,27 +13,26 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const app = express();
-const PORT = Number(process.env.PORT || process.env.AURA_CORE_API_PORT || 4999);
+const PORT = Number(process.env.PORT || 4999);
 
-// Registry for tools (CommonJS)
+// Load tools registry
 const toolsRegistry = require("./core/tools-registry.cjs");
 
-// ----------------------
-// CORS FIX (Allow All)
-// ----------------------
+// -------------------------------------
+// GLOBAL CORS (Allow everything for now)
+// -------------------------------------
 app.use(
   cors({
     origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
-    allowedHeaders: "Content-Type,Authorization,x-core-client"
+    allowedHeaders: "*"
   })
 );
-
 app.use(bodyParser.json());
 
-// ----------------------
-// HEALTH
-// ----------------------
+// -------------------------------------
+// HEALTH CHECK
+// -------------------------------------
 app.get("/health", (req, res) => {
   res.json({
     ok: true,
@@ -40,31 +42,29 @@ app.get("/health", (req, res) => {
   });
 });
 
-// ----------------------
-// PROJECT CONNECT (API endpoint)
-// ----------------------
+// -------------------------------------
+// CONNECT STORE / PROJECT ENDPOINT
+// -------------------------------------
 app.post("/api/projects", (req, res) => {
   const { name, domain, platform } = req.body || {};
-
-  console.log("📦 New Project Connect Request:", { name, domain, platform });
+  console.log("📦 New project connect:", { name, domain, platform });
 
   if (!name || !domain) {
     return res
       .status(400)
-      .json({ ok: false, error: "Missing required fields (name, domain)" });
+      .json({ ok: false, error: "Missing required fields: name or domain" });
   }
 
-  // Example response for front-end
   res.json({
     ok: true,
-    message: "Project registered successfully",
+    message: "Project connected successfully",
     project: { name, domain, platform }
   });
 });
 
-// ----------------------
-// RUN TOOL ENDPOINT
-// ----------------------
+// -------------------------------------
+// TOOL RUNNER
+// -------------------------------------
 app.post("/run/:tool", async (req, res) => {
   const toolKey = req.params.tool;
   const input = req.body || {};
@@ -79,7 +79,10 @@ app.post("/run/:tool", async (req, res) => {
   }
 
   try {
-    const ctx = { env: process.env, environment: process.env.NODE_ENV || "production" };
+    const ctx = {
+      env: process.env,
+      environment: process.env.NODE_ENV || "production"
+    };
     const result = await tool.run(input, ctx);
     res.json({ ok: true, tool: toolKey, result });
   } catch (err) {
@@ -88,9 +91,9 @@ app.post("/run/:tool", async (req, res) => {
   }
 });
 
-// ----------------------
-// STATIC CONSOLE UI
-// ----------------------
+// -------------------------------------
+// STATIC FRONTEND (Console UI)
+// -------------------------------------
 const consoleBuildPath = path.join(__dirname, "..", "aura-console", "dist");
 app.use(express.static(consoleBuildPath));
 
@@ -98,11 +101,11 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(consoleBuildPath, "index.html"));
 });
 
-// ----------------------
+// -------------------------------------
 // START SERVER
-// ----------------------
+// -------------------------------------
 app.listen(PORT, () => {
-  console.log(`[Core] AURA Core API running at http://localhost:${PORT}`);
+  console.log(`[Core] AURA Core API running on port ${PORT}`);
 });
 
 module.exports = app;
