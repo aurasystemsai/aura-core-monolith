@@ -12,8 +12,7 @@ const PRODUCT_SEO_TOOL = {
 };
 
 // For local development we always talk to the Core API on port 4999
-const DEFAULT_CORE_API = "http://localhost:4999";
-
+const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 function App() {
   const [coreUrl, setCoreUrl] = useState(DEFAULT_CORE_API);
   const [coreStatus, setCoreStatus] = useState("idle"); // idle | checking | ok | error
