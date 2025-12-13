@@ -235,7 +235,6 @@ function App() {
 
   // Filter history by market + device first
   const historyForFilters = runHistory.filter((run) => {
-    // If we ever have old runs without market/device, treat as "all"
     const runMarket = run.market || "Worldwide";
     const runDevice = run.device || "Desktop";
     return runMarket === activeMarket && runDevice === activeDevice;
@@ -254,7 +253,7 @@ function App() {
   const latestRun = runHistory[runHistory.length - 1];
 
   // -------------------------------------------------
-  // Copy for the "How to reach 100/100" helper card
+  // “How to reach 100/100” helper copy
   // -------------------------------------------------
   const buildTitleAdvice = () => {
     if (!currentTitleLength) {
@@ -505,8 +504,7 @@ function App() {
             </div>
           </section>
 
-          {/* If you are on Overview, show full dashboard.
-              Other tabs show a clear “coming soon” panel. */}
+          {/* Overview vs other tabs */}
           {pageTab === "Overview" ? (
             <>
               {/* KPI ROW */}
@@ -593,8 +591,7 @@ function App() {
                       <code>
                         [What it is] + [1–2 big benefits] + [when to use it]
                       </code>
-                      .
-                      <br />
+                      .<br />
                       Example: “Waterproof paperclip bracelet with sweat-proof
                       coating. Adjustable fit for gym, everyday wear and
                       gifting.”
@@ -945,7 +942,7 @@ function App() {
               </section>
             </>
           ) : (
-            // Non-Overview tabs – simple explainer so it’s obvious they do something
+            // Non-Overview tabs – “coming soon” panels
             <section style={{ marginTop: 10 }}>
               <div className="card">
                 <div className="card-header">
@@ -965,7 +962,8 @@ function App() {
                       </li>
                       <li>
                         See who wins on click-through potential in{" "}
-                        {activeMarket} for {activeDevice.toLowerCase()}.
+                        {activeMarket} for{" "}
+                        {activeDevice.toLowerCase()}.
                       </li>
                       <li>
                         Export a simple action list you can plug straight into
