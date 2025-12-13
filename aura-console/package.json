@@ -1,36 +1,22 @@
 {
-  "name": "aura-core-monolith",
+  "name": "aura-console",
   "version": "1.0.0",
-  "description": "AURA Systems • Core Monolith API and Automation Console — unified gateway for all AURA tools",
-  "main": "src/server.js",
-  "type": "commonjs",
+  "private": true,
   "scripts": {
-    "dev": "nodemon src/server.js",
-    "start": "node src/server.js",
-    "test:tools": "node src/test-all-tools.js",
-    "console": "npm run dev --prefix aura-console",
-    "build:console": "npm install --prefix aura-console --include=dev && npm run build --prefix aura-console",
-    "lint": "eslint --ext .js,.jsx src"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext js,jsx --max-warnings=0"
   },
-  "keywords": [
-    "aura",
-    "aura-systems",
-    "aura-core",
-    "automation",
-    "ai",
-    "shopify",
-    "seo",
-    "nodejs"
-  ],
   "dependencies": {
-    "body-parser": "^1.20.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1",
-    "openai": "^4.52.0"          
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@vitejs/plugin-react-swc": "^3.5.0",
     "eslint": "^8.57.0",
-    "nodemon": "^3.1.7"
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.6",
+    "vite": "^5.0.0"
   }
 }
