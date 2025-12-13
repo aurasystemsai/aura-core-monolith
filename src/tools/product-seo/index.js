@@ -59,7 +59,7 @@ Follow these rules carefully:
 - Aim for roughly 45–60 characters.
 - Put the main product keyword near the beginning.
 - Include 1–2 key benefits or materials (e.g. waterproof, gold plated, adjustable).
-- If a brand name is given, mention it near the end (e.g. “– DTP Jewellery”).
+- If a brand name is given, mention it near the end (e.g. "– DTP Jewellery").
 - Do NOT include quotation marks around the title.
 
 2) META DESCRIPTION
@@ -67,12 +67,12 @@ Follow these rules carefully:
 - Summarise what it is, the main benefits and when to wear it.
 - Mention materials, finish or special properties (e.g. sweat-proof, hypoallergenic).
 - Include at least one use case or occasion from the input (gym, gifting, everyday wear, etc.).
-- Encourage the click but do NOT use spammy phrases like “Click now” or “Best ever”.
+- Encourage the click but do NOT use spammy phrases like "Click now" or "Best ever".
 
 3) URL SLUG / HANDLE
 - Lowercase.
 - Hyphen separated.
-- No brand name, no stop-words like “the” or “and” unless needed.
+- No brand name, no stop-words like "the" or "and" unless needed.
 - Keep it short but descriptive (3–7 words).
 
 4) KEYWORD SET
@@ -98,19 +98,48 @@ Return STRICT JSON only in this exact shape:
 }
 `.trim();
 
-  const response = await client.responses.create({
-  model: "gpt-4.1-mini",
-  input: prompt,
-  text_format: "json", // updated parameter name
-});
+  // -------------------------------
+  // OpenAI call with safe fallback
+  // -------------------------------
+  let raw;
 
-  const raw =
-    response.output &&
-    response.output[0] &&
-    response.output[0].content &&
-    response.output[0].content[0] &&
-    response.output[0].content[0].text &&
-    response.output[0].content[0].text.value;
+  try {
+    // Try modern Responses API with JSON mode
+    const resp = await client.responses.create({
+      model: "gpt-4.1-mini",
+      input: prompt,
+      response_format: { type: "json_object" },
+    });
+
+    raw =
+      resp &&
+      resp.output &&
+      resp.output[0] &&
+      resp.output[0].content &&
+      resp.output[0].content[0] &&
+      resp.output[0].content[0].text &&
+      resp.output[0].content[0].text.value;
+  } catch (err) {
+    // Fallback for environments / SDK versions where Responses API
+    // or response_format is not supported
+    console.warn(
+      "[product-seo] Responses API failed, falling back to chat.completions:",
+      err.message
+    );
+
+    const legacy = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.4,
+    });
+
+    raw =
+      legacy &&
+      legacy.choices &&
+      legacy.choices[0] &&
+      legacy.choices[0].message &&
+      legacy.choices[0].message.content;
+  }
 
   if (!raw) {
     throw new Error("OpenAI response missing text payload");
