@@ -70,43 +70,69 @@ Return STRICT JSON only in this shape:
 }
 `.trim();
 
-  // IMPORTANT:
-  // - No `response_format` here. The Responses API now rejects that param.
-  // - We force JSON via the prompt and parse the plain text ourselves.
+  // Use the Responses API – no response_format, just strict JSON via prompt
   const response = await client.responses.create({
     model: "gpt-4.1-mini",
     input: prompt,
   });
 
-  const raw =
-    response.output &&
-    response.output[0] &&
-    response.output[0].content &&
-    response.output[0].content[0] &&
-    response.output[0].content[0].text &&
-    response.output[0].content[0].text.value;
+  // Try to safely extract the text payload from different possible shapes
+  let raw = "";
 
-  if (!raw) {
+  try {
+    const output0 = response.output && response.output[0];
+
+    if (
+      output0 &&
+      Array.isArray(output0.content) &&
+      output0.content[0] != null
+    ) {
+      const content0 = output0.content[0];
+
+      // Newer SDKs: content0.text may be a string
+      if (typeof content0.text === "string") {
+        raw = content0.text;
+      }
+      // Older / current shape: content0.text.value is the string
+      else if (
+        content0.text &&
+        typeof content0.text.value === "string"
+      ) {
+        raw = content0.text.value;
+      }
+      // Fallback: content0 itself is a string
+      else if (typeof content0 === "string") {
+        raw = content0;
+      }
+    }
+
+    // Some SDKs expose a convenience field
+    if (!raw && typeof response.output_text === "string") {
+      raw = response.output_text;
+    }
+  } catch (e) {
+    // Leave raw as "" – we'll throw a clear error below
+  }
+
+  if (!raw || !raw.trim()) {
     throw new Error("OpenAI response missing text payload");
   }
 
-  // Clean up common formatting (```json ... ``` etc.) before JSON.parse
-  let cleaned = raw.trim();
-  if (cleaned.startsWith("```")) {
-    // Strip ```json or ``` from the start and ``` from the end
-    cleaned = cleaned.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+  raw = raw.trim();
+
+  // Ensure we are parsing a clean JSON object (defensive in case of stray text)
+  let jsonString = raw;
+  const firstBrace = raw.indexOf("{");
+  const lastBrace = raw.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    jsonString = raw.slice(firstBrace, lastBrace + 1);
   }
 
   let parsed;
   try {
-    parsed = JSON.parse(cleaned);
+    parsed = JSON.parse(jsonString);
   } catch (err) {
-    throw new Error(
-      `Failed to parse JSON from OpenAI response. Got: ${cleaned.slice(
-        0,
-        200
-      )}`
-    );
+    throw new Error("Failed to parse JSON from OpenAI response");
   }
 
   return {
