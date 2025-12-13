@@ -99,50 +99,59 @@ Return STRICT JSON only in this exact shape:
 `.trim();
 
   // -------------------------------
-  // OpenAI call with safe fallback
+  // OpenAI call with fallback
   // -------------------------------
   let raw;
+  let attempt = 0;
 
-  try {
-    // Try modern Responses API with JSON mode
-    const resp = await client.responses.create({
-      model: "gpt-4.1-mini",
-      input: prompt,
-      response_format: { type: "json_object" },
-    });
+  while (!raw && attempt < 2) {
+    try {
+      // Primary call – Responses API (modern SDKs)
+      const resp = await client.responses.create({
+        model: "gpt-4.1-mini",
+        input: prompt,
+        response_format: { type: "json_object" },
+      });
 
-    raw =
-      resp &&
-      resp.output &&
-      resp.output[0] &&
-      resp.output[0].content &&
-      resp.output[0].content[0] &&
-      resp.output[0].content[0].text &&
-      resp.output[0].content[0].text.value;
-  } catch (err) {
-    // Fallback for environments / SDK versions where Responses API
-    // or response_format is not supported
-    console.warn(
-      "[product-seo] Responses API failed, falling back to chat.completions:",
-      err.message
-    );
+      raw =
+        resp &&
+        resp.output &&
+        resp.output[0] &&
+        resp.output[0].content &&
+        resp.output[0].content[0] &&
+        resp.output[0].content[0].text &&
+        resp.output[0].content[0].text.value;
+    } catch (err) {
+      // Fallback to chat.completions for older SDKs
+      console.warn(
+        `[product-seo] Responses API failed (attempt ${attempt + 1}): ${err.message}`
+      );
 
-    const legacy = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.4,
-    });
+      try {
+        const legacy = await client.chat.completions.create({
+          model: "gpt-4.1-mini",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.4,
+        });
 
-    raw =
-      legacy &&
-      legacy.choices &&
-      legacy.choices[0] &&
-      legacy.choices[0].message &&
-      legacy.choices[0].message.content;
+        raw =
+          legacy &&
+          legacy.choices &&
+          legacy.choices[0] &&
+          legacy.choices[0].message &&
+          legacy.choices[0].message.content;
+      } catch (legacyErr) {
+        console.warn(
+          `[product-seo] Legacy API fallback failed (attempt ${attempt + 1}): ${legacyErr.message}`
+        );
+      }
+    }
+
+    attempt++;
   }
 
   if (!raw) {
-    throw new Error("OpenAI response missing text payload");
+    throw new Error("OpenAI response missing text payload after 2 attempts");
   }
 
   let parsed;
