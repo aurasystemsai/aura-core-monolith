@@ -48,19 +48,47 @@ exports.run = async function run(input, ctx = {}) {
   const prompt = `
 You are an ecommerce SEO specialist for a jewellery brand.
 
-Write:
-1) A product SEO title (aim for 48–58 characters).
-2) A meta description (aim for 135–155 characters).
-3) A URL slug/handle (kebab-case, lowercase).
-4) A focused keyword set (5–10 phrases, comma-separated).
+Your job is to write search-optimised product SEO for organic Google results.
+Write in clear, natural UK English. Avoid clickbait, all-caps and emojis.
 
+Optimise for: high click-through rate, strong keyword relevance and clear value.
+
+Follow these rules carefully:
+
+1) PRODUCT SEO TITLE
+- Aim for roughly 45–60 characters.
+- Put the main product keyword near the beginning.
+- Include 1–2 key benefits or materials (e.g. waterproof, gold plated, adjustable).
+- If a brand name is given, mention it near the end (e.g. “– DTP Jewellery”).
+- Do NOT include quotation marks around the title.
+
+2) META DESCRIPTION
+- Aim for roughly 130–155 characters.
+- Summarise what it is, the main benefits and when to wear it.
+- Mention materials, finish or special properties (e.g. sweat-proof, hypoallergenic).
+- Include at least one use case or occasion from the input (gym, gifting, everyday wear, etc.).
+- Encourage the click but do NOT use spammy phrases like “Click now” or “Best ever”.
+
+3) URL SLUG / HANDLE
+- Lowercase.
+- Hyphen separated.
+- No brand name, no stop-words like “the” or “and” unless needed.
+- Keep it short but descriptive (3–7 words).
+
+4) KEYWORD SET
+- 5–10 search phrases.
+- Mix of short-tail and long-tail.
+- Include material, style and use cases where relevant.
+- Focus on how real shoppers would search for this product.
+
+INPUT:
 Product title: ${productTitle}
 Description: ${productDescription}
 Brand: ${brand || "N/A"}
 Tone of voice: ${tone || "modern, confident, UK English"}
 Use cases: ${Array.isArray(useCases) ? useCases.join(", ") : useCases}
 
-Return STRICT JSON only in this shape (no extra text):
+Return STRICT JSON only in this exact shape:
 
 {
   "title": "…",
@@ -70,22 +98,19 @@ Return STRICT JSON only in this shape (no extra text):
 }
 `.trim();
 
-  // NOTE: Responses API now uses text.format instead of response_format
   const response = await client.responses.create({
     model: "gpt-4.1-mini",
     input: prompt,
-    temperature: 0.3,
-    max_output_tokens: 400,
-    text: {
-      format: { type: "json_object" },
-    },
+    response_format: { type: "json_object" },
   });
 
-  // Try to pull the JSON string out of the Responses API structure
   const raw =
-    response?.output?.[0]?.content?.[0]?.text?.value ||
-    response?.output_text ||
-    null;
+    response.output &&
+    response.output[0] &&
+    response.output[0].content &&
+    response.output[0].content[0] &&
+    response.output[0].content[0].text &&
+    response.output[0].content[0].text.value;
 
   if (!raw) {
     throw new Error("OpenAI response missing text payload");
@@ -95,7 +120,6 @@ Return STRICT JSON only in this shape (no extra text):
   try {
     parsed = JSON.parse(raw);
   } catch (err) {
-    console.error("Failed to parse JSON from OpenAI response:", raw);
     throw new Error("Failed to parse JSON from OpenAI response");
   }
 
