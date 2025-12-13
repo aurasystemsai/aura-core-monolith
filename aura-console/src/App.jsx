@@ -11,8 +11,9 @@ const PRODUCT_SEO_TOOL = {
     "Generate SEO titles, descriptions, slugs and keyword sets for products.",
 };
 
-// For local development we always talk to the Core API on port 4999
+// For Render we talk to the Core API on the service URL
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
+
 function App() {
   const [coreUrl, setCoreUrl] = useState(DEFAULT_CORE_API);
   const [coreStatus, setCoreStatus] = useState("idle"); // idle | checking | ok | error
@@ -53,6 +54,9 @@ function App() {
   // Simple run history for the chart + table
   const [runHistory, setRunHistory] = useState([]);
 
+  // Suggestions for “How to reach 100/100”
+  const [seoSuggestions, setSeoSuggestions] = useState([]);
+
   // -------------------------------------------------
   // Load project from localStorage (if already connected)
   // -------------------------------------------------
@@ -92,33 +96,117 @@ function App() {
   }, [coreUrl]);
 
   // -------------------------------------------------
-  // Score calculations
+  // Score calculations (with real 100/100 band)
   // -------------------------------------------------
   const currentTitleLength = (seoTitle || productTitle).length;
   const currentMetaLength = (seoDescription || productDescription).length;
 
+  // Title: 50–57 chars = 100, “ok band” around that = 90
   const currentTitleScore =
     currentTitleLength === 0
       ? null
-      : currentTitleLength < 45
+      : currentTitleLength < 40
       ? 40
-      : currentTitleLength > 60
+      : currentTitleLength > 65
       ? 60
+      : currentTitleLength >= 50 && currentTitleLength <= 57
+      ? 100
       : 90;
 
+  // Meta: 135–155 chars = 100, “ok band” around that = 90
   const currentMetaScore =
     currentMetaLength === 0
       ? null
-      : currentMetaLength < 130
+      : currentMetaLength < 120
       ? 40
-      : currentMetaLength > 155
+      : currentMetaLength > 165
       ? 60
+      : currentMetaLength >= 135 && currentMetaLength <= 155
+      ? 100
       : 90;
 
   const overallScore =
     currentTitleScore !== null && currentMetaScore !== null
       ? Math.round((currentTitleScore + currentMetaScore) / 2)
       : null;
+
+  // -------------------------------------------------
+  // Helper: build suggestions for “How to reach 100/100”
+  // -------------------------------------------------
+  const buildSeoSuggestions = (titleLen, metaLen, slug) => {
+    const tips = [];
+
+    if (!titleLen || !metaLen) {
+      tips.push(
+        "Add a clear product title and description, then re-run the engine."
+      );
+      return tips;
+    }
+
+    // Title length suggestions
+    if (titleLen < 50) {
+      const needed = 50 - titleLen;
+      tips.push(
+        `Your title is a bit short. Add roughly ${needed}–${
+          needed + 5
+        } characters (e.g. a benefit or material) to get closer to 100/100.`
+      );
+    } else if (titleLen > 57) {
+      const extra = titleLen - 57;
+      tips.push(
+        `Your title is slightly long. Trim about ${extra} characters (remove weak adjectives or duplicate words) to tighten it up.`
+      );
+    } else {
+      tips.push(
+        "Title length is in the sweet spot. Only tweak wording if you want a different angle."
+      );
+    }
+
+    // Meta length suggestions
+    if (metaLen < 135) {
+      const needed = 135 - metaLen;
+      tips.push(
+        `Meta description is short. Add around ${needed}–${
+          needed + 15
+        } characters with clear benefits, materials or use cases.`
+      );
+    } else if (metaLen > 155) {
+      const extra = metaLen - 155;
+      tips.push(
+        `Meta description is a little long. Trim about ${extra} characters so the key message fits comfortably in search results.`
+      );
+    } else {
+      tips.push(
+        "Meta description length is spot on. Focus on clarity, benefits and one strong call to action."
+      );
+    }
+
+    // Slug suggestions
+    if (!slug) {
+      tips.push(
+        "Generate a short, hyphenated slug (e.g. `waterproof-paperclip-bracelet`) so URLs are clean and readable."
+      );
+    } else {
+      if (!/^[a-z0-9-]+$/.test(slug)) {
+        tips.push(
+          "Update the slug to use lowercase letters, numbers and hyphens only (no spaces or special characters)."
+        );
+      }
+      if (slug.length > 60) {
+        tips.push(
+          "Your slug is quite long. Remove stop words so the URL focuses on the main keywords."
+        );
+      }
+    }
+
+    if (tips.length === 0) {
+      tips.push(
+        "Nice work — this run is already very strong. Use A/B tests on titles and descriptions if you want to chase incremental gains."
+      );
+    }
+
+    return tips;
+  };
 
   // -------------------------------------------------
   // Run Product SEO Engine
@@ -180,10 +268,28 @@ function App() {
       const tLen = (nextTitle || productTitle).length;
       const mLen = (nextDescription || productDescription).length;
 
+      // Re-use same scoring rules for history / trend
       const tScore =
-        tLen === 0 ? null : tLen < 45 ? 40 : tLen > 60 ? 60 : 90;
+        tLen === 0
+          ? null
+          : tLen < 40
+          ? 40
+          : tLen > 65
+          ? 60
+          : tLen >= 50 && tLen <= 57
+          ? 100
+          : 90;
+
       const mScore =
-        mLen === 0 ? null : mLen < 130 ? 40 : mLen > 155 ? 60 : 90;
+        mLen === 0
+          ? null
+          : mLen < 120
+          ? 40
+          : mLen > 165
+          ? 60
+          : mLen >= 135 && mLen <= 155
+          ? 100
+          : 90;
 
       const oScore =
         tScore !== null && mScore !== null
@@ -203,6 +309,9 @@ function App() {
         ];
         return next.slice(-12);
       });
+
+      // Build suggestions for the “How to reach 100/100” card
+      setSeoSuggestions(buildSeoSuggestions(tLen, mLen, nextSlug));
     } catch (err) {
       console.error(err);
       setRunError(err.message || "Failed to run Product SEO Engine");
@@ -478,7 +587,7 @@ function App() {
                 </span>
                 <span className="kpi-unit">characters</span>
               </div>
-              <div className="kpi-target">Target: 45–60</div>
+              <div className="kpi-target">Target: 50–57 for 100/100</div>
             </div>
 
             <div className="kpi-card">
@@ -489,7 +598,7 @@ function App() {
                 </span>
                 <span className="kpi-unit">characters</span>
               </div>
-              <div className="kpi-target">Target: 130–155</div>
+              <div className="kpi-target">Target: 135–155 for 100/100</div>
             </div>
 
             <div className="kpi-card">
@@ -508,8 +617,43 @@ function App() {
 
           {/* MAIN GRID */}
           <section className="main-grid">
-            {/* LEFT COLUMN: history + generated fields */}
+            {/* LEFT COLUMN: tips + history + generated fields */}
             <div className="left-column">
+              {/* SEO coaching card */}
+              <div className="card">
+                <div className="card-header">
+                  <div className="card-title-row">
+                    <h2 className="card-title">How to reach 100/100</h2>
+                  </div>
+                  <p className="card-subtitle">
+                    Practical suggestions based on your latest run. Adjust the
+                    product copy on the right, then re-run the engine.
+                  </p>
+                </div>
+                <ul
+                  style={{
+                    margin: 0,
+                    paddingLeft: "18px",
+                    fontSize: "11px",
+                    color: "var(--text-soft)",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "4px",
+                  }}
+                >
+                  {seoSuggestions.length === 0 ? (
+                    <li>
+                      Run Product SEO once and we&apos;ll show concrete
+                      suggestions here.
+                    </li>
+                  ) : (
+                    seoSuggestions.map((tip, idx) => (
+                      <li key={idx}>{tip}</li>
+                    ))
+                  )}
+                </ul>
+              </div>
+
               {/* Run history card */}
               <div className="card">
                 <div className="card-header">
