@@ -1,111 +1,152 @@
-// ===============================================
-// AURA Core Monolith - Final Render Build
-// - Fully open CORS
-// - Logs all connect requests
-// - Ready for hosted frontend
-// ===============================================
+// src/server.js
+// --------------------------------------------------
+// AURA Core Monolith API
+// Unified gateway for all AURA tools
+// --------------------------------------------------
 
-const path = require("path");
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const dotenv = require("dotenv");
-dotenv.config();
+const path = require("path");
+
+const toolsRegistry = require("./core/tools-registry");
+const projectRoutes = require("./core/projects");
 
 const app = express();
-const PORT = Number(process.env.PORT || 4999);
 
-// Load tools registry
-const toolsRegistry = require("./core/tools-registry.cjs");
+// ---------------------------------------------------------------------------
+// Basic config
+// ---------------------------------------------------------------------------
+const PORT = process.env.PORT || 10000;
+const ENVIRONMENT = process.env.NODE_ENV || "production";
 
-// -------------------------------------
-// GLOBAL CORS (Allow everything for now)
-// -------------------------------------
+// ---------------------------------------------------------------------------
+// Middleware
+// ---------------------------------------------------------------------------
 app.use(
   cors({
-    origin: "*",
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
-    allowedHeaders: "*"
+    origin: true,
+    credentials: true,
   })
 );
-app.use(bodyParser.json());
 
-// -------------------------------------
-// HEALTH CHECK
-// -------------------------------------
+// body parsing
+app.use(bodyParser.json({ limit: "1mb" }));
+app.use(
+  bodyParser.urlencoded({
+    extended: false,
+  })
+);
+
+// simple request logging (good for Render logs)
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    const ms = Date.now() - start;
+    console.log(
+      `[Core] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${ms}ms)`
+    );
+  });
+  next();
+});
+
+// ---------------------------------------------------------------------------
+// Healthcheck
+// ---------------------------------------------------------------------------
 app.get("/health", (req, res) => {
   res.json({
     ok: true,
-    status: "ok",
-    env: process.env.NODE_ENV || "production",
-    tools: Object.keys(toolsRegistry).length
+    service: "aura-core-monolith",
+    env: ENVIRONMENT,
+    time: new Date().toISOString(),
   });
 });
 
-// -------------------------------------
-// CONNECT STORE / PROJECT ENDPOINT
-// -------------------------------------
-app.post("/api/projects", (req, res) => {
-  const { name, domain, platform } = req.body || {};
-  console.log("📦 New project connect:", { name, domain, platform });
+// ---------------------------------------------------------------------------
+// Project / store routes (Connect Store screen)
+// ---------------------------------------------------------------------------
+app.use(projectRoutes);
 
-  if (!name || !domain) {
-    return res
-      .status(400)
-      .json({ ok: false, error: "Missing required fields: name or domain" });
-  }
-
-  res.json({
-    ok: true,
-    message: "Project connected successfully",
-    project: { name, domain, platform }
-  });
-});
-
-// -------------------------------------
-// TOOL RUNNER
-// -------------------------------------
-app.post("/run/:tool", async (req, res) => {
-  const toolKey = req.params.tool;
+// ---------------------------------------------------------------------------
+// Tool execution endpoint
+// POST /run/:toolId
+// ---------------------------------------------------------------------------
+app.post("/run/:toolId", async (req, res) => {
+  const toolId = req.params.toolId;
   const input = req.body || {};
-  const tool = toolsRegistry[toolKey];
+  const projectId = req.header("x-aura-project-id") || null;
 
-  if (!tool) {
+  const tool = toolsRegistry.getTool(toolId);
+
+  if (!tool || typeof tool.run !== "function") {
     return res.status(404).json({
       ok: false,
-      error: `Unknown tool '${toolKey}'.`,
-      knownTools: Object.keys(toolsRegistry)
+      error: `Unknown tool '${toolId}'`,
     });
   }
 
   try {
-    const ctx = {
-      env: process.env,
-      environment: process.env.NODE_ENV || "production"
-    };
-    const result = await tool.run(input, ctx);
-    res.json({ ok: true, tool: toolKey, result });
+    console.log(
+      `[Core] Running tool '${toolId}' for project ${projectId || "unknown"}`
+    );
+
+    const result = await tool.run(input, {
+      projectId,
+      environment: ENVIRONMENT,
+    });
+
+    // Normalize the output a bit so the console can rely on a consistent shape.
+    res.json({
+      ok: true,
+      tool: tool.meta || { id: toolId },
+      result,
+    });
   } catch (err) {
-    console.error("❌ Tool error:", toolKey, err);
-    res.status(500).json({ ok: false, error: err.message });
+    console.error("[Core] Tool error:", toolId, err);
+
+    const status = err.statusCode || err.status || 500;
+
+    res.status(status).json({
+      ok: false,
+      error: err.message || "Tool execution failed",
+    });
   }
 });
 
-// -------------------------------------
-// STATIC FRONTEND (Console UI)
-// -------------------------------------
-const consoleBuildPath = path.join(__dirname, "..", "aura-console", "dist");
-app.use(express.static(consoleBuildPath));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(consoleBuildPath, "index.html"));
+// ---------------------------------------------------------------------------
+// Fallback 404 handler
+// ---------------------------------------------------------------------------
+app.use((req, res) => {
+  res.status(404).json({
+    ok: false,
+    error: `Route not found: ${req.method} ${req.originalUrl}`,
+  });
 });
 
-// -------------------------------------
-// START SERVER
-// -------------------------------------
+// ---------------------------------------------------------------------------
+// Error handler (last resort)
+// ---------------------------------------------------------------------------
+app.use((err, req, res, next) => {
+  console.error("[Core] Unhandled error:", err);
+  res.status(500).json({
+    ok: false,
+    error: "Internal server error",
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Start server
+// ---------------------------------------------------------------------------
 app.listen(PORT, () => {
-  console.log(`[Core] AURA Core API running on port ${PORT}`);
+  console.log(
+    `[Core] AURA Core API running on port ${PORT}\n` +
+      "==> Your service is live 🎉\n" +
+      "==> ////////////////////////////////\n" +
+      `==> Available at your primary URL\n` +
+      "==> ////////////////////////////////"
+  );
 });
 
 module.exports = app;
