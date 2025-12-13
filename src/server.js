@@ -1,152 +1,152 @@
 // src/server.js
-// --------------------------------------------------
+// ----------------------------------------
 // AURA Core Monolith API
-// Unified gateway for all AURA tools
-// --------------------------------------------------
+// ----------------------------------------
 
-require("dotenv").config();
-
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const path = require("path");
+const dotenv = require("dotenv");
 
-const toolsRegistry = require("./core/tools-registry");
-const projectRoutes = require("./core/projects");
+dotenv.config();
+
+const { getTool } = require("./core/tools-registry.cjs");
+const projectsCore = require("./core/projects");
 
 const app = express();
-
-// ---------------------------------------------------------------------------
-// Basic config
-// ---------------------------------------------------------------------------
 const PORT = process.env.PORT || 10000;
-const ENVIRONMENT = process.env.NODE_ENV || "production";
 
-// ---------------------------------------------------------------------------
-// Middleware
-// ---------------------------------------------------------------------------
+// ---------- MIDDLEWARE ----------
+
+app.use(cors());
 app.use(
-  cors({
-    origin: true,
-    credentials: true,
+  bodyParser.json({
+    limit: "1mb",
   })
 );
 
-// body parsing
-app.use(bodyParser.json({ limit: "1mb" }));
-app.use(
-  bodyParser.urlencoded({
-    extended: false,
-  })
-);
-
-// simple request logging (good for Render logs)
-app.use((req, res, next) => {
-  const start = Date.now();
-  res.on("finish", () => {
-    const ms = Date.now() - start;
-    console.log(
-      `[Core] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${ms}ms)`
-    );
-  });
+// Simple request logging
+app.use((req, _res, next) => {
+  console.log(
+    `[Core] ${req.method} ${req.url} ${
+      req.headers["x-aura-project-id"] || ""
+    }`
+  );
   next();
 });
 
-// ---------------------------------------------------------------------------
-// Healthcheck
-// ---------------------------------------------------------------------------
-app.get("/health", (req, res) => {
+// ---------- HEALTH CHECK ----------
+
+app.get("/health", (_req, res) => {
   res.json({
     ok: true,
     service: "aura-core-monolith",
-    env: ENVIRONMENT,
-    time: new Date().toISOString(),
+    env: process.env.NODE_ENV || "production",
+    timestamp: new Date().toISOString(),
   });
 });
 
-// ---------------------------------------------------------------------------
-// Project / store routes (Connect Store screen)
-// ---------------------------------------------------------------------------
-app.use(projectRoutes);
+// ---------- PROJECTS API (Connect Store) ----------
 
-// ---------------------------------------------------------------------------
-// Tool execution endpoint
-// POST /run/:toolId
-// ---------------------------------------------------------------------------
-app.post("/run/:toolId", async (req, res) => {
-  const toolId = req.params.toolId;
-  const input = req.body || {};
-  const projectId = req.header("x-aura-project-id") || null;
+// Create a new project from the Connect Store screen
+app.post("/projects", (req, res) => {
+  try {
+    const { name, domain, platform } = req.body || {};
 
-  const tool = toolsRegistry.getTool(toolId);
+    if (!name || !domain) {
+      return res.status(400).json({
+        ok: false,
+        error: "name and domain are required",
+      });
+    }
 
-  if (!tool || typeof tool.run !== "function") {
-    return res.status(404).json({
+    const project = projectsCore.createProject({
+      name: String(name).trim(),
+      domain: String(domain).trim(),
+      platform: (platform || "other").trim(),
+    });
+
+    return res.json({
+      ok: true,
+      project,
+    });
+  } catch (err) {
+    console.error("[Core] Error creating project", err);
+    return res.status(500).json({
       ok: false,
-      error: `Unknown tool '${toolId}'`,
+      error: "Failed to create project",
     });
   }
+});
+
+// List all projects (used by console project switcher)
+app.get("/projects", (_req, res) => {
+  try {
+    const projects = projectsCore.listProjects();
+    return res.json({
+      ok: true,
+      projects,
+    });
+  } catch (err) {
+    console.error("[Core] Error listing projects", err);
+    return res.status(500).json({
+      ok: false,
+      error: "Failed to list projects",
+    });
+  }
+});
+
+// ---------- TOOL RUN ROUTE ----------
+
+app.post("/run/:toolId", async (req, res) => {
+  const toolId = req.params.toolId;
+  const projectId = req.headers["x-aura-project-id"];
 
   try {
-    console.log(
-      `[Core] Running tool '${toolId}' for project ${projectId || "unknown"}`
-    );
+    const tool = getTool(toolId);
+    const input = req.body || {};
 
-    const result = await tool.run(input, {
-      projectId,
-      environment: ENVIRONMENT,
-    });
+    const ctx = {
+      environment: process.env.NODE_ENV || "production",
+      projectId: projectId || null,
+    };
 
-    // Normalize the output a bit so the console can rely on a consistent shape.
-    res.json({
+    const result = await tool.run(input, ctx);
+
+    return res.json({
       ok: true,
-      tool: tool.meta || { id: toolId },
+      toolId,
       result,
     });
   } catch (err) {
-    console.error("[Core] Tool error:", toolId, err);
+    console.error(`[Core] Tool error: ${toolId}`, err);
 
-    const status = err.statusCode || err.status || 500;
-
-    res.status(status).json({
+    return res.status(500).json({
       ok: false,
-      error: err.message || "Tool execution failed",
+      error: err.message || "Tool run failed",
     });
   }
 });
 
-// ---------------------------------------------------------------------------
-// Fallback 404 handler
-// ---------------------------------------------------------------------------
-app.use((req, res) => {
-  res.status(404).json({
-    ok: false,
-    error: `Route not found: ${req.method} ${req.originalUrl}`,
-  });
+// ---------- STATIC CONSOLE (built React app) ----------
+
+const consoleDist = path.join(__dirname, "..", "aura-console", "dist");
+
+app.use(express.static(consoleDist));
+
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(consoleDist, "index.html"));
 });
 
-// ---------------------------------------------------------------------------
-// Error handler (last resort)
-// ---------------------------------------------------------------------------
-app.use((err, req, res, next) => {
-  console.error("[Core] Unhandled error:", err);
-  res.status(500).json({
-    ok: false,
-    error: "Internal server error",
-  });
-});
+// ---------- START SERVER ----------
 
-// ---------------------------------------------------------------------------
-// Start server
-// ---------------------------------------------------------------------------
 app.listen(PORT, () => {
   console.log(
     `[Core] AURA Core API running on port ${PORT}\n` +
       "==> Your service is live 🎉\n" +
-      "==> ////////////////////////////////\n" +
-      `==> Available at your primary URL\n` +
-      "==> ////////////////////////////////"
+      `==> Available at your primary URL ${
+        process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`
+      }\n`
   );
 });
-
-module.exports = app;
