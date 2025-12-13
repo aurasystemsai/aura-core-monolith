@@ -1,12 +1,12 @@
 // src/tools/product-seo/index.js
 // ----------------------------------------
-// Product SEO Engine (Self-Optimising)
+// Product SEO Engine tool for AURA Core
 // ----------------------------------------
 
 const OpenAI = require("openai");
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 exports.meta = {
@@ -14,7 +14,7 @@ exports.meta = {
   name: "Product SEO Engine",
   category: "SEO",
   description:
-    "Generate SEO titles, descriptions, slugs and keyword sets for products. Automatically optimises results for 90+ score quality."
+    "Generate SEO titles, descriptions, slugs and keyword sets for products.",
 };
 
 /**
@@ -28,135 +28,87 @@ exports.meta = {
  */
 exports.run = async function run(input, ctx = {}) {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is not set. Add it in your Render environment.");
+    throw new Error(
+      "OPENAI_API_KEY is not set. Add it in your Render environment."
+    );
   }
 
   const {
     productTitle = "",
     productDescription = "",
     brand = "",
-    tone = "modern, confident, UK English",
-    useCases = []
+    tone = "",
+    useCases = [],
   } = input || {};
 
   if (!productTitle || !productDescription) {
     throw new Error("productTitle and productDescription are required");
   }
 
-  // STEP 1 — Initial generation
-  const basePrompt = `
-You are an advanced eCommerce SEO engine for luxury jewellery brands.
+  const prompt = `
+You are an ecommerce SEO specialist for a jewellery brand.
 
-Write STRICT JSON in this structure:
-{
-  "title": "...",
-  "metaDescription": "...",
-  "slug": "...",
-  "keywords": ["...", "..."],
-  "score": 0-100
-}
+Write:
+1) A product SEO title (aim for 48–58 characters).
+2) A meta description (aim for 135–155 characters).
+3) A URL slug/handle (kebab-case, lowercase).
+4) A focused keyword set (5–10 phrases, comma-separated).
 
-Rules:
-- Title: 45–60 characters, includes brand and 1–2 high-intent keywords.
-- Meta description: 130–155 characters, include emotional & functional benefits.
-- Slug: short, lowercase, SEO-friendly.
-- Keywords: 6–10 phrases, relevance-weighted.
-- Score: Estimate SEO quality (title length, keyword richness, readability).
-- If score < 90, regenerate internally until ≥ 90 before returning.
-
-Input:
-Brand: ${brand || "N/A"}
-Product Title: ${productTitle}
+Product title: ${productTitle}
 Description: ${productDescription}
-Tone: ${tone}
+Brand: ${brand || "N/A"}
+Tone of voice: ${tone || "modern, confident, UK English"}
 Use cases: ${Array.isArray(useCases) ? useCases.join(", ") : useCases}
+
+Return STRICT JSON only in this shape (no extra text):
+
+{
+  "title": "…",
+  "metaDescription": "…",
+  "slug": "…",
+  "keywords": ["…", "…"]
+}
 `.trim();
 
+  // NOTE: Responses API now uses text.format instead of response_format
   const response = await client.responses.create({
     model: "gpt-4.1-mini",
-    input: basePrompt,
-    response_format: { type: "json_object" }
+    input: prompt,
+    temperature: 0.3,
+    max_output_tokens: 400,
+    text: {
+      format: { type: "json_object" },
+    },
   });
 
+  // Try to pull the JSON string out of the Responses API structure
   const raw =
-    response.output &&
-    response.output[0] &&
-    response.output[0].content &&
-    response.output[0].content[0] &&
-    (response.output[0].content[0].text?.value ||
-      response.output[0].content[0].text);
+    response?.output?.[0]?.content?.[0]?.text?.value ||
+    response?.output_text ||
+    null;
 
-  if (!raw) throw new Error("OpenAI response missing text payload");
+  if (!raw) {
+    throw new Error("OpenAI response missing text payload");
+  }
 
   let parsed;
   try {
     parsed = JSON.parse(raw);
-  } catch {
+  } catch (err) {
+    console.error("Failed to parse JSON from OpenAI response:", raw);
     throw new Error("Failed to parse JSON from OpenAI response");
   }
 
-  let { title, metaDescription, slug, keywords, score } = parsed;
-
-  // STEP 2 — Local validation + automatic refinement
-  const safeScore = typeof score === "number" ? score : 60;
-
-  if (safeScore < 90) {
-    console.log(`[SEO Engine] Auto-optimising low score (${safeScore})...`);
-
-    const refinePrompt = `
-Refine and improve this product SEO so it achieves a 90–100 score.
-Maintain brand consistency and natural readability.
-Return STRICT JSON in this structure again.
-
-Current:
-${JSON.stringify(parsed, null, 2)}
-
-Focus on:
-- Expanding title to 55–60 chars max.
-- Strengthening call-to-action in meta description.
-- Improving keyword set relevance.
-    `.trim();
-
-    const refined = await client.responses.create({
-      model: "gpt-4.1-mini",
-      input: refinePrompt,
-      response_format: { type: "json_object" }
-    });
-
-    const improvedRaw =
-      refined.output &&
-      refined.output[0] &&
-      refined.output[0].content &&
-      refined.output[0].content[0] &&
-      (refined.output[0].content[0].text?.value ||
-        refined.output[0].content[0].text);
-
-    if (improvedRaw) {
-      try {
-        const improved = JSON.parse(improvedRaw);
-        title = improved.title || title;
-        metaDescription = improved.metaDescription || metaDescription;
-        slug = improved.slug || slug;
-        keywords = improved.keywords || keywords;
-        score = improved.score || 90;
-      } catch {
-        console.warn("[SEO Engine] Refinement parse failed, fallback to original.");
-      }
-    }
-  }
-
-  // STEP 3 — Return clean data
   return {
     input,
     output: {
-      title: title || "",
-      metaDescription: metaDescription || "",
-      description: metaDescription || "",
-      slug: slug || "",
-      keywords: Array.isArray(keywords) ? keywords : [],
-      score: Math.min(score || 90, 100)
+      title: parsed.title || "",
+      description: parsed.metaDescription || "",
+      metaDescription: parsed.metaDescription || "",
+      slug: parsed.slug || parsed.handle || "",
+      keywords: Array.isArray(parsed.keywords) ? parsed.keywords : [],
     },
     model: "gpt-4.1-mini",
-    environment: ctx.environment || "unknown"
+    environment: ctx.environment || "unknown",
   };
 };
