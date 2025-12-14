@@ -14,7 +14,8 @@ exports.meta = {
   name: "Product SEO Engine",
   category: "SEO",
   description:
-    "Generate SEO titles, descriptions, slugs and keyword sets for products.",
+    "Generate SEO titles, meta descriptions, slugs and keyword sets for ecommerce products.",
+  version: "1.1.0",
 };
 
 /**
@@ -23,7 +24,7 @@ exports.meta = {
  *   productDescription: string
  *   brand: string
  *   tone: string
- *   useCases: string[]  // e.g. ["gym", "everyday wear", "gifting"]
+ *   useCases: string[] | string
  * }
  */
 exports.run = async function run(input, ctx = {}) {
@@ -45,180 +46,143 @@ exports.run = async function run(input, ctx = {}) {
     throw new Error("productTitle and productDescription are required");
   }
 
-  const useCasesList = Array.isArray(useCases)
+  // Normalise useCases into a comma-separated string for the prompt
+  const useCasesText = Array.isArray(useCases)
     ? useCases.join(", ")
     : String(useCases || "");
 
-  // Base prompt we’ll keep reusing if we need to repair lengths
-  const basePrompt = `
-You are an ecommerce SEO specialist for a jewellery brand.
+  // -------------------------------------------------
+  // Prompt tuned to drive towards 100/100 in our UI:
+  // Title: 45–60 chars (ideally 52–58)
+  // Meta: 130–155 chars (ideally 140–150)
+  // -------------------------------------------------
+  const prompt = `
+You are an ecommerce SEO specialist for a modern jewellery brand.
 
-Your job is to write finished, search-optimised product SEO that a beginner
-can paste straight into Shopify.
-
+Your job is to write search-optimised product SEO for organic Google results.
 Write in clear, natural UK English. Avoid clickbait, all-caps and emojis.
+
+The client's internal scoring system rewards:
+- Product SEO title between 45–60 characters, best around 52–58.
+- Meta description between 130–155 characters, best around 140–150.
+
 Optimise for: high click-through rate, strong keyword relevance and clear value.
+Focus on realistic, human-sounding copy that would win clicks in Google results.
 
-You MUST respect the length rules below. If your draft is outside these ranges,
-rewrite it until it fits BEFORE you respond.
+Follow these rules carefully:
 
-HARD LENGTH RULES
------------------
-• Product SEO title: 45–60 characters (inclusive).
-• Meta description: 130–155 characters (inclusive).
-• Character count includes spaces and punctuation.
-• Do NOT mention character counts in the text.
-• Only respond when BOTH the title and meta description are within these bands.
-
-GUIDELINES
-----------
 1) PRODUCT SEO TITLE
-• Put the main product keyword near the beginning.
-• Include 1–2 key benefits or materials
-  (e.g. waterproof, sweat-proof, gold plated, adjustable, hypoallergenic).
-• If a brand name is given, mention it near the end (e.g. "– DTP Jewellery").
-• No quotation marks around the title.
+- Aim for 52–58 characters where possible (always between 45–60).
+- Put the main product keyword near the beginning.
+- Include 1–2 key benefits or materials (e.g. waterproof, gold plated, adjustable).
+- If a brand name is given, mention it at the end (e.g. "– DTP Jewellery").
+- Do NOT use quotation marks around the title.
+- Do NOT stuff random keywords; it must read like a real title.
 
 2) META DESCRIPTION
-• Summarise what it is, the main benefits and when to wear it.
-• Mention materials, finish or special properties
-  (e.g. sweat-proof, hypoallergenic, tarnish-resistant).
-• Include at least one use case or occasion from the input
-  (e.g. gym, everyday wear, gifting, date night).
-• Encourage the click with natural language, not spammy phrases like
-  "Click now" or "Best ever".
+- Aim for 140–150 characters where possible (always between 130–155).
+- Summarise what it is, main benefits and when to wear it.
+- Mention materials, finish or special properties (e.g. sweat-proof, hypoallergenic).
+- Include at least one use case or occasion from the input (gym, gifting, everyday wear, etc.).
+- Encourage the click with calm, confident language – no spammy phrases like
+  "Click now", "Best ever", "Limited time only", etc.
 
 3) URL SLUG / HANDLE
-• Lowercase.
-• Hyphen separated.
-• No brand name, no stop-words like "the" or "and" unless genuinely needed.
-• Keep it short but descriptive (around 3–7 words).
+- Lowercase.
+- Hyphen separated.
+- No brand name.
+- Avoid stop words like "the" or "and" unless they are really needed.
+- Keep it short but descriptive (about 3–7 words).
 
 4) KEYWORD SET
-• 5–10 search phrases.
-• Mix of short-tail and long-tail queries.
-• Include material, style and use cases where relevant.
-• Focus on how real shoppers would search for this product.
+- 5–10 realistic search phrases.
+- Mix of short-tail and long-tail queries.
+- Include material, style and use cases where relevant.
+- Focus on how real shoppers would actually search for this product.
 
-INPUT
------
+INPUT:
 Product title: ${productTitle}
 Description: ${productDescription}
 Brand: ${brand || "N/A"}
 Tone of voice: ${tone || "modern, confident, UK English"}
-Use cases: ${useCasesList || "N/A"}
+Use cases: ${useCasesText || "N/A"}
 
-RESPONSE FORMAT
----------------
-Return STRICT JSON only in this exact shape:
+Return STRICT JSON only in this exact shape, with no extra text:
 
 {
-  "title": "…",              // 45–60 characters
-  "metaDescription": "…",    // 130–155 characters
-  "slug": "…",               // lowercase, hyphen-separated
-  "keywords": ["…", "…"]     // 5–10 search phrases
+  "title": "SEO product title here",
+  "metaDescription": "Meta description here",
+  "slug": "url-slug-here",
+  "keywords": ["keyword one", "keyword two", "keyword three"]
 }
 `.trim();
 
-  // Helper to call OpenAI Responses API with a given prompt
-  async function callOpenAI(promptText) {
+  // -------------------------------------------------
+  // Call OpenAI Responses API
+  // Use output_text helper so we don't depend on internal structure.
+  // -------------------------------------------------
+  let raw;
+  try {
     const response = await client.responses.create({
       model: "gpt-4.1-mini",
-      input: promptText,
+      input: prompt,
     });
 
-    const raw =
-      response &&
-      response.output &&
-      response.output[0] &&
-      response.output[0].content &&
-      response.output[0].content[0] &&
-      response.output[0].content[0].text &&
-      response.output[0].content[0].text.value;
+    // New SDKs expose a convenience string with all text output merged.
+    raw = response.output_text;
 
-    if (!raw) {
+    if (!raw || typeof raw !== "string") {
       throw new Error("OpenAI response missing text payload");
     }
-
-    let parsed;
-    try {
-      parsed = JSON.parse(raw);
-    } catch (err) {
-      console.error("Failed to parse JSON from OpenAI response:", err, raw);
-      throw new Error("Failed to parse JSON from OpenAI response");
-    }
-
-    return { raw, parsed };
-  }
-
-  const TITLE_MIN = 45;
-  const TITLE_MAX = 60;
-  const META_MIN = 130;
-  const META_MAX = 155;
-
-  const maxAttempts = 3;
-  let attempt = 1;
-  let finalParsed = null;
-
-  let promptToUse = basePrompt;
-
-  while (attempt <= maxAttempts) {
-    const { raw, parsed } = await callOpenAI(promptToUse);
-
-    const title = parsed.title || "";
-    const meta = parsed.metaDescription || "";
-
-    const titleLen = title.length;
-    const metaLen = meta.length;
-
-    const titleOk = titleLen >= TITLE_MIN && titleLen <= TITLE_MAX;
-    const metaOk = metaLen >= META_MIN && metaLen <= META_MAX;
-
-    if (titleOk && metaOk) {
-      finalParsed = parsed;
-      break;
-    }
-
-    // If we got this far, lengths are wrong – build a repair prompt
-    const repairPrompt = `
-${basePrompt}
-
-The last attempt produced this JSON:
-
-${raw}
-
-Its lengths were:
-- title length: ${titleLen} characters
-- metaDescription length: ${metaLen} characters
-
-This does NOT meet the required bands.
-
-Rewrite ONLY the JSON so that:
-- "title" length is between ${TITLE_MIN} and ${TITLE_MAX} characters inclusive.
-- "metaDescription" length is between ${META_MIN} and ${META_MAX} characters inclusive.
-
-Keep the same general meaning, tone and keywords, just adjust wording to hit the lengths.
-Return STRICT JSON only in the same shape.
-`.trim();
-
-    promptToUse = repairPrompt;
-    attempt += 1;
-  }
-
-  if (!finalParsed) {
+  } catch (err) {
+    // Surface a cleaner error message to the console UI
+    console.error("Product SEO Engine — OpenAI error:", err);
     throw new Error(
-      "Failed to generate SEO fields with correct title/meta lengths after multiple attempts."
+      `Failed to call OpenAI for Product SEO Engine: ${
+        err?.message || "unknown error"
+      }`
     );
   }
+
+  // -------------------------------------------------
+  // Parse JSON from the model
+  // -------------------------------------------------
+  let parsed;
+  try {
+    // In case the model wraps JSON with explanation (it shouldn't, but be safe),
+    // try to extract the first JSON object substring.
+    let jsonText = raw.trim();
+
+    if (!jsonText.startsWith("{")) {
+      const firstBrace = jsonText.indexOf("{");
+      const lastBrace = jsonText.lastIndexOf("}");
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        jsonText = jsonText.slice(firstBrace, lastBrace + 1);
+      }
+    }
+
+    parsed = JSON.parse(jsonText);
+  } catch (err) {
+    console.error("Product SEO Engine — JSON parse error. Raw text:", raw);
+    throw new Error("Failed to parse JSON from OpenAI response");
+  }
+
+  // Normalise output so the console is always safe to render
+  const normalised = {
+    title: parsed.title || "",
+    metaDescription: parsed.metaDescription || "",
+    slug: parsed.slug || parsed.handle || "",
+    keywords: Array.isArray(parsed.keywords) ? parsed.keywords : [],
+  };
 
   return {
     input,
     output: {
-      title: finalParsed.title || "",
-      description: finalParsed.metaDescription || "",
-      metaDescription: finalParsed.metaDescription || "",
-      slug: finalParsed.slug || finalParsed.handle || "",
-      keywords: Array.isArray(finalParsed.keywords) ? finalParsed.keywords : [],
+      title: normalised.title,
+      description: normalised.metaDescription,
+      metaDescription: normalised.metaDescription,
+      slug: normalised.slug,
+      keywords: normalised.keywords,
     },
     model: "gpt-4.1-mini",
     environment: ctx.environment || "unknown",
