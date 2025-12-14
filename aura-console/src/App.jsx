@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import ProjectSetup from "./ProjectSetup";
 import ProjectSwitcher from "./ProjectSwitcher";
-import SystemHealthPanel from "./SystemHealthPanel";
+import SystemHealthPanel from "./components/SystemHealthPanel";
+
 
 const PRODUCT_SEO_TOOL = {
   id: "product-seo",
