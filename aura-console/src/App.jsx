@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import ProjectSetup from "./ProjectSetup";
@@ -42,6 +41,11 @@ function App() {
   const [rawJson, setRawJson] = useState("");
   const [lastRunAt, setLastRunAt] = useState(null);
 
+  // AI advice from the tool
+  const [aiAdviceTitle, setAiAdviceTitle] = useState("");
+  const [aiAdviceMeta, setAiAdviceMeta] = useState("");
+  const [aiAdviceGeneral, setAiAdviceGeneral] = useState("");
+
   // Run status
   const [isRunning, setIsRunning] = useState(false);
   const [runError, setRunError] = useState(null);
@@ -66,7 +70,7 @@ function App() {
         id,
         name: localStorage.getItem("auraProjectName") || "Untitled project",
         domain: localStorage.getItem("auraProjectDomain") || "—",
-        platform: localStorage.getItem("auraPlatform") || "Other / Manual",
+        platform: localStorage.getItem("auraPlatform") || "other",
       });
     }
   }, []);
@@ -132,6 +136,11 @@ function App() {
     setIsRunning(true);
     setRunError(null);
 
+    // Clear previous AI advice so user sees it's fresh per run
+    setAiAdviceTitle("");
+    setAiAdviceMeta("");
+    setAiAdviceGeneral("");
+
     const payload = {
       productTitle,
       productDescription,
@@ -171,11 +180,16 @@ function App() {
         output.description || output.metaDescription || "";
       const nextSlug = output.slug || output.handle || "";
       const nextKeywords = output.keywords || output.keywordSet || [];
+      const advice = output.advice || {};
 
       setSeoTitle(nextTitle);
       setSeoDescription(nextDescription);
       setSeoSlug(nextSlug);
       setSeoKeywords(nextKeywords);
+
+      setAiAdviceTitle(advice.titleTips || "");
+      setAiAdviceMeta(advice.metaTips || "");
+      setAiAdviceGeneral(advice.generalTips || "");
 
       const now = new Date();
       const nowLabel = now.toLocaleString();
@@ -224,11 +238,9 @@ function App() {
   // -------------------------------------------------
   const copyToClipboard = (value) => {
     if (!value) return;
-    try {
-      navigator.clipboard.writeText(value);
-    } catch (err) {
+    navigator.clipboard.writeText(value).catch((err) => {
       console.error("Clipboard copy failed", err);
-    }
+    });
   };
 
   const keywordsDisplay =
@@ -238,6 +250,7 @@ function App() {
 
   // Filter history by market + device first
   const historyForFilters = runHistory.filter((run) => {
+    // If we ever have old runs without market/device, treat as "all"
     const runMarket = run.market || "Worldwide";
     const runDevice = run.device || "Desktop";
     return runMarket === activeMarket && runDevice === activeDevice;
@@ -337,7 +350,6 @@ function App() {
           </button>
         </nav>
 
-        {/* Project footer (same visual as your screenshot) */}
         <ProjectSwitcher
           coreUrl={coreUrl}
           currentProject={project}
@@ -361,18 +373,6 @@ function App() {
               <div className="top-strip-subtitle">
                 Generate SEO titles, descriptions, slugs and keyword sets for
                 products. Designed so beginners never touch JSON.
-              </div>
-
-              {/* Project info strip under the title */}
-              <div className="project-info-strip">
-                <span className="project-info-pill">
-                  Domain:{" "}
-                  <strong>{project.domain || "Not set"}</strong>
-                </span>
-                <span className="project-info-pill">
-                  Platform:{" "}
-                  <strong>{project.platform || "Other / Manual"}</strong>
-                </span>
               </div>
             </div>
 
@@ -459,8 +459,7 @@ function App() {
                   <button
                     key={market}
                     className={
-                      "pill" +
-                      (activeMarket === market ? " pill--active" : "")
+                      "pill" + (activeMarket === market ? " pill--active" : "")
                     }
                     onClick={() => setActiveMarket(market)}
                   >
@@ -521,7 +520,8 @@ function App() {
             </div>
           </section>
 
-          {/* Overview vs “coming soon” tabs */}
+          {/* If you are on Overview, show full dashboard.
+              Other tabs show a clear “coming soon” panel. */}
           {pageTab === "Overview" ? (
             <>
               {/* KPI ROW */}
@@ -572,9 +572,7 @@ function App() {
                     <span className="kpi-unit">runs</span>
                   </div>
                   <div className="kpi-target">
-                    {runHistory.length === 0
-                      ? "No runs yet. Click Run Product SEO to record your first score."
-                      : `Latest score: ${latestRun?.score ?? "—"}/100`}
+                    Latest score: {latestRun?.score ?? "—"}/100
                   </div>
                 </div>
               </section>
@@ -610,13 +608,55 @@ function App() {
                       <code>
                         [What it is] + [1–2 big benefits] + [when to use it]
                       </code>
-                      .<br />
-                      Example: “Waterproof paperclip bracelet with sweat-proof
+                      .
+                      <br />
+                      Example: "Waterproof paperclip bracelet with sweat-proof
                       coating. Adjustable fit for gym, everyday wear and
-                      gifting.”
+                      gifting."
                     </span>
                   </li>
                 </ol>
+
+                {(aiAdviceTitle || aiAdviceMeta || aiAdviceGeneral) && (
+                  <div
+                    style={{
+                      marginTop: 10,
+                      padding: "8px 10px",
+                      borderRadius: 12,
+                      border: "1px dashed rgba(148,163,184,0.5)",
+                      background: "rgba(15,23,42,0.9)",
+                      fontSize: 11,
+                    }}
+                  >
+                    <div
+                      style={{
+                        textTransform: "uppercase",
+                        letterSpacing: "0.14em",
+                        color: "#6b7280",
+                        marginBottom: 4,
+                      }}
+                    >
+                      AI suggestions for this product
+                    </div>
+                    <ul style={{ margin: 0, paddingLeft: 16 }}>
+                      {aiAdviceTitle && (
+                        <li>
+                          <strong>Title:</strong> {aiAdviceTitle}
+                        </li>
+                      )}
+                      {aiAdviceMeta && (
+                        <li>
+                          <strong>Meta:</strong> {aiAdviceMeta}
+                        </li>
+                      )}
+                      {aiAdviceGeneral && (
+                        <li>
+                          <strong>Overall:</strong> {aiAdviceGeneral}
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
               </section>
 
               {/* MAIN GRID */}

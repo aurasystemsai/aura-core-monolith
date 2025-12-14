@@ -48,9 +48,10 @@ exports.run = async function run(input, ctx = {}) {
   const prompt = `
 You are an ecommerce SEO specialist for a jewellery brand.
 
-Your job is to write search-optimised product SEO for organic Google results.
-Write in clear, natural UK English. Avoid clickbait, all-caps and emojis.
+Your job is to write search-optimised product SEO for organic Google results
+and also give a short explanation of how to improve that SEO.
 
+Write in clear, natural UK English. Avoid clickbait, all-caps and emojis.
 Optimise for: high click-through rate, strong keyword relevance and clear value.
 
 Follow these rules carefully:
@@ -81,12 +82,20 @@ Follow these rules carefully:
 - Include material, style and use cases where relevant.
 - Focus on how real shoppers would search for this product.
 
+5) ADVICE FOR BEGINNERS
+- Assume the user is new to SEO.
+- Give one short tip on how they could improve the TITLE if they want to tweak it.
+- Give one short tip on how they could improve the META DESCRIPTION.
+- Give one short general tip about SEO for this type of product.
+
 INPUT:
 Product title: ${productTitle}
 Description: ${productDescription}
 Brand: ${brand || "N/A"}
 Tone of voice: ${tone || "modern, confident, UK English"}
-Use cases: ${Array.isArray(useCases) ? useCases.join(", ") : useCases}
+Use cases: ${
+    Array.isArray(useCases) ? useCases.join(", ") : String(useCases || "")
+  }
 
 Return STRICT JSON only in this exact shape:
 
@@ -94,72 +103,43 @@ Return STRICT JSON only in this exact shape:
   "title": "…",
   "metaDescription": "…",
   "slug": "…",
-  "keywords": ["…", "…"]
+  "keywords": ["…", "…"],
+  "advice": {
+    "titleTips": "…",
+    "metaTips": "…",
+    "generalTips": "…"
+  }
 }
 `.trim();
 
-  // -------------------------------
-  // OpenAI call with fallback
-  // -------------------------------
-  let raw;
-  let attempt = 0;
+  const response = await client.responses.create({
+    model: "gpt-4.1-mini",
+    input: prompt,
+    text_format: "json", // IMPORTANT: Responses API expects "text_format"
+  });
 
-  while (!raw && attempt < 2) {
-    try {
-      // Primary call – Responses API (modern SDKs)
-      const resp = await client.responses.create({
-        model: "gpt-4.1-mini",
-        input: prompt,
-        response_format: { type: "json_object" },
-      });
-
-      raw =
-        resp &&
-        resp.output &&
-        resp.output[0] &&
-        resp.output[0].content &&
-        resp.output[0].content[0] &&
-        resp.output[0].content[0].text &&
-        resp.output[0].content[0].text.value;
-    } catch (err) {
-      // Fallback to chat.completions for older SDKs
-      console.warn(
-        `[product-seo] Responses API failed (attempt ${attempt + 1}): ${err.message}`
-      );
-
-      try {
-        const legacy = await client.chat.completions.create({
-          model: "gpt-4.1-mini",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.4,
-        });
-
-        raw =
-          legacy &&
-          legacy.choices &&
-          legacy.choices[0] &&
-          legacy.choices[0].message &&
-          legacy.choices[0].message.content;
-      } catch (legacyErr) {
-        console.warn(
-          `[product-seo] Legacy API fallback failed (attempt ${attempt + 1}): ${legacyErr.message}`
-        );
-      }
-    }
-
-    attempt++;
-  }
+  const raw =
+    response &&
+    response.output &&
+    response.output[0] &&
+    response.output[0].content &&
+    response.output[0].content[0] &&
+    response.output[0].content[0].text &&
+    response.output[0].content[0].text.value;
 
   if (!raw) {
-    throw new Error("OpenAI response missing text payload after 2 attempts");
+    throw new Error("OpenAI response missing text payload");
   }
 
   let parsed;
   try {
     parsed = JSON.parse(raw);
   } catch (err) {
+    console.error("Failed to parse JSON from OpenAI response:", raw);
     throw new Error("Failed to parse JSON from OpenAI response");
   }
+
+  const advice = parsed.advice || {};
 
   return {
     input,
@@ -169,6 +149,11 @@ Return STRICT JSON only in this exact shape:
       metaDescription: parsed.metaDescription || "",
       slug: parsed.slug || parsed.handle || "",
       keywords: Array.isArray(parsed.keywords) ? parsed.keywords : [],
+      advice: {
+        titleTips: advice.titleTips || "",
+        metaTips: advice.metaTips || "",
+        generalTips: advice.generalTips || "",
+      },
     },
     model: "gpt-4.1-mini",
     environment: ctx.environment || "unknown",
