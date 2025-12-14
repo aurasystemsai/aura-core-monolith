@@ -41,10 +41,10 @@ function App() {
   const [rawJson, setRawJson] = useState("");
   const [lastRunAt, setLastRunAt] = useState(null);
 
-  // AI advice from the tool
-  const [aiAdviceTitle, setAiAdviceTitle] = useState("");
-  const [aiAdviceMeta, setAiAdviceMeta] = useState("");
-  const [aiAdviceGeneral, setAiAdviceGeneral] = useState("");
+  // AI advice (from tool output.advice)
+  const [titleAdvice, setTitleAdvice] = useState("");
+  const [metaAdvice, setMetaAdvice] = useState("");
+  const [generalAdvice, setGeneralAdvice] = useState("");
 
   // Run status
   const [isRunning, setIsRunning] = useState(false);
@@ -59,6 +59,12 @@ function App() {
   // Simple run history for the chart + table
   // Each run stores the market + device that were active at the time
   const [runHistory, setRunHistory] = useState([]);
+
+  // Ideal bands for lengths
+  const TITLE_MIN = 45;
+  const TITLE_MAX = 60;
+  const META_MIN = 130;
+  const META_MAX = 155;
 
   // -------------------------------------------------
   // Load project from localStorage (if already connected)
@@ -99,28 +105,38 @@ function App() {
   }, [coreUrl]);
 
   // -------------------------------------------------
-  // Score calculations
+  // Scoring helpers (NEW)
   // -------------------------------------------------
+  const scoreLength = (len, min, max) => {
+    if (!len) return null;
+
+    // Perfect band → 100
+    if (len >= min && len <= max) return 100;
+
+    // Distance outside the band
+    const distance = len < min ? min - len : len - max;
+
+    // Within ~10 chars either side → still pretty good
+    if (distance <= 10) return 80;
+    if (distance <= 20) return 65;
+
+    // Way off
+    return 40;
+  };
+
   const currentTitleLength = (seoTitle || productTitle).length;
   const currentMetaLength = (seoDescription || productDescription).length;
 
-  const currentTitleScore =
-    currentTitleLength === 0
-      ? null
-      : currentTitleLength < 45
-      ? 40
-      : currentTitleLength > 60
-      ? 60
-      : 90;
-
-  const currentMetaScore =
-    currentMetaLength === 0
-      ? null
-      : currentMetaLength < 130
-      ? 40
-      : currentMetaLength > 155
-      ? 60
-      : 90;
+  const currentTitleScore = scoreLength(
+    currentTitleLength,
+    TITLE_MIN,
+    TITLE_MAX
+  );
+  const currentMetaScore = scoreLength(
+    currentMetaLength,
+    META_MIN,
+    META_MAX
+  );
 
   const overallScore =
     currentTitleScore !== null && currentMetaScore !== null
@@ -135,11 +151,6 @@ function App() {
 
     setIsRunning(true);
     setRunError(null);
-
-    // Clear previous AI advice so user sees it's fresh per run
-    setAiAdviceTitle("");
-    setAiAdviceMeta("");
-    setAiAdviceGeneral("");
 
     const payload = {
       productTitle,
@@ -180,16 +191,17 @@ function App() {
         output.description || output.metaDescription || "";
       const nextSlug = output.slug || output.handle || "";
       const nextKeywords = output.keywords || output.keywordSet || [];
-      const advice = output.advice || {};
 
       setSeoTitle(nextTitle);
       setSeoDescription(nextDescription);
       setSeoSlug(nextSlug);
       setSeoKeywords(nextKeywords);
 
-      setAiAdviceTitle(advice.titleTips || "");
-      setAiAdviceMeta(advice.metaTips || "");
-      setAiAdviceGeneral(advice.generalTips || "");
+      // Advice from the tool
+      const advice = output.advice || {};
+      setTitleAdvice(advice.titleTips || "");
+      setMetaAdvice(advice.metaTips || "");
+      setGeneralAdvice(advice.generalTips || "");
 
       const now = new Date();
       const nowLabel = now.toLocaleString();
@@ -198,10 +210,8 @@ function App() {
       const tLen = (nextTitle || productTitle).length;
       const mLen = (nextDescription || productDescription).length;
 
-      const tScore =
-        tLen === 0 ? null : tLen < 45 ? 40 : tLen > 60 ? 60 : 90;
-      const mScore =
-        mLen === 0 ? null : mLen < 130 ? 40 : mLen > 155 ? 60 : 90;
+      const tScore = scoreLength(tLen, TITLE_MIN, TITLE_MAX);
+      const mScore = scoreLength(mLen, META_MIN, META_MAX);
 
       const oScore =
         tScore !== null && mScore !== null
@@ -275,13 +285,13 @@ function App() {
     if (!currentTitleLength) {
       return "Add a clear product title first, then run the engine. Aim for 45–60 characters.";
     }
-    if (currentTitleLength < 45) {
-      const minExtra = 45 - currentTitleLength;
-      const maxExtra = 60 - currentTitleLength;
+    if (currentTitleLength < TITLE_MIN) {
+      const minExtra = TITLE_MIN - currentTitleLength;
+      const maxExtra = TITLE_MAX - currentTitleLength;
       return `Your current title is ${currentTitleLength} characters. Try adding roughly ${minExtra}–${maxExtra} characters with materials, finish or a key benefit.`;
     }
-    if (currentTitleLength > 60) {
-      const extra = currentTitleLength - 60;
+    if (currentTitleLength > TITLE_MAX) {
+      const extra = currentTitleLength - TITLE_MAX;
       return `Your current title is ${currentTitleLength} characters. It is a bit long – consider trimming around ${extra} characters so it stays punchy in search results.`;
     }
     return `Your current title is ${currentTitleLength} characters, which is right in the sweet spot. Only tweak it if it feels clunky or hard to read.`;
@@ -291,13 +301,13 @@ function App() {
     if (!currentMetaLength) {
       return "Write 2–3 short sentences describing benefits, materials and use cases. Aim for 130–155 characters.";
     }
-    if (currentMetaLength < 130) {
-      const minExtra = 130 - currentMetaLength;
-      const maxExtra = 155 - currentMetaLength;
+    if (currentMetaLength < META_MIN) {
+      const minExtra = META_MIN - currentMetaLength;
+      const maxExtra = META_MAX - currentMetaLength;
       return `Your meta description is ${currentMetaLength} characters. Add around ${minExtra}–${maxExtra} characters with clear benefits, materials or occasions (e.g. gym, gifting, everyday wear).`;
     }
-    if (currentMetaLength > 155) {
-      const extra = currentMetaLength - 155;
+    if (currentMetaLength > META_MAX) {
+      const extra = currentMetaLength - META_MAX;
       return `Your meta description is ${currentMetaLength} characters. It may get cut off in Google. Try removing roughly ${extra} characters or a whole extra sentence.`;
     }
     return `Your meta description is ${currentMetaLength} characters, which is on target. Focus on clarity and benefits rather than adding more words.`;
@@ -520,8 +530,6 @@ function App() {
             </div>
           </section>
 
-          {/* If you are on Overview, show full dashboard.
-              Other tabs show a clear “coming soon” panel. */}
           {pageTab === "Overview" ? (
             <>
               {/* KPI ROW */}
@@ -549,7 +557,9 @@ function App() {
                     </span>
                     <span className="kpi-unit">characters</span>
                   </div>
-                  <div className="kpi-target">Target: 45–60</div>
+                  <div className="kpi-target">
+                    Target: {TITLE_MIN}–{TITLE_MAX}
+                  </div>
                 </div>
 
                 <div className="kpi-card">
@@ -560,7 +570,9 @@ function App() {
                     </span>
                     <span className="kpi-unit">characters</span>
                   </div>
-                  <div className="kpi-target">Target: 130–155</div>
+                  <div className="kpi-target">
+                    Target: {META_MIN}–{META_MAX}
+                  </div>
                 </div>
 
                 <div className="kpi-card">
@@ -610,53 +622,40 @@ function App() {
                       </code>
                       .
                       <br />
-                      Example: "Waterproof paperclip bracelet with sweat-proof
+                      Example: “Waterproof paperclip bracelet with sweat-proof
                       coating. Adjustable fit for gym, everyday wear and
-                      gifting."
+                      gifting.”
                     </span>
                   </li>
                 </ol>
+              </section>
 
-                {(aiAdviceTitle || aiAdviceMeta || aiAdviceGeneral) && (
-                  <div
-                    style={{
-                      marginTop: 10,
-                      padding: "8px 10px",
-                      borderRadius: 12,
-                      border: "1px dashed rgba(148,163,184,0.5)",
-                      background: "rgba(15,23,42,0.9)",
-                      fontSize: 11,
-                    }}
-                  >
-                    <div
-                      style={{
-                        textTransform: "uppercase",
-                        letterSpacing: "0.14em",
-                        color: "#6b7280",
-                        marginBottom: 4,
-                      }}
-                    >
-                      AI suggestions for this product
-                    </div>
-                    <ul style={{ margin: 0, paddingLeft: 16 }}>
-                      {aiAdviceTitle && (
-                        <li>
-                          <strong>Title:</strong> {aiAdviceTitle}
-                        </li>
-                      )}
-                      {aiAdviceMeta && (
-                        <li>
-                          <strong>Meta:</strong> {aiAdviceMeta}
-                        </li>
-                      )}
-                      {aiAdviceGeneral && (
-                        <li>
-                          <strong>Overall:</strong> {aiAdviceGeneral}
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                )}
+              {/* AI SUGGESTIONS CARD */}
+              <section className="card" style={{ marginTop: 10 }}>
+                <div className="card-header">
+                  <h2 className="card-title">AI suggestions for this product</h2>
+                  <p className="card-subtitle">
+                    Generated from your last run. Use this as a second opinion
+                    on how to tweak the copy before you publish.
+                  </p>
+                </div>
+                <ul style={{ fontSize: 12, paddingLeft: 18, margin: 0 }}>
+                  <li>
+                    <strong>Title:</strong>{" "}
+                    {titleAdvice ||
+                      "Run the engine to get specific tips for your title."}
+                  </li>
+                  <li>
+                    <strong>Meta:</strong>{" "}
+                    {metaAdvice ||
+                      "We will suggest how to strengthen your meta description once you have run the tool at least once."}
+                  </li>
+                  <li>
+                    <strong>Overall:</strong>{" "}
+                    {generalAdvice ||
+                      "General optimisation tips for this product will appear here after the first run."}
+                  </li>
+                </ul>
               </section>
 
               {/* MAIN GRID */}
@@ -1001,7 +1000,7 @@ function App() {
               </section>
             </>
           ) : (
-            // Non-Overview tabs – simple explainer so it’s obvious they do something
+            // Non-Overview tabs – simple explainer
             <section style={{ marginTop: 10 }}>
               <div className="card">
                 <div className="card-header">
