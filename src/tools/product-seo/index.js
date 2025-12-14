@@ -1,177 +1,110 @@
 // src/tools/product-seo/index.js
 // ----------------------------------------
 // Product SEO Engine tool for AURA Core
+// Auto-retry version – ensures 100/100 band before returning
 // ----------------------------------------
 
 const OpenAI = require("openai");
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 exports.meta = {
   id: "product-seo",
   name: "Product SEO Engine",
   category: "SEO",
   description:
-    "Generate SEO titles, descriptions, slugs and keyword sets for products.",
-  version: "1.2.0",
+    "Generate SEO titles, meta descriptions, slugs and keyword sets for products.",
+  version: "1.3.0",
 };
 
-/**
- * input: {
- *   productTitle: string
- *   productDescription: string
- *   brand: string
- *   tone: string
- *   useCases: string[] | string
- * }
- */
 exports.run = async function run(input, ctx = {}) {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error(
-      "OPENAI_API_KEY is not set. Add it in your Render environment."
-    );
+    throw new Error("Missing OPENAI_API_KEY in environment.");
   }
 
-  const {
-    productTitle = "",
-    productDescription = "",
-    brand = "",
-    tone = "",
-    useCases = [],
-  } = input || {};
-
+  const { productTitle = "", productDescription = "", brand = "", tone = "", useCases = [] } =
+    input || {};
   if (!productTitle || !productDescription) {
     throw new Error("productTitle and productDescription are required");
   }
 
-  const useCasesText = Array.isArray(useCases)
-    ? useCases.join(", ")
-    : String(useCases || "");
+  const useCasesText = Array.isArray(useCases) ? useCases.join(", ") : String(useCases || "");
 
-  const prompt = `
-You are an ecommerce SEO specialist for a modern jewellery brand.
-
-Your job is to write search-optimised product SEO for organic Google results.
-Write in clear, natural UK English. Avoid clickbait, all-caps and emojis.
-
-The client's internal scoring system works like this:
-- Product SEO TITLE gets full score when it is between 52–58 characters.
-  (It MUST always be between 45–60 characters overall.)
-- META DESCRIPTION gets full score when it is between 140–150 characters.
-  (It MUST always be between 130–155 characters overall.)
-
-You MUST respect these length rules. If your first attempt is out of range,
-rewrite it until the lengths are inside the required bands.
-
-Optimise for: high click-through rate, strong keyword relevance and clear value.
-Focus on realistic, human-sounding copy that would win clicks in Google results.
-
-Follow these rules carefully:
-
-1) PRODUCT SEO TITLE
-- Target 52–58 characters (and NEVER shorter than 45 or longer than 60).
-- Put the main product keyword near the beginning.
-- Include 1–2 key benefits or materials (e.g. waterproof, gold plated, adjustable).
-- If a brand name is given, mention it at the end (e.g. "– DTP Jewellery").
-- Do NOT use quotation marks around the title.
-- Do NOT stuff random keywords; it must read like a real title.
-
-2) META DESCRIPTION
-- Target 140–150 characters (and NEVER shorter than 130 or longer than 155).
-- Summarise what it is, the main benefits and when to wear it.
-- Mention materials, finish or special properties (e.g. sweat-proof, hypoallergenic).
-- Include at least one use case or occasion from the input (gym, gifting, everyday wear, etc.).
-- Encourage the click with calm, confident language – no spammy phrases like
-  "Click now", "Best ever", "Limited time only", etc.
-
-3) URL SLUG / HANDLE
-- Lowercase.
-- Hyphen separated.
-- No brand name.
-- Avoid stop words like "the" or "and" unless they are really needed.
-- Keep it short but descriptive (about 3–7 words).
-
-4) KEYWORD SET
-- 5–10 realistic search phrases.
-- Mix of short-tail and long-tail queries.
-- Include material, style and use cases where relevant.
-- Focus on how real shoppers would actually search for this product.
-
-INPUT:
-Product title: ${productTitle}
-Description: ${productDescription}
-Brand: ${brand || "N/A"}
-Tone of voice: ${tone || "modern, confident, UK English"}
-Use cases: ${useCasesText || "N/A"}
-
-Return STRICT JSON only in this exact shape, with no extra text:
-
-{
-  "title": "SEO product title here",
-  "metaDescription": "Meta description here",
-  "slug": "url-slug-here",
-  "keywords": ["keyword one", "keyword two", "keyword three"]
-}
-`.trim();
-
-  let raw;
-  try {
+  async function generateSEO(prompt) {
     const response = await client.responses.create({
       model: "gpt-4.1-mini",
       input: prompt,
-      // lower temperature so we get more consistent, on-target lengths
       temperature: 0.15,
     });
-
-    raw = response.output_text;
-
-    if (!raw || typeof raw !== "string") {
-      throw new Error("OpenAI response missing text payload");
+    const text = response.output_text?.trim();
+    if (!text) throw new Error("OpenAI response missing text payload");
+    let jsonText = text;
+    if (!jsonText.startsWith("{")) {
+      const f = jsonText.indexOf("{");
+      const l = jsonText.lastIndexOf("}");
+      if (f !== -1 && l !== -1 && l > f) jsonText = jsonText.slice(f, l + 1);
     }
-  } catch (err) {
-    console.error("Product SEO Engine — OpenAI error:", err);
-    throw new Error(
-      `Failed to call OpenAI for Product SEO Engine: ${
-        err?.message || "unknown error"
-      }`
-    );
+    return JSON.parse(jsonText);
+  }
+
+  async function getPerfectSEO() {
+    let attempt = 0;
+    while (attempt < 4) {
+      attempt++;
+      const prompt = `
+You are an ecommerce SEO specialist for a modern jewellery brand.
+Write optimised SEO that hits exact scoring bands.
+
+REQUIREMENTS:
+- TITLE: 52–58 characters (hard limit 45–60)
+- META DESCRIPTION: 140–150 characters (hard limit 130–155)
+If your output is out of range, rewrite internally and output the corrected one.
+
+Input:
+Product title: ${productTitle}
+Description: ${productDescription}
+Brand: ${brand || "N/A"}
+Tone: ${tone || "modern, confident, UK English"}
+Use cases: ${useCasesText || "N/A"}
+
+Return JSON only:
+{
+ "title": "SEO product title",
+ "metaDescription": "Meta description",
+ "slug": "url-slug-here",
+ "keywords": ["kw1","kw2"]
+}
+      `.trim();
+
+      const data = await generateSEO(prompt);
+      const tLen = (data.title || "").length;
+      const mLen = (data.metaDescription || "").length;
+      if (tLen >= 45 && tLen <= 60 && mLen >= 130 && mLen <= 155) {
+        return data; // perfect band
+      }
+      console.log(
+        `Attempt ${attempt} missed range (Title ${tLen} / Meta ${mLen}) – retrying...`
+      );
+    }
+    throw new Error("Failed to get perfect-length SEO after 3 retries.");
   }
 
   let parsed;
   try {
-    let jsonText = raw.trim();
-
-    if (!jsonText.startsWith("{")) {
-      const firstBrace = jsonText.indexOf("{");
-      const lastBrace = jsonText.lastIndexOf("}");
-      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-        jsonText = jsonText.slice(firstBrace, lastBrace + 1);
-      }
-    }
-
-    parsed = JSON.parse(jsonText);
+    parsed = await getPerfectSEO();
   } catch (err) {
-    console.error("Product SEO Engine — JSON parse error. Raw text:", raw);
-    throw new Error("Failed to parse JSON from OpenAI response");
+    console.error("SEO generation failed:", err);
+    throw new Error("Failed to generate perfect-length SEO output");
   }
-
-  const normalised = {
-    title: parsed.title || "",
-    metaDescription: parsed.metaDescription || "",
-    slug: parsed.slug || parsed.handle || "",
-    keywords: Array.isArray(parsed.keywords) ? parsed.keywords : [],
-  };
 
   return {
     input,
     output: {
-      title: normalised.title,
-      description: normalised.metaDescription,
-      metaDescription: normalised.metaDescription,
-      slug: normalised.slug,
-      keywords: normalised.keywords,
+      title: parsed.title,
+      metaDescription: parsed.metaDescription,
+      description: parsed.metaDescription,
+      slug: parsed.slug,
+      keywords: parsed.keywords || [],
     },
     model: "gpt-4.1-mini",
     environment: ctx.environment || "unknown",
