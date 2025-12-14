@@ -14,8 +14,8 @@ exports.meta = {
   name: "Product SEO Engine",
   category: "SEO",
   description:
-    "Generate SEO titles, meta descriptions, slugs and keyword sets for ecommerce products.",
-  version: "1.1.0",
+    "Generate SEO titles, descriptions, slugs and keyword sets for products.",
+  version: "1.2.0",
 };
 
 /**
@@ -46,25 +46,24 @@ exports.run = async function run(input, ctx = {}) {
     throw new Error("productTitle and productDescription are required");
   }
 
-  // Normalise useCases into a comma-separated string for the prompt
   const useCasesText = Array.isArray(useCases)
     ? useCases.join(", ")
     : String(useCases || "");
 
-  // -------------------------------------------------
-  // Prompt tuned to drive towards 100/100 in our UI:
-  // Title: 45–60 chars (ideally 52–58)
-  // Meta: 130–155 chars (ideally 140–150)
-  // -------------------------------------------------
   const prompt = `
 You are an ecommerce SEO specialist for a modern jewellery brand.
 
 Your job is to write search-optimised product SEO for organic Google results.
 Write in clear, natural UK English. Avoid clickbait, all-caps and emojis.
 
-The client's internal scoring system rewards:
-- Product SEO title between 45–60 characters, best around 52–58.
-- Meta description between 130–155 characters, best around 140–150.
+The client's internal scoring system works like this:
+- Product SEO TITLE gets full score when it is between 52–58 characters.
+  (It MUST always be between 45–60 characters overall.)
+- META DESCRIPTION gets full score when it is between 140–150 characters.
+  (It MUST always be between 130–155 characters overall.)
+
+You MUST respect these length rules. If your first attempt is out of range,
+rewrite it until the lengths are inside the required bands.
 
 Optimise for: high click-through rate, strong keyword relevance and clear value.
 Focus on realistic, human-sounding copy that would win clicks in Google results.
@@ -72,7 +71,7 @@ Focus on realistic, human-sounding copy that would win clicks in Google results.
 Follow these rules carefully:
 
 1) PRODUCT SEO TITLE
-- Aim for 52–58 characters where possible (always between 45–60).
+- Target 52–58 characters (and NEVER shorter than 45 or longer than 60).
 - Put the main product keyword near the beginning.
 - Include 1–2 key benefits or materials (e.g. waterproof, gold plated, adjustable).
 - If a brand name is given, mention it at the end (e.g. "– DTP Jewellery").
@@ -80,8 +79,8 @@ Follow these rules carefully:
 - Do NOT stuff random keywords; it must read like a real title.
 
 2) META DESCRIPTION
-- Aim for 140–150 characters where possible (always between 130–155).
-- Summarise what it is, main benefits and when to wear it.
+- Target 140–150 characters (and NEVER shorter than 130 or longer than 155).
+- Summarise what it is, the main benefits and when to wear it.
 - Mention materials, finish or special properties (e.g. sweat-proof, hypoallergenic).
 - Include at least one use case or occasion from the input (gym, gifting, everyday wear, etc.).
 - Encourage the click with calm, confident language – no spammy phrases like
@@ -117,25 +116,21 @@ Return STRICT JSON only in this exact shape, with no extra text:
 }
 `.trim();
 
-  // -------------------------------------------------
-  // Call OpenAI Responses API
-  // Use output_text helper so we don't depend on internal structure.
-  // -------------------------------------------------
   let raw;
   try {
     const response = await client.responses.create({
       model: "gpt-4.1-mini",
       input: prompt,
+      // lower temperature so we get more consistent, on-target lengths
+      temperature: 0.15,
     });
 
-    // New SDKs expose a convenience string with all text output merged.
     raw = response.output_text;
 
     if (!raw || typeof raw !== "string") {
       throw new Error("OpenAI response missing text payload");
     }
   } catch (err) {
-    // Surface a cleaner error message to the console UI
     console.error("Product SEO Engine — OpenAI error:", err);
     throw new Error(
       `Failed to call OpenAI for Product SEO Engine: ${
@@ -144,13 +139,8 @@ Return STRICT JSON only in this exact shape, with no extra text:
     );
   }
 
-  // -------------------------------------------------
-  // Parse JSON from the model
-  // -------------------------------------------------
   let parsed;
   try {
-    // In case the model wraps JSON with explanation (it shouldn't, but be safe),
-    // try to extract the first JSON object substring.
     let jsonText = raw.trim();
 
     if (!jsonText.startsWith("{")) {
@@ -167,7 +157,6 @@ Return STRICT JSON only in this exact shape, with no extra text:
     throw new Error("Failed to parse JSON from OpenAI response");
   }
 
-  // Normalise output so the console is always safe to render
   const normalised = {
     title: parsed.title || "",
     metaDescription: parsed.metaDescription || "",
