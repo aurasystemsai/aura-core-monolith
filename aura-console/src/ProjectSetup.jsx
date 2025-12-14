@@ -1,41 +1,28 @@
-// src/ProjectSetup.jsx
+// aura-console/src/ProjectSetup.jsx
+// -----------------------------------------
+// "Connect store" onboarding screen
+// Talks directly to Core /projects API
+// -----------------------------------------
+
 import React, { useState } from "react";
-import "./App.css";
 
-/**
- * Props:
- *  - coreUrl: string (Core API base URL)
- *  - onConnected: (project) => void
- */
 function ProjectSetup({ coreUrl, onConnected }) {
-  const [projectName, setProjectName] = useState("aura");
-  const [domain, setDomain] = useState("https://aurasystemsai.com");
-  const [platform, setPlatform] = useState("other");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [name, setName] = useState("");
+  const [domain, setDomain] = useState("");
+  const [platform, setPlatform] = useState("shopify");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  const validate = () => {
-    if (!projectName.trim()) {
-      return "Project / Brand name is required.";
-    }
-    if (!domain.trim()) {
-      return "Storefront domain is required.";
-    }
-    return null;
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
-    const validationError = validate();
-    if (validationError) {
-      setError(validationError);
+    if (!name.trim() || !domain.trim()) {
+      setError("Store name and domain are required.");
       return;
     }
 
-    setIsSubmitting(true);
-
+    setLoading(true);
     try {
       const res = await fetch(`${coreUrl}/projects`, {
         method: "POST",
@@ -43,80 +30,75 @@ function ProjectSetup({ coreUrl, onConnected }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: projectName.trim(),
+          name: name.trim(),
           domain: domain.trim(),
-          platform,
+          platform: platform || "other",
         }),
       });
 
-      const text = await res.text();
       if (!res.ok) {
-        // Render often returns HTML "Cannot POST /projects" for wrong routes
-        throw new Error(text || `Failed to create project (${res.status})`);
+        const text = await res.text();
+        throw new Error(
+          text || `Core API returned ${res.status} creating project`
+        );
       }
 
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        // If Core returns plain text, fallback to minimal object
-        data = {};
+      const data = await res.json();
+      if (!data.ok || !data.project) {
+        throw new Error("Core API did not return a project object.");
       }
 
-      const project = {
-        id: data.id || data.projectId || projectName.trim(),
-        name: data.name || projectName.trim(),
-        domain: data.domain || domain.trim(),
-        platform: data.platform || platform,
-      };
+      const project = data.project;
 
-      // Persist locally so the console can auto-restore
+      // Persist to localStorage so App.jsx can rehydrate on reload
       localStorage.setItem("auraProjectId", project.id);
-      localStorage.setItem("auraProjectName", project.name);
-      localStorage.setItem("auraProjectDomain", project.domain);
-      localStorage.setItem("auraPlatform", project.platform);
+      localStorage.setItem("auraProjectName", project.name || "");
+      localStorage.setItem("auraProjectDomain", project.domain || "");
+      localStorage.setItem("auraPlatform", project.platform || "other");
 
-      onConnected(project);
+      // Hand back to App so it can show the main console
+      if (onConnected) {
+        onConnected(project);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("[Console] Failed to create project", err);
       setError(
         err.message ||
-          "Failed to connect your store. Check the Core API URL and try again."
+          "Failed to connect your store. Check Core API URL and try again."
       );
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
     <div className="project-setup-screen">
       <div className="project-setup-card">
-        <div className="side-nav-eyebrow" style={{ marginBottom: 4 }}>
-          AURA SYSTEMS AI
-        </div>
-        <h1>Connect your store</h1>
+        <h1>Connect your first project</h1>
         <p className="subtitle">
-          AURA works with Shopify and all other ecommerce platforms. For
-          non-Shopify stores, you&apos;ll paste product details manually into
-          the SEO tools.
+          A project is usually a single store or domain (for example your
+          Shopify brand). You can add more later and switch between them in the
+          sidebar.
         </p>
 
         <form className="project-setup-form" onSubmit={handleSubmit}>
           <label>
-            Project / Brand name
+            Store / brand name
             <input
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              placeholder="e.g. DTP Jewellery"
+              type="text"
+              placeholder="DTP Jewellery"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </label>
 
           <label>
-            Storefront domain
+            Main domain
             <input
+              type="text"
+              placeholder="dtpjewellry.com"
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
-              placeholder="e.g. https://dtpjewellry.com"
             />
           </label>
 
@@ -126,16 +108,26 @@ function ProjectSetup({ coreUrl, onConnected }) {
               value={platform}
               onChange={(e) => setPlatform(e.target.value)}
             >
-              <option value="other">Other / Manual (default)</option>
               <option value="shopify">Shopify</option>
               <option value="woocommerce">WooCommerce</option>
-              <option value="bigcommerce">BigCommerce</option>
+              <option value="framer">Framer</option>
+              <option value="custom">Custom stack</option>
+              <option value="other">Other</option>
             </select>
           </label>
 
           {error && (
-            <div className="error-banner" style={{ marginTop: 2 }}>
-              <span className="error-dot" />
+            <div
+              style={{
+                marginTop: 4,
+                fontSize: 12,
+                color: "#fecaca",
+                padding: "6px 8px",
+                borderRadius: 8,
+                border: "1px solid rgba(248,113,113,0.7)",
+                background: "rgba(127,29,29,0.9)",
+              }}
+            >
               {error}
             </div>
           )}
@@ -143,21 +135,22 @@ function ProjectSetup({ coreUrl, onConnected }) {
           <button
             type="submit"
             className="button button--primary"
-            disabled={isSubmitting}
+            disabled={loading}
           >
-            {isSubmitting ? "Connecting…" : "Connect Store"}
+            {loading ? "Connecting…" : "Connect store"}
           </button>
 
           <div
             style={{
+              marginTop: 8,
               fontSize: 11,
               color: "#9ca3af",
-              marginTop: 6,
-              lineHeight: 1.45,
+              lineHeight: 1.4,
             }}
           >
-            We store your project ID, domain and platform in your browser so you
-            do not have to reconnect every time. No passwords are stored here.
+            We store projects in AURA’s Core database, not just your browser.
+            Once connected, the SEO Command Centre will run Product SEO against
+            this project.
           </div>
         </form>
       </div>
