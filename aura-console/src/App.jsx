@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import ProjectSetup from "./ProjectSetup";
 import ProjectSwitcher from "./ProjectSwitcher";
+import SystemHealthPanel from "./SystemHealthPanel";
 
 const PRODUCT_SEO_TOOL = {
   id: "product-seo",
@@ -60,6 +61,9 @@ function App() {
   // Each run stores the market + device that were active at the time
   const [runHistory, setRunHistory] = useState([]);
 
+  // Which metric to show in the chart (Score trend / Meta length)
+  const [historyView, setHistoryView] = useState("score"); // "score" | "meta"
+
   // Ideal bands for lengths
   const TITLE_MIN = 45;
   const TITLE_MAX = 60;
@@ -105,7 +109,7 @@ function App() {
   }, [coreUrl]);
 
   // -------------------------------------------------
-  // Scoring helpers (NEW)
+  // Scoring helpers
   // -------------------------------------------------
   const scoreLength = (len, min, max) => {
     if (!len) return null;
@@ -440,6 +444,11 @@ function App() {
             </div>
           </header>
 
+          {/* SYSTEM HEALTH PANEL */}
+          <section style={{ marginTop: 10, marginBottom: 6 }}>
+            <SystemHealthPanel />
+          </section>
+
           {/* PAGE TABS */}
           <section className="page-tabs">
             {[
@@ -668,10 +677,24 @@ function App() {
                       <div className="card-title-row">
                         <h2 className="card-title">SEO run history</h2>
                         <div className="card-toggle-tabs">
-                          <button className="tab tab--active">
+                          <button
+                            className={
+                              "tab" +
+                              (historyView === "score" ? " tab--active" : "")
+                            }
+                            onClick={() => setHistoryView("score")}
+                          >
                             Score trend
                           </button>
-                          <button className="tab">Meta length</button>
+                          <button
+                            className={
+                              "tab" +
+                              (historyView === "meta" ? " tab--active" : "")
+                            }
+                            onClick={() => setHistoryView("meta")}
+                          >
+                            Meta length
+                          </button>
                         </div>
                       </div>
                       <p className="card-subtitle">
@@ -686,14 +709,28 @@ function App() {
                       {rangedHistory.length ? (
                         <div className="run-history-spark">
                           {rangedHistory.map((run) => {
-                            const score = run.score ?? 0;
-                            const height = 20 + (score / 100) * 60;
+                            let metric;
+                            if (historyView === "score") {
+                              metric = run.score ?? 0;
+                            } else {
+                              // normalise meta length to 0–100 band for the chart
+                              const length = run.metaLength || 0;
+                              const clamped = Math.min(length, 220); // hard cap
+                              metric = (clamped / 220) * 100;
+                            }
+
+                            const height = 20 + (metric / 100) * 60;
+
                             return (
                               <div
                                 key={run.id}
                                 className="run-history-bar"
                                 style={{ height: `${height}%` }}
-                                title={`Run ${run.id} • ${score || "n/a"}/100`}
+                                title={
+                                  historyView === "score"
+                                    ? `Run ${run.id} • ${run.score || "n/a"}/100`
+                                    : `Run ${run.id} • meta ${run.metaLength} chars`
+                                }
                               />
                             );
                           })}
