@@ -45,7 +45,7 @@ exports.run = async function run(input, ctx = {}) {
     throw new Error("productTitle and productDescription are required");
   }
 
-  const prompt = `
+  const systemPrompt = `
 You are an ecommerce SEO specialist for a jewellery brand.
 
 Your job is to write search-optimised product SEO for organic Google results
@@ -87,7 +87,9 @@ Follow these rules carefully:
 - Give one short tip on how they could improve the TITLE if they want to tweak it.
 - Give one short tip on how they could improve the META DESCRIPTION.
 - Give one short general tip about SEO for this type of product.
+`.trim();
 
+  const userPrompt = `
 INPUT:
 Product title: ${productTitle}
 Description: ${productDescription}
@@ -112,23 +114,21 @@ Return STRICT JSON only in this exact shape:
 }
 `.trim();
 
-  // NOTE: no response_format / text_format – the API was rejecting that.
-  const response = await client.responses.create({
+  // Use classic chat completions so the payload is simple and stable.
+  const completion = await client.chat.completions.create({
     model: "gpt-4.1-mini",
-    input: prompt,
+    temperature: 0.5,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
   });
 
-  const raw =
-    response &&
-    response.output &&
-    response.output[0] &&
-    response.output[0].content &&
-    response.output[0].content[0] &&
-    response.output[0].content[0].text &&
-    response.output[0].content[0].text.value;
+  const raw = completion?.choices?.[0]?.message?.content;
 
   if (!raw) {
-    throw new Error("OpenAI response missing text payload");
+    throw new Error("OpenAI response missing message content");
   }
 
   let parsed;
