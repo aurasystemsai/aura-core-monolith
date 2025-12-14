@@ -4,7 +4,6 @@ import ProjectSetup from "./ProjectSetup";
 import ProjectSwitcher from "./ProjectSwitcher";
 import SystemHealthPanel from "./components/SystemHealthPanel";
 
-
 const PRODUCT_SEO_TOOL = {
   id: "product-seo",
   name: "Product SEO Engine",
@@ -108,42 +107,43 @@ function App() {
 
     check();
   }, [coreUrl]);
-// -------------------------------------------------
-// Load persisted run history from Core API (SQLite)
-// -------------------------------------------------
-useEffect(() => {
-  if (!project) return;
 
-  const fetchRuns = async () => {
-    try {
-      const res = await fetch(`${coreUrl}/projects/${project.id}/runs`);
-      if (!res.ok) return; // fail silently
+  // -------------------------------------------------
+  // Load persisted run history from Core API (SQLite)
+  // -------------------------------------------------
+  useEffect(() => {
+    if (!project) return;
 
-      const data = await res.json();
-      if (!data.ok || !Array.isArray(data.runs)) return;
+    const fetchRuns = async () => {
+      try {
+        const res = await fetch(`${coreUrl}/projects/${project.id}/runs`);
+        if (!res.ok) return; // fail silently
 
-      // Map API -> local shape
-      const mapped = data.runs
-        .slice()
-        .reverse() // oldest first for your existing ordering
-        .map((run, idx) => ({
-          id: idx + 1,
-          time: new Date(run.createdAt).toLocaleString(),
-          score: run.score ?? null,
-          titleLength: run.titleLength ?? null,
-          metaLength: run.metaLength ?? null,
-          market: run.market || "Worldwide",
-          device: run.device || "Desktop",
-        }));
+        const data = await res.json();
+        if (!data.ok || !Array.isArray(data.runs)) return;
 
-      setRunHistory(mapped);
-    } catch (err) {
-      console.error("Failed to load run history", err);
-    }
-  };
+        // Map API -> local shape
+        const mapped = data.runs
+          .slice()
+          .reverse() // oldest first for your existing ordering
+          .map((run, idx) => ({
+            id: idx + 1,
+            time: new Date(run.createdAt).toLocaleString(),
+            score: run.score ?? null,
+            titleLength: run.titleLength ?? null,
+            metaLength: run.metaLength ?? null,
+            market: run.market || "Worldwide",
+            device: run.device || "Desktop",
+          }));
 
-  fetchRuns();
-}, [project, coreUrl]);
+        setRunHistory(mapped);
+      } catch (err) {
+        console.error("Failed to load run history", err);
+      }
+    };
+
+    fetchRuns();
+  }, [project, coreUrl]);
 
   // -------------------------------------------------
   // Scoring helpers
@@ -276,7 +276,8 @@ useEffect(() => {
         // Keep only last 50 runs to avoid silly growth
         return next.slice(-50);
       });
-            // Persist run to Core API (SQLite). Fire-and-forget – UI already updated.
+
+      // Persist run to Core API (SQLite). Fire-and-forget – UI already updated.
       try {
         await fetch(`${coreUrl}/projects/${project.id}/runs`, {
           method: "POST",
@@ -299,7 +300,6 @@ useEffect(() => {
         console.error("Failed to persist run", persistErr);
         // No UI error – this is just analytics
       }
-
     } catch (err) {
       console.error(err);
       setRunError(err.message || "Failed to run Product SEO Engine");
@@ -405,6 +405,16 @@ useEffect(() => {
           </div>
         </div>
 
+        {/* Project picker right under the brand */}
+        <div className="side-nav-project-switcher">
+          <ProjectSwitcher
+            coreUrl={coreUrl}
+            currentProject={project}
+            onSelectProject={(p) => setProject(p)}
+            onDisconnect={() => setProject(null)}
+          />
+        </div>
+
         <nav className="side-nav-menu">
           <div className="side-nav-section-label">Suites</div>
           <button className="side-nav-item side-nav-item--active">
@@ -424,13 +434,6 @@ useEffect(() => {
             Developers
           </button>
         </nav>
-
-        <ProjectSwitcher
-          coreUrl={coreUrl}
-          currentProject={project}
-          onSelectProject={(p) => setProject(p)}
-          onDisconnect={() => setProject(null)}
-        />
       </aside>
 
       {/* MAIN AREA */}
@@ -507,7 +510,11 @@ useEffect(() => {
 
           {/* SYSTEM HEALTH PANEL */}
           <section style={{ marginTop: 10, marginBottom: 6 }}>
-            <SystemHealthPanel />
+            <SystemHealthPanel
+              coreStatus={coreStatus}
+              coreStatusLabel={coreStatusLabel}
+              lastRunAt={lastRunAt}
+            />
           </section>
 
           {/* PAGE TABS */}

@@ -1,53 +1,105 @@
 // src/core/projects.js
 // ----------------------------------------
-// Simple in-memory projects store for AURA Core
+// AURA Core • Projects storage (SQLite)
 // ----------------------------------------
+//
+// Responsible for:
+// - Creating projects when a store is connected from the console
+// - Listing projects for the ProjectSwitcher
+//
+// Uses the shared SQLite connection from src/core/db.js
+//
 
-// Map<projectId, project>
-const projects = new Map();
+const db = require("./db");
+
+// --- Initialise table on first require -----------------------------
+
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS projects (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    domain TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )
+`).run();
+
+// --- Helpers --------------------------------------------------------
+
+// simple id generator, no extra deps
+function generateId() {
+  return (
+    "proj_" +
+    Date.now().toString(36) +
+    "_" +
+    Math.random().toString(36).slice(2, 8)
+  );
+}
+
+// --- Public API -----------------------------------------------------
 
 /**
- * Create a new project.
- *
- * @param {Object} params
- * @param {string} params.name
- * @param {string} params.domain
- * @param {string} [params.platform]
+ * Create a new project row.
+ * Called from POST /projects in src/server.js
  */
-function createProject({ name, domain, platform = "other" }) {
-  const id = [
-    Date.now().toString(36),
-    Math.random().toString(36).slice(2, 8),
-  ].join("-");
+function createProject({ name, domain, platform }) {
+  const now = new Date().toISOString();
+  const id = generateId();
 
   const project = {
     id,
     name,
     domain,
     platform,
-    createdAt: new Date().toISOString(),
+    created_at: now,
+    updated_at: now,
   };
 
-  projects.set(id, project);
-  return project;
+  const stmt = db.prepare(`
+    INSERT INTO projects (id, name, domain, platform, created_at, updated_at)
+    VALUES (@id, @name, @domain, @platform, @created_at, @updated_at)
+  `);
+
+  stmt.run(project);
+
+  // Return object in the shape the console expects
+  return {
+    id,
+    name,
+    domain,
+    platform,
+    createdAt: now,
+    updatedAt: now,
+  };
 }
 
 /**
- * Get a project by ID.
- */
-function getProject(id) {
-  return projects.get(id) || null;
-}
-
-/**
- * List all projects.
+ * List all projects (newest first).
+ * Used by GET /projects in src/server.js
  */
 function listProjects() {
-  return Array.from(projects.values());
+  const rows = db
+    .prepare(
+      `
+      SELECT id, name, domain, platform, created_at, updated_at
+      FROM projects
+      ORDER BY created_at DESC
+    `
+    )
+    .all();
+
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    domain: row.domain,
+    platform: row.platform,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
 }
 
 module.exports = {
   createProject,
-  getProject,
   listProjects,
 };
