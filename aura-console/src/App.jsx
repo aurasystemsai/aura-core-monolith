@@ -108,6 +108,42 @@ function App() {
 
     check();
   }, [coreUrl]);
+// -------------------------------------------------
+// Load persisted run history from Core API (SQLite)
+// -------------------------------------------------
+useEffect(() => {
+  if (!project) return;
+
+  const fetchRuns = async () => {
+    try {
+      const res = await fetch(`${coreUrl}/projects/${project.id}/runs`);
+      if (!res.ok) return; // fail silently
+
+      const data = await res.json();
+      if (!data.ok || !Array.isArray(data.runs)) return;
+
+      // Map API -> local shape
+      const mapped = data.runs
+        .slice()
+        .reverse() // oldest first for your existing ordering
+        .map((run, idx) => ({
+          id: idx + 1,
+          time: new Date(run.createdAt).toLocaleString(),
+          score: run.score ?? null,
+          titleLength: run.titleLength ?? null,
+          metaLength: run.metaLength ?? null,
+          market: run.market || "Worldwide",
+          device: run.device || "Desktop",
+        }));
+
+      setRunHistory(mapped);
+    } catch (err) {
+      console.error("Failed to load run history", err);
+    }
+  };
+
+  fetchRuns();
+}, [project, coreUrl]);
 
   // -------------------------------------------------
   // Scoring helpers
@@ -240,6 +276,30 @@ function App() {
         // Keep only last 50 runs to avoid silly growth
         return next.slice(-50);
       });
+            // Persist run to Core API (SQLite). Fire-and-forget – UI already updated.
+      try {
+        await fetch(`${coreUrl}/projects/${project.id}/runs`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            toolId: PRODUCT_SEO_TOOL.id,
+            createdAt: now.toISOString(),
+            market: activeMarket,
+            device: activeDevice,
+            score: oScore,
+            titleLength: tLen,
+            metaLength: mLen,
+            input: payload,
+            output,
+          }),
+        });
+      } catch (persistErr) {
+        console.error("Failed to persist run", persistErr);
+        // No UI error – this is just analytics
+      }
+
     } catch (err) {
       console.error(err);
       setRunError(err.message || "Failed to run Product SEO Engine");
