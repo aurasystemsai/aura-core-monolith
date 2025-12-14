@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import ProjectSetup from "./ProjectSetup";
@@ -55,9 +56,6 @@ function App() {
   // Each run stores the market + device that were active at the time
   const [runHistory, setRunHistory] = useState([]);
 
-  // Copy toast state
-  const [copyState, setCopyState] = useState(null); // { label, at }
-
   // -------------------------------------------------
   // Load project from localStorage (if already connected)
   // -------------------------------------------------
@@ -68,7 +66,7 @@ function App() {
         id,
         name: localStorage.getItem("auraProjectName") || "Untitled project",
         domain: localStorage.getItem("auraProjectDomain") || "—",
-        platform: localStorage.getItem("auraPlatform") || "other",
+        platform: localStorage.getItem("auraPlatform") || "Other / Manual",
       });
     }
   }, []);
@@ -224,32 +222,10 @@ function App() {
   // -------------------------------------------------
   // Helpers
   // -------------------------------------------------
-  const copyToClipboard = async (value, label) => {
+  const copyToClipboard = (value) => {
     if (!value) return;
-
     try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(value);
-      } else {
-        // Fallback for older browsers
-        const textarea = document.createElement("textarea");
-        textarea.value = value;
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        textarea.focus();
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-      }
-
-      setCopyState({ label, at: Date.now() });
-      setTimeout(() => {
-        setCopyState((prev) => {
-          if (!prev) return null;
-          return Date.now() - prev.at > 1200 ? null : prev;
-        });
-      }, 1200);
+      navigator.clipboard.writeText(value);
     } catch (err) {
       console.error("Clipboard copy failed", err);
     }
@@ -361,6 +337,7 @@ function App() {
           </button>
         </nav>
 
+        {/* Project footer (same visual as your screenshot) */}
         <ProjectSwitcher
           coreUrl={coreUrl}
           currentProject={project}
@@ -384,6 +361,18 @@ function App() {
               <div className="top-strip-subtitle">
                 Generate SEO titles, descriptions, slugs and keyword sets for
                 products. Designed so beginners never touch JSON.
+              </div>
+
+              {/* Project info strip under the title */}
+              <div className="project-info-strip">
+                <span className="project-info-pill">
+                  Domain:{" "}
+                  <strong>{project.domain || "Not set"}</strong>
+                </span>
+                <span className="project-info-pill">
+                  Platform:{" "}
+                  <strong>{project.platform || "Other / Manual"}</strong>
+                </span>
               </div>
             </div>
 
@@ -470,7 +459,8 @@ function App() {
                   <button
                     key={market}
                     className={
-                      "pill" + (activeMarket === market ? " pill--active" : "")
+                      "pill" +
+                      (activeMarket === market ? " pill--active" : "")
                     }
                     onClick={() => setActiveMarket(market)}
                   >
@@ -531,8 +521,7 @@ function App() {
             </div>
           </section>
 
-          {/* If you are on Overview, show full dashboard.
-              Other tabs show a clear “coming soon” panel. */}
+          {/* Overview vs “coming soon” tabs */}
           {pageTab === "Overview" ? (
             <>
               {/* KPI ROW */}
@@ -583,7 +572,9 @@ function App() {
                     <span className="kpi-unit">runs</span>
                   </div>
                   <div className="kpi-target">
-                    Latest score: {latestRun?.score ?? "—"}/100
+                    {runHistory.length === 0
+                      ? "No runs yet. Click Run Product SEO to record your first score."
+                      : `Latest score: ${latestRun?.score ?? "—"}/100`}
                   </div>
                 </div>
               </section>
@@ -619,8 +610,7 @@ function App() {
                       <code>
                         [What it is] + [1–2 big benefits] + [when to use it]
                       </code>
-                      .
-                      <br />
+                      .<br />
                       Example: “Waterproof paperclip bracelet with sweat-proof
                       coating. Adjustable fit for gym, everyday wear and
                       gifting.”
@@ -758,9 +748,7 @@ function App() {
                           <td>
                             <button
                               className="button button--ghost button--tiny"
-                              onClick={() =>
-                                copyToClipboard(seoTitle, "Title")
-                              }
+                              onClick={() => copyToClipboard(seoTitle)}
                               disabled={!seoTitle}
                             >
                               Copy
@@ -776,12 +764,7 @@ function App() {
                           <td>
                             <button
                               className="button button--ghost button--tiny"
-                              onClick={() =>
-                                copyToClipboard(
-                                  seoDescription,
-                                  "Meta description"
-                                )
-                              }
+                              onClick={() => copyToClipboard(seoDescription)}
                               disabled={!seoDescription}
                             >
                               Copy
@@ -796,7 +779,7 @@ function App() {
                           <td>
                             <button
                               className="button button--ghost button--tiny"
-                              onClick={() => copyToClipboard(seoSlug, "Slug")}
+                              onClick={() => copyToClipboard(seoSlug)}
                               disabled={!seoSlug}
                             >
                               Copy
@@ -813,7 +796,7 @@ function App() {
                             <button
                               className="button button--ghost button--tiny"
                               onClick={() =>
-                                copyToClipboard(keywordsDisplay, "Keywords")
+                                copyToClipboard(keywordsDisplay)
                               }
                               disabled={!keywordsDisplay}
                             >
@@ -823,12 +806,6 @@ function App() {
                         </tr>
                       </tbody>
                     </table>
-
-                    {copyState && (
-                      <div className="copy-toast">
-                        {copyState.label} copied to clipboard
-                      </div>
-                    )}
 
                     <details className="raw-json">
                       <summary>Raw JSON from Core API (advanced)</summary>
