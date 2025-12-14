@@ -1,4 +1,4 @@
-# Logs
+# --- Logs ---
 logs
 *.log
 npm-debug.log*
@@ -7,17 +7,33 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# --- Dependency directories ---
 node_modules
 dist
 dist-ssr
-*.local
+.local
 
-# Editor directories and files
+# --- Environment and API keys ---
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# --- Build artifacts ---
+*.tgz
+*.zip
+*.tar.gz
+
+# --- Editor directories and files ---
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
-*.suo
+
+# --- System files ---
+Thumbs.db
+.suo
 *.ntvs*
 *.njsproj
 *.sln
