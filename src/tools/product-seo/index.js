@@ -112,10 +112,10 @@ Return STRICT JSON only in this exact shape:
 }
 `.trim();
 
+  // NOTE: no response_format / text_format – the API was rejecting that.
   const response = await client.responses.create({
     model: "gpt-4.1-mini",
     input: prompt,
-    text_format: "json", // IMPORTANT: Responses API expects "text_format"
   });
 
   const raw =
