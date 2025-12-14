@@ -1,12 +1,14 @@
 // src/tools/product-seo/index.js
 // ----------------------------------------
 // Product SEO Engine tool for AURA Core
-// Auto-retry version – ensures 100/100 band before returning
+// Auto-retry with graceful fallback (no user-visible errors)
 // ----------------------------------------
 
 const OpenAI = require("openai");
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 exports.meta = {
   id: "product-seo",
@@ -14,97 +16,196 @@ exports.meta = {
   category: "SEO",
   description:
     "Generate SEO titles, meta descriptions, slugs and keyword sets for products.",
-  version: "1.3.0",
+  version: "1.3.1",
 };
 
-exports.run = async function run(input, ctx = {}) {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("Missing OPENAI_API_KEY in environment.");
-  }
+/**
+ * Helper: how far are we from the ideal range?
+ * Returns 0 when inside range, otherwise the distance in characters.
+ */
+function rangePenalty(len, min, max) {
+  if (len < min) return min - len;
+  if (len > max) return len - max;
+  return 0;
+}
 
-  const { productTitle = "", productDescription = "", brand = "", tone = "", useCases = [] } =
-    input || {};
-  if (!productTitle || !productDescription) {
-    throw new Error("productTitle and productDescription are required");
-  }
+/**
+ * Call OpenAI once and parse JSON.
+ */
+async function generateSEOOnce(payload) {
+  const {
+    productTitle,
+    productDescription,
+    brand,
+    tone,
+    useCasesText,
+  } = payload;
 
-  const useCasesText = Array.isArray(useCases) ? useCases.join(", ") : String(useCases || "");
+  const prompt = `
+You are an ecommerce SEO specialist for a jewellery brand.
 
-  async function generateSEO(prompt) {
-    const response = await client.responses.create({
-      model: "gpt-4.1-mini",
-      input: prompt,
-      temperature: 0.15,
-    });
-    const text = response.output_text?.trim();
-    if (!text) throw new Error("OpenAI response missing text payload");
-    let jsonText = text;
-    if (!jsonText.startsWith("{")) {
-      const f = jsonText.indexOf("{");
-      const l = jsonText.lastIndexOf("}");
-      if (f !== -1 && l !== -1 && l > f) jsonText = jsonText.slice(f, l + 1);
-    }
-    return JSON.parse(jsonText);
-  }
+Write search-optimised product SEO in clear, natural UK English.
+Avoid clickbait, all-caps and emojis.
 
-  async function getPerfectSEO() {
-    let attempt = 0;
-    while (attempt < 4) {
-      attempt++;
-      const prompt = `
-You are an ecommerce SEO specialist for a modern jewellery brand.
-Write optimised SEO that hits exact scoring bands.
+Your target scoring bands (ideal):
+- Product SEO title: 45–60 characters.
+- Meta description: 130–155 characters.
 
-REQUIREMENTS:
-- TITLE: 52–58 characters (hard limit 45–60)
-- META DESCRIPTION: 140–150 characters (hard limit 130–155)
-If your output is out of range, rewrite internally and output the corrected one.
+Try to land as close to the middle of each band as possible.
+If you overshoot or undershoot, quickly correct yourself BEFORE finalising output.
 
-Input:
+INPUT
+------
 Product title: ${productTitle}
 Description: ${productDescription}
 Brand: ${brand || "N/A"}
-Tone: ${tone || "modern, confident, UK English"}
+Tone of voice: ${tone || "modern, confident, UK English"}
 Use cases: ${useCasesText || "N/A"}
 
-Return JSON only:
-{
- "title": "SEO product title",
- "metaDescription": "Meta description",
- "slug": "url-slug-here",
- "keywords": ["kw1","kw2"]
-}
-      `.trim();
+OUTPUT FORMAT
+-------------
+Return STRICT JSON only in this exact shape, nothing else:
 
-      const data = await generateSEO(prompt);
-      const tLen = (data.title || "").length;
-      const mLen = (data.metaDescription || "").length;
-      if (tLen >= 45 && tLen <= 60 && mLen >= 130 && mLen <= 155) {
-        return data; // perfect band
-      }
-      console.log(
-        `Attempt ${attempt} missed range (Title ${tLen} / Meta ${mLen}) – retrying...`
-      );
+{
+  "title": "SEO product title",
+  "metaDescription": "Meta description text",
+  "slug": "url-slug-here",
+  "keywords": ["keyword one", "keyword two"]
+}
+  `.trim();
+
+  const response = await client.responses.create({
+    model: "gpt-4.1-mini",
+    input: prompt,
+    temperature: 0.15,
+  });
+
+  const text = response.output_text && response.output_text.trim();
+  if (!text) {
+    throw new Error("OpenAI response missing text payload");
+  }
+
+  // In case the model wraps JSON in explanation text, strip to { ... }.
+  let jsonText = text;
+  if (!jsonText.startsWith("{")) {
+    const first = jsonText.indexOf("{");
+    const last = jsonText.lastIndexOf("}");
+    if (first !== -1 && last !== -1 && last > first) {
+      jsonText = jsonText.slice(first, last + 1);
     }
-    throw new Error("Failed to get perfect-length SEO after 3 retries.");
   }
 
   let parsed;
   try {
-    parsed = await getPerfectSEO();
+    parsed = JSON.parse(jsonText);
   } catch (err) {
-    console.error("SEO generation failed:", err);
-    throw new Error("Failed to generate perfect-length SEO output");
+    console.error("Failed to parse JSON from OpenAI response:", text);
+    throw new Error("Failed to parse JSON from OpenAI response");
   }
+
+  return parsed;
+}
+
+exports.run = async function run(input, ctx = {}) {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error(
+      "OPENAI_API_KEY is not set. Add it in your Render environment."
+    );
+  }
+
+  const {
+    productTitle = "",
+    productDescription = "",
+    brand = "",
+    tone = "",
+    useCases = [],
+  } = input || {};
+
+  if (!productTitle || !productDescription) {
+    throw new Error("productTitle and productDescription are required");
+  }
+
+  const useCasesText = Array.isArray(useCases)
+    ? useCases.join(", ")
+    : String(useCases || "");
+
+  const payload = {
+    productTitle,
+    productDescription,
+    brand,
+    tone,
+    useCasesText,
+  };
+
+  const maxAttempts = 4;
+  let best = null; // { data, titleLen, metaLen, penalty }
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    let data;
+    try {
+      data = await generateSEOOnce(payload);
+    } catch (err) {
+      // If OpenAI itself breaks (rate limit etc.), bail out early.
+      console.error(`Product SEO attempt ${attempt} failed:`, err.message);
+      if (!best) {
+        throw err;
+      }
+      // We already have a usable best attempt – break and return it.
+      break;
+    }
+
+    const title = data.title || "";
+    const meta = data.metaDescription || "";
+
+    const tLen = title.length;
+    const mLen = meta.length;
+
+    const titlePenalty = rangePenalty(tLen, 45, 60);
+    const metaPenalty = rangePenalty(mLen, 130, 155);
+    const totalPenalty = titlePenalty + metaPenalty;
+
+    const snapshot = {
+      data,
+      titleLen: tLen,
+      metaLen: mLen,
+      penalty: totalPenalty,
+    };
+
+    // First attempt or better than previous best
+    if (!best || totalPenalty < best.penalty) {
+      best = snapshot;
+    }
+
+    console.log(
+      `[Product SEO] Attempt ${attempt}: titleLen=${tLen}, metaLen=${mLen}, penalty=${totalPenalty}`
+    );
+
+    // Perfect range hit – stop retrying.
+    if (totalPenalty === 0) {
+      break;
+    }
+  }
+
+  if (!best) {
+    throw new Error("Unable to generate SEO output");
+  }
+
+  const final = best.data;
 
   return {
     input,
     output: {
-      title: parsed.title,
-      metaDescription: parsed.metaDescription,
-      description: parsed.metaDescription,
-      slug: parsed.slug,
-      keywords: parsed.keywords || [],
+      title: final.title || "",
+      description: final.metaDescription || "",
+      metaDescription: final.metaDescription || "",
+      slug: final.slug || final.handle || "",
+      keywords: Array.isArray(final.keywords) ? final.keywords : [],
+      // optional debug so *you* can see if it hit perfect; users never see this.
+      _debug: {
+        titleChars: best.titleLen,
+        metaChars: best.metaLen,
+        penalty: best.penalty,
+      },
     },
     model: "gpt-4.1-mini",
     environment: ctx.environment || "unknown",
