@@ -55,6 +55,9 @@ function App() {
   // Each run stores the market + device that were active at the time
   const [runHistory, setRunHistory] = useState([]);
 
+  // Copy toast state
+  const [copyState, setCopyState] = useState(null); // { label, at }
+
   // -------------------------------------------------
   // Load project from localStorage (if already connected)
   // -------------------------------------------------
@@ -221,11 +224,35 @@ function App() {
   // -------------------------------------------------
   // Helpers
   // -------------------------------------------------
-  const copyToClipboard = (value) => {
+  const copyToClipboard = async (value, label) => {
     if (!value) return;
-    navigator.clipboard.writeText(value).catch((err) => {
+
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(value);
+      } else {
+        // Fallback for older browsers
+        const textarea = document.createElement("textarea");
+        textarea.value = value;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+
+      setCopyState({ label, at: Date.now() });
+      setTimeout(() => {
+        setCopyState((prev) => {
+          if (!prev) return null;
+          return Date.now() - prev.at > 1200 ? null : prev;
+        });
+      }, 1200);
+    } catch (err) {
       console.error("Clipboard copy failed", err);
-    });
+    }
   };
 
   const keywordsDisplay =
@@ -253,7 +280,7 @@ function App() {
   const latestRun = runHistory[runHistory.length - 1];
 
   // -------------------------------------------------
-  // “How to reach 100/100” helper copy
+  // Copy for the "How to reach 100/100" helper card
   // -------------------------------------------------
   const buildTitleAdvice = () => {
     if (!currentTitleLength) {
@@ -504,7 +531,8 @@ function App() {
             </div>
           </section>
 
-          {/* Overview vs other tabs */}
+          {/* If you are on Overview, show full dashboard.
+              Other tabs show a clear “coming soon” panel. */}
           {pageTab === "Overview" ? (
             <>
               {/* KPI ROW */}
@@ -591,7 +619,8 @@ function App() {
                       <code>
                         [What it is] + [1–2 big benefits] + [when to use it]
                       </code>
-                      .<br />
+                      .
+                      <br />
                       Example: “Waterproof paperclip bracelet with sweat-proof
                       coating. Adjustable fit for gym, everyday wear and
                       gifting.”
@@ -729,7 +758,9 @@ function App() {
                           <td>
                             <button
                               className="button button--ghost button--tiny"
-                              onClick={() => copyToClipboard(seoTitle)}
+                              onClick={() =>
+                                copyToClipboard(seoTitle, "Title")
+                              }
                               disabled={!seoTitle}
                             >
                               Copy
@@ -745,7 +776,12 @@ function App() {
                           <td>
                             <button
                               className="button button--ghost button--tiny"
-                              onClick={() => copyToClipboard(seoDescription)}
+                              onClick={() =>
+                                copyToClipboard(
+                                  seoDescription,
+                                  "Meta description"
+                                )
+                              }
                               disabled={!seoDescription}
                             >
                               Copy
@@ -760,7 +796,7 @@ function App() {
                           <td>
                             <button
                               className="button button--ghost button--tiny"
-                              onClick={() => copyToClipboard(seoSlug)}
+                              onClick={() => copyToClipboard(seoSlug, "Slug")}
                               disabled={!seoSlug}
                             >
                               Copy
@@ -777,7 +813,7 @@ function App() {
                             <button
                               className="button button--ghost button--tiny"
                               onClick={() =>
-                                copyToClipboard(keywordsDisplay)
+                                copyToClipboard(keywordsDisplay, "Keywords")
                               }
                               disabled={!keywordsDisplay}
                             >
@@ -787,6 +823,12 @@ function App() {
                         </tr>
                       </tbody>
                     </table>
+
+                    {copyState && (
+                      <div className="copy-toast">
+                        {copyState.label} copied to clipboard
+                      </div>
+                    )}
 
                     <details className="raw-json">
                       <summary>Raw JSON from Core API (advanced)</summary>
@@ -942,7 +984,7 @@ function App() {
               </section>
             </>
           ) : (
-            // Non-Overview tabs – “coming soon” panels
+            // Non-Overview tabs – simple explainer so it’s obvious they do something
             <section style={{ marginTop: 10 }}>
               <div className="card">
                 <div className="card-header">
@@ -962,8 +1004,7 @@ function App() {
                       </li>
                       <li>
                         See who wins on click-through potential in{" "}
-                        {activeMarket} for{" "}
-                        {activeDevice.toLowerCase()}.
+                        {activeMarket} for {activeDevice.toLowerCase()}.
                       </li>
                       <li>
                         Export a simple action list you can plug straight into
