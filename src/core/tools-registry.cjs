@@ -109,23 +109,27 @@ const allTools = [
 ];
 
 // Build { id -> tool } map and validate
-const toolsById = allTools.reduce((map, tool) => {
+const toolsById = {};
+
+for (const tool of allTools) {
+  // Skip any dev helpers that don’t look like proper tools
   if (!tool || !tool.meta || !tool.meta.id) {
-    throw new Error(
-      "Tool missing meta.id – every tool must export meta.id: " +
-        JSON.stringify(Object.keys(tool || {}))
+    // This will just show up in logs, but not crash the app.
+    console.warn(
+      "[tools-registry] Skipping module without meta.id:",
+      Object.keys(tool || {})
     );
+    continue;
   }
 
   const id = tool.meta.id;
 
-  if (map[id]) {
+  if (toolsById[id]) {
     throw new Error(`Duplicate tool id registered in tools-registry: ${id}`);
   }
 
-  map[id] = tool;
-  return map;
-}, {});
+  toolsById[id] = tool;
+}
 
 /**
  * Lookup a tool by ID.
