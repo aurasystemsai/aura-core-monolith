@@ -1,4 +1,4 @@
-// src/core/tools-registry.cjs
+// src/core/tools-registry.js
 // ------------------------------------------------------
 // Central registry for all AURA Core tools.
 //
@@ -9,7 +9,7 @@
 // This file collects them, verifies unique IDs and exposes:
 //   - toolsById: { [id]: toolModule }
 //   - getTool(id): toolModule (throws if unknown)
-//   - listTools(): [{ id, name, category }]
+//   - listTools(): { id, name, category }[]
 // ------------------------------------------------------
 
 "use strict";
@@ -24,6 +24,7 @@ const schemaRichResultsEngine = require("../tools/schema-rich-results-engine");
 const imageAltMediaSeo = require("../tools/image-alt-media-seo");
 const rankVisibilityTracker = require("../tools/rank-visibility-tracker");
 const aiAltTextEngine = require("../tools/ai-alt-text-engine");
+const blogDraftEngine = require("../tools/blog-draft-engine");
 
 // Lifecycle / retention / automation tools
 const abandonedCheckoutWinback = require("../tools/abandoned-checkout-winback");
@@ -54,15 +55,15 @@ const brandIntelligenceLayer = require("../tools/brand-intelligence-layer");
 const creativeAutomationEngine = require("../tools/creative-automation-engine");
 const auraOperationsAi = require("../tools/aura-operations-ai");
 
-// Platform / orchestration
-// NOTE: aura-api-sdk is a DEV helper (key + run only) so it is NOT registered as a tool.
+// Platform / orchestration (no dev-only stubs here)
+// NOTE: The previous aura-api-sdk helper did not expose meta.id
+// so it cannot live in the tools registry. Keep SDK-style helpers
+// in /tools but DO NOT register them here unless they behave like tools.
 const workflowOrchestrator = require("../tools/workflow-orchestrator");
 
 // ------------------------------------------------------
 // Master list – ONE place to register tools.
-// If you add new tools, require them above and add them here.
 // ------------------------------------------------------
-
 const allTools = [
   // SEO + content
   productSeo,
@@ -74,6 +75,7 @@ const allTools = [
   imageAltMediaSeo,
   rankVisibilityTracker,
   aiAltTextEngine,
+  blogDraftEngine,
 
   // Lifecycle / retention
   abandonedCheckoutWinback,
@@ -108,28 +110,26 @@ const allTools = [
   workflowOrchestrator,
 ];
 
+// ------------------------------------------------------
 // Build { id -> tool } map and validate
-const toolsById = {};
-
-for (const tool of allTools) {
-  // Skip any dev helpers that don’t look like proper tools
+// ------------------------------------------------------
+const toolsById = allTools.reduce((map, tool) => {
   if (!tool || !tool.meta || !tool.meta.id) {
-    // This will just show up in logs, but not crash the app.
-    console.warn(
-      "[tools-registry] Skipping module without meta.id:",
-      Object.keys(tool || {})
+    throw new Error(
+      "Tool missing meta.id – every tool must export meta.id: " +
+        JSON.stringify(Object.keys(tool || {}))
     );
-    continue;
   }
 
   const id = tool.meta.id;
 
-  if (toolsById[id]) {
+  if (map[id]) {
     throw new Error(`Duplicate tool id registered in tools-registry: ${id}`);
   }
 
-  toolsById[id] = tool;
-}
+  map[id] = tool;
+  return map;
+}, {});
 
 /**
  * Lookup a tool by ID.
