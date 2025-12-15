@@ -286,6 +286,7 @@ function App() {
 
     let payload;
     if (isWeekly) {
+      // Weekly Blog Content Engine payload
       payload = {
         brand: weeklyBrand,
         niche: weeklyNiche,
@@ -295,7 +296,23 @@ function App() {
         tone: weeklyTone,
         market: activeMarket,
       };
+    } else if (isDraft) {
+      // Blog Draft Engine payload – MUST include blogTitle
+      const topics = useCases
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      payload = {
+        blogTitle: productTitle,
+        blogSummary: productDescription,
+        brand,
+        tone,
+        topics,
+        market: activeMarket,
+      };
     } else {
+      // Product SEO / Blog SEO payload
       payload = {
         productTitle,
         productDescription,
@@ -305,6 +322,7 @@ function App() {
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean),
+        market: activeMarket,
       };
     }
 
