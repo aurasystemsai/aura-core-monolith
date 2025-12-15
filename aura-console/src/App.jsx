@@ -4,12 +4,25 @@ import ProjectSetup from "./ProjectSetup";
 import ProjectSwitcher from "./ProjectSwitcher";
 import SystemHealthPanel from "./components/SystemHealthPanel";
 
-const PRODUCT_SEO_TOOL = {
-  id: "product-seo",
-  name: "Product SEO Engine",
-  category: "SEO",
-  description:
-    "Generate SEO titles, descriptions, slugs and keyword sets for products.",
+const TOOL_MODES = {
+  product: {
+    id: "product-seo",
+    name: "Product SEO Engine",
+    category: "SEO",
+    eyebrow: "Product catalogue · SEO",
+    description:
+      "Generate SEO titles, descriptions, slugs and keyword sets for products. Designed so beginners never touch JSON.",
+    runButtonLabel: "Run Product SEO",
+  },
+  blog: {
+    id: "blog-seo",
+    name: "Blog SEO Engine",
+    category: "SEO",
+    eyebrow: "Content · SEO",
+    description:
+      "Generate SEO titles, meta descriptions, slugs and keyword sets for blog posts and long-form content.",
+    runButtonLabel: "Run Blog SEO",
+  },
 };
 
 // For production we always talk to the Core API on Render
@@ -20,10 +33,13 @@ function App() {
   const [coreStatus, setCoreStatus] = useState("idle"); // idle | checking | ok | error
   const [coreStatusLabel, setCoreStatusLabel] = useState("Not checked yet");
 
+  // Which SEO mode we are in: "product" | "blog"
+  const [mode, setMode] = useState("product");
+
   // Connected project / store
   const [project, setProject] = useState(null);
 
-  // Product inputs
+  // Product / blog inputs (we reuse the same fields for both modes)
   const [productTitle, setProductTitle] = useState(
     "Paperclip waterproof bracelet"
   );
@@ -58,11 +74,14 @@ function App() {
   const [pageTab, setPageTab] = useState("Overview");
 
   // Simple run history for the chart + table
-  // Each run stores the market + device that were active at the time
+  // Each run stores the market + device + tool that were active at the time
   const [runHistory, setRunHistory] = useState([]);
 
   // Which metric to show in the chart (Score trend / Meta length)
   const [historyView, setHistoryView] = useState("score"); // "score" | "meta"
+
+  // Derived: active tool config
+  const activeTool = TOOL_MODES[mode];
 
   // Ideal bands for lengths
   const TITLE_MIN = 45;
@@ -134,6 +153,7 @@ function App() {
             metaLength: run.metaLength ?? null,
             market: run.market || "Worldwide",
             device: run.device || "Desktop",
+            toolId: run.toolId || "product-seo",
           }));
 
         setRunHistory(mapped);
@@ -185,7 +205,7 @@ function App() {
       : null;
 
   // -------------------------------------------------
-  // Run Product SEO Engine
+  // Run SEO Engine (Product or Blog depending on mode)
   // -------------------------------------------------
   const handleRun = async () => {
     if (!project) return;
@@ -205,7 +225,7 @@ function App() {
     };
 
     try {
-      const res = await fetch(`${coreUrl}/run/${PRODUCT_SEO_TOOL.id}`, {
+      const res = await fetch(`${coreUrl}/run/${activeTool.id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -238,7 +258,7 @@ function App() {
       setSeoSlug(nextSlug);
       setSeoKeywords(nextKeywords);
 
-      // Advice from the tool
+      // Advice from the tool (optional)
       const advice = output.advice || {};
       setTitleAdvice(advice.titleTips || "");
       setMetaAdvice(advice.metaTips || "");
@@ -259,7 +279,7 @@ function App() {
           ? Math.round((tScore + mScore) / 2)
           : null;
 
-      // Store run with market + device so the pills actually filter something
+      // Store run with market + device + tool so the pills & mode actually filter something
       setRunHistory((prev) => {
         const next = [
           ...prev,
@@ -271,6 +291,7 @@ function App() {
             metaLength: mLen,
             market: activeMarket,
             device: activeDevice,
+            toolId: activeTool.id,
           },
         ];
         // Keep only last 50 runs to avoid silly growth
@@ -285,7 +306,7 @@ function App() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            toolId: PRODUCT_SEO_TOOL.id,
+            toolId: activeTool.id,
             createdAt: now.toISOString(),
             market: activeMarket,
             device: activeDevice,
@@ -302,7 +323,10 @@ function App() {
       }
     } catch (err) {
       console.error(err);
-      setRunError(err.message || "Failed to run Product SEO Engine");
+      setRunError(
+        err.message ||
+          `Failed to run ${mode === "product" ? "Product" : "Blog"} SEO Engine`
+      );
     } finally {
       setIsRunning(false);
     }
@@ -323,12 +347,17 @@ function App() {
       ? seoKeywords.join(", ")
       : "";
 
-  // Filter history by market + device first
+  // Filter history by market + device + active tool first
   const historyForFilters = runHistory.filter((run) => {
-    // If we ever have old runs without market/device, treat as "all"
     const runMarket = run.market || "Worldwide";
     const runDevice = run.device || "Desktop";
-    return runMarket === activeMarket && runDevice === activeDevice;
+    const runTool = run.toolId || "product-seo";
+
+    return (
+      runMarket === activeMarket &&
+      runDevice === activeDevice &&
+      runTool === activeTool.id
+    );
   });
 
   // Then slice by timeRange for spark + table
@@ -341,35 +370,37 @@ function App() {
     rangedHistory = historyForFilters;
   }
 
-  const latestRun = runHistory[runHistory.length - 1];
+  const latestRun = historyForFilters[historyForFilters.length - 1];
 
   // -------------------------------------------------
   // Copy for the "How to reach 100/100" helper card
   // -------------------------------------------------
   const buildTitleAdvice = () => {
+    const thing = mode === "product" ? "product title" : "blog post title";
+
     if (!currentTitleLength) {
-      return "Add a clear product title first, then run the engine. Aim for 45–60 characters.";
+      return `Add a clear ${thing} first, then run the engine. Aim for 45–60 characters.`;
     }
     if (currentTitleLength < TITLE_MIN) {
       const minExtra = TITLE_MIN - currentTitleLength;
       const maxExtra = TITLE_MAX - currentTitleLength;
-      return `Your current title is ${currentTitleLength} characters. Try adding roughly ${minExtra}–${maxExtra} characters with materials, finish or a key benefit.`;
+      return `Your current ${thing} is ${currentTitleLength} characters. Try adding roughly ${minExtra}–${maxExtra} characters with materials, benefits or a clear angle.`;
     }
     if (currentTitleLength > TITLE_MAX) {
       const extra = currentTitleLength - TITLE_MAX;
-      return `Your current title is ${currentTitleLength} characters. It is a bit long – consider trimming around ${extra} characters so it stays punchy in search results.`;
+      return `Your current ${thing} is ${currentTitleLength} characters. It is a bit long – consider trimming around ${extra} characters so it stays punchy in search results.`;
     }
-    return `Your current title is ${currentTitleLength} characters, which is right in the sweet spot. Only tweak it if it feels clunky or hard to read.`;
+    return `Your current ${thing} is ${currentTitleLength} characters, which is right in the sweet spot. Only tweak it if it feels clunky or hard to read.`;
   };
 
   const buildMetaAdvice = () => {
     if (!currentMetaLength) {
-      return "Write 2–3 short sentences describing benefits, materials and use cases. Aim for 130–155 characters.";
+      return "Write 2–3 short sentences describing benefits, key points and use cases. Aim for 130–155 characters.";
     }
     if (currentMetaLength < META_MIN) {
       const minExtra = META_MIN - currentMetaLength;
       const maxExtra = META_MAX - currentMetaLength;
-      return `Your meta description is ${currentMetaLength} characters. Add around ${minExtra}–${maxExtra} characters with clear benefits, materials or occasions (e.g. gym, gifting, everyday wear).`;
+      return `Your meta description is ${currentMetaLength} characters. Add around ${minExtra}–${maxExtra} characters with clear benefits, themes or occasions (e.g. gym, gifting, everyday wear).`;
     }
     if (currentMetaLength > META_MAX) {
       const extra = currentMetaLength - META_MAX;
@@ -405,16 +436,6 @@ function App() {
           </div>
         </div>
 
-        {/* Project picker right under the brand */}
-        <div className="side-nav-project-switcher">
-          <ProjectSwitcher
-            coreUrl={coreUrl}
-            currentProject={project}
-            onSelectProject={(p) => setProject(p)}
-            onDisconnect={() => setProject(null)}
-          />
-        </div>
-
         <nav className="side-nav-menu">
           <div className="side-nav-section-label">Suites</div>
           <button className="side-nav-item side-nav-item--active">
@@ -434,6 +455,13 @@ function App() {
             Developers
           </button>
         </nav>
+
+        <ProjectSwitcher
+          coreUrl={coreUrl}
+          currentProject={project}
+          onSelectProject={(p) => setProject(p)}
+          onDisconnect={() => setProject(null)}
+        />
       </aside>
 
       {/* MAIN AREA */}
@@ -442,15 +470,37 @@ function App() {
           {/* HEADER STRIP */}
           <header className="top-strip">
             <div className="top-strip-left">
-              <div className="top-strip-eyebrow">
-                Product catalogue · {PRODUCT_SEO_TOOL.category}
-              </div>
+              <div className="top-strip-eyebrow">{activeTool.eyebrow}</div>
               <h1 className="top-strip-title">
-                {PRODUCT_SEO_TOOL.name} · {project.name}
+                {activeTool.name} · {project.name}
               </h1>
               <div className="top-strip-subtitle">
-                Generate SEO titles, descriptions, slugs and keyword sets for
-                products. Designed so beginners never touch JSON.
+                {activeTool.description}
+              </div>
+
+              {/* Mode toggle */}
+              <div className="mode-toggle">
+                <span className="filters-label" style={{ marginRight: 8 }}>
+                  Mode
+                </span>
+                <div className="pill-row">
+                  <button
+                    className={
+                      "pill" + (mode === "product" ? " pill--active" : "")
+                    }
+                    onClick={() => setMode("product")}
+                  >
+                    Product SEO
+                  </button>
+                  <button
+                    className={
+                      "pill" + (mode === "blog" ? " pill--active" : "")
+                    }
+                    onClick={() => setMode("blog")}
+                  >
+                    Blog &amp; content SEO
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -503,18 +553,14 @@ function App() {
                 onClick={handleRun}
                 disabled={isRunning || coreStatus !== "ok"}
               >
-                {isRunning ? "Running…" : "Run Product SEO"}
+                {isRunning ? "Running…" : activeTool.runButtonLabel}
               </button>
             </div>
           </header>
 
           {/* SYSTEM HEALTH PANEL */}
           <section style={{ marginTop: 10, marginBottom: 6 }}>
-            <SystemHealthPanel
-              coreStatus={coreStatus}
-              coreStatusLabel={coreStatusLabel}
-              lastRunAt={lastRunAt}
-            />
+            <SystemHealthPanel />
           </section>
 
           {/* PAGE TABS */}
@@ -656,7 +702,7 @@ function App() {
                   <div className="kpi-label">Runs recorded</div>
                   <div className="kpi-main">
                     <span className="kpi-value">
-                      {runHistory.length || "—"}
+                      {historyForFilters.length || "—"}
                     </span>
                     <span className="kpi-unit">runs</span>
                   </div>
@@ -673,15 +719,18 @@ function App() {
                   <p className="card-subtitle">
                     You do not need to be an SEO expert. Follow these steps,
                     change the text on the right, then click{" "}
-                    <strong>Run Product SEO</strong> again. Guidance is tuned
-                    for <strong>{activeMarket}</strong> ·{" "}
+                    <strong>{activeTool.runButtonLabel}</strong> again.
+                    Guidance is tuned for <strong>{activeMarket}</strong> ·{" "}
                     <strong>{activeDevice}</strong>.
                   </p>
                 </div>
 
                 <ol style={{ paddingLeft: 18, fontSize: 12, margin: 0 }}>
                   <li style={{ marginBottom: 8 }}>
-                    <strong>Make your product title clear.</strong>
+                    <strong>
+                      Make your {mode === "product" ? "product" : "article"}{" "}
+                      title clear.
+                    </strong>
                     <br />
                     {buildTitleAdvice()}
                   </li>
@@ -695,7 +744,8 @@ function App() {
                     <br />
                     <span style={{ fontSize: 11 }}>
                       <code>
-                        [What it is] + [1–2 big benefits] + [when to use it]
+                        [What it is] + [1–2 big benefits] + [when / who it is
+                        for]
                       </code>
                       .
                       <br />
@@ -710,7 +760,7 @@ function App() {
               {/* AI SUGGESTIONS CARD */}
               <section className="card" style={{ marginTop: 10 }}>
                 <div className="card-header">
-                  <h2 className="card-title">AI suggestions for this product</h2>
+                  <h2 className="card-title">AI suggestions for this content</h2>
                   <p className="card-subtitle">
                     Generated from your last run. Use this as a second opinion
                     on how to tweak the copy before you publish.
@@ -730,7 +780,7 @@ function App() {
                   <li>
                     <strong>Overall:</strong>{" "}
                     {generalAdvice ||
-                      "General optimisation tips for this product will appear here after the first run."}
+                      "General optimisation tips for this content will appear here after the first run."}
                   </li>
                 </ul>
               </section>
@@ -769,7 +819,8 @@ function App() {
                         Every time you re-run the engine, we plot a new point
                         here. You are currently viewing{" "}
                         <strong>{activeMarket}</strong> ·{" "}
-                        <strong>{activeDevice}</strong> runs only.
+                        <strong>{activeDevice}</strong> runs for{" "}
+                        <strong>{activeTool.name}</strong> only.
                       </p>
                     </div>
 
@@ -781,9 +832,8 @@ function App() {
                             if (historyView === "score") {
                               metric = run.score ?? 0;
                             } else {
-                              // normalise meta length to 0–100 band for the chart
                               const length = run.metaLength || 0;
-                              const clamped = Math.min(length, 220); // hard cap
+                              const clamped = Math.min(length, 220);
                               metric = (clamped / 220) * 100;
                             }
 
@@ -805,8 +855,8 @@ function App() {
                         </div>
                       ) : (
                         <div className="run-history-empty">
-                          No runs recorded yet for this market + device. Click
-                          “Run Product SEO” to start tracking.
+                          No runs recorded yet for this market + device + tool.
+                          Click “{activeTool.runButtonLabel}” to start tracking.
                         </div>
                       )}
 
@@ -842,8 +892,8 @@ function App() {
                           {rangedHistory.length === 0 ? (
                             <tr>
                               <td colSpan={5}>
-                                No runs yet. Click “Run Product SEO” to start
-                                tracking.
+                                No runs yet. Click “{activeTool.runButtonLabel}
+                                ” to start tracking.
                               </td>
                             </tr>
                           ) : (
@@ -870,8 +920,8 @@ function App() {
                     <div className="card-header">
                       <h2 className="card-title">Generated SEO fields</h2>
                       <p className="card-subtitle">
-                        Paste straight into Shopify or your platform. Use the
-                        copy buttons so beginners never touch JSON.
+                        Paste straight into your CMS or platform. Use the copy
+                        buttons so beginners never touch JSON.
                       </p>
                     </div>
 
@@ -961,53 +1011,64 @@ function App() {
                   </div>
                 </div>
 
-                {/* RIGHT COLUMN – Product inspector */}
+                {/* RIGHT COLUMN – Inspector */}
                 <div className="right-column">
                   <div className="card inspector-card">
                     <div className="card-header">
-                      <h2 className="card-title">Product inspector</h2>
+                      <h2 className="card-title">
+                        {mode === "product"
+                          ? "Product inspector"
+                          : "Blog article inspector"}
+                      </h2>
                       <p className="card-subtitle">
-                        Step 1: describe the product in plain English. Step 2:
-                        run the engine. Step 3: copy the SEO fields from the
-                        left-hand table.
+                        {mode === "product"
+                          ? "Step 1: describe the product in plain English. Step 2: run the engine. Step 3: copy the SEO fields from the left-hand table."
+                          : "Step 1: describe the blog post in plain English. Step 2: run the engine. Step 3: copy the SEO fields from the left-hand table into your CMS."}
                       </p>
                     </div>
 
-                    <div className="inspector-field-group presets-row">
-                      <div className="inspector-label">Presets</div>
-                      <div className="preset-chips">
-                        <button
-                          className="preset-chip"
-                          onClick={() =>
-                            setProductTitle(
-                              "Waterproof gold huggie earrings"
-                            )
-                          }
-                        >
-                          Waterproof earrings
-                        </button>
-                        <button
-                          className="preset-chip"
-                          onClick={() =>
-                            setProductTitle("Layered waterproof necklace set")
-                          }
-                        >
-                          Layered necklace
-                        </button>
-                        <button
-                          className="preset-chip"
-                          onClick={() =>
-                            setProductTitle("Minimal paperclip bracelet")
-                          }
-                        >
-                          Bracelet
-                        </button>
+                    {/* Presets – only make sense for product mode */}
+                    {mode === "product" && (
+                      <div className="inspector-field-group presets-row">
+                        <div className="inspector-label">Presets</div>
+                        <div className="preset-chips">
+                          <button
+                            className="preset-chip"
+                            onClick={() =>
+                              setProductTitle(
+                                "Waterproof gold huggie earrings"
+                              )
+                            }
+                          >
+                            Waterproof earrings
+                          </button>
+                          <button
+                            className="preset-chip"
+                            onClick={() =>
+                              setProductTitle(
+                                "Layered waterproof necklace set"
+                              )
+                            }
+                          >
+                            Layered necklace
+                          </button>
+                          <button
+                            className="preset-chip"
+                            onClick={() =>
+                              setProductTitle("Minimal paperclip bracelet")
+                            }
+                          >
+                            Bracelet
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     <div className="inspector-field-group">
                       <label className="inspector-label" htmlFor="title">
-                        Product title
+                        {mode === "product"
+                          ? "Product title"
+                          : "Blog post title"}
                       </label>
                       <input
                         id="title"
@@ -1022,7 +1083,9 @@ function App() {
                         className="inspector-label"
                         htmlFor="description"
                       >
-                        Product description
+                        {mode === "product"
+                          ? "Product description"
+                          : "Blog summary / intro"}
                       </label>
                       <textarea
                         id="description"
@@ -1066,7 +1129,9 @@ function App() {
                         className="inspector-label"
                         htmlFor="useCases"
                       >
-                        Use cases / occasions
+                        {mode === "product"
+                          ? "Use cases / occasions"
+                          : "Main topics / angles"}
                       </label>
                       <input
                         id="useCases"
@@ -1086,7 +1151,7 @@ function App() {
                         onClick={handleRun}
                         disabled={isRunning || coreStatus !== "ok"}
                       >
-                        {isRunning ? "Running…" : "Run Product SEO"}
+                        {isRunning ? "Running…" : activeTool.runButtonLabel}
                       </button>
                       <div className="inspector-footnote">
                         SEO fields generated. Copy them from the left-hand
@@ -1112,8 +1177,8 @@ function App() {
                   <h2 className="card-title">{pageTab}</h2>
                   <p className="card-subtitle">
                     This view is part of the AURA roadmap. You can show this to
-                    clients as an upcoming feature while we focus on the Product
-                    SEO Engine.
+                    clients as an upcoming feature while we focus on the{" "}
+                    {activeTool.name}.
                   </p>
                 </div>
                 <ul style={{ fontSize: 12, paddingLeft: 18 }}>
@@ -1129,15 +1194,15 @@ function App() {
                       </li>
                       <li>
                         Export a simple action list you can plug straight into
-                        Shopify.
+                        your platform.
                       </li>
                     </>
                   )}
                   {pageTab === "Growth report" && (
                     <>
                       <li>
-                        Track how your average product SEO score moves over
-                        time.
+                        Track how your average SEO score moves over time for{" "}
+                        {activeTool.name}.
                       </li>
                       <li>
                         Spot weeks where titles/meta dropped below target so you
@@ -1152,14 +1217,14 @@ function App() {
                     <>
                       <li>
                         See which markets (US / UK / EU / Worldwide) are best
-                        optimised for your catalogue.
+                        optimised for your catalogue and content.
                       </li>
                       <li>
                         Plan localisation work – which regions need better copy,
                         currency cues or spelling.
                       </li>
                       <li>
-                        Future versions will auto-translate product SEO for each
+                        Future versions will auto-translate SEO for each
                         region.
                       </li>
                     </>
