@@ -35,6 +35,19 @@ const ENGINES = {
     lengthTitleLabel: "Title length",
     lengthTitleHelper: "Your current blog post title is",
   },
+  draft: {
+    key: "draft",
+    toolId: "blog-draft-engine",
+    name: "Blog Draft Engine",
+    suitePrefix: "Content · Planning",
+    runButtonLabel: "Run Blog draft",
+    chipLabel: "Blog draft",
+    inspectorTitle: "Blog draft brief",
+    inspectorSubtitle:
+      "Describe who the post is for and what it should cover. We’ll generate a ready-to-paste blog draft with sections and a CTA.",
+    lengthTitleLabel: "Title length",
+    lengthTitleHelper: "Your current blog draft title is",
+  },
   weekly: {
     key: "weekly",
     toolId: "weekly-blog-content-engine",
@@ -47,19 +60,6 @@ const ENGINES = {
       "Describe your niche, audience and cadence. We’ll generate a simple weekly content plan you can plug straight into your CMS.",
     lengthTitleLabel: "Avg. title length",
     lengthTitleHelper: "Average planned post title length is",
-  },
-  blogDraft: {
-    key: "blogDraft",
-    toolId: "blog-draft-engine",
-    name: "Blog Draft Engine",
-    suitePrefix: "Content · Drafting",
-    runButtonLabel: "Run Blog draft",
-    chipLabel: "Blog draft",
-    inspectorTitle: "Blog draft brief",
-    inspectorSubtitle:
-      "Describe the blog idea in plain English. We’ll generate an outline plus a first draft you can paste into your CMS.",
-    lengthTitleLabel: "Title length",
-    lengthTitleHelper: "Your current blog draft title is",
   },
 };
 
@@ -76,7 +76,7 @@ function App() {
   const [activeEngine, setActiveEngine] = useState("product");
   const currentEngine = ENGINES[activeEngine];
 
-  // Product / blog / blog-draft single-piece inputs
+  // Product / blog single-piece inputs
   const [productTitle, setProductTitle] = useState(
     "Paperclip waterproof bracelet"
   );
@@ -113,10 +113,11 @@ function App() {
   const [weeklySummary, setWeeklySummary] = useState("");
   const [weeklyPosts, setWeeklyPosts] = useState([]);
 
-  // Blog draft extra output
-  const [blogDraftSections, setBlogDraftSections] = useState([]);
-  const [blogDraftHtml, setBlogDraftHtml] = useState("");
-  const [blogDraftWordCount, setBlogDraftWordCount] = useState(null);
+  // Blog draft specific output
+  const [draftSections, setDraftSections] = useState([]);
+  const [draftCta, setDraftCta] = useState("");
+  const [draftWordCount, setDraftWordCount] = useState(null);
+  const [draftHtml, setDraftHtml] = useState("");
 
   // AI advice (from tool output.advice for product/blog)
   const [titleAdvice, setTitleAdvice] = useState("");
@@ -144,11 +145,15 @@ function App() {
   const META_MAX = 155;
 
   const isProduct = activeEngine === "product";
-  const isBlog = activeEngine === "blog";
+  const isBlogSeo = activeEngine === "blog";
+  const isDraft = activeEngine === "draft";
   const isWeekly = activeEngine === "weekly";
-  const isBlogDraft = activeEngine === "blogDraft";
-  const isBlogLike = isBlog || isBlogDraft;
-  const pieceLabel = isProduct ? "product" : isBlogLike ? "blog post" : "content";
+  const isBlogLike = isBlogSeo || isDraft;
+  const pieceLabel = isProduct
+    ? "product"
+    : isWeekly
+    ? "content plan"
+    : "blog post";
 
   // -------------------------------------------------
   // Load project from localStorage (if already connected)
@@ -279,11 +284,6 @@ function App() {
 
     const toolId = currentEngine.toolId;
 
-    const useCasesArray = useCases
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-
     let payload;
     if (isWeekly) {
       payload = {
@@ -295,24 +295,16 @@ function App() {
         tone: weeklyTone,
         market: activeMarket,
       };
-    } else if (isBlogDraft) {
-      // Blog Draft Engine payload – blog-centric naming
-      payload = {
-        blogTitle: productTitle,
-        blogSummary: productDescription,
-        brand,
-        tone,
-        topics: useCasesArray,
-        market: activeMarket,
-      };
     } else {
-      // Product SEO + Blog SEO
       payload = {
         productTitle,
         productDescription,
         brand,
         tone,
-        useCases: useCasesArray,
+        useCases: useCases
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
       };
     }
 
@@ -337,6 +329,7 @@ function App() {
       setRawJson(JSON.stringify(data, null, 2));
 
       const output = data?.result?.output || data?.output || {};
+
       if (!output) throw new Error("No output returned from tool");
 
       const now = new Date();
@@ -351,6 +344,12 @@ function App() {
         const posts = Array.isArray(output.posts) ? output.posts : [];
         setWeeklySummary(output.summary || "");
         setWeeklyPosts(posts);
+
+        // Clear draft-specific fields when running weekly
+        setDraftSections([]);
+        setDraftCta("");
+        setDraftWordCount(null);
+        setDraftHtml("");
 
         if (posts.length) {
           const titleLens = posts.map((p) => (p.title || "").length);
@@ -371,42 +370,7 @@ function App() {
           tScore !== null && mScore !== null
             ? Math.round((tScore + mScore) / 2)
             : null;
-      } else if (isBlogDraft) {
-        // Blog draft output – keep SEO fields + outline + HTML
-        const draft = output.draft || output;
-
-        const nextTitle = draft.title || draft.blogTitle || "";
-        const nextDescription =
-          draft.metaDescription || draft.description || "";
-        const nextSlug = draft.slug || draft.handle || "";
-        const nextKeywords =
-          draft.primaryKeyword && !Array.isArray(draft.primaryKeyword)
-            ? [draft.primaryKeyword]
-            : draft.keywords || draft.keywordSet || [];
-
-        setSeoTitle(nextTitle);
-        setSeoDescription(nextDescription);
-        setSeoSlug(nextSlug);
-        setSeoKeywords(nextKeywords || []);
-
-        setBlogDraftSections(draft.sections || []);
-        setBlogDraftHtml(draft.articleHtml || draft.html || "");
-        setBlogDraftWordCount(
-          draft.estimatedWordCount || draft.wordCount || null
-        );
-
-        tLen = (nextTitle || productTitle).length;
-        mLen = (nextDescription || productDescription).length;
-
-        const tScore = scoreLength(tLen, TITLE_MIN, TITLE_MAX);
-        const mScore = scoreLength(mLen, META_MIN, META_MAX);
-
-        oScore =
-          tScore !== null && mScore !== null
-            ? Math.round((tScore + mScore) / 2)
-            : null;
       } else {
-        // Product SEO + Blog SEO output
         const nextTitle = output.title || output.seoTitle || "";
         const nextDescription =
           output.description || output.metaDescription || "";
@@ -422,6 +386,25 @@ function App() {
         setTitleAdvice(advice.titleTips || "");
         setMetaAdvice(advice.metaTips || "");
         setGeneralAdvice(advice.generalTips || "");
+
+        // Blog draft specific mapping
+        if (toolId === "blog-draft-engine") {
+          setDraftSections(
+            Array.isArray(output.sections) ? output.sections : []
+          );
+          setDraftCta(output.cta || "");
+          setDraftWordCount(
+            typeof output.estimatedWordCount === "number"
+              ? output.estimatedWordCount
+              : null
+          );
+          setDraftHtml(output.articleHtml || "");
+        } else {
+          setDraftSections([]);
+          setDraftCta("");
+          setDraftWordCount(null);
+          setDraftHtml("");
+        }
 
         tLen = (nextTitle || productTitle).length;
         mLen = (nextDescription || productDescription).length;
@@ -523,7 +506,11 @@ function App() {
 
   // Advice text (title / meta) – phrased per engine
   const buildTitleAdvice = () => {
-    const label = isProduct ? "product" : isBlogLike ? "blog post" : "content";
+    const label = isProduct
+      ? "product"
+      : isWeekly
+      ? "content plan"
+      : "blog post";
     if (!currentTitleLength) {
       return `Add a clear ${label} title first, then run the engine. Aim for 45–60 characters.`;
     }
@@ -904,6 +891,10 @@ function App() {
                   <h2 className="card-title">
                     AI suggestions for this {pieceLabel}
                   </h2>
+                  <p className="card-subtitle">
+                    Generated from your last run. Use this as a second opinion
+                    on how to tweak the copy before you publish.
+                  </p>
                 </div>
                 <ul style={{ fontSize: 12, paddingLeft: 18, margin: 0 }}>
                   <li>
@@ -1054,7 +1045,7 @@ function App() {
                     </div>
                   </div>
 
-                  {/* Generated fields / weekly plan */}
+                  {/* Generated fields / weekly plan / draft article */}
                   {isWeekly ? (
                     <div className="card seo-table-card">
                       <div className="card-header">
@@ -1214,68 +1205,133 @@ function App() {
                         </details>
                       </div>
 
-                      {isBlogDraft && (
-                        <div className="card seo-table-card" style={{ marginTop: 10 }}>
+                      {isDraft && (
+                        <div
+                          className="card seo-table-card"
+                          style={{ marginTop: 10 }}
+                        >
                           <div className="card-header">
-                            <h2 className="card-title">Blog outline &amp; draft</h2>
+                            <h2 className="card-title">
+                              Draft article (generated)
+                            </h2>
                             <p className="card-subtitle">
-                              Use this as your working draft. Copy into your CMS
-                              or docs and edit before publishing.
+                              Copy this into your CMS editor. You can lightly
+                              edit the copy before publishing.
                             </p>
                           </div>
 
-                          <div className="blog-draft-layout">
-                            <div className="blog-outline-column">
-                              <h3 className="small-heading">Outline</h3>
-                              <ol className="blog-outline-list">
-                                {blogDraftSections.length === 0 ? (
-                                  <li>
-                                    Run the Blog draft engine to generate an
-                                    outline.
-                                  </li>
-                                ) : (
-                                  blogDraftSections.map((section, idx) => (
-                                    <li key={idx}>
-                                      <strong>
-                                        {section.heading ||
-                                          section.title ||
-                                          `Section ${idx + 1}`}
-                                      </strong>
-                                      {section.summary && (
-                                        <div className="blog-outline-summary">
-                                          {section.summary}
-                                        </div>
-                                      )}
-                                    </li>
-                                  ))
-                                )}
-                              </ol>
-                            </div>
-
-                            <div className="blog-draft-column">
-                              <h3 className="small-heading">
-                                Draft{" "}
-                                {blogDraftWordCount
-                                  ? `· approx. ${blogDraftWordCount} words`
-                                  : ""}
-                              </h3>
-                              <div className="blog-draft-body">
-                                {blogDraftHtml ? (
-                                  <div
-                                    className="blog-draft-html"
-                                    dangerouslySetInnerHTML={{
-                                      __html: blogDraftHtml,
-                                    }}
-                                  />
-                                ) : (
-                                  <p style={{ fontSize: 12 }}>
-                                    Run the engine to generate a first draft. It
-                                    will appear here as formatted paragraphs you
-                                    can paste into your CMS.
-                                  </p>
-                                )}
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 24,
+                              fontSize: 12,
+                              marginBottom: 12,
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <div>
+                              <div style={{ opacity: 0.7 }}>
+                                Estimated word count
+                              </div>
+                              <div style={{ fontWeight: 600 }}>
+                                {draftWordCount != null ? draftWordCount : "—"}
                               </div>
                             </div>
+                            <div style={{ flex: 1, minWidth: 200 }}>
+                              <div style={{ opacity: 0.7 }}>CTA</div>
+                              <div style={{ fontWeight: 500 }}>
+                                {draftCta ||
+                                  "CTA will appear here after the first run."}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={{ marginBottom: 12 }}>
+                            <h3
+                              className="card-title"
+                              style={{
+                                fontSize: 13,
+                                marginBottom: 4,
+                                marginTop: 0,
+                              }}
+                            >
+                              Outline
+                            </h3>
+                            {draftSections.length === 0 ? (
+                              <p style={{ fontSize: 12 }}>
+                                Run the Blog Draft Engine to generate section
+                                headings and summaries.
+                              </p>
+                            ) : (
+                              <table className="seo-table">
+                                <thead>
+                                  <tr>
+                                    <th>#</th>
+                                    <th>Section heading</th>
+                                    <th>Summary</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {draftSections.map((section, idx) => {
+                                    const heading =
+                                      typeof section === "string"
+                                        ? section
+                                        : section.heading ||
+                                          section.title ||
+                                          "Section";
+                                    const summary =
+                                      typeof section === "string"
+                                        ? "—"
+                                        : section.summary ||
+                                          section.description ||
+                                          (Array.isArray(section.bullets)
+                                            ? section.bullets.join(" · ")
+                                            : "—");
+                                    return (
+                                      <tr key={idx}>
+                                        <td>{idx + 1}</td>
+                                        <td>{heading}</td>
+                                        <td>{summary}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            )}
+                          </div>
+
+                          <div>
+                            <h3
+                              className="card-title"
+                              style={{
+                                fontSize: 13,
+                                marginBottom: 4,
+                                marginTop: 0,
+                              }}
+                            >
+                              Full article (HTML)
+                            </h3>
+                            <div
+                              className="field-help"
+                              style={{ marginBottom: 6 }}
+                            >
+                              Paste this into your blog editor using the HTML
+                              view, or copy into a document.
+                            </div>
+                            <button
+                              className="button button--ghost button--tiny"
+                              onClick={() => copyToClipboard(draftHtml)}
+                              disabled={!draftHtml}
+                            >
+                              Copy HTML
+                            </button>
+                            <pre
+                              className="raw-json-pre"
+                              style={{ marginTop: 6 }}
+                            >
+                              {draftHtml ||
+                                "// Run the Blog Draft Engine to generate the article HTML here."}
+                            </pre>
                           </div>
                         </div>
                       )}
@@ -1530,8 +1586,6 @@ function App() {
                       <div className="inspector-footnote">
                         {isWeekly
                           ? "Plan generated. Copy titles and meta from the left-hand table."
-                          : isBlogDraft
-                          ? "Draft generated. Copy the outline and body from the left-hand table."
                           : "SEO fields generated. Copy them from the left-hand table."}
                       </div>
                     </div>
