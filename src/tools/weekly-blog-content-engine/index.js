@@ -1,9 +1,11 @@
 // src/tools/weekly-blog-content-engine/index.js
 // ------------------------------------------------------
-// Weekly Blog Content Engine
-// Generates a small content calendar of blog posts
-// for ecommerce / content sites, tuned for UK English.
+// Weekly Blog Content Engine for AURA Core
+// Generates a simple weekly content plan (summary + posts[])
+// Designed to be consumed by the SEO Command Centre console.
 // ------------------------------------------------------
+
+"use strict";
 
 const OpenAI = require("openai");
 
@@ -14,85 +16,78 @@ const client = new OpenAI({
 exports.meta = {
   id: "weekly-blog-content-engine",
   name: "Weekly Blog Content Engine",
-  category: "Content",
+  category: "SEO / Content",
   description:
-    "Generate a simple weekly blog content calendar with SEO-ready titles, angles and target keywords.",
+    "Generate a simple weekly content plan with SEO-ready blog titles, meta descriptions, slugs and primary keywords.",
   version: "1.0.0",
 };
 
 /**
- * Single OpenAI call that returns a calendar JSON object.
+ * Call OpenAI once and parse JSON.
  */
-async function generateCalendarOnce(payload) {
+async function generatePlanOnce(payload) {
   const {
     brand,
     niche,
     audience,
+    cadence,
+    themes,
     tone,
-    mainProducts,
-    coreKeywords,
     market,
-    weeks,
   } = payload;
 
   const prompt = `
-You are a senior content strategist and SEO specialist in ecommerce.
+You are an ecommerce and content marketing strategist.
 
-Your job is to propose a short, practical blog content calendar for a brand.
+Your job is to create a simple, realistic weekly blog content plan
+for a brand, with **SEO-ready** titles and meta descriptions in clear UK English.
 
-Write in clear, natural UK English.
-Avoid clickbait, all-caps and emojis.
+The plan should be easy for beginners to plug directly into their CMS.
 
-BRAND CONTEXT
--------------
-Brand / store: ${brand || "N/A"}
-Niche / category: ${niche || "N/A"}
-Primary audience: ${audience || "N/A"}
-Tone of voice: ${tone || "modern, confident, UK English"}
-Flagship products / offers: ${mainProducts || "N/A"}
-Core keywords to lean on: ${coreKeywords || "N/A"}
+INPUT
+------
+Brand / site: ${brand || "N/A"}
+Niche / topic: ${niche || "N/A"}
+Target audience: ${audience || "N/A"}
+Cadence: ${cadence || "N/A"}
+Main themes / angles: ${themes || "N/A"}
 Primary market: ${market || "Worldwide"}
+Tone of voice: ${tone || "Elevated, modern, UK English"}
 
-CALENDAR REQUIREMENTS
----------------------
-- Plan for ${weeks} week(s).
-- Assume 1 blog post per week.
-- Posts should be genuinely useful, not just product plug articles.
-- Mix awareness (education), consideration (guides / comparisons) and conversion (buying guides, styling ideas).
-- Each idea MUST be different and non-duplicated.
-
-For each post, provide:
-- clear SEO blog title (45–60 characters if possible)
-- short meta description (130–155 characters if possible)
-- short angle / summary of the article
-- single primary SEO keyword or keyphrase
-- suggested URL slug (lowercase, hyphen-separated, no domain)
+REQUIREMENTS
+------------
+- Create between 3 and 6 posts for one batch (e.g. one week or two weeks).
+- Titles must be natural, non-clickbait, and optimised for search.
+- Meta descriptions should be 130–155 characters where possible.
+- Slugs should be URL-safe (lowercase, hyphens, no special characters).
+- Primary keyword should be a realistic search term, not a full sentence.
+- SuggestedDate can be simple (e.g. "Monday", "Wednesday", or "Week 1, Post 1").
 
 OUTPUT FORMAT
 -------------
-Return STRICT JSON ONLY in this exact shape, nothing else:
+Return STRICT JSON ONLY in exactly this shape:
 
 {
-  "weeks": [
+  "summary": "Short paragraph describing the focus of this week's content plan.",
+  "posts": [
     {
-      "weekNumber": 1,
-      "post": {
-        "title": "SEO blog title",
-        "metaDescription": "Meta description text",
-        "angle": "What this article focuses on",
-        "primaryKeyword": "keyword string",
-        "slug": "url-slug-here"
-      }
+      "title": "SEO-ready blog post title",
+      "metaDescription": "Meta description of 130–155 characters.",
+      "slug": "url-friendly-slug-here",
+      "primaryKeyword": "primary keyword phrase",
+      "angle": "short line on the main angle or story",
+      "suggestedDate": "e.g. Monday, Week 1"
     }
-  ],
-  "notes": "Optional notes for the marketer"
+  ]
 }
+
+Do not include any extra commentary before or after the JSON.
   `.trim();
 
   const response = await client.responses.create({
     model: "gpt-4.1-mini",
     input: prompt,
-    temperature: 0.35,
+    temperature: 0.25,
   });
 
   const text = response.output_text && response.output_text.trim();
@@ -100,7 +95,7 @@ Return STRICT JSON ONLY in this exact shape, nothing else:
     throw new Error("OpenAI response missing text payload");
   }
 
-  // In case model wraps JSON, slice down to { ... }
+  // In case the model wraps JSON in explanation text, strip to { ... }.
   let jsonText = text;
   if (!jsonText.startsWith("{")) {
     const first = jsonText.indexOf("{");
@@ -110,15 +105,15 @@ Return STRICT JSON ONLY in this exact shape, nothing else:
     }
   }
 
+  let parsed;
   try {
-    return JSON.parse(jsonText);
+    parsed = JSON.parse(jsonText);
   } catch (err) {
-    console.error(
-      "Failed to parse JSON from Weekly Blog Content Engine:",
-      text
-    );
-    throw new Error("Failed to parse JSON from OpenAI response");
+    console.error("Failed to parse JSON from OpenAI weekly plan:", text);
+    throw new Error("Failed to parse JSON from OpenAI weekly plan");
   }
+
+  return parsed;
 }
 
 exports.run = async function run(input = {}, ctx = {}) {
@@ -132,38 +127,75 @@ exports.run = async function run(input = {}, ctx = {}) {
     brand = "",
     niche = "",
     audience = "",
+    cadence = "",
+    themes = "",
     tone = "",
-    mainProducts = "",
-    coreKeywords = "",
     market = "Worldwide",
-    weeks = 4,
   } = input || {};
 
   if (!brand && !niche) {
-    throw new Error("At least one of 'brand' or 'niche' must be provided");
+    throw new Error(
+      "At least brand or niche is required for Weekly Blog Content Engine"
+    );
   }
 
   const payload = {
     brand,
     niche,
     audience,
+    cadence,
+    themes,
     tone,
-    mainProducts,
-    coreKeywords,
     market,
-    weeks: Number.isFinite(weeks) && weeks > 0 ? Math.min(weeks, 12) : 4,
   };
 
-  // Simple single-shot for now – calendar doesn't need retries like strict length tools
-  const calendar = await generateCalendarOnce(payload);
+  // Single attempt is usually enough here – we do not need strict length perfect.
+  const plan = await generatePlanOnce(payload);
 
-  const weeksOut = Array.isArray(calendar.weeks) ? calendar.weeks : [];
+  const posts = Array.isArray(plan.posts) ? plan.posts : [];
+
+  // Normalise posts fields so the React console can rely on them.
+  const normalisedPosts = posts.map((p, idx) => {
+    const title = String(p.title || "").trim();
+    const metaDescription = String(p.metaDescription || p.description || "").trim();
+    const slug = String(p.slug || p.handle || "").trim();
+    const primaryKeyword = String(
+      p.primaryKeyword || p.keyword || ""
+    ).trim();
+    const angle = String(p.angle || p.summary || "").trim();
+    const suggestedDate = String(
+      p.suggestedDate || p.date || `Post ${idx + 1}`
+    ).trim();
+
+    return {
+      title,
+      metaDescription,
+      slug,
+      primaryKeyword,
+      angle,
+      suggestedDate,
+    };
+  });
+
+  // Basic scoring metrics for the console (average lengths)
+  const titleLens = normalisedPosts.map((p) => p.title.length);
+  const metaLens = normalisedPosts.map((p) => p.metaDescription.length);
+  const avg = (arr) =>
+    arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+
+  const avgTitleLen = avg(titleLens);
+  const avgMetaLen = avg(metaLens);
 
   return {
     input,
     output: {
-      weeks: weeksOut,
-      notes: calendar.notes || "",
+      summary: plan.summary || "",
+      posts: normalisedPosts,
+      stats: {
+        avgTitleLength: avgTitleLen,
+        avgMetaLength: avgMetaLen,
+        postCount: normalisedPosts.length,
+      },
     },
     model: "gpt-4.1-mini",
     environment: ctx.environment || "unknown",
