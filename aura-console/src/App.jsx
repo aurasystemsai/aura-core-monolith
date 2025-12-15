@@ -48,6 +48,19 @@ const ENGINES = {
     lengthTitleLabel: "Avg. title length",
     lengthTitleHelper: "Average planned post title length is",
   },
+  blogDraft: {
+    key: "blogDraft",
+    toolId: "blog-draft-engine",
+    name: "Blog Draft Engine",
+    suitePrefix: "Content · Drafting",
+    runButtonLabel: "Run Blog draft",
+    chipLabel: "Blog draft",
+    inspectorTitle: "Blog draft brief",
+    inspectorSubtitle:
+      "Describe the blog idea in plain English. We’ll generate an outline plus a first draft you can paste into your CMS.",
+    lengthTitleLabel: "Title length",
+    lengthTitleHelper: "Your current blog draft title is",
+  },
 };
 
 function App() {
@@ -63,7 +76,7 @@ function App() {
   const [activeEngine, setActiveEngine] = useState("product");
   const currentEngine = ENGINES[activeEngine];
 
-  // Product / blog single-piece inputs
+  // Product / blog / blog-draft single-piece inputs
   const [productTitle, setProductTitle] = useState(
     "Paperclip waterproof bracelet"
   );
@@ -100,6 +113,11 @@ function App() {
   const [weeklySummary, setWeeklySummary] = useState("");
   const [weeklyPosts, setWeeklyPosts] = useState([]);
 
+  // Blog draft extra output
+  const [blogDraftSections, setBlogDraftSections] = useState([]);
+  const [blogDraftHtml, setBlogDraftHtml] = useState("");
+  const [blogDraftWordCount, setBlogDraftWordCount] = useState(null);
+
   // AI advice (from tool output.advice for product/blog)
   const [titleAdvice, setTitleAdvice] = useState("");
   const [metaAdvice, setMetaAdvice] = useState("");
@@ -128,7 +146,9 @@ function App() {
   const isProduct = activeEngine === "product";
   const isBlog = activeEngine === "blog";
   const isWeekly = activeEngine === "weekly";
-  const pieceLabel = isProduct ? "product" : isBlog ? "blog post" : "content";
+  const isBlogDraft = activeEngine === "blogDraft";
+  const isBlogLike = isBlog || isBlogDraft;
+  const pieceLabel = isProduct ? "product" : isBlogLike ? "blog post" : "content";
 
   // -------------------------------------------------
   // Load project from localStorage (if already connected)
@@ -259,6 +279,11 @@ function App() {
 
     const toolId = currentEngine.toolId;
 
+    const useCasesArray = useCases
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
     let payload;
     if (isWeekly) {
       payload = {
@@ -270,16 +295,24 @@ function App() {
         tone: weeklyTone,
         market: activeMarket,
       };
+    } else if (isBlogDraft) {
+      // Blog Draft Engine payload – blog-centric naming
+      payload = {
+        blogTitle: productTitle,
+        blogSummary: productDescription,
+        brand,
+        tone,
+        topics: useCasesArray,
+        market: activeMarket,
+      };
     } else {
+      // Product SEO + Blog SEO
       payload = {
         productTitle,
         productDescription,
         brand,
         tone,
-        useCases: useCases
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
+        useCases: useCasesArray,
       };
     }
 
@@ -304,7 +337,6 @@ function App() {
       setRawJson(JSON.stringify(data, null, 2));
 
       const output = data?.result?.output || data?.output || {};
-
       if (!output) throw new Error("No output returned from tool");
 
       const now = new Date();
@@ -339,7 +371,42 @@ function App() {
           tScore !== null && mScore !== null
             ? Math.round((tScore + mScore) / 2)
             : null;
+      } else if (isBlogDraft) {
+        // Blog draft output – keep SEO fields + outline + HTML
+        const draft = output.draft || output;
+
+        const nextTitle = draft.title || draft.blogTitle || "";
+        const nextDescription =
+          draft.metaDescription || draft.description || "";
+        const nextSlug = draft.slug || draft.handle || "";
+        const nextKeywords =
+          draft.primaryKeyword && !Array.isArray(draft.primaryKeyword)
+            ? [draft.primaryKeyword]
+            : draft.keywords || draft.keywordSet || [];
+
+        setSeoTitle(nextTitle);
+        setSeoDescription(nextDescription);
+        setSeoSlug(nextSlug);
+        setSeoKeywords(nextKeywords || []);
+
+        setBlogDraftSections(draft.sections || []);
+        setBlogDraftHtml(draft.articleHtml || draft.html || "");
+        setBlogDraftWordCount(
+          draft.estimatedWordCount || draft.wordCount || null
+        );
+
+        tLen = (nextTitle || productTitle).length;
+        mLen = (nextDescription || productDescription).length;
+
+        const tScore = scoreLength(tLen, TITLE_MIN, TITLE_MAX);
+        const mScore = scoreLength(mLen, META_MIN, META_MAX);
+
+        oScore =
+          tScore !== null && mScore !== null
+            ? Math.round((tScore + mScore) / 2)
+            : null;
       } else {
+        // Product SEO + Blog SEO output
         const nextTitle = output.title || output.seoTitle || "";
         const nextDescription =
           output.description || output.metaDescription || "";
@@ -456,7 +523,7 @@ function App() {
 
   // Advice text (title / meta) – phrased per engine
   const buildTitleAdvice = () => {
-    const label = isProduct ? "product" : isBlog ? "blog post" : "content";
+    const label = isProduct ? "product" : isBlogLike ? "blog post" : "content";
     if (!currentTitleLength) {
       return `Add a clear ${label} title first, then run the engine. Aim for 45–60 characters.`;
     }
@@ -748,7 +815,9 @@ function App() {
                 </div>
 
                 <div className="kpi-card">
-                  <div className="kpi-label">{currentEngine.lengthTitleLabel}</div>
+                  <div className="kpi-label">
+                    {currentEngine.lengthTitleLabel}
+                  </div>
                   <div className="kpi-main">
                     <span className="kpi-value">
                       {currentTitleLength || "—"}
@@ -829,16 +898,12 @@ function App() {
                 </ol>
               </section>
 
-              {/* AI SUGGESTIONS (only really for product/blog but harmless in weekly) */}
+              {/* AI SUGGESTIONS */}
               <section className="card" style={{ marginTop: 10 }}>
                 <div className="card-header">
                   <h2 className="card-title">
                     AI suggestions for this {pieceLabel}
                   </h2>
-                  <p className="card-subtitle">
-                    Generated from your last run. Use this as a second opinion
-                    on how to tweak the copy before you publish.
-                  </p>
                 </div>
                 <ul style={{ fontSize: 12, paddingLeft: 18, margin: 0 }}>
                   <li>
@@ -1052,99 +1117,169 @@ function App() {
                       </table>
                     </div>
                   ) : (
-                    <div className="card seo-table-card">
-                      <div className="card-header">
-                        <h2 className="card-title">Generated SEO fields</h2>
-                        <p className="card-subtitle">
-                          Paste straight into Shopify or your platform. Use the
-                          copy buttons so beginners never touch JSON.
-                        </p>
+                    <>
+                      <div className="card seo-table-card">
+                        <div className="card-header">
+                          <h2 className="card-title">Generated SEO fields</h2>
+                          <p className="card-subtitle">
+                            Paste straight into Shopify or your platform. Use
+                            the copy buttons so beginners never touch JSON.
+                          </p>
+                        </div>
+
+                        <table className="seo-table">
+                          <thead>
+                            <tr>
+                              <th>Field</th>
+                              <th>Value</th>
+                              <th className="actions-col">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>Title</td>
+                              <td>
+                                {seoTitle || "Run the engine to get a title."}
+                              </td>
+                              <td>
+                                <button
+                                  className="button button--ghost button--tiny"
+                                  onClick={() => copyToClipboard(seoTitle)}
+                                  disabled={!seoTitle}
+                                >
+                                  Copy
+                                </button>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>Meta description</td>
+                              <td>
+                                {seoDescription ||
+                                  "Meta description will appear here after the first run."}
+                              </td>
+                              <td>
+                                <button
+                                  className="button button--ghost button--tiny"
+                                  onClick={() =>
+                                    copyToClipboard(seoDescription)
+                                  }
+                                  disabled={!seoDescription}
+                                >
+                                  Copy
+                                </button>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>Slug / handle</td>
+                              <td>
+                                {seoSlug || "Suggested slug will appear here."}
+                              </td>
+                              <td>
+                                <button
+                                  className="button button--ghost button--tiny"
+                                  onClick={() => copyToClipboard(seoSlug)}
+                                  disabled={!seoSlug}
+                                >
+                                  Copy
+                                </button>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>Keywords</td>
+                              <td>
+                                {keywordsDisplay ||
+                                  "Keyword set will appear here after the first run."}
+                              </td>
+                              <td>
+                                <button
+                                  className="button button--ghost button--tiny"
+                                  onClick={() =>
+                                    copyToClipboard(keywordsDisplay)
+                                  }
+                                  disabled={!keywordsDisplay}
+                                >
+                                  Copy
+                                </button>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+
+                        <details className="raw-json">
+                          <summary>Raw JSON from Core API (advanced)</summary>
+                          <pre className="raw-json-pre">
+                            {rawJson ||
+                              "// Run the engine to see the raw JSON here."}
+                          </pre>
+                        </details>
                       </div>
 
-                      <table className="seo-table">
-                        <thead>
-                          <tr>
-                            <th>Field</th>
-                            <th>Value</th>
-                            <th className="actions-col">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>Title</td>
-                            <td>
-                              {seoTitle || "Run the engine to get a title."}
-                            </td>
-                            <td>
-                              <button
-                                className="button button--ghost button--tiny"
-                                onClick={() => copyToClipboard(seoTitle)}
-                                disabled={!seoTitle}
-                              >
-                                Copy
-                              </button>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>Meta description</td>
-                            <td>
-                              {seoDescription ||
-                                "Meta description will appear here after the first run."}
-                            </td>
-                            <td>
-                              <button
-                                className="button button--ghost button--tiny"
-                                onClick={() => copyToClipboard(seoDescription)}
-                                disabled={!seoDescription}
-                              >
-                                Copy
-                              </button>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>Slug / handle</td>
-                            <td>
-                              {seoSlug || "Suggested slug will appear here."}
-                            </td>
-                            <td>
-                              <button
-                                className="button button--ghost button--tiny"
-                                onClick={() => copyToClipboard(seoSlug)}
-                                disabled={!seoSlug}
-                              >
-                                Copy
-                              </button>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>Keywords</td>
-                            <td>
-                              {keywordsDisplay ||
-                                "Keyword set will appear here after the first run."}
-                            </td>
-                            <td>
-                              <button
-                                className="button button--ghost button--tiny"
-                                onClick={() =>
-                                  copyToClipboard(keywordsDisplay)
-                                }
-                                disabled={!keywordsDisplay}
-                              >
-                                Copy
-                              </button>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+                      {isBlogDraft && (
+                        <div className="card seo-table-card" style={{ marginTop: 10 }}>
+                          <div className="card-header">
+                            <h2 className="card-title">Blog outline &amp; draft</h2>
+                            <p className="card-subtitle">
+                              Use this as your working draft. Copy into your CMS
+                              or docs and edit before publishing.
+                            </p>
+                          </div>
 
-                      <details className="raw-json">
-                        <summary>Raw JSON from Core API (advanced)</summary>
-                        <pre className="raw-json-pre">
-                          {rawJson ||
-                            "// Run the engine to see the raw JSON here."}
-                        </pre>
-                      </details>
-                    </div>
+                          <div className="blog-draft-layout">
+                            <div className="blog-outline-column">
+                              <h3 className="small-heading">Outline</h3>
+                              <ol className="blog-outline-list">
+                                {blogDraftSections.length === 0 ? (
+                                  <li>
+                                    Run the Blog draft engine to generate an
+                                    outline.
+                                  </li>
+                                ) : (
+                                  blogDraftSections.map((section, idx) => (
+                                    <li key={idx}>
+                                      <strong>
+                                        {section.heading ||
+                                          section.title ||
+                                          `Section ${idx + 1}`}
+                                      </strong>
+                                      {section.summary && (
+                                        <div className="blog-outline-summary">
+                                          {section.summary}
+                                        </div>
+                                      )}
+                                    </li>
+                                  ))
+                                )}
+                              </ol>
+                            </div>
+
+                            <div className="blog-draft-column">
+                              <h3 className="small-heading">
+                                Draft{" "}
+                                {blogDraftWordCount
+                                  ? `· approx. ${blogDraftWordCount} words`
+                                  : ""}
+                              </h3>
+                              <div className="blog-draft-body">
+                                {blogDraftHtml ? (
+                                  <div
+                                    className="blog-draft-html"
+                                    dangerouslySetInnerHTML={{
+                                      __html: blogDraftHtml,
+                                    }}
+                                  />
+                                ) : (
+                                  <p style={{ fontSize: 12 }}>
+                                    Run the engine to generate a first draft. It
+                                    will appear here as formatted paragraphs you
+                                    can paste into your CMS.
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -1265,7 +1400,7 @@ function App() {
                               className="preset-chip"
                               onClick={() =>
                                 setProductTitle(
-                                  isBlog
+                                  isBlogLike
                                     ? "How to style waterproof gold huggie earrings"
                                     : "Waterproof gold huggie earrings"
                                 )
@@ -1277,7 +1412,7 @@ function App() {
                               className="preset-chip"
                               onClick={() =>
                                 setProductTitle(
-                                  isBlog
+                                  isBlogLike
                                     ? "Layered waterproof necklace looks for everyday wear"
                                     : "Layered waterproof necklace set"
                                 )
@@ -1289,7 +1424,7 @@ function App() {
                               className="preset-chip"
                               onClick={() =>
                                 setProductTitle(
-                                  isBlog
+                                  isBlogLike
                                     ? "Why paperclip bracelets are the perfect everyday stack"
                                     : "Minimal paperclip bracelet"
                                 )
@@ -1302,7 +1437,7 @@ function App() {
 
                         <div className="inspector-field-group">
                           <label className="inspector-label" htmlFor="title">
-                            {isBlog ? "Blog post title" : "Product title"}
+                            {isBlogLike ? "Blog post title" : "Product title"}
                           </label>
                           <input
                             id="title"
@@ -1317,7 +1452,9 @@ function App() {
                             className="inspector-label"
                             htmlFor="description"
                           >
-                            {isBlog ? "Blog summary / intro" : "Product description"}
+                            {isBlogLike
+                              ? "Blog summary / intro"
+                              : "Product description"}
                           </label>
                           <textarea
                             id="description"
@@ -1364,7 +1501,7 @@ function App() {
                             className="inspector-label"
                             htmlFor="useCases"
                           >
-                            {isBlog
+                            {isBlogLike
                               ? "Main topics / angles"
                               : "Use cases / occasions"}
                           </label>
@@ -1393,6 +1530,8 @@ function App() {
                       <div className="inspector-footnote">
                         {isWeekly
                           ? "Plan generated. Copy titles and meta from the left-hand table."
+                          : isBlogDraft
+                          ? "Draft generated. Copy the outline and body from the left-hand table."
                           : "SEO fields generated. Copy them from the left-hand table."}
                       </div>
                     </div>
