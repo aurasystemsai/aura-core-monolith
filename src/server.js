@@ -13,7 +13,7 @@ dotenv.config();
 
 const { getTool } = require("./core/tools-registry.cjs");
 const projectsCore = require("./core/projects");
-const runsCore = require("./core/runs"); // NEW
+const contentCore = require("./core/content");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -98,74 +98,99 @@ app.get("/projects", (_req, res) => {
   }
 });
 
-// ---------- RUNS API (SQLite-backed) ---------- // NEW
+// ---------- CONTENT SEO API (generic, not just shops) ----------
 
-// List recent runs for a project
-app.get("/projects/:projectId/runs", (req, res) => {
+/**
+ * POST /projects/:projectId/content/batch
+ *
+ * Ingest / update content items for a project.
+ * Used by any platform to push pages/posts/products into AURA.
+ *
+ * Body:
+ * {
+ *   "items": [
+ *     {
+ *       "type": "blog",          // optional, default "other"
+ *       "platform": "wordpress", // optional
+ *       "externalId": "123",     // optional
+ *       "url": "https://site.com/blog/post-1",
+ *       "title": "How to style waterproof jewellery",
+ *       "metaDescription": "Our guide to styling waterproof jewellery…",
+ *       "h1": "How to style waterproof jewellery",
+ *       "bodyExcerpt": "In this guide we cover…",
+ *       "raw": { ... }           // optional, raw source row
+ *     }
+ *   ]
+ * }
+ */
+app.post("/projects/:projectId/content/batch", (req, res) => {
+  const projectId = req.params.projectId;
+
   try {
-    const { projectId } = req.params;
-    if (!projectId) {
-      return res.status(400).json({ ok: false, error: "projectId is required" });
+    const { items } = req.body || {};
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        ok: false,
+        error: "items[] array is required",
+      });
     }
 
-    const runs = runsCore.listRuns({ projectId, limit: 50 });
+    const result = contentCore.upsertContentItems(projectId, items);
 
     return res.json({
       ok: true,
-      runs,
+      projectId,
+      inserted: result.inserted,
     });
   } catch (err) {
-    console.error("[Core] Error listing runs", err);
+    console.error("[Core] Error in content batch", err);
     return res.status(500).json({
       ok: false,
-      error: "Failed to list runs",
+      error: "Failed to upsert content items",
     });
   }
 });
 
-// Record a new run
-app.post("/projects/:projectId/runs", (req, res) => {
+/**
+ * GET /projects/:projectId/content/health
+ *
+ * Returns "bad SEO" items for that project so the user knows what to fix.
+ *
+ * Query params:
+ *  - type     (optional): product | blog | landing | category | docs | other
+ *  - maxScore (optional): number (default 70) – return items at or below this score
+ *  - limit    (optional): number (default 100)
+ */
+app.get("/projects/:projectId/content/health", (req, res) => {
+  const projectId = req.params.projectId;
+  const { type, maxScore, limit } = req.query;
+
   try {
-    const { projectId } = req.params;
-    if (!projectId) {
-      return res.status(400).json({ ok: false, error: "projectId is required" });
-    }
-
-    const {
-      toolId,
-      createdAt,
-      market,
-      device,
-      score,
-      titleLength,
-      metaLength,
-      input,
-      output,
-    } = req.body || {};
-
-    if (!toolId) {
-      return res.status(400).json({ ok: false, error: "toolId is required" });
-    }
-
-    runsCore.recordRun({
+    const items = contentCore.getContentHealth({
       projectId,
-      toolId,
-      createdAt,
-      market,
-      device,
-      score,
-      titleLength,
-      metaLength,
-      input,
-      output,
+      type: type || undefined,
+      maxScore:
+        maxScore !== undefined && maxScore !== ""
+          ? Number(maxScore)
+          : 70,
+      limit:
+        limit !== undefined && limit !== "" ? Number(limit) : 100,
     });
 
-    return res.json({ ok: true });
+    return res.json({
+      ok: true,
+      projectId,
+      type: type || null,
+      maxScore: maxScore !== undefined ? Number(maxScore) : 70,
+      limit: limit !== undefined ? Number(limit) : 100,
+      items,
+    });
   } catch (err) {
-    console.error("[Core] Error recording run", err);
+    console.error("[Core] Error in content health", err);
     return res.status(500).json({
       ok: false,
-      error: "Failed to record run",
+      error: "Failed to fetch content health",
     });
   }
 });
