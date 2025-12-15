@@ -10,6 +10,9 @@
 //   - toolsById: { [id]: toolModule }
 //   - getTool(id): toolModule (throws if unknown)
 //   - listTools(): [{ id, name, category }]
+//
+// Any module that does NOT expose meta.id is treated as a helper/SDK
+// and is skipped (with a console warning) instead of crashing Core.
 // ------------------------------------------------------
 
 "use strict";
@@ -67,12 +70,14 @@ const auraOperationsAi = require("../tools/aura-operations-ai");
 
 // ------------------------------------------------------
 // Platform / orchestration
-// (SDKs like aura-api-sdk are NOT registered as tools)
+// (SDKs like aura-api-sdk should NOT be registered as tools)
 // ------------------------------------------------------
 const workflowOrchestrator = require("../tools/workflow-orchestrator");
 
 // ------------------------------------------------------
 // Master list – ONE place to register tools.
+// You can require helpers/SDKs elsewhere; only *tools*
+// go in this array.
 // ------------------------------------------------------
 const allTools = [
   // SEO + content / planning
@@ -121,25 +126,40 @@ const allTools = [
 ];
 
 // ------------------------------------------------------
-// Build { id -> tool } map and validate
+// Build { id -> tool } map and validate.
+// Any module without meta.id is treated as NON-tool and skipped.
 // ------------------------------------------------------
-const toolsById = allTools.reduce((map, tool) => {
-  if (!tool || !tool.meta || !tool.meta.id) {
+const toolsById = {};
+
+for (const mod of allTools) {
+  if (!mod || typeof mod !== "object") {
+    console.warn(
+      "[tools-registry] Skipping invalid module (not an object):",
+      mod
+    );
+    continue;
+  }
+
+  const keys = Object.keys(mod);
+
+  if (!mod.meta || !mod.meta.id) {
+    console.warn(
+      "[tools-registry] Skipping module without meta.id; keys=",
+      keys
+    );
+    continue;
+  }
+
+  const id = mod.meta.id;
+
+  if (toolsById[id]) {
     throw new Error(
-      "Tool missing meta.id – every tool must export meta.id: " +
-        JSON.stringify(Object.keys(tool || {}))
+      `Duplicate tool id registered in tools-registry: ${id}`
     );
   }
 
-  const id = tool.meta.id;
-
-  if (map[id]) {
-    throw new Error(`Duplicate tool id registered in tools-registry: ${id}`);
-  }
-
-  map[id] = tool;
-  return map;
-}, {});
+  toolsById[id] = mod;
+}
 
 /**
  * Lookup a tool by ID.
