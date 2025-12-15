@@ -1,40 +1,131 @@
-// src/core/tools-registry.cjs
-// ----------------------------------------
-// Central registry for all AURA Core tools
-// ----------------------------------------
+// src/core/tools-registry.js
+// ------------------------------------------------------
+// Central registry for all AURA Core tools.
+//
+// Each tool must export:
+//   - meta: { id: string, name: string, ... }
+//   - run(input, ctx)
+//
+// This file collects them, verifies unique IDs and exposes:
+//   - toolsById: { [id]: toolModule }
+//   - getTool(id): toolModule (throws if unknown)
+// ------------------------------------------------------
 
-// Each require pulls in a tool folder that exports { meta, run }
+"use strict";
+
+// SEO + content tools
 const productSeo = require("../tools/product-seo");
 const blogSeo = require("../tools/blog-seo");
+const weeklyBlogContentEngine = require("../tools/weekly-blog-content-engine");
+const onPageSeoEngine = require("../tools/on-page-seo-engine");
+const technicalSeoAuditor = require("../tools/technical-seo-auditor");
+const schemaRichResultsEngine = require("../tools/schema-rich-results-engine");
+const imageAltMediaSeo = require("../tools/image-alt-media-seo");
+const rankVisibilityTracker = require("../tools/rank-visibility-tracker");
+const aiAltTextEngine = require("../tools/ai-alt-text-engine");
 
-// Later we can add more tools here in exactly the same way:
-// const someOtherTool = require("../tools/some-other-tool");
+// Lifecycle / retention / automation tools
+const abandonedCheckoutWinback = require("../tools/abandoned-checkout-winback");
+const returnsRmaAutomation = require("../tools/returns-rma-automation");
+const ltvChurnPredictor = require("../tools/ltv-churn-predictor");
+const emailAutomationBuilder = require("../tools/email-automation-builder");
+const socialSchedulerContentEngine = require("../tools/social-scheduler-content-engine");
+const reviewUgcEngine = require("../tools/review-ugc-engine");
+const klaviyoFlowOptimizer = require("../tools/klaviyo-flow-optimizer");
 
+// Pricing, finance, operations
+const dynamicPricingEngine = require("../tools/dynamic-pricing-engine");
+const financeAutopilot = require("../tools/finance-autopilot");
+const dailyCfoPack = require("../tools/daily-cfo-pack");
+const inventorySupplierSync = require("../tools/inventory-supplier-sync");
+const multiChannelOptimizer = require("../tools/multi-channel-optimizer");
+
+// Support, inbox, assistants
+const customerSupportAi = require("../tools/customer-support-ai");
+const inboxAssistant = require("../tools/inbox-assistant");
+const inboxReplyAssistant = require("../tools/inbox-reply-assistant");
+const aiSupportAssistant = require("../tools/ai-support-assistant");
+
+// Strategy, insights, brand / ops layers
+const aiLaunchPlanner = require("../tools/ai-launch-planner");
+const autoInsights = require("../tools/auto-insights");
+const brandIntelligenceLayer = require("../tools/brand-intelligence-layer");
+const creativeAutomationEngine = require("../tools/creative-automation-engine");
+const auraOperationsAi = require("../tools/aura-operations-ai");
+
+// Platform / SDK / orchestration
+const auraApiSdk = require("../tools/aura-api-sdk");
+const workflowOrchestrator = require("../tools/workflow-orchestrator");
+
+// If you add new tools, require them here and then add them
+// to the allTools array below.
+// ------------------------------------------------------
+
+// Master list – ONE place to register tools.
 const allTools = [
+  // SEO + content
   productSeo,
   blogSeo,
+  weeklyBlogContentEngine,
+  onPageSeoEngine,
+  technicalSeoAuditor,
+  schemaRichResultsEngine,
+  imageAltMediaSeo,
+  rankVisibilityTracker,
+  aiAltTextEngine,
+
+  // Lifecycle / retention
+  abandonedCheckoutWinback,
+  returnsRmaAutomation,
+  ltvChurnPredictor,
+  emailAutomationBuilder,
+  socialSchedulerContentEngine,
+  reviewUgcEngine,
+  klaviyoFlowOptimizer,
+
+  // Pricing / finance / ops
+  dynamicPricingEngine,
+  financeAutopilot,
+  dailyCfoPack,
+  inventorySupplierSync,
+  multiChannelOptimizer,
+
+  // Support / inbox / assistants
+  customerSupportAi,
+  inboxAssistant,
+  inboxReplyAssistant,
+  aiSupportAssistant,
+
+  // Strategy / insights / brand / ops
+  aiLaunchPlanner,
+  autoInsights,
+  brandIntelligenceLayer,
+  creativeAutomationEngine,
+  auraOperationsAi,
+
+  // Platform / orchestration
+  auraApiSdk,
+  workflowOrchestrator,
 ];
 
-// Build a lookup map by tool meta.id
-const toolsById = {};
-
-for (const tool of allTools) {
-  if (!tool || !tool.meta || !tool.meta.id || typeof tool.run !== "function") {
-    console.warn("[ToolsRegistry] Skipping invalid tool export");
-    continue;
-  }
-
-  if (toolsById[tool.meta.id]) {
-    console.warn(
-      `[ToolsRegistry] Duplicate tool id '${tool.meta.id}' – keeping the first registration`
+// Build { id -> tool } map and validate
+const toolsById = allTools.reduce((map, tool) => {
+  if (!tool || !tool.meta || !tool.meta.id) {
+    throw new Error(
+      "Tool missing meta.id – every tool must export meta.id: " +
+        JSON.stringify(Object.keys(tool || {}))
     );
-    continue;
   }
 
-  toolsById[tool.meta.id] = tool;
-}
+  const id = tool.meta.id;
 
-console.log("[ToolsRegistry] Registered tools:", Object.keys(toolsById));
+  if (map[id]) {
+    throw new Error(`Duplicate tool id registered in tools-registry: ${id}`);
+  }
+
+  map[id] = tool;
+  return map;
+}, {});
 
 /**
  * Lookup a tool by ID.
@@ -51,15 +142,14 @@ function getTool(toolId) {
 }
 
 /**
- * Optional helper if we ever want to show a tool list in the console.
+ * Convenience: list all registered tools (id + name).
+ * Useful for debugging / API introspection.
  */
 function listTools() {
   return Object.values(toolsById).map((tool) => ({
     id: tool.meta.id,
     name: tool.meta.name,
-    category: tool.meta.category,
-    description: tool.meta.description,
-    version: tool.meta.version,
+    category: tool.meta.category || null,
   }));
 }
 
