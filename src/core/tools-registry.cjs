@@ -1,4 +1,4 @@
-// src/core/tools-registry.js
+// src/core/tools-registry.cjs
 // ------------------------------------------------------
 // Central registry for all AURA Core tools.
 //
@@ -54,8 +54,8 @@ const brandIntelligenceLayer = require("../tools/brand-intelligence-layer");
 const creativeAutomationEngine = require("../tools/creative-automation-engine");
 const auraOperationsAi = require("../tools/aura-operations-ai");
 
-// Platform / SDK / orchestration
-const auraApiSdk = require("../tools/aura-api-sdk");
+// Platform / orchestration
+// NOTE: aura-api-sdk is a DEV helper (key + run only) so it is NOT registered as a tool.
 const workflowOrchestrator = require("../tools/workflow-orchestrator");
 
 // ------------------------------------------------------
@@ -105,7 +105,6 @@ const allTools = [
   auraOperationsAi,
 
   // Platform / orchestration
-  auraApiSdk,
   workflowOrchestrator,
 ];
 
