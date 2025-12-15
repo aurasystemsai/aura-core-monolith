@@ -1,76 +1,44 @@
 // src/core/tools-registry.cjs
 // ----------------------------------------
-// Central registry for all AURA tools
-// ----------------------------------------
-
-const productSeo = require("../tools/product-seo");
-const blogSeo = require("../tools/blog-seo"); // NEW
-// Register tools by ID (tool.meta.id)
-const toolsById = {
-  [productSeo.meta.id]: productSeo,
-// src/core/tools-registry.cjs
-// ----------------------------------------
 // Central registry for all AURA Core tools
 // ----------------------------------------
 
-// Import each tool module here.
-// Each tool should export at least:
-//   - meta: { id, name, category, description, ... }
-//   - run: async (input, ctx) => { ... }
-
+// Each require pulls in a tool folder that exports { meta, run }
 const productSeo = require("../tools/product-seo");
 const blogSeo = require("../tools/blog-seo");
 
-// If/when you add more tools later, require them like this:
+// Later we can add more tools here in exactly the same way:
 // const someOtherTool = require("../tools/some-other-tool");
 
-// ----------------------------------------
-// Build the registry
-// ----------------------------------------
-
-const tools = [
+const allTools = [
   productSeo,
   blogSeo,
-  // someOtherTool,
 ];
 
-const toolsById = Object.create(null);
+// Build a lookup map by tool meta.id
+const toolsById = {};
 
-for (const tool of tools) {
+for (const tool of allTools) {
   if (!tool || !tool.meta || !tool.meta.id || typeof tool.run !== "function") {
+    console.warn("[ToolsRegistry] Skipping invalid tool export");
+    continue;
+  }
+
+  if (toolsById[tool.meta.id]) {
     console.warn(
-      "[ToolsRegistry] Skipping invalid tool definition:",
-      tool && tool.meta ? tool.meta.id : tool
+      `[ToolsRegistry] Duplicate tool id '${tool.meta.id}' – keeping the first registration`
     );
     continue;
   }
 
-  const id = tool.meta.id;
-
-  if (toolsById[id]) {
-    console.warn(
-      `[ToolsRegistry] Duplicate tool id detected: "${id}". Skipping later definition.`
-    );
-    continue;
-  }
-
-  toolsById[id] = tool;
+  toolsById[tool.meta.id] = tool;
 }
 
-console.log(
-  "[ToolsRegistry] Registered tools:",
-  Object.keys(toolsById).join(", ") || "(none)"
-);
-
-// ----------------------------------------
-// Public API
-// ----------------------------------------
+console.log("[ToolsRegistry] Registered tools:", Object.keys(toolsById));
 
 /**
  * Lookup a tool by ID.
  * Throws if the tool is not registered.
- *
- * Used by: /run/:toolId in src/server.js
  */
 function getTool(toolId) {
   const tool = toolsById[toolId];
@@ -83,21 +51,16 @@ function getTool(toolId) {
 }
 
 /**
- * Optional helper: return a light list of tools
- * (handy for showing a UI list in the console later).
+ * Optional helper if we ever want to show a tool list in the console.
  */
 function listTools() {
-  return Object.keys(toolsById).map((id) => {
-    const t = toolsById[id];
-    const meta = t.meta || {};
-    return {
-      id,
-      name: meta.name || id,
-      category: meta.category || "Uncategorised",
-      description: meta.description || "",
-      version: meta.version || "1.0.0",
-    };
-  });
+  return Object.values(toolsById).map((tool) => ({
+    id: tool.meta.id,
+    name: tool.meta.name,
+    category: tool.meta.category,
+    description: tool.meta.description,
+    version: tool.meta.version,
+  }));
 }
 
 module.exports = {
@@ -105,4 +68,3 @@ module.exports = {
   getTool,
   listTools,
 };
-
