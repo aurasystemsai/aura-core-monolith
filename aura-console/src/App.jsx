@@ -1,994 +1,1475 @@
 // aura-console/src/App.jsx
-// ------------------------------------------------------------------
-// AURA Systems • SEO Command Centre
-// Product SEO, Blog SEO, Weekly Blog Content Engine + Blog Draft Engine
-// ------------------------------------------------------------------
+import React, { useState, useEffect } from "react";
+import "./App.css";
+import ProjectSetup from "./ProjectSetup";
+import ProjectSwitcher from "./ProjectSwitcher";
+import SystemHealthPanel from "./components/SystemHealthPanel";
 
-import React, { useState } from "react";
+const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
-const CORE_API_BASE =
-  import.meta.env.VITE_CORE_API_BASE ||
-  "https://aura-core-monolith.onrender.com";
-
-// Generic helper to call any AURA Core tool
-async function runTool(toolId, input) {
-  const res = await fetch(`${CORE_API_BASE}/api/tools/run`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ toolId, input }),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(
-      `Core API error (${res.status}): ${text || "No error body returned"}`
-    );
-  }
-
-  const data = await res.json();
-  return data;
-}
-
-// Simple stat card component
-function StatCard({ label, value, sub }) {
-  return (
-    <div className="flex flex-col rounded-2xl bg-slate-900/70 border border-slate-800 px-4 py-3 min-w-[150px]">
-      <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
-        {label}
-      </span>
-      <span className="text-2xl font-semibold text-slate-50 mt-1">
-        {value ?? "—"}
-      </span>
-      {sub && (
-        <span className="text-[11px] text-slate-500 mt-0.5 whitespace-nowrap">
-          {sub}
-        </span>
-      )}
-    </div>
-  );
-}
+// Single place to define engines used by the console
+const ENGINES = {
+  product: {
+    key: "product",
+    toolId: "product-seo",
+    name: "Product SEO Engine",
+    suitePrefix: "Product catalogue · SEO",
+    runButtonLabel: "Run Product SEO",
+    chipLabel: "Product SEO",
+    inspectorTitle: "Product inspector",
+    inspectorSubtitle:
+      "Step 1: describe the product in plain English. Step 2: run the engine. Step 3: copy the SEO fields from the left-hand table.",
+    lengthTitleLabel: "Title length",
+    lengthTitleHelper: "Your current product title is",
+  },
+  blog: {
+    key: "blog",
+    toolId: "blog-seo",
+    name: "Blog SEO Engine",
+    suitePrefix: "Content · SEO",
+    runButtonLabel: "Run Blog SEO",
+    chipLabel: "Blog SEO",
+    inspectorTitle: "Blog article inspector",
+    inspectorSubtitle:
+      "Step 1: describe the blog post in plain English. Step 2: run the engine. Step 3: copy the SEO fields from the left-hand table into your CMS.",
+    lengthTitleLabel: "Title length",
+    lengthTitleHelper: "Your current blog post title is",
+  },
+  weekly: {
+    key: "weekly",
+    toolId: "weekly-blog-content-engine",
+    name: "Weekly Blog Content Engine",
+    suitePrefix: "Content · Planning",
+    runButtonLabel: "Run Weekly plan",
+    chipLabel: "Weekly blog plan",
+    inspectorTitle: "Weekly blog planner",
+    inspectorSubtitle:
+      "Describe your niche, audience and cadence. We’ll generate a simple weekly content plan you can plug straight into your CMS.",
+    lengthTitleLabel: "Avg. title length",
+    lengthTitleHelper: "Average planned post title length is",
+  },
+};
 
 function App() {
-  const [activeTool, setActiveTool] = useState("product-seo");
+  // Core API + health
+  const [coreUrl, setCoreUrl] = useState(DEFAULT_CORE_API);
+  const [coreStatus, setCoreStatus] = useState("idle"); // idle | checking | ok | error
+  const [coreStatusLabel, setCoreStatusLabel] = useState("Not checked yet");
 
-  // Shared state bits
+  // Connected project / store
+  const [project, setProject] = useState(null);
+
+  // Which engine is active in the UI
+  const [activeEngine, setActiveEngine] = useState("product");
+  const currentEngine = ENGINES[activeEngine];
+
+  // Product / blog single-piece inputs
+  const [productTitle, setProductTitle] = useState(
+    "Paperclip waterproof bracelet"
+  );
+  const [productDescription, setProductDescription] = useState(
+    "Bold paperclip chain bracelet with a sweat-proof, waterproof coating. Adjustable fit for any wrist, perfect for everyday wear."
+  );
+  const [brand, setBrand] = useState("DTP Jewellery");
+  const [tone, setTone] = useState("Elevated, modern, UK English");
+  const [useCases, setUseCases] = useState("gym, everyday wear, gifting");
+
+  // Weekly planner inputs
+  const [weeklyBrand, setWeeklyBrand] = useState("DTP Jewellery");
+  const [weeklyNiche, setWeeklyNiche] = useState(
+    "Waterproof everyday jewellery and gifting"
+  );
+  const [weeklyAudience, setWeeklyAudience] = useState(
+    "UK women 18–34 who want affordable waterproof jewellery"
+  );
+  const [weeklyCadence, setWeeklyCadence] = useState("2 posts per week");
+  const [weeklyThemes, setWeeklyThemes] = useState(
+    "product education, styling tips, gifting ideas, lifestyle stories"
+  );
+  const [weeklyTone, setWeeklyTone] = useState("Elevated, warm, UK English");
+
+  // Output fields (single-piece engines)
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDescription, setSeoDescription] = useState("");
+  const [seoSlug, setSeoSlug] = useState("");
+  const [seoKeywords, setSeoKeywords] = useState([]);
+  const [rawJson, setRawJson] = useState("");
+  const [lastRunAt, setLastRunAt] = useState(null);
+
+  // Weekly plan output
+  const [weeklySummary, setWeeklySummary] = useState("");
+  const [weeklyPosts, setWeeklyPosts] = useState([]);
+
+  // AI advice (from tool output.advice for product/blog)
+  const [titleAdvice, setTitleAdvice] = useState("");
+  const [metaAdvice, setMetaAdvice] = useState("");
+  const [generalAdvice, setGeneralAdvice] = useState("");
+
+  // Run status
   const [isRunning, setIsRunning] = useState(false);
-  const [lastError, setLastError] = useState("");
+  const [runError, setRunError] = useState(null);
 
-  // Product SEO
-  const [productInput, setProductInput] = useState({
-    title: "",
-    description: "",
-    brand: "DTP Jewellery",
-    tone: "Elevated, modern, UK English",
-    useCases: "gym, everyday wear, gifting",
-  });
-  const [productResult, setProductResult] = useState(null);
+  // Dashboard chrome
+  const [activeMarket, setActiveMarket] = useState("Worldwide");
+  const [activeDevice, setActiveDevice] = useState("Desktop");
+  const [timeRange, setTimeRange] = useState("30d"); // 30d / 180d / all
+  const [pageTab, setPageTab] = useState("Overview");
 
-  // Blog SEO (single article)
-  const [blogSeoInput, setBlogSeoInput] = useState({
-    title: "",
-    intro: "",
-    brand: "DTP Jewellery",
-    tone: "Elevated, modern, UK English",
-    mainTopics: "gym, everyday wear, gifting",
-  });
-  const [blogSeoResult, setBlogSeoResult] = useState(null);
+  // Simple run history (shared across engines, filtered later)
+  const [runHistory, setRunHistory] = useState([]);
+  const [historyView, setHistoryView] = useState("score"); // "score" | "meta"
 
-  // Weekly blog content engine
-  const [weeklyInput, setWeeklyInput] = useState({
-    brand: "DTP Jewellery",
-    niche: "Waterproof everyday jewellery and gifting",
-    audience: "UK women 18–34 who want affordable waterproof jewellery",
-    cadence: "2 posts per week",
-    tone: "Elevated, warm, UK English",
-    themes: "product education, styling tips, gifting ideas, lifestyle stories",
-  });
-  const [weeklyResult, setWeeklyResult] = useState(null);
+  // Ideal bands
+  const TITLE_MIN = 45;
+  const TITLE_MAX = 60;
+  const META_MIN = 130;
+  const META_MAX = 155;
 
-  // Blog draft engine
-  const [draftInput, setDraftInput] = useState({
-    title: "",
-    primaryKeyword: "",
-    summary: "",
-    brand: "DTP Jewellery",
-    tone: "Elevated, warm, UK English",
-  });
-  const [draftResult, setDraftResult] = useState(null);
+  const isProduct = activeEngine === "product";
+  const isBlog = activeEngine === "blog";
+  const isWeekly = activeEngine === "weekly";
+  const pieceLabel = isProduct ? "product" : isBlog ? "blog post" : "content";
 
-  // Simple score helpers (so UI doesn’t explode if API shape changes)
-  const productScore =
-    productResult?.output?.score ?? productResult?._score ?? "—";
-  const productTitleChars =
-    productResult?.output?._debug?.titleChars ??
-    productResult?.output?.title?.length ??
-    "—";
-  const productMetaChars =
-    productResult?.output?._debug?.metaChars ??
-    productResult?.output?.metaDescription?.length ??
-    "—";
+  // -------------------------------------------------
+  // Load project from localStorage (if already connected)
+  // -------------------------------------------------
+  useEffect(() => {
+    const id = localStorage.getItem("auraProjectId");
+    if (id) {
+      setProject({
+        id,
+        name: localStorage.getItem("auraProjectName") || "Untitled project",
+        domain: localStorage.getItem("auraProjectDomain") || "—",
+        platform: localStorage.getItem("auraPlatform") || "other",
+      });
+    }
+  }, []);
 
-  const blogSeoScore =
-    blogSeoResult?.output?.score ?? blogSeoResult?._score ?? "—";
-  const blogSeoTitleChars =
-    blogSeoResult?.output?._debug?.titleChars ??
-    blogSeoResult?.output?.title?.length ??
-    "—";
-  const blogSeoMetaChars =
-    blogSeoResult?.output?._debug?.metaChars ??
-    blogSeoResult?.output?.metaDescription?.length ??
-    "—";
+  // -------------------------------------------------
+  // Health check Core API
+  // -------------------------------------------------
+  useEffect(() => {
+    const check = async () => {
+      setCoreStatus("checking");
+      setCoreStatusLabel("Checking Core API …");
+      try {
+        const res = await fetch(`${coreUrl}/health`);
+        if (!res.ok) throw new Error("Health check failed");
+        setCoreStatus("ok");
+        setCoreStatusLabel("Core API online • env=production");
+      } catch (err) {
+        console.error(err);
+        setCoreStatus("error");
+        setCoreStatusLabel("Core API offline — check Core server");
+      }
+    };
+    check();
+  }, [coreUrl]);
 
-  const weeklyScore =
-    weeklyResult?.output?.score ?? weeklyResult?._score ?? "—";
+  // -------------------------------------------------
+  // Load persisted run history from Core API (SQLite)
+  // -------------------------------------------------
+  useEffect(() => {
+    if (!project) return;
 
-  const draftWordCount =
-    draftResult?.output?.estimatedWordCount ??
-    draftResult?.output?.wordCount ??
-    "—";
+    const fetchRuns = async () => {
+      try {
+        const res = await fetch(`${coreUrl}/projects/${project.id}/runs`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.ok || !Array.isArray(data.runs)) return;
 
-  // ------------------------------------------------------------------
-  // Handlers
-  // ------------------------------------------------------------------
+        const mapped = data.runs
+          .slice()
+          .reverse()
+          .map((run, idx) => ({
+            id: idx + 1,
+            time: new Date(run.createdAt).toLocaleString(),
+            score: run.score ?? null,
+            titleLength: run.titleLength ?? null,
+            metaLength: run.metaLength ?? null,
+            market: run.market || "Worldwide",
+            device: run.device || "Desktop",
+            toolId: run.toolId || "product-seo",
+          }));
 
-  async function handleRunProductSeo() {
+        setRunHistory(mapped);
+      } catch (err) {
+        console.error("Failed to load run history", err);
+      }
+    };
+
+    fetchRuns();
+  }, [project, coreUrl]);
+
+  // -------------------------------------------------
+  // Scoring helpers
+  // -------------------------------------------------
+  const scoreLength = (len, min, max) => {
+    if (!len) return null;
+    if (len >= min && len <= max) return 100;
+    const distance = len < min ? min - len : len - max;
+    if (distance <= 10) return 80;
+    if (distance <= 20) return 65;
+    return 40;
+  };
+
+  // Current lengths depend on engine
+  let currentTitleLength = 0;
+  let currentMetaLength = 0;
+
+  if (isWeekly && weeklyPosts.length) {
+    const titleLens = weeklyPosts.map((p) => (p.title || "").length);
+    const metaLens = weeklyPosts.map(
+      (p) => (p.metaDescription || p.description || "").length
+    );
+    const avg = (arr) =>
+      arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+    currentTitleLength = avg(titleLens);
+    currentMetaLength = avg(metaLens);
+  } else {
+    currentTitleLength = (seoTitle || productTitle).length;
+    currentMetaLength = (seoDescription || productDescription).length;
+  }
+
+  const currentTitleScore = scoreLength(
+    currentTitleLength,
+    TITLE_MIN,
+    TITLE_MAX
+  );
+  const currentMetaScore = scoreLength(
+    currentMetaLength,
+    META_MIN,
+    META_MAX
+  );
+
+  const overallScore =
+    currentTitleScore !== null && currentMetaScore !== null
+      ? Math.round((currentTitleScore + currentMetaScore) / 2)
+      : null;
+
+  // -------------------------------------------------
+  // Run engine
+  // -------------------------------------------------
+  const handleRun = async () => {
+    if (!project) return;
+
     setIsRunning(true);
-    setLastError("");
-    setProductResult(null);
+    setRunError(null);
 
-    try {
-      const payload = {
-        productTitle: productInput.title,
-        productDescription: productInput.description,
-        brand: productInput.brand,
-        tone: productInput.tone,
-        useCases: productInput.useCases
+    const toolId = currentEngine.toolId;
+
+    let payload;
+    if (isWeekly) {
+      payload = {
+        brand: weeklyBrand,
+        niche: weeklyNiche,
+        audience: weeklyAudience,
+        cadence: weeklyCadence,
+        themes: weeklyThemes,
+        tone: weeklyTone,
+        market: activeMarket,
+      };
+    } else {
+      payload = {
+        productTitle,
+        productDescription,
+        brand,
+        tone,
+        useCases: useCases
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean),
       };
-
-      const data = await runTool("product-seo", payload);
-      setProductResult(data);
-    } catch (err) {
-      console.error(err);
-      setLastError(err.message || "Failed to run Product SEO");
-    } finally {
-      setIsRunning(false);
     }
-  }
-
-  async function handleRunBlogSeo() {
-    setIsRunning(true);
-    setLastError("");
-    setBlogSeoResult(null);
 
     try {
-      const payload = {
-        blogTitle: blogSeoInput.title,
-        blogIntro: blogSeoInput.intro,
-        brand: blogSeoInput.brand,
-        tone: blogSeoInput.tone,
-        topics: blogSeoInput.mainTopics
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
-      };
+      const res = await fetch(`${coreUrl}/run/${toolId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-aura-project-id": project.id,
+        },
+        body: JSON.stringify(payload),
+      });
 
-      const data = await runTool("blog-seo", payload);
-      setBlogSeoResult(data);
-    } catch (err) {
-      console.error(err);
-      setLastError(err.message || "Failed to run Blog SEO");
-    } finally {
-      setIsRunning(false);
-    }
-  }
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(
+          `Core API error (${res.status}): ${text || res.statusText}`
+        );
+      }
 
-  async function handleRunWeeklyPlan() {
-    setIsRunning(true);
-    setLastError("");
-    setWeeklyResult(null);
+      const data = await res.json();
+      setRawJson(JSON.stringify(data, null, 2));
 
-    try {
-      const payload = {
-        brand: weeklyInput.brand,
-        niche: weeklyInput.niche,
-        targetAudience: weeklyInput.audience,
-        cadence: weeklyInput.cadence,
-        tone: weeklyInput.tone,
-        mainThemes: weeklyInput.themes
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
-      };
+      const output = data?.result?.output || data?.output || {};
 
-      const data = await runTool("weekly-blog-content-engine", payload);
-      setWeeklyResult(data);
-    } catch (err) {
-      console.error(err);
-      setLastError(err.message || "Failed to run Weekly Blog Content Engine");
-    } finally {
-      setIsRunning(false);
-    }
-  }
+      if (!output) throw new Error("No output returned from tool");
 
-  async function handleRunBlogDraft() {
-    setIsRunning(true);
-    setLastError("");
-    setDraftResult(null);
+      const now = new Date();
+      const nowLabel = now.toLocaleString();
+      setLastRunAt(nowLabel);
 
-    try {
-      const payload = {
-        title: draftInput.title,
-        primaryKeyword: draftInput.primaryKeyword,
-        summary: draftInput.summary,
-        brand: draftInput.brand,
-        tone: draftInput.tone,
-      };
+      let tLen = 0;
+      let mLen = 0;
+      let oScore = null;
 
-      const data = await runTool("blog-draft-engine", payload);
-      setDraftResult(data);
-    } catch (err) {
-      console.error(err);
-      setLastError(err.message || "Failed to run Blog Draft Engine");
-    } finally {
-      setIsRunning(false);
-    }
-  }
+      if (isWeekly) {
+        const posts = Array.isArray(output.posts) ? output.posts : [];
+        setWeeklySummary(output.summary || "");
+        setWeeklyPosts(posts);
 
-  // ------------------------------------------------------------------
-  // Render helpers for tools
-  // ------------------------------------------------------------------
-
-  function renderHeaderTitle() {
-    switch (activeTool) {
-      case "product-seo":
-        return "Product SEO Engine · aura";
-      case "blog-seo":
-        return "Blog SEO Engine · aura";
-      case "weekly-blog":
-        return "Weekly Blog Content Engine · aura";
-      case "blog-draft":
-        return "Blog Draft Engine · aura";
-      default:
-        return "SEO Command Centre · aura";
-    }
-  }
-
-  function renderToolTabs() {
-    const tabs = [
-      { id: "product-seo", label: "Product SEO" },
-      { id: "blog-seo", label: "Blog SEO" },
-      { id: "weekly-blog", label: "Weekly blog plan" },
-      { id: "blog-draft", label: "Blog draft" },
-    ];
-
-    return (
-      <div className="inline-flex rounded-full bg-slate-900/70 border border-slate-800 p-1 text-sm">
-        {tabs.map((tab) => {
-          const isActive = activeTool === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTool(tab.id)}
-              className={`px-4 py-1.5 rounded-full font-medium transition ${
-                isActive
-                  ? "bg-cyan-400 text-slate-900 shadow"
-                  : "text-slate-300 hover:text-white hover:bg-slate-800/80"
-              }`}
-            >
-              {tab.label}
-            </button>
+        if (posts.length) {
+          const titleLens = posts.map((p) => (p.title || "").length);
+          const metaLens = posts.map(
+            (p) => (p.metaDescription || p.description || "").length
           );
-        })}
-      </div>
-    );
-  }
+          const avg = (arr) =>
+            arr.length
+              ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length)
+              : 0;
+          tLen = avg(titleLens);
+          mLen = avg(metaLens);
+        }
 
-  function renderProductSeoPanel() {
-    const out = productResult?.output || {};
+        const tScore = scoreLength(tLen, TITLE_MIN, TITLE_MAX);
+        const mScore = scoreLength(mLen, META_MIN, META_MAX);
+        oScore =
+          tScore !== null && mScore !== null
+            ? Math.round((tScore + mScore) / 2)
+            : null;
+      } else {
+        const nextTitle = output.title || output.seoTitle || "";
+        const nextDescription =
+          output.description || output.metaDescription || "";
+        const nextSlug = output.slug || output.handle || "";
+        const nextKeywords = output.keywords || output.keywordSet || [];
 
-    return (
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left: inspector */}
-        <div className="rounded-2xl bg-slate-900/80 border border-slate-800 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-slate-50 mb-2">
-            Product inspector
-          </h2>
+        setSeoTitle(nextTitle);
+        setSeoDescription(nextDescription);
+        setSeoSlug(nextSlug);
+        setSeoKeywords(nextKeywords);
 
-          <label className="block text-sm text-slate-300">
-            Product title
-            <textarea
-              className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50 resize-none"
-              rows={2}
-              value={productInput.title}
-              onChange={(e) =>
-                setProductInput({ ...productInput, title: e.target.value })
-              }
-            />
-          </label>
+        const advice = output.advice || {};
+        setTitleAdvice(advice.titleTips || "");
+        setMetaAdvice(advice.metaTips || "");
+        setGeneralAdvice(advice.generalTips || "");
 
-          <label className="block text-sm text-slate-300">
-            Product description
-            <textarea
-              className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50 resize-y min-h-[96px]"
-              rows={4}
-              value={productInput.description}
-              onChange={(e) =>
-                setProductInput({
-                  ...productInput,
-                  description: e.target.value,
-                })
-              }
-            />
-          </label>
+        tLen = (nextTitle || productTitle).length;
+        mLen = (nextDescription || productDescription).length;
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <label className="block text-xs text-slate-300">
-              Brand / site
-              <input
-                className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-                value={productInput.brand}
-                onChange={(e) =>
-                  setProductInput({ ...productInput, brand: e.target.value })
-                }
-              />
-            </label>
-            <label className="block text-xs text-slate-300 md:col-span-2">
-              Tone &amp; voice
-              <input
-                className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-                value={productInput.tone}
-                onChange={(e) =>
-                  setProductInput({ ...productInput, tone: e.target.value })
-                }
-              />
-            </label>
-          </div>
+        const tScore = scoreLength(tLen, TITLE_MIN, TITLE_MAX);
+        const mScore = scoreLength(mLen, META_MIN, META_MAX);
 
-          <label className="block text-xs text-slate-300">
-            Main use cases / angles
-            <input
-              className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-              placeholder="gym, everyday wear, gifting"
-              value={productInput.useCases}
-              onChange={(e) =>
-                setProductInput({ ...productInput, useCases: e.target.value })
-              }
-            />
-            <span className="text-[11px] text-slate-500">
-              Comma separated. We convert these to keyword clusters.
-            </span>
-          </label>
+        oScore =
+          tScore !== null && mScore !== null
+            ? Math.round((tScore + mScore) / 2)
+            : null;
+      }
 
-          <button
-            onClick={handleRunProductSeo}
-            disabled={isRunning}
-            className="mt-4 inline-flex items-center justify-center px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-900 font-semibold text-sm hover:opacity-90 disabled:opacity-60"
-          >
-            {isRunning ? "Running Product SEO…" : "Run Product SEO"}
-          </button>
-        </div>
+      // Record in in-memory history
+      setRunHistory((prev) => {
+        const next = [
+          ...prev,
+          {
+            id: prev.length + 1,
+            time: nowLabel,
+            score: oScore,
+            titleLength: tLen,
+            metaLength: mLen,
+            market: activeMarket,
+            device: activeDevice,
+            toolId,
+          },
+        ];
+        return next.slice(-50);
+      });
 
-        {/* Right: results */}
-        <div className="rounded-2xl bg-slate-900/80 border border-slate-800 p-6 flex flex-col gap-4">
-          <h2 className="text-lg font-semibold text-slate-50 mb-1">
-            Generated SEO fields
-          </h2>
-          <div className="flex flex-wrap gap-3 mb-2">
-            <StatCard
-              label="Overall SEO score"
-              value={productScore}
-              sub="/100"
-            />
-            <StatCard
-              label="Title length"
-              value={productTitleChars}
-              sub="Target: 45–60"
-            />
-            <StatCard
-              label="Meta description"
-              value={productMetaChars}
-              sub="Target: 130–155"
-            />
-          </div>
-
-          <div className="text-sm text-slate-200 space-y-3">
-            <div>
-              <div className="text-xs font-semibold text-slate-400 uppercase">
-                Title
-              </div>
-              <div className="mt-1 bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2">
-                {out.title || "Run Product SEO to generate."}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-slate-400 uppercase">
-                Meta description
-              </div>
-              <div className="mt-1 bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2">
-                {out.metaDescription || "We’ll generate this once you run."}
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <div className="text-xs font-semibold text-slate-400 uppercase">
-                  Slug / handle
-                </div>
-                <div className="mt-1 bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2">
-                  {out.slug || "—"}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs font-semibold text-slate-400 uppercase">
-                  Keywords
-                </div>
-                <div className="mt-1 bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-xs">
-                  {Array.isArray(out.keywords) && out.keywords.length
-                    ? out.keywords.join(", ")
-                    : "—"}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function renderBlogSeoPanel() {
-    const out = blogSeoResult?.output || {};
-
-    return (
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left: inspector */}
-        <div className="rounded-2xl bg-slate-900/80 border border-slate-800 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-slate-50 mb-2">
-            Blog article inspector
-          </h2>
-
-          <label className="block text-sm text-slate-300">
-            Blog post title
-            <textarea
-              className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50 resize-none"
-              rows={2}
-              value={blogSeoInput.title}
-              onChange={(e) =>
-                setBlogSeoInput({ ...blogSeoInput, title: e.target.value })
-              }
-            />
-          </label>
-
-          <label className="block text-sm text-slate-300">
-            Blog summary / intro
-            <textarea
-              className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50 resize-y min-h-[96px]"
-              rows={4}
-              value={blogSeoInput.intro}
-              onChange={(e) =>
-                setBlogSeoInput({ ...blogSeoInput, intro: e.target.value })
-              }
-            />
-          </label>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <label className="block text-xs text-slate-300">
-              Brand / site
-              <input
-                className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-                value={blogSeoInput.brand}
-                onChange={(e) =>
-                  setBlogSeoInput({ ...blogSeoInput, brand: e.target.value })
-                }
-              />
-            </label>
-            <label className="block text-xs text-slate-300 md:col-span-2">
-              Tone &amp; voice
-              <input
-                className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-                value={blogSeoInput.tone}
-                onChange={(e) =>
-                  setBlogSeoInput({ ...blogSeoInput, tone: e.target.value })
-                }
-              />
-            </label>
-          </div>
-
-          <label className="block text-xs text-slate-300">
-            Main topics / angles
-            <input
-              className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-              placeholder="gym, everyday wear, gifting"
-              value={blogSeoInput.mainTopics}
-              onChange={(e) =>
-                setBlogSeoInput({
-                  ...blogSeoInput,
-                  mainTopics: e.target.value,
-                })
-              }
-            />
-          </label>
-
-          <button
-            onClick={handleRunBlogSeo}
-            disabled={isRunning}
-            className="mt-4 inline-flex items-center justify-center px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-900 font-semibold text-sm hover:opacity-90 disabled:opacity-60"
-          >
-            {isRunning ? "Running Blog SEO…" : "Run Blog SEO"}
-          </button>
-        </div>
-
-        {/* Right: results */}
-        <div className="rounded-2xl bg-slate-900/80 border border-slate-800 p-6 flex flex-col gap-4">
-          <h2 className="text-lg font-semibold text-slate-50 mb-1">
-            Generated SEO fields
-          </h2>
-          <div className="flex flex-wrap gap-3 mb-2">
-            <StatCard label="Overall SEO score" value={blogSeoScore} sub="/100" />
-            <StatCard
-              label="Title length"
-              value={blogSeoTitleChars}
-              sub="Target: 45–60"
-            />
-            <StatCard
-              label="Meta description"
-              value={blogSeoMetaChars}
-              sub="Target: 130–155"
-            />
-          </div>
-
-          <div className="text-sm text-slate-200 space-y-3">
-            <div>
-              <div className="text-xs font-semibold text-slate-400 uppercase">
-                Title
-              </div>
-              <div className="mt-1 bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2">
-                {out.title || "Run Blog SEO to generate."}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-slate-400 uppercase">
-                Meta description
-              </div>
-              <div className="mt-1 bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2">
-                {out.metaDescription || "We’ll generate this once you run."}
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <div className="text-xs font-semibold text-slate-400 uppercase">
-                  Slug
-                </div>
-                <div className="mt-1 bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2">
-                  {out.slug || "—"}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs font-semibold text-slate-400 uppercase">
-                  Keywords
-                </div>
-                <div className="mt-1 bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-xs">
-                  {Array.isArray(out.keywords) && out.keywords.length
-                    ? out.keywords.join(", ")
-                    : "—"}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function renderWeeklyPanel() {
-    const out = weeklyResult?.output || {};
-    const plan =
-      out.plan || out.rows || out.posts || []; // try a few field names
-    const summary = out.summary || out.overview || "";
-
-    return (
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left: planner */}
-        <div className="rounded-2xl bg-slate-900/80 border border-slate-800 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-slate-50 mb-2">
-            Weekly blog planner
-          </h2>
-
-          <label className="block text-xs text-slate-300">
-            Brand / site
-            <input
-              className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-              value={weeklyInput.brand}
-              onChange={(e) =>
-                setWeeklyInput({ ...weeklyInput, brand: e.target.value })
-              }
-            />
-          </label>
-
-          <label className="block text-xs text-slate-300">
-            Niche / topic
-            <input
-              className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-              value={weeklyInput.niche}
-              onChange={(e) =>
-                setWeeklyInput({ ...weeklyInput, niche: e.target.value })
-              }
-            />
-          </label>
-
-          <label className="block text-xs text-slate-300">
-            Target audience
-            <input
-              className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-              value={weeklyInput.audience}
-              onChange={(e) =>
-                setWeeklyInput({ ...weeklyInput, audience: e.target.value })
-              }
-            />
-          </label>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="block text-xs text-slate-300">
-              Cadence
-              <input
-                className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-                value={weeklyInput.cadence}
-                onChange={(e) =>
-                  setWeeklyInput({ ...weeklyInput, cadence: e.target.value })
-                }
-              />
-            </label>
-            <label className="block text-xs text-slate-300">
-              Tone &amp; voice
-              <input
-                className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-                value={weeklyInput.tone}
-                onChange={(e) =>
-                  setWeeklyInput({ ...weeklyInput, tone: e.target.value })
-                }
-              />
-            </label>
-          </div>
-
-          <label className="block text-xs text-slate-300">
-            Main themes / angles
-            <input
-              className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-              value={weeklyInput.themes}
-              onChange={(e) =>
-                setWeeklyInput({ ...weeklyInput, themes: e.target.value })
-              }
-            />
-            <span className="text-[11px] text-slate-500">
-              Comma separated. We’ll mix these into the weekly schedule.
-            </span>
-          </label>
-
-          <button
-            onClick={handleRunWeeklyPlan}
-            disabled={isRunning}
-            className="mt-4 inline-flex items-center justify-center px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-900 font-semibold text-sm hover:opacity-90 disabled:opacity-60"
-          >
-            {isRunning ? "Running Weekly plan…" : "Run Weekly plan"}
-          </button>
-        </div>
-
-        {/* Right: results */}
-        <div className="rounded-2xl bg-slate-900/80 border border-slate-800 p-6 flex flex-col gap-4">
-          <h2 className="text-lg font-semibold text-slate-50 mb-1">
-            Weekly blog plan (generated)
-          </h2>
-
-          <div className="flex flex-wrap gap-3">
-            <StatCard
-              label="Overall SEO score"
-              value={weeklyScore}
-              sub="/100"
-            />
-          </div>
-
-          {summary && (
-            <p className="mt-2 text-sm text-slate-300">{summary}</p>
-          )}
-
-          <div className="mt-3 overflow-x-auto border border-slate-800 rounded-xl">
-            <table className="min-w-full text-sm text-left text-slate-200">
-              <thead className="bg-slate-900/80 text-xs uppercase text-slate-400">
-                <tr>
-                  <th className="px-3 py-2 w-8">#</th>
-                  <th className="px-3 py-2">Title</th>
-                  <th className="px-3 py-2">Main angle / summary</th>
-                  <th className="px-3 py-2">Primary keyword</th>
-                  <th className="px-3 py-2">Slug</th>
-                  <th className="px-3 py-2">Suggested date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {plan.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="px-3 py-4 text-center text-slate-500"
-                    >
-                      Run the Weekly plan to generate your next batch of posts.
-                    </td>
-                  </tr>
-                )}
-                {plan.map((row, idx) => (
-                  <tr
-                    key={idx}
-                    className={
-                      idx % 2 === 0 ? "bg-slate-900/60" : "bg-slate-900/30"
-                    }
-                  >
-                    <td className="px-3 py-2 text-slate-400">{idx + 1}</td>
-                    <td className="px-3 py-2 font-medium text-slate-50">
-                      {row.title}
-                    </td>
-                    <td className="px-3 py-2 text-slate-200">
-                      {row.summary || row.mainAngle || row.angle}
-                    </td>
-                    <td className="px-3 py-2 text-slate-200">
-                      {row.primaryKeyword || row.keyword}
-                    </td>
-                    <td className="px-3 py-2 text-slate-200">{row.slug}</td>
-                    <td className="px-3 py-2 text-slate-200">
-                      {row.suggestedDate || row.suggested_day || row.day}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function renderDraftPanel() {
-    const out = draftResult?.output || {};
-
-    return (
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left: draft request */}
-        <div className="rounded-2xl bg-slate-900/80 border border-slate-800 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-slate-50 mb-2">
-            Blog draft inspector
-          </h2>
-
-          <label className="block text-sm text-slate-300">
-            Blog title / topic
-            <textarea
-              className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50 resize-none"
-              rows={2}
-              value={draftInput.title}
-              onChange={(e) =>
-                setDraftInput({ ...draftInput, title: e.target.value })
-              }
-            />
-          </label>
-
-          <label className="block text-xs text-slate-300">
-            Primary keyword
-            <input
-              className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-              value={draftInput.primaryKeyword}
-              onChange={(e) =>
-                setDraftInput({
-                  ...draftInput,
-                  primaryKeyword: e.target.value,
-                })
-              }
-            />
-          </label>
-
-          <label className="block text-sm text-slate-300">
-            Angle / summary you want
-            <textarea
-              className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50 resize-y min-h-[80px]"
-              value={draftInput.summary}
-              onChange={(e) =>
-                setDraftInput({ ...draftInput, summary: e.target.value })
-              }
-            />
-          </label>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <label className="block text-xs text-slate-300">
-              Brand / site
-              <input
-                className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-                value={draftInput.brand}
-                onChange={(e) =>
-                  setDraftInput({ ...draftInput, brand: e.target.value })
-                }
-              />
-            </label>
-            <label className="block text-xs text-slate-300 md:col-span-2">
-              Tone &amp; voice
-              <input
-                className="mt-1 w-full bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-50"
-                value={draftInput.tone}
-                onChange={(e) =>
-                  setDraftInput({ ...draftInput, tone: e.target.value })
-                }
-              />
-            </label>
-          </div>
-
-          <button
-            onClick={handleRunBlogDraft}
-            disabled={isRunning}
-            className="mt-4 inline-flex items-center justify-center px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-900 font-semibold text-sm hover:opacity-90 disabled:opacity-60"
-          >
-            {isRunning ? "Generating draft…" : "Generate blog draft"}
-          </button>
-        </div>
-
-        {/* Right: draft output */}
-        <div className="rounded-2xl bg-slate-900/80 border border-slate-800 p-6 flex flex-col gap-4">
-          <h2 className="text-lg font-semibold text-slate-50 mb-1">
-            Generated blog draft
-          </h2>
-
-          <div className="flex flex-wrap gap-3">
-            <StatCard
-              label="Estimated word count"
-              value={draftWordCount}
-              sub="Approx."
-            />
-          </div>
-
-          <div className="mt-3 text-sm text-slate-200 space-y-3">
-            <div>
-              <div className="text-xs font-semibold text-slate-400 uppercase">
-                SEO title
-              </div>
-              <div className="mt-1 bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2">
-                {out.title || "Run the draft engine to generate."}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-xs font-semibold text-slate-400 uppercase">
-                Meta description
-              </div>
-              <div className="mt-1 bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2">
-                {out.metaDescription || out.description || "—"}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-xs font-semibold text-slate-400 uppercase mb-1">
-                Article HTML
-              </div>
-              <div className="bg-slate-950/60 border border-slate-700 rounded-lg px-3 py-2 max-h-[420px] overflow-y-auto text-sm prose prose-invert prose-slate">
-                {out.articleHtml ? (
-                  <div
-                    dangerouslySetInnerHTML={{ __html: out.articleHtml }}
-                  />
-                ) : (
-                  <span className="text-slate-500">
-                    When you run the Blog Draft Engine, the full article HTML
-                    will appear here. Paste directly into your CMS, or export
-                    via API later.
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function renderActiveTool() {
-    switch (activeTool) {
-      case "product-seo":
-        return renderProductSeoPanel();
-      case "blog-seo":
-        return renderBlogSeoPanel();
-      case "weekly-blog":
-        return renderWeeklyPanel();
-      case "blog-draft":
-        return renderDraftPanel();
-      default:
-        return renderProductSeoPanel();
+      // Persist run to Core API (SQLite) – fire-and-forget
+      try {
+        await fetch(`${coreUrl}/projects/${project.id}/runs`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            toolId,
+            createdAt: now.toISOString(),
+            market: activeMarket,
+            device: activeDevice,
+            score: oScore,
+            titleLength: tLen,
+            metaLength: mLen,
+            input: payload,
+            output,
+          }),
+        });
+      } catch (persistErr) {
+        console.error("Failed to persist run", persistErr);
+      }
+    } catch (err) {
+      console.error(err);
+      setRunError(err.message || "Failed to run engine");
+    } finally {
+      setIsRunning(false);
     }
+  };
+
+  // -------------------------------------------------
+  // Helpers
+  // -------------------------------------------------
+  const copyToClipboard = (value) => {
+    if (!value) return;
+    navigator.clipboard.writeText(value).catch((err) => {
+      console.error("Clipboard copy failed", err);
+    });
+  };
+
+  const keywordsDisplay =
+    seoKeywords && Array.isArray(seoKeywords)
+      ? seoKeywords.join(", ")
+      : "";
+
+  // Filter history by engine + market + device
+  const historyForFilters = runHistory.filter((run) => {
+    const runMarket = run.market || "Worldwide";
+    const runDevice = run.device || "Desktop";
+    const runToolId = run.toolId || "product-seo";
+    return (
+      runMarket === activeMarket &&
+      runDevice === activeDevice &&
+      runToolId === currentEngine.toolId
+    );
+  });
+
+  let rangedHistory;
+  if (timeRange === "30d") {
+    rangedHistory = historyForFilters.slice(-5);
+  } else if (timeRange === "180d") {
+    rangedHistory = historyForFilters.slice(-8);
+  } else {
+    rangedHistory = historyForFilters;
   }
 
-  // ------------------------------------------------------------------
-  // Root layout
-  // ------------------------------------------------------------------
+  const latestRun = historyForFilters[historyForFilters.length - 1];
 
+  // Advice text (title / meta) – phrased per engine
+  const buildTitleAdvice = () => {
+    const label = isProduct ? "product" : isBlog ? "blog post" : "content";
+    if (!currentTitleLength) {
+      return `Add a clear ${label} title first, then run the engine. Aim for 45–60 characters.`;
+    }
+    if (currentTitleLength < TITLE_MIN) {
+      const minExtra = TITLE_MIN - currentTitleLength;
+      const maxExtra = TITLE_MAX - currentTitleLength;
+      return `Your current ${label} title is ${currentTitleLength} characters. Try adding roughly ${minExtra}–${maxExtra} characters with materials, finish or a key benefit.`;
+    }
+    if (currentTitleLength > TITLE_MAX) {
+      const extra = currentTitleLength - TITLE_MAX;
+      return `Your current ${label} title is ${currentTitleLength} characters. It is a bit long – consider trimming around ${extra} characters so it stays punchy in search results.`;
+    }
+    return `Your current ${label} title is ${currentTitleLength} characters, which is right in the sweet spot. Only tweak it if it feels clunky or hard to read.`;
+  };
+
+  const buildMetaAdvice = () => {
+    if (!currentMetaLength) {
+      return "Write 2–3 short sentences describing benefits, materials and use cases. Aim for 130–155 characters.";
+    }
+    if (currentMetaLength < META_MIN) {
+      const minExtra = META_MIN - currentMetaLength;
+      const maxExtra = META_MAX - currentMetaLength;
+      return `Your meta description is ${currentMetaLength} characters. Add around ${minExtra}–${maxExtra} characters with clear benefits, materials or occasions (e.g. gym, gifting, everyday wear).`;
+    }
+    if (currentMetaLength > META_MAX) {
+      const extra = currentMetaLength - META_MAX;
+      return `Your meta description is ${currentMetaLength} characters. It may get cut off in Google. Try removing roughly ${extra} characters or a whole extra sentence.`;
+    }
+    return `Your meta description is ${currentMetaLength} characters, which is on target. Focus on clarity and benefits rather than adding more words.`;
+  };
+
+  // -------------------------------------------------
+  // Onboarding screen: no project yet
+  // -------------------------------------------------
+  if (!project) {
+    return (
+      <ProjectSetup
+        coreUrl={coreUrl}
+        onConnected={(proj) => setProject(proj)}
+      />
+    );
+  }
+
+  // -------------------------------------------------
+  // Main console UI
+  // -------------------------------------------------
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex">
-      {/* Left sidebar */}
-      <aside className="hidden md:flex flex-col w-60 bg-slate-950 border-r border-slate-900 px-5 py-6 gap-8">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-slate-950 font-bold text-lg">
-            A
-          </div>
-          <div>
-            <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
-              AURA Systems AI
-            </div>
-            <div className="text-sm font-semibold text-slate-100">
-              SEO Command Centre
-            </div>
+    <div className="app-shell">
+      {/* SIDEBAR */}
+      <aside className="side-nav">
+        <div className="side-nav-brand">
+          <div className="side-nav-avatar">A</div>
+          <div className="side-nav-brand-copy">
+            <span className="side-nav-eyebrow">AURA SYSTEMS AI</span>
+            <span className="side-nav-title">SEO Command Centre</span>
           </div>
         </div>
 
-        <div>
-          <div className="text-[11px] uppercase tracking-[0.18em] text-slate-500 mb-2">
-            Suites
-          </div>
-          <nav className="space-y-1 text-sm">
-            <button className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-slate-900 text-cyan-400 font-medium">
-              <span>SEO Suite</span>
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            </button>
-            <button className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-500 hover:bg-slate-900/60">
-              <span>CRO / Social</span>
-              <span className="h-1.5 w-1.5 rounded-full bg-slate-700" />
-            </button>
-            <button className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-500 hover:bg-slate-900/60">
-              <span>Flows &amp; Email</span>
-              <span className="h-1.5 w-1.5 rounded-full bg-slate-700" />
-            </button>
-            <button className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-500 hover:bg-slate-900/60">
-              <span>Developers</span>
-              <span className="h-1.5 w-1.5 rounded-full bg-slate-700" />
-            </button>
-          </nav>
-        </div>
+        <nav className="side-nav-menu">
+          <div className="side-nav-section-label">Suites</div>
+          <button className="side-nav-item side-nav-item--active">
+            <span className="side-nav-dot seo" />
+            SEO Suite
+          </button>
+          <button className="side-nav-item" disabled>
+            <span className="side-nav-dot cro" />
+            CRO / Social
+          </button>
+          <button className="side-nav-item" disabled>
+            <span className="side-nav-dot flows" />
+            Flows &amp; Email
+          </button>
+          <button className="side-nav-item" disabled>
+            <span className="side-nav-dot dev" />
+            Developers
+          </button>
+        </nav>
 
-        <div className="mt-auto text-[11px] text-slate-500">
-          Connected project
-          <div className="mt-1 text-xs text-slate-300">aura</div>
-          <div className="text-[11px] text-slate-500">
-            aurasystemsai.com (production)
-          </div>
-        </div>
+        <ProjectSwitcher
+          coreUrl={coreUrl}
+          currentProject={project}
+          onSelectProject={(p) => setProject(p)}
+          onDisconnect={() => setProject(null)}
+        />
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 flex flex-col">
-        <header className="border-b border-slate-900 px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div>
-            <div className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-              Content · SEO / Planning
-            </div>
-            <h1 className="text-xl md:text-2xl font-semibold text-slate-50">
-              {renderHeaderTitle()}
-            </h1>
-            <p className="text-xs md:text-sm text-slate-400 mt-1">
-              Generate SEO titles, descriptions, slugs and content plans so
-              beginners never touch JSON.
-            </p>
-          </div>
-
-          <div className="flex flex-col md:items-end gap-2">
-            <div className="flex items-center gap-3">
-              <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/40 text-xs text-emerald-300 flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Core API online · env=production</span>
+      {/* MAIN AREA */}
+      <main className="app-main">
+        <div className="page-frame">
+          {/* HEADER STRIP */}
+          <header className="top-strip">
+            <div className="top-strip-left">
+              <div className="top-strip-eyebrow">
+                {currentEngine.suitePrefix}
               </div>
-              {renderToolTabs()}
-            </div>
-            {lastError && (
-              <div className="text-[11px] text-rose-300 bg-rose-950/40 border border-rose-900 rounded-md px-2 py-1 max-w-md">
-                {lastError}
+              <h1 className="top-strip-title">
+                {currentEngine.name} · {project.name}
+              </h1>
+              <div className="top-strip-subtitle">
+                {isWeekly
+                  ? "Generate a simple weekly content plan with SEO-ready titles, descriptions and angles. Designed so beginners never touch JSON."
+                  : "Generate SEO titles, descriptions, slugs and keyword sets so beginners never touch JSON."}
               </div>
-            )}
-          </div>
-        </header>
 
-        <div className="px-6 pb-10 pt-6 overflow-y-auto">
-          {renderActiveTool()}
+              <div className="engine-toggle-row">
+                {Object.values(ENGINES).map((engine) => (
+                  <button
+                    key={engine.key}
+                    className={
+                      "engine-toggle" +
+                      (activeEngine === engine.key
+                        ? " engine-toggle--active"
+                        : "")
+                    }
+                    onClick={() => setActiveEngine(engine.key)}
+                  >
+                    {engine.chipLabel}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="top-strip-right">
+              <div className="core-api-block">
+                <div className="core-api-label">Core API</div>
+                <div className="core-api-row">
+                  <input
+                    className="core-api-input"
+                    value={coreUrl}
+                    onChange={(e) => setCoreUrl(e.target.value)}
+                    spellCheck={false}
+                  />
+                  <button
+                    className="button button--ghost core-api-refresh"
+                    onClick={() => setCoreUrl((u) => u.trim())}
+                  >
+                    Refresh
+                  </button>
+                </div>
+
+                <div
+                  className={[
+                    "core-status-chip",
+                    coreStatus === "checking"
+                      ? "core-status-chip--loading"
+                      : coreStatus === "ok"
+                      ? "core-status-chip--ok"
+                      : coreStatus === "error"
+                      ? "core-status-chip--error"
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  <span className="core-status-indicator" />
+                  <span className="core-status-text">{coreStatusLabel}</span>
+                </div>
+              </div>
+
+              <div className="top-strip-meta">
+                <div className="top-strip-meta-label">Last run</div>
+                <div className="top-strip-meta-value">
+                  {lastRunAt || "Not run yet"}
+                </div>
+              </div>
+
+              <button
+                className="button button--primary top-strip-run"
+                onClick={handleRun}
+                disabled={isRunning || coreStatus !== "ok"}
+              >
+                {isRunning ? "Running…" : currentEngine.runButtonLabel}
+              </button>
+            </div>
+          </header>
+
+          {/* SYSTEM HEALTH PANEL */}
+          <section style={{ marginTop: 10, marginBottom: 6 }}>
+            <SystemHealthPanel />
+          </section>
+
+          {/* PAGE TABS */}
+          <section className="page-tabs">
+            {[
+              "Overview",
+              "Compare domains",
+              "Growth report",
+              "Compare by countries",
+            ].map((tab) => (
+              <button
+                key={tab}
+                className={
+                  "page-tab" + (pageTab === tab ? " page-tab--active" : "")
+                }
+                onClick={() => setPageTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </section>
+
+          {/* FILTER STRIP */}
+          <section className="filters-strip">
+            <div className="filters-left">
+              <div className="filters-label">Market</div>
+              <div className="pill-row">
+                {["Worldwide", "US", "UK", "EU"].map((market) => (
+                  <button
+                    key={market}
+                    className={
+                      "pill" + (activeMarket === market ? " pill--active" : "")
+                    }
+                    onClick={() => setActiveMarket(market)}
+                  >
+                    {market}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="filters-right">
+              <div className="filters-group">
+                <div className="filters-label">Device</div>
+                <div className="pill-row">
+                  {["Desktop", "Mobile"].map((device) => (
+                    <button
+                      key={device}
+                      className={
+                        "pill" +
+                        (activeDevice === device ? " pill--active" : "")
+                      }
+                      onClick={() => setActiveDevice(device)}
+                    >
+                      {device}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="filters-group">
+                <div className="filters-label">Run history</div>
+                <div className="pill-row">
+                  <button
+                    className={
+                      "pill" + (timeRange === "30d" ? " pill--active" : "")
+                    }
+                    onClick={() => setTimeRange("30d")}
+                  >
+                    Last 5 runs
+                  </button>
+                  <button
+                    className={
+                      "pill" + (timeRange === "180d" ? " pill--active" : "")
+                    }
+                    onClick={() => setTimeRange("180d")}
+                  >
+                    Last 8 runs
+                  </button>
+                  <button
+                    className={
+                      "pill" + (timeRange === "all" ? " pill--active" : "")
+                    }
+                    onClick={() => setTimeRange("all")}
+                  >
+                    All runs
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {pageTab === "Overview" ? (
+            <>
+              {/* KPI ROW */}
+              <section className="kpi-row">
+                <div className="kpi-card">
+                  <div className="kpi-label">Overall SEO score</div>
+                  <div className="kpi-main">
+                    <span className="kpi-value">
+                      {overallScore !== null ? `${overallScore}` : "—"}
+                    </span>
+                    <span className="kpi-unit">
+                      {overallScore !== null ? "/100" : ""}
+                    </span>
+                  </div>
+                  <div className="kpi-footnote">
+                    Based on current title and meta description length.
+                  </div>
+                </div>
+
+                <div className="kpi-card">
+                  <div className="kpi-label">{currentEngine.lengthTitleLabel}</div>
+                  <div className="kpi-main">
+                    <span className="kpi-value">
+                      {currentTitleLength || "—"}
+                    </span>
+                    <span className="kpi-unit">characters</span>
+                  </div>
+                  <div className="kpi-target">
+                    Target: {TITLE_MIN}–{TITLE_MAX}
+                  </div>
+                </div>
+
+                <div className="kpi-card">
+                  <div className="kpi-label">Meta description</div>
+                  <div className="kpi-main">
+                    <span className="kpi-value">
+                      {currentMetaLength || "—"}
+                    </span>
+                    <span className="kpi-unit">characters</span>
+                  </div>
+                  <div className="kpi-target">
+                    Target: {META_MIN}–{META_MAX}
+                  </div>
+                </div>
+
+                <div className="kpi-card">
+                  <div className="kpi-label">Runs recorded</div>
+                  <div className="kpi-main">
+                    <span className="kpi-value">
+                      {historyForFilters.length || "—"}
+                    </span>
+                    <span className="kpi-unit">runs</span>
+                  </div>
+                  <div className="kpi-target">
+                    Latest score: {latestRun?.score ?? "—"}/100
+                  </div>
+                </div>
+              </section>
+
+              {/* HOW TO REACH 100/100 */}
+              <section className="card" style={{ marginTop: 10 }}>
+                <div className="card-header">
+                  <h2 className="card-title">How to reach 100/100</h2>
+                  <p className="card-subtitle">
+                    You do not need to be an SEO expert. Follow these steps,
+                    change the text on the right, then click{" "}
+                    <strong>{currentEngine.runButtonLabel}</strong> again.
+                    Guidance is tuned for <strong>{activeMarket}</strong> ·{" "}
+                    <strong>{activeDevice}</strong>.
+                  </p>
+                </div>
+
+                <ol style={{ paddingLeft: 18, fontSize: 12, margin: 0 }}>
+                  <li style={{ marginBottom: 8 }}>
+                    <strong>Make your title clear.</strong>
+                    <br />
+                    {buildTitleAdvice()}
+                  </li>
+                  <li style={{ marginBottom: 8 }}>
+                    <strong>Use your meta description to sell the click.</strong>
+                    <br />
+                    {buildMetaAdvice()}
+                  </li>
+                  <li>
+                    <strong>Quick beginner formula you can follow:</strong>
+                    <br />
+                    <span style={{ fontSize: 11 }}>
+                      <code>
+                        [What it is] + [1–2 big benefits] + [when / who it is
+                        for]
+                      </code>
+                      .
+                      <br />
+                      Example: “Waterproof paperclip bracelet with sweat-proof
+                      coating. Adjustable fit for gym, everyday wear and
+                      gifting.”
+                    </span>
+                  </li>
+                </ol>
+              </section>
+
+              {/* AI SUGGESTIONS (only really for product/blog but harmless in weekly) */}
+              <section className="card" style={{ marginTop: 10 }}>
+                <div className="card-header">
+                  <h2 className="card-title">
+                    AI suggestions for this {pieceLabel}
+                  </h2>
+                  <p className="card-subtitle">
+                    Generated from your last run. Use this as a second opinion
+                    on how to tweak the copy before you publish.
+                  </p>
+                </div>
+                <ul style={{ fontSize: 12, paddingLeft: 18, margin: 0 }}>
+                  <li>
+                    <strong>Title:</strong>{" "}
+                    {titleAdvice ||
+                      "Run the engine to get specific tips for your title."}
+                  </li>
+                  <li>
+                    <strong>Meta:</strong>{" "}
+                    {metaAdvice ||
+                      "We will suggest how to strengthen your meta description once you have run the tool at least once."}
+                  </li>
+                  <li>
+                    <strong>Overall:</strong>{" "}
+                    {generalAdvice ||
+                      "General optimisation tips for this piece will appear here after the first run."}
+                  </li>
+                </ul>
+              </section>
+
+              {/* MAIN GRID */}
+              <section className="main-grid">
+                {/* LEFT COLUMN */}
+                <div className="left-column">
+                  {/* Run history card */}
+                  <div className="card">
+                    <div className="card-header">
+                      <div className="card-title-row">
+                        <h2 className="card-title">SEO run history</h2>
+                        <div className="card-toggle-tabs">
+                          <button
+                            className={
+                              "tab" +
+                              (historyView === "score" ? " tab--active" : "")
+                            }
+                            onClick={() => setHistoryView("score")}
+                          >
+                            Score trend
+                          </button>
+                          <button
+                            className={
+                              "tab" +
+                              (historyView === "meta" ? " tab--active" : "")
+                            }
+                            onClick={() => setHistoryView("meta")}
+                          >
+                            Meta length
+                          </button>
+                        </div>
+                      </div>
+                      <p className="card-subtitle">
+                        Every time you re-run the engine, we plot a new point
+                        here. You are currently viewing{" "}
+                        <strong>{activeMarket}</strong> ·{" "}
+                        <strong>{activeDevice}</strong> runs for{" "}
+                        <strong>{currentEngine.chipLabel}</strong> only.
+                      </p>
+                    </div>
+
+                    <div className="run-history-chart">
+                      {rangedHistory.length ? (
+                        <div className="run-history-spark">
+                          {rangedHistory.map((run) => {
+                            let metric;
+                            if (historyView === "score") {
+                              metric = run.score ?? 0;
+                            } else {
+                              const length = run.metaLength || 0;
+                              const clamped = Math.min(length, 220);
+                              metric = (clamped / 220) * 100;
+                            }
+                            const height = 20 + (metric / 100) * 60;
+                            return (
+                              <div
+                                key={run.id}
+                                className="run-history-bar"
+                                style={{ height: `${height}%` }}
+                                title={
+                                  historyView === "score"
+                                    ? `Run ${run.id} • ${run.score || "n/a"}/100`
+                                    : `Run ${run.id} • meta ${run.metaLength} chars`
+                                }
+                              />
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="run-history-empty">
+                          No runs recorded yet for this engine / market /
+                          device. Click “{currentEngine.runButtonLabel}” to
+                          start tracking.
+                        </div>
+                      )}
+
+                      <div className="chart-x-axis">
+                        {rangedHistory.map((run) => (
+                          <span key={run.id}>Run {run.id}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="run-history-table-wrapper">
+                      <div className="run-history-table-header">
+                        <span className="run-history-table-title">
+                          Last runs
+                        </span>
+                        <span className="run-history-table-subtitle">
+                          Shows how your lengths and score changed per run for
+                          this engine / market / device.
+                        </span>
+                      </div>
+
+                      <table className="run-history-table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>When</th>
+                            <th>Score</th>
+                            <th>Title chars</th>
+                            <th>Meta chars</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rangedHistory.length === 0 ? (
+                            <tr>
+                              <td colSpan={5}>
+                                No runs yet. Click "
+                                {currentEngine.runButtonLabel}" to start
+                                tracking.
+                              </td>
+                            </tr>
+                          ) : (
+                            [...rangedHistory]
+                              .slice()
+                              .reverse()
+                              .map((run) => (
+                                <tr key={run.id}>
+                                  <td>Run {run.id}</td>
+                                  <td>{run.time}</td>
+                                  <td>{run.score ?? "—"}</td>
+                                  <td>{run.titleLength}</td>
+                                  <td>{run.metaLength}</td>
+                                </tr>
+                              ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Generated fields / weekly plan */}
+                  {isWeekly ? (
+                    <div className="card seo-table-card">
+                      <div className="card-header">
+                        <h2 className="card-title">
+                          Weekly blog plan (generated)
+                        </h2>
+                        <p className="card-subtitle">
+                          Paste this straight into your CMS or Notion. Titles
+                          and meta descriptions are already tuned for search.
+                        </p>
+                      </div>
+
+                      {weeklySummary && (
+                        <p style={{ fontSize: 12, marginBottom: 12 }}>
+                          {weeklySummary}
+                        </p>
+                      )}
+
+                      <table className="seo-table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Title</th>
+                            <th>Main angle / summary</th>
+                            <th>Primary keyword</th>
+                            <th>Slug</th>
+                            <th>Suggested date</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {weeklyPosts.length === 0 ? (
+                            <tr>
+                              <td colSpan={6}>
+                                Run the Weekly blog planner to generate your
+                                next batch of posts.
+                              </td>
+                            </tr>
+                          ) : (
+                            weeklyPosts.map((post, idx) => (
+                              <tr key={idx}>
+                                <td>{idx + 1}</td>
+                                <td>{post.title || "—"}</td>
+                                <td>
+                                  {post.angle ||
+                                    post.summary ||
+                                    post.metaDescription ||
+                                    "—"}
+                                </td>
+                                <td>
+                                  {post.primaryKeyword ||
+                                    post.keyword ||
+                                    "—"}
+                                </td>
+                                <td>{post.slug || post.handle || "—"}</td>
+                                <td>{post.suggestedDate || post.date || "—"}</td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="card seo-table-card">
+                      <div className="card-header">
+                        <h2 className="card-title">Generated SEO fields</h2>
+                        <p className="card-subtitle">
+                          Paste straight into Shopify or your platform. Use the
+                          copy buttons so beginners never touch JSON.
+                        </p>
+                      </div>
+
+                      <table className="seo-table">
+                        <thead>
+                          <tr>
+                            <th>Field</th>
+                            <th>Value</th>
+                            <th className="actions-col">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Title</td>
+                            <td>
+                              {seoTitle || "Run the engine to get a title."}
+                            </td>
+                            <td>
+                              <button
+                                className="button button--ghost button--tiny"
+                                onClick={() => copyToClipboard(seoTitle)}
+                                disabled={!seoTitle}
+                              >
+                                Copy
+                              </button>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Meta description</td>
+                            <td>
+                              {seoDescription ||
+                                "Meta description will appear here after the first run."}
+                            </td>
+                            <td>
+                              <button
+                                className="button button--ghost button--tiny"
+                                onClick={() => copyToClipboard(seoDescription)}
+                                disabled={!seoDescription}
+                              >
+                                Copy
+                              </button>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Slug / handle</td>
+                            <td>
+                              {seoSlug || "Suggested slug will appear here."}
+                            </td>
+                            <td>
+                              <button
+                                className="button button--ghost button--tiny"
+                                onClick={() => copyToClipboard(seoSlug)}
+                                disabled={!seoSlug}
+                              >
+                                Copy
+                              </button>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Keywords</td>
+                            <td>
+                              {keywordsDisplay ||
+                                "Keyword set will appear here after the first run."}
+                            </td>
+                            <td>
+                              <button
+                                className="button button--ghost button--tiny"
+                                onClick={() =>
+                                  copyToClipboard(keywordsDisplay)
+                                }
+                                disabled={!keywordsDisplay}
+                              >
+                                Copy
+                              </button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      <details className="raw-json">
+                        <summary>Raw JSON from Core API (advanced)</summary>
+                        <pre className="raw-json-pre">
+                          {rawJson ||
+                            "// Run the engine to see the raw JSON here."}
+                        </pre>
+                      </details>
+                    </div>
+                  )}
+                </div>
+
+                {/* RIGHT COLUMN – inspectors */}
+                <div className="right-column">
+                  <div className="card inspector-card">
+                    <div className="card-header">
+                      <h2 className="card-title">
+                        {currentEngine.inspectorTitle}
+                      </h2>
+                      <p className="card-subtitle">
+                        {currentEngine.inspectorSubtitle}
+                      </p>
+                    </div>
+
+                    {isWeekly ? (
+                      <>
+                        <div className="inspector-field-group">
+                          <label className="inspector-label" htmlFor="wBrand">
+                            Brand / site
+                          </label>
+                          <input
+                            id="wBrand"
+                            className="inspector-input"
+                            value={weeklyBrand}
+                            onChange={(e) => setWeeklyBrand(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="inspector-field-group">
+                          <label className="inspector-label" htmlFor="wNiche">
+                            Niche / topic
+                          </label>
+                          <input
+                            id="wNiche"
+                            className="inspector-input"
+                            value={weeklyNiche}
+                            onChange={(e) => setWeeklyNiche(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="inspector-field-group">
+                          <label
+                            className="inspector-label"
+                            htmlFor="wAudience"
+                          >
+                            Target audience
+                          </label>
+                          <input
+                            id="wAudience"
+                            className="inspector-input"
+                            value={weeklyAudience}
+                            onChange={(e) =>
+                              setWeeklyAudience(e.target.value)
+                            }
+                          />
+                        </div>
+
+                        <div className="inspector-columns">
+                          <div className="inspector-field-group">
+                            <label
+                              className="inspector-label"
+                              htmlFor="wCadence"
+                            >
+                              Cadence
+                            </label>
+                            <input
+                              id="wCadence"
+                              className="inspector-input"
+                              value={weeklyCadence}
+                              onChange={(e) =>
+                                setWeeklyCadence(e.target.value)
+                              }
+                            />
+                          </div>
+
+                          <div className="inspector-field-group">
+                            <label className="inspector-label" htmlFor="wTone">
+                              Tone &amp; voice
+                            </label>
+                            <input
+                              id="wTone"
+                              className="inspector-input"
+                              value={weeklyTone}
+                              onChange={(e) => setWeeklyTone(e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="inspector-field-group">
+                          <label
+                            className="inspector-label"
+                            htmlFor="wThemes"
+                          >
+                            Main themes / angles
+                          </label>
+                          <input
+                            id="wThemes"
+                            className="inspector-input"
+                            value={weeklyThemes}
+                            onChange={(e) =>
+                              setWeeklyThemes(e.target.value)
+                            }
+                          />
+                          <div className="field-help">
+                            Comma separated. We will mix these into the weekly
+                            schedule (e.g. product education, styling tips,
+                            gifting).
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="inspector-field-group presets-row">
+                          <div className="inspector-label">Presets</div>
+                          <div className="preset-chips">
+                            <button
+                              className="preset-chip"
+                              onClick={() =>
+                                setProductTitle(
+                                  isBlog
+                                    ? "How to style waterproof gold huggie earrings"
+                                    : "Waterproof gold huggie earrings"
+                                )
+                              }
+                            >
+                              Waterproof earrings
+                            </button>
+                            <button
+                              className="preset-chip"
+                              onClick={() =>
+                                setProductTitle(
+                                  isBlog
+                                    ? "Layered waterproof necklace looks for everyday wear"
+                                    : "Layered waterproof necklace set"
+                                )
+                              }
+                            >
+                              Layered necklace
+                            </button>
+                            <button
+                              className="preset-chip"
+                              onClick={() =>
+                                setProductTitle(
+                                  isBlog
+                                    ? "Why paperclip bracelets are the perfect everyday stack"
+                                    : "Minimal paperclip bracelet"
+                                )
+                              }
+                            >
+                              Bracelet
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="inspector-field-group">
+                          <label className="inspector-label" htmlFor="title">
+                            {isBlog ? "Blog post title" : "Product title"}
+                          </label>
+                          <input
+                            id="title"
+                            className="inspector-input"
+                            value={productTitle}
+                            onChange={(e) => setProductTitle(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="inspector-field-group">
+                          <label
+                            className="inspector-label"
+                            htmlFor="description"
+                          >
+                            {isBlog ? "Blog summary / intro" : "Product description"}
+                          </label>
+                          <textarea
+                            id="description"
+                            className="inspector-textarea"
+                            rows={5}
+                            value={productDescription}
+                            onChange={(e) =>
+                              setProductDescription(e.target.value)
+                            }
+                          />
+                        </div>
+
+                        <div className="inspector-columns">
+                          <div className="inspector-field-group">
+                            <label
+                              className="inspector-label"
+                              htmlFor="brand"
+                            >
+                              Brand
+                            </label>
+                            <input
+                              id="brand"
+                              className="inspector-input"
+                              value={brand}
+                              onChange={(e) => setBrand(e.target.value)}
+                            />
+                          </div>
+
+                          <div className="inspector-field-group">
+                            <label className="inspector-label" htmlFor="tone">
+                              Tone &amp; voice
+                            </label>
+                            <input
+                              id="tone"
+                              className="inspector-input"
+                              value={tone}
+                              onChange={(e) => setTone(e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="inspector-field-group">
+                          <label
+                            className="inspector-label"
+                            htmlFor="useCases"
+                          >
+                            {isBlog
+                              ? "Main topics / angles"
+                              : "Use cases / occasions"}
+                          </label>
+                          <input
+                            id="useCases"
+                            className="inspector-input"
+                            value={useCases}
+                            onChange={(e) => setUseCases(e.target.value)}
+                          />
+                          <div className="field-help">
+                            Comma separated. We convert this into structured
+                            context for the engine.
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    <div className="inspector-footer">
+                      <button
+                        className="button button--primary inspector-run"
+                        onClick={handleRun}
+                        disabled={isRunning || coreStatus !== "ok"}
+                      >
+                        {isRunning ? "Running…" : currentEngine.runButtonLabel}
+                      </button>
+                      <div className="inspector-footnote">
+                        {isWeekly
+                          ? "Plan generated. Copy titles and meta from the left-hand table."
+                          : "SEO fields generated. Copy them from the left-hand table."}
+                      </div>
+                    </div>
+
+                    {runError && (
+                      <div className="error-banner">
+                        <span className="error-dot" />
+                        {runError}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            </>
+          ) : (
+            // Non-Overview tabs – roadmap explainer
+            <section style={{ marginTop: 10 }}>
+              <div className="card">
+                <div className="card-header">
+                  <h2 className="card-title">{pageTab}</h2>
+                  <p className="card-subtitle">
+                    This view is part of the AURA roadmap. You can show this to
+                    clients as an upcoming feature while we focus on the SEO
+                    engines.
+                  </p>
+                </div>
+                <ul style={{ fontSize: 12, paddingLeft: 18 }}>
+                  {pageTab === "Compare domains" && (
+                    <>
+                      <li>
+                        Compare your project domain against competitors on title
+                        &amp; meta quality.
+                      </li>
+                      <li>
+                        See who wins on click-through potential in{" "}
+                        {activeMarket} for {activeDevice.toLowerCase()}.
+                      </li>
+                      <li>
+                        Export a simple action list you can plug straight into
+                        Shopify.
+                      </li>
+                    </>
+                  )}
+                  {pageTab === "Growth report" && (
+                    <>
+                      <li>
+                        Track how your average SEO score moves over time across
+                        products and content.
+                      </li>
+                      <li>
+                        Spot weeks where titles/meta dropped below target so you
+                        can fix them quickly.
+                      </li>
+                      <li>
+                        Perfect for monthly reports you send to brands.
+                      </li>
+                    </>
+                  )}
+                  {pageTab === "Compare by countries" && (
+                    <>
+                      <li>
+                        See which markets (US / UK / EU / Worldwide) are best
+                        optimised for your catalogue.
+                      </li>
+                      <li>
+                        Plan localisation work – which regions need better copy,
+                        currency cues or spelling.
+                      </li>
+                      <li>
+                        Future versions will auto-translate SEO for each region.
+                      </li>
+                    </>
+                  )}
+                </ul>
+              </div>
+            </section>
+          )}
         </div>
       </main>
     </div>
