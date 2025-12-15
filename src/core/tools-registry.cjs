@@ -9,6 +9,7 @@
 // This file collects them, verifies unique IDs and exposes:
 //   - toolsById: { [id]: toolModule }
 //   - getTool(id): toolModule (throws if unknown)
+//   - listTools(): [{ id, name, category }]
 // ------------------------------------------------------
 
 "use strict";
@@ -31,7 +32,7 @@ const ltvChurnPredictor = require("../tools/ltv-churn-predictor");
 const emailAutomationBuilder = require("../tools/email-automation-builder");
 const socialSchedulerContentEngine = require("../tools/social-scheduler-content-engine");
 const reviewUgcEngine = require("../tools/review-ugc-engine");
-const klaviyoFlowOptimizer = require("../tools/klaviyo-flow-optimizer");
+const klaviyoFlowAutomation = require("../tools/klaviyo-flow-automation");
 
 // Pricing, finance, operations
 const dynamicPricingEngine = require("../tools/dynamic-pricing-engine");
@@ -57,11 +58,11 @@ const auraOperationsAi = require("../tools/aura-operations-ai");
 const auraApiSdk = require("../tools/aura-api-sdk");
 const workflowOrchestrator = require("../tools/workflow-orchestrator");
 
-// If you add new tools, require them here and then add them
-// to the allTools array below.
+// ------------------------------------------------------
+// Master list – ONE place to register tools.
+// If you add new tools, require them above and add them here.
 // ------------------------------------------------------
 
-// Master list – ONE place to register tools.
 const allTools = [
   // SEO + content
   productSeo,
@@ -81,7 +82,7 @@ const allTools = [
   emailAutomationBuilder,
   socialSchedulerContentEngine,
   reviewUgcEngine,
-  klaviyoFlowOptimizer,
+  klaviyoFlowAutomation,
 
   // Pricing / finance / ops
   dynamicPricingEngine,
