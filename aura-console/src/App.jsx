@@ -1,29 +1,57 @@
+// aura-console/src/App.jsx
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import ProjectSetup from "./ProjectSetup";
 import ProjectSwitcher from "./ProjectSwitcher";
 import SystemHealthPanel from "./components/SystemHealthPanel";
 
-const PRODUCT_SEO_TOOL = {
-  id: "product-seo",
-  name: "Product SEO Engine",
-  category: "SEO",
-  description:
-    "Generate SEO titles, descriptions, slugs and keyword sets for products.",
-};
-
-const BLOG_SEO_TOOL = {
-  id: "blog-seo",
-  name: "Blog SEO Engine",
-  category: "SEO",
-  description:
-    "Generate SEO titles, descriptions, slugs and keyword sets for blog posts and content.",
-};
-
-// For production we always talk to the Core API on Render
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
+// Single place to define engines used by the console
+const ENGINES = {
+  product: {
+    key: "product",
+    toolId: "product-seo",
+    name: "Product SEO Engine",
+    suitePrefix: "Product catalogue · SEO",
+    runButtonLabel: "Run Product SEO",
+    chipLabel: "Product SEO",
+    inspectorTitle: "Product inspector",
+    inspectorSubtitle:
+      "Step 1: describe the product in plain English. Step 2: run the engine. Step 3: copy the SEO fields from the left-hand table.",
+    lengthTitleLabel: "Title length",
+    lengthTitleHelper: "Your current product title is",
+  },
+  blog: {
+    key: "blog",
+    toolId: "blog-seo",
+    name: "Blog SEO Engine",
+    suitePrefix: "Content · SEO",
+    runButtonLabel: "Run Blog SEO",
+    chipLabel: "Blog SEO",
+    inspectorTitle: "Blog article inspector",
+    inspectorSubtitle:
+      "Step 1: describe the blog post in plain English. Step 2: run the engine. Step 3: copy the SEO fields from the left-hand table into your CMS.",
+    lengthTitleLabel: "Title length",
+    lengthTitleHelper: "Your current blog post title is",
+  },
+  weekly: {
+    key: "weekly",
+    toolId: "weekly-blog-content-engine",
+    name: "Weekly Blog Content Engine",
+    suitePrefix: "Content · Planning",
+    runButtonLabel: "Run Weekly plan",
+    chipLabel: "Weekly blog plan",
+    inspectorTitle: "Weekly blog planner",
+    inspectorSubtitle:
+      "Describe your niche, audience and cadence. We’ll generate a simple weekly content plan you can plug straight into your CMS.",
+    lengthTitleLabel: "Avg. title length",
+    lengthTitleHelper: "Average planned post title length is",
+  },
+};
+
 function App() {
+  // Core API + health
   const [coreUrl, setCoreUrl] = useState(DEFAULT_CORE_API);
   const [coreStatus, setCoreStatus] = useState("idle"); // idle | checking | ok | error
   const [coreStatusLabel, setCoreStatusLabel] = useState("Not checked yet");
@@ -31,12 +59,11 @@ function App() {
   // Connected project / store
   const [project, setProject] = useState(null);
 
-  // Active mode in the console: "product" or "blog"
-  const [mode, setMode] = useState("product");
-  const activeTool = mode === "product" ? PRODUCT_SEO_TOOL : BLOG_SEO_TOOL;
-  const isBlog = mode === "blog";
+  // Which engine is active in the UI
+  const [activeEngine, setActiveEngine] = useState("product");
+  const currentEngine = ENGINES[activeEngine];
 
-  // Shared content inputs (we just relabel them per mode in the UI)
+  // Product / blog single-piece inputs
   const [productTitle, setProductTitle] = useState(
     "Paperclip waterproof bracelet"
   );
@@ -47,7 +74,21 @@ function App() {
   const [tone, setTone] = useState("Elevated, modern, UK English");
   const [useCases, setUseCases] = useState("gym, everyday wear, gifting");
 
-  // Output fields
+  // Weekly planner inputs
+  const [weeklyBrand, setWeeklyBrand] = useState("DTP Jewellery");
+  const [weeklyNiche, setWeeklyNiche] = useState(
+    "Waterproof everyday jewellery and gifting"
+  );
+  const [weeklyAudience, setWeeklyAudience] = useState(
+    "UK women 18–34 who want affordable waterproof jewellery"
+  );
+  const [weeklyCadence, setWeeklyCadence] = useState("2 posts per week");
+  const [weeklyThemes, setWeeklyThemes] = useState(
+    "product education, styling tips, gifting ideas, lifestyle stories"
+  );
+  const [weeklyTone, setWeeklyTone] = useState("Elevated, warm, UK English");
+
+  // Output fields (single-piece engines)
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
   const [seoSlug, setSeoSlug] = useState("");
@@ -55,7 +96,11 @@ function App() {
   const [rawJson, setRawJson] = useState("");
   const [lastRunAt, setLastRunAt] = useState(null);
 
-  // AI advice (from tool output.advice)
+  // Weekly plan output
+  const [weeklySummary, setWeeklySummary] = useState("");
+  const [weeklyPosts, setWeeklyPosts] = useState([]);
+
+  // AI advice (from tool output.advice for product/blog)
   const [titleAdvice, setTitleAdvice] = useState("");
   const [metaAdvice, setMetaAdvice] = useState("");
   const [generalAdvice, setGeneralAdvice] = useState("");
@@ -64,24 +109,26 @@ function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [runError, setRunError] = useState(null);
 
-  // Dashboard chrome (filters etc.)
+  // Dashboard chrome
   const [activeMarket, setActiveMarket] = useState("Worldwide");
   const [activeDevice, setActiveDevice] = useState("Desktop");
   const [timeRange, setTimeRange] = useState("30d"); // 30d / 180d / all
   const [pageTab, setPageTab] = useState("Overview");
 
-  // Simple run history for the chart + table
-  // Each run stores the market + device + toolId that were active at the time
+  // Simple run history (shared across engines, filtered later)
   const [runHistory, setRunHistory] = useState([]);
-
-  // Which metric to show in the chart (Score trend / Meta length)
   const [historyView, setHistoryView] = useState("score"); // "score" | "meta"
 
-  // Ideal bands for lengths
+  // Ideal bands
   const TITLE_MIN = 45;
   const TITLE_MAX = 60;
   const META_MIN = 130;
   const META_MAX = 155;
+
+  const isProduct = activeEngine === "product";
+  const isBlog = activeEngine === "blog";
+  const isWeekly = activeEngine === "weekly";
+  const pieceLabel = isProduct ? "product" : isBlog ? "blog post" : "content";
 
   // -------------------------------------------------
   // Load project from localStorage (if already connected)
@@ -105,7 +152,6 @@ function App() {
     const check = async () => {
       setCoreStatus("checking");
       setCoreStatusLabel("Checking Core API …");
-
       try {
         const res = await fetch(`${coreUrl}/health`);
         if (!res.ok) throw new Error("Health check failed");
@@ -117,7 +163,6 @@ function App() {
         setCoreStatusLabel("Core API offline — check Core server");
       }
     };
-
     check();
   }, [coreUrl]);
 
@@ -130,12 +175,10 @@ function App() {
     const fetchRuns = async () => {
       try {
         const res = await fetch(`${coreUrl}/projects/${project.id}/runs`);
-        if (!res.ok) return; // fail silently
-
+        if (!res.ok) return;
         const data = await res.json();
         if (!data.ok || !Array.isArray(data.runs)) return;
 
-        // Map API -> local shape
         const mapped = data.runs
           .slice()
           .reverse()
@@ -147,7 +190,7 @@ function App() {
             metaLength: run.metaLength ?? null,
             market: run.market || "Worldwide",
             device: run.device || "Desktop",
-            toolId: run.toolId || PRODUCT_SEO_TOOL.id,
+            toolId: run.toolId || "product-seo",
           }));
 
         setRunHistory(mapped);
@@ -164,16 +207,30 @@ function App() {
   // -------------------------------------------------
   const scoreLength = (len, min, max) => {
     if (!len) return null;
-    if (len >= min && len <= max) return 100; // perfect band
-
+    if (len >= min && len <= max) return 100;
     const distance = len < min ? min - len : len - max;
     if (distance <= 10) return 80;
     if (distance <= 20) return 65;
     return 40;
   };
 
-  const currentTitleLength = (seoTitle || productTitle).length;
-  const currentMetaLength = (seoDescription || productDescription).length;
+  // Current lengths depend on engine
+  let currentTitleLength = 0;
+  let currentMetaLength = 0;
+
+  if (isWeekly && weeklyPosts.length) {
+    const titleLens = weeklyPosts.map((p) => (p.title || "").length);
+    const metaLens = weeklyPosts.map(
+      (p) => (p.metaDescription || p.description || "").length
+    );
+    const avg = (arr) =>
+      arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+    currentTitleLength = avg(titleLens);
+    currentMetaLength = avg(metaLens);
+  } else {
+    currentTitleLength = (seoTitle || productTitle).length;
+    currentMetaLength = (seoDescription || productDescription).length;
+  }
 
   const currentTitleScore = scoreLength(
     currentTitleLength,
@@ -192,7 +249,7 @@ function App() {
       : null;
 
   // -------------------------------------------------
-  // Run SEO Engine (Product or Blog, depending on mode)
+  // Run engine
   // -------------------------------------------------
   const handleRun = async () => {
     if (!project) return;
@@ -200,19 +257,34 @@ function App() {
     setIsRunning(true);
     setRunError(null);
 
-    const payload = {
-      productTitle,
-      productDescription,
-      brand,
-      tone,
-      useCases: useCases
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean),
-    };
+    const toolId = currentEngine.toolId;
+
+    let payload;
+    if (isWeekly) {
+      payload = {
+        brand: weeklyBrand,
+        niche: weeklyNiche,
+        audience: weeklyAudience,
+        cadence: weeklyCadence,
+        themes: weeklyThemes,
+        tone: weeklyTone,
+        market: activeMarket,
+      };
+    } else {
+      payload = {
+        productTitle,
+        productDescription,
+        brand,
+        tone,
+        useCases: useCases
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
+      };
+    }
 
     try {
-      const res = await fetch(`${coreUrl}/run/${activeTool.id}`, {
+      const res = await fetch(`${coreUrl}/run/${toolId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -232,40 +304,71 @@ function App() {
       setRawJson(JSON.stringify(data, null, 2));
 
       const output = data?.result?.output || data?.output || {};
+
       if (!output) throw new Error("No output returned from tool");
-
-      const nextTitle = output.title || output.seoTitle || "";
-      const nextDescription =
-        output.description || output.metaDescription || "";
-      const nextSlug = output.slug || output.handle || "";
-      const nextKeywords = output.keywords || output.keywordSet || [];
-
-      setSeoTitle(nextTitle);
-      setSeoDescription(nextDescription);
-      setSeoSlug(nextSlug);
-      setSeoKeywords(nextKeywords);
-
-      const advice = output.advice || {};
-      setTitleAdvice(advice.titleTips || "");
-      setMetaAdvice(advice.metaTips || "");
-      setGeneralAdvice(advice.generalTips || "");
 
       const now = new Date();
       const nowLabel = now.toLocaleString();
       setLastRunAt(nowLabel);
 
-      const tLen = (nextTitle || productTitle).length;
-      const mLen = (nextDescription || productDescription).length;
+      let tLen = 0;
+      let mLen = 0;
+      let oScore = null;
 
-      const tScore = scoreLength(tLen, TITLE_MIN, TITLE_MAX);
-      const mScore = scoreLength(mLen, META_MIN, META_MAX);
+      if (isWeekly) {
+        const posts = Array.isArray(output.posts) ? output.posts : [];
+        setWeeklySummary(output.summary || "");
+        setWeeklyPosts(posts);
 
-      const oScore =
-        tScore !== null && mScore !== null
-          ? Math.round((tScore + mScore) / 2)
-          : null;
+        if (posts.length) {
+          const titleLens = posts.map((p) => (p.title || "").length);
+          const metaLens = posts.map(
+            (p) => (p.metaDescription || p.description || "").length
+          );
+          const avg = (arr) =>
+            arr.length
+              ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length)
+              : 0;
+          tLen = avg(titleLens);
+          mLen = avg(metaLens);
+        }
 
-      // Update local history (for immediate UI)
+        const tScore = scoreLength(tLen, TITLE_MIN, TITLE_MAX);
+        const mScore = scoreLength(mLen, META_MIN, META_MAX);
+        oScore =
+          tScore !== null && mScore !== null
+            ? Math.round((tScore + mScore) / 2)
+            : null;
+      } else {
+        const nextTitle = output.title || output.seoTitle || "";
+        const nextDescription =
+          output.description || output.metaDescription || "";
+        const nextSlug = output.slug || output.handle || "";
+        const nextKeywords = output.keywords || output.keywordSet || [];
+
+        setSeoTitle(nextTitle);
+        setSeoDescription(nextDescription);
+        setSeoSlug(nextSlug);
+        setSeoKeywords(nextKeywords);
+
+        const advice = output.advice || {};
+        setTitleAdvice(advice.titleTips || "");
+        setMetaAdvice(advice.metaTips || "");
+        setGeneralAdvice(advice.generalTips || "");
+
+        tLen = (nextTitle || productTitle).length;
+        mLen = (nextDescription || productDescription).length;
+
+        const tScore = scoreLength(tLen, TITLE_MIN, TITLE_MAX);
+        const mScore = scoreLength(mLen, META_MIN, META_MAX);
+
+        oScore =
+          tScore !== null && mScore !== null
+            ? Math.round((tScore + mScore) / 2)
+            : null;
+      }
+
+      // Record in in-memory history
       setRunHistory((prev) => {
         const next = [
           ...prev,
@@ -277,20 +380,21 @@ function App() {
             metaLength: mLen,
             market: activeMarket,
             device: activeDevice,
-            toolId: activeTool.id,
+            toolId,
           },
         ];
-        return next.slice(-50); // keep last 50
+        return next.slice(-50);
       });
 
-      // Persist run to Core API (SQLite). Fire-and-forget – UI already updated.
+      // Persist run to Core API (SQLite) – fire-and-forget
       try {
         await fetch(`${coreUrl}/projects/${project.id}/runs`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
-            toolId: activeTool.id,
-            mode,
+            toolId,
             createdAt: now.toISOString(),
             market: activeMarket,
             device: activeDevice,
@@ -306,10 +410,7 @@ function App() {
       }
     } catch (err) {
       console.error(err);
-      setRunError(
-        err.message ||
-          `Failed to run ${isBlog ? "Blog SEO Engine" : "Product SEO Engine"}`
-      );
+      setRunError(err.message || "Failed to run engine");
     } finally {
       setIsRunning(false);
     }
@@ -330,19 +431,18 @@ function App() {
       ? seoKeywords.join(", ")
       : "";
 
-  // Filter history first by toolId + market + device
+  // Filter history by engine + market + device
   const historyForFilters = runHistory.filter((run) => {
     const runMarket = run.market || "Worldwide";
     const runDevice = run.device || "Desktop";
-    const runToolId = run.toolId || PRODUCT_SEO_TOOL.id;
+    const runToolId = run.toolId || "product-seo";
     return (
       runMarket === activeMarket &&
       runDevice === activeDevice &&
-      runToolId === activeTool.id
+      runToolId === currentEngine.toolId
     );
   });
 
-  // Then slice by timeRange for spark + table
   let rangedHistory;
   if (timeRange === "30d") {
     rangedHistory = historyForFilters.slice(-5);
@@ -354,24 +454,22 @@ function App() {
 
   const latestRun = historyForFilters[historyForFilters.length - 1];
 
-  // -------------------------------------------------
-  // Copy for the "How to reach 100/100" helper card
-  // -------------------------------------------------
+  // Advice text (title / meta) – phrased per engine
   const buildTitleAdvice = () => {
-    const label = isBlog ? "blog post title" : "product title";
+    const label = isProduct ? "product" : isBlog ? "blog post" : "content";
     if (!currentTitleLength) {
-      return `Add a clear ${label} first, then run the engine. Aim for 45–60 characters.`;
+      return `Add a clear ${label} title first, then run the engine. Aim for 45–60 characters.`;
     }
     if (currentTitleLength < TITLE_MIN) {
       const minExtra = TITLE_MIN - currentTitleLength;
       const maxExtra = TITLE_MAX - currentTitleLength;
-      return `Your current ${isBlog ? "blog post" : "product"} title is ${currentTitleLength} characters. Try adding roughly ${minExtra}–${maxExtra} characters with materials, finish or a key benefit.`;
+      return `Your current ${label} title is ${currentTitleLength} characters. Try adding roughly ${minExtra}–${maxExtra} characters with materials, finish or a key benefit.`;
     }
     if (currentTitleLength > TITLE_MAX) {
       const extra = currentTitleLength - TITLE_MAX;
-      return `Your current ${isBlog ? "blog post" : "product"} title is ${currentTitleLength} characters. It is a bit long – consider trimming around ${extra} characters so it stays punchy in search results.`;
+      return `Your current ${label} title is ${currentTitleLength} characters. It is a bit long – consider trimming around ${extra} characters so it stays punchy in search results.`;
     }
-    return `Your current ${isBlog ? "blog post" : "product"} title is ${currentTitleLength} characters, which is right in the sweet spot. Only tweak it if it feels clunky or hard to read.`;
+    return `Your current ${label} title is ${currentTitleLength} characters, which is right in the sweet spot. Only tweak it if it feels clunky or hard to read.`;
   };
 
   const buildMetaAdvice = () => {
@@ -452,31 +550,32 @@ function App() {
           <header className="top-strip">
             <div className="top-strip-left">
               <div className="top-strip-eyebrow">
-                {isBlog ? "Content · SEO" : "Product catalogue · SEO"}
+                {currentEngine.suitePrefix}
               </div>
               <h1 className="top-strip-title">
-                {activeTool.name} · {project.name}
+                {currentEngine.name} · {project.name}
               </h1>
               <div className="top-strip-subtitle">
-                {isBlog
-                  ? "Generate SEO titles, descriptions, slugs and keyword sets for blog posts. Designed so beginners never touch JSON."
-                  : "Generate SEO titles, descriptions, slugs and keyword sets for products. Designed so beginners never touch JSON."}
+                {isWeekly
+                  ? "Generate a simple weekly content plan with SEO-ready titles, descriptions and angles. Designed so beginners never touch JSON."
+                  : "Generate SEO titles, descriptions, slugs and keyword sets so beginners never touch JSON."}
               </div>
 
-              {/* Mode toggle */}
-              <div className="mode-toggle">
-                <button
-                  className={mode === "product" ? "active" : ""}
-                  onClick={() => setMode("product")}
-                >
-                  Product SEO
-                </button>
-                <button
-                  className={mode === "blog" ? "active" : ""}
-                  onClick={() => setMode("blog")}
-                >
-                  Blog SEO
-                </button>
+              <div className="engine-toggle-row">
+                {Object.values(ENGINES).map((engine) => (
+                  <button
+                    key={engine.key}
+                    className={
+                      "engine-toggle" +
+                      (activeEngine === engine.key
+                        ? " engine-toggle--active"
+                        : "")
+                    }
+                    onClick={() => setActiveEngine(engine.key)}
+                  >
+                    {engine.chipLabel}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -529,13 +628,7 @@ function App() {
                 onClick={handleRun}
                 disabled={isRunning || coreStatus !== "ok"}
               >
-                {isBlog
-                  ? isRunning
-                    ? "Running…"
-                    : "Run Blog SEO"
-                  : isRunning
-                  ? "Running…"
-                  : "Run Product SEO"}
+                {isRunning ? "Running…" : currentEngine.runButtonLabel}
               </button>
             </div>
           </header>
@@ -565,7 +658,7 @@ function App() {
             ))}
           </section>
 
-          {/* FILTER STRIP (market / device / history) */}
+          {/* FILTER STRIP */}
           <section className="filters-strip">
             <div className="filters-left">
               <div className="filters-label">Market</div>
@@ -655,7 +748,7 @@ function App() {
                 </div>
 
                 <div className="kpi-card">
-                  <div className="kpi-label">Title length</div>
+                  <div className="kpi-label">{currentEngine.lengthTitleLabel}</div>
                   <div className="kpi-main">
                     <span className="kpi-value">
                       {currentTitleLength || "—"}
@@ -694,25 +787,22 @@ function App() {
                 </div>
               </section>
 
-              {/* HOW TO REACH 100/100 CARD */}
+              {/* HOW TO REACH 100/100 */}
               <section className="card" style={{ marginTop: 10 }}>
                 <div className="card-header">
                   <h2 className="card-title">How to reach 100/100</h2>
                   <p className="card-subtitle">
                     You do not need to be an SEO expert. Follow these steps,
                     change the text on the right, then click{" "}
-                    <strong>{isBlog ? "Run Blog SEO" : "Run Product SEO"}</strong>{" "}
-                    again. Guidance is tuned for{" "}
-                    <strong>{activeMarket}</strong> ·{" "}
+                    <strong>{currentEngine.runButtonLabel}</strong> again.
+                    Guidance is tuned for <strong>{activeMarket}</strong> ·{" "}
                     <strong>{activeDevice}</strong>.
                   </p>
                 </div>
 
                 <ol style={{ paddingLeft: 18, fontSize: 12, margin: 0 }}>
                   <li style={{ marginBottom: 8 }}>
-                    <strong>
-                      Make your {isBlog ? "article" : "product"} title clear.
-                    </strong>
+                    <strong>Make your title clear.</strong>
                     <br />
                     {buildTitleAdvice()}
                   </li>
@@ -726,7 +816,8 @@ function App() {
                     <br />
                     <span style={{ fontSize: 11 }}>
                       <code>
-                        [What it is] + [1–2 big benefits] + [when to use it]
+                        [What it is] + [1–2 big benefits] + [when / who it is
+                        for]
                       </code>
                       .
                       <br />
@@ -738,11 +829,11 @@ function App() {
                 </ol>
               </section>
 
-              {/* AI SUGGESTIONS CARD */}
+              {/* AI SUGGESTIONS (only really for product/blog but harmless in weekly) */}
               <section className="card" style={{ marginTop: 10 }}>
                 <div className="card-header">
                   <h2 className="card-title">
-                    AI suggestions for this content
+                    AI suggestions for this {pieceLabel}
                   </h2>
                   <p className="card-subtitle">
                     Generated from your last run. Use this as a second opinion
@@ -763,14 +854,14 @@ function App() {
                   <li>
                     <strong>Overall:</strong>{" "}
                     {generalAdvice ||
-                      "General optimisation tips for this content will appear here after the first run."}
+                      "General optimisation tips for this piece will appear here after the first run."}
                   </li>
                 </ul>
               </section>
 
               {/* MAIN GRID */}
               <section className="main-grid">
-                {/* LEFT COLUMN: history + generated fields */}
+                {/* LEFT COLUMN */}
                 <div className="left-column">
                   {/* Run history card */}
                   <div className="card">
@@ -803,7 +894,7 @@ function App() {
                         here. You are currently viewing{" "}
                         <strong>{activeMarket}</strong> ·{" "}
                         <strong>{activeDevice}</strong> runs for{" "}
-                        <strong>{activeTool.name}</strong> only.
+                        <strong>{currentEngine.chipLabel}</strong> only.
                       </p>
                     </div>
 
@@ -820,7 +911,6 @@ function App() {
                               metric = (clamped / 220) * 100;
                             }
                             const height = 20 + (metric / 100) * 60;
-
                             return (
                               <div
                                 key={run.id}
@@ -837,8 +927,8 @@ function App() {
                         </div>
                       ) : (
                         <div className="run-history-empty">
-                          No runs recorded yet for this market + device. Click{" "}
-                          {isBlog ? "“Run Blog SEO”" : "“Run Product SEO”"} to
+                          No runs recorded yet for this engine / market /
+                          device. Click “{currentEngine.runButtonLabel}” to
                           start tracking.
                         </div>
                       )}
@@ -857,7 +947,7 @@ function App() {
                         </span>
                         <span className="run-history-table-subtitle">
                           Shows how your lengths and score changed per run for
-                          this market + device.
+                          this engine / market / device.
                         </span>
                       </div>
 
@@ -875,11 +965,9 @@ function App() {
                           {rangedHistory.length === 0 ? (
                             <tr>
                               <td colSpan={5}>
-                                No runs yet. Click{" "}
-                                {isBlog
-                                  ? "“Run Blog SEO”"
-                                  : "“Run Product SEO”"}{" "}
-                                to start tracking.
+                                No runs yet. Click "
+                                {currentEngine.runButtonLabel}" to start
+                                tracking.
                               </td>
                             </tr>
                           ) : (
@@ -901,230 +989,398 @@ function App() {
                     </div>
                   </div>
 
-                  {/* Generated SEO fields card */}
-                  <div className="card seo-table-card">
-                    <div className="card-header">
-                      <h2 className="card-title">Generated SEO fields</h2>
-                      <p className="card-subtitle">
-                        Paste straight into your CMS / Shopify or platform. Use
-                        the copy buttons so beginners never touch JSON.
-                      </p>
+                  {/* Generated fields / weekly plan */}
+                  {isWeekly ? (
+                    <div className="card seo-table-card">
+                      <div className="card-header">
+                        <h2 className="card-title">
+                          Weekly blog plan (generated)
+                        </h2>
+                        <p className="card-subtitle">
+                          Paste this straight into your CMS or Notion. Titles
+                          and meta descriptions are already tuned for search.
+                        </p>
+                      </div>
+
+                      {weeklySummary && (
+                        <p style={{ fontSize: 12, marginBottom: 12 }}>
+                          {weeklySummary}
+                        </p>
+                      )}
+
+                      <table className="seo-table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Title</th>
+                            <th>Main angle / summary</th>
+                            <th>Primary keyword</th>
+                            <th>Slug</th>
+                            <th>Suggested date</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {weeklyPosts.length === 0 ? (
+                            <tr>
+                              <td colSpan={6}>
+                                Run the Weekly blog planner to generate your
+                                next batch of posts.
+                              </td>
+                            </tr>
+                          ) : (
+                            weeklyPosts.map((post, idx) => (
+                              <tr key={idx}>
+                                <td>{idx + 1}</td>
+                                <td>{post.title || "—"}</td>
+                                <td>
+                                  {post.angle ||
+                                    post.summary ||
+                                    post.metaDescription ||
+                                    "—"}
+                                </td>
+                                <td>
+                                  {post.primaryKeyword ||
+                                    post.keyword ||
+                                    "—"}
+                                </td>
+                                <td>{post.slug || post.handle || "—"}</td>
+                                <td>{post.suggestedDate || post.date || "—"}</td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
                     </div>
+                  ) : (
+                    <div className="card seo-table-card">
+                      <div className="card-header">
+                        <h2 className="card-title">Generated SEO fields</h2>
+                        <p className="card-subtitle">
+                          Paste straight into Shopify or your platform. Use the
+                          copy buttons so beginners never touch JSON.
+                        </p>
+                      </div>
 
-                    <table className="seo-table">
-                      <thead>
-                        <tr>
-                          <th>Field</th>
-                          <th>Value</th>
-                          <th className="actions-col">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>Title</td>
-                          <td>
-                            {seoTitle ||
-                              `Run the engine to get a ${isBlog ? "blog" : "product"} title.`}
-                          </td>
-                          <td>
-                            <button
-                              className="button button--ghost button--tiny"
-                              onClick={() => copyToClipboard(seoTitle)}
-                              disabled={!seoTitle}
-                            >
-                              Copy
-                            </button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Meta description</td>
-                          <td>
-                            {seoDescription ||
-                              "Meta description will appear here after the first run."}
-                          </td>
-                          <td>
-                            <button
-                              className="button button--ghost button--tiny"
-                              onClick={() => copyToClipboard(seoDescription)}
-                              disabled={!seoDescription}
-                            >
-                              Copy
-                            </button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Slug / handle</td>
-                          <td>
-                            {seoSlug || "Suggested slug will appear here."}
-                          </td>
-                          <td>
-                            <button
-                              className="button button--ghost button--tiny"
-                              onClick={() => copyToClipboard(seoSlug)}
-                              disabled={!seoSlug}
-                            >
-                              Copy
-                            </button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Keywords</td>
-                          <td>
-                            {keywordsDisplay ||
-                              "Keyword set will appear here after the first run."}
-                          </td>
-                          <td>
-                            <button
-                              className="button button--ghost button--tiny"
-                              onClick={() =>
-                                copyToClipboard(keywordsDisplay)
-                              }
-                              disabled={!keywordsDisplay}
-                            >
-                              Copy
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                      <table className="seo-table">
+                        <thead>
+                          <tr>
+                            <th>Field</th>
+                            <th>Value</th>
+                            <th className="actions-col">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Title</td>
+                            <td>
+                              {seoTitle || "Run the engine to get a title."}
+                            </td>
+                            <td>
+                              <button
+                                className="button button--ghost button--tiny"
+                                onClick={() => copyToClipboard(seoTitle)}
+                                disabled={!seoTitle}
+                              >
+                                Copy
+                              </button>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Meta description</td>
+                            <td>
+                              {seoDescription ||
+                                "Meta description will appear here after the first run."}
+                            </td>
+                            <td>
+                              <button
+                                className="button button--ghost button--tiny"
+                                onClick={() => copyToClipboard(seoDescription)}
+                                disabled={!seoDescription}
+                              >
+                                Copy
+                              </button>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Slug / handle</td>
+                            <td>
+                              {seoSlug || "Suggested slug will appear here."}
+                            </td>
+                            <td>
+                              <button
+                                className="button button--ghost button--tiny"
+                                onClick={() => copyToClipboard(seoSlug)}
+                                disabled={!seoSlug}
+                              >
+                                Copy
+                              </button>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Keywords</td>
+                            <td>
+                              {keywordsDisplay ||
+                                "Keyword set will appear here after the first run."}
+                            </td>
+                            <td>
+                              <button
+                                className="button button--ghost button--tiny"
+                                onClick={() =>
+                                  copyToClipboard(keywordsDisplay)
+                                }
+                                disabled={!keywordsDisplay}
+                              >
+                                Copy
+                              </button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
 
-                    <details className="raw-json">
-                      <summary>Raw JSON from Core API (advanced)</summary>
-                      <pre className="raw-json-pre">
-                        {rawJson ||
-                          "// Run the engine to see the raw JSON here."}
-                      </pre>
-                    </details>
-                  </div>
+                      <details className="raw-json">
+                        <summary>Raw JSON from Core API (advanced)</summary>
+                        <pre className="raw-json-pre">
+                          {rawJson ||
+                            "// Run the engine to see the raw JSON here."}
+                        </pre>
+                      </details>
+                    </div>
+                  )}
                 </div>
 
-                {/* RIGHT COLUMN – Inspector */}
+                {/* RIGHT COLUMN – inspectors */}
                 <div className="right-column">
                   <div className="card inspector-card">
                     <div className="card-header">
                       <h2 className="card-title">
-                        {isBlog ? "Blog article inspector" : "Product inspector"}
+                        {currentEngine.inspectorTitle}
                       </h2>
                       <p className="card-subtitle">
-                        Step 1: describe the{" "}
-                        {isBlog ? "blog post" : "product"} in plain English.
-                        Step 2: run the engine. Step 3: copy the SEO fields from
-                        the left-hand table.
+                        {currentEngine.inspectorSubtitle}
                       </p>
                     </div>
 
-                    <div className="inspector-field-group presets-row">
-                      <div className="inspector-label">Presets</div>
-                      <div className="preset-chips">
-                        <button
-                          className="preset-chip"
-                          onClick={() =>
-                            setProductTitle(
-                              isBlog
-                                ? "Waterproof bracelet editorial"
-                                : "Waterproof gold huggie earrings"
-                            )
-                          }
-                        >
-                          {isBlog ? "Article: waterproof" : "Waterproof earrings"}
-                        </button>
-                        <button
-                          className="preset-chip"
-                          onClick={() =>
-                            setProductTitle(
-                              isBlog
-                                ? "Layered necklace styling guide"
-                                : "Layered waterproof necklace set"
-                            )
-                          }
-                        >
-                          {isBlog ? "Layering guide" : "Layered necklace"}
-                        </button>
-                        <button
-                          className="preset-chip"
-                          onClick={() =>
-                            setProductTitle(
-                              isBlog
-                                ? "Minimal bracelet gift guide"
-                                : "Minimal paperclip bracelet"
-                            )
-                          }
-                        >
-                          {isBlog ? "Gift guide" : "Bracelet"}
-                        </button>
-                      </div>
-                    </div>
+                    {isWeekly ? (
+                      <>
+                        <div className="inspector-field-group">
+                          <label className="inspector-label" htmlFor="wBrand">
+                            Brand / site
+                          </label>
+                          <input
+                            id="wBrand"
+                            className="inspector-input"
+                            value={weeklyBrand}
+                            onChange={(e) => setWeeklyBrand(e.target.value)}
+                          />
+                        </div>
 
-                    <div className="inspector-field-group">
-                      <label className="inspector-label" htmlFor="title">
-                        {isBlog ? "Blog post title" : "Product title"}
-                      </label>
-                      <input
-                        id="title"
-                        className="inspector-input"
-                        value={productTitle}
-                        onChange={(e) => setProductTitle(e.target.value)}
-                      />
-                    </div>
+                        <div className="inspector-field-group">
+                          <label className="inspector-label" htmlFor="wNiche">
+                            Niche / topic
+                          </label>
+                          <input
+                            id="wNiche"
+                            className="inspector-input"
+                            value={weeklyNiche}
+                            onChange={(e) => setWeeklyNiche(e.target.value)}
+                          />
+                        </div>
 
-                    <div className="inspector-field-group">
-                      <label className="inspector-label" htmlFor="description">
-                        {isBlog ? "Blog summary / intro" : "Product description"}
-                      </label>
-                      <textarea
-                        id="description"
-                        className="inspector-textarea"
-                        rows={5}
-                        value={productDescription}
-                        onChange={(e) =>
-                          setProductDescription(e.target.value)
-                        }
-                      />
-                    </div>
+                        <div className="inspector-field-group">
+                          <label
+                            className="inspector-label"
+                            htmlFor="wAudience"
+                          >
+                            Target audience
+                          </label>
+                          <input
+                            id="wAudience"
+                            className="inspector-input"
+                            value={weeklyAudience}
+                            onChange={(e) =>
+                              setWeeklyAudience(e.target.value)
+                            }
+                          />
+                        </div>
 
-                    <div className="inspector-columns">
-                      <div className="inspector-field-group">
-                        <label className="inspector-label" htmlFor="brand">
-                          Brand
-                        </label>
-                        <input
-                          id="brand"
-                          className="inspector-input"
-                          value={brand}
-                          onChange={(e) => setBrand(e.target.value)}
-                        />
-                      </div>
+                        <div className="inspector-columns">
+                          <div className="inspector-field-group">
+                            <label
+                              className="inspector-label"
+                              htmlFor="wCadence"
+                            >
+                              Cadence
+                            </label>
+                            <input
+                              id="wCadence"
+                              className="inspector-input"
+                              value={weeklyCadence}
+                              onChange={(e) =>
+                                setWeeklyCadence(e.target.value)
+                              }
+                            />
+                          </div>
 
-                      <div className="inspector-field-group">
-                        <label className="inspector-label" htmlFor="tone">
-                          Tone &amp; voice
-                        </label>
-                        <input
-                          id="tone"
-                          className="inspector-input"
-                          value={tone}
-                          onChange={(e) => setTone(e.target.value)}
-                        />
-                      </div>
-                    </div>
+                          <div className="inspector-field-group">
+                            <label className="inspector-label" htmlFor="wTone">
+                              Tone &amp; voice
+                            </label>
+                            <input
+                              id="wTone"
+                              className="inspector-input"
+                              value={weeklyTone}
+                              onChange={(e) => setWeeklyTone(e.target.value)}
+                            />
+                          </div>
+                        </div>
 
-                    <div className="inspector-field-group">
-                      <label className="inspector-label" htmlFor="useCases">
-                        {isBlog
-                          ? "Main topics / angles"
-                          : "Use cases / occasions"}
-                      </label>
-                      <input
-                        id="useCases"
-                        className="inspector-input"
-                        value={useCases}
-                        onChange={(e) => setUseCases(e.target.value)}
-                      />
-                      <div className="field-help">
-                        Comma separated. We convert this into structured context
-                        for the engine.
-                      </div>
-                    </div>
+                        <div className="inspector-field-group">
+                          <label
+                            className="inspector-label"
+                            htmlFor="wThemes"
+                          >
+                            Main themes / angles
+                          </label>
+                          <input
+                            id="wThemes"
+                            className="inspector-input"
+                            value={weeklyThemes}
+                            onChange={(e) =>
+                              setWeeklyThemes(e.target.value)
+                            }
+                          />
+                          <div className="field-help">
+                            Comma separated. We will mix these into the weekly
+                            schedule (e.g. product education, styling tips,
+                            gifting).
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="inspector-field-group presets-row">
+                          <div className="inspector-label">Presets</div>
+                          <div className="preset-chips">
+                            <button
+                              className="preset-chip"
+                              onClick={() =>
+                                setProductTitle(
+                                  isBlog
+                                    ? "How to style waterproof gold huggie earrings"
+                                    : "Waterproof gold huggie earrings"
+                                )
+                              }
+                            >
+                              Waterproof earrings
+                            </button>
+                            <button
+                              className="preset-chip"
+                              onClick={() =>
+                                setProductTitle(
+                                  isBlog
+                                    ? "Layered waterproof necklace looks for everyday wear"
+                                    : "Layered waterproof necklace set"
+                                )
+                              }
+                            >
+                              Layered necklace
+                            </button>
+                            <button
+                              className="preset-chip"
+                              onClick={() =>
+                                setProductTitle(
+                                  isBlog
+                                    ? "Why paperclip bracelets are the perfect everyday stack"
+                                    : "Minimal paperclip bracelet"
+                                )
+                              }
+                            >
+                              Bracelet
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="inspector-field-group">
+                          <label className="inspector-label" htmlFor="title">
+                            {isBlog ? "Blog post title" : "Product title"}
+                          </label>
+                          <input
+                            id="title"
+                            className="inspector-input"
+                            value={productTitle}
+                            onChange={(e) => setProductTitle(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="inspector-field-group">
+                          <label
+                            className="inspector-label"
+                            htmlFor="description"
+                          >
+                            {isBlog ? "Blog summary / intro" : "Product description"}
+                          </label>
+                          <textarea
+                            id="description"
+                            className="inspector-textarea"
+                            rows={5}
+                            value={productDescription}
+                            onChange={(e) =>
+                              setProductDescription(e.target.value)
+                            }
+                          />
+                        </div>
+
+                        <div className="inspector-columns">
+                          <div className="inspector-field-group">
+                            <label
+                              className="inspector-label"
+                              htmlFor="brand"
+                            >
+                              Brand
+                            </label>
+                            <input
+                              id="brand"
+                              className="inspector-input"
+                              value={brand}
+                              onChange={(e) => setBrand(e.target.value)}
+                            />
+                          </div>
+
+                          <div className="inspector-field-group">
+                            <label className="inspector-label" htmlFor="tone">
+                              Tone &amp; voice
+                            </label>
+                            <input
+                              id="tone"
+                              className="inspector-input"
+                              value={tone}
+                              onChange={(e) => setTone(e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="inspector-field-group">
+                          <label
+                            className="inspector-label"
+                            htmlFor="useCases"
+                          >
+                            {isBlog
+                              ? "Main topics / angles"
+                              : "Use cases / occasions"}
+                          </label>
+                          <input
+                            id="useCases"
+                            className="inspector-input"
+                            value={useCases}
+                            onChange={(e) => setUseCases(e.target.value)}
+                          />
+                          <div className="field-help">
+                            Comma separated. We convert this into structured
+                            context for the engine.
+                          </div>
+                        </div>
+                      </>
+                    )}
 
                     <div className="inspector-footer">
                       <button
@@ -1132,17 +1388,12 @@ function App() {
                         onClick={handleRun}
                         disabled={isRunning || coreStatus !== "ok"}
                       >
-                        {isBlog
-                          ? isRunning
-                            ? "Running…"
-                            : "Run Blog SEO"
-                          : isRunning
-                          ? "Running…"
-                          : "Run Product SEO"}
+                        {isRunning ? "Running…" : currentEngine.runButtonLabel}
                       </button>
                       <div className="inspector-footnote">
-                        SEO fields generated. Copy them from the left-hand
-                        table.
+                        {isWeekly
+                          ? "Plan generated. Copy titles and meta from the left-hand table."
+                          : "SEO fields generated. Copy them from the left-hand table."}
                       </div>
                     </div>
 
@@ -1157,15 +1408,15 @@ function App() {
               </section>
             </>
           ) : (
-            // Non-Overview tabs – simple explainer
+            // Non-Overview tabs – roadmap explainer
             <section style={{ marginTop: 10 }}>
               <div className="card">
                 <div className="card-header">
                   <h2 className="card-title">{pageTab}</h2>
                   <p className="card-subtitle">
                     This view is part of the AURA roadmap. You can show this to
-                    clients as an upcoming feature while we focus on the{" "}
-                    {activeTool.name}.
+                    clients as an upcoming feature while we focus on the SEO
+                    engines.
                   </p>
                 </div>
                 <ul style={{ fontSize: 12, paddingLeft: 18 }}>
@@ -1177,20 +1428,19 @@ function App() {
                       </li>
                       <li>
                         See who wins on click-through potential in{" "}
-                        {activeMarket} for{" "}
-                        {activeDevice.toLowerCase()}.
+                        {activeMarket} for {activeDevice.toLowerCase()}.
                       </li>
                       <li>
                         Export a simple action list you can plug straight into
-                        your CMS or Shopify.
+                        Shopify.
                       </li>
                     </>
                   )}
                   {pageTab === "Growth report" && (
                     <>
                       <li>
-                        Track how your average SEO score moves over time for{" "}
-                        {activeTool.name}.
+                        Track how your average SEO score moves over time across
+                        products and content.
                       </li>
                       <li>
                         Spot weeks where titles/meta dropped below target so you
@@ -1205,7 +1455,7 @@ function App() {
                     <>
                       <li>
                         See which markets (US / UK / EU / Worldwide) are best
-                        optimised.
+                        optimised for your catalogue.
                       </li>
                       <li>
                         Plan localisation work – which regions need better copy,
