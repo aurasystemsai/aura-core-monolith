@@ -97,8 +97,84 @@ function getDraftById(projectId, draftId) {
   };
 }
 
+function createDraft(projectId, draft) {
+  ensureDraftsTable();
+
+  const toolId = String(draft.toolId || "").trim();
+  if (!toolId) {
+    throw new Error("toolId is required");
+  }
+
+  const createdAt = String(draft.createdAt || "").trim();
+  if (!createdAt) {
+    throw new Error("createdAt is required");
+  }
+
+  const title = draft.title != null ? String(draft.title) : null;
+  const slug = draft.slug != null ? String(draft.slug) : null;
+  const metaDescription =
+    draft.metaDescription != null ? String(draft.metaDescription) : null;
+  const primaryKeyword =
+    draft.primaryKeyword != null ? String(draft.primaryKeyword) : null;
+
+  let inputJson = null;
+  let outputJson = null;
+  try {
+    inputJson = draft.input != null ? JSON.stringify(draft.input) : null;
+  } catch {
+    inputJson = null;
+  }
+  try {
+    outputJson = draft.output != null ? JSON.stringify(draft.output) : null;
+  } catch {
+    outputJson = null;
+  }
+
+  const articleText =
+    draft.articleText != null ? String(draft.articleText) : null;
+  const articleHtml =
+    draft.articleHtml != null ? String(draft.articleHtml) : null;
+
+  const info = db
+    .prepare(
+      `
+      INSERT INTO drafts (
+        projectId,
+        toolId,
+        createdAt,
+        title,
+        slug,
+        metaDescription,
+        primaryKeyword,
+        inputJson,
+        outputJson,
+        articleText,
+        articleHtml
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `
+    )
+    .run(
+      projectId || "",
+      toolId,
+      createdAt,
+      title,
+      slug,
+      metaDescription,
+      primaryKeyword,
+      inputJson,
+      outputJson,
+      articleText,
+      articleHtml
+    );
+
+  return {
+    id: info.lastInsertRowid,
+  };
+}
+
 module.exports = {
   ensureDraftsTable,
   listDraftsByProject,
   getDraftById,
+  createDraft,
 };
