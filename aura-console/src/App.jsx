@@ -391,7 +391,10 @@ function App() {
       } else {
         const nextTitle = output.title || output.seoTitle || "";
         const nextDescription =
-          output.description || output.metaDescription || output.metaDescription || "";
+          output.description ||
+          output.metaDescription ||
+          output.metaDescription ||
+          "";
         const nextSlug = output.slug || output.handle || "";
         const nextKeywords =
           output.keywords ||
@@ -563,7 +566,12 @@ function App() {
   };
 
   if (!project) {
-    return <ProjectSetup coreUrl={coreUrl} onConnected={(proj) => setProject(proj)} />;
+    return (
+      <ProjectSetup
+        coreUrl={coreUrl}
+        onConnected={(proj) => setProject(proj)}
+      />
+    );
   }
 
   return (
@@ -609,7 +617,9 @@ function App() {
         <div className="page-frame">
           <header className="top-strip">
             <div className="top-strip-left">
-              <div className="top-strip-eyebrow">{currentEngine.suitePrefix}</div>
+              <div className="top-strip-eyebrow">
+                {currentEngine.suitePrefix}
+              </div>
               <h1 className="top-strip-title">
                 {currentEngine.name} · {project.name}
               </h1>
@@ -625,7 +635,9 @@ function App() {
                     key={engine.key}
                     className={
                       "engine-toggle" +
-                      (activeEngine === engine.key ? " engine-toggle--active" : "")
+                      (activeEngine === engine.key
+                        ? " engine-toggle--active"
+                        : "")
                     }
                     onClick={() => setActiveEngine(engine.key)}
                   >
@@ -674,7 +686,9 @@ function App() {
 
               <div className="top-strip-meta">
                 <div className="top-strip-meta-label">Last run</div>
-                <div className="top-strip-meta-value">{lastRunAt || "Not run yet"}</div>
+                <div className="top-strip-meta-value">
+                  {lastRunAt || "Not run yet"}
+                </div>
               </div>
 
               <button
@@ -701,7 +715,9 @@ function App() {
             ].map((tab) => (
               <button
                 key={tab}
-                className={"page-tab" + (pageTab === tab ? " page-tab--active" : "")}
+                className={
+                  "page-tab" + (pageTab === tab ? " page-tab--active" : "")
+                }
                 onClick={() => setPageTab(tab)}
               >
                 {tab}
@@ -716,7 +732,9 @@ function App() {
                 {["Worldwide", "US", "UK", "EU"].map((market) => (
                   <button
                     key={market}
-                    className={"pill" + (activeMarket === market ? " pill--active" : "")}
+                    className={
+                      "pill" + (activeMarket === market ? " pill--active" : "")
+                    }
                     onClick={() => setActiveMarket(market)}
                   >
                     {market}
@@ -732,7 +750,9 @@ function App() {
                   {["Desktop", "Mobile"].map((device) => (
                     <button
                       key={device}
-                      className={"pill" + (activeDevice === device ? " pill--active" : "")}
+                      className={
+                        "pill" + (activeDevice === device ? " pill--active" : "")
+                      }
                       onClick={() => setActiveDevice(device)}
                     >
                       {device}
@@ -745,19 +765,25 @@ function App() {
                 <div className="filters-label">Run history</div>
                 <div className="pill-row">
                   <button
-                    className={"pill" + (timeRange === "30d" ? " pill--active" : "")}
+                    className={
+                      "pill" + (timeRange === "30d" ? " pill--active" : "")
+                    }
                     onClick={() => setTimeRange("30d")}
                   >
                     Last 5 runs
                   </button>
                   <button
-                    className={"pill" + (timeRange === "180d" ? " pill--active" : "")}
+                    className={
+                      "pill" + (timeRange === "180d" ? " pill--active" : "")
+                    }
                     onClick={() => setTimeRange("180d")}
                   >
                     Last 8 runs
                   </button>
                   <button
-                    className={"pill" + (timeRange === "all" ? " pill--active" : "")}
+                    className={
+                      "pill" + (timeRange === "all" ? " pill--active" : "")
+                    }
                     onClick={() => setTimeRange("all")}
                   >
                     All runs
@@ -777,7 +803,8 @@ function App() {
                   </p>
                 </div>
 
-                <DraftLibrary coreUrl={coreUrl} />
+                {/* FIX: pass projectId so DraftLibrary can call /projects/:projectId/drafts */}
+                <DraftLibrary coreUrl={coreUrl} projectId={project.id} />
               </div>
             </section>
           ) : pageTab === "Overview" ? (
@@ -786,16 +813,26 @@ function App() {
                 <div className="kpi-card">
                   <div className="kpi-label">Overall SEO score</div>
                   <div className="kpi-main">
-                    <span className="kpi-value">{overallScore !== null ? `${overallScore}` : "—"}</span>
-                    <span className="kpi-unit">{overallScore !== null ? "/100" : ""}</span>
+                    <span className="kpi-value">
+                      {overallScore !== null ? `${overallScore}` : "—"}
+                    </span>
+                    <span className="kpi-unit">
+                      {overallScore !== null ? "/100" : ""}
+                    </span>
                   </div>
-                  <div className="kpi-footnote">Based on current title and meta description length.</div>
+                  <div className="kpi-footnote">
+                    Based on current title and meta description length.
+                  </div>
                 </div>
 
                 <div className="kpi-card">
-                  <div className="kpi-label">{currentEngine.lengthTitleLabel}</div>
+                  <div className="kpi-label">
+                    {currentEngine.lengthTitleLabel}
+                  </div>
                   <div className="kpi-main">
-                    <span className="kpi-value">{currentTitleLength || "—"}</span>
+                    <span className="kpi-value">
+                      {currentTitleLength || "—"}
+                    </span>
                     <span className="kpi-unit">characters</span>
                   </div>
                   <div className="kpi-target">
@@ -806,7 +843,9 @@ function App() {
                 <div className="kpi-card">
                   <div className="kpi-label">Meta description</div>
                   <div className="kpi-main">
-                    <span className="kpi-value">{currentMetaLength || "—"}</span>
+                    <span className="kpi-value">
+                      {currentMetaLength || "—"}
+                    </span>
                     <span className="kpi-unit">characters</span>
                   </div>
                   <div className="kpi-target">
@@ -817,7 +856,9 @@ function App() {
                 <div className="kpi-card">
                   <div className="kpi-label">Runs recorded</div>
                   <div className="kpi-main">
-                    <span className="kpi-value">{historyForFilters.length || "—"}</span>
+                    <span className="kpi-value">
+                      {historyForFilters.length || "—"}
+                    </span>
                     <span className="kpi-unit">runs</span>
                   </div>
                   <div className="kpi-target">
@@ -830,9 +871,11 @@ function App() {
                 <div className="card-header">
                   <h2 className="card-title">How to reach 100/100</h2>
                   <p className="card-subtitle">
-                    You do not need to be an SEO expert. Follow these steps, change the text on the right, then click{" "}
-                    <strong>{currentEngine.runButtonLabel}</strong> again. Guidance is tuned for{" "}
-                    <strong>{activeMarket}</strong> · <strong>{activeDevice}</strong>.
+                    You do not need to be an SEO expert. Follow these steps,
+                    change the text on the right, then click{" "}
+                    <strong>{currentEngine.runButtonLabel}</strong> again.
+                    Guidance is tuned for <strong>{activeMarket}</strong> ·{" "}
+                    <strong>{activeDevice}</strong>.
                   </p>
                 </div>
 
@@ -851,9 +894,15 @@ function App() {
                     <strong>Quick beginner formula you can follow:</strong>
                     <br />
                     <span style={{ fontSize: 11 }}>
-                      <code>[What it is] + [1–2 big benefits] + [when / who it is for]</code>.
+                      <code>
+                        [What it is] + [1–2 big benefits] + [when / who it is
+                        for]
+                      </code>
+                      .
                       <br />
-                      Example: “Waterproof paperclip bracelet with sweat-proof coating. Adjustable fit for gym, everyday wear and gifting.”
+                      Example: “Waterproof paperclip bracelet with sweat-proof
+                      coating. Adjustable fit for gym, everyday wear and
+                      gifting.”
                     </span>
                   </li>
                 </ol>
@@ -861,15 +910,19 @@ function App() {
 
               <section className="card" style={{ marginTop: 10 }}>
                 <div className="card-header">
-                  <h2 className="card-title">AI suggestions for this {pieceLabel}</h2>
+                  <h2 className="card-title">
+                    AI suggestions for this {pieceLabel}
+                  </h2>
                   <p className="card-subtitle">
-                    Generated from your last run. Use this as a second opinion on how to tweak the copy before you publish.
+                    Generated from your last run. Use this as a second opinion
+                    on how to tweak the copy before you publish.
                   </p>
                 </div>
                 <ul style={{ fontSize: 12, paddingLeft: 18, margin: 0 }}>
                   <li>
                     <strong>Title:</strong>{" "}
-                    {titleAdvice || "Run the engine to get specific tips for your title."}
+                    {titleAdvice ||
+                      "Run the engine to get specific tips for your title."}
                   </li>
                   <li>
                     <strong>Meta:</strong>{" "}
@@ -878,7 +931,8 @@ function App() {
                   </li>
                   <li>
                     <strong>Overall:</strong>{" "}
-                    {generalAdvice || "General optimisation tips for this piece will appear here after the first run."}
+                    {generalAdvice ||
+                      "General optimisation tips for this piece will appear here after the first run."}
                   </li>
                 </ul>
               </section>
@@ -891,13 +945,19 @@ function App() {
                         <h2 className="card-title">SEO run history</h2>
                         <div className="card-toggle-tabs">
                           <button
-                            className={"tab" + (historyView === "score" ? " tab--active" : "")}
+                            className={
+                              "tab" +
+                              (historyView === "score" ? " tab--active" : "")
+                            }
                             onClick={() => setHistoryView("score")}
                           >
                             Score trend
                           </button>
                           <button
-                            className={"tab" + (historyView === "meta" ? " tab--active" : "")}
+                            className={
+                              "tab" +
+                              (historyView === "meta" ? " tab--active" : "")
+                            }
                             onClick={() => setHistoryView("meta")}
                           >
                             Meta length
@@ -905,8 +965,10 @@ function App() {
                         </div>
                       </div>
                       <p className="card-subtitle">
-                        Every time you re-run the engine, we plot a new point here. You are currently viewing{" "}
-                        <strong>{activeMarket}</strong> · <strong>{activeDevice}</strong> runs for{" "}
+                        Every time you re-run the engine, we plot a new point
+                        here. You are currently viewing{" "}
+                        <strong>{activeMarket}</strong> ·{" "}
+                        <strong>{activeDevice}</strong> runs for{" "}
                         <strong>{currentEngine.chipLabel}</strong> only.
                       </p>
                     </div>
@@ -940,8 +1002,9 @@ function App() {
                         </div>
                       ) : (
                         <div className="run-history-empty">
-                          No runs recorded yet for this engine / market / device. Click “{currentEngine.runButtonLabel}”
-                          to start tracking.
+                          No runs recorded yet for this engine / market / device.
+                          Click “{currentEngine.runButtonLabel}” to start
+                          tracking.
                         </div>
                       )}
 
@@ -954,9 +1017,12 @@ function App() {
 
                     <div className="run-history-table-wrapper">
                       <div className="run-history-table-header">
-                        <span className="run-history-table-title">Last runs</span>
+                        <span className="run-history-table-title">
+                          Last runs
+                        </span>
                         <span className="run-history-table-subtitle">
-                          Shows how your lengths and score changed per run for this engine / market / device.
+                          Shows how your lengths and score changed per run for
+                          this engine / market / device.
                         </span>
                       </div>
 
@@ -974,7 +1040,9 @@ function App() {
                           {rangedHistory.length === 0 ? (
                             <tr>
                               <td colSpan={5}>
-                                No runs yet. Click "{currentEngine.runButtonLabel}" to start tracking.
+                                No runs yet. Click &quot;
+                                {currentEngine.runButtonLabel}
+                                &quot; to start tracking.
                               </td>
                             </tr>
                           ) : (
@@ -1001,11 +1069,16 @@ function App() {
                       <div className="card-header">
                         <h2 className="card-title">Weekly blog plan (generated)</h2>
                         <p className="card-subtitle">
-                          Paste this straight into your CMS or Notion. Titles and meta descriptions are already tuned for search.
+                          Paste this straight into your CMS or Notion. Titles
+                          and meta descriptions are already tuned for search.
                         </p>
                       </div>
 
-                      {weeklySummary && <p style={{ fontSize: 12, marginBottom: 12 }}>{weeklySummary}</p>}
+                      {weeklySummary && (
+                        <p style={{ fontSize: 12, marginBottom: 12 }}>
+                          {weeklySummary}
+                        </p>
+                      )}
 
                       <table className="seo-table">
                         <thead>
@@ -1021,14 +1094,21 @@ function App() {
                         <tbody>
                           {weeklyPosts.length === 0 ? (
                             <tr>
-                              <td colSpan={6}>Run the Weekly blog planner to generate your next batch of posts.</td>
+                              <td colSpan={6}>
+                                Run the Weekly blog planner to generate your next batch of posts.
+                              </td>
                             </tr>
                           ) : (
                             weeklyPosts.map((post, idx) => (
                               <tr key={idx}>
                                 <td>{idx + 1}</td>
                                 <td>{post.title || "—"}</td>
-                                <td>{post.angle || post.summary || post.metaDescription || "—"}</td>
+                                <td>
+                                  {post.angle ||
+                                    post.summary ||
+                                    post.metaDescription ||
+                                    "—"}
+                                </td>
                                 <td>{post.primaryKeyword || post.keyword || "—"}</td>
                                 <td>{post.slug || post.handle || "—"}</td>
                                 <td>{post.suggestedDate || post.date || "—"}</td>
@@ -1072,7 +1152,10 @@ function App() {
                             </tr>
                             <tr>
                               <td>Meta description</td>
-                              <td>{seoDescription || "Meta description will appear here after the first run."}</td>
+                              <td>
+                                {seoDescription ||
+                                  "Meta description will appear here after the first run."}
+                              </td>
                               <td>
                                 <button
                                   className="button button--ghost button--tiny"
@@ -1098,7 +1181,10 @@ function App() {
                             </tr>
                             <tr>
                               <td>Keywords</td>
-                              <td>{keywordsDisplay || "Keyword set will appear here after the first run."}</td>
+                              <td>
+                                {keywordsDisplay ||
+                                  "Keyword set will appear here after the first run."}
+                              </td>
                               <td>
                                 <button
                                   className="button button--ghost button--tiny"
@@ -1121,7 +1207,10 @@ function App() {
                       </div>
 
                       {isDraft && (
-                        <div className="card seo-table-card" style={{ marginTop: 10 }}>
+                        <div
+                          className="card seo-table-card"
+                          style={{ marginTop: 10 }}
+                        >
                           <div className="card-header">
                             <h2 className="card-title">Draft article (generated)</h2>
                             <p className="card-subtitle">
@@ -1139,7 +1228,9 @@ function App() {
                             }}
                           >
                             <div>
-                              <div style={{ opacity: 0.7 }}>Estimated word count</div>
+                              <div style={{ opacity: 0.7 }}>
+                                Estimated word count
+                              </div>
                               <div style={{ fontWeight: 600 }}>
                                 {draftWordCount != null ? draftWordCount : "—"}
                               </div>
@@ -1147,13 +1238,21 @@ function App() {
                             <div style={{ flex: 1, minWidth: 200 }}>
                               <div style={{ opacity: 0.7 }}>CTA</div>
                               <div style={{ fontWeight: 500 }}>
-                                {draftCta || "CTA will appear here after the first run."}
+                                {draftCta ||
+                                  "CTA will appear here after the first run."}
                               </div>
                             </div>
                           </div>
 
                           <div style={{ marginBottom: 12 }}>
-                            <h3 className="card-title" style={{ fontSize: 13, marginBottom: 4, marginTop: 0 }}>
+                            <h3
+                              className="card-title"
+                              style={{
+                                fontSize: 13,
+                                marginBottom: 4,
+                                marginTop: 0,
+                              }}
+                            >
                               Outline
                             </h3>
                             {draftSections.length === 0 ? (
@@ -1174,7 +1273,9 @@ function App() {
                                     const heading =
                                       typeof section === "string"
                                         ? section
-                                        : section.heading || section.title || "Section";
+                                        : section.heading ||
+                                          section.title ||
+                                          "Section";
                                     const summary =
                                       typeof section === "string"
                                         ? "—"
@@ -1197,24 +1298,47 @@ function App() {
                           </div>
 
                           <div>
-                            <h3 className="card-title" style={{ fontSize: 13, marginBottom: 4, marginTop: 0 }}>
+                            <h3
+                              className="card-title"
+                              style={{
+                                fontSize: 13,
+                                marginBottom: 4,
+                                marginTop: 0,
+                              }}
+                            >
                               Full article
                             </h3>
 
-                            <div className="field-help" style={{ marginBottom: 6 }}>
+                            <div
+                              className="field-help"
+                              style={{ marginBottom: 6 }}
+                            >
                               Choose the format you want to copy. Plain text is best for most editors. HTML is there if you need it.
                             </div>
 
-                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: 8,
+                                flexWrap: "wrap",
+                                marginBottom: 8,
+                              }}
+                            >
                               <button
-                                className={"pill" + (draftFormat === "text" ? " pill--active" : "")}
+                                className={
+                                  "pill" +
+                                  (draftFormat === "text" ? " pill--active" : "")
+                                }
                                 onClick={() => setDraftFormat("text")}
                                 type="button"
                               >
                                 Plain text
                               </button>
                               <button
-                                className={"pill" + (draftFormat === "html" ? " pill--active" : "")}
+                                className={
+                                  "pill" +
+                                  (draftFormat === "html" ? " pill--active" : "")
+                                }
                                 onClick={() => setDraftFormat("html")}
                                 type="button"
                               >
@@ -1224,9 +1348,13 @@ function App() {
                               <button
                                 className="button button--ghost button--tiny"
                                 onClick={() =>
-                                  copyToClipboard(draftFormat === "html" ? draftHtml : draftText)
+                                  copyToClipboard(
+                                    draftFormat === "html" ? draftHtml : draftText
+                                  )
                                 }
-                                disabled={draftFormat === "html" ? !draftHtml : !draftText}
+                                disabled={
+                                  draftFormat === "html" ? !draftHtml : !draftText
+                                }
                                 type="button"
                               >
                                 Copy {draftFormat === "html" ? "HTML" : "text"}
@@ -1235,8 +1363,10 @@ function App() {
 
                             <pre className="raw-json-pre" style={{ marginTop: 6 }}>
                               {draftFormat === "html"
-                                ? draftHtml || "// Run the Blog Draft Engine to generate the article HTML here."
-                                : draftText || "// Run the Blog Draft Engine to generate the article text here."}
+                                ? draftHtml ||
+                                  "// Run the Blog Draft Engine to generate the article HTML here."
+                                : draftText ||
+                                  "// Run the Blog Draft Engine to generate the article text here."}
                             </pre>
                           </div>
                         </div>
@@ -1480,7 +1610,9 @@ function App() {
                 <ul style={{ fontSize: 12, paddingLeft: 18 }}>
                   {pageTab === "Compare domains" && (
                     <>
-                      <li>Compare your project domain against competitors on title &amp; meta quality.</li>
+                      <li>
+                        Compare your project domain against competitors on title &amp; meta quality.
+                      </li>
                       <li>
                         See who wins on click-through potential in {activeMarket} for {activeDevice.toLowerCase()}.
                       </li>

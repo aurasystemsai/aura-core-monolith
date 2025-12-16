@@ -2,17 +2,21 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 /**
- * Draft Library UI
- * - Lists saved drafts from Core API
- * - Select a draft to preview/export
- * - Toggle output format: Plain text | HTML
+ * Draft Library UI (project-scoped)
  *
- * Expected API (tolerant to shapes):
- *  GET  /drafts                -> { ok:true, drafts:[...] } OR { drafts:[...] } OR [...]
- *  GET  /drafts/:id             -> { ok:true, draft:{...} } OR { draft:{...} } OR {...}
+ * Matches Core drafts schema:
+ *  - list: id, projectId, toolId, createdAt, title, slug, metaDescription, primaryKeyword
+ *  - detail: + inputJson/outputJson parsed as input/output, articleText, articleHtml
  *
- * This component uses the Core API base passed in as `coreUrl`.
+ * Expected API routes:
+ *  GET /projects/:projectId/drafts?limit=50&offset=0
+ *  GET /projects/:projectId/drafts/:draftId
+ *
+ * Props:
+ *  - coreUrl (string)    e.g. https://aura-core-monolith.onrender.com
+ *  - projectId (string)  current project id
  */
+
 function safeJsonParse(text) {
   try {
     return JSON.parse(text);
@@ -21,31 +25,12 @@ function safeJsonParse(text) {
   }
 }
 
-function normalizeListPayload(payload) {
-  if (Array.isArray(payload)) return payload;
-  if (payload && Array.isArray(payload.drafts)) return payload.drafts;
-  if (payload && payload.ok && Array.isArray(payload.drafts)) return payload.drafts;
-  return [];
-}
-
-function normalizeGetPayload(payload) {
-  if (!payload) return null;
-  if (payload.draft) return payload.draft;
-  if (payload.ok && payload.draft) return payload.draft;
-  if (typeof payload === "object") return payload;
-  return null;
-}
-
 function pickId(d) {
-  return d?.id || d?._id || d?.draftId || d?.key || null;
+  return d?.id ?? d?._id ?? d?.draftId ?? d?.key ?? null;
 }
 
 function pickTitle(d) {
   return d?.title || d?.name || d?.slug || "Untitled draft";
-}
-
-function pickUpdatedAt(d) {
-  return d?.updatedAt || d?.updated_at || d?.lastUpdated || d?.modifiedAt || d?.createdAt || null;
 }
 
 function pickCreatedAt(d) {
@@ -57,30 +42,6 @@ function formatDate(iso) {
   const dt = new Date(iso);
   if (Number.isNaN(dt.getTime())) return String(iso);
   return dt.toLocaleString();
-}
-
-function getDraftBody(draft) {
-  return (
-    draft?.body ??
-    draft?.content ??
-    draft?.text ??
-    draft?.plainText ??
-    draft?.plain_text ??
-    draft?.draft ??
-    ""
-  );
-}
-
-function getDraftHtml(draft) {
-  return (
-    draft?.html ??
-    draft?.contentHtml ??
-    draft?.content_html ??
-    draft?.bodyHtml ??
-    draft?.body_html ??
-    draft?.articleHtml ??
-    ""
-  );
 }
 
 function escapeHtml(str) {
@@ -112,7 +73,6 @@ function ensureHtmlDoc(html, title = "Draft") {
 
   if (hasHtmlTag) return hasDoctype ? trimmed : `<!doctype html>\n${trimmed}`;
 
-  // Fragment HTML → wrap to full document for export
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -138,48 +98,79 @@ function downloadFile(filename, content, mime = "text/plain;charset=utf-8") {
   URL.revokeObjectURL(url);
 }
 
-export default function DraftLibrary({ coreUrl }) {
+export default function DraftLibrary({ coreUrl, projectId }) {
   const base = String(coreUrl || "").replace(/\/$/, "");
+  const pid = String(projectId || "").trim();
 
   const [loadingList, setLoadingList] = useState(false);
   const [loadingDraft, setLoadingDraft] = useState(false);
   const [error, setError] = useState("");
+
   const [drafts, setDrafts] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedDraft, setSelectedDraft] = useState(null);
+
   const [query, setQuery] = useState("");
   const [format, setFormat] = useState("plain"); // "plain" | "html"
   const [copied, setCopied] = useState(false);
+
+  // Basic pagination (optional but useful)
+  const [limit, setLimit] = useState(50);
+  const [offset, setOffset] = useState(0);
 
   function apiUrl(path) {
     const p = path.startsWith("/") ? path : `/${path}`;
     return `${base}${p}`;
   }
 
-  async function fetchDrafts() {
-    if (!base) return;
+  async function fetchDrafts({ reset = false } = {}) {
+    if (!base || !pid) return;
+
     setError("");
     setLoadingList(true);
+
     try {
-      const res = await fetch(apiUrl("/drafts"), {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
+      const useOffset = reset ? 0 : offset;
+      const res = await fetch(
+        apiUrl(
+          `/projects/${encodeURIComponent(pid)}/drafts?limit=${encodeURIComponent(
+            limit
+          )}&offset=${encodeURIComponent(useOffset)}`
+        ),
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
       const text = await res.text();
       const payload = safeJsonParse(text) ?? text;
 
       if (!res.ok) {
         throw new Error(
-          (payload && payload.error) || `Failed to load drafts (HTTP ${res.status})`
+          (payload && payload.error) ||
+            `Failed to load drafts (HTTP ${res.status})`
         );
       }
 
-      const list = normalizeListPayload(payload);
-      setDrafts(list);
+      const list = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.drafts)
+        ? payload.drafts
+        : Array.isArray(payload?.items)
+        ? payload.items
+        : [];
 
-      if (!selectedId && list.length > 0) {
-        const firstId = pickId(list[0]);
-        setSelectedId(firstId);
+      if (reset) {
+        setDrafts(list);
+        setOffset(0);
+        if (!selectedId && list.length > 0) {
+          setSelectedId(pickId(list[0]));
+        }
+      } else {
+        // Append (if API supports offset paging)
+        const merged = [...drafts, ...list];
+        setDrafts(merged);
       }
     } catch (e) {
       setError(e?.message || "Failed to load drafts");
@@ -188,27 +179,40 @@ export default function DraftLibrary({ coreUrl }) {
     }
   }
 
-  async function fetchDraftById(id) {
-    if (!base || !id) return;
+  async function fetchDraftById(draftId) {
+    if (!base || !pid || !draftId) return;
+
     setError("");
     setLoadingDraft(true);
     setSelectedDraft(null);
+
     try {
-      const res = await fetch(apiUrl(`/drafts/${encodeURIComponent(id)}`), {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
+      const res = await fetch(
+        apiUrl(
+          `/projects/${encodeURIComponent(pid)}/drafts/${encodeURIComponent(
+            draftId
+          )}`
+        ),
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
       const text = await res.text();
       const payload = safeJsonParse(text) ?? text;
 
       if (!res.ok) {
         throw new Error(
-          (payload && payload.error) || `Failed to load draft (HTTP ${res.status})`
+          (payload && payload.error) ||
+            `Failed to load draft (HTTP ${res.status})`
         );
       }
 
-      const draft = normalizeGetPayload(payload);
-      setSelectedDraft(draft);
+      const draft =
+        payload?.draft || (payload?.ok && payload?.draft) ? payload.draft : payload;
+
+      setSelectedDraft(draft || null);
     } catch (e) {
       setError(e?.message || "Failed to load draft");
     } finally {
@@ -216,15 +220,23 @@ export default function DraftLibrary({ coreUrl }) {
     }
   }
 
+  // Refresh whenever coreUrl/projectId changes
   useEffect(() => {
-    fetchDrafts();
+    setDrafts([]);
+    setSelectedId(null);
+    setSelectedDraft(null);
+    setOffset(0);
+
+    if (base && pid) {
+      fetchDrafts({ reset: true });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [base]);
+  }, [base, pid]);
 
   useEffect(() => {
     if (selectedId) fetchDraftById(selectedId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId, base]);
+  }, [selectedId, base, pid]);
 
   const filteredDrafts = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -233,7 +245,14 @@ export default function DraftLibrary({ coreUrl }) {
     return drafts.filter((d) => {
       const title = pickTitle(d).toLowerCase();
       const id = String(pickId(d) || "").toLowerCase();
-      return title.includes(q) || id.includes(q);
+      const keyword = String(d?.primaryKeyword || "").toLowerCase();
+      const slug = String(d?.slug || "").toLowerCase();
+      return (
+        title.includes(q) ||
+        id.includes(q) ||
+        keyword.includes(q) ||
+        slug.includes(q)
+      );
     });
   }, [drafts, query]);
 
@@ -241,14 +260,24 @@ export default function DraftLibrary({ coreUrl }) {
 
   const plainOutput = useMemo(() => {
     if (!selectedDraft) return "";
-    const body = getDraftBody(selectedDraft);
-    if (typeof body === "object") return JSON.stringify(body, null, 2);
+    // Core schema uses articleText
+    const body =
+      selectedDraft?.articleText ??
+      selectedDraft?.article_text ??
+      selectedDraft?.text ??
+      selectedDraft?.plainText ??
+      "";
     return String(body || "");
   }, [selectedDraft]);
 
   const htmlOutput = useMemo(() => {
     if (!selectedDraft) return "";
-    const html = getDraftHtml(selectedDraft);
+    // Core schema uses articleHtml
+    const html =
+      selectedDraft?.articleHtml ??
+      selectedDraft?.article_html ??
+      selectedDraft?.html ??
+      "";
 
     if (html && String(html).trim()) {
       return ensureHtmlDoc(html, exportTitle);
@@ -292,22 +321,24 @@ export default function DraftLibrary({ coreUrl }) {
     }
   }
 
+  const canUse = Boolean(base && pid);
+
   return (
     <div style={styles.page}>
       <div style={styles.header}>
         <div>
           <div style={styles.h1}>Draft Library</div>
           <div style={styles.sub}>
-            Saved drafts from Core API. Export as Plain text or HTML.
+            Project drafts stored in Core SQLite. Export as Plain text or HTML.
           </div>
         </div>
 
         <div style={styles.headerRight}>
           <button
             type="button"
-            onClick={fetchDrafts}
+            onClick={() => fetchDrafts({ reset: true })}
             style={styles.btn}
-            disabled={loadingList || !base}
+            disabled={!canUse || loadingList}
             title="Reload drafts"
           >
             {loadingList ? "Refreshing…" : "Refresh"}
@@ -315,11 +346,12 @@ export default function DraftLibrary({ coreUrl }) {
         </div>
       </div>
 
-      {!base ? (
+      {!canUse ? (
         <div style={styles.errorBox}>
-          <div style={styles.errorTitle}>Core API not set</div>
+          <div style={styles.errorTitle}>Draft Library unavailable</div>
           <div style={styles.errorText}>
-            Core API base URL is missing. Set it in the top strip “Core API” field.
+            Missing Core API base URL or Project ID. Ensure you are connected to
+            a project and Core API is set in the top strip.
           </div>
         </div>
       ) : null}
@@ -342,19 +374,21 @@ export default function DraftLibrary({ coreUrl }) {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search drafts…"
+            placeholder="Search title, slug, keyword…"
             style={styles.input}
+            disabled={!canUse}
           />
 
           <div style={styles.list}>
-            {loadingList ? (
+            {loadingList && drafts.length === 0 ? (
               <div style={styles.muted}>Loading drafts…</div>
             ) : filteredDrafts.length === 0 ? (
-              <div style={styles.muted}>No drafts found.</div>
+              <div style={styles.muted}>No drafts found for this project.</div>
             ) : (
               filteredDrafts.map((d) => {
                 const id = pickId(d);
                 const isActive = id && id === selectedId;
+
                 return (
                   <button
                     key={id || pickTitle(d)}
@@ -368,17 +402,66 @@ export default function DraftLibrary({ coreUrl }) {
                     <div style={styles.listItemTop}>
                       <div style={styles.listItemTitle}>{pickTitle(d)}</div>
                     </div>
+
                     <div style={styles.listItemMeta}>
                       <span style={styles.mono}>
-                        {id ? String(id).slice(0, 10) : "—"}
+                        {d?.primaryKeyword ? d.primaryKeyword : `ID ${String(id || "—")}`}
                       </span>
                       <span style={styles.dot}>•</span>
-                      <span>{formatDate(pickUpdatedAt(d))}</span>
+                      <span>{formatDate(pickCreatedAt(d))}</span>
                     </div>
+
+                    {d?.metaDescription ? (
+                      <div style={styles.listItemDesc}>
+                        {String(d.metaDescription).slice(0, 120)}
+                        {String(d.metaDescription).length > 120 ? "…" : ""}
+                      </div>
+                    ) : null}
                   </button>
                 );
               })
             )}
+          </div>
+
+          <div style={styles.pagerRow}>
+            <div style={styles.pagerLeft}>
+              <span style={styles.pagerLabel}>Limit</span>
+              <select
+                value={limit}
+                onChange={(e) => {
+                  const next = Number(e.target.value);
+                  setLimit(next);
+                  setOffset(0);
+                  setDrafts([]);
+                  setSelectedId(null);
+                  setSelectedDraft(null);
+                  setTimeout(() => fetchDrafts({ reset: true }), 0);
+                }}
+                style={styles.select}
+                disabled={!canUse || loadingList}
+              >
+                {[25, 50, 100, 200].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const nextOffset = offset + limit;
+                setOffset(nextOffset);
+                // load more (append)
+                setTimeout(() => fetchDrafts({ reset: false }), 0);
+              }}
+              style={styles.btnSecondary}
+              disabled={!canUse || loadingList}
+              title="Load more drafts"
+            >
+              Load more
+            </button>
           </div>
         </div>
 
@@ -396,6 +479,7 @@ export default function DraftLibrary({ coreUrl }) {
                     ...styles.toggleBtn,
                     ...(format === "plain" ? styles.toggleBtnActive : {}),
                   }}
+                  disabled={!selectedDraft}
                 >
                   Plain text
                 </button>
@@ -406,6 +490,7 @@ export default function DraftLibrary({ coreUrl }) {
                     ...styles.toggleBtn,
                     ...(format === "html" ? styles.toggleBtnActive : {}),
                   }}
+                  disabled={!selectedDraft}
                 >
                   HTML
                 </button>
@@ -453,15 +538,15 @@ export default function DraftLibrary({ coreUrl }) {
                   </div>
                 </div>
                 <div style={styles.metaBlock}>
-                  <div style={styles.metaLabel}>Updated</div>
+                  <div style={styles.metaLabel}>Primary keyword</div>
                   <div style={styles.metaValue}>
-                    {formatDate(pickUpdatedAt(selectedDraft))}
+                    {selectedDraft?.primaryKeyword || "—"}
                   </div>
                 </div>
                 <div style={styles.metaBlock}>
-                  <div style={styles.metaLabel}>ID</div>
+                  <div style={styles.metaLabel}>Slug</div>
                   <div style={{ ...styles.metaValue, ...styles.mono }}>
-                    {String(pickId(selectedDraft) || "—")}
+                    {selectedDraft?.slug || "—"}
                   </div>
                 </div>
               </div>
@@ -474,8 +559,8 @@ export default function DraftLibrary({ coreUrl }) {
               />
 
               <div style={styles.hint}>
-                Tip: if the draft does not store HTML, the HTML export wraps the plain text in a{" "}
-                <b>&lt;pre&gt;</b>.
+                Note: if a draft has no <b>articleHtml</b>, HTML export wraps the
+                plain text into a <b>&lt;pre&gt;</b>.
               </div>
             </>
           )}
@@ -551,7 +636,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: 8,
-    maxHeight: 430,
+    maxHeight: 390,
     overflow: "auto",
     paddingRight: 2,
   },
@@ -572,8 +657,10 @@ const styles = {
   listItemTop: { display: "flex", alignItems: "center", gap: 8 },
   listItemTitle: { fontSize: 12, fontWeight: 800, lineHeight: 1.2 },
   listItemMeta: { marginTop: 6, fontSize: 11, opacity: 0.75 },
+  listItemDesc: { marginTop: 6, fontSize: 11, opacity: 0.7, lineHeight: 1.3 },
   mono: {
-    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+    fontFamily:
+      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
   },
   dot: { margin: "0 6px" },
   controls: { display: "flex", gap: 8, alignItems: "center" },
@@ -627,7 +714,8 @@ const styles = {
     color: "inherit",
     padding: 12,
     boxSizing: "border-box",
-    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+    fontFamily:
+      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
     fontSize: 12,
     lineHeight: 1.5,
     outline: "none",
@@ -635,7 +723,7 @@ const styles = {
   hint: { marginTop: 10, fontSize: 12, opacity: 0.75 },
   metaRow: {
     display: "grid",
-    gridTemplateColumns: "1.3fr 1fr 1fr 1fr",
+    gridTemplateColumns: "1.4fr 1fr 1fr 1fr",
     gap: 10,
     marginBottom: 10,
   },
@@ -656,4 +744,22 @@ const styles = {
   },
   errorTitle: { fontSize: 13, fontWeight: 900, marginBottom: 4 },
   errorText: { fontSize: 12, opacity: 0.9 },
+  pagerRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 10,
+  },
+  pagerLeft: { display: "flex", alignItems: "center", gap: 8 },
+  pagerLabel: { fontSize: 12, opacity: 0.75 },
+  select: {
+    borderRadius: 10,
+    border: "1px solid rgba(148, 163, 184, 0.20)",
+    background: "rgba(2, 6, 23, 0.22)",
+    color: "inherit",
+    padding: "8px 10px",
+    fontSize: 12,
+    outline: "none",
+  },
 };
