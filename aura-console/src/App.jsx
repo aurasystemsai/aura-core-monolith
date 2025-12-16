@@ -273,6 +273,128 @@ function App() {
       : null;
 
   // -------------------------------------------------
+  // Helpers: formatting + auto-save drafts
+  // -------------------------------------------------
+  const slugify = (value) => {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/['"]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80);
+  };
+
+  const buildWeeklyText = (summary, posts) => {
+    const lines = [];
+    lines.push(`# Weekly plan`);
+    if (summary) lines.push(`\n${summary}\n`);
+    lines.push(`\n## Posts\n`);
+    (posts || []).forEach((p, idx) => {
+      lines.push(
+        `\n${idx + 1}. ${p.title || "Untitled"}`
+      );
+      if (p.primaryKeyword || p.keyword) {
+        lines.push(`   - Keyword: ${p.primaryKeyword || p.keyword}`);
+      }
+      if (p.slug || p.handle) {
+        lines.push(`   - Slug: ${p.slug || p.handle}`);
+      }
+      if (p.metaDescription || p.description) {
+        lines.push(
+          `   - Meta: ${p.metaDescription || p.description}`
+        );
+      }
+      if (p.angle || p.summary) {
+        lines.push(`   - Angle: ${p.angle || p.summary}`);
+      }
+      if (p.suggestedDate || p.date) {
+        lines.push(`   - Date: ${p.suggestedDate || p.date}`);
+      }
+    });
+    return lines.join("\n");
+  };
+
+  const buildWeeklyHtml = (summary, posts) => {
+    const esc = (s) =>
+      String(s || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    const rows = (posts || [])
+      .map((p, idx) => {
+        return `<tr>
+<td>${idx + 1}</td>
+<td>${esc(p.title || "Untitled")}</td>
+<td>${esc(p.primaryKeyword || p.keyword || "")}</td>
+<td>${esc(p.slug || p.handle || "")}</td>
+<td>${esc(p.metaDescription || p.description || "")}</td>
+<td>${esc(p.angle || p.summary || "")}</td>
+<td>${esc(p.suggestedDate || p.date || "")}</td>
+</tr>`;
+      })
+      .join("\n");
+
+    return `<h1>Weekly plan</h1>
+${summary ? `<p>${esc(summary)}</p>` : ""}
+<table>
+<thead>
+<tr>
+<th>#</th><th>Title</th><th>Keyword</th><th>Slug</th><th>Meta</th><th>Angle</th><th>Date</th>
+</tr>
+</thead>
+<tbody>
+${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
+</tbody>
+</table>`;
+  };
+
+  const autoSaveDraftToCore = async ({
+    toolId,
+    createdAtIso,
+    title,
+    slug,
+    metaDescription,
+    primaryKeyword,
+    input,
+    output,
+    articleText,
+    articleHtml,
+  }) => {
+    if (!project?.id) return;
+
+    const body = {
+      toolId: toolId || "unknown",
+      createdAt: createdAtIso || new Date().toISOString(),
+      title: title || null,
+      slug: slug || null,
+      metaDescription: metaDescription || null,
+      primaryKeyword: primaryKeyword || null,
+      input: input || null,
+      output: output || null,
+      articleText: articleText || null,
+      articleHtml: articleHtml || null,
+    };
+
+    // Fire-and-forget, but we still want errors in console
+    try {
+      const res = await fetch(`${coreUrl}/projects/${project.id}/drafts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(
+          `Draft save failed (${res.status}): ${text || res.statusText}`
+        );
+      }
+    } catch (err) {
+      console.error("[Console] Auto-save draft failed", err);
+    }
+  };
+
+  // -------------------------------------------------
   // Run engine
   // -------------------------------------------------
   const handleRun = async () => {
@@ -349,6 +471,7 @@ function App() {
       if (!output) throw new Error("No output returned from tool");
 
       const now = new Date();
+      const nowIso = now.toISOString();
       const nowLabel = now.toLocaleString();
       setLastRunAt(nowLabel);
 
@@ -356,6 +479,9 @@ function App() {
       let mLen = 0;
       let oScore = null;
 
+      // -------------------------------------------------
+      // Weekly
+      // -------------------------------------------------
       if (isWeekly) {
         const posts = Array.isArray(output.posts) ? output.posts : [];
         setWeeklySummary(output.summary || "");
@@ -388,7 +514,34 @@ function App() {
           tScore !== null && mScore !== null
             ? Math.round((tScore + mScore) / 2)
             : null;
+
+        // AUTO-SAVE (weekly plan as a draft record)
+        const weeklyTitle = `Weekly plan · ${weeklyBrand || "Brand"} · ${now
+          .toISOString()
+          .slice(0, 10)}`;
+        const weeklySlug = slugify(weeklyTitle);
+        const weeklyText = buildWeeklyText(output.summary || "", posts);
+        const weeklyHtml = buildWeeklyHtml(output.summary || "", posts);
+
+        await autoSaveDraftToCore({
+          toolId,
+          createdAtIso: nowIso,
+          title: weeklyTitle,
+          slug: weeklySlug,
+          metaDescription:
+            (output.summary || "").slice(0, 240) || "Weekly content plan",
+          primaryKeyword: (posts?.[0]?.primaryKeyword ||
+            posts?.[0]?.keyword ||
+            "")?.toString(),
+          input: payload,
+          output,
+          articleText: weeklyText,
+          articleHtml: weeklyHtml,
+        });
       } else {
+        // -------------------------------------------------
+        // Product SEO / Blog SEO / Draft
+        // -------------------------------------------------
         const nextTitle = output.title || output.seoTitle || "";
         const nextDescription =
           output.description ||
@@ -411,9 +564,14 @@ function App() {
         setMetaAdvice(advice.metaTips || "");
         setGeneralAdvice(advice.generalTips || "");
 
-        // Blog draft specific mapping + AUTO-SAVE
+        // Blog draft specific mapping
+        let saveArticleText = null;
+        let saveArticleHtml = null;
+
         if (toolId === "blog-draft-engine") {
-          setDraftSections(Array.isArray(output.sections) ? output.sections : []);
+          setDraftSections(
+            Array.isArray(output.sections) ? output.sections : []
+          );
           setDraftCta(output.cta || "");
           setDraftWordCount(
             typeof output.estimatedWordCount === "number"
@@ -424,30 +582,8 @@ function App() {
           setDraftText(output.articleText || "");
           setDraftFormat("text");
 
-          // Auto-save to Draft Library (fire-and-forget)
-          try {
-            await fetch(`${coreUrl}/projects/${project.id}/drafts`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                toolId: "blog-draft-engine",
-                createdAt: now.toISOString(),
-                title: nextTitle || productTitle || "",
-                slug: nextSlug || "",
-                metaDescription: nextDescription || "",
-                primaryKeyword:
-                  (Array.isArray(nextKeywords) && nextKeywords[0]) ||
-                  output.primaryKeyword ||
-                  "",
-                input: payload,
-                output,
-                articleText: output.articleText || "",
-                articleHtml: output.articleHtml || "",
-              }),
-            });
-          } catch (e) {
-            console.error("Failed to auto-save draft", e);
-          }
+          saveArticleText = output.articleText || "";
+          saveArticleHtml = output.articleHtml || "";
         } else {
           setDraftSections([]);
           setDraftCta("");
@@ -455,6 +591,56 @@ function App() {
           setDraftHtml("");
           setDraftText("");
           setDraftFormat("text");
+
+          // For non-draft engines: save a clean summary as articleText/Html
+          const summaryTitle =
+            nextTitle || productTitle || `${toolId} run · ${nowIso.slice(0, 10)}`;
+          const summarySlug = nextSlug || slugify(summaryTitle);
+          const summaryMeta =
+            nextDescription ||
+            `Generated SEO fields for ${summaryTitle}`.slice(0, 155);
+
+          saveArticleText = [
+            `# ${summaryTitle}`,
+            ``,
+            `Tool: ${toolId}`,
+            `Market: ${activeMarket}`,
+            `Device: ${activeDevice}`,
+            ``,
+            `## SEO Fields`,
+            `- Title: ${nextTitle || ""}`,
+            `- Meta: ${nextDescription || ""}`,
+            `- Slug: ${summarySlug || ""}`,
+            `- Primary keyword: ${output.primaryKeyword || (Array.isArray(nextKeywords) ? nextKeywords[0] : "") || ""}`,
+            `- Keywords: ${
+              Array.isArray(nextKeywords) ? nextKeywords.join(", ") : ""
+            }`,
+          ].join("\n");
+
+          const esc = (s) =>
+            String(s || "")
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;");
+
+          saveArticleHtml = `<h1>${esc(summaryTitle)}</h1>
+<p><strong>Tool:</strong> ${esc(toolId)}<br/>
+<strong>Market:</strong> ${esc(activeMarket)}<br/>
+<strong>Device:</strong> ${esc(activeDevice)}</p>
+<h2>SEO Fields</h2>
+<ul>
+<li><strong>Title:</strong> ${esc(nextTitle)}</li>
+<li><strong>Meta:</strong> ${esc(nextDescription)}</li>
+<li><strong>Slug:</strong> ${esc(summarySlug)}</li>
+<li><strong>Primary keyword:</strong> ${esc(
+            output.primaryKeyword ||
+              (Array.isArray(nextKeywords) ? nextKeywords[0] : "") ||
+              ""
+          )}</li>
+<li><strong>Keywords:</strong> ${esc(
+            Array.isArray(nextKeywords) ? nextKeywords.join(", ") : ""
+          )}</li>
+</ul>`;
         }
 
         tLen = (nextTitle || productTitle).length;
@@ -467,6 +653,37 @@ function App() {
           tScore !== null && mScore !== null
             ? Math.round((tScore + mScore) / 2)
             : null;
+
+        // AUTO-SAVE (every engine)
+        const safeTitle =
+          (toolId === "blog-draft-engine" ? (output.blogTitle || nextTitle) : nextTitle) ||
+          productTitle ||
+          `${toolId} run · ${nowIso.slice(0, 10)}`;
+
+        const safeSlug =
+          nextSlug || slugify(safeTitle) || `run-${nowIso.slice(0, 10)}`;
+
+        const primaryKeyword =
+          output.primaryKeyword ||
+          (Array.isArray(nextKeywords) ? nextKeywords[0] : "") ||
+          "";
+
+        await autoSaveDraftToCore({
+          toolId,
+          createdAtIso: nowIso,
+          title: safeTitle,
+          slug: safeSlug,
+          metaDescription:
+            nextDescription ||
+            output.metaDescription ||
+            output.description ||
+            "",
+          primaryKeyword: String(primaryKeyword || ""),
+          input: payload,
+          output,
+          articleText: saveArticleText,
+          articleHtml: saveArticleHtml,
+        });
       }
 
       // Record in in-memory history
@@ -496,7 +713,7 @@ function App() {
           },
           body: JSON.stringify({
             toolId,
-            createdAt: now.toISOString(),
+            createdAt: nowIso,
             market: activeMarket,
             device: activeDevice,
             score: oScore,
@@ -554,11 +771,7 @@ function App() {
   const latestRun = historyForFilters[historyForFilters.length - 1];
 
   const buildTitleAdvice = () => {
-    const label = isProduct
-      ? "product"
-      : isWeekly
-      ? "content plan"
-      : "blog post";
+    const label = isProduct ? "product" : isWeekly ? "content plan" : "blog post";
     if (!currentTitleLength) {
       return `Add a clear ${label} title first, then run the engine. Aim for 45–60 characters.`;
     }
@@ -572,6 +785,7 @@ function App() {
       return `Your current ${label} title is ${currentTitleLength} characters. It is a bit long – consider trimming around ${extra} characters so it stays punchy in search results.`;
     }
     return `Your current ${label} title is ${currentTitleLength} characters, which is right in the sweet spot. Only tweak it if it feels clunky or hard to read.`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   };
 
   const buildMetaAdvice = () => {
@@ -591,7 +805,9 @@ function App() {
   };
 
   if (!project) {
-    return <ProjectSetup coreUrl={coreUrl} onConnected={(proj) => setProject(proj)} />;
+    return (
+      <ProjectSetup coreUrl={coreUrl} onConnected={(proj) => setProject(proj)} />
+    );
   }
 
   return (
@@ -799,9 +1015,10 @@ function App() {
             <section style={{ marginTop: 10 }}>
               <div className="card">
                 <div className="card-header">
-                  <h2 className="card-title">Saved drafts</h2>
+                  <h2 className="card-title">Draft Library</h2>
                   <p className="card-subtitle">
-                    Browse drafts saved in your Core API Draft Library. Export as plain text or HTML.
+                    Saved runs and drafts for this project (stored in Core SQLite).
+                    Export as plain text or HTML.
                   </p>
                 </div>
 
@@ -1251,9 +1468,7 @@ function App() {
 
                               <button
                                 className="button button--ghost button--tiny"
-                                onClick={() =>
-                                  copyToClipboard(draftFormat === "html" ? draftHtml : draftText)
-                                }
+                                onClick={() => copyToClipboard(draftFormat === "html" ? draftHtml : draftText)}
                                 disabled={draftFormat === "html" ? !draftHtml : !draftText}
                                 type="button"
                               >
@@ -1481,8 +1696,8 @@ function App() {
                       </button>
                       <div className="inspector-footnote">
                         {isWeekly
-                          ? "Plan generated. Copy titles and meta from the left-hand table."
-                          : "SEO fields generated. Copy them from the left-hand table."}
+                          ? "Plan generated and saved. Open Draft Library to export."
+                          : "Output generated and saved. Open Draft Library to export."}
                       </div>
                     </div>
 
