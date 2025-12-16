@@ -100,35 +100,29 @@ function getDraftById(projectId, draftId) {
 function createDraft(projectId, body) {
   ensureDraftsTable();
 
-  const safeProjectId = String(projectId || "").trim();
-  if (!safeProjectId) {
-    const err = new Error("projectId is required");
-    err.statusCode = 400;
-    throw err;
-  }
+  const {
+    toolId,
+    createdAt,
+    title,
+    slug,
+    metaDescription,
+    primaryKeyword,
+    input,
+    output,
+    articleText,
+    articleHtml,
+  } = body || {};
 
-  const toolId = String(body?.toolId || "").trim();
   if (!toolId) {
     const err = new Error("toolId is required");
     err.statusCode = 400;
     throw err;
   }
 
-  const createdAt = body?.createdAt ? String(body.createdAt) : new Date().toISOString();
+  const ts = createdAt ? String(createdAt) : new Date().toISOString();
 
-  const title = body?.title != null ? String(body.title) : null;
-  const slug = body?.slug != null ? String(body.slug) : null;
-  const metaDescription = body?.metaDescription != null ? String(body.metaDescription) : null;
-  const primaryKeyword = body?.primaryKeyword != null ? String(body.primaryKeyword) : null;
-
-  const inputJson =
-    body?.input != null ? JSON.stringify(body.input) : null;
-
-  const outputJson =
-    body?.output != null ? JSON.stringify(body.output) : null;
-
-  const articleText = body?.articleText != null ? String(body.articleText) : null;
-  const articleHtml = body?.articleHtml != null ? String(body.articleHtml) : null;
+  const inputJson = input ? JSON.stringify(input) : null;
+  const outputJson = output ? JSON.stringify(output) : null;
 
   const info = db.prepare(`
     INSERT INTO drafts (
@@ -145,28 +139,28 @@ function createDraft(projectId, body) {
       articleHtml
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
-    safeProjectId,
-    toolId,
-    createdAt,
-    title,
-    slug,
-    metaDescription,
-    primaryKeyword,
+    projectId || "",
+    String(toolId),
+    ts,
+    title != null ? String(title) : null,
+    slug != null ? String(slug) : null,
+    metaDescription != null ? String(metaDescription) : null,
+    primaryKeyword != null ? String(primaryKeyword) : null,
     inputJson,
     outputJson,
-    articleText,
-    articleHtml
+    articleText != null ? String(articleText) : null,
+    articleHtml != null ? String(articleHtml) : null
   );
 
   return {
     id: info.lastInsertRowid,
-    projectId: safeProjectId,
-    toolId,
-    createdAt,
-    title,
-    slug,
-    metaDescription,
-    primaryKeyword,
+    projectId: projectId || "",
+    toolId: String(toolId),
+    createdAt: ts,
+    title: title != null ? String(title) : null,
+    slug: slug != null ? String(slug) : null,
+    metaDescription: metaDescription != null ? String(metaDescription) : null,
+    primaryKeyword: primaryKeyword != null ? String(primaryKeyword) : null,
   };
 }
 

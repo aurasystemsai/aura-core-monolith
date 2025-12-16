@@ -1,176 +1,97 @@
-// src/core/drafts.js
+// src/routes/drafts.js
 "use strict";
 
-const db = require("./db");
+const express = require("express");
+const draftsCore = require("../core/drafts");
 
-function ensureDraftsTable() {
-  db.prepare(`
-    CREATE TABLE IF NOT EXISTS drafts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      projectId TEXT,
-      toolId TEXT NOT NULL,
-      createdAt TEXT NOT NULL,
+const router = express.Router();
 
-      title TEXT,
-      slug TEXT,
-      metaDescription TEXT,
-      primaryKeyword TEXT,
-
-      inputJson TEXT,
-      outputJson TEXT,
-
-      articleText TEXT,
-      articleHtml TEXT
-    )
-  `).run();
-
-  db.prepare(`
-    CREATE INDEX IF NOT EXISTS idx_drafts_project_createdAt
-    ON drafts (projectId, createdAt)
-  `).run();
-}
-
-function listDraftsByProject(projectId, limit = 50, offset = 0) {
-  ensureDraftsTable();
-
-  const safeLimit = Math.max(1, Math.min(Number(limit) || 50, 200));
-  const safeOffset = Math.max(0, Number(offset) || 0);
-
-  const rows = db.prepare(`
-    SELECT
-      id,
-      projectId,
-      toolId,
-      createdAt,
-      title,
-      slug,
-      metaDescription,
-      primaryKeyword
-    FROM drafts
-    WHERE projectId = ?
-    ORDER BY datetime(createdAt) DESC
-    LIMIT ? OFFSET ?
-  `).all(projectId || "", safeLimit, safeOffset);
-
-  return rows || [];
-}
-
-function getDraftById(projectId, draftId) {
-  ensureDraftsTable();
-
-  const row = db.prepare(`
-    SELECT
-      id,
-      projectId,
-      toolId,
-      createdAt,
-      title,
-      slug,
-      metaDescription,
-      primaryKeyword,
-      inputJson,
-      outputJson,
-      articleText,
-      articleHtml
-    FROM drafts
-    WHERE projectId = ? AND id = ?
-    LIMIT 1
-  `).get(projectId || "", Number(draftId));
-
-  if (!row) return null;
-
-  let input = null;
-  let output = null;
+/**
+ * GET /projects/:projectId/drafts
+ * Query: limit, offset
+ */
+router.get("/projects/:projectId/drafts", (req, res) => {
+  const projectId = req.params.projectId;
+  const { limit, offset } = req.query;
 
   try {
-    input = row.inputJson ? JSON.parse(row.inputJson) : null;
-  } catch {}
-  try {
-    output = row.outputJson ? JSON.parse(row.outputJson) : null;
-  } catch {}
-
-  return {
-    ...row,
-    input,
-    output,
-  };
-}
-
-function createDraft(projectId, body) {
-  ensureDraftsTable();
-
-  const payload = body || {};
-  const toolId = String(payload.toolId || "").trim();
-  if (!toolId) {
-    const err = new Error("toolId is required");
-    err.statusCode = 400;
-    throw err;
+    const drafts = draftsCore.listDraftsByProject(projectId, limit, offset);
+    return res.json({
+      ok: true,
+      projectId,
+      drafts,
+    });
+  } catch (err) {
+    console.error("[Drafts] Error listing drafts", err);
+    return res.status(500).json({
+      ok: false,
+      error: "Failed to list drafts",
+    });
   }
+});
 
-  const createdAt = payload.createdAt
-    ? new Date(payload.createdAt).toISOString()
-    : new Date().toISOString();
+/**
+ * GET /projects/:projectId/drafts/:draftId
+ */
+router.get("/projects/:projectId/drafts/:draftId", (req, res) => {
+  const projectId = req.params.projectId;
+  const draftId = req.params.draftId;
 
-  const title = payload.title != null ? String(payload.title) : null;
-  const slug = payload.slug != null ? String(payload.slug) : null;
-  const metaDescription =
-    payload.metaDescription != null ? String(payload.metaDescription) : null;
-  const primaryKeyword =
-    payload.primaryKeyword != null ? String(payload.primaryKeyword) : null;
-
-  const inputJson =
-    payload.input != null ? safeStringify(payload.input) : null;
-  const outputJson =
-    payload.output != null ? safeStringify(payload.output) : null;
-
-  const articleText =
-    payload.articleText != null ? String(payload.articleText) : null;
-  const articleHtml =
-    payload.articleHtml != null ? String(payload.articleHtml) : null;
-
-  const info = db.prepare(`
-    INSERT INTO drafts (
-      projectId,
-      toolId,
-      createdAt,
-      title,
-      slug,
-      metaDescription,
-      primaryKeyword,
-      inputJson,
-      outputJson,
-      articleText,
-      articleHtml
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    projectId || "",
-    toolId,
-    createdAt,
-    title,
-    slug,
-    metaDescription,
-    primaryKeyword,
-    inputJson,
-    outputJson,
-    articleText,
-    articleHtml
-  );
-
-  const id = info.lastInsertRowid;
-  return getDraftById(projectId, id);
-}
-
-function safeStringify(value) {
   try {
-    return JSON.stringify(value);
-  } catch {
-    return null;
-  }
-}
+    const draft = draftsCore.getDraftById(projectId, draftId);
+    if (!draft) {
+      return res.status(404).json({
+        ok: false,
+        error: "Draft not found",
+      });
+    }
 
-module.exports = {
-  ensureDraftsTable,
-  listDraftsByProject,
-  getDraftById,
-  createDraft,
-};
+    return res.json({
+      ok: true,
+      projectId,
+      draft,
+    });
+  } catch (err) {
+    console.error("[Drafts] Error reading draft", err);
+    return res.status(500).json({
+      ok: false,
+      error: "Failed to read draft",
+    });
+  }
+});
+
+/**
+ * POST /projects/:projectId/drafts
+ *
+ * Body:
+ * {
+ *   toolId: "blog-draft-engine",
+ *   createdAt: "ISO" (optional),
+ *   title, slug, metaDescription, primaryKeyword (optional),
+ *   input: {...} (optional),
+ *   output: {...} (optional),
+ *   articleText: "...",
+ *   articleHtml: "..."
+ * }
+ */
+router.post("/projects/:projectId/drafts", (req, res) => {
+  const projectId = req.params.projectId;
+
+  try {
+    const created = draftsCore.createDraft(projectId, req.body || {});
+    return res.json({
+      ok: true,
+      projectId,
+      draft: created,
+    });
+  } catch (err) {
+    const status = err.statusCode || 500;
+    console.error("[Drafts] Error creating draft", err);
+    return res.status(status).json({
+      ok: false,
+      error: err.message || "Failed to create draft",
+    });
+  }
+});
+
+module.exports = router;
