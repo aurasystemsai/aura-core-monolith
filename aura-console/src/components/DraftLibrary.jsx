@@ -1,765 +1,568 @@
 // aura-console/src/components/DraftLibrary.jsx
 import React, { useEffect, useMemo, useState } from "react";
 
-/**
- * Draft Library UI (project-scoped)
- *
- * Matches Core drafts schema:
- *  - list: id, projectId, toolId, createdAt, title, slug, metaDescription, primaryKeyword
- *  - detail: + inputJson/outputJson parsed as input/output, articleText, articleHtml
- *
- * Expected API routes:
- *  GET /projects/:projectId/drafts?limit=50&offset=0
- *  GET /projects/:projectId/drafts/:draftId
- *
- * Props:
- *  - coreUrl (string)    e.g. https://aura-core-monolith.onrender.com
- *  - projectId (string)  current project id
- */
-
-function safeJsonParse(text) {
+function safeJson(value) {
   try {
-    return JSON.parse(text);
+    return JSON.stringify(value, null, 2);
   } catch {
-    return null;
+    return "";
   }
 }
 
-function pickId(d) {
-  return d?.id ?? d?._id ?? d?.draftId ?? d?.key ?? null;
-}
+function DraftLibrary({ coreUrl, projectId: projectIdProp }) {
+  const projectId =
+    projectIdProp || localStorage.getItem("auraProjectId") || "";
 
-function pickTitle(d) {
-  return d?.title || d?.name || d?.slug || "Untitled draft";
-}
-
-function pickCreatedAt(d) {
-  return d?.createdAt || d?.created_at || null;
-}
-
-function formatDate(iso) {
-  if (!iso) return "—";
-  const dt = new Date(iso);
-  if (Number.isNaN(dt.getTime())) return String(iso);
-  return dt.toLocaleString();
-}
-
-function escapeHtml(str) {
-  return String(str || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function ensureHtmlDoc(html, title = "Draft") {
-  const trimmed = String(html || "").trim();
-  if (!trimmed) {
-    return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>${escapeHtml(title)}</title>
-</head>
-<body>
-</body>
-</html>`;
-  }
-
-  const hasHtmlTag = /<html[\s>]/i.test(trimmed);
-  const hasDoctype = /<!doctype html>/i.test(trimmed);
-
-  if (hasHtmlTag) return hasDoctype ? trimmed : `<!doctype html>\n${trimmed}`;
-
-  return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>${escapeHtml(title)}</title>
-</head>
-<body>
-${trimmed}
-</body>
-</html>`;
-}
-
-function downloadFile(filename, content, mime = "text/plain;charset=utf-8") {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-export default function DraftLibrary({ coreUrl, projectId }) {
-  const base = String(coreUrl || "").replace(/\/$/, "");
-  const pid = String(projectId || "").trim();
-
-  const [loadingList, setLoadingList] = useState(false);
-  const [loadingDraft, setLoadingDraft] = useState(false);
-  const [error, setError] = useState("");
+  const [status, setStatus] = useState("idle"); // idle | loading | error | ok
+  const [error, setError] = useState(null);
 
   const [drafts, setDrafts] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
-  const [selectedDraft, setSelectedDraft] = useState(null);
+  const [selected, setSelected] = useState(null);
 
-  const [query, setQuery] = useState("");
-  const [format, setFormat] = useState("plain"); // "plain" | "html"
-  const [copied, setCopied] = useState(false);
-
-  // Basic pagination (optional but useful)
-  const [limit, setLimit] = useState(50);
+  const [limit, setLimit] = useState(25);
   const [offset, setOffset] = useState(0);
 
-  function apiUrl(path) {
-    const p = path.startsWith("/") ? path : `/${path}`;
-    return `${base}${p}`;
-  }
+  const [search, setSearch] = useState("");
+  const [format, setFormat] = useState("text"); // text | html
+  const [detailsView, setDetailsView] = useState("article"); // article | seo | json
 
-  async function fetchDrafts({ reset = false } = {}) {
-    if (!base || !pid) return;
-
-    setError("");
-    setLoadingList(true);
-
-    try {
-      const useOffset = reset ? 0 : offset;
-      const res = await fetch(
-        apiUrl(
-          `/projects/${encodeURIComponent(pid)}/drafts?limit=${encodeURIComponent(
-            limit
-          )}&offset=${encodeURIComponent(useOffset)}`
-        ),
-        {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      const text = await res.text();
-      const payload = safeJsonParse(text) ?? text;
-
-      if (!res.ok) {
-        throw new Error(
-          (payload && payload.error) ||
-            `Failed to load drafts (HTTP ${res.status})`
-        );
-      }
-
-      const list = Array.isArray(payload)
-        ? payload
-        : Array.isArray(payload?.drafts)
-        ? payload.drafts
-        : Array.isArray(payload?.items)
-        ? payload.items
-        : [];
-
-      if (reset) {
-        setDrafts(list);
-        setOffset(0);
-        if (!selectedId && list.length > 0) {
-          setSelectedId(pickId(list[0]));
-        }
-      } else {
-        // Append (if API supports offset paging)
-        const merged = [...drafts, ...list];
-        setDrafts(merged);
-      }
-    } catch (e) {
-      setError(e?.message || "Failed to load drafts");
-    } finally {
-      setLoadingList(false);
-    }
-  }
-
-  async function fetchDraftById(draftId) {
-    if (!base || !pid || !draftId) return;
-
-    setError("");
-    setLoadingDraft(true);
-    setSelectedDraft(null);
-
-    try {
-      const res = await fetch(
-        apiUrl(
-          `/projects/${encodeURIComponent(pid)}/drafts/${encodeURIComponent(
-            draftId
-          )}`
-        ),
-        {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      const text = await res.text();
-      const payload = safeJsonParse(text) ?? text;
-
-      if (!res.ok) {
-        throw new Error(
-          (payload && payload.error) ||
-            `Failed to load draft (HTTP ${res.status})`
-        );
-      }
-
-      const draft =
-        payload?.draft || (payload?.ok && payload?.draft) ? payload.draft : payload;
-
-      setSelectedDraft(draft || null);
-    } catch (e) {
-      setError(e?.message || "Failed to load draft");
-    } finally {
-      setLoadingDraft(false);
-    }
-  }
-
-  // Refresh whenever coreUrl/projectId changes
-  useEffect(() => {
-    setDrafts([]);
-    setSelectedId(null);
-    setSelectedDraft(null);
-    setOffset(0);
-
-    if (base && pid) {
-      fetchDrafts({ reset: true });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [base, pid]);
-
-  useEffect(() => {
-    if (selectedId) fetchDraftById(selectedId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId, base, pid]);
+  const canQuery = Boolean(coreUrl && projectId);
 
   const filteredDrafts = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = (search || "").trim().toLowerCase();
     if (!q) return drafts;
 
     return drafts.filter((d) => {
-      const title = pickTitle(d).toLowerCase();
-      const id = String(pickId(d) || "").toLowerCase();
-      const keyword = String(d?.primaryKeyword || "").toLowerCase();
-      const slug = String(d?.slug || "").toLowerCase();
+      const title = (d.title || "").toLowerCase();
+      const slug = (d.slug || "").toLowerCase();
+      const kw = (d.primaryKeyword || "").toLowerCase();
+      const meta = (d.metaDescription || "").toLowerCase();
       return (
         title.includes(q) ||
-        id.includes(q) ||
-        keyword.includes(q) ||
-        slug.includes(q)
+        slug.includes(q) ||
+        kw.includes(q) ||
+        meta.includes(q)
       );
     });
-  }, [drafts, query]);
+  }, [drafts, search]);
 
-  const exportTitle = pickTitle(selectedDraft || {}) || "Draft";
+  const selectedArticleText =
+    (selected && selected.articleText) || "";
+  const selectedArticleHtml =
+    (selected && selected.articleHtml) || "";
 
-  const plainOutput = useMemo(() => {
-    if (!selectedDraft) return "";
-    // Core schema uses articleText
-    const body =
-      selectedDraft?.articleText ??
-      selectedDraft?.article_text ??
-      selectedDraft?.text ??
-      selectedDraft?.plainText ??
-      "";
-    return String(body || "");
-  }, [selectedDraft]);
-
-  const htmlOutput = useMemo(() => {
-    if (!selectedDraft) return "";
-    // Core schema uses articleHtml
-    const html =
-      selectedDraft?.articleHtml ??
-      selectedDraft?.article_html ??
-      selectedDraft?.html ??
-      "";
-
-    if (html && String(html).trim()) {
-      return ensureHtmlDoc(html, exportTitle);
-    }
-
-    const escaped = escapeHtml(plainOutput);
-    return ensureHtmlDoc(`<pre>${escaped}</pre>`, exportTitle);
-  }, [selectedDraft, plainOutput, exportTitle]);
-
-  const outputText = format === "html" ? htmlOutput : plainOutput;
-
-  async function copyToClipboard() {
+  const copyToClipboard = async (value) => {
+    if (!value) return;
     try {
-      await navigator.clipboard.writeText(outputText);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1200);
+      await navigator.clipboard.writeText(value);
+    } catch (err) {
+      console.error("Clipboard copy failed", err);
+    }
+  };
+
+  const fetchDrafts = async () => {
+    if (!canQuery) return;
+
+    setStatus("loading");
+    setError(null);
+
+    try {
+      const url = new URL(`${coreUrl}/projects/${projectId}/drafts`);
+      url.searchParams.set("limit", String(limit));
+      url.searchParams.set("offset", String(offset));
+
+      const res = await fetch(url.toString());
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(
+          `Failed to load drafts (${res.status}): ${text || res.statusText}`
+        );
+      }
+
+      const data = await res.json();
+      const items = Array.isArray(data?.drafts) ? data.drafts : [];
+      setDrafts(items);
+
+      // If we don’t have a selection yet, auto-select the first draft.
+      if (!selectedId && items.length) {
+        setSelectedId(items[0].id);
+      }
+
+      setStatus("ok");
+    } catch (err) {
+      console.error(err);
+      setStatus("error");
+      setError(err.message || "Failed to load drafts");
+    }
+  };
+
+  const fetchDraftById = async (id) => {
+    if (!canQuery || !id) return;
+
+    try {
+      const res = await fetch(
+        `${coreUrl}/projects/${projectId}/drafts/${id}`
+      );
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(
+          `Failed to load draft (${res.status}): ${text || res.statusText}`
+        );
+      }
+
+      const data = await res.json();
+      const draft = data?.draft || data;
+      setSelected(draft || null);
+    } catch (err) {
+      console.error(err);
+      setSelected(null);
+      setError(err.message || "Failed to load selected draft");
+    }
+  };
+
+  // Initial load + whenever paging changes
+  useEffect(() => {
+    fetchDrafts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coreUrl, projectId, limit, offset]);
+
+  // Fetch the selected draft details
+  useEffect(() => {
+    if (!selectedId) return;
+    fetchDraftById(selectedId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId, coreUrl, projectId]);
+
+  const selectedSummary = useMemo(() => {
+    if (!selectedId) return null;
+    return drafts.find((d) => d.id === selectedId) || null;
+  }, [drafts, selectedId]);
+
+  const createdAtLabel = (iso) => {
+    if (!iso) return "—";
+    try {
+      return new Date(iso).toLocaleString();
     } catch {
-      const ta = document.createElement("textarea");
-      ta.value = outputText;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      ta.remove();
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1200);
+      return iso;
     }
-  }
+  };
 
-  function downloadCurrent() {
-    const safeName =
-      exportTitle
-        .replace(/[^\w\- ]+/g, "")
-        .trim()
-        .replace(/\s+/g, "-")
-        .slice(0, 80) || "draft";
+  const articleForFormat =
+    format === "html" ? selectedArticleHtml : selectedArticleText;
 
-    if (format === "html") {
-      downloadFile(`${safeName}.html`, htmlOutput, "text/html;charset=utf-8");
-    } else {
-      downloadFile(`${safeName}.txt`, plainOutput, "text/plain;charset=utf-8");
-    }
-  }
+  const formatLabel = format === "html" ? "HTML" : "text";
 
-  const canUse = Boolean(base && pid);
-
-  return (
-    <div style={styles.page}>
-      <div style={styles.header}>
-        <div>
-          <div style={styles.h1}>Draft Library</div>
-          <div style={styles.sub}>
-            Project drafts stored in Core SQLite. Export as Plain text or HTML.
-          </div>
-        </div>
-
-        <div style={styles.headerRight}>
-          <button
-            type="button"
-            onClick={() => fetchDrafts({ reset: true })}
-            style={styles.btn}
-            disabled={!canUse || loadingList}
-            title="Reload drafts"
-          >
-            {loadingList ? "Refreshing…" : "Refresh"}
-          </button>
+  if (!projectId) {
+    return (
+      <div style={{ fontSize: 12 }}>
+        <div style={{ marginBottom: 8, opacity: 0.8 }}>
+          No project selected. Connect a project first so we can load drafts.
         </div>
       </div>
+    );
+  }
 
-      {!canUse ? (
-        <div style={styles.errorBox}>
-          <div style={styles.errorTitle}>Draft Library unavailable</div>
-          <div style={styles.errorText}>
-            Missing Core API base URL or Project ID. Ensure you are connected to
-            a project and Core API is set in the top strip.
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "360px 1fr", gap: 12 }}>
+      {/* LEFT: Draft list */}
+      <div className="card" style={{ margin: 0 }}>
+        <div className="card-header">
+          <div
+            className="card-title-row"
+            style={{ display: "flex", alignItems: "center", gap: 10 }}
+          >
+            <h3 className="card-title" style={{ fontSize: 14, margin: 0 }}>
+              Drafts
+            </h3>
+
+            <button
+              className="button button--ghost button--tiny"
+              onClick={fetchDrafts}
+              type="button"
+              disabled={!canQuery || status === "loading"}
+            >
+              {status === "loading" ? "Loading…" : "Refresh"}
+            </button>
+          </div>
+
+          <p className="card-subtitle" style={{ marginTop: 6 }}>
+            Showing {Math.min(limit, filteredDrafts.length)} of{" "}
+            {drafts.length} loaded (page offset {offset}).
+          </p>
+        </div>
+
+        <div style={{ padding: "0 14px 12px" }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <input
+              className="core-api-input"
+              placeholder="Search title, slug, keyword…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ flex: 1, minWidth: 180 }}
+            />
+
+            <select
+              className="core-api-input"
+              value={limit}
+              onChange={(e) => {
+                setOffset(0);
+                setLimit(Number(e.target.value) || 25);
+              }}
+              style={{ width: 110 }}
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              marginTop: 10,
+              alignItems: "center",
+            }}
+          >
+            <button
+              className="button button--ghost button--tiny"
+              type="button"
+              onClick={() => setOffset((o) => Math.max(0, o - limit))}
+              disabled={offset === 0 || status === "loading"}
+            >
+              Prev
+            </button>
+            <button
+              className="button button--ghost button--tiny"
+              type="button"
+              onClick={() => setOffset((o) => o + limit)}
+              disabled={status === "loading" || drafts.length < limit}
+            >
+              Next
+            </button>
+            <div style={{ fontSize: 11, opacity: 0.75 }}>
+              Page {Math.floor(offset / limit) + 1}
+            </div>
           </div>
         </div>
-      ) : null}
 
-      {error ? (
-        <div style={styles.errorBox}>
-          <div style={styles.errorTitle}>Error</div>
-          <div style={styles.errorText}>{error}</div>
-        </div>
-      ) : null}
+        <div style={{ padding: "0 8px 10px" }}>
+          {status === "error" && (
+            <div className="error-banner" style={{ margin: "0 6px 10px" }}>
+              <span className="error-dot" />
+              {error || "Failed to load drafts"}
+            </div>
+          )}
 
-      <div style={styles.grid}>
-        {/* Left: list */}
-        <div style={styles.panel}>
-          <div style={styles.panelHeader}>
-            <div style={styles.panelTitle}>Saved drafts</div>
-            <div style={styles.badge}>{filteredDrafts.length}</div>
-          </div>
-
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search title, slug, keyword…"
-            style={styles.input}
-            disabled={!canUse}
-          />
-
-          <div style={styles.list}>
-            {loadingList && drafts.length === 0 ? (
-              <div style={styles.muted}>Loading drafts…</div>
-            ) : filteredDrafts.length === 0 ? (
-              <div style={styles.muted}>No drafts found for this project.</div>
-            ) : (
-              filteredDrafts.map((d) => {
-                const id = pickId(d);
-                const isActive = id && id === selectedId;
-
+          {status !== "loading" && drafts.length === 0 ? (
+            <div style={{ padding: 12, fontSize: 12, opacity: 0.8 }}>
+              No drafts found for this project yet.
+              <div style={{ marginTop: 6 }}>
+                Run the <strong>Blog Draft Engine</strong> and save the output
+                to your Draft Library.
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {filteredDrafts.map((d) => {
+                const active = d.id === selectedId;
                 return (
                   <button
-                    key={id || pickTitle(d)}
+                    key={d.id}
                     type="button"
-                    onClick={() => setSelectedId(id)}
+                    onClick={() => setSelectedId(d.id)}
+                    className={
+                      "side-nav-item" + (active ? " side-nav-item--active" : "")
+                    }
                     style={{
-                      ...styles.listItem,
-                      ...(isActive ? styles.listItemActive : {}),
+                      textAlign: "left",
+                      padding: "10px 10px",
+                      borderRadius: 10,
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: active
+                        ? "rgba(255,255,255,0.06)"
+                        : "rgba(255,255,255,0.02)",
+                      cursor: "pointer",
                     }}
                   >
-                    <div style={styles.listItemTop}>
-                      <div style={styles.listItemTitle}>{pickTitle(d)}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600 }}>
+                      {d.title || "Untitled draft"}
                     </div>
-
-                    <div style={styles.listItemMeta}>
-                      <span style={styles.mono}>
-                        {d?.primaryKeyword ? d.primaryKeyword : `ID ${String(id || "—")}`}
-                      </span>
-                      <span style={styles.dot}>•</span>
-                      <span>{formatDate(pickCreatedAt(d))}</span>
+                    <div style={{ fontSize: 11, opacity: 0.75, marginTop: 2 }}>
+                      {d.primaryKeyword ? (
+                        <span>{d.primaryKeyword}</span>
+                      ) : (
+                        <span>—</span>
+                      )}
+                      <span style={{ margin: "0 8px", opacity: 0.4 }}>•</span>
+                      <span>{createdAtLabel(d.createdAt)}</span>
                     </div>
-
-                    {d?.metaDescription ? (
-                      <div style={styles.listItemDesc}>
-                        {String(d.metaDescription).slice(0, 120)}
-                        {String(d.metaDescription).length > 120 ? "…" : ""}
+                    {d.slug ? (
+                      <div style={{ fontSize: 11, opacity: 0.7, marginTop: 2 }}>
+                        /{d.slug}
                       </div>
                     ) : null}
                   </button>
                 );
-              })
-            )}
-          </div>
-
-          <div style={styles.pagerRow}>
-            <div style={styles.pagerLeft}>
-              <span style={styles.pagerLabel}>Limit</span>
-              <select
-                value={limit}
-                onChange={(e) => {
-                  const next = Number(e.target.value);
-                  setLimit(next);
-                  setOffset(0);
-                  setDrafts([]);
-                  setSelectedId(null);
-                  setSelectedDraft(null);
-                  setTimeout(() => fetchDrafts({ reset: true }), 0);
-                }}
-                style={styles.select}
-                disabled={!canUse || loadingList}
-              >
-                {[25, 50, 100, 200].map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
+              })}
             </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                const nextOffset = offset + limit;
-                setOffset(nextOffset);
-                // load more (append)
-                setTimeout(() => fetchDrafts({ reset: false }), 0);
-              }}
-              style={styles.btnSecondary}
-              disabled={!canUse || loadingList}
-              title="Load more drafts"
-            >
-              Load more
-            </button>
-          </div>
-        </div>
-
-        {/* Right: preview/export */}
-        <div style={styles.panel}>
-          <div style={styles.panelHeader}>
-            <div style={styles.panelTitle}>Draft</div>
-
-            <div style={styles.controls}>
-              <div style={styles.toggleWrap}>
-                <button
-                  type="button"
-                  onClick={() => setFormat("plain")}
-                  style={{
-                    ...styles.toggleBtn,
-                    ...(format === "plain" ? styles.toggleBtnActive : {}),
-                  }}
-                  disabled={!selectedDraft}
-                >
-                  Plain text
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormat("html")}
-                  style={{
-                    ...styles.toggleBtn,
-                    ...(format === "html" ? styles.toggleBtnActive : {}),
-                  }}
-                  disabled={!selectedDraft}
-                >
-                  HTML
-                </button>
-              </div>
-
-              <button
-                type="button"
-                onClick={copyToClipboard}
-                style={styles.btn}
-                disabled={!selectedDraft || loadingDraft}
-                title="Copy output to clipboard"
-              >
-                {copied ? "Copied" : "Copy"}
-              </button>
-
-              <button
-                type="button"
-                onClick={downloadCurrent}
-                style={styles.btnSecondary}
-                disabled={!selectedDraft || loadingDraft}
-                title="Download as .txt or .html"
-              >
-                Download
-              </button>
-            </div>
-          </div>
-
-          {!selectedId ? (
-            <div style={styles.muted}>Select a draft to view it.</div>
-          ) : loadingDraft ? (
-            <div style={styles.muted}>Loading draft…</div>
-          ) : !selectedDraft ? (
-            <div style={styles.muted}>Draft not found.</div>
-          ) : (
-            <>
-              <div style={styles.metaRow}>
-                <div style={styles.metaBlock}>
-                  <div style={styles.metaLabel}>Title</div>
-                  <div style={styles.metaValue}>{pickTitle(selectedDraft)}</div>
-                </div>
-                <div style={styles.metaBlock}>
-                  <div style={styles.metaLabel}>Created</div>
-                  <div style={styles.metaValue}>
-                    {formatDate(pickCreatedAt(selectedDraft))}
-                  </div>
-                </div>
-                <div style={styles.metaBlock}>
-                  <div style={styles.metaLabel}>Primary keyword</div>
-                  <div style={styles.metaValue}>
-                    {selectedDraft?.primaryKeyword || "—"}
-                  </div>
-                </div>
-                <div style={styles.metaBlock}>
-                  <div style={styles.metaLabel}>Slug</div>
-                  <div style={{ ...styles.metaValue, ...styles.mono }}>
-                    {selectedDraft?.slug || "—"}
-                  </div>
-                </div>
-              </div>
-
-              <textarea
-                value={outputText}
-                readOnly
-                style={styles.textarea}
-                spellCheck={false}
-              />
-
-              <div style={styles.hint}>
-                Note: if a draft has no <b>articleHtml</b>, HTML export wraps the
-                plain text into a <b>&lt;pre&gt;</b>.
-              </div>
-            </>
           )}
         </div>
+      </div>
+
+      {/* RIGHT: Draft detail */}
+      <div className="card" style={{ margin: 0 }}>
+        <div className="card-header">
+          <div
+            className="card-title-row"
+            style={{ display: "flex", alignItems: "center", gap: 10 }}
+          >
+            <h3 className="card-title" style={{ fontSize: 14, margin: 0 }}>
+              Draft details
+            </h3>
+
+            <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+              <button
+                className={"pill" + (detailsView === "article" ? " pill--active" : "")}
+                onClick={() => setDetailsView("article")}
+                type="button"
+              >
+                Article
+              </button>
+              <button
+                className={"pill" + (detailsView === "seo" ? " pill--active" : "")}
+                onClick={() => setDetailsView("seo")}
+                type="button"
+              >
+                SEO
+              </button>
+              <button
+                className={"pill" + (detailsView === "json" ? " pill--active" : "")}
+                onClick={() => setDetailsView("json")}
+                type="button"
+              >
+                JSON
+              </button>
+            </div>
+          </div>
+
+          <p className="card-subtitle" style={{ marginTop: 6 }}>
+            {selectedSummary?.title || selected?.title
+              ? "Select format, copy, and paste into your CMS."
+              : "Select a draft from the left to view it here."}
+          </p>
+        </div>
+
+        {!selectedId ? (
+          <div style={{ padding: 14, fontSize: 12, opacity: 0.8 }}>
+            Choose a draft from the left-hand list.
+          </div>
+        ) : (
+          <div style={{ padding: 14 }}>
+            {/* Header meta */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 10,
+                marginBottom: 12,
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 11, opacity: 0.7 }}>Title</div>
+                <div style={{ fontSize: 13, fontWeight: 650 }}>
+                  {selected?.title || selectedSummary?.title || "Untitled draft"}
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: 11, opacity: 0.7 }}>Created</div>
+                <div style={{ fontSize: 12, fontWeight: 600 }}>
+                  {createdAtLabel(selected?.createdAt || selectedSummary?.createdAt)}
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: 11, opacity: 0.7 }}>Primary keyword</div>
+                <div style={{ fontSize: 12, fontWeight: 600 }}>
+                  {selected?.primaryKeyword || selectedSummary?.primaryKeyword || "—"}
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: 11, opacity: 0.7 }}>Slug</div>
+                <div style={{ fontSize: 12, fontWeight: 600 }}>
+                  {selected?.slug || selectedSummary?.slug || "—"}
+                </div>
+              </div>
+            </div>
+
+            {/* SEO view */}
+            {detailsView === "seo" && (
+              <div className="card seo-table-card" style={{ marginTop: 0 }}>
+                <div className="card-header" style={{ paddingLeft: 0, paddingRight: 0 }}>
+                  <h2 className="card-title" style={{ fontSize: 13 }}>
+                    SEO fields (saved with the draft)
+                  </h2>
+                  <p className="card-subtitle">
+                    Copy these into your CMS SEO panel if needed.
+                  </p>
+                </div>
+
+                <table className="seo-table">
+                  <thead>
+                    <tr>
+                      <th>Field</th>
+                      <th>Value</th>
+                      <th className="actions-col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Title</td>
+                      <td>{selected?.title || selectedSummary?.title || "—"}</td>
+                      <td>
+                        <button
+                          className="button button--ghost button--tiny"
+                          onClick={() => copyToClipboard(selected?.title || selectedSummary?.title || "")}
+                          type="button"
+                          disabled={!(selected?.title || selectedSummary?.title)}
+                        >
+                          Copy
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Meta description</td>
+                      <td>{selected?.metaDescription || selectedSummary?.metaDescription || "—"}</td>
+                      <td>
+                        <button
+                          className="button button--ghost button--tiny"
+                          onClick={() =>
+                            copyToClipboard(selected?.metaDescription || selectedSummary?.metaDescription || "")
+                          }
+                          type="button"
+                          disabled={!(selected?.metaDescription || selectedSummary?.metaDescription)}
+                        >
+                          Copy
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Slug</td>
+                      <td>{selected?.slug || selectedSummary?.slug || "—"}</td>
+                      <td>
+                        <button
+                          className="button button--ghost button--tiny"
+                          onClick={() => copyToClipboard(selected?.slug || selectedSummary?.slug || "")}
+                          type="button"
+                          disabled={!(selected?.slug || selectedSummary?.slug)}
+                        >
+                          Copy
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Primary keyword</td>
+                      <td>{selected?.primaryKeyword || selectedSummary?.primaryKeyword || "—"}</td>
+                      <td>
+                        <button
+                          className="button button--ghost button--tiny"
+                          onClick={() =>
+                            copyToClipboard(selected?.primaryKeyword || selectedSummary?.primaryKeyword || "")
+                          }
+                          type="button"
+                          disabled={!(selected?.primaryKeyword || selectedSummary?.primaryKeyword)}
+                        >
+                          Copy
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Article view */}
+            {detailsView === "article" && (
+              <div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                  <button
+                    className={"pill" + (format === "text" ? " pill--active" : "")}
+                    onClick={() => setFormat("text")}
+                    type="button"
+                  >
+                    Plain text
+                  </button>
+                  <button
+                    className={"pill" + (format === "html" ? " pill--active" : "")}
+                    onClick={() => setFormat("html")}
+                    type="button"
+                    disabled={!selectedArticleHtml}
+                    title={!selectedArticleHtml ? "No HTML stored for this draft" : ""}
+                  >
+                    HTML
+                  </button>
+
+                  <button
+                    className="button button--ghost button--tiny"
+                    onClick={() => copyToClipboard(articleForFormat)}
+                    disabled={!articleForFormat}
+                    type="button"
+                    style={{ marginLeft: "auto" }}
+                  >
+                    Copy {formatLabel}
+                  </button>
+                </div>
+
+                <pre className="raw-json-pre" style={{ marginTop: 0 }}>
+                  {articleForFormat
+                    ? articleForFormat
+                    : format === "html"
+                    ? "// This draft has no saved HTML. Switch to Plain text, or save HTML from the engine."
+                    : "// This draft has no saved article text yet."}
+                </pre>
+
+                <div style={{ marginTop: 10, fontSize: 11, opacity: 0.75 }}>
+                  Tip: Plain text is usually safest for Shopify/WordPress editors. Use HTML only if your editor supports it cleanly.
+                </div>
+              </div>
+            )}
+
+            {/* JSON view */}
+            {detailsView === "json" && (
+              <div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                  <button
+                    className="button button--ghost button--tiny"
+                    onClick={() => copyToClipboard(safeJson(selected))}
+                    disabled={!selected}
+                    type="button"
+                  >
+                    Copy JSON
+                  </button>
+
+                  <button
+                    className="button button--ghost button--tiny"
+                    onClick={() => fetchDraftById(selectedId)}
+                    type="button"
+                  >
+                    Reload details
+                  </button>
+                </div>
+
+                <pre className="raw-json-pre" style={{ marginTop: 0 }}>
+                  {selected ? safeJson(selected) : "// Loading draft JSON…"}
+                </pre>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-const styles = {
-  page: {
-    width: "100%",
-    padding: 0,
-    boxSizing: "border-box",
-  },
-  header: {
-    display: "flex",
-    gap: 12,
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  headerRight: {
-    display: "flex",
-    gap: 10,
-    alignItems: "center",
-  },
-  h1: { fontSize: 16, fontWeight: 800, lineHeight: 1.2 },
-  sub: { fontSize: 12, opacity: 0.8, marginTop: 4 },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "360px 1fr",
-    gap: 12,
-    alignItems: "start",
-  },
-  panel: {
-    border: "1px solid rgba(148, 163, 184, 0.20)",
-    borderRadius: 16,
-    padding: 12,
-    background: "rgba(2, 6, 23, 0.30)",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.20)",
-    backdropFilter: "blur(8px)",
-    minHeight: 520,
-  },
-  panelHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10,
-    marginBottom: 10,
-  },
-  panelTitle: { fontSize: 13, fontWeight: 800, opacity: 0.95 },
-  badge: {
-    fontSize: 12,
-    padding: "2px 8px",
-    borderRadius: 999,
-    border: "1px solid rgba(148, 163, 184, 0.20)",
-    opacity: 0.9,
-  },
-  input: {
-    width: "100%",
-    padding: "10px 10px",
-    borderRadius: 12,
-    border: "1px solid rgba(148, 163, 184, 0.20)",
-    background: "rgba(2, 6, 23, 0.22)",
-    color: "inherit",
-    outline: "none",
-    boxSizing: "border-box",
-    marginBottom: 10,
-    fontSize: 12,
-  },
-  list: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-    maxHeight: 390,
-    overflow: "auto",
-    paddingRight: 2,
-  },
-  listItem: {
-    textAlign: "left",
-    width: "100%",
-    borderRadius: 14,
-    border: "1px solid rgba(148, 163, 184, 0.16)",
-    background: "rgba(2, 6, 23, 0.16)",
-    color: "inherit",
-    padding: 10,
-    cursor: "pointer",
-  },
-  listItemActive: {
-    border: "1px solid rgba(0, 240, 255, 0.45)",
-    background: "rgba(0, 240, 255, 0.08)",
-  },
-  listItemTop: { display: "flex", alignItems: "center", gap: 8 },
-  listItemTitle: { fontSize: 12, fontWeight: 800, lineHeight: 1.2 },
-  listItemMeta: { marginTop: 6, fontSize: 11, opacity: 0.75 },
-  listItemDesc: { marginTop: 6, fontSize: 11, opacity: 0.7, lineHeight: 1.3 },
-  mono: {
-    fontFamily:
-      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-  },
-  dot: { margin: "0 6px" },
-  controls: { display: "flex", gap: 8, alignItems: "center" },
-  toggleWrap: {
-    display: "flex",
-    border: "1px solid rgba(148, 163, 184, 0.20)",
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  toggleBtn: {
-    padding: "8px 10px",
-    fontSize: 12,
-    border: "none",
-    cursor: "pointer",
-    background: "transparent",
-    color: "inherit",
-    opacity: 0.8,
-  },
-  toggleBtnActive: {
-    background: "rgba(148, 163, 184, 0.12)",
-    opacity: 1,
-    fontWeight: 800,
-  },
-  btn: {
-    padding: "8px 10px",
-    borderRadius: 12,
-    border: "1px solid rgba(148, 163, 184, 0.20)",
-    background: "rgba(2, 6, 23, 0.22)",
-    color: "inherit",
-    cursor: "pointer",
-    fontSize: 12,
-  },
-  btnSecondary: {
-    padding: "8px 10px",
-    borderRadius: 12,
-    border: "1px solid rgba(148, 163, 184, 0.20)",
-    background: "transparent",
-    color: "inherit",
-    cursor: "pointer",
-    fontSize: 12,
-    opacity: 0.9,
-  },
-  muted: { opacity: 0.7, fontSize: 12, padding: 6 },
-  textarea: {
-    width: "100%",
-    height: 320,
-    resize: "vertical",
-    borderRadius: 16,
-    border: "1px solid rgba(148, 163, 184, 0.20)",
-    background: "rgba(2, 6, 23, 0.22)",
-    color: "inherit",
-    padding: 12,
-    boxSizing: "border-box",
-    fontFamily:
-      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-    fontSize: 12,
-    lineHeight: 1.5,
-    outline: "none",
-  },
-  hint: { marginTop: 10, fontSize: 12, opacity: 0.75 },
-  metaRow: {
-    display: "grid",
-    gridTemplateColumns: "1.4fr 1fr 1fr 1fr",
-    gap: 10,
-    marginBottom: 10,
-  },
-  metaBlock: {
-    border: "1px solid rgba(148, 163, 184, 0.16)",
-    borderRadius: 16,
-    padding: 10,
-    background: "rgba(2, 6, 23, 0.16)",
-  },
-  metaLabel: { fontSize: 11, opacity: 0.7, marginBottom: 4 },
-  metaValue: { fontSize: 12, fontWeight: 800, opacity: 0.95 },
-  errorBox: {
-    border: "1px solid rgba(239, 68, 68, 0.35)",
-    background: "rgba(239, 68, 68, 0.08)",
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 12,
-  },
-  errorTitle: { fontSize: 13, fontWeight: 900, marginBottom: 4 },
-  errorText: { fontSize: 12, opacity: 0.9 },
-  pagerRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 10,
-    marginTop: 10,
-  },
-  pagerLeft: { display: "flex", alignItems: "center", gap: 8 },
-  pagerLabel: { fontSize: 12, opacity: 0.75 },
-  select: {
-    borderRadius: 10,
-    border: "1px solid rgba(148, 163, 184, 0.20)",
-    background: "rgba(2, 6, 23, 0.22)",
-    color: "inherit",
-    padding: "8px 10px",
-    fontSize: 12,
-    outline: "none",
-  },
-};
+export default DraftLibrary;
