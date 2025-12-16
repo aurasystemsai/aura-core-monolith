@@ -4,6 +4,7 @@ import "./App.css";
 import ProjectSetup from "./ProjectSetup";
 import ProjectSwitcher from "./ProjectSwitcher";
 import SystemHealthPanel from "./components/SystemHealthPanel";
+import DraftLibrary from "./components/DraftLibrary";
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
@@ -691,7 +692,13 @@ function App() {
           </section>
 
           <section className="page-tabs">
-            {["Overview", "Compare domains", "Growth report", "Compare by countries"].map((tab) => (
+            {[
+              "Overview",
+              "Draft Library",
+              "Compare domains",
+              "Growth report",
+              "Compare by countries",
+            ].map((tab) => (
               <button
                 key={tab}
                 className={"page-tab" + (pageTab === tab ? " page-tab--active" : "")}
@@ -760,7 +767,20 @@ function App() {
             </div>
           </section>
 
-          {pageTab === "Overview" ? (
+          {pageTab === "Draft Library" ? (
+            <section style={{ marginTop: 10 }}>
+              <div className="card">
+                <div className="card-header">
+                  <h2 className="card-title">Saved drafts</h2>
+                  <p className="card-subtitle">
+                    Browse drafts saved in your Core API Draft Library. Export as plain text or HTML.
+                  </p>
+                </div>
+
+                <DraftLibrary coreUrl={coreUrl} />
+              </div>
+            </section>
+          ) : pageTab === "Overview" ? (
             <>
               <section className="kpi-row">
                 <div className="kpi-card">
