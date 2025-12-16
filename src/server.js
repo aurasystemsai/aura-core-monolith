@@ -15,6 +15,9 @@ const { getTool } = require("./core/tools-registry.cjs");
 const projectsCore = require("./core/projects");
 const contentCore = require("./core/content");
 
+// NEW: Drafts API routes (Draft Library)
+const draftsRoutes = require("./routes/drafts");
+
 const app = express();
 const PORT = process.env.PORT || 10000;
 
@@ -36,6 +39,11 @@ app.use((req, _res, next) => {
   );
   next();
 });
+
+// ---------- API ROUTES (must be before static + catch-all) ----------
+
+// Draft Library API
+app.use(draftsRoutes);
 
 // ---------- HEALTH CHECK ----------
 
