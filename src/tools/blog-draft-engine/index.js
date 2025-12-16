@@ -1,9 +1,8 @@
 // src/tools/blog-draft-engine/index.js
 // ------------------------------------------------------
 // Blog Draft Engine
-// Takes a single blog idea (title + summary + topics)
+// Takes a single blog idea (title + angle + keyword etc.)
 // and returns a full SEO-ready article draft.
-// Outputs BOTH Markdown + HTML so the console can copy either.
 // ------------------------------------------------------
 
 "use strict";
@@ -18,8 +17,7 @@ exports.meta = {
   id: "blog-draft-engine",
   name: "Blog Draft Engine",
   category: "Content · Drafts",
-  description:
-    "Generate a full SEO-focused blog article draft from a single blog idea.",
+  description: "Generate a full SEO-focused blog article draft from a single blog idea.",
   version: "1.1.0",
 };
 
@@ -27,23 +25,10 @@ exports.meta = {
  * Single OpenAI call -> JSON
  */
 async function generateDraftOnce(payload) {
-  const {
-    blogTitle,
-    blogSummary,
-    brand,
-    tone,
-    audience,
-    primaryKeyword,
-    targetWordCount,
-    topics,
-  } = payload;
+  const { blogTitle, blogSummary, brand, tone, audience, primaryKeyword, targetWordCount } = payload;
 
   const safeWordCount =
-    typeof targetWordCount === "number" && targetWordCount > 400
-      ? targetWordCount
-      : 1200;
-
-  const safeTopics = Array.isArray(topics) ? topics.filter(Boolean) : [];
+    typeof targetWordCount === "number" && targetWordCount > 400 ? targetWordCount : 1200;
 
   const prompt = `
 You are an SEO content strategist and copywriter for a modern ecommerce brand.
@@ -54,7 +39,6 @@ Brand: ${brand || "N/A"}
 Audience: ${audience || "N/A"}
 Tone of voice: ${tone || "elevated, warm, UK English"}
 Primary keyword: ${primaryKeyword || "N/A"}
-Topics / angles (optional): ${safeTopics.length ? safeTopics.join(", ") : "N/A"}
 Target word count: around ${safeWordCount} words (do not go far above 1.3x this).
 
 BLOG IDEA
@@ -69,7 +53,6 @@ REQUIREMENTS
 - Use short paragraphs (2–4 sentences).
 - Use subheadings that make sense for skimmers.
 - End with a simple, helpful call-to-action that fits an ecommerce brand (not generic "subscribe to our newsletter").
-- Do NOT output HTML. Body text should be plain text with normal punctuation.
 
 OUTPUT FORMAT (STRICT JSON)
 ---------------------------
@@ -81,7 +64,8 @@ Return STRICT JSON only. No backticks, no prose, no comments.
   "slug": "url-slug-using-lowercase-hyphens",
   "primaryKeyword": "the main keyword you optimised for",
   "sections": [
-    { "heading": "Section heading", "body": "Plain text body. Use newlines to separate paragraphs if helpful." }
+    { "heading": "Intro heading (optional)", "body": "One or two paragraphs of text." },
+    { "heading": "Next section heading", "body": "Body text for this section." }
   ],
   "cta": "Single short closing paragraph with a natural call-to-action",
   "estimatedWordCount": 1234
@@ -95,9 +79,7 @@ Return STRICT JSON only. No backticks, no prose, no comments.
   });
 
   const text = response.output_text && response.output_text.trim();
-  if (!text) {
-    throw new Error("OpenAI response missing text payload");
-  }
+  if (!text) throw new Error("OpenAI response missing text payload");
 
   let jsonText = text;
   if (!jsonText.startsWith("{")) {
@@ -120,117 +102,68 @@ Return STRICT JSON only. No backticks, no prose, no comments.
 }
 
 /**
- * Markdown helper (preferred for most CMS editors)
+ * Simple HTML helper so the console can show a readable article.
  */
-function assembleMarkdown(draft) {
+function assembleHtml(draft) {
   const parts = [];
 
-  const title = (draft.title || "").trim();
-  if (title) parts.push(`# ${title}`, "");
+  if (draft.title) parts.push(`<h1>${draft.title}</h1>`);
 
   if (Array.isArray(draft.sections)) {
     draft.sections.forEach((section) => {
       if (!section) return;
-
-      const heading =
-        typeof section === "string"
-          ? section
-          : (section.heading || section.title || "").trim();
-
-      const body =
-        typeof section === "string"
-          ? ""
-          : String(section.body || section.content || section.text || "").trim();
-
-      if (heading) parts.push(`## ${heading}`, "");
-
+      const heading = section.heading || "";
+      const body = section.body || "";
+      if (heading) parts.push(`<h2>${heading}</h2>`);
       if (body) {
-        const paras = body
+        const paragraphs = String(body)
           .split(/\n+/)
           .map((p) => p.trim())
           .filter(Boolean);
-
-        paras.forEach((p) => parts.push(p, ""));
+        paragraphs.forEach((p) => parts.push(`<p>${p}</p>`));
       }
     });
   }
 
-  const cta = String(draft.cta || "").trim();
-  if (cta) {
-    parts.push("---", "", `**${cta}**`, "");
+  if (draft.cta) parts.push(`<p><strong>${draft.cta}</strong></p>`);
+
+  return parts.join("\n");
+}
+
+/**
+ * Markdown helper (recommended for Shopify/Notion).
+ */
+function assembleMarkdown(draft) {
+  const parts = [];
+
+  if (draft.title) parts.push(`# ${draft.title}\n`);
+
+  if (Array.isArray(draft.sections)) {
+    draft.sections.forEach((section) => {
+      if (!section) return;
+      const heading = section.heading || "";
+      const body = section.body || "";
+      if (heading) parts.push(`## ${heading}\n`);
+      if (body) {
+        const paragraphs = String(body)
+          .split(/\n+/)
+          .map((p) => p.trim())
+          .filter(Boolean);
+        paragraphs.forEach((p) => parts.push(`${p}\n`));
+      }
+    });
+  }
+
+  if (draft.cta) {
+    parts.push(`\n**${draft.cta}**\n`);
   }
 
   return parts.join("\n").trim();
 }
 
-/**
- * Simple HTML helper so the console can show HTML if needed.
- * (We still generate from the plain-text sections.)
- */
-function assembleHtmlFromSections(draft) {
-  const parts = [];
-
-  const title = (draft.title || "").trim();
-  if (title) parts.push(`<h1>${escapeHtml(title)}</h1>`);
-
-  if (Array.isArray(draft.sections)) {
-    draft.sections.forEach((section) => {
-      if (!section) return;
-
-      const heading =
-        typeof section === "string"
-          ? section
-          : (section.heading || section.title || "").trim();
-
-      const body =
-        typeof section === "string"
-          ? ""
-          : String(section.body || section.content || section.text || "").trim();
-
-      if (heading) parts.push(`<h2>${escapeHtml(heading)}</h2>`);
-
-      if (body) {
-        const paras = body
-          .split(/\n+/)
-          .map((p) => p.trim())
-          .filter(Boolean);
-
-        paras.forEach((p) => {
-          parts.push(`<p>${escapeHtml(p)}</p>`);
-        });
-      }
-    });
-  }
-
-  const cta = String(draft.cta || "").trim();
-  if (cta) parts.push(`<p><strong>${escapeHtml(cta)}</strong></p>`);
-
-  return parts.join("\n");
-}
-
-function escapeHtml(str) {
-  return String(str)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function countWordsFromText(text) {
-  const clean = String(text || "")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (!clean) return 0;
-  return clean.split(" ").length;
-}
-
 exports.run = async function run(input, ctx = {}) {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error(
-      "OPENAI_API_KEY is not set. Add it in your Render environment."
-    );
+    throw new Error("OPENAI_API_KEY is not set. Add it in your Render environment.");
   }
 
   const {
@@ -241,7 +174,6 @@ exports.run = async function run(input, ctx = {}) {
     audience = "",
     primaryKeyword = "",
     targetWordCount = 1200,
-    topics = [],
   } = input || {};
 
   if (!blogTitle) {
@@ -256,30 +188,29 @@ exports.run = async function run(input, ctx = {}) {
     audience,
     primaryKeyword,
     targetWordCount,
-    topics,
   };
 
   const draft = await generateDraftOnce(payload);
 
-  const articleMarkdown = assembleMarkdown(draft);
-  const articleHtml = assembleHtmlFromSections(draft);
+  const html = assembleHtml(draft);
+  const markdown = assembleMarkdown(draft);
 
   const wordCount =
     typeof draft.estimatedWordCount === "number"
       ? draft.estimatedWordCount
-      : countWordsFromText(articleMarkdown || articleHtml);
+      : (markdown.split(/\s+/) || []).filter(Boolean).length;
 
   return {
     input,
     output: {
-      title: (draft.title || blogTitle || "").trim(),
-      metaDescription: (draft.metaDescription || "").trim(),
-      slug: (draft.slug || "").trim(),
-      primaryKeyword: (draft.primaryKeyword || primaryKeyword || "").trim(),
+      title: draft.title || blogTitle,
+      metaDescription: draft.metaDescription || "",
+      slug: draft.slug || "",
+      primaryKeyword: draft.primaryKeyword || primaryKeyword || "",
       sections: Array.isArray(draft.sections) ? draft.sections : [],
-      cta: (draft.cta || "").trim(),
-      articleMarkdown,
-      articleHtml,
+      cta: draft.cta || "",
+      articleHtml: html,
+      articleMarkdown: markdown,
       estimatedWordCount: wordCount,
     },
     model: "gpt-4.1-mini",
