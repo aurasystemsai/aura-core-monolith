@@ -152,7 +152,11 @@ function App() {
   const isDraft = activeEngine === "draft";
   const isWeekly = activeEngine === "weekly";
   const isBlogLike = isBlogSeo || isDraft;
-  const pieceLabel = isProduct ? "product" : isWeekly ? "content plan" : "blog post";
+  const pieceLabel = isProduct
+    ? "product"
+    : isWeekly
+    ? "content plan"
+    : "blog post";
 
   // -------------------------------------------------
   // Load project from localStorage (if already connected)
@@ -244,7 +248,9 @@ function App() {
 
   if (isWeekly && weeklyPosts.length) {
     const titleLens = weeklyPosts.map((p) => (p.title || "").length);
-    const metaLens = weeklyPosts.map((p) => (p.metaDescription || p.description || "").length);
+    const metaLens = weeklyPosts.map(
+      (p) => (p.metaDescription || p.description || "").length
+    );
     const avg = (arr) =>
       arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
     currentTitleLength = avg(titleLens);
@@ -263,9 +269,9 @@ function App() {
       : null;
 
   // -------------------------------------------------
-  // Auto-save draft helper (Blog Draft Engine only)
+  // Auto-save drafts to Draft Library (Core SQLite)
   // -------------------------------------------------
-  const autoSaveDraft = async ({
+  const saveDraftToLibrary = async ({
     toolId,
     createdAt,
     title,
@@ -278,28 +284,38 @@ function App() {
     articleHtml,
   }) => {
     if (!project?.id) return;
+    if (!coreUrl) return;
+
     try {
-      await fetch(`${coreUrl}/projects/${project.id}/drafts`, {
+      const res = await fetch(`${coreUrl}/projects/${project.id}/drafts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          toolId,
-          createdAt,
-          title,
-          slug,
-          metaDescription,
-          primaryKeyword,
-          input,
-          output,
-          articleText,
-          articleHtml,
+          toolId: toolId || "blog-draft-engine",
+          createdAt: createdAt || new Date().toISOString(),
+          title: title || "",
+          slug: slug || "",
+          metaDescription: metaDescription || "",
+          primaryKeyword: primaryKeyword || "",
+          input: input || null,
+          output: output || null,
+          articleText: articleText || "",
+          articleHtml: articleHtml || "",
         }),
       });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Failed to auto-save draft", res.status, text);
+        return;
+      }
+
+      // Optional: you could read the response here if you want an ID, but not required.
+      // const data = await res.json();
     } catch (err) {
-      // silent failure: do not block UX
-      console.error("Auto-save draft failed", err);
+      console.error("Failed to auto-save draft", err);
     }
   };
 
@@ -316,6 +332,7 @@ function App() {
 
     let payload;
     if (isWeekly) {
+      // Weekly Blog Content Engine payload
       payload = {
         brand: weeklyBrand,
         niche: weeklyNiche,
@@ -326,6 +343,7 @@ function App() {
         market: activeMarket,
       };
     } else if (isDraft) {
+      // Blog Draft Engine payload – MUST include blogTitle
       const topics = useCases
         .split(",")
         .map((s) => s.trim())
@@ -340,6 +358,7 @@ function App() {
         market: activeMarket,
       };
     } else {
+      // Product SEO / Blog SEO payload
       payload = {
         productTitle,
         productDescription,
@@ -397,9 +416,13 @@ function App() {
 
         if (posts.length) {
           const titleLens = posts.map((p) => (p.title || "").length);
-          const metaLens = posts.map((p) => (p.metaDescription || p.description || "").length);
+          const metaLens = posts.map(
+            (p) => (p.metaDescription || p.description || "").length
+          );
           const avg = (arr) =>
-            arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+            arr.length
+              ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length)
+              : 0;
           tLen = avg(titleLens);
           mLen = avg(metaLens);
         }
@@ -413,7 +436,10 @@ function App() {
       } else {
         const nextTitle = output.title || output.seoTitle || "";
         const nextDescription =
-          output.description || output.metaDescription || output.metaDescription || "";
+          output.description ||
+          output.metaDescription ||
+          output.metaDescription ||
+          "";
         const nextSlug = output.slug || output.handle || "";
         const nextKeywords =
           output.keywords ||
@@ -434,37 +460,37 @@ function App() {
         if (toolId === "blog-draft-engine") {
           const sections = Array.isArray(output.sections) ? output.sections : [];
           const cta = output.cta || "";
-          const wc =
+          const wordCount =
             typeof output.estimatedWordCount === "number"
               ? output.estimatedWordCount
               : null;
-          const aHtml = output.articleHtml || "";
-          const aText = output.articleText || "";
+          const articleHtml = output.articleHtml || "";
+          const articleText = output.articleText || "";
 
           setDraftSections(sections);
           setDraftCta(cta);
-          setDraftWordCount(wc);
-          setDraftHtml(aHtml);
-          setDraftText(aText);
+          setDraftWordCount(wordCount);
+          setDraftHtml(articleHtml);
+          setDraftText(articleText);
           setDraftFormat("text");
 
-          // AUTO-SAVE draft to Core Draft Library (fire-and-forget)
-          const primaryKw =
+          // AUTO-SAVE DRAFT (fire-and-forget)
+          const primaryKeyword =
             output.primaryKeyword ||
             (Array.isArray(nextKeywords) && nextKeywords.length ? nextKeywords[0] : "") ||
             "";
 
-          autoSaveDraft({
-            toolId,
+          saveDraftToLibrary({
+            toolId: "blog-draft-engine",
             createdAt: now.toISOString(),
-            title: nextTitle || productTitle,
+            title: nextTitle || productTitle || "",
             slug: nextSlug || "",
             metaDescription: nextDescription || "",
-            primaryKeyword: primaryKw,
+            primaryKeyword,
             input: payload,
             output,
-            articleText: aText,
-            articleHtml: aHtml,
+            articleText,
+            articleHtml,
           });
         } else {
           setDraftSections([]);
@@ -553,7 +579,11 @@ function App() {
     const runMarket = run.market || "Worldwide";
     const runDevice = run.device || "Desktop";
     const runToolId = run.toolId || "product-seo";
-    return runMarket === activeMarket && runDevice === activeDevice && runToolId === currentEngine.toolId;
+    return (
+      runMarket === activeMarket &&
+      runDevice === activeDevice &&
+      runToolId === currentEngine.toolId
+    );
   });
 
   let rangedHistory;
@@ -582,7 +612,7 @@ function App() {
       return `Your current ${label} title is ${currentTitleLength} characters. It is a bit long – consider trimming around ${extra} characters so it stays punchy in search results.`;
     }
     return `Your current ${label} title is ${currentTitleLength} characters, which is right in the sweet spot. Only tweak it if it feels clunky or hard to read.`;
-  };
+    };
 
   const buildMetaAdvice = () => {
     if (!currentMetaLength) {
@@ -601,7 +631,9 @@ function App() {
   };
 
   if (!project) {
-    return <ProjectSetup coreUrl={coreUrl} onConnected={(proj) => setProject(proj)} />;
+    return (
+      <ProjectSetup coreUrl={coreUrl} onConnected={(proj) => setProject(proj)} />
+    );
   }
 
   return (
@@ -661,7 +693,10 @@ function App() {
                 {Object.values(ENGINES).map((engine) => (
                   <button
                     key={engine.key}
-                    className={"engine-toggle" + (activeEngine === engine.key ? " engine-toggle--active" : "")}
+                    className={
+                      "engine-toggle" +
+                      (activeEngine === engine.key ? " engine-toggle--active" : "")
+                    }
                     onClick={() => setActiveEngine(engine.key)}
                   >
                     {engine.chipLabel}
@@ -727,7 +762,13 @@ function App() {
           </section>
 
           <section className="page-tabs">
-            {["Overview", "Draft Library", "Compare domains", "Growth report", "Compare by countries"].map((tab) => (
+            {[
+              "Overview",
+              "Draft Library",
+              "Compare domains",
+              "Growth report",
+              "Compare by countries",
+            ].map((tab) => (
               <button
                 key={tab}
                 className={"page-tab" + (pageTab === tab ? " page-tab--active" : "")}
@@ -806,7 +847,7 @@ function App() {
                   </p>
                 </div>
 
-                <DraftLibrary coreUrl={coreUrl} />
+                <DraftLibrary coreUrl={coreUrl} projectId={project.id} />
               </div>
             </section>
           ) : pageTab === "Overview" ? (
@@ -815,10 +856,16 @@ function App() {
                 <div className="kpi-card">
                   <div className="kpi-label">Overall SEO score</div>
                   <div className="kpi-main">
-                    <span className="kpi-value">{overallScore !== null ? `${overallScore}` : "—"}</span>
-                    <span className="kpi-unit">{overallScore !== null ? "/100" : ""}</span>
+                    <span className="kpi-value">
+                      {overallScore !== null ? `${overallScore}` : "—"}
+                    </span>
+                    <span className="kpi-unit">
+                      {overallScore !== null ? "/100" : ""}
+                    </span>
                   </div>
-                  <div className="kpi-footnote">Based on current title and meta description length.</div>
+                  <div className="kpi-footnote">
+                    Based on current title and meta description length.
+                  </div>
                 </div>
 
                 <div className="kpi-card">
@@ -969,8 +1016,7 @@ function App() {
                         </div>
                       ) : (
                         <div className="run-history-empty">
-                          No runs recorded yet for this engine / market / device. Click “{currentEngine.runButtonLabel}”
-                          to start tracking.
+                          No runs recorded yet for this engine / market / device. Click “{currentEngine.runButtonLabel}” to start tracking.
                         </div>
                       )}
 
@@ -1252,9 +1298,7 @@ function App() {
 
                               <button
                                 className="button button--ghost button--tiny"
-                                onClick={() =>
-                                  copyToClipboard(draftFormat === "html" ? draftHtml : draftText)
-                                }
+                                onClick={() => copyToClipboard(draftFormat === "html" ? draftHtml : draftText)}
                                 disabled={draftFormat === "html" ? !draftHtml : !draftText}
                                 type="button"
                               >
