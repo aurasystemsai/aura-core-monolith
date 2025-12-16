@@ -7,7 +7,7 @@ function ensureDraftsTable() {
   db.prepare(`
     CREATE TABLE IF NOT EXISTS drafts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      projectId TEXT NOT NULL,
+      projectId TEXT,
       toolId TEXT NOT NULL,
       createdAt TEXT NOT NULL,
 
@@ -33,30 +33,24 @@ function ensureDraftsTable() {
 function listDraftsByProject(projectId, limit = 50, offset = 0) {
   ensureDraftsTable();
 
-  const safeProjectId = String(projectId || "").trim();
   const safeLimit = Math.max(1, Math.min(Number(limit) || 50, 200));
   const safeOffset = Math.max(0, Number(offset) || 0);
 
-  // summary list only (no huge article body)
-  const rows = db
-    .prepare(
-      `
-      SELECT
-        id,
-        projectId,
-        toolId,
-        createdAt,
-        title,
-        slug,
-        metaDescription,
-        primaryKeyword
-      FROM drafts
-      WHERE projectId = ?
-      ORDER BY datetime(createdAt) DESC
-      LIMIT ? OFFSET ?
-    `
-    )
-    .all(safeProjectId, safeLimit, safeOffset);
+  const rows = db.prepare(`
+    SELECT
+      id,
+      projectId,
+      toolId,
+      createdAt,
+      title,
+      slug,
+      metaDescription,
+      primaryKeyword
+    FROM drafts
+    WHERE projectId = ?
+    ORDER BY datetime(createdAt) DESC
+    LIMIT ? OFFSET ?
+  `).all(projectId || "", safeLimit, safeOffset);
 
   return rows || [];
 }
@@ -64,36 +58,30 @@ function listDraftsByProject(projectId, limit = 50, offset = 0) {
 function getDraftById(projectId, draftId) {
   ensureDraftsTable();
 
-  const safeProjectId = String(projectId || "").trim();
-  const safeDraftId = Number(draftId);
-
-  const row = db
-    .prepare(
-      `
-      SELECT
-        id,
-        projectId,
-        toolId,
-        createdAt,
-        title,
-        slug,
-        metaDescription,
-        primaryKeyword,
-        inputJson,
-        outputJson,
-        articleText,
-        articleHtml
-      FROM drafts
-      WHERE projectId = ? AND id = ?
-      LIMIT 1
-    `
-    )
-    .get(safeProjectId, safeDraftId);
+  const row = db.prepare(`
+    SELECT
+      id,
+      projectId,
+      toolId,
+      createdAt,
+      title,
+      slug,
+      metaDescription,
+      primaryKeyword,
+      inputJson,
+      outputJson,
+      articleText,
+      articleHtml
+    FROM drafts
+    WHERE projectId = ? AND id = ?
+    LIMIT 1
+  `).get(projectId || "", Number(draftId));
 
   if (!row) return null;
 
   let input = null;
   let output = null;
+
   try {
     input = row.inputJson ? JSON.parse(row.inputJson) : null;
   } catch {}
@@ -111,61 +99,38 @@ function getDraftById(projectId, draftId) {
 function createDraft(projectId, body) {
   ensureDraftsTable();
 
-  const safeProjectId = String(projectId || "").trim();
-  if (!safeProjectId) {
-    const err = new Error("projectId is required");
-    err.statusCode = 400;
-    throw err;
-  }
-
-  const toolId = String(body?.toolId || "").trim();
+  const payload = body || {};
+  const toolId = String(payload.toolId || "").trim();
   if (!toolId) {
     const err = new Error("toolId is required");
     err.statusCode = 400;
     throw err;
   }
 
-  const createdAt = body?.createdAt
-    ? String(body.createdAt)
+  const createdAt = payload.createdAt
+    ? new Date(payload.createdAt).toISOString()
     : new Date().toISOString();
 
-  const title = body?.title != null ? String(body.title) : null;
-  const slug = body?.slug != null ? String(body.slug) : null;
+  const title = payload.title != null ? String(payload.title) : null;
+  const slug = payload.slug != null ? String(payload.slug) : null;
   const metaDescription =
-    body?.metaDescription != null ? String(body.metaDescription) : null;
+    payload.metaDescription != null ? String(payload.metaDescription) : null;
   const primaryKeyword =
-    body?.primaryKeyword != null ? String(body.primaryKeyword) : null;
+    payload.primaryKeyword != null ? String(payload.primaryKeyword) : null;
 
   const inputJson =
-    body?.input != null ? JSON.stringify(body.input) : null;
+    payload.input != null ? safeStringify(payload.input) : null;
   const outputJson =
-    body?.output != null ? JSON.stringify(body.output) : null;
+    payload.output != null ? safeStringify(payload.output) : null;
 
   const articleText =
-    body?.articleText != null ? String(body.articleText) : null;
+    payload.articleText != null ? String(payload.articleText) : null;
   const articleHtml =
-    body?.articleHtml != null ? String(body.articleHtml) : null;
+    payload.articleHtml != null ? String(payload.articleHtml) : null;
 
-  const info = db
-    .prepare(
-      `
-      INSERT INTO drafts (
-        projectId,
-        toolId,
-        createdAt,
-        title,
-        slug,
-        metaDescription,
-        primaryKeyword,
-        inputJson,
-        outputJson,
-        articleText,
-        articleHtml
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `
-    )
-    .run(
-      safeProjectId,
+  const info = db.prepare(`
+    INSERT INTO drafts (
+      projectId,
       toolId,
       createdAt,
       title,
@@ -176,9 +141,31 @@ function createDraft(projectId, body) {
       outputJson,
       articleText,
       articleHtml
-    );
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    projectId || "",
+    toolId,
+    createdAt,
+    title,
+    slug,
+    metaDescription,
+    primaryKeyword,
+    inputJson,
+    outputJson,
+    articleText,
+    articleHtml
+  );
 
-  return getDraftById(safeProjectId, info.lastInsertRowid);
+  const id = info.lastInsertRowid;
+  return getDraftById(projectId, id);
+}
+
+function safeStringify(value) {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return null;
+  }
 }
 
 module.exports = {
