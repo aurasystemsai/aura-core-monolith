@@ -119,7 +119,7 @@ function App() {
   const [draftWordCount, setDraftWordCount] = useState(null);
   const [draftHtml, setDraftHtml] = useState("");
   const [draftMarkdown, setDraftMarkdown] = useState("");
-  const [draftFormat, setDraftFormat] = useState("markdown"); // markdown | html
+  const [draftFormat, setDraftFormat] = useState("markdown"); // "markdown" | "html"
 
   // AI advice (from tool output.advice for product/blog)
   const [titleAdvice, setTitleAdvice] = useState("");
@@ -137,6 +137,7 @@ function App() {
   const [pageTab, setPageTab] = useState("Overview");
 
   // Simple run history (shared across engines, filtered later)
+  // We store the full run objects so we can build a Draft Library.
   const [runHistory, setRunHistory] = useState([]);
   const [historyView, setHistoryView] = useState("score"); // "score" | "meta"
 
@@ -151,6 +152,7 @@ function App() {
   const isDraft = activeEngine === "draft";
   const isWeekly = activeEngine === "weekly";
   const isBlogLike = isBlogSeo || isDraft;
+
   const pieceLabel = isProduct
     ? "product"
     : isWeekly
@@ -212,12 +214,15 @@ function App() {
           .map((run, idx) => ({
             id: idx + 1,
             time: new Date(run.createdAt).toLocaleString(),
+            createdAt: run.createdAt,
             score: run.score ?? null,
             titleLength: run.titleLength ?? null,
             metaLength: run.metaLength ?? null,
             market: run.market || "Worldwide",
             device: run.device || "Desktop",
             toolId: run.toolId || "product-seo",
+            input: run.input || null,
+            output: run.output || null,
           }));
 
         setRunHistory(mapped);
@@ -259,8 +264,16 @@ function App() {
     currentMetaLength = (seoDescription || productDescription).length;
   }
 
-  const currentTitleScore = scoreLength(currentTitleLength, TITLE_MIN, TITLE_MAX);
-  const currentMetaScore = scoreLength(currentMetaLength, META_MIN, META_MAX);
+  const currentTitleScore = scoreLength(
+    currentTitleLength,
+    TITLE_MIN,
+    TITLE_MAX
+  );
+  const currentMetaScore = scoreLength(
+    currentMetaLength,
+    META_MIN,
+    META_MAX
+  );
 
   const overallScore =
     currentTitleScore !== null && currentMetaScore !== null
@@ -280,7 +293,6 @@ function App() {
 
     let payload;
     if (isWeekly) {
-      // Weekly Blog Content Engine payload
       payload = {
         brand: weeklyBrand,
         niche: weeklyNiche,
@@ -291,7 +303,6 @@ function App() {
         market: activeMarket,
       };
     } else if (isDraft) {
-      // Blog Draft Engine payload – MUST include blogTitle
       const topics = useCases
         .split(",")
         .map((s) => s.trim())
@@ -306,7 +317,6 @@ function App() {
         market: activeMarket,
       };
     } else {
-      // Product SEO / Blog SEO payload
       payload = {
         productTitle,
         productDescription,
@@ -332,7 +342,9 @@ function App() {
 
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(`Core API error (${res.status}): ${text || res.statusText}`);
+        throw new Error(
+          `Core API error (${res.status}): ${text || res.statusText}`
+        );
       }
 
       const data = await res.json();
@@ -360,7 +372,6 @@ function App() {
         setDraftWordCount(null);
         setDraftHtml("");
         setDraftMarkdown("");
-        setDraftFormat("markdown");
 
         if (posts.length) {
           const titleLens = posts.map((p) => (p.title || "").length);
@@ -383,7 +394,8 @@ function App() {
             : null;
       } else {
         const nextTitle = output.title || output.seoTitle || "";
-        const nextDescription = output.description || output.metaDescription || "";
+        const nextDescription =
+          output.description || output.metaDescription || "";
         const nextSlug = output.slug || output.handle || "";
         const nextKeywords = output.keywords || output.keywordSet || [];
 
@@ -397,16 +409,17 @@ function App() {
         setMetaAdvice(advice.metaTips || "");
         setGeneralAdvice(advice.generalTips || "");
 
-        // Blog draft specific mapping
         if (toolId === "blog-draft-engine") {
           setDraftSections(Array.isArray(output.sections) ? output.sections : []);
           setDraftCta(output.cta || "");
           setDraftWordCount(
-            typeof output.estimatedWordCount === "number" ? output.estimatedWordCount : null
+            typeof output.estimatedWordCount === "number"
+              ? output.estimatedWordCount
+              : null
           );
           setDraftHtml(output.articleHtml || "");
           setDraftMarkdown(output.articleMarkdown || "");
-          // default to markdown every time (you said you don't want HTML by default)
+          // Default to Markdown for non-technical users
           setDraftFormat("markdown");
         } else {
           setDraftSections([]);
@@ -414,7 +427,6 @@ function App() {
           setDraftWordCount(null);
           setDraftHtml("");
           setDraftMarkdown("");
-          setDraftFormat("markdown");
         }
 
         tLen = (nextTitle || productTitle).length;
@@ -422,7 +434,6 @@ function App() {
 
         const tScore = scoreLength(tLen, TITLE_MIN, TITLE_MAX);
         const mScore = scoreLength(mLen, META_MIN, META_MAX);
-
         oScore =
           tScore !== null && mScore !== null
             ? Math.round((tScore + mScore) / 2)
@@ -430,30 +441,33 @@ function App() {
       }
 
       // Record in in-memory history
+      // NOTE: This mirrors what you persist server-side, but also keeps the output
+      // so Draft Library works immediately without refresh.
       setRunHistory((prev) => {
         const next = [
           ...prev,
           {
             id: prev.length + 1,
             time: nowLabel,
+            createdAt: now.toISOString(),
             score: oScore,
             titleLength: tLen,
             metaLength: mLen,
             market: activeMarket,
             device: activeDevice,
             toolId,
+            input: payload,
+            output,
           },
         ];
-        return next.slice(-50);
+        return next.slice(-80);
       });
 
-      // Persist run to Core API (SQLite) – fire-and-forget
+      // Persist run to Core API (SQLite)
       try {
         await fetch(`${coreUrl}/projects/${project.id}/runs`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             toolId,
             createdAt: now.toISOString(),
@@ -513,9 +527,57 @@ function App() {
 
   const latestRun = historyForFilters[historyForFilters.length - 1];
 
-  // Advice text (title / meta) – phrased per engine
+  // Draft library (per project) – stored from runs where toolId=blog-draft-engine
+  const draftLibrary = runHistory
+    .filter((r) => r.toolId === "blog-draft-engine")
+    .slice()
+    .reverse();
+
+  const openDraftFromLibrary = (run) => {
+    if (!run) return;
+
+    const input = run.input || {};
+    const output = run.output || {};
+
+    setActiveEngine("draft");
+
+    setProductTitle(input.blogTitle || output.title || "Untitled draft");
+    setProductDescription(input.blogSummary || "");
+    setBrand(input.brand || "DTP Jewellery");
+    setTone(input.tone || "Elevated, modern, UK English");
+
+    if (Array.isArray(input.topics) && input.topics.length) {
+      setUseCases(input.topics.join(", "));
+    }
+
+    setSeoTitle(output.title || "");
+    setSeoDescription(output.metaDescription || "");
+    setSeoSlug(output.slug || "");
+    setSeoKeywords(
+      output.keywords || output.keywordSet || output.topics || []
+    );
+
+    setDraftSections(Array.isArray(output.sections) ? output.sections : []);
+    setDraftCta(output.cta || "");
+    setDraftWordCount(
+      typeof output.estimatedWordCount === "number"
+        ? output.estimatedWordCount
+        : null
+    );
+    setDraftHtml(output.articleHtml || "");
+    setDraftMarkdown(output.articleMarkdown || "");
+
+    setDraftFormat(output.articleMarkdown ? "markdown" : "html");
+    setLastRunAt(run.time || "Loaded from Draft library");
+  };
+
+  // Advice text – phrased per engine
   const buildTitleAdvice = () => {
-    const label = isProduct ? "product" : isWeekly ? "content plan" : "blog post";
+    const label = isProduct
+      ? "product"
+      : isWeekly
+      ? "content plan"
+      : "blog post";
     if (!currentTitleLength) {
       return `Add a clear ${label} title first, then run the engine. Aim for 45–60 characters.`;
     }
@@ -551,7 +613,9 @@ function App() {
   // Onboarding screen: no project yet
   // -------------------------------------------------
   if (!project) {
-    return <ProjectSetup coreUrl={coreUrl} onConnected={(proj) => setProject(proj)} />;
+    return (
+      <ProjectSetup coreUrl={coreUrl} onConnected={(proj) => setProject(proj)} />
+    );
   }
 
   // -------------------------------------------------
@@ -668,7 +732,9 @@ function App() {
 
               <div className="top-strip-meta">
                 <div className="top-strip-meta-label">Last run</div>
-                <div className="top-strip-meta-value">{lastRunAt || "Not run yet"}</div>
+                <div className="top-strip-meta-value">
+                  {lastRunAt || "Not run yet"}
+                </div>
               </div>
 
               <button
@@ -725,9 +791,7 @@ function App() {
                   {["Desktop", "Mobile"].map((device) => (
                     <button
                       key={device}
-                      className={
-                        "pill" + (activeDevice === device ? " pill--active" : "")
-                      }
+                      className={"pill" + (activeDevice === device ? " pill--active" : "")}
                       onClick={() => setActiveDevice(device)}
                     >
                       {device}
@@ -746,9 +810,7 @@ function App() {
                     Last 5 runs
                   </button>
                   <button
-                    className={
-                      "pill" + (timeRange === "180d" ? " pill--active" : "")
-                    }
+                    className={"pill" + (timeRange === "180d" ? " pill--active" : "")}
                     onClick={() => setTimeRange("180d")}
                   >
                     Last 8 runs
@@ -771,8 +833,12 @@ function App() {
                 <div className="kpi-card">
                   <div className="kpi-label">Overall SEO score</div>
                   <div className="kpi-main">
-                    <span className="kpi-value">{overallScore !== null ? `${overallScore}` : "—"}</span>
-                    <span className="kpi-unit">{overallScore !== null ? "/100" : ""}</span>
+                    <span className="kpi-value">
+                      {overallScore !== null ? `${overallScore}` : "—"}
+                    </span>
+                    <span className="kpi-unit">
+                      {overallScore !== null ? "/100" : ""}
+                    </span>
                   </div>
                   <div className="kpi-footnote">
                     Based on current title and meta description length.
@@ -818,10 +884,10 @@ function App() {
                 <div className="card-header">
                   <h2 className="card-title">How to reach 100/100</h2>
                   <p className="card-subtitle">
-                    You do not need to be an SEO expert. Follow these steps,
-                    change the text on the right, then click{" "}
-                    <strong>{currentEngine.runButtonLabel}</strong> again.
-                    Guidance is tuned for <strong>{activeMarket}</strong> ·{" "}
+                    You do not need to be an SEO expert. Follow these steps, change the
+                    text on the right, then click{" "}
+                    <strong>{currentEngine.runButtonLabel}</strong> again. Guidance is
+                    tuned for <strong>{activeMarket}</strong> ·{" "}
                     <strong>{activeDevice}</strong>.
                   </p>
                 </div>
@@ -841,10 +907,13 @@ function App() {
                     <strong>Quick beginner formula you can follow:</strong>
                     <br />
                     <span style={{ fontSize: 11 }}>
-                      <code>[What it is] + [1–2 big benefits] + [when / who it is for]</code>.
+                      <code>
+                        [What it is] + [1–2 big benefits] + [when / who it is for]
+                      </code>
+                      .
                       <br />
-                      Example: “Waterproof paperclip bracelet with sweat-proof
-                      coating. Adjustable fit for gym, everyday wear and gifting.”
+                      Example: “Waterproof paperclip bracelet with sweat-proof coating.
+                      Adjustable fit for gym, everyday wear and gifting.”
                     </span>
                   </li>
                 </ol>
@@ -855,8 +924,8 @@ function App() {
                 <div className="card-header">
                   <h2 className="card-title">AI suggestions for this {pieceLabel}</h2>
                   <p className="card-subtitle">
-                    Generated from your last run. Use this as a second opinion
-                    on how to tweak the copy before you publish.
+                    Generated from your last run. Use this as a second opinion on how to
+                    tweak the copy before you publish.
                   </p>
                 </div>
                 <ul style={{ fontSize: 12, paddingLeft: 18, margin: 0 }}>
@@ -902,8 +971,8 @@ function App() {
                         </div>
                       </div>
                       <p className="card-subtitle">
-                        Every time you re-run the engine, we plot a new point here.
-                        You are currently viewing <strong>{activeMarket}</strong> ·{" "}
+                        Every time you re-run the engine, we plot a new point here. You
+                        are currently viewing <strong>{activeMarket}</strong> ·{" "}
                         <strong>{activeDevice}</strong> runs for{" "}
                         <strong>{currentEngine.chipLabel}</strong> only.
                       </p>
@@ -954,8 +1023,8 @@ function App() {
                       <div className="run-history-table-header">
                         <span className="run-history-table-title">Last runs</span>
                         <span className="run-history-table-subtitle">
-                          Shows how your lengths and score changed per run for this engine /
-                          market / device.
+                          Shows how your lengths and score changed per run for this engine
+                          / market / device.
                         </span>
                       </div>
 
@@ -973,7 +1042,8 @@ function App() {
                           {rangedHistory.length === 0 ? (
                             <tr>
                               <td colSpan={5}>
-                                No runs yet. Click "{currentEngine.runButtonLabel}" to start tracking.
+                                No runs yet. Click "{currentEngine.runButtonLabel}" to
+                                start tracking.
                               </td>
                             </tr>
                           ) : (
@@ -1001,8 +1071,8 @@ function App() {
                       <div className="card-header">
                         <h2 className="card-title">Weekly blog plan (generated)</h2>
                         <p className="card-subtitle">
-                          Paste this straight into your CMS or Notion. Titles and meta descriptions
-                          are already tuned for search.
+                          Paste this straight into your CMS or Notion. Titles and meta
+                          descriptions are already tuned for search.
                         </p>
                       </div>
 
@@ -1025,7 +1095,8 @@ function App() {
                           {weeklyPosts.length === 0 ? (
                             <tr>
                               <td colSpan={6}>
-                                Run the Weekly blog planner to generate your next batch of posts.
+                                Run the Weekly blog planner to generate your next batch of
+                                posts.
                               </td>
                             </tr>
                           ) : (
@@ -1049,7 +1120,8 @@ function App() {
                         <div className="card-header">
                           <h2 className="card-title">Generated SEO fields</h2>
                           <p className="card-subtitle">
-                            Paste into your platform. Use copy buttons so beginners never touch JSON.
+                            Paste straight into Shopify or your platform. Use the copy
+                            buttons so beginners never touch JSON.
                           </p>
                         </div>
 
@@ -1132,135 +1204,189 @@ function App() {
                       </div>
 
                       {isDraft && (
-                        <div className="card seo-table-card" style={{ marginTop: 10 }}>
-                          <div className="card-header">
-                            <h2 className="card-title">Draft article (generated)</h2>
-                            <p className="card-subtitle">
-                              Default is Markdown. Switch to HTML only if your CMS needs it.
-                            </p>
-                          </div>
-
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: 24,
-                              fontSize: 12,
-                              marginBottom: 12,
-                              flexWrap: "wrap",
-                            }}
-                          >
-                            <div>
-                              <div style={{ opacity: 0.7 }}>Estimated word count</div>
-                              <div style={{ fontWeight: 600 }}>
-                                {draftWordCount != null ? draftWordCount : "—"}
-                              </div>
-                            </div>
-                            <div style={{ flex: 1, minWidth: 200 }}>
-                              <div style={{ opacity: 0.7 }}>CTA</div>
-                              <div style={{ fontWeight: 500 }}>
-                                {draftCta || "CTA will appear here after the first run."}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div style={{ marginBottom: 12 }}>
-                            <h3
-                              className="card-title"
-                              style={{ fontSize: 13, marginBottom: 4, marginTop: 0 }}
-                            >
-                              Outline
-                            </h3>
-                            {draftSections.length === 0 ? (
-                              <p style={{ fontSize: 12 }}>
-                                Run the Blog Draft Engine to generate section headings and summaries.
+                        <>
+                          {/* Draft Library */}
+                          <div className="card seo-table-card" style={{ marginTop: 10 }}>
+                            <div className="card-header">
+                              <h2 className="card-title">Draft library (saved)</h2>
+                              <p className="card-subtitle">
+                                Drafts are automatically saved per project when you run the
+                                Blog Draft Engine. Click Open to reload any draft.
                               </p>
-                            ) : (
-                              <table className="seo-table">
-                                <thead>
+                            </div>
+
+                            <table className="seo-table">
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>When</th>
+                                  <th>Title</th>
+                                  <th>Words</th>
+                                  <th className="actions-col">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {draftLibrary.length === 0 ? (
                                   <tr>
-                                    <th>#</th>
-                                    <th>Section heading</th>
-                                    <th>Summary</th>
+                                    <td colSpan={5}>
+                                      No saved drafts yet. Run “Run Blog draft” to create
+                                      your first saved draft.
+                                    </td>
                                   </tr>
-                                </thead>
-                                <tbody>
-                                  {draftSections.map((section, idx) => {
-                                    const heading =
-                                      typeof section === "string"
-                                        ? section
-                                        : section.heading || section.title || "Section";
-                                    const summary =
-                                      typeof section === "string"
-                                        ? "—"
-                                        : section.summary ||
-                                          section.description ||
-                                          (Array.isArray(section.bullets)
-                                            ? section.bullets.join(" · ")
-                                            : "—");
+                                ) : (
+                                  draftLibrary.slice(0, 12).map((run, idx) => {
+                                    const title =
+                                      run?.output?.title ||
+                                      run?.input?.blogTitle ||
+                                      "Untitled draft";
+                                    const words =
+                                      run?.output?.estimatedWordCount ??
+                                      run?.output?.wordCount ??
+                                      "—";
                                     return (
-                                      <tr key={idx}>
+                                      <tr key={`${run.createdAt || run.time}-${idx}`}>
                                         <td>{idx + 1}</td>
-                                        <td>{heading}</td>
-                                        <td>{summary}</td>
+                                        <td>{run.time}</td>
+                                        <td>{title}</td>
+                                        <td>{words}</td>
+                                        <td>
+                                          <button
+                                            className="button button--ghost button--tiny"
+                                            onClick={() => openDraftFromLibrary(run)}
+                                          >
+                                            Open
+                                          </button>
+                                        </td>
                                       </tr>
                                     );
-                                  })}
-                                </tbody>
-                              </table>
-                            )}
+                                  })
+                                )}
+                              </tbody>
+                            </table>
                           </div>
 
-                          <div>
-                            <h3
-                              className="card-title"
-                              style={{ fontSize: 13, marginBottom: 4, marginTop: 0 }}
+                          {/* Draft Article Output */}
+                          <div className="card seo-table-card" style={{ marginTop: 10 }}>
+                            <div className="card-header">
+                              <h2 className="card-title">Draft article (generated)</h2>
+                              <p className="card-subtitle">
+                                Choose Markdown or HTML. Most editors prefer Markdown.
+                              </p>
+                            </div>
+
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: 24,
+                                fontSize: 12,
+                                marginBottom: 12,
+                                flexWrap: "wrap",
+                              }}
                             >
-                              Full article
-                            </h3>
-
-                            <div className="field-help" style={{ marginBottom: 8 }}>
-                              Choose the format you want to paste into your editor.
+                              <div>
+                                <div style={{ opacity: 0.7 }}>Estimated word count</div>
+                                <div style={{ fontWeight: 600 }}>
+                                  {draftWordCount != null ? draftWordCount : "—"}
+                                </div>
+                              </div>
+                              <div style={{ flex: 1, minWidth: 200 }}>
+                                <div style={{ opacity: 0.7 }}>CTA</div>
+                                <div style={{ fontWeight: 500 }}>
+                                  {draftCta || "CTA will appear here after the first run."}
+                                </div>
+                              </div>
                             </div>
 
-                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                              <button
-                                className={
-                                  "pill" + (draftFormat === "markdown" ? " pill--active" : "")
-                                }
-                                onClick={() => setDraftFormat("markdown")}
-                                type="button"
+                            <div style={{ marginBottom: 12 }}>
+                              <h3
+                                className="card-title"
+                                style={{ fontSize: 13, marginBottom: 4, marginTop: 0 }}
                               >
-                                Markdown
-                              </button>
-                              <button
-                                className={
-                                  "pill" + (draftFormat === "html" ? " pill--active" : "")
-                                }
-                                onClick={() => setDraftFormat("html")}
-                                type="button"
-                              >
-                                HTML
-                              </button>
-
-                              <div style={{ flex: 1 }} />
-
-                              <button
-                                className="button button--ghost button--tiny"
-                                onClick={() =>
-                                  copyToClipboard(
-                                    draftFormat === "markdown" ? draftMarkdown : draftHtml
-                                  )
-                                }
-                                disabled={
-                                  draftFormat === "markdown" ? !draftMarkdown : !draftHtml
-                                }
-                                type="button"
-                              >
-                                Copy {draftFormat === "markdown" ? "Markdown" : "HTML"}
-                              </button>
+                                Outline
+                              </h3>
+                              {draftSections.length === 0 ? (
+                                <p style={{ fontSize: 12 }}>
+                                  Run the Blog Draft Engine to generate section headings and
+                                  summaries.
+                                </p>
+                              ) : (
+                                <table className="seo-table">
+                                  <thead>
+                                    <tr>
+                                      <th>#</th>
+                                      <th>Section heading</th>
+                                      <th>Summary</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {draftSections.map((section, idx) => {
+                                      const heading =
+                                        typeof section === "string"
+                                          ? section
+                                          : section.heading || section.title || "Section";
+                                      const summary =
+                                        typeof section === "string"
+                                          ? "—"
+                                          : section.summary ||
+                                            section.description ||
+                                            section.body ||
+                                            (Array.isArray(section.bullets)
+                                              ? section.bullets.join(" · ")
+                                              : "—");
+                                      return (
+                                        <tr key={idx}>
+                                          <td>{idx + 1}</td>
+                                          <td>{heading}</td>
+                                          <td>{summary}</td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              )}
                             </div>
 
-                            <pre className="raw-json-pre" style={{ marginTop: 8 }}>
+                            <div style={{ marginBottom: 8 }}>
+                              <h3
+                                className="card-title"
+                                style={{ fontSize: 13, marginBottom: 6, marginTop: 0 }}
+                              >
+                                Full article
+                              </h3>
+
+                              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                <button
+                                  className={
+                                    "pill" + (draftFormat === "markdown" ? " pill--active" : "")
+                                  }
+                                  onClick={() => setDraftFormat("markdown")}
+                                >
+                                  Markdown
+                                </button>
+                                <button
+                                  className={"pill" + (draftFormat === "html" ? " pill--active" : "")}
+                                  onClick={() => setDraftFormat("html")}
+                                >
+                                  HTML
+                                </button>
+
+                                <button
+                                  className="button button--ghost button--tiny"
+                                  onClick={() =>
+                                    copyToClipboard(
+                                      draftFormat === "markdown" ? draftMarkdown : draftHtml
+                                    )
+                                  }
+                                  disabled={
+                                    draftFormat === "markdown" ? !draftMarkdown : !draftHtml
+                                  }
+                                >
+                                  Copy {draftFormat === "markdown" ? "Markdown" : "HTML"}
+                                </button>
+                              </div>
+                            </div>
+
+                            <pre className="raw-json-pre" style={{ marginTop: 6 }}>
                               {draftFormat === "markdown"
                                 ? draftMarkdown ||
                                   "// Run the Blog Draft Engine to generate the article Markdown here."
@@ -1268,7 +1394,7 @@ function App() {
                                   "// Run the Blog Draft Engine to generate the article HTML here."}
                             </pre>
                           </div>
-                        </div>
+                        </>
                       )}
                     </>
                   )}
@@ -1357,8 +1483,8 @@ function App() {
                             onChange={(e) => setWeeklyThemes(e.target.value)}
                           />
                           <div className="field-help">
-                            Comma separated. We will mix these into the weekly schedule (e.g. product
-                            education, styling tips, gifting).
+                            Comma separated. We will mix these into the weekly schedule
+                            (e.g. product education, styling tips, gifting).
                           </div>
                         </div>
                       </>
@@ -1468,7 +1594,8 @@ function App() {
                             onChange={(e) => setUseCases(e.target.value)}
                           />
                           <div className="field-help">
-                            Comma separated. We convert this into structured context for the engine.
+                            Comma separated. We convert this into structured context for
+                            the engine.
                           </div>
                         </div>
                       </>
@@ -1500,26 +1627,20 @@ function App() {
               </section>
             </>
           ) : (
-            // Non-Overview tabs – roadmap explainer
             <section style={{ marginTop: 10 }}>
               <div className="card">
                 <div className="card-header">
                   <h2 className="card-title">{pageTab}</h2>
                   <p className="card-subtitle">
-                    This view is part of the AURA roadmap. You can show this to clients as an
-                    upcoming feature while we focus on the SEO engines.
+                    This view is part of the AURA roadmap. You can show this to clients
+                    as an upcoming feature while we focus on the SEO engines.
                   </p>
                 </div>
                 <ul style={{ fontSize: 12, paddingLeft: 18 }}>
                   {pageTab === "Compare domains" && (
                     <>
-                      <li>
-                        Compare your project domain against competitors on title &amp; meta quality.
-                      </li>
-                      <li>
-                        See who wins on click-through potential in {activeMarket} for{" "}
-                        {activeDevice.toLowerCase()}.
-                      </li>
+                      <li>Compare your project domain against competitors on title &amp; meta quality.</li>
+                      <li>See who wins on click-through potential in {activeMarket} for {activeDevice.toLowerCase()}.</li>
                       <li>Export a simple action list you can plug straight into Shopify.</li>
                     </>
                   )}
@@ -1532,12 +1653,8 @@ function App() {
                   )}
                   {pageTab === "Compare by countries" && (
                     <>
-                      <li>
-                        See which markets (US / UK / EU / Worldwide) are best optimised for your catalogue.
-                      </li>
-                      <li>
-                        Plan localisation work – which regions need better copy, currency cues or spelling.
-                      </li>
+                      <li>See which markets (US / UK / EU / Worldwide) are best optimised for your catalogue.</li>
+                      <li>Plan localisation work – which regions need better copy, currency cues or spelling.</li>
                       <li>Future versions will auto-translate SEO for each region.</li>
                     </>
                   )}
