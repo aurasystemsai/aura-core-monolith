@@ -7,7 +7,7 @@ function ensureDraftsTable() {
   db.prepare(`
     CREATE TABLE IF NOT EXISTS drafts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      projectId TEXT,
+      projectId TEXT NOT NULL,
       toolId TEXT NOT NULL,
       createdAt TEXT NOT NULL,
 
@@ -33,10 +33,11 @@ function ensureDraftsTable() {
 function listDraftsByProject(projectId, limit = 50, offset = 0) {
   ensureDraftsTable();
 
+  const safeProjectId = String(projectId || "").trim();
   const safeLimit = Math.max(1, Math.min(Number(limit) || 50, 200));
   const safeOffset = Math.max(0, Number(offset) || 0);
 
-  // Summary list only (no huge article body)
+  // summary list only (no huge article body)
   const rows = db
     .prepare(
       `
@@ -55,13 +56,16 @@ function listDraftsByProject(projectId, limit = 50, offset = 0) {
       LIMIT ? OFFSET ?
     `
     )
-    .all(projectId || "", safeLimit, safeOffset);
+    .all(safeProjectId, safeLimit, safeOffset);
 
   return rows || [];
 }
 
 function getDraftById(projectId, draftId) {
   ensureDraftsTable();
+
+  const safeProjectId = String(projectId || "").trim();
+  const safeDraftId = Number(draftId);
 
   const row = db
     .prepare(
@@ -84,11 +88,10 @@ function getDraftById(projectId, draftId) {
       LIMIT 1
     `
     )
-    .get(projectId || "", Number(draftId));
+    .get(safeProjectId, safeDraftId);
 
   if (!row) return null;
 
-  // Parse JSON safely (optional)
   let input = null;
   let output = null;
   try {
@@ -107,6 +110,13 @@ function getDraftById(projectId, draftId) {
 
 function createDraft(projectId, body) {
   ensureDraftsTable();
+
+  const safeProjectId = String(projectId || "").trim();
+  if (!safeProjectId) {
+    const err = new Error("projectId is required");
+    err.statusCode = 400;
+    throw err;
+  }
 
   const toolId = String(body?.toolId || "").trim();
   if (!toolId) {
@@ -127,9 +137,9 @@ function createDraft(projectId, body) {
     body?.primaryKeyword != null ? String(body.primaryKeyword) : null;
 
   const inputJson =
-    body?.input != null ? safeStringify(body.input) : null;
+    body?.input != null ? JSON.stringify(body.input) : null;
   const outputJson =
-    body?.output != null ? safeStringify(body.output) : null;
+    body?.output != null ? JSON.stringify(body.output) : null;
 
   const articleText =
     body?.articleText != null ? String(body.articleText) : null;
@@ -155,7 +165,7 @@ function createDraft(projectId, body) {
     `
     )
     .run(
-      projectId || "",
+      safeProjectId,
       toolId,
       createdAt,
       title,
@@ -168,16 +178,7 @@ function createDraft(projectId, body) {
       articleHtml
     );
 
-  const insertedId = info.lastInsertRowid;
-  return getDraftById(projectId, insertedId);
-}
-
-function safeStringify(obj) {
-  try {
-    return JSON.stringify(obj);
-  } catch {
-    return null;
-  }
+  return getDraftById(safeProjectId, info.lastInsertRowid);
 }
 
 module.exports = {

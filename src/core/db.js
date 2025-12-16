@@ -1,97 +1,34 @@
-// src/routes/drafts.js
+// src/core/db.js
+// ------------------------------
+// Shared SQLite connection for AURA Core
+// ------------------------------
+
 "use strict";
 
-const express = require("express");
-const draftsCore = require("../core/drafts");
+const fs = require("fs");
+const path = require("path");
+const Database = require("better-sqlite3");
 
-const router = express.Router();
+// Decide where the DB lives:
+// - In production (Render), set AURA_DB_PATH (e.g. /var/data/aura-core.sqlite)
+// - Locally, fall back to src/data/aura-core.sqlite
+const dbPath =
+  process.env.AURA_DB_PATH ||
+  path.join(__dirname, "..", "data", "aura-core.sqlite");
 
-/**
- * GET /projects/:projectId/drafts
- * Query: limit, offset
- */
-router.get("/projects/:projectId/drafts", (req, res) => {
-  const projectId = req.params.projectId;
-  const { limit, offset } = req.query;
+// Ensure directory exists
+const dir = path.dirname(dbPath);
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir, { recursive: true });
+}
 
-  try {
-    const drafts = draftsCore.listDraftsByProject(projectId, limit, offset);
-    return res.json({
-      ok: true,
-      projectId,
-      drafts,
-    });
-  } catch (err) {
-    console.error("[Drafts] Error listing drafts", err);
-    return res.status(500).json({
-      ok: false,
-      error: "Failed to list drafts",
-    });
-  }
-});
+// Open connection (creates file if it doesn't exist)
+const db = new Database(dbPath);
 
-/**
- * GET /projects/:projectId/drafts/:draftId
- */
-router.get("/projects/:projectId/drafts/:draftId", (req, res) => {
-  const projectId = req.params.projectId;
-  const draftId = req.params.draftId;
+// WAL mode for better concurrency
+db.pragma("journal_mode = WAL");
 
-  try {
-    const draft = draftsCore.getDraftById(projectId, draftId);
-    if (!draft) {
-      return res.status(404).json({
-        ok: false,
-        error: "Draft not found",
-      });
-    }
+// Small log so we can see where it’s writing
+console.log(`[Core] SQLite DB path: ${dbPath}`);
 
-    return res.json({
-      ok: true,
-      projectId,
-      draft,
-    });
-  } catch (err) {
-    console.error("[Drafts] Error reading draft", err);
-    return res.status(500).json({
-      ok: false,
-      error: "Failed to read draft",
-    });
-  }
-});
-
-/**
- * POST /projects/:projectId/drafts
- *
- * Body:
- * {
- *   toolId: "blog-draft-engine",
- *   createdAt: "ISO" (optional),
- *   title, slug, metaDescription, primaryKeyword (optional),
- *   input: {...} (optional),
- *   output: {...} (optional),
- *   articleText: "...",
- *   articleHtml: "..."
- * }
- */
-router.post("/projects/:projectId/drafts", (req, res) => {
-  const projectId = req.params.projectId;
-
-  try {
-    const created = draftsCore.createDraft(projectId, req.body || {});
-    return res.json({
-      ok: true,
-      projectId,
-      draft: created,
-    });
-  } catch (err) {
-    const status = err.statusCode || 500;
-    console.error("[Drafts] Error creating draft", err);
-    return res.status(status).json({
-      ok: false,
-      error: err.message || "Failed to create draft",
-    });
-  }
-});
-
-module.exports = router;
+module.exports = db;

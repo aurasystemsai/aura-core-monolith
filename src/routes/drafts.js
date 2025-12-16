@@ -1,97 +1,189 @@
-// src/routes/drafts.js
+// src/core/drafts.js
 "use strict";
 
-const express = require("express");
-const draftsCore = require("../core/drafts");
+const db = require("./db");
 
-const router = express.Router();
+function ensureDraftsTable() {
+  db.prepare(`
+    CREATE TABLE IF NOT EXISTS drafts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      projectId TEXT NOT NULL,
+      toolId TEXT NOT NULL,
+      createdAt TEXT NOT NULL,
 
-/**
- * GET /projects/:projectId/drafts
- * Query: limit, offset
- */
-router.get("/projects/:projectId/drafts", (req, res) => {
-  const projectId = req.params.projectId;
-  const { limit, offset } = req.query;
+      title TEXT,
+      slug TEXT,
+      metaDescription TEXT,
+      primaryKeyword TEXT,
 
+      inputJson TEXT,
+      outputJson TEXT,
+
+      articleText TEXT,
+      articleHtml TEXT
+    )
+  `).run();
+
+  db.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_drafts_project_createdAt
+    ON drafts (projectId, createdAt)
+  `).run();
+}
+
+function listDraftsByProject(projectId, limit = 50, offset = 0) {
+  ensureDraftsTable();
+
+  const safeProjectId = String(projectId || "").trim();
+  const safeLimit = Math.max(1, Math.min(Number(limit) || 50, 200));
+  const safeOffset = Math.max(0, Number(offset) || 0);
+
+  // summary list only (no huge article body)
+  const rows = db
+    .prepare(
+      `
+      SELECT
+        id,
+        projectId,
+        toolId,
+        createdAt,
+        title,
+        slug,
+        metaDescription,
+        primaryKeyword
+      FROM drafts
+      WHERE projectId = ?
+      ORDER BY datetime(createdAt) DESC
+      LIMIT ? OFFSET ?
+    `
+    )
+    .all(safeProjectId, safeLimit, safeOffset);
+
+  return rows || [];
+}
+
+function getDraftById(projectId, draftId) {
+  ensureDraftsTable();
+
+  const safeProjectId = String(projectId || "").trim();
+  const safeDraftId = Number(draftId);
+
+  const row = db
+    .prepare(
+      `
+      SELECT
+        id,
+        projectId,
+        toolId,
+        createdAt,
+        title,
+        slug,
+        metaDescription,
+        primaryKeyword,
+        inputJson,
+        outputJson,
+        articleText,
+        articleHtml
+      FROM drafts
+      WHERE projectId = ? AND id = ?
+      LIMIT 1
+    `
+    )
+    .get(safeProjectId, safeDraftId);
+
+  if (!row) return null;
+
+  let input = null;
+  let output = null;
   try {
-    const drafts = draftsCore.listDraftsByProject(projectId, limit, offset);
-    return res.json({
-      ok: true,
-      projectId,
-      drafts,
-    });
-  } catch (err) {
-    console.error("[Drafts] Error listing drafts", err);
-    return res.status(500).json({
-      ok: false,
-      error: "Failed to list drafts",
-    });
-  }
-});
-
-/**
- * GET /projects/:projectId/drafts/:draftId
- */
-router.get("/projects/:projectId/drafts/:draftId", (req, res) => {
-  const projectId = req.params.projectId;
-  const draftId = req.params.draftId;
-
+    input = row.inputJson ? JSON.parse(row.inputJson) : null;
+  } catch {}
   try {
-    const draft = draftsCore.getDraftById(projectId, draftId);
-    if (!draft) {
-      return res.status(404).json({
-        ok: false,
-        error: "Draft not found",
-      });
-    }
+    output = row.outputJson ? JSON.parse(row.outputJson) : null;
+  } catch {}
 
-    return res.json({
-      ok: true,
-      projectId,
-      draft,
-    });
-  } catch (err) {
-    console.error("[Drafts] Error reading draft", err);
-    return res.status(500).json({
-      ok: false,
-      error: "Failed to read draft",
-    });
+  return {
+    ...row,
+    input,
+    output,
+  };
+}
+
+function createDraft(projectId, body) {
+  ensureDraftsTable();
+
+  const safeProjectId = String(projectId || "").trim();
+  if (!safeProjectId) {
+    const err = new Error("projectId is required");
+    err.statusCode = 400;
+    throw err;
   }
-});
 
-/**
- * POST /projects/:projectId/drafts
- *
- * Body:
- * {
- *   toolId: "blog-draft-engine",
- *   createdAt: "ISO" (optional),
- *   title, slug, metaDescription, primaryKeyword (optional),
- *   input: {...} (optional),
- *   output: {...} (optional),
- *   articleText: "...",
- *   articleHtml: "..."
- * }
- */
-router.post("/projects/:projectId/drafts", (req, res) => {
-  const projectId = req.params.projectId;
-
-  try {
-    const created = draftsCore.createDraft(projectId, req.body || {});
-    return res.json({
-      ok: true,
-      projectId,
-      draft: created,
-    });
-  } catch (err) {
-    const status = err.statusCode || 500;
-    console.error("[Drafts] Error creating draft", err);
-    return res.status(status).json({
-      ok: false,
-      error: err.message || "Failed to create draft",
-    });
+  const toolId = String(body?.toolId || "").trim();
+  if (!toolId) {
+    const err = new Error("toolId is required");
+    err.statusCode = 400;
+    throw err;
   }
-});
 
-module.exports = router;
+  const createdAt = body?.createdAt
+    ? String(body.createdAt)
+    : new Date().toISOString();
+
+  const title = body?.title != null ? String(body.title) : null;
+  const slug = body?.slug != null ? String(body.slug) : null;
+  const metaDescription =
+    body?.metaDescription != null ? String(body.metaDescription) : null;
+  const primaryKeyword =
+    body?.primaryKeyword != null ? String(body.primaryKeyword) : null;
+
+  const inputJson =
+    body?.input != null ? JSON.stringify(body.input) : null;
+  const outputJson =
+    body?.output != null ? JSON.stringify(body.output) : null;
+
+  const articleText =
+    body?.articleText != null ? String(body.articleText) : null;
+  const articleHtml =
+    body?.articleHtml != null ? String(body.articleHtml) : null;
+
+  const info = db
+    .prepare(
+      `
+      INSERT INTO drafts (
+        projectId,
+        toolId,
+        createdAt,
+        title,
+        slug,
+        metaDescription,
+        primaryKeyword,
+        inputJson,
+        outputJson,
+        articleText,
+        articleHtml
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `
+    )
+    .run(
+      safeProjectId,
+      toolId,
+      createdAt,
+      title,
+      slug,
+      metaDescription,
+      primaryKeyword,
+      inputJson,
+      outputJson,
+      articleText,
+      articleHtml
+    );
+
+  return getDraftById(safeProjectId, info.lastInsertRowid);
+}
+
+module.exports = {
+  ensureDraftsTable,
+  listDraftsByProject,
+  getDraftById,
+  createDraft,
+};
