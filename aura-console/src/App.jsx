@@ -260,64 +260,17 @@ function App() {
     currentMetaLength = (seoDescription || productDescription).length;
   }
 
-  const currentTitleScore = scoreLength(currentTitleLength, TITLE_MIN, TITLE_MAX);
+  const currentTitleScore = scoreLength(
+    currentTitleLength,
+    TITLE_MIN,
+    TITLE_MAX
+  );
   const currentMetaScore = scoreLength(currentMetaLength, META_MIN, META_MAX);
 
   const overallScore =
     currentTitleScore !== null && currentMetaScore !== null
       ? Math.round((currentTitleScore + currentMetaScore) / 2)
       : null;
-
-  // -------------------------------------------------
-  // Auto-save drafts to Draft Library (Core SQLite)
-  // -------------------------------------------------
-  const saveDraftToLibrary = async ({
-    toolId,
-    createdAt,
-    title,
-    slug,
-    metaDescription,
-    primaryKeyword,
-    input,
-    output,
-    articleText,
-    articleHtml,
-  }) => {
-    if (!project?.id) return;
-    if (!coreUrl) return;
-
-    try {
-      const res = await fetch(`${coreUrl}/projects/${project.id}/drafts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          toolId: toolId || "blog-draft-engine",
-          createdAt: createdAt || new Date().toISOString(),
-          title: title || "",
-          slug: slug || "",
-          metaDescription: metaDescription || "",
-          primaryKeyword: primaryKeyword || "",
-          input: input || null,
-          output: output || null,
-          articleText: articleText || "",
-          articleHtml: articleHtml || "",
-        }),
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("Failed to auto-save draft", res.status, text);
-        return;
-      }
-
-      // Optional: you could read the response here if you want an ID, but not required.
-      // const data = await res.json();
-    } catch (err) {
-      console.error("Failed to auto-save draft", err);
-    }
-  };
 
   // -------------------------------------------------
   // Run engine
@@ -384,7 +337,9 @@ function App() {
 
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(`Core API error (${res.status}): ${text || res.statusText}`);
+        throw new Error(
+          `Core API error (${res.status}): ${text || res.statusText}`
+        );
       }
 
       const data = await res.json();
@@ -456,42 +411,43 @@ function App() {
         setMetaAdvice(advice.metaTips || "");
         setGeneralAdvice(advice.generalTips || "");
 
-        // Blog draft specific mapping
+        // Blog draft specific mapping + AUTO-SAVE
         if (toolId === "blog-draft-engine") {
-          const sections = Array.isArray(output.sections) ? output.sections : [];
-          const cta = output.cta || "";
-          const wordCount =
+          setDraftSections(Array.isArray(output.sections) ? output.sections : []);
+          setDraftCta(output.cta || "");
+          setDraftWordCount(
             typeof output.estimatedWordCount === "number"
               ? output.estimatedWordCount
-              : null;
-          const articleHtml = output.articleHtml || "";
-          const articleText = output.articleText || "";
-
-          setDraftSections(sections);
-          setDraftCta(cta);
-          setDraftWordCount(wordCount);
-          setDraftHtml(articleHtml);
-          setDraftText(articleText);
+              : null
+          );
+          setDraftHtml(output.articleHtml || "");
+          setDraftText(output.articleText || "");
           setDraftFormat("text");
 
-          // AUTO-SAVE DRAFT (fire-and-forget)
-          const primaryKeyword =
-            output.primaryKeyword ||
-            (Array.isArray(nextKeywords) && nextKeywords.length ? nextKeywords[0] : "") ||
-            "";
-
-          saveDraftToLibrary({
-            toolId: "blog-draft-engine",
-            createdAt: now.toISOString(),
-            title: nextTitle || productTitle || "",
-            slug: nextSlug || "",
-            metaDescription: nextDescription || "",
-            primaryKeyword,
-            input: payload,
-            output,
-            articleText,
-            articleHtml,
-          });
+          // Auto-save to Draft Library (fire-and-forget)
+          try {
+            await fetch(`${coreUrl}/projects/${project.id}/drafts`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                toolId: "blog-draft-engine",
+                createdAt: now.toISOString(),
+                title: nextTitle || productTitle || "",
+                slug: nextSlug || "",
+                metaDescription: nextDescription || "",
+                primaryKeyword:
+                  (Array.isArray(nextKeywords) && nextKeywords[0]) ||
+                  output.primaryKeyword ||
+                  "",
+                input: payload,
+                output,
+                articleText: output.articleText || "",
+                articleHtml: output.articleHtml || "",
+              }),
+            });
+          } catch (e) {
+            console.error("Failed to auto-save draft", e);
+          }
         } else {
           setDraftSections([]);
           setDraftCta("");
@@ -598,7 +554,11 @@ function App() {
   const latestRun = historyForFilters[historyForFilters.length - 1];
 
   const buildTitleAdvice = () => {
-    const label = isProduct ? "product" : isWeekly ? "content plan" : "blog post";
+    const label = isProduct
+      ? "product"
+      : isWeekly
+      ? "content plan"
+      : "blog post";
     if (!currentTitleLength) {
       return `Add a clear ${label} title first, then run the engine. Aim for 45–60 characters.`;
     }
@@ -612,7 +572,7 @@ function App() {
       return `Your current ${label} title is ${currentTitleLength} characters. It is a bit long – consider trimming around ${extra} characters so it stays punchy in search results.`;
     }
     return `Your current ${label} title is ${currentTitleLength} characters, which is right in the sweet spot. Only tweak it if it feels clunky or hard to read.`;
-    };
+  };
 
   const buildMetaAdvice = () => {
     if (!currentMetaLength) {
@@ -631,9 +591,7 @@ function App() {
   };
 
   if (!project) {
-    return (
-      <ProjectSetup coreUrl={coreUrl} onConnected={(proj) => setProject(proj)} />
-    );
+    return <ProjectSetup coreUrl={coreUrl} onConnected={(proj) => setProject(proj)} />;
   }
 
   return (
@@ -856,16 +814,10 @@ function App() {
                 <div className="kpi-card">
                   <div className="kpi-label">Overall SEO score</div>
                   <div className="kpi-main">
-                    <span className="kpi-value">
-                      {overallScore !== null ? `${overallScore}` : "—"}
-                    </span>
-                    <span className="kpi-unit">
-                      {overallScore !== null ? "/100" : ""}
-                    </span>
+                    <span className="kpi-value">{overallScore !== null ? `${overallScore}` : "—"}</span>
+                    <span className="kpi-unit">{overallScore !== null ? "/100" : ""}</span>
                   </div>
-                  <div className="kpi-footnote">
-                    Based on current title and meta description length.
-                  </div>
+                  <div className="kpi-footnote">Based on current title and meta description length.</div>
                 </div>
 
                 <div className="kpi-card">
@@ -1016,7 +968,8 @@ function App() {
                         </div>
                       ) : (
                         <div className="run-history-empty">
-                          No runs recorded yet for this engine / market / device. Click “{currentEngine.runButtonLabel}” to start tracking.
+                          No runs recorded yet for this engine / market / device. Click “{currentEngine.runButtonLabel}”
+                          to start tracking.
                         </div>
                       )}
 
@@ -1298,7 +1251,9 @@ function App() {
 
                               <button
                                 className="button button--ghost button--tiny"
-                                onClick={() => copyToClipboard(draftFormat === "html" ? draftHtml : draftText)}
+                                onClick={() =>
+                                  copyToClipboard(draftFormat === "html" ? draftHtml : draftText)
+                                }
                                 disabled={draftFormat === "html" ? !draftHtml : !draftText}
                                 type="button"
                               >

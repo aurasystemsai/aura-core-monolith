@@ -36,22 +36,26 @@ function listDraftsByProject(projectId, limit = 50, offset = 0) {
   const safeLimit = Math.max(1, Math.min(Number(limit) || 50, 200));
   const safeOffset = Math.max(0, Number(offset) || 0);
 
-  // summary list only (no huge article body)
-  const rows = db.prepare(`
-    SELECT
-      id,
-      projectId,
-      toolId,
-      createdAt,
-      title,
-      slug,
-      metaDescription,
-      primaryKeyword
-    FROM drafts
-    WHERE projectId = ?
-    ORDER BY datetime(createdAt) DESC
-    LIMIT ? OFFSET ?
-  `).all(projectId || "", safeLimit, safeOffset);
+  // Summary list only (no huge article body)
+  const rows = db
+    .prepare(
+      `
+      SELECT
+        id,
+        projectId,
+        toolId,
+        createdAt,
+        title,
+        slug,
+        metaDescription,
+        primaryKeyword
+      FROM drafts
+      WHERE projectId = ?
+      ORDER BY datetime(createdAt) DESC
+      LIMIT ? OFFSET ?
+    `
+    )
+    .all(projectId || "", safeLimit, safeOffset);
 
   return rows || [];
 }
@@ -59,24 +63,28 @@ function listDraftsByProject(projectId, limit = 50, offset = 0) {
 function getDraftById(projectId, draftId) {
   ensureDraftsTable();
 
-  const row = db.prepare(`
-    SELECT
-      id,
-      projectId,
-      toolId,
-      createdAt,
-      title,
-      slug,
-      metaDescription,
-      primaryKeyword,
-      inputJson,
-      outputJson,
-      articleText,
-      articleHtml
-    FROM drafts
-    WHERE projectId = ? AND id = ?
-    LIMIT 1
-  `).get(projectId || "", Number(draftId));
+  const row = db
+    .prepare(
+      `
+      SELECT
+        id,
+        projectId,
+        toolId,
+        createdAt,
+        title,
+        slug,
+        metaDescription,
+        primaryKeyword,
+        inputJson,
+        outputJson,
+        articleText,
+        articleHtml
+      FROM drafts
+      WHERE projectId = ? AND id = ?
+      LIMIT 1
+    `
+    )
+    .get(projectId || "", Number(draftId));
 
   if (!row) return null;
 
@@ -97,43 +105,36 @@ function getDraftById(projectId, draftId) {
   };
 }
 
-function createDraft(projectId, draft) {
+function createDraft(projectId, body) {
   ensureDraftsTable();
 
-  const toolId = String(draft.toolId || "").trim();
+  const toolId = String(body?.toolId || "").trim();
   if (!toolId) {
-    throw new Error("toolId is required");
+    const err = new Error("toolId is required");
+    err.statusCode = 400;
+    throw err;
   }
 
-  const createdAt = String(draft.createdAt || "").trim();
-  if (!createdAt) {
-    throw new Error("createdAt is required");
-  }
+  const createdAt = body?.createdAt
+    ? String(body.createdAt)
+    : new Date().toISOString();
 
-  const title = draft.title != null ? String(draft.title) : null;
-  const slug = draft.slug != null ? String(draft.slug) : null;
+  const title = body?.title != null ? String(body.title) : null;
+  const slug = body?.slug != null ? String(body.slug) : null;
   const metaDescription =
-    draft.metaDescription != null ? String(draft.metaDescription) : null;
+    body?.metaDescription != null ? String(body.metaDescription) : null;
   const primaryKeyword =
-    draft.primaryKeyword != null ? String(draft.primaryKeyword) : null;
+    body?.primaryKeyword != null ? String(body.primaryKeyword) : null;
 
-  let inputJson = null;
-  let outputJson = null;
-  try {
-    inputJson = draft.input != null ? JSON.stringify(draft.input) : null;
-  } catch {
-    inputJson = null;
-  }
-  try {
-    outputJson = draft.output != null ? JSON.stringify(draft.output) : null;
-  } catch {
-    outputJson = null;
-  }
+  const inputJson =
+    body?.input != null ? safeStringify(body.input) : null;
+  const outputJson =
+    body?.output != null ? safeStringify(body.output) : null;
 
   const articleText =
-    draft.articleText != null ? String(draft.articleText) : null;
+    body?.articleText != null ? String(body.articleText) : null;
   const articleHtml =
-    draft.articleHtml != null ? String(draft.articleHtml) : null;
+    body?.articleHtml != null ? String(body.articleHtml) : null;
 
   const info = db
     .prepare(
@@ -167,9 +168,16 @@ function createDraft(projectId, draft) {
       articleHtml
     );
 
-  return {
-    id: info.lastInsertRowid,
-  };
+  const insertedId = info.lastInsertRowid;
+  return getDraftById(projectId, insertedId);
+}
+
+function safeStringify(obj) {
+  try {
+    return JSON.stringify(obj);
+  } catch {
+    return null;
+  }
 }
 
 module.exports = {
