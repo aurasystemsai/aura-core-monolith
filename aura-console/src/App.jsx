@@ -118,10 +118,8 @@ function App() {
   const [draftCta, setDraftCta] = useState("");
   const [draftWordCount, setDraftWordCount] = useState(null);
   const [draftHtml, setDraftHtml] = useState("");
-
-  // ✅ NEW: optional Markdown output + UI choice
-  const [draftMarkdown, setDraftMarkdown] = useState("");
-  const [draftFormat, setDraftFormat] = useState("markdown"); // "markdown" | "html"
+  const [draftText, setDraftText] = useState("");
+  const [draftFormat, setDraftFormat] = useState("text"); // "text" | "html"
 
   // AI advice (from tool output.advice for product/blog)
   const [titleAdvice, setTitleAdvice] = useState("");
@@ -266,11 +264,7 @@ function App() {
     TITLE_MIN,
     TITLE_MAX
   );
-  const currentMetaScore = scoreLength(
-    currentMetaLength,
-    META_MIN,
-    META_MAX
-  );
+  const currentMetaScore = scoreLength(currentMetaLength, META_MIN, META_MAX);
 
   const overallScore =
     currentTitleScore !== null && currentMetaScore !== null
@@ -351,7 +345,6 @@ function App() {
       setRawJson(JSON.stringify(data, null, 2));
 
       const output = data?.result?.output || data?.output || {};
-
       if (!output) throw new Error("No output returned from tool");
 
       const now = new Date();
@@ -372,8 +365,8 @@ function App() {
         setDraftCta("");
         setDraftWordCount(null);
         setDraftHtml("");
-        setDraftMarkdown("");
-        setDraftFormat("markdown");
+        setDraftText("");
+        setDraftFormat("text");
 
         if (posts.length) {
           const titleLens = posts.map((p) => (p.title || "").length);
@@ -397,14 +390,17 @@ function App() {
       } else {
         const nextTitle = output.title || output.seoTitle || "";
         const nextDescription =
-          output.description || output.metaDescription || "";
+          output.description || output.metaDescription || output.metaDescription || "";
         const nextSlug = output.slug || output.handle || "";
-        const nextKeywords = output.keywords || output.keywordSet || [];
+        const nextKeywords =
+          output.keywords ||
+          output.keywordSet ||
+          (output.primaryKeyword ? [output.primaryKeyword] : []);
 
         setSeoTitle(nextTitle);
         setSeoDescription(nextDescription);
         setSeoSlug(nextSlug);
-        setSeoKeywords(nextKeywords);
+        setSeoKeywords(Array.isArray(nextKeywords) ? nextKeywords : []);
 
         const advice = output.advice || {};
         setTitleAdvice(advice.titleTips || "");
@@ -420,27 +416,16 @@ function App() {
               ? output.estimatedWordCount
               : null
           );
-
-          // ✅ HTML is still supported
           setDraftHtml(output.articleHtml || "");
-
-          // ✅ NEW: Markdown if your tool returns it (recommended)
-          // If the tool does NOT return articleMarkdown yet, this will just stay blank.
-          setDraftMarkdown(output.articleMarkdown || "");
-
-          // Default the UI to Markdown if available, otherwise fallback to HTML
-          if (output.articleMarkdown) {
-            setDraftFormat("markdown");
-          } else {
-            setDraftFormat("html");
-          }
+          setDraftText(output.articleText || "");
+          setDraftFormat("text");
         } else {
           setDraftSections([]);
           setDraftCta("");
           setDraftWordCount(null);
           setDraftHtml("");
-          setDraftMarkdown("");
-          setDraftFormat("markdown");
+          setDraftText("");
+          setDraftFormat("text");
         }
 
         tLen = (nextTitle || productTitle).length;
@@ -513,24 +498,6 @@ function App() {
     });
   };
 
-  // ✅ NEW: simple download helper (Markdown or HTML)
-  const downloadTextFile = (filename, text, mimeType) => {
-    if (!text) return;
-    try {
-      const blob = new Blob([text], { type: mimeType || "text/plain;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Download failed", err);
-    }
-  };
-
   const keywordsDisplay =
     seoKeywords && Array.isArray(seoKeywords) ? seoKeywords.join(", ") : "";
 
@@ -557,9 +524,12 @@ function App() {
 
   const latestRun = historyForFilters[historyForFilters.length - 1];
 
-  // Advice text (title / meta) – phrased per engine
   const buildTitleAdvice = () => {
-    const label = isProduct ? "product" : isWeekly ? "content plan" : "blog post";
+    const label = isProduct
+      ? "product"
+      : isWeekly
+      ? "content plan"
+      : "blog post";
     if (!currentTitleLength) {
       return `Add a clear ${label} title first, then run the engine. Aim for 45–60 characters.`;
     }
@@ -591,19 +561,12 @@ function App() {
     return `Your meta description is ${currentMetaLength} characters, which is on target. Focus on clarity and benefits rather than adding more words.`;
   };
 
-  // -------------------------------------------------
-  // Onboarding screen: no project yet
-  // -------------------------------------------------
   if (!project) {
     return <ProjectSetup coreUrl={coreUrl} onConnected={(proj) => setProject(proj)} />;
   }
 
-  // -------------------------------------------------
-  // Main console UI
-  // -------------------------------------------------
   return (
     <div className="app-shell">
-      {/* SIDEBAR */}
       <aside className="side-nav">
         <div className="side-nav-brand">
           <div className="side-nav-avatar">A</div>
@@ -641,10 +604,8 @@ function App() {
         />
       </aside>
 
-      {/* MAIN AREA */}
       <main className="app-main">
         <div className="page-frame">
-          {/* HEADER STRIP */}
           <header className="top-strip">
             <div className="top-strip-left">
               <div className="top-strip-eyebrow">{currentEngine.suitePrefix}</div>
@@ -725,27 +686,22 @@ function App() {
             </div>
           </header>
 
-          {/* SYSTEM HEALTH PANEL */}
           <section style={{ marginTop: 10, marginBottom: 6 }}>
             <SystemHealthPanel />
           </section>
 
-          {/* PAGE TABS */}
           <section className="page-tabs">
-            {["Overview", "Compare domains", "Growth report", "Compare by countries"].map(
-              (tab) => (
-                <button
-                  key={tab}
-                  className={"page-tab" + (pageTab === tab ? " page-tab--active" : "")}
-                  onClick={() => setPageTab(tab)}
-                >
-                  {tab}
-                </button>
-              )
-            )}
+            {["Overview", "Compare domains", "Growth report", "Compare by countries"].map((tab) => (
+              <button
+                key={tab}
+                className={"page-tab" + (pageTab === tab ? " page-tab--active" : "")}
+                onClick={() => setPageTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
           </section>
 
-          {/* FILTER STRIP */}
           <section className="filters-strip">
             <div className="filters-left">
               <div className="filters-label">Market</div>
@@ -806,19 +762,14 @@ function App() {
 
           {pageTab === "Overview" ? (
             <>
-              {/* KPI ROW */}
               <section className="kpi-row">
                 <div className="kpi-card">
                   <div className="kpi-label">Overall SEO score</div>
                   <div className="kpi-main">
-                    <span className="kpi-value">
-                      {overallScore !== null ? `${overallScore}` : "—"}
-                    </span>
+                    <span className="kpi-value">{overallScore !== null ? `${overallScore}` : "—"}</span>
                     <span className="kpi-unit">{overallScore !== null ? "/100" : ""}</span>
                   </div>
-                  <div className="kpi-footnote">
-                    Based on current title and meta description length.
-                  </div>
+                  <div className="kpi-footnote">Based on current title and meta description length.</div>
                 </div>
 
                 <div className="kpi-card">
@@ -849,19 +800,19 @@ function App() {
                     <span className="kpi-value">{historyForFilters.length || "—"}</span>
                     <span className="kpi-unit">runs</span>
                   </div>
-                  <div className="kpi-target">Latest score: {latestRun?.score ?? "—"}/100</div>
+                  <div className="kpi-target">
+                    Latest score: {latestRun?.score ?? "—"}/100
+                  </div>
                 </div>
               </section>
 
-              {/* HOW TO REACH 100/100 */}
               <section className="card" style={{ marginTop: 10 }}>
                 <div className="card-header">
                   <h2 className="card-title">How to reach 100/100</h2>
                   <p className="card-subtitle">
-                    You do not need to be an SEO expert. Follow these steps, change the text
-                    on the right, then click{" "}
-                    <strong>{currentEngine.runButtonLabel}</strong> again. Guidance is tuned
-                    for <strong>{activeMarket}</strong> · <strong>{activeDevice}</strong>.
+                    You do not need to be an SEO expert. Follow these steps, change the text on the right, then click{" "}
+                    <strong>{currentEngine.runButtonLabel}</strong> again. Guidance is tuned for{" "}
+                    <strong>{activeMarket}</strong> · <strong>{activeDevice}</strong>.
                   </p>
                 </div>
 
@@ -882,20 +833,17 @@ function App() {
                     <span style={{ fontSize: 11 }}>
                       <code>[What it is] + [1–2 big benefits] + [when / who it is for]</code>.
                       <br />
-                      Example: “Waterproof paperclip bracelet with sweat-proof coating.
-                      Adjustable fit for gym, everyday wear and gifting.”
+                      Example: “Waterproof paperclip bracelet with sweat-proof coating. Adjustable fit for gym, everyday wear and gifting.”
                     </span>
                   </li>
                 </ol>
               </section>
 
-              {/* AI SUGGESTIONS */}
               <section className="card" style={{ marginTop: 10 }}>
                 <div className="card-header">
                   <h2 className="card-title">AI suggestions for this {pieceLabel}</h2>
                   <p className="card-subtitle">
-                    Generated from your last run. Use this as a second opinion on how to tweak
-                    the copy before you publish.
+                    Generated from your last run. Use this as a second opinion on how to tweak the copy before you publish.
                   </p>
                 </div>
                 <ul style={{ fontSize: 12, paddingLeft: 18, margin: 0 }}>
@@ -910,17 +858,13 @@ function App() {
                   </li>
                   <li>
                     <strong>Overall:</strong>{" "}
-                    {generalAdvice ||
-                      "General optimisation tips for this piece will appear here after the first run."}
+                    {generalAdvice || "General optimisation tips for this piece will appear here after the first run."}
                   </li>
                 </ul>
               </section>
 
-              {/* MAIN GRID */}
               <section className="main-grid">
-                {/* LEFT COLUMN */}
                 <div className="left-column">
-                  {/* Run history card */}
                   <div className="card">
                     <div className="card-header">
                       <div className="card-title-row">
@@ -941,9 +885,8 @@ function App() {
                         </div>
                       </div>
                       <p className="card-subtitle">
-                        Every time you re-run the engine, we plot a new point here. You are
-                        currently viewing <strong>{activeMarket}</strong> ·{" "}
-                        <strong>{activeDevice}</strong> runs for{" "}
+                        Every time you re-run the engine, we plot a new point here. You are currently viewing{" "}
+                        <strong>{activeMarket}</strong> · <strong>{activeDevice}</strong> runs for{" "}
                         <strong>{currentEngine.chipLabel}</strong> only.
                       </p>
                     </div>
@@ -977,8 +920,8 @@ function App() {
                         </div>
                       ) : (
                         <div className="run-history-empty">
-                          No runs recorded yet for this engine / market / device. Click “
-                          {currentEngine.runButtonLabel}” to start tracking.
+                          No runs recorded yet for this engine / market / device. Click “{currentEngine.runButtonLabel}”
+                          to start tracking.
                         </div>
                       )}
 
@@ -993,8 +936,7 @@ function App() {
                       <div className="run-history-table-header">
                         <span className="run-history-table-title">Last runs</span>
                         <span className="run-history-table-subtitle">
-                          Shows how your lengths and score changed per run for this engine /
-                          market / device.
+                          Shows how your lengths and score changed per run for this engine / market / device.
                         </span>
                       </div>
 
@@ -1012,8 +954,7 @@ function App() {
                           {rangedHistory.length === 0 ? (
                             <tr>
                               <td colSpan={5}>
-                                No runs yet. Click "{currentEngine.runButtonLabel}" to start
-                                tracking.
+                                No runs yet. Click "{currentEngine.runButtonLabel}" to start tracking.
                               </td>
                             </tr>
                           ) : (
@@ -1035,20 +976,16 @@ function App() {
                     </div>
                   </div>
 
-                  {/* Generated fields / weekly plan / draft article */}
                   {isWeekly ? (
                     <div className="card seo-table-card">
                       <div className="card-header">
                         <h2 className="card-title">Weekly blog plan (generated)</h2>
                         <p className="card-subtitle">
-                          Paste this straight into your CMS or Notion. Titles and meta
-                          descriptions are already tuned for search.
+                          Paste this straight into your CMS or Notion. Titles and meta descriptions are already tuned for search.
                         </p>
                       </div>
 
-                      {weeklySummary && (
-                        <p style={{ fontSize: 12, marginBottom: 12 }}>{weeklySummary}</p>
-                      )}
+                      {weeklySummary && <p style={{ fontSize: 12, marginBottom: 12 }}>{weeklySummary}</p>}
 
                       <table className="seo-table">
                         <thead>
@@ -1064,10 +1001,7 @@ function App() {
                         <tbody>
                           {weeklyPosts.length === 0 ? (
                             <tr>
-                              <td colSpan={6}>
-                                Run the Weekly blog planner to generate your next batch of
-                                posts.
-                              </td>
+                              <td colSpan={6}>Run the Weekly blog planner to generate your next batch of posts.</td>
                             </tr>
                           ) : (
                             weeklyPosts.map((post, idx) => (
@@ -1090,8 +1024,7 @@ function App() {
                         <div className="card-header">
                           <h2 className="card-title">Generated SEO fields</h2>
                           <p className="card-subtitle">
-                            Paste straight into Shopify or your platform. Use the copy buttons
-                            so beginners never touch JSON.
+                            Paste straight into Shopify or your platform. Use the copy buttons so beginners never touch JSON.
                           </p>
                         </div>
 
@@ -1119,10 +1052,7 @@ function App() {
                             </tr>
                             <tr>
                               <td>Meta description</td>
-                              <td>
-                                {seoDescription ||
-                                  "Meta description will appear here after the first run."}
-                              </td>
+                              <td>{seoDescription || "Meta description will appear here after the first run."}</td>
                               <td>
                                 <button
                                   className="button button--ghost button--tiny"
@@ -1148,10 +1078,7 @@ function App() {
                             </tr>
                             <tr>
                               <td>Keywords</td>
-                              <td>
-                                {keywordsDisplay ||
-                                  "Keyword set will appear here after the first run."}
-                              </td>
+                              <td>{keywordsDisplay || "Keyword set will appear here after the first run."}</td>
                               <td>
                                 <button
                                   className="button button--ghost button--tiny"
@@ -1178,8 +1105,7 @@ function App() {
                           <div className="card-header">
                             <h2 className="card-title">Draft article (generated)</h2>
                             <p className="card-subtitle">
-                              Copy this into your CMS editor. You can lightly edit the copy
-                              before publishing.
+                              Copy this into your CMS editor. Default is plain text. HTML is optional if your editor supports it.
                             </p>
                           </div>
 
@@ -1255,61 +1181,42 @@ function App() {
                               Full article
                             </h3>
 
-                            {/* ✅ NEW: format choice */}
                             <div className="field-help" style={{ marginBottom: 6 }}>
-                              Most users should use <strong>Markdown</strong>.{" "}
-                              <strong>HTML</strong> is only required for advanced CMS editors.
+                              Choose the format you want to copy. Plain text is best for most editors. HTML is there if you need it.
                             </div>
 
-                            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
                               <button
-                                className={"pill" + (draftFormat === "markdown" ? " pill--active" : "")}
-                                onClick={() => setDraftFormat("markdown")}
+                                className={"pill" + (draftFormat === "text" ? " pill--active" : "")}
+                                onClick={() => setDraftFormat("text")}
+                                type="button"
                               >
-                                Markdown
+                                Plain text
                               </button>
                               <button
                                 className={"pill" + (draftFormat === "html" ? " pill--active" : "")}
                                 onClick={() => setDraftFormat("html")}
+                                type="button"
                               >
                                 HTML
                               </button>
 
-                              <div style={{ flex: 1 }} />
-
                               <button
                                 className="button button--ghost button--tiny"
                                 onClick={() =>
-                                  copyToClipboard(draftFormat === "markdown" ? draftMarkdown : draftHtml)
+                                  copyToClipboard(draftFormat === "html" ? draftHtml : draftText)
                                 }
-                                disabled={draftFormat === "markdown" ? !draftMarkdown : !draftHtml}
+                                disabled={draftFormat === "html" ? !draftHtml : !draftText}
+                                type="button"
                               >
-                                Copy
-                              </button>
-
-                              <button
-                                className="button button--ghost button--tiny"
-                                onClick={() =>
-                                  downloadTextFile(
-                                    `blog-draft.${draftFormat === "markdown" ? "md" : "html"}`,
-                                    draftFormat === "markdown" ? draftMarkdown : draftHtml,
-                                    draftFormat === "markdown"
-                                      ? "text/markdown;charset=utf-8"
-                                      : "text/html;charset=utf-8"
-                                  )
-                                }
-                                disabled={draftFormat === "markdown" ? !draftMarkdown : !draftHtml}
-                              >
-                                Download
+                                Copy {draftFormat === "html" ? "HTML" : "text"}
                               </button>
                             </div>
 
                             <pre className="raw-json-pre" style={{ marginTop: 6 }}>
-                              {draftFormat === "markdown"
-                                ? draftMarkdown ||
-                                  "// Markdown is recommended. If this is empty, your tool is not returning articleMarkdown yet."
-                                : draftHtml ||
-                                  "// Run the Blog Draft Engine to generate the article HTML here."}
+                              {draftFormat === "html"
+                                ? draftHtml || "// Run the Blog Draft Engine to generate the article HTML here."
+                                : draftText || "// Run the Blog Draft Engine to generate the article text here."}
                             </pre>
                           </div>
                         </div>
@@ -1318,7 +1225,6 @@ function App() {
                   )}
                 </div>
 
-                {/* RIGHT COLUMN – inspectors */}
                 <div className="right-column">
                   <div className="card inspector-card">
                     <div className="card-header">
@@ -1401,8 +1307,7 @@ function App() {
                             onChange={(e) => setWeeklyThemes(e.target.value)}
                           />
                           <div className="field-help">
-                            Comma separated. We will mix these into the weekly schedule (e.g.
-                            product education, styling tips, gifting).
+                            Comma separated. We will mix these into the weekly schedule (e.g. product education, styling tips, gifting).
                           </div>
                         </div>
                       </>
@@ -1512,8 +1417,7 @@ function App() {
                             onChange={(e) => setUseCases(e.target.value)}
                           />
                           <div className="field-help">
-                            Comma separated. We convert this into structured context for the
-                            engine.
+                            Comma separated. We convert this into structured context for the engine.
                           </div>
                         </div>
                       </>
@@ -1550,20 +1454,15 @@ function App() {
                 <div className="card-header">
                   <h2 className="card-title">{pageTab}</h2>
                   <p className="card-subtitle">
-                    This view is part of the AURA roadmap. You can show this to clients as an
-                    upcoming feature while we focus on the SEO engines.
+                    This view is part of the AURA roadmap. You can show this to clients as an upcoming feature while we focus on the SEO engines.
                   </p>
                 </div>
                 <ul style={{ fontSize: 12, paddingLeft: 18 }}>
                   {pageTab === "Compare domains" && (
                     <>
+                      <li>Compare your project domain against competitors on title &amp; meta quality.</li>
                       <li>
-                        Compare your project domain against competitors on title &amp; meta
-                        quality.
-                      </li>
-                      <li>
-                        See who wins on click-through potential in {activeMarket} for{" "}
-                        {activeDevice.toLowerCase()}.
+                        See who wins on click-through potential in {activeMarket} for {activeDevice.toLowerCase()}.
                       </li>
                       <li>Export a simple action list you can plug straight into Shopify.</li>
                     </>

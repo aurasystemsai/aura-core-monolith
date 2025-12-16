@@ -1,14 +1,24 @@
 // src/tools/blog-draft-engine/index.js
 // ------------------------------------------------------
 // Blog Draft Engine
-// Generates a full SEO-ready blog article
-// Outputs BOTH Markdown (primary) and HTML (derived)
+// Takes a single blog idea (title + summary + topics etc.)
+// and returns a full SEO-ready article draft.
+// Also persists drafts to SQLite via src/core/db.js.
 // ------------------------------------------------------
 
 "use strict";
 
 const OpenAI = require("openai");
-const { marked } = require("marked");
+
+// Shared Core DB (single SQLite file, shared across the API)
+let db = null;
+try {
+  // Path: src/tools/blog-draft-engine -> ../../core/db
+  db = require("../../core/db");
+} catch (e) {
+  // If DB isn't available for some reason, we still allow the tool to run.
+  db = null;
+}
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -19,12 +29,107 @@ exports.meta = {
   name: "Blog Draft Engine",
   category: "Content · Drafts",
   description:
-    "Generate a full SEO-focused blog article draft with sections, CTA, Markdown and HTML.",
+    "Generate a full SEO-focused blog article draft from a single blog idea.",
   version: "1.1.0",
 };
 
+// ------------------------------------------------------
+// SQLite helpers
+// ------------------------------------------------------
+
+function ensureDraftsTable() {
+  if (!db) return;
+
+  db.prepare(`
+    CREATE TABLE IF NOT EXISTS drafts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      projectId TEXT,
+      toolId TEXT NOT NULL,
+      createdAt TEXT NOT NULL,
+
+      title TEXT,
+      slug TEXT,
+      metaDescription TEXT,
+      primaryKeyword TEXT,
+
+      inputJson TEXT,
+      outputJson TEXT,
+
+      articleText TEXT,
+      articleHtml TEXT
+    )
+  `).run();
+
+  // Helpful index for listing by project/time later
+  db.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_drafts_project_createdAt
+    ON drafts (projectId, createdAt)
+  `).run();
+}
+
+function safeJsonStringify(value) {
+  try {
+    return JSON.stringify(value ?? null);
+  } catch {
+    return "";
+  }
+}
+
+function persistDraft({
+  projectId,
+  toolId,
+  createdAt,
+  title,
+  slug,
+  metaDescription,
+  primaryKeyword,
+  input,
+  output,
+  articleText,
+  articleHtml,
+}) {
+  if (!db) return;
+
+  ensureDraftsTable();
+
+  db.prepare(
+    `
+    INSERT INTO drafts (
+      projectId, toolId, createdAt,
+      title, slug, metaDescription, primaryKeyword,
+      inputJson, outputJson,
+      articleText, articleHtml
+    ) VALUES (
+      @projectId, @toolId, @createdAt,
+      @title, @slug, @metaDescription, @primaryKeyword,
+      @inputJson, @outputJson,
+      @articleText, @articleHtml
+    )
+  `
+  ).run({
+    projectId: projectId || "",
+    toolId: toolId || "blog-draft-engine",
+    createdAt: createdAt || new Date().toISOString(),
+
+    title: title || "",
+    slug: slug || "",
+    metaDescription: metaDescription || "",
+    primaryKeyword: primaryKeyword || "",
+
+    inputJson: safeJsonStringify(input),
+    outputJson: safeJsonStringify(output),
+
+    articleText: articleText || "",
+    articleHtml: articleHtml || "",
+  });
+}
+
+// ------------------------------------------------------
+// Draft generation
+// ------------------------------------------------------
+
 /**
- * Single OpenAI call → strict JSON
+ * Single OpenAI call -> STRICT JSON
  */
 async function generateDraftOnce(payload) {
   const {
@@ -35,6 +140,8 @@ async function generateDraftOnce(payload) {
     audience,
     primaryKeyword,
     targetWordCount,
+    topics,
+    market,
   } = payload;
 
   const safeWordCount =
@@ -42,46 +149,50 @@ async function generateDraftOnce(payload) {
       ? targetWordCount
       : 1200;
 
+  const topicsLine = Array.isArray(topics) && topics.length
+    ? topics.join(", ")
+    : "N/A";
+
   const prompt = `
 You are an SEO content strategist and copywriter for a modern ecommerce brand.
 
-Write a COMPLETE blog article in clear, natural UK English.
+Write a complete SEO-friendly blog post in clear, natural UK English.
 
 Brand: ${brand || "N/A"}
 Audience: ${audience || "N/A"}
 Tone of voice: ${tone || "elevated, warm, UK English"}
 Primary keyword: ${primaryKeyword || "N/A"}
-Target word count: around ${safeWordCount} words
+Secondary topics / angles: ${topicsLine}
+Market: ${market || "Worldwide"}
+Target word count: around ${safeWordCount} words (do not go far above 1.3x this).
 
 BLOG IDEA
 ---------
 Title: ${blogTitle}
-Summary / angle: ${blogSummary || "N/A"}
+One-line summary / angle: ${blogSummary || "N/A"}
 
 REQUIREMENTS
 ------------
-- Primary keyword must appear naturally in the H1 and early in the introduction.
-- No clickbait, no emojis, no all-caps.
-- Short paragraphs (2–4 sentences).
-- Logical H2/H3 structure for skimmers.
-- Finish with a soft ecommerce-style CTA (not newsletter spam).
+- Make sure the primary keyword appears naturally in the H1 and early in the intro.
+- Avoid clickbait, all caps and emojis.
+- Use short paragraphs (2–4 sentences).
+- Use subheadings that make sense for skimmers.
+- End with a simple, helpful call-to-action that fits an ecommerce brand (not generic "subscribe to our newsletter").
 
-OUTPUT FORMAT (STRICT JSON ONLY)
---------------------------------
-Return STRICT JSON. No prose. No comments.
+OUTPUT FORMAT (STRICT JSON)
+---------------------------
+Return STRICT JSON only. No backticks, no prose, no comments.
 
 {
-  "title": "Exact H1 title",
-  "metaDescription": "SEO meta description (130–155 characters)",
-  "slug": "url-slug-lowercase-hyphens",
-  "primaryKeyword": "main keyword",
+  "title": "Exact article H1",
+  "metaDescription": "Compelling search meta description (130–155 characters)",
+  "slug": "url-slug-using-lowercase-hyphens",
+  "primaryKeyword": "the main keyword you optimised for",
   "sections": [
-    {
-      "heading": "Section heading",
-      "body": "Paragraph text for this section."
-    }
+    { "heading": "Intro heading (optional)", "body": "One or two paragraphs of text." },
+    { "heading": "Next section heading", "body": "Body text for this section." }
   ],
-  "cta": "Closing CTA paragraph",
+  "cta": "Single short closing paragraph with a natural call-to-action",
   "estimatedWordCount": 1234
 }
   `.trim();
@@ -89,7 +200,7 @@ Return STRICT JSON. No prose. No comments.
   const response = await client.responses.create({
     model: "gpt-4.1-mini",
     input: prompt,
-    temperature: 0.35,
+    temperature: 0.3,
   });
 
   const text = response.output_text && response.output_text.trim();
@@ -97,7 +208,7 @@ Return STRICT JSON. No prose. No comments.
     throw new Error("OpenAI response missing text payload");
   }
 
-  // Strip to JSON if model wraps output
+  // Guard if any leading/trailing junk appears
   let jsonText = text;
   if (!jsonText.startsWith("{")) {
     const first = jsonText.indexOf("{");
@@ -107,52 +218,115 @@ Return STRICT JSON. No prose. No comments.
     }
   }
 
+  let parsed;
   try {
-    return JSON.parse(jsonText);
+    parsed = JSON.parse(jsonText);
   } catch (err) {
     console.error("Blog Draft Engine JSON parse failed:", text);
     throw new Error("Failed to parse JSON from OpenAI response");
   }
+
+  return parsed;
 }
 
 /**
- * Build Markdown article (PRIMARY FORMAT)
+ * HTML helper (optional output)
  */
-function buildMarkdown(draft) {
-  const lines = [];
+function assembleHtml(draft) {
+  const parts = [];
 
   if (draft.title) {
-    lines.push(`# ${draft.title}\n`);
+    parts.push(`<h1>${draft.title}</h1>`);
   }
 
   if (Array.isArray(draft.sections)) {
     draft.sections.forEach((section) => {
       if (!section) return;
 
-      if (section.heading) {
-        lines.push(`## ${section.heading}\n`);
-      }
+      const heading = section.heading || "";
+      const body = section.body || "";
 
-      if (section.body) {
-        lines.push(`${section.body}\n`);
+      if (heading) parts.push(`<h2>${heading}</h2>`);
+
+      if (body) {
+        const paragraphs = String(body)
+          .split(/\n+/)
+          .map((p) => p.trim())
+          .filter(Boolean);
+
+        paragraphs.forEach((p) => {
+          parts.push(`<p>${p}</p>`);
+        });
       }
     });
   }
 
   if (draft.cta) {
-    lines.push(`---\n**${draft.cta}**\n`);
+    parts.push(`<p><strong>${draft.cta}</strong></p>`);
   }
 
-  return lines.join("\n").trim();
+  return parts.join("\n");
 }
 
 /**
- * Convert Markdown → HTML (SECONDARY FORMAT)
+ * Plain text / Markdown-style helper (default output)
  */
-function markdownToHtml(markdown) {
-  if (!markdown) return "";
-  return marked.parse(markdown);
+function assembleText(draft) {
+  const parts = [];
+
+  if (draft.title) {
+    parts.push(`# ${draft.title}`);
+    parts.push("");
+  }
+
+  if (Array.isArray(draft.sections)) {
+    draft.sections.forEach((section) => {
+      if (!section) return;
+
+      const heading = section.heading || "";
+      const body = section.body || "";
+
+      if (heading) {
+        parts.push(`## ${heading}`);
+      }
+
+      if (body) {
+        const paragraphs = String(body)
+          .split(/\n+/)
+          .map((p) => p.trim())
+          .filter(Boolean);
+
+        paragraphs.forEach((p) => {
+          parts.push(p);
+          parts.push("");
+        });
+      } else {
+        parts.push("");
+      }
+    });
+  }
+
+  if (draft.cta) {
+    parts.push("**CTA**");
+    parts.push(draft.cta);
+    parts.push("");
+  }
+
+  return parts.join("\n").trim();
 }
+
+function estimateWordCountFromText(text) {
+  const clean = String(text || "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!clean) return 0;
+  return clean.split(" ").length;
+}
+
+// ------------------------------------------------------
+// Tool entrypoint
+// ------------------------------------------------------
 
 exports.run = async function run(input, ctx = {}) {
   if (!process.env.OPENAI_API_KEY) {
@@ -169,6 +343,8 @@ exports.run = async function run(input, ctx = {}) {
     audience = "",
     primaryKeyword = "",
     targetWordCount = 1200,
+    topics = [],
+    market = "Worldwide",
   } = input || {};
 
   if (!blogTitle) {
@@ -183,32 +359,61 @@ exports.run = async function run(input, ctx = {}) {
     audience,
     primaryKeyword,
     targetWordCount,
+    topics: Array.isArray(topics) ? topics : [],
+    market,
   };
 
   const draft = await generateDraftOnce(payload);
 
-  // Build outputs
-  const articleMarkdown = buildMarkdown(draft);
-  const articleHtml = markdownToHtml(articleMarkdown);
+  const articleText = assembleText(draft);
+  const articleHtml = assembleHtml(draft);
 
-  const estimatedWordCount =
+  const wordCount =
     typeof draft.estimatedWordCount === "number"
       ? draft.estimatedWordCount
-      : articleMarkdown.split(/\s+/).length;
+      : estimateWordCountFromText(articleText || articleHtml);
+
+  const output = {
+    title: draft.title || blogTitle,
+    metaDescription: draft.metaDescription || "",
+    slug: draft.slug || "",
+    primaryKeyword: draft.primaryKeyword || primaryKeyword || "",
+    sections: Array.isArray(draft.sections) ? draft.sections : [],
+    cta: draft.cta || "",
+    articleText,   // non-HTML default
+    articleHtml,   // optional HTML
+    estimatedWordCount: wordCount,
+  };
+
+  // Attempt to persist draft (same SQLite DB via core/db.js)
+  try {
+    const projectId =
+      ctx.projectId ||
+      (ctx.project && ctx.project.id) ||
+      (ctx.request && ctx.request.projectId) ||
+      input.projectId ||
+      "";
+
+    persistDraft({
+      projectId,
+      toolId: exports.meta.id,
+      createdAt: new Date().toISOString(),
+      title: output.title,
+      slug: output.slug,
+      metaDescription: output.metaDescription,
+      primaryKeyword: output.primaryKeyword,
+      input,
+      output,
+      articleText: output.articleText,
+      articleHtml: output.articleHtml,
+    });
+  } catch (persistErr) {
+    console.error("[blog-draft-engine] Failed to persist draft:", persistErr);
+  }
 
   return {
     input,
-    output: {
-      title: draft.title || blogTitle,
-      metaDescription: draft.metaDescription || "",
-      slug: draft.slug || "",
-      primaryKeyword: draft.primaryKeyword || primaryKeyword || "",
-      sections: Array.isArray(draft.sections) ? draft.sections : [],
-      cta: draft.cta || "",
-      articleMarkdown,
-      articleHtml,
-      estimatedWordCount,
-    },
+    output,
     model: "gpt-4.1-mini",
     environment: ctx.environment || "unknown",
   };
