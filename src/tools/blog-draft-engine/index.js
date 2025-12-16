@@ -3,6 +3,7 @@
 // Blog Draft Engine
 // Takes a single blog idea (title + angle + keyword etc.)
 // and returns a full SEO-ready article draft.
+// Returns BOTH Markdown and HTML so the client can choose.
 // ------------------------------------------------------
 
 "use strict";
@@ -18,8 +19,8 @@ exports.meta = {
   name: "Blog Draft Engine",
   category: "Content · Drafts",
   description:
-    "Generate a full SEO-focused blog article draft from a single blog idea.",
-  version: "1.0.0",
+    "Generate a full SEO-focused blog article draft from a single blog idea (Markdown + HTML).",
+  version: "1.1.0",
 };
 
 /**
@@ -115,38 +116,101 @@ Return STRICT JSON only. No backticks, no prose, no comments.
 }
 
 /**
- * Simple HTML helper so the console can show a readable article.
+ * Basic HTML escaping so if users paste odd characters,
+ * we don't accidentally generate broken HTML strings.
+ * (We still show this HTML as text in the console.)
  */
-function assembleHtml(draft) {
-  const parts = [];
+function escapeHtml(s) {
+  return String(s || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/**
+ * Build Markdown from the draft JSON
+ */
+function assembleMarkdown(draft) {
+  const lines = [];
 
   if (draft.title) {
-    parts.push(`<h1>${draft.title}</h1>`);
+    lines.push(`# ${String(draft.title).trim()}`);
+    lines.push("");
   }
 
   if (Array.isArray(draft.sections)) {
     draft.sections.forEach((section) => {
       if (!section) return;
-      const heading = section.heading || "";
-      const body = section.body || "";
+      const heading = String(section.heading || "").trim();
+      const body = String(section.body || "").trim();
+
       if (heading) {
-        parts.push(`<h2>${heading}</h2>`);
+        lines.push(`## ${heading}`);
+        lines.push("");
       }
+
       if (body) {
-        // basic newline -> <p> split
-        const paragraphs = String(body)
+        // keep paragraph breaks
+        const paragraphs = body
           .split(/\n+/)
           .map((p) => p.trim())
           .filter(Boolean);
+
         paragraphs.forEach((p) => {
-          parts.push(`<p>${p}</p>`);
+          lines.push(p);
+          lines.push("");
         });
       }
     });
   }
 
   if (draft.cta) {
-    parts.push(`<p><strong>${draft.cta}</strong></p>`);
+    lines.push(`**${String(draft.cta).trim()}**`);
+    lines.push("");
+  }
+
+  return lines.join("\n").trim() + "\n";
+}
+
+/**
+ * Simple HTML helper so the console can show a readable article.
+ * NOTE: This is HTML-as-text in the UI (not rendered), so safe either way,
+ * but we escape by default to avoid accidental HTML injection when copying.
+ */
+function assembleHtmlFromDraft(draft) {
+  const parts = [];
+
+  if (draft.title) {
+    parts.push(`<h1>${escapeHtml(draft.title)}</h1>`);
+  }
+
+  if (Array.isArray(draft.sections)) {
+    draft.sections.forEach((section) => {
+      if (!section) return;
+      const heading = (section.heading || "").toString().trim();
+      const body = (section.body || "").toString().trim();
+
+      if (heading) {
+        parts.push(`<h2>${escapeHtml(heading)}</h2>`);
+      }
+
+      if (body) {
+        const paragraphs = body
+          .split(/\n+/)
+          .map((p) => p.trim())
+          .filter(Boolean);
+
+        paragraphs.forEach((p) => {
+          parts.push(`<p>${escapeHtml(p)}</p>`);
+        });
+      }
+    });
+  }
+
+  if (draft.cta) {
+    parts.push(`<p><strong>${escapeHtml(draft.cta)}</strong></p>`);
   }
 
   return parts.join("\n");
@@ -185,23 +249,32 @@ exports.run = async function run(input, ctx = {}) {
 
   const draft = await generateDraftOnce(payload);
 
-  const html = assembleHtml(draft);
+  const markdown = assembleMarkdown(draft);
+  const html = assembleHtmlFromDraft(draft);
+
   const wordCount =
     typeof draft.estimatedWordCount === "number"
       ? draft.estimatedWordCount
-      : (html.replace(/<[^>]+>/g, " ").split(/\s+/) || []).length;
+      : (markdown || "")
+          .replace(/[#*_`>\[\]\(\)]/g, " ")
+          .split(/\s+/)
+          .filter(Boolean).length;
 
   return {
     input,
     output: {
       title: draft.title || blogTitle,
       metaDescription: draft.metaDescription || "",
+      description: draft.metaDescription || "", // helps the console reuse the same meta slot
       slug: draft.slug || "",
       primaryKeyword: draft.primaryKeyword || primaryKeyword || "",
       sections: Array.isArray(draft.sections) ? draft.sections : [],
       cta: draft.cta || "",
-      articleHtml: html,
       estimatedWordCount: wordCount,
+
+      // BOTH formats
+      articleMarkdown: markdown,
+      articleHtml: html,
     },
     model: "gpt-4.1-mini",
     environment: ctx.environment || "unknown",
