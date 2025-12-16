@@ -118,8 +118,10 @@ function App() {
   const [draftCta, setDraftCta] = useState("");
   const [draftWordCount, setDraftWordCount] = useState(null);
   const [draftHtml, setDraftHtml] = useState("");
+
+  // ✅ NEW: optional Markdown output + UI choice
   const [draftMarkdown, setDraftMarkdown] = useState("");
-  const [draftFormat, setDraftFormat] = useState("markdown"); // markdown | html
+  const [draftFormat, setDraftFormat] = useState("markdown"); // "markdown" | "html"
 
   // AI advice (from tool output.advice for product/blog)
   const [titleAdvice, setTitleAdvice] = useState("");
@@ -264,108 +266,16 @@ function App() {
     TITLE_MIN,
     TITLE_MAX
   );
-  const currentMetaScore = scoreLength(currentMetaLength, META_MIN, META_MAX);
+  const currentMetaScore = scoreLength(
+    currentMetaLength,
+    META_MIN,
+    META_MAX
+  );
 
   const overallScore =
     currentTitleScore !== null && currentMetaScore !== null
       ? Math.round((currentTitleScore + currentMetaScore) / 2)
       : null;
-
-  // -------------------------------------------------
-  // Helpers
-  // -------------------------------------------------
-  const copyToClipboard = (value) => {
-    if (!value) return;
-    navigator.clipboard.writeText(value).catch((err) => {
-      console.error("Clipboard copy failed", err);
-    });
-  };
-
-  const downloadTextFile = (filename, text, mime = "text/plain;charset=utf-8") => {
-    if (!text) return;
-    try {
-      const blob = new Blob([text], { type: mime });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Download failed", err);
-    }
-  };
-
-  const safeSlug = (value) =>
-    String(value || "")
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "") || "draft";
-
-  const keywordsDisplay =
-    seoKeywords && Array.isArray(seoKeywords) ? seoKeywords.join(", ") : "";
-
-  // Filter history by engine + market + device
-  const historyForFilters = runHistory.filter((run) => {
-    const runMarket = run.market || "Worldwide";
-    const runDevice = run.device || "Desktop";
-    const runToolId = run.toolId || "product-seo";
-    return (
-      runMarket === activeMarket &&
-      runDevice === activeDevice &&
-      runToolId === currentEngine.toolId
-    );
-  });
-
-  let rangedHistory;
-  if (timeRange === "30d") {
-    rangedHistory = historyForFilters.slice(-5);
-  } else if (timeRange === "180d") {
-    rangedHistory = historyForFilters.slice(-8);
-  } else {
-    rangedHistory = historyForFilters;
-  }
-
-  const latestRun = historyForFilters[historyForFilters.length - 1];
-
-  // Advice text (title / meta) – phrased per engine
-  const buildTitleAdvice = () => {
-    const label = isProduct ? "product" : isWeekly ? "content plan" : "blog post";
-    if (!currentTitleLength) {
-      return `Add a clear ${label} title first, then run the engine. Aim for 45–60 characters.`;
-    }
-    if (currentTitleLength < TITLE_MIN) {
-      const minExtra = TITLE_MIN - currentTitleLength;
-      const maxExtra = TITLE_MAX - currentTitleLength;
-      return `Your current ${label} title is ${currentTitleLength} characters. Try adding roughly ${minExtra}–${maxExtra} characters with materials, finish or a key benefit.`;
-    }
-    if (currentTitleLength > TITLE_MAX) {
-      const extra = currentTitleLength - TITLE_MAX;
-      return `Your current ${label} title is ${currentTitleLength} characters. It is a bit long – consider trimming around ${extra} characters so it stays punchy in search results.`;
-    }
-    return `Your current ${label} title is ${currentTitleLength} characters, which is right in the sweet spot. Only tweak it if it feels clunky or hard to read.`;
-  };
-
-  const buildMetaAdvice = () => {
-    if (!currentMetaLength) {
-      return "Write 2–3 short sentences describing benefits, materials and use cases. Aim for 130–155 characters.";
-    }
-    if (currentMetaLength < META_MIN) {
-      const minExtra = META_MIN - currentMetaLength;
-      const maxExtra = META_MAX - currentMetaLength;
-      return `Your meta description is ${currentMetaLength} characters. Add around ${minExtra}–${maxExtra} characters with clear benefits, materials or occasions (e.g. gym, gifting, everyday wear).`;
-    }
-    if (currentMetaLength > META_MAX) {
-      const extra = currentMetaLength - META_MAX;
-      return `Your meta description is ${currentMetaLength} characters. It may get cut off in Google. Try removing roughly ${extra} characters or a whole extra sentence.`;
-    }
-    return `Your meta description is ${currentMetaLength} characters, which is on target. Focus on clarity and benefits rather than adding more words.`;
-  };
 
   // -------------------------------------------------
   // Run engine
@@ -441,6 +351,7 @@ function App() {
       setRawJson(JSON.stringify(data, null, 2));
 
       const output = data?.result?.output || data?.output || {};
+
       if (!output) throw new Error("No output returned from tool");
 
       const now = new Date();
@@ -485,7 +396,8 @@ function App() {
             : null;
       } else {
         const nextTitle = output.title || output.seoTitle || "";
-        const nextDescription = output.description || output.metaDescription || "";
+        const nextDescription =
+          output.description || output.metaDescription || "";
         const nextSlug = output.slug || output.handle || "";
         const nextKeywords = output.keywords || output.keywordSet || [];
 
@@ -504,11 +416,24 @@ function App() {
           setDraftSections(Array.isArray(output.sections) ? output.sections : []);
           setDraftCta(output.cta || "");
           setDraftWordCount(
-            typeof output.estimatedWordCount === "number" ? output.estimatedWordCount : null
+            typeof output.estimatedWordCount === "number"
+              ? output.estimatedWordCount
+              : null
           );
+
+          // ✅ HTML is still supported
           setDraftHtml(output.articleHtml || "");
+
+          // ✅ NEW: Markdown if your tool returns it (recommended)
+          // If the tool does NOT return articleMarkdown yet, this will just stay blank.
           setDraftMarkdown(output.articleMarkdown || "");
-          setDraftFormat("markdown"); // POLISH: default to Markdown view (no HTML forced)
+
+          // Default the UI to Markdown if available, otherwise fallback to HTML
+          if (output.articleMarkdown) {
+            setDraftFormat("markdown");
+          } else {
+            setDraftFormat("html");
+          }
         } else {
           setDraftSections([]);
           setDraftCta("");
@@ -552,7 +477,9 @@ function App() {
       try {
         await fetch(`${coreUrl}/projects/${project.id}/runs`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             toolId,
             createdAt: now.toISOString(),
@@ -577,20 +504,103 @@ function App() {
   };
 
   // -------------------------------------------------
+  // Helpers
+  // -------------------------------------------------
+  const copyToClipboard = (value) => {
+    if (!value) return;
+    navigator.clipboard.writeText(value).catch((err) => {
+      console.error("Clipboard copy failed", err);
+    });
+  };
+
+  // ✅ NEW: simple download helper (Markdown or HTML)
+  const downloadTextFile = (filename, text, mimeType) => {
+    if (!text) return;
+    try {
+      const blob = new Blob([text], { type: mimeType || "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download failed", err);
+    }
+  };
+
+  const keywordsDisplay =
+    seoKeywords && Array.isArray(seoKeywords) ? seoKeywords.join(", ") : "";
+
+  // Filter history by engine + market + device
+  const historyForFilters = runHistory.filter((run) => {
+    const runMarket = run.market || "Worldwide";
+    const runDevice = run.device || "Desktop";
+    const runToolId = run.toolId || "product-seo";
+    return (
+      runMarket === activeMarket &&
+      runDevice === activeDevice &&
+      runToolId === currentEngine.toolId
+    );
+  });
+
+  let rangedHistory;
+  if (timeRange === "30d") {
+    rangedHistory = historyForFilters.slice(-5);
+  } else if (timeRange === "180d") {
+    rangedHistory = historyForFilters.slice(-8);
+  } else {
+    rangedHistory = historyForFilters;
+  }
+
+  const latestRun = historyForFilters[historyForFilters.length - 1];
+
+  // Advice text (title / meta) – phrased per engine
+  const buildTitleAdvice = () => {
+    const label = isProduct ? "product" : isWeekly ? "content plan" : "blog post";
+    if (!currentTitleLength) {
+      return `Add a clear ${label} title first, then run the engine. Aim for 45–60 characters.`;
+    }
+    if (currentTitleLength < TITLE_MIN) {
+      const minExtra = TITLE_MIN - currentTitleLength;
+      const maxExtra = TITLE_MAX - currentTitleLength;
+      return `Your current ${label} title is ${currentTitleLength} characters. Try adding roughly ${minExtra}–${maxExtra} characters with materials, finish or a key benefit.`;
+    }
+    if (currentTitleLength > TITLE_MAX) {
+      const extra = currentTitleLength - TITLE_MAX;
+      return `Your current ${label} title is ${currentTitleLength} characters. It is a bit long – consider trimming around ${extra} characters so it stays punchy in search results.`;
+    }
+    return `Your current ${label} title is ${currentTitleLength} characters, which is right in the sweet spot. Only tweak it if it feels clunky or hard to read.`;
+  };
+
+  const buildMetaAdvice = () => {
+    if (!currentMetaLength) {
+      return "Write 2–3 short sentences describing benefits, materials and use cases. Aim for 130–155 characters.";
+    }
+    if (currentMetaLength < META_MIN) {
+      const minExtra = META_MIN - currentMetaLength;
+      const maxExtra = META_MAX - currentMetaLength;
+      return `Your meta description is ${currentMetaLength} characters. Add around ${minExtra}–${maxExtra} characters with clear benefits, materials or occasions (e.g. gym, gifting, everyday wear).`;
+    }
+    if (currentMetaLength > META_MAX) {
+      const extra = currentMetaLength - META_MAX;
+      return `Your meta description is ${currentMetaLength} characters. It may get cut off in Google. Try removing roughly ${extra} characters or a whole extra sentence.`;
+    }
+    return `Your meta description is ${currentMetaLength} characters, which is on target. Focus on clarity and benefits rather than adding more words.`;
+  };
+
+  // -------------------------------------------------
   // Onboarding screen: no project yet
   // -------------------------------------------------
   if (!project) {
-    return (
-      <ProjectSetup coreUrl={coreUrl} onConnected={(proj) => setProject(proj)} />
-    );
+    return <ProjectSetup coreUrl={coreUrl} onConnected={(proj) => setProject(proj)} />;
   }
 
   // -------------------------------------------------
   // Main console UI
   // -------------------------------------------------
-  const draftFilenameBase = safeSlug(seoSlug || productTitle || "blog-draft");
-  const selectedDraftText = draftFormat === "markdown" ? draftMarkdown : draftHtml;
-
   return (
     <div className="app-shell">
       {/* SIDEBAR */}
@@ -722,15 +732,17 @@ function App() {
 
           {/* PAGE TABS */}
           <section className="page-tabs">
-            {["Overview", "Compare domains", "Growth report", "Compare by countries"].map((tab) => (
-              <button
-                key={tab}
-                className={"page-tab" + (pageTab === tab ? " page-tab--active" : "")}
-                onClick={() => setPageTab(tab)}
-              >
-                {tab}
-              </button>
-            ))}
+            {["Overview", "Compare domains", "Growth report", "Compare by countries"].map(
+              (tab) => (
+                <button
+                  key={tab}
+                  className={"page-tab" + (pageTab === tab ? " page-tab--active" : "")}
+                  onClick={() => setPageTab(tab)}
+                >
+                  {tab}
+                </button>
+              )
+            )}
           </section>
 
           {/* FILTER STRIP */}
@@ -799,10 +811,14 @@ function App() {
                 <div className="kpi-card">
                   <div className="kpi-label">Overall SEO score</div>
                   <div className="kpi-main">
-                    <span className="kpi-value">{overallScore !== null ? `${overallScore}` : "—"}</span>
+                    <span className="kpi-value">
+                      {overallScore !== null ? `${overallScore}` : "—"}
+                    </span>
                     <span className="kpi-unit">{overallScore !== null ? "/100" : ""}</span>
                   </div>
-                  <div className="kpi-footnote">Based on current title and meta description length.</div>
+                  <div className="kpi-footnote">
+                    Based on current title and meta description length.
+                  </div>
                 </div>
 
                 <div className="kpi-card">
@@ -842,9 +858,10 @@ function App() {
                 <div className="card-header">
                   <h2 className="card-title">How to reach 100/100</h2>
                   <p className="card-subtitle">
-                    You do not need to be an SEO expert. Follow these steps, change the text on the
-                    right, then click <strong>{currentEngine.runButtonLabel}</strong> again.
-                    Guidance is tuned for <strong>{activeMarket}</strong> · <strong>{activeDevice}</strong>.
+                    You do not need to be an SEO expert. Follow these steps, change the text
+                    on the right, then click{" "}
+                    <strong>{currentEngine.runButtonLabel}</strong> again. Guidance is tuned
+                    for <strong>{activeMarket}</strong> · <strong>{activeDevice}</strong>.
                   </p>
                 </div>
 
@@ -865,8 +882,8 @@ function App() {
                     <span style={{ fontSize: 11 }}>
                       <code>[What it is] + [1–2 big benefits] + [when / who it is for]</code>.
                       <br />
-                      Example: “Waterproof paperclip bracelet with sweat-proof coating. Adjustable fit for
-                      gym, everyday wear and gifting.”
+                      Example: “Waterproof paperclip bracelet with sweat-proof coating.
+                      Adjustable fit for gym, everyday wear and gifting.”
                     </span>
                   </li>
                 </ol>
@@ -877,8 +894,8 @@ function App() {
                 <div className="card-header">
                   <h2 className="card-title">AI suggestions for this {pieceLabel}</h2>
                   <p className="card-subtitle">
-                    Generated from your last run. Use this as a second opinion on how to tweak the copy
-                    before you publish.
+                    Generated from your last run. Use this as a second opinion on how to tweak
+                    the copy before you publish.
                   </p>
                 </div>
                 <ul style={{ fontSize: 12, paddingLeft: 18, margin: 0 }}>
@@ -924,8 +941,9 @@ function App() {
                         </div>
                       </div>
                       <p className="card-subtitle">
-                        Every time you re-run the engine, we plot a new point here. You are currently
-                        viewing <strong>{activeMarket}</strong> · <strong>{activeDevice}</strong> runs for{" "}
+                        Every time you re-run the engine, we plot a new point here. You are
+                        currently viewing <strong>{activeMarket}</strong> ·{" "}
+                        <strong>{activeDevice}</strong> runs for{" "}
                         <strong>{currentEngine.chipLabel}</strong> only.
                       </p>
                     </div>
@@ -975,7 +993,8 @@ function App() {
                       <div className="run-history-table-header">
                         <span className="run-history-table-title">Last runs</span>
                         <span className="run-history-table-subtitle">
-                          Shows how your lengths and score changed per run for this engine / market / device.
+                          Shows how your lengths and score changed per run for this engine /
+                          market / device.
                         </span>
                       </div>
 
@@ -993,7 +1012,8 @@ function App() {
                           {rangedHistory.length === 0 ? (
                             <tr>
                               <td colSpan={5}>
-                                No runs yet. Click "{currentEngine.runButtonLabel}" to start tracking.
+                                No runs yet. Click "{currentEngine.runButtonLabel}" to start
+                                tracking.
                               </td>
                             </tr>
                           ) : (
@@ -1021,8 +1041,8 @@ function App() {
                       <div className="card-header">
                         <h2 className="card-title">Weekly blog plan (generated)</h2>
                         <p className="card-subtitle">
-                          Paste this straight into your CMS or Notion. Titles and meta descriptions are already
-                          tuned for search.
+                          Paste this straight into your CMS or Notion. Titles and meta
+                          descriptions are already tuned for search.
                         </p>
                       </div>
 
@@ -1044,7 +1064,10 @@ function App() {
                         <tbody>
                           {weeklyPosts.length === 0 ? (
                             <tr>
-                              <td colSpan={6}>Run the Weekly blog planner to generate your next batch of posts.</td>
+                              <td colSpan={6}>
+                                Run the Weekly blog planner to generate your next batch of
+                                posts.
+                              </td>
                             </tr>
                           ) : (
                             weeklyPosts.map((post, idx) => (
@@ -1067,7 +1090,8 @@ function App() {
                         <div className="card-header">
                           <h2 className="card-title">Generated SEO fields</h2>
                           <p className="card-subtitle">
-                            Paste straight into Shopify or your platform. Use the copy buttons so beginners never touch JSON.
+                            Paste straight into Shopify or your platform. Use the copy buttons
+                            so beginners never touch JSON.
                           </p>
                         </div>
 
@@ -1125,7 +1149,8 @@ function App() {
                             <tr>
                               <td>Keywords</td>
                               <td>
-                                {keywordsDisplay || "Keyword set will appear here after the first run."}
+                                {keywordsDisplay ||
+                                  "Keyword set will appear here after the first run."}
                               </td>
                               <td>
                                 <button
@@ -1153,7 +1178,8 @@ function App() {
                           <div className="card-header">
                             <h2 className="card-title">Draft article (generated)</h2>
                             <p className="card-subtitle">
-                              Copy this into your CMS editor. Markdown is recommended for Shopify/Notion; use HTML only if your editor requires it.
+                              Copy this into your CMS editor. You can lightly edit the copy
+                              before publishing.
                             </p>
                           </div>
 
@@ -1181,10 +1207,7 @@ function App() {
                           </div>
 
                           <div style={{ marginBottom: 12 }}>
-                            <h3
-                              className="card-title"
-                              style={{ fontSize: 13, marginBottom: 4, marginTop: 0 }}
-                            >
+                            <h3 className="card-title" style={{ fontSize: 13, marginBottom: 4, marginTop: 0 }}>
                               Outline
                             </h3>
                             {draftSections.length === 0 ? (
@@ -1228,76 +1251,65 @@ function App() {
                           </div>
 
                           <div>
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                gap: 12,
-                                flexWrap: "wrap",
-                                marginBottom: 6,
-                              }}
-                            >
-                              <h3
-                                className="card-title"
-                                style={{ fontSize: 13, marginBottom: 0, marginTop: 0 }}
-                              >
-                                Full article
-                              </h3>
+                            <h3 className="card-title" style={{ fontSize: 13, marginBottom: 4, marginTop: 0 }}>
+                              Full article
+                            </h3>
 
-                              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                                {/* Format toggle */}
-                                <div className="pill-row" style={{ margin: 0 }}>
-                                  <button
-                                    className={"pill" + (draftFormat === "markdown" ? " pill--active" : "")}
-                                    onClick={() => setDraftFormat("markdown")}
-                                  >
-                                    Markdown
-                                  </button>
-                                  <button
-                                    className={"pill" + (draftFormat === "html" ? " pill--active" : "")}
-                                    onClick={() => setDraftFormat("html")}
-                                  >
-                                    HTML
-                                  </button>
-                                </div>
-
-                                {/* Actions */}
-                                <button
-                                  className="button button--ghost button--tiny"
-                                  onClick={() => copyToClipboard(selectedDraftText)}
-                                  disabled={!selectedDraftText}
-                                >
-                                  Copy {draftFormat === "markdown" ? "Markdown" : "HTML"}
-                                </button>
-
-                                <button
-                                  className="button button--ghost button--tiny"
-                                  onClick={() =>
-                                    downloadTextFile(
-                                      `${draftFilenameBase}.${draftFormat === "markdown" ? "md" : "html"}`,
-                                      selectedDraftText,
-                                      draftFormat === "markdown"
-                                        ? "text/markdown;charset=utf-8"
-                                        : "text/html;charset=utf-8"
-                                    )
-                                  }
-                                  disabled={!selectedDraftText}
-                                >
-                                  Download .{draftFormat === "markdown" ? "md" : "html"}
-                                </button>
-                              </div>
+                            {/* ✅ NEW: format choice */}
+                            <div className="field-help" style={{ marginBottom: 6 }}>
+                              Most users should use <strong>Markdown</strong>.{" "}
+                              <strong>HTML</strong> is only required for advanced CMS editors.
                             </div>
 
-                            <div className="field-help" style={{ marginBottom: 6 }}>
-                              {draftFormat === "markdown"
-                                ? "Recommended. Paste into Shopify, Notion, Google Docs, or most editors."
-                                : "Use this only if your CMS requires HTML input."}
+                            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                              <button
+                                className={"pill" + (draftFormat === "markdown" ? " pill--active" : "")}
+                                onClick={() => setDraftFormat("markdown")}
+                              >
+                                Markdown
+                              </button>
+                              <button
+                                className={"pill" + (draftFormat === "html" ? " pill--active" : "")}
+                                onClick={() => setDraftFormat("html")}
+                              >
+                                HTML
+                              </button>
+
+                              <div style={{ flex: 1 }} />
+
+                              <button
+                                className="button button--ghost button--tiny"
+                                onClick={() =>
+                                  copyToClipboard(draftFormat === "markdown" ? draftMarkdown : draftHtml)
+                                }
+                                disabled={draftFormat === "markdown" ? !draftMarkdown : !draftHtml}
+                              >
+                                Copy
+                              </button>
+
+                              <button
+                                className="button button--ghost button--tiny"
+                                onClick={() =>
+                                  downloadTextFile(
+                                    `blog-draft.${draftFormat === "markdown" ? "md" : "html"}`,
+                                    draftFormat === "markdown" ? draftMarkdown : draftHtml,
+                                    draftFormat === "markdown"
+                                      ? "text/markdown;charset=utf-8"
+                                      : "text/html;charset=utf-8"
+                                  )
+                                }
+                                disabled={draftFormat === "markdown" ? !draftMarkdown : !draftHtml}
+                              >
+                                Download
+                              </button>
                             </div>
 
                             <pre className="raw-json-pre" style={{ marginTop: 6 }}>
-                              {selectedDraftText ||
-                                "// Run the Blog Draft Engine to generate the article here."}
+                              {draftFormat === "markdown"
+                                ? draftMarkdown ||
+                                  "// Markdown is recommended. If this is empty, your tool is not returning articleMarkdown yet."
+                                : draftHtml ||
+                                  "// Run the Blog Draft Engine to generate the article HTML here."}
                             </pre>
                           </div>
                         </div>
@@ -1389,8 +1401,8 @@ function App() {
                             onChange={(e) => setWeeklyThemes(e.target.value)}
                           />
                           <div className="field-help">
-                            Comma separated. We will mix these into the weekly schedule (e.g. product education,
-                            styling tips, gifting).
+                            Comma separated. We will mix these into the weekly schedule (e.g.
+                            product education, styling tips, gifting).
                           </div>
                         </div>
                       </>
@@ -1500,7 +1512,8 @@ function App() {
                             onChange={(e) => setUseCases(e.target.value)}
                           />
                           <div className="field-help">
-                            Comma separated. We convert this into structured context for the engine.
+                            Comma separated. We convert this into structured context for the
+                            engine.
                           </div>
                         </div>
                       </>
@@ -1532,21 +1545,25 @@ function App() {
               </section>
             </>
           ) : (
-            // Non-Overview tabs – roadmap explainer
             <section style={{ marginTop: 10 }}>
               <div className="card">
                 <div className="card-header">
                   <h2 className="card-title">{pageTab}</h2>
                   <p className="card-subtitle">
-                    This view is part of the AURA roadmap. You can show this to clients as an upcoming feature while we focus on the SEO engines.
+                    This view is part of the AURA roadmap. You can show this to clients as an
+                    upcoming feature while we focus on the SEO engines.
                   </p>
                 </div>
                 <ul style={{ fontSize: 12, paddingLeft: 18 }}>
                   {pageTab === "Compare domains" && (
                     <>
-                      <li>Compare your project domain against competitors on title &amp; meta quality.</li>
                       <li>
-                        See who wins on click-through potential in {activeMarket} for {activeDevice.toLowerCase()}.
+                        Compare your project domain against competitors on title &amp; meta
+                        quality.
+                      </li>
+                      <li>
+                        See who wins on click-through potential in {activeMarket} for{" "}
+                        {activeDevice.toLowerCase()}.
                       </li>
                       <li>Export a simple action list you can plug straight into Shopify.</li>
                     </>

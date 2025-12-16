@@ -1,13 +1,14 @@
 // src/tools/blog-draft-engine/index.js
 // ------------------------------------------------------
 // Blog Draft Engine
-// Takes a single blog idea (title + angle + keyword etc.)
-// and returns a full SEO-ready article draft.
+// Generates a full SEO-ready blog article
+// Outputs BOTH Markdown (primary) and HTML (derived)
 // ------------------------------------------------------
 
 "use strict";
 
 const OpenAI = require("openai");
+const { marked } = require("marked");
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -17,57 +18,70 @@ exports.meta = {
   id: "blog-draft-engine",
   name: "Blog Draft Engine",
   category: "Content · Drafts",
-  description: "Generate a full SEO-focused blog article draft from a single blog idea.",
+  description:
+    "Generate a full SEO-focused blog article draft with sections, CTA, Markdown and HTML.",
   version: "1.1.0",
 };
 
 /**
- * Single OpenAI call -> JSON
+ * Single OpenAI call → strict JSON
  */
 async function generateDraftOnce(payload) {
-  const { blogTitle, blogSummary, brand, tone, audience, primaryKeyword, targetWordCount } = payload;
+  const {
+    blogTitle,
+    blogSummary,
+    brand,
+    tone,
+    audience,
+    primaryKeyword,
+    targetWordCount,
+  } = payload;
 
   const safeWordCount =
-    typeof targetWordCount === "number" && targetWordCount > 400 ? targetWordCount : 1200;
+    typeof targetWordCount === "number" && targetWordCount > 400
+      ? targetWordCount
+      : 1200;
 
   const prompt = `
 You are an SEO content strategist and copywriter for a modern ecommerce brand.
 
-Write a complete SEO-friendly blog post in clear, natural UK English.
+Write a COMPLETE blog article in clear, natural UK English.
 
 Brand: ${brand || "N/A"}
 Audience: ${audience || "N/A"}
 Tone of voice: ${tone || "elevated, warm, UK English"}
 Primary keyword: ${primaryKeyword || "N/A"}
-Target word count: around ${safeWordCount} words (do not go far above 1.3x this).
+Target word count: around ${safeWordCount} words
 
 BLOG IDEA
 ---------
 Title: ${blogTitle}
-One-line summary / angle: ${blogSummary || "N/A"}
+Summary / angle: ${blogSummary || "N/A"}
 
 REQUIREMENTS
 ------------
-- Make sure the primary keyword appears naturally in the H1 and early in the intro.
-- Avoid clickbait, all caps and emojis.
-- Use short paragraphs (2–4 sentences).
-- Use subheadings that make sense for skimmers.
-- End with a simple, helpful call-to-action that fits an ecommerce brand (not generic "subscribe to our newsletter").
+- Primary keyword must appear naturally in the H1 and early in the introduction.
+- No clickbait, no emojis, no all-caps.
+- Short paragraphs (2–4 sentences).
+- Logical H2/H3 structure for skimmers.
+- Finish with a soft ecommerce-style CTA (not newsletter spam).
 
-OUTPUT FORMAT (STRICT JSON)
----------------------------
-Return STRICT JSON only. No backticks, no prose, no comments.
+OUTPUT FORMAT (STRICT JSON ONLY)
+--------------------------------
+Return STRICT JSON. No prose. No comments.
 
 {
-  "title": "Exact article H1",
-  "metaDescription": "Compelling search meta description (130–155 characters)",
-  "slug": "url-slug-using-lowercase-hyphens",
-  "primaryKeyword": "the main keyword you optimised for",
+  "title": "Exact H1 title",
+  "metaDescription": "SEO meta description (130–155 characters)",
+  "slug": "url-slug-lowercase-hyphens",
+  "primaryKeyword": "main keyword",
   "sections": [
-    { "heading": "Intro heading (optional)", "body": "One or two paragraphs of text." },
-    { "heading": "Next section heading", "body": "Body text for this section." }
+    {
+      "heading": "Section heading",
+      "body": "Paragraph text for this section."
+    }
   ],
-  "cta": "Single short closing paragraph with a natural call-to-action",
+  "cta": "Closing CTA paragraph",
   "estimatedWordCount": 1234
 }
   `.trim();
@@ -75,12 +89,15 @@ Return STRICT JSON only. No backticks, no prose, no comments.
   const response = await client.responses.create({
     model: "gpt-4.1-mini",
     input: prompt,
-    temperature: 0.3,
+    temperature: 0.35,
   });
 
   const text = response.output_text && response.output_text.trim();
-  if (!text) throw new Error("OpenAI response missing text payload");
+  if (!text) {
+    throw new Error("OpenAI response missing text payload");
+  }
 
+  // Strip to JSON if model wraps output
   let jsonText = text;
   if (!jsonText.startsWith("{")) {
     const first = jsonText.indexOf("{");
@@ -90,80 +107,58 @@ Return STRICT JSON only. No backticks, no prose, no comments.
     }
   }
 
-  let parsed;
   try {
-    parsed = JSON.parse(jsonText);
+    return JSON.parse(jsonText);
   } catch (err) {
     console.error("Blog Draft Engine JSON parse failed:", text);
     throw new Error("Failed to parse JSON from OpenAI response");
   }
-
-  return parsed;
 }
 
 /**
- * Simple HTML helper so the console can show a readable article.
+ * Build Markdown article (PRIMARY FORMAT)
  */
-function assembleHtml(draft) {
-  const parts = [];
+function buildMarkdown(draft) {
+  const lines = [];
 
-  if (draft.title) parts.push(`<h1>${draft.title}</h1>`);
-
-  if (Array.isArray(draft.sections)) {
-    draft.sections.forEach((section) => {
-      if (!section) return;
-      const heading = section.heading || "";
-      const body = section.body || "";
-      if (heading) parts.push(`<h2>${heading}</h2>`);
-      if (body) {
-        const paragraphs = String(body)
-          .split(/\n+/)
-          .map((p) => p.trim())
-          .filter(Boolean);
-        paragraphs.forEach((p) => parts.push(`<p>${p}</p>`));
-      }
-    });
+  if (draft.title) {
+    lines.push(`# ${draft.title}\n`);
   }
 
-  if (draft.cta) parts.push(`<p><strong>${draft.cta}</strong></p>`);
-
-  return parts.join("\n");
-}
-
-/**
- * Markdown helper (recommended for Shopify/Notion).
- */
-function assembleMarkdown(draft) {
-  const parts = [];
-
-  if (draft.title) parts.push(`# ${draft.title}\n`);
-
   if (Array.isArray(draft.sections)) {
     draft.sections.forEach((section) => {
       if (!section) return;
-      const heading = section.heading || "";
-      const body = section.body || "";
-      if (heading) parts.push(`## ${heading}\n`);
-      if (body) {
-        const paragraphs = String(body)
-          .split(/\n+/)
-          .map((p) => p.trim())
-          .filter(Boolean);
-        paragraphs.forEach((p) => parts.push(`${p}\n`));
+
+      if (section.heading) {
+        lines.push(`## ${section.heading}\n`);
+      }
+
+      if (section.body) {
+        lines.push(`${section.body}\n`);
       }
     });
   }
 
   if (draft.cta) {
-    parts.push(`\n**${draft.cta}**\n`);
+    lines.push(`---\n**${draft.cta}**\n`);
   }
 
-  return parts.join("\n").trim();
+  return lines.join("\n").trim();
+}
+
+/**
+ * Convert Markdown → HTML (SECONDARY FORMAT)
+ */
+function markdownToHtml(markdown) {
+  if (!markdown) return "";
+  return marked.parse(markdown);
 }
 
 exports.run = async function run(input, ctx = {}) {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is not set. Add it in your Render environment.");
+    throw new Error(
+      "OPENAI_API_KEY is not set. Add it in your Render environment."
+    );
   }
 
   const {
@@ -192,13 +187,14 @@ exports.run = async function run(input, ctx = {}) {
 
   const draft = await generateDraftOnce(payload);
 
-  const html = assembleHtml(draft);
-  const markdown = assembleMarkdown(draft);
+  // Build outputs
+  const articleMarkdown = buildMarkdown(draft);
+  const articleHtml = markdownToHtml(articleMarkdown);
 
-  const wordCount =
+  const estimatedWordCount =
     typeof draft.estimatedWordCount === "number"
       ? draft.estimatedWordCount
-      : (markdown.split(/\s+/) || []).filter(Boolean).length;
+      : articleMarkdown.split(/\s+/).length;
 
   return {
     input,
@@ -209,9 +205,9 @@ exports.run = async function run(input, ctx = {}) {
       primaryKeyword: draft.primaryKeyword || primaryKeyword || "",
       sections: Array.isArray(draft.sections) ? draft.sections : [],
       cta: draft.cta || "",
-      articleHtml: html,
-      articleMarkdown: markdown,
-      estimatedWordCount: wordCount,
+      articleMarkdown,
+      articleHtml,
+      estimatedWordCount,
     },
     model: "gpt-4.1-mini",
     environment: ctx.environment || "unknown",
