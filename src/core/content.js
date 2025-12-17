@@ -15,10 +15,16 @@ db.exec(`
     platform TEXT,                    -- wordpress | webflow | etsy | static | other
     externalId TEXT,                  -- CMS id / product id / slug
     url TEXT NOT NULL,                -- canonical URL of the item
+
     title TEXT,
     metaDescription TEXT,
     h1 TEXT,
     bodyExcerpt TEXT,
+
+    -- Manual overrides (what the user pasted during ingest)
+    manualTitle TEXT,
+    manualMetaDescription TEXT,
+
     raw TEXT,                         -- raw JSON from source (optional, truncated)
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL
@@ -28,10 +34,31 @@ db.exec(`
     ON content_items(projectId, url);
 `);
 
+// Add columns to existing installs safely (SQLite has no IF NOT EXISTS for ALTER COLUMN)
+function ensureColumn(table, column, typeSql) {
+  try {
+    const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+    const exists = cols.some((c) => c.name === column);
+    if (!exists) {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${typeSql};`);
+    }
+  } catch (err) {
+    console.error("[Core] ensureColumn failed", table, column, err);
+  }
+}
+
+ensureColumn("content_items", "manualTitle", "TEXT");
+ensureColumn("content_items", "manualMetaDescription", "TEXT");
+
 function normaliseString(value) {
   if (value === undefined || value === null) return null;
   const trimmed = String(value).trim();
   return trimmed.length ? trimmed : null;
+}
+
+function normaliseType(value) {
+  const t = normaliseString(value);
+  return t || "other";
 }
 
 /**
@@ -46,16 +73,28 @@ function upsertContentItems(projectId, items) {
       const url = normaliseString(item.url);
       if (!url) return null;
 
+      // What user pasted in (ingest) should be treated as a manual override.
+      // We also keep it in title/metaDescription if those fields are currently empty.
+      const incomingTitle = normaliseString(item.title);
+      const incomingMeta = normaliseString(item.metaDescription);
+
       return {
         projectId,
-        type: normaliseString(item.type) || "other",
+        type: normaliseType(item.type),
         platform: normaliseString(item.platform),
         externalId: normaliseString(item.externalId),
         url,
-        title: normaliseString(item.title),
-        metaDescription: normaliseString(item.metaDescription),
+
+        // Fetched / system fields
+        title: incomingTitle,
+        metaDescription: incomingMeta,
         h1: normaliseString(item.h1),
         bodyExcerpt: normaliseString(item.bodyExcerpt),
+
+        // Manual overrides (populate when user supplies title/meta in ingest)
+        manualTitle: incomingTitle,
+        manualMetaDescription: incomingMeta,
+
         raw: item.raw
           ? JSON.stringify(item.raw).slice(0, 32760) // protect against huge blobs
           : null,
@@ -80,6 +119,8 @@ function upsertContentItems(projectId, items) {
       metaDescription,
       h1,
       bodyExcerpt,
+      manualTitle,
+      manualMetaDescription,
       raw,
       createdAt,
       updatedAt
@@ -94,20 +135,28 @@ function upsertContentItems(projectId, items) {
       @metaDescription,
       @h1,
       @bodyExcerpt,
+      @manualTitle,
+      @manualMetaDescription,
       @raw,
       @createdAt,
       @updatedAt
     )
     ON CONFLICT(projectId, url) DO UPDATE SET
-      type           = excluded.type,
-      platform       = excluded.platform,
-      externalId     = excluded.externalId,
-      title          = excluded.title,
-      metaDescription= excluded.metaDescription,
-      h1             = excluded.h1,
-      bodyExcerpt    = excluded.bodyExcerpt,
-      raw            = excluded.raw,
-      updatedAt      = excluded.updatedAt;
+      -- Only overwrite when new values are non-null (prevents blank overwriting)
+      type                 = COALESCE(excluded.type, content_items.type),
+      platform             = COALESCE(excluded.platform, content_items.platform),
+      externalId           = COALESCE(excluded.externalId, content_items.externalId),
+
+      title                = COALESCE(excluded.title, content_items.title),
+      metaDescription      = COALESCE(excluded.metaDescription, content_items.metaDescription),
+      h1                   = COALESCE(excluded.h1, content_items.h1),
+      bodyExcerpt          = COALESCE(excluded.bodyExcerpt, content_items.bodyExcerpt),
+
+      manualTitle          = COALESCE(excluded.manualTitle, content_items.manualTitle),
+      manualMetaDescription= COALESCE(excluded.manualMetaDescription, content_items.manualMetaDescription),
+
+      raw                  = COALESCE(excluded.raw, content_items.raw),
+      updatedAt            = excluded.updatedAt;
   `);
 
   const tx = db.transaction((batch) => {
@@ -121,19 +170,36 @@ function upsertContentItems(projectId, items) {
   return { inserted: rows.length };
 }
 
+function getContentItemByUrl(projectId, url) {
+  const u = normaliseString(url);
+  if (!projectId || !u) return null;
+
+  const stmt = db.prepare(`
+    SELECT *
+    FROM content_items
+    WHERE projectId = ? AND url = ?
+    LIMIT 1
+  `);
+
+  return stmt.get(projectId, u) || null;
+}
+
 /**
  * Very simple SEO scoring for now:
  * - title length band 45–60
  * - meta length band 130–155
  * - H1 present
+ *
+ * IMPORTANT: use manual overrides first so the UI never lies.
  */
 function scoreRow(row) {
   const issues = [];
 
-  const title = row.title || "";
-  const meta = row.metaDescription || "";
-  const titleLen = title.length;
-  const metaLen = meta.length;
+  const effectiveTitle = row.manualTitle || row.title || "";
+  const effectiveMeta = row.manualMetaDescription || row.metaDescription || "";
+
+  const titleLen = effectiveTitle.length;
+  const metaLen = effectiveMeta.length;
 
   const TITLE_MIN = 45;
   const TITLE_MAX = 60;
@@ -172,7 +238,7 @@ function scoreRow(row) {
     }
   }
 
-  // H1 presence
+  // H1 presence (use stored h1 only)
   if (!row.h1) {
     score -= 5;
     issues.push("NO_H1");
@@ -186,6 +252,8 @@ function scoreRow(row) {
     titleLength: titleLen,
     metaLength: metaLen,
     issues,
+    effectiveTitle,
+    effectiveMetaDescription: effectiveMeta,
   };
 }
 
@@ -221,12 +289,19 @@ function getContentHealth({ projectId, type, maxScore = 70, limit = 100 }) {
       platform: row.platform,
       externalId: row.externalId,
       url: row.url,
+
+      // raw stored fields
       title: row.title,
       metaDescription: row.metaDescription,
+      manualTitle: row.manualTitle,
+      manualMetaDescription: row.manualMetaDescription,
       h1: row.h1,
       bodyExcerpt: row.bodyExcerpt,
+
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
+
+      // scoring + effective display fields
       ...scoring,
     };
   });
@@ -246,4 +321,5 @@ function getContentHealth({ projectId, type, maxScore = 70, limit = 100 }) {
 module.exports = {
   upsertContentItems,
   getContentHealth,
+  getContentItemByUrl,
 };

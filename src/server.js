@@ -14,11 +14,9 @@ dotenv.config();
 const { getTool } = require("./core/tools-registry.cjs");
 const projectsCore = require("./core/projects");
 const contentCore = require("./core/content");
-
-// NEW: Auto-fetch title/meta for ingestion
 const { fetchPageMeta } = require("./core/fetchPageMeta");
 
-// NEW: Drafts API routes (Draft Library)
+// Drafts API routes (Draft Library)
 const draftsRoutes = require("./routes/drafts");
 
 const app = express();
@@ -115,30 +113,8 @@ app.get("/projects", (_req, res) => {
  * POST /projects/:projectId/content/batch
  *
  * Ingest / update content items for a project.
- * Used by any platform to push pages/posts/products into AURA.
- *
- * Body:
- * {
- *   "items": [
- *     {
- *       "type": "blog",          // optional, default "other"
- *       "platform": "wordpress", // optional
- *       "externalId": "123",     // optional
- *       "url": "https://site.com/blog/post-1",
- *       "title": "How to style waterproof jewellery",
- *       "metaDescription": "Our guide to styling waterproof jewellery…",
- *       "h1": "How to style waterproof jewellery",
- *       "bodyExcerpt": "In this guide we cover…",
- *       "raw": { ... }           // optional, raw source row
- *     }
- *   ]
- * }
- *
- * NEW BEHAVIOUR:
- * - If title/metaDescription are missing, Core will fetch the URL and attempt
- *   to fill them automatically before saving (beginner-friendly).
  */
-app.post("/projects/:projectId/content/batch", async (req, res) => {
+app.post("/projects/:projectId/content/batch", (req, res) => {
   const projectId = req.params.projectId;
 
   try {
@@ -151,64 +127,12 @@ app.post("/projects/:projectId/content/batch", async (req, res) => {
       });
     }
 
-    // Normalise + enrich missing title/meta (with small concurrency limit)
-    const concurrency = 5;
-    let autoFilledTitle = 0;
-    let autoFilledMeta = 0;
-    let fetchErrors = 0;
-
-    const queue = items.slice();
-    const enriched = [];
-
-    const worker = async () => {
-      while (queue.length) {
-        const item = queue.shift();
-        if (!item || typeof item !== "object") {
-          enriched.push(item);
-          continue;
-        }
-
-        const next = { ...item };
-
-        const hasUrl = !!next.url;
-        const needsTitle = !next.title || String(next.title).trim() === "";
-        const needsMeta =
-          !next.metaDescription || String(next.metaDescription).trim() === "";
-
-        if (hasUrl && (needsTitle || needsMeta)) {
-          const fetched = await fetchPageMeta(String(next.url).trim());
-          if (fetched.ok) {
-            if (needsTitle && fetched.title) {
-              next.title = fetched.title;
-              autoFilledTitle += 1;
-            }
-            if (needsMeta && fetched.metaDescription) {
-              next.metaDescription = fetched.metaDescription;
-              autoFilledMeta += 1;
-            }
-          } else {
-            fetchErrors += 1;
-          }
-        }
-
-        enriched.push(next);
-      }
-    };
-
-    const workers = Array.from({ length: concurrency }, () => worker());
-    await Promise.all(workers);
-
-    const result = contentCore.upsertContentItems(projectId, enriched);
+    const result = contentCore.upsertContentItems(projectId, items);
 
     return res.json({
       ok: true,
       projectId,
       inserted: result.inserted,
-      enriched: {
-        autoFilledTitle,
-        autoFilledMeta,
-        fetchErrors,
-      },
     });
   } catch (err) {
     console.error("[Core] Error in content batch", err);
@@ -220,14 +144,85 @@ app.post("/projects/:projectId/content/batch", async (req, res) => {
 });
 
 /**
+ * POST /projects/:projectId/content/refresh
+ *
+ * Refreshes a single URL by fetching HTML and extracting <title>, meta description, and H1.
+ * This helps with platforms where ingest-only URLs have no stored meta yet.
+ *
+ * Body:
+ * { "url": "https://example.com/page", "type": "page" }
+ */
+app.post("/projects/:projectId/content/refresh", async (req, res) => {
+  const projectId = req.params.projectId;
+
+  try {
+    const { url, type } = req.body || {};
+    if (!url) {
+      return res.status(400).json({
+        ok: false,
+        error: "url is required",
+      });
+    }
+
+    // Preserve existing row metadata where possible (so refresh never breaks type/platform)
+    const existing = contentCore.getContentItemByUrl(projectId, url);
+
+    const fetched = await fetchPageMeta(url);
+    if (!fetched.ok) {
+      return res.status(502).json({
+        ok: false,
+        error: "Failed to fetch HTML meta for URL",
+        details: fetched,
+      });
+    }
+
+    // Upsert only non-null fetched values (contentCore uses COALESCE on conflict)
+    contentCore.upsertContentItems(projectId, [
+      {
+        url: fetched.url,
+        type: existing?.type || type || "other",
+        platform: existing?.platform || null,
+        externalId: existing?.externalId || null,
+        title: fetched.title,
+        metaDescription: fetched.metaDescription,
+        h1: fetched.h1,
+        raw: {
+          fetchedAt: new Date().toISOString(),
+          status: fetched.status,
+          contentType: fetched.contentType,
+          source: "fetchPageMeta",
+        },
+      },
+    ]);
+
+    // Return updated health row for convenience (optional)
+    const items = contentCore.getContentHealth({
+      projectId,
+      type: null,
+      maxScore: 100,
+      limit: 200,
+    });
+
+    const updated = items.find((i) => i.url === fetched.url) || null;
+
+    return res.json({
+      ok: true,
+      projectId,
+      url: fetched.url,
+      fetched,
+      updated,
+    });
+  } catch (err) {
+    console.error("[Core] Error refreshing content URL", err);
+    return res.status(500).json({
+      ok: false,
+      error: "Failed to refresh URL meta",
+    });
+  }
+});
+
+/**
  * GET /projects/:projectId/content/health
- *
- * Returns "bad SEO" items for that project so the user knows what to fix.
- *
- * Query params:
- *  - type     (optional): product | blog | landing | category | docs | other
- *  - maxScore (optional): number (default 70) – return items at or below this score
- *  - limit    (optional): number (default 100)
  */
 app.get("/projects/:projectId/content/health", (req, res) => {
   const projectId = req.params.projectId;
