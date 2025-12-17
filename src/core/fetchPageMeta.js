@@ -1,45 +1,75 @@
 // src/core/fetchPageMeta.js
-// --------------------------------------------------------
-// Fetch a URL and extract <title> + meta description from HTML
-// No external deps (works on Node 18+ / 20+ / 24+).
-// --------------------------------------------------------
+// ----------------------------------------
+// Fetch basic SEO metadata from a public URL
+// - title (prefers <title>, falls back to og:title, then <h1>)
+// - metaDescription (prefers meta[name=description], falls back to og:description)
+// - h1 (first <h1> on page)
+// ----------------------------------------
 
-function decodeHtmlEntities(input) {
-  if (!input) return "";
-  return input
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
-}
+const DEFAULT_TIMEOUT_MS = 12000;
 
-function cleanText(input) {
-  return decodeHtmlEntities(String(input || ""))
+function stripTags(input) {
+  return String(input || "")
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, " ")
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, " ")
+    .replace(/<[^>]*>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function extractTagContent(html, regex) {
-  const m = html.match(regex);
-  return m && m[1] ? cleanText(m[1]) : "";
+function decodeHtmlEntities(input) {
+  // Lightweight decoding for the most common entities we encounter in titles/meta.
+  // (No external dependencies.)
+  const s = String(input || "");
+  return s
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function extractMetaContent(html, nameOrProp) {
+function pickFirstNonEmpty(...values) {
+  for (const v of values) {
+    const t = String(v || "").trim();
+    if (t) return t;
+  }
+  return "";
+}
+
+function extractTagContent(html, tagName) {
+  const re = new RegExp(`<${tagName}[^>]*>([\\s\\S]*?)<\\/${tagName}>`, "i");
+  const m = html.match(re);
+  return m ? decodeHtmlEntities(stripTags(m[1])) : "";
+}
+
+function extractMetaByName(html, name) {
   // matches: <meta name="description" content="...">
-  // matches: <meta property="og:description" content="...">
   const re = new RegExp(
-    `<meta\\s+(?:[^>]*?)?(?:name|property)\\s*=\\s*["']${nameOrProp}["'](?:[^>]*?)content\\s*=\\s*["']([^"']*)["'][^>]*>`,
+    `<meta[^>]+name=["']${name}["'][^>]*content=["']([^"']*)["'][^>]*>`,
     "i"
   );
-  return extractTagContent(html, re);
+  const m = html.match(re);
+  return m ? decodeHtmlEntities(stripTags(m[1])) : "";
 }
 
-async function fetchWithTimeout(url, ms) {
+function extractMetaByProperty(html, property) {
+  // matches: <meta property="og:title" content="...">
+  const re = new RegExp(
+    `<meta[^>]+property=["']${property}["'][^>]*content=["']([^"']*)["'][^>]*>`,
+    "i"
+  );
+  const m = html.match(re);
+  return m ? decodeHtmlEntities(stripTags(m[1])) : "";
+}
+
+async function fetchHtml(url, timeoutMs = DEFAULT_TIMEOUT_MS) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), ms);
+  const id = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch(url, {
@@ -47,94 +77,95 @@ async function fetchWithTimeout(url, ms) {
       redirect: "follow",
       signal: controller.signal,
       headers: {
-        "User-Agent": "AURA-Core/1.0 (+https://aurasystemsai.com)",
+        // A normal UA reduces blocks from some hosts.
+        "User-Agent":
+          "AURAContentBot/1.0 (+https://aurasystemsai.com) NodeFetch",
         Accept: "text/html,application/xhtml+xml",
       },
     });
-    return res;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
 
-async function fetchPageMeta(url, opts = {}) {
-  const timeoutMs = typeof opts.timeoutMs === "number" ? opts.timeoutMs : 8000;
-
-  if (!url || typeof url !== "string") {
-    return {
-      ok: false,
-      url,
-      title: "",
-      metaDescription: "",
-      error: "Invalid URL",
-    };
-  }
-
-  if (!/^https?:\/\//i.test(url)) {
-    return {
-      ok: false,
-      url,
-      title: "",
-      metaDescription: "",
-      error: "URL must start with http:// or https://",
-    };
-  }
-
-  try {
-    const res = await fetchWithTimeout(url, timeoutMs);
     const contentType = res.headers.get("content-type") || "";
+    const isHtml =
+      contentType.includes("text/html") || contentType.includes("application/xhtml+xml");
+
+    // Even if CT is missing, still try to read text (some hosts omit it).
+    const text = await res.text();
 
     if (!res.ok) {
       return {
         ok: false,
-        url,
-        title: "",
-        metaDescription: "",
-        error: `Fetch failed (${res.status})`,
+        status: res.status,
+        statusText: res.statusText,
+        html: text || "",
+        isHtml,
       };
-    }
-
-    if (!contentType.toLowerCase().includes("text/html")) {
-      return {
-        ok: true,
-        url,
-        title: "",
-        metaDescription: "",
-        note: `Non-HTML content-type: ${contentType}`,
-      };
-    }
-
-    const html = await res.text();
-
-    // Title: <title>...</title>
-    let title = extractTagContent(html, /<title[^>]*>([\s\S]*?)<\/title>/i);
-
-    // Meta description priority
-    let metaDescription =
-      extractMetaContent(html, "description") ||
-      extractMetaContent(html, "og:description") ||
-      extractMetaContent(html, "twitter:description");
-
-    // Fallback title
-    if (!title) {
-      title =
-        extractMetaContent(html, "og:title") ||
-        extractMetaContent(html, "twitter:title");
     }
 
     return {
       ok: true,
-      url,
-      title: title || "",
-      metaDescription: metaDescription || "",
+      status: res.status,
+      statusText: res.statusText,
+      html: text || "",
+      isHtml,
     };
-  } catch (err) {
-    const msg =
-      err && err.name === "AbortError"
-        ? "Timeout fetching URL"
-        : err?.message || "Fetch error";
-    return { ok: false, url, title: "", metaDescription: "", error: msg };
+  } finally {
+    clearTimeout(id);
   }
 }
 
-module.exports = { fetchPageMeta };
+/**
+ * Fetch SEO metadata from a URL.
+ * @param {string} url
+ * @returns {Promise<{ ok: boolean, url: string, title: string, metaDescription: string, h1: string, error?: string }>}
+ */
+async function fetchPageMeta(url) {
+  const safeUrl = String(url || "").trim();
+  if (!safeUrl) {
+    return { ok: false, url: safeUrl, title: "", metaDescription: "", h1: "", error: "Missing url" };
+  }
+
+  let fetched;
+  try {
+    fetched = await fetchHtml(safeUrl);
+  } catch (err) {
+    return {
+      ok: false,
+      url: safeUrl,
+      title: "",
+      metaDescription: "",
+      h1: "",
+      error: err?.name === "AbortError" ? "Fetch timed out" : (err?.message || "Fetch failed"),
+    };
+  }
+
+  const html = fetched.html || "";
+
+  // Extract core signals
+  const titleTag = extractTagContent(html, "title");
+  const ogTitle = extractMetaByProperty(html, "og:title");
+  const h1 = extractTagContent(html, "h1");
+
+  const metaDesc = extractMetaByName(html, "description");
+  const ogDesc = extractMetaByProperty(html, "og:description");
+
+  // IMPORTANT: fallback rule for product UX:
+  // If <title> is empty but <h1> exists, use h1 as title.
+  const title = pickFirstNonEmpty(titleTag, ogTitle, h1);
+
+  const metaDescription = pickFirstNonEmpty(metaDesc, ogDesc);
+
+  // Normalise "empty" outputs
+  const normalisedTitle = (title || "").trim();
+  const normalisedMeta = (metaDescription || "").trim();
+  const normalisedH1 = (h1 || "").trim();
+
+  return {
+    ok: true,
+    url: safeUrl,
+    title: normalisedTitle,
+    metaDescription: normalisedMeta,
+    h1: normalisedH1,
+  };
+}
+
+module.exports = fetchPageMeta;
