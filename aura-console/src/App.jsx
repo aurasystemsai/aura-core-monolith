@@ -7,6 +7,7 @@ import SystemHealthPanel from "./components/SystemHealthPanel";
 import DraftLibrary from "./components/DraftLibrary";
 import ContentHealthAuditor from "./components/ContentHealthAuditor";
 import ContentIngestor from "./components/ContentIngestor";
+import FixQueue from "./components/FixQueue"; // ✅ NEW
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
@@ -705,6 +706,7 @@ function App() {
               "Overview",
               "Draft Library",
               "Content Health",
+              "Fix Queue", // ✅ NEW
               "Content Ingest",
               "Compare domains",
               "Growth report",
@@ -815,6 +817,19 @@ function App() {
                 </div>
 
                 <ContentHealthAuditor coreUrl={coreUrl} projectId={project.id} />
+              </div>
+            </section>
+          ) : pageTab === "Fix Queue" ? (
+            <section style={{ marginTop: 10 }}>
+              <div className="card">
+                <div className="card-header">
+                  <h2 className="card-title">Fix Queue</h2>
+                  <p className="card-subtitle">
+                    Items you have queued from Content Health. Work through them in order, assign owners, track status, and export.
+                  </p>
+                </div>
+
+                <FixQueue coreUrl={coreUrl} projectId={project.id} />
               </div>
             </section>
           ) : pageTab === "Content Ingest" ? (
