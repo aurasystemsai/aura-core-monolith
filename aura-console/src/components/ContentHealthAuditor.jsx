@@ -259,7 +259,8 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
         <div className="cha-summary-item cha-summary-item--grow">
           <div className="cha-summary-label">Tip</div>
           <div className="cha-summary-value cha-summary-tip">
-            Work top-to-bottom. Fix title/meta/H1, then refresh and watch rows disappear.
+            Work top-to-bottom. Fix title/meta/H1, then refresh and watch rows
+            disappear.
           </div>
         </div>
       </div>
@@ -282,7 +283,7 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
               <th>Meta description</th>
               <th style={{ width: 220 }}>Issues</th>
               <th style={{ width: 150 }}>Updated</th>
-              <th style={{ width: 160 }}>Actions</th>
+              <th style={{ width: 220 }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -295,12 +296,15 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
             ) : !items.length ? (
               <tr>
                 <td colSpan={8} className="cha-empty">
-                  No items found for these filters. Either everything is healthy, or you have not ingested content yet.
+                  No items found for these filters. Either everything is healthy,
+                  or you have not ingested content yet.
                 </td>
               </tr>
             ) : (
               items.map((row) => {
                 const prettyIssues = issuesPretty(row.issues);
+                const canQueue = Array.isArray(row.issues) && row.issues.length;
+
                 return (
                   <tr key={`${row.id}-${row.url}`}>
                     <td>
@@ -321,7 +325,9 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
                       </a>
                       <div className="cha-sub">{row.externalId || "—"}</div>
                     </td>
-                    <td title={row.title || ""}>{truncate(row.title || "—", 80)}</td>
+                    <td title={row.title || ""}>
+                      {truncate(row.title || "—", 80)}
+                    </td>
                     <td title={row.metaDescription || ""}>
                       {truncate(row.metaDescription || "—", 95)}
                     </td>
@@ -340,9 +346,13 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
                     </td>
                     <td>
                       <div className="cha-date">
-                        {row.updatedAt ? new Date(row.updatedAt).toLocaleString() : "—"}
+                        {row.updatedAt
+                          ? new Date(row.updatedAt).toLocaleString()
+                          : "—"}
                       </div>
                     </td>
+
+                    {/* ✅ ACTIONS — kept everything, only added Fix Queue button */}
                     <td>
                       <div className="cha-action-row">
                         <button
@@ -353,6 +363,7 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
                         >
                           Copy URL
                         </button>
+
                         <button
                           className="button button--ghost button--tiny"
                           type="button"
@@ -362,6 +373,7 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
                         >
                           Copy title
                         </button>
+
                         <button
                           className="button button--ghost button--tiny"
                           type="button"
@@ -370,6 +382,47 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
                           disabled={!row.metaDescription}
                         >
                           Copy meta
+                        </button>
+
+                        <button
+                          className="button button--ghost button--tiny"
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const res = await fetch(
+                                `${normalizedCoreUrl}/projects/${projectId}/fix-queue`,
+                                {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    url: row.url,
+                                    issues: row.issues || [],
+                                  }),
+                                }
+                              );
+
+                              if (!res.ok) {
+                                const t = await res.text().catch(() => "");
+                                throw new Error(
+                                  `Fix Queue error (${res.status}): ${
+                                    t || res.statusText
+                                  }`
+                                );
+                              }
+
+                              alert("Added to Fix Queue");
+                            } catch (e) {
+                              alert(e?.message || "Failed to add to Fix Queue");
+                            }
+                          }}
+                          disabled={!canQueue}
+                          title={
+                            canQueue
+                              ? "Add this URL + issues into your Fix Queue"
+                              : "Nothing to queue (no issues on this row)"
+                          }
+                        >
+                          Add to Fix Queue
                         </button>
                       </div>
                     </td>
@@ -387,7 +440,8 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
         </div>
         <div className="cha-footer-right">
           <span className="cha-muted">
-            Scoring is currently length-based (title/meta) + H1 present. We can upgrade this later to real SEO heuristics.
+            Scoring is currently length-based (title/meta) + H1 present. We can
+            upgrade this later to real SEO heuristics.
           </span>
         </div>
       </div>
