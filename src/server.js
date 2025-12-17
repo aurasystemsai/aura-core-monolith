@@ -15,6 +15,9 @@ const { getTool } = require("./core/tools-registry.cjs");
 const projectsCore = require("./core/projects");
 const contentCore = require("./core/content");
 
+// NEW: Auto-fetch title/meta for ingestion
+const { fetchPageMeta } = require("./core/fetchPageMeta");
+
 // NEW: Drafts API routes (Draft Library)
 const draftsRoutes = require("./routes/drafts");
 
@@ -130,8 +133,12 @@ app.get("/projects", (_req, res) => {
  *     }
  *   ]
  * }
+ *
+ * NEW BEHAVIOUR:
+ * - If title/metaDescription are missing, Core will fetch the URL and attempt
+ *   to fill them automatically before saving (beginner-friendly).
  */
-app.post("/projects/:projectId/content/batch", (req, res) => {
+app.post("/projects/:projectId/content/batch", async (req, res) => {
   const projectId = req.params.projectId;
 
   try {
@@ -144,12 +151,64 @@ app.post("/projects/:projectId/content/batch", (req, res) => {
       });
     }
 
-    const result = contentCore.upsertContentItems(projectId, items);
+    // Normalise + enrich missing title/meta (with small concurrency limit)
+    const concurrency = 5;
+    let autoFilledTitle = 0;
+    let autoFilledMeta = 0;
+    let fetchErrors = 0;
+
+    const queue = items.slice();
+    const enriched = [];
+
+    const worker = async () => {
+      while (queue.length) {
+        const item = queue.shift();
+        if (!item || typeof item !== "object") {
+          enriched.push(item);
+          continue;
+        }
+
+        const next = { ...item };
+
+        const hasUrl = !!next.url;
+        const needsTitle = !next.title || String(next.title).trim() === "";
+        const needsMeta =
+          !next.metaDescription || String(next.metaDescription).trim() === "";
+
+        if (hasUrl && (needsTitle || needsMeta)) {
+          const fetched = await fetchPageMeta(String(next.url).trim());
+          if (fetched.ok) {
+            if (needsTitle && fetched.title) {
+              next.title = fetched.title;
+              autoFilledTitle += 1;
+            }
+            if (needsMeta && fetched.metaDescription) {
+              next.metaDescription = fetched.metaDescription;
+              autoFilledMeta += 1;
+            }
+          } else {
+            fetchErrors += 1;
+          }
+        }
+
+        enriched.push(next);
+      }
+    };
+
+    const workers = Array.from({ length: concurrency }, () => worker());
+    await Promise.all(workers);
+
+    const result = contentCore.upsertContentItems(projectId, enriched);
 
     return res.json({
       ok: true,
       projectId,
       inserted: result.inserted,
+      enriched: {
+        autoFilledTitle,
+        autoFilledMeta,
+        fetchErrors,
+      },
     });
   } catch (err) {
     console.error("[Core] Error in content batch", err);
@@ -178,12 +237,8 @@ app.get("/projects/:projectId/content/health", (req, res) => {
     const items = contentCore.getContentHealth({
       projectId,
       type: type || undefined,
-      maxScore:
-        maxScore !== undefined && maxScore !== ""
-          ? Number(maxScore)
-          : 70,
-      limit:
-        limit !== undefined && limit !== "" ? Number(limit) : 100,
+      maxScore: maxScore !== undefined && maxScore !== "" ? Number(maxScore) : 70,
+      limit: limit !== undefined && limit !== "" ? Number(limit) : 100,
     });
 
     return res.json({
