@@ -5,6 +5,7 @@ import ProjectSetup from "./ProjectSetup";
 import ProjectSwitcher from "./ProjectSwitcher";
 import SystemHealthPanel from "./components/SystemHealthPanel";
 import DraftLibrary from "./components/DraftLibrary";
+import ContentHealthAuditor from "./components/ContentHealthAuditor";
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
@@ -273,128 +274,6 @@ function App() {
       : null;
 
   // -------------------------------------------------
-  // Helpers: formatting + auto-save drafts
-  // -------------------------------------------------
-  const slugify = (value) => {
-    return String(value || "")
-      .trim()
-      .toLowerCase()
-      .replace(/['"]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 80);
-  };
-
-  const buildWeeklyText = (summary, posts) => {
-    const lines = [];
-    lines.push(`# Weekly plan`);
-    if (summary) lines.push(`\n${summary}\n`);
-    lines.push(`\n## Posts\n`);
-    (posts || []).forEach((p, idx) => {
-      lines.push(
-        `\n${idx + 1}. ${p.title || "Untitled"}`
-      );
-      if (p.primaryKeyword || p.keyword) {
-        lines.push(`   - Keyword: ${p.primaryKeyword || p.keyword}`);
-      }
-      if (p.slug || p.handle) {
-        lines.push(`   - Slug: ${p.slug || p.handle}`);
-      }
-      if (p.metaDescription || p.description) {
-        lines.push(
-          `   - Meta: ${p.metaDescription || p.description}`
-        );
-      }
-      if (p.angle || p.summary) {
-        lines.push(`   - Angle: ${p.angle || p.summary}`);
-      }
-      if (p.suggestedDate || p.date) {
-        lines.push(`   - Date: ${p.suggestedDate || p.date}`);
-      }
-    });
-    return lines.join("\n");
-  };
-
-  const buildWeeklyHtml = (summary, posts) => {
-    const esc = (s) =>
-      String(s || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    const rows = (posts || [])
-      .map((p, idx) => {
-        return `<tr>
-<td>${idx + 1}</td>
-<td>${esc(p.title || "Untitled")}</td>
-<td>${esc(p.primaryKeyword || p.keyword || "")}</td>
-<td>${esc(p.slug || p.handle || "")}</td>
-<td>${esc(p.metaDescription || p.description || "")}</td>
-<td>${esc(p.angle || p.summary || "")}</td>
-<td>${esc(p.suggestedDate || p.date || "")}</td>
-</tr>`;
-      })
-      .join("\n");
-
-    return `<h1>Weekly plan</h1>
-${summary ? `<p>${esc(summary)}</p>` : ""}
-<table>
-<thead>
-<tr>
-<th>#</th><th>Title</th><th>Keyword</th><th>Slug</th><th>Meta</th><th>Angle</th><th>Date</th>
-</tr>
-</thead>
-<tbody>
-${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
-</tbody>
-</table>`;
-  };
-
-  const autoSaveDraftToCore = async ({
-    toolId,
-    createdAtIso,
-    title,
-    slug,
-    metaDescription,
-    primaryKeyword,
-    input,
-    output,
-    articleText,
-    articleHtml,
-  }) => {
-    if (!project?.id) return;
-
-    const body = {
-      toolId: toolId || "unknown",
-      createdAt: createdAtIso || new Date().toISOString(),
-      title: title || null,
-      slug: slug || null,
-      metaDescription: metaDescription || null,
-      primaryKeyword: primaryKeyword || null,
-      input: input || null,
-      output: output || null,
-      articleText: articleText || null,
-      articleHtml: articleHtml || null,
-    };
-
-    // Fire-and-forget, but we still want errors in console
-    try {
-      const res = await fetch(`${coreUrl}/projects/${project.id}/drafts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(
-          `Draft save failed (${res.status}): ${text || res.statusText}`
-        );
-      }
-    } catch (err) {
-      console.error("[Console] Auto-save draft failed", err);
-    }
-  };
-
-  // -------------------------------------------------
   // Run engine
   // -------------------------------------------------
   const handleRun = async () => {
@@ -407,7 +286,6 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
 
     let payload;
     if (isWeekly) {
-      // Weekly Blog Content Engine payload
       payload = {
         brand: weeklyBrand,
         niche: weeklyNiche,
@@ -418,7 +296,6 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
         market: activeMarket,
       };
     } else if (isDraft) {
-      // Blog Draft Engine payload – MUST include blogTitle
       const topics = useCases
         .split(",")
         .map((s) => s.trim())
@@ -433,7 +310,6 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
         market: activeMarket,
       };
     } else {
-      // Product SEO / Blog SEO payload
       payload = {
         productTitle,
         productDescription,
@@ -471,7 +347,6 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
       if (!output) throw new Error("No output returned from tool");
 
       const now = new Date();
-      const nowIso = now.toISOString();
       const nowLabel = now.toLocaleString();
       setLastRunAt(nowLabel);
 
@@ -479,15 +354,11 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
       let mLen = 0;
       let oScore = null;
 
-      // -------------------------------------------------
-      // Weekly
-      // -------------------------------------------------
       if (isWeekly) {
         const posts = Array.isArray(output.posts) ? output.posts : [];
         setWeeklySummary(output.summary || "");
         setWeeklyPosts(posts);
 
-        // Clear draft-specific fields when running weekly
         setDraftSections([]);
         setDraftCta("");
         setDraftWordCount(null);
@@ -514,34 +385,7 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
           tScore !== null && mScore !== null
             ? Math.round((tScore + mScore) / 2)
             : null;
-
-        // AUTO-SAVE (weekly plan as a draft record)
-        const weeklyTitle = `Weekly plan · ${weeklyBrand || "Brand"} · ${now
-          .toISOString()
-          .slice(0, 10)}`;
-        const weeklySlug = slugify(weeklyTitle);
-        const weeklyText = buildWeeklyText(output.summary || "", posts);
-        const weeklyHtml = buildWeeklyHtml(output.summary || "", posts);
-
-        await autoSaveDraftToCore({
-          toolId,
-          createdAtIso: nowIso,
-          title: weeklyTitle,
-          slug: weeklySlug,
-          metaDescription:
-            (output.summary || "").slice(0, 240) || "Weekly content plan",
-          primaryKeyword: (posts?.[0]?.primaryKeyword ||
-            posts?.[0]?.keyword ||
-            "")?.toString(),
-          input: payload,
-          output,
-          articleText: weeklyText,
-          articleHtml: weeklyHtml,
-        });
       } else {
-        // -------------------------------------------------
-        // Product SEO / Blog SEO / Draft
-        // -------------------------------------------------
         const nextTitle = output.title || output.seoTitle || "";
         const nextDescription =
           output.description ||
@@ -564,10 +408,6 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
         setMetaAdvice(advice.metaTips || "");
         setGeneralAdvice(advice.generalTips || "");
 
-        // Blog draft specific mapping
-        let saveArticleText = null;
-        let saveArticleHtml = null;
-
         if (toolId === "blog-draft-engine") {
           setDraftSections(
             Array.isArray(output.sections) ? output.sections : []
@@ -581,9 +421,6 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
           setDraftHtml(output.articleHtml || "");
           setDraftText(output.articleText || "");
           setDraftFormat("text");
-
-          saveArticleText = output.articleText || "";
-          saveArticleHtml = output.articleHtml || "";
         } else {
           setDraftSections([]);
           setDraftCta("");
@@ -591,56 +428,6 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
           setDraftHtml("");
           setDraftText("");
           setDraftFormat("text");
-
-          // For non-draft engines: save a clean summary as articleText/Html
-          const summaryTitle =
-            nextTitle || productTitle || `${toolId} run · ${nowIso.slice(0, 10)}`;
-          const summarySlug = nextSlug || slugify(summaryTitle);
-          const summaryMeta =
-            nextDescription ||
-            `Generated SEO fields for ${summaryTitle}`.slice(0, 155);
-
-          saveArticleText = [
-            `# ${summaryTitle}`,
-            ``,
-            `Tool: ${toolId}`,
-            `Market: ${activeMarket}`,
-            `Device: ${activeDevice}`,
-            ``,
-            `## SEO Fields`,
-            `- Title: ${nextTitle || ""}`,
-            `- Meta: ${nextDescription || ""}`,
-            `- Slug: ${summarySlug || ""}`,
-            `- Primary keyword: ${output.primaryKeyword || (Array.isArray(nextKeywords) ? nextKeywords[0] : "") || ""}`,
-            `- Keywords: ${
-              Array.isArray(nextKeywords) ? nextKeywords.join(", ") : ""
-            }`,
-          ].join("\n");
-
-          const esc = (s) =>
-            String(s || "")
-              .replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;");
-
-          saveArticleHtml = `<h1>${esc(summaryTitle)}</h1>
-<p><strong>Tool:</strong> ${esc(toolId)}<br/>
-<strong>Market:</strong> ${esc(activeMarket)}<br/>
-<strong>Device:</strong> ${esc(activeDevice)}</p>
-<h2>SEO Fields</h2>
-<ul>
-<li><strong>Title:</strong> ${esc(nextTitle)}</li>
-<li><strong>Meta:</strong> ${esc(nextDescription)}</li>
-<li><strong>Slug:</strong> ${esc(summarySlug)}</li>
-<li><strong>Primary keyword:</strong> ${esc(
-            output.primaryKeyword ||
-              (Array.isArray(nextKeywords) ? nextKeywords[0] : "") ||
-              ""
-          )}</li>
-<li><strong>Keywords:</strong> ${esc(
-            Array.isArray(nextKeywords) ? nextKeywords.join(", ") : ""
-          )}</li>
-</ul>`;
         }
 
         tLen = (nextTitle || productTitle).length;
@@ -653,40 +440,8 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
           tScore !== null && mScore !== null
             ? Math.round((tScore + mScore) / 2)
             : null;
-
-        // AUTO-SAVE (every engine)
-        const safeTitle =
-          (toolId === "blog-draft-engine" ? (output.blogTitle || nextTitle) : nextTitle) ||
-          productTitle ||
-          `${toolId} run · ${nowIso.slice(0, 10)}`;
-
-        const safeSlug =
-          nextSlug || slugify(safeTitle) || `run-${nowIso.slice(0, 10)}`;
-
-        const primaryKeyword =
-          output.primaryKeyword ||
-          (Array.isArray(nextKeywords) ? nextKeywords[0] : "") ||
-          "";
-
-        await autoSaveDraftToCore({
-          toolId,
-          createdAtIso: nowIso,
-          title: safeTitle,
-          slug: safeSlug,
-          metaDescription:
-            nextDescription ||
-            output.metaDescription ||
-            output.description ||
-            "",
-          primaryKeyword: String(primaryKeyword || ""),
-          input: payload,
-          output,
-          articleText: saveArticleText,
-          articleHtml: saveArticleHtml,
-        });
       }
 
-      // Record in in-memory history
       setRunHistory((prev) => {
         const next = [
           ...prev,
@@ -713,7 +468,7 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
           },
           body: JSON.stringify({
             toolId,
-            createdAt: nowIso,
+            createdAt: now.toISOString(),
             market: activeMarket,
             device: activeDevice,
             score: oScore,
@@ -771,7 +526,11 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
   const latestRun = historyForFilters[historyForFilters.length - 1];
 
   const buildTitleAdvice = () => {
-    const label = isProduct ? "product" : isWeekly ? "content plan" : "blog post";
+    const label = isProduct
+      ? "product"
+      : isWeekly
+      ? "content plan"
+      : "blog post";
     if (!currentTitleLength) {
       return `Add a clear ${label} title first, then run the engine. Aim for 45–60 characters.`;
     }
@@ -785,7 +544,6 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
       return `Your current ${label} title is ${currentTitleLength} characters. It is a bit long – consider trimming around ${extra} characters so it stays punchy in search results.`;
     }
     return `Your current ${label} title is ${currentTitleLength} characters, which is right in the sweet spot. Only tweak it if it feels clunky or hard to read.`;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   };
 
   const buildMetaAdvice = () => {
@@ -918,7 +676,9 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
 
               <div className="top-strip-meta">
                 <div className="top-strip-meta-label">Last run</div>
-                <div className="top-strip-meta-value">{lastRunAt || "Not run yet"}</div>
+                <div className="top-strip-meta-value">
+                  {lastRunAt || "Not run yet"}
+                </div>
               </div>
 
               <button
@@ -932,20 +692,27 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
           </header>
 
           <section style={{ marginTop: 10, marginBottom: 6 }}>
-            <SystemHealthPanel />
+            <SystemHealthPanel
+              coreStatus={coreStatus}
+              coreStatusLabel={coreStatusLabel}
+              lastRunAt={lastRunAt}
+            />
           </section>
 
           <section className="page-tabs">
             {[
               "Overview",
               "Draft Library",
+              "Content Health",
               "Compare domains",
               "Growth report",
               "Compare by countries",
             ].map((tab) => (
               <button
                 key={tab}
-                className={"page-tab" + (pageTab === tab ? " page-tab--active" : "")}
+                className={
+                  "page-tab" + (pageTab === tab ? " page-tab--active" : "")
+                }
                 onClick={() => setPageTab(tab)}
               >
                 {tab}
@@ -960,7 +727,9 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                 {["Worldwide", "US", "UK", "EU"].map((market) => (
                   <button
                     key={market}
-                    className={"pill" + (activeMarket === market ? " pill--active" : "")}
+                    className={
+                      "pill" + (activeMarket === market ? " pill--active" : "")
+                    }
                     onClick={() => setActiveMarket(market)}
                   >
                     {market}
@@ -976,7 +745,9 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                   {["Desktop", "Mobile"].map((device) => (
                     <button
                       key={device}
-                      className={"pill" + (activeDevice === device ? " pill--active" : "")}
+                      className={
+                        "pill" + (activeDevice === device ? " pill--active" : "")
+                      }
                       onClick={() => setActiveDevice(device)}
                     >
                       {device}
@@ -989,19 +760,25 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                 <div className="filters-label">Run history</div>
                 <div className="pill-row">
                   <button
-                    className={"pill" + (timeRange === "30d" ? " pill--active" : "")}
+                    className={
+                      "pill" + (timeRange === "30d" ? " pill--active" : "")
+                    }
                     onClick={() => setTimeRange("30d")}
                   >
                     Last 5 runs
                   </button>
                   <button
-                    className={"pill" + (timeRange === "180d" ? " pill--active" : "")}
+                    className={
+                      "pill" + (timeRange === "180d" ? " pill--active" : "")
+                    }
                     onClick={() => setTimeRange("180d")}
                   >
                     Last 8 runs
                   </button>
                   <button
-                    className={"pill" + (timeRange === "all" ? " pill--active" : "")}
+                    className={
+                      "pill" + (timeRange === "all" ? " pill--active" : "")
+                    }
                     onClick={() => setTimeRange("all")}
                   >
                     All runs
@@ -1017,12 +794,25 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                 <div className="card-header">
                   <h2 className="card-title">Draft Library</h2>
                   <p className="card-subtitle">
-                    Saved runs and drafts for this project (stored in Core SQLite).
+                    Saved blog drafts for this project (stored in Core SQLite).
                     Export as plain text or HTML.
                   </p>
                 </div>
 
                 <DraftLibrary coreUrl={coreUrl} projectId={project.id} />
+              </div>
+            </section>
+          ) : pageTab === "Content Health" ? (
+            <section style={{ marginTop: 10 }}>
+              <div className="card">
+                <div className="card-header">
+                  <h2 className="card-title">Content Health Auditor</h2>
+                  <p className="card-subtitle">
+                    Pulls “bad SEO” pages/posts/products from Core. Filter by type + max score and work through the table like a checklist.
+                  </p>
+                </div>
+
+                <ContentHealthAuditor coreUrl={coreUrl} projectId={project.id} />
               </div>
             </section>
           ) : pageTab === "Overview" ? (
@@ -1031,16 +821,26 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                 <div className="kpi-card">
                   <div className="kpi-label">Overall SEO score</div>
                   <div className="kpi-main">
-                    <span className="kpi-value">{overallScore !== null ? `${overallScore}` : "—"}</span>
-                    <span className="kpi-unit">{overallScore !== null ? "/100" : ""}</span>
+                    <span className="kpi-value">
+                      {overallScore !== null ? `${overallScore}` : "—"}
+                    </span>
+                    <span className="kpi-unit">
+                      {overallScore !== null ? "/100" : ""}
+                    </span>
                   </div>
-                  <div className="kpi-footnote">Based on current title and meta description length.</div>
+                  <div className="kpi-footnote">
+                    Based on current title and meta description length.
+                  </div>
                 </div>
 
                 <div className="kpi-card">
-                  <div className="kpi-label">{currentEngine.lengthTitleLabel}</div>
+                  <div className="kpi-label">
+                    {currentEngine.lengthTitleLabel}
+                  </div>
                   <div className="kpi-main">
-                    <span className="kpi-value">{currentTitleLength || "—"}</span>
+                    <span className="kpi-value">
+                      {currentTitleLength || "—"}
+                    </span>
                     <span className="kpi-unit">characters</span>
                   </div>
                   <div className="kpi-target">
@@ -1051,7 +851,9 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                 <div className="kpi-card">
                   <div className="kpi-label">Meta description</div>
                   <div className="kpi-main">
-                    <span className="kpi-value">{currentMetaLength || "—"}</span>
+                    <span className="kpi-value">
+                      {currentMetaLength || "—"}
+                    </span>
                     <span className="kpi-unit">characters</span>
                   </div>
                   <div className="kpi-target">
@@ -1062,7 +864,9 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                 <div className="kpi-card">
                   <div className="kpi-label">Runs recorded</div>
                   <div className="kpi-main">
-                    <span className="kpi-value">{historyForFilters.length || "—"}</span>
+                    <span className="kpi-value">
+                      {historyForFilters.length || "—"}
+                    </span>
                     <span className="kpi-unit">runs</span>
                   </div>
                   <div className="kpi-target">
@@ -1075,9 +879,11 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                 <div className="card-header">
                   <h2 className="card-title">How to reach 100/100</h2>
                   <p className="card-subtitle">
-                    You do not need to be an SEO expert. Follow these steps, change the text on the right, then click{" "}
-                    <strong>{currentEngine.runButtonLabel}</strong> again. Guidance is tuned for{" "}
-                    <strong>{activeMarket}</strong> · <strong>{activeDevice}</strong>.
+                    You do not need to be an SEO expert. Follow these steps,
+                    change the text on the right, then click{" "}
+                    <strong>{currentEngine.runButtonLabel}</strong> again.
+                    Guidance is tuned for <strong>{activeMarket}</strong> ·{" "}
+                    <strong>{activeDevice}</strong>.
                   </p>
                 </div>
 
@@ -1096,9 +902,15 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                     <strong>Quick beginner formula you can follow:</strong>
                     <br />
                     <span style={{ fontSize: 11 }}>
-                      <code>[What it is] + [1–2 big benefits] + [when / who it is for]</code>.
+                      <code>
+                        [What it is] + [1–2 big benefits] + [when / who it is
+                        for]
+                      </code>
+                      .
                       <br />
-                      Example: “Waterproof paperclip bracelet with sweat-proof coating. Adjustable fit for gym, everyday wear and gifting.”
+                      Example: “Waterproof paperclip bracelet with sweat-proof
+                      coating. Adjustable fit for gym, everyday wear and
+                      gifting.”
                     </span>
                   </li>
                 </ol>
@@ -1106,15 +918,19 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
 
               <section className="card" style={{ marginTop: 10 }}>
                 <div className="card-header">
-                  <h2 className="card-title">AI suggestions for this {pieceLabel}</h2>
+                  <h2 className="card-title">
+                    AI suggestions for this {pieceLabel}
+                  </h2>
                   <p className="card-subtitle">
-                    Generated from your last run. Use this as a second opinion on how to tweak the copy before you publish.
+                    Generated from your last run. Use this as a second opinion
+                    on how to tweak the copy before you publish.
                   </p>
                 </div>
                 <ul style={{ fontSize: 12, paddingLeft: 18, margin: 0 }}>
                   <li>
                     <strong>Title:</strong>{" "}
-                    {titleAdvice || "Run the engine to get specific tips for your title."}
+                    {titleAdvice ||
+                      "Run the engine to get specific tips for your title."}
                   </li>
                   <li>
                     <strong>Meta:</strong>{" "}
@@ -1123,7 +939,8 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                   </li>
                   <li>
                     <strong>Overall:</strong>{" "}
-                    {generalAdvice || "General optimisation tips for this piece will appear here after the first run."}
+                    {generalAdvice ||
+                      "General optimisation tips for this piece will appear here after the first run."}
                   </li>
                 </ul>
               </section>
@@ -1136,13 +953,19 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                         <h2 className="card-title">SEO run history</h2>
                         <div className="card-toggle-tabs">
                           <button
-                            className={"tab" + (historyView === "score" ? " tab--active" : "")}
+                            className={
+                              "tab" +
+                              (historyView === "score" ? " tab--active" : "")
+                            }
                             onClick={() => setHistoryView("score")}
                           >
                             Score trend
                           </button>
                           <button
-                            className={"tab" + (historyView === "meta" ? " tab--active" : "")}
+                            className={
+                              "tab" +
+                              (historyView === "meta" ? " tab--active" : "")
+                            }
                             onClick={() => setHistoryView("meta")}
                           >
                             Meta length
@@ -1150,8 +973,10 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                         </div>
                       </div>
                       <p className="card-subtitle">
-                        Every time you re-run the engine, we plot a new point here. You are currently viewing{" "}
-                        <strong>{activeMarket}</strong> · <strong>{activeDevice}</strong> runs for{" "}
+                        Every time you re-run the engine, we plot a new point
+                        here. You are currently viewing{" "}
+                        <strong>{activeMarket}</strong> ·{" "}
+                        <strong>{activeDevice}</strong> runs for{" "}
                         <strong>{currentEngine.chipLabel}</strong> only.
                       </p>
                     </div>
@@ -1185,8 +1010,9 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                         </div>
                       ) : (
                         <div className="run-history-empty">
-                          No runs recorded yet for this engine / market / device. Click “{currentEngine.runButtonLabel}”
-                          to start tracking.
+                          No runs recorded yet for this engine / market / device.
+                          Click “{currentEngine.runButtonLabel}” to start
+                          tracking.
                         </div>
                       )}
 
@@ -1201,7 +1027,8 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                       <div className="run-history-table-header">
                         <span className="run-history-table-title">Last runs</span>
                         <span className="run-history-table-subtitle">
-                          Shows how your lengths and score changed per run for this engine / market / device.
+                          Shows how your lengths and score changed per run for
+                          this engine / market / device.
                         </span>
                       </div>
 
@@ -1219,7 +1046,8 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                           {rangedHistory.length === 0 ? (
                             <tr>
                               <td colSpan={5}>
-                                No runs yet. Click "{currentEngine.runButtonLabel}" to start tracking.
+                                No runs yet. Click "{currentEngine.runButtonLabel}"
+                                to start tracking.
                               </td>
                             </tr>
                           ) : (
@@ -1246,11 +1074,16 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                       <div className="card-header">
                         <h2 className="card-title">Weekly blog plan (generated)</h2>
                         <p className="card-subtitle">
-                          Paste this straight into your CMS or Notion. Titles and meta descriptions are already tuned for search.
+                          Paste this straight into your CMS or Notion. Titles and
+                          meta descriptions are already tuned for search.
                         </p>
                       </div>
 
-                      {weeklySummary && <p style={{ fontSize: 12, marginBottom: 12 }}>{weeklySummary}</p>}
+                      {weeklySummary && (
+                        <p style={{ fontSize: 12, marginBottom: 12 }}>
+                          {weeklySummary}
+                        </p>
+                      )}
 
                       <table className="seo-table">
                         <thead>
@@ -1266,14 +1099,22 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                         <tbody>
                           {weeklyPosts.length === 0 ? (
                             <tr>
-                              <td colSpan={6}>Run the Weekly blog planner to generate your next batch of posts.</td>
+                              <td colSpan={6}>
+                                Run the Weekly blog planner to generate your next
+                                batch of posts.
+                              </td>
                             </tr>
                           ) : (
                             weeklyPosts.map((post, idx) => (
                               <tr key={idx}>
                                 <td>{idx + 1}</td>
                                 <td>{post.title || "—"}</td>
-                                <td>{post.angle || post.summary || post.metaDescription || "—"}</td>
+                                <td>
+                                  {post.angle ||
+                                    post.summary ||
+                                    post.metaDescription ||
+                                    "—"}
+                                </td>
                                 <td>{post.primaryKeyword || post.keyword || "—"}</td>
                                 <td>{post.slug || post.handle || "—"}</td>
                                 <td>{post.suggestedDate || post.date || "—"}</td>
@@ -1289,7 +1130,8 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                         <div className="card-header">
                           <h2 className="card-title">Generated SEO fields</h2>
                           <p className="card-subtitle">
-                            Paste straight into Shopify or your platform. Use the copy buttons so beginners never touch JSON.
+                            Paste straight into Shopify or your platform. Use the
+                            copy buttons so beginners never touch JSON.
                           </p>
                         </div>
 
@@ -1317,7 +1159,10 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                             </tr>
                             <tr>
                               <td>Meta description</td>
-                              <td>{seoDescription || "Meta description will appear here after the first run."}</td>
+                              <td>
+                                {seoDescription ||
+                                  "Meta description will appear here after the first run."}
+                              </td>
                               <td>
                                 <button
                                   className="button button--ghost button--tiny"
@@ -1343,7 +1188,10 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                             </tr>
                             <tr>
                               <td>Keywords</td>
-                              <td>{keywordsDisplay || "Keyword set will appear here after the first run."}</td>
+                              <td>
+                                {keywordsDisplay ||
+                                  "Keyword set will appear here after the first run."}
+                              </td>
                               <td>
                                 <button
                                   className="button button--ghost button--tiny"
@@ -1370,7 +1218,8 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                           <div className="card-header">
                             <h2 className="card-title">Draft article (generated)</h2>
                             <p className="card-subtitle">
-                              Copy this into your CMS editor. Default is plain text. HTML is optional if your editor supports it.
+                              Copy this into your CMS editor. Default is plain text.
+                              HTML is optional if your editor supports it.
                             </p>
                           </div>
 
@@ -1398,12 +1247,16 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                           </div>
 
                           <div style={{ marginBottom: 12 }}>
-                            <h3 className="card-title" style={{ fontSize: 13, marginBottom: 4, marginTop: 0 }}>
+                            <h3
+                              className="card-title"
+                              style={{ fontSize: 13, marginBottom: 4, marginTop: 0 }}
+                            >
                               Outline
                             </h3>
                             {draftSections.length === 0 ? (
                               <p style={{ fontSize: 12 }}>
-                                Run the Blog Draft Engine to generate section headings and summaries.
+                                Run the Blog Draft Engine to generate section headings and
+                                summaries.
                               </p>
                             ) : (
                               <table className="seo-table">
@@ -1442,24 +1295,39 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                           </div>
 
                           <div>
-                            <h3 className="card-title" style={{ fontSize: 13, marginBottom: 4, marginTop: 0 }}>
+                            <h3
+                              className="card-title"
+                              style={{ fontSize: 13, marginBottom: 4, marginTop: 0 }}
+                            >
                               Full article
                             </h3>
 
                             <div className="field-help" style={{ marginBottom: 6 }}>
-                              Choose the format you want to copy. Plain text is best for most editors. HTML is there if you need it.
+                              Choose the format you want to copy. Plain text is best for
+                              most editors. HTML is there if you need it.
                             </div>
 
-                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: 8,
+                                flexWrap: "wrap",
+                                marginBottom: 8,
+                              }}
+                            >
                               <button
-                                className={"pill" + (draftFormat === "text" ? " pill--active" : "")}
+                                className={
+                                  "pill" + (draftFormat === "text" ? " pill--active" : "")
+                                }
                                 onClick={() => setDraftFormat("text")}
                                 type="button"
                               >
                                 Plain text
                               </button>
                               <button
-                                className={"pill" + (draftFormat === "html" ? " pill--active" : "")}
+                                className={
+                                  "pill" + (draftFormat === "html" ? " pill--active" : "")
+                                }
                                 onClick={() => setDraftFormat("html")}
                                 type="button"
                               >
@@ -1468,7 +1336,9 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
 
                               <button
                                 className="button button--ghost button--tiny"
-                                onClick={() => copyToClipboard(draftFormat === "html" ? draftHtml : draftText)}
+                                onClick={() =>
+                                  copyToClipboard(draftFormat === "html" ? draftHtml : draftText)
+                                }
                                 disabled={draftFormat === "html" ? !draftHtml : !draftText}
                                 type="button"
                               >
@@ -1570,7 +1440,8 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                             onChange={(e) => setWeeklyThemes(e.target.value)}
                           />
                           <div className="field-help">
-                            Comma separated. We will mix these into the weekly schedule (e.g. product education, styling tips, gifting).
+                            Comma separated. We will mix these into the weekly schedule
+                            (e.g. product education, styling tips, gifting).
                           </div>
                         </div>
                       </>
@@ -1680,7 +1551,8 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                             onChange={(e) => setUseCases(e.target.value)}
                           />
                           <div className="field-help">
-                            Comma separated. We convert this into structured context for the engine.
+                            Comma separated. We convert this into structured context for
+                            the engine.
                           </div>
                         </div>
                       </>
@@ -1696,8 +1568,8 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                       </button>
                       <div className="inspector-footnote">
                         {isWeekly
-                          ? "Plan generated and saved. Open Draft Library to export."
-                          : "Output generated and saved. Open Draft Library to export."}
+                          ? "Plan generated. Copy titles and meta from the left-hand table."
+                          : "SEO fields generated. Copy them from the left-hand table."}
                       </div>
                     </div>
 
@@ -1717,30 +1589,44 @@ ${rows || `<tr><td colspan="7">No posts generated.</td></tr>`}
                 <div className="card-header">
                   <h2 className="card-title">{pageTab}</h2>
                   <p className="card-subtitle">
-                    This view is part of the AURA roadmap. You can show this to clients as an upcoming feature while we focus on the SEO engines.
+                    This view is part of the AURA roadmap. You can show this to
+                    clients as an upcoming feature while we focus on the SEO
+                    engines.
                   </p>
                 </div>
                 <ul style={{ fontSize: 12, paddingLeft: 18 }}>
                   {pageTab === "Compare domains" && (
                     <>
-                      <li>Compare your project domain against competitors on title &amp; meta quality.</li>
                       <li>
-                        See who wins on click-through potential in {activeMarket} for {activeDevice.toLowerCase()}.
+                        Compare your project domain against competitors on title &amp;
+                        meta quality.
+                      </li>
+                      <li>
+                        See who wins on click-through potential in {activeMarket} for{" "}
+                        {activeDevice.toLowerCase()}.
                       </li>
                       <li>Export a simple action list you can plug straight into Shopify.</li>
                     </>
                   )}
                   {pageTab === "Growth report" && (
                     <>
-                      <li>Track how your average SEO score moves over time across products and content.</li>
-                      <li>Spot weeks where titles/meta dropped below target so you can fix them quickly.</li>
+                      <li>
+                        Track how your average SEO score moves over time across products and content.
+                      </li>
+                      <li>
+                        Spot weeks where titles/meta dropped below target so you can fix them quickly.
+                      </li>
                       <li>Perfect for monthly reports you send to brands.</li>
                     </>
                   )}
                   {pageTab === "Compare by countries" && (
                     <>
-                      <li>See which markets (US / UK / EU / Worldwide) are best optimised for your catalogue.</li>
-                      <li>Plan localisation work – which regions need better copy, currency cues or spelling.</li>
+                      <li>
+                        See which markets (US / UK / EU / Worldwide) are best optimised for your catalogue.
+                      </li>
+                      <li>
+                        Plan localisation work – which regions need better copy, currency cues or spelling.
+                      </li>
                       <li>Future versions will auto-translate SEO for each region.</li>
                     </>
                   )}
