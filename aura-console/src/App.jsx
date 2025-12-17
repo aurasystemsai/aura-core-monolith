@@ -6,6 +6,7 @@ import ProjectSwitcher from "./ProjectSwitcher";
 import SystemHealthPanel from "./components/SystemHealthPanel";
 import DraftLibrary from "./components/DraftLibrary";
 import ContentHealthAuditor from "./components/ContentHealthAuditor";
+import ContentIngestor from "./components/ContentIngestor";
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
@@ -704,6 +705,7 @@ function App() {
               "Overview",
               "Draft Library",
               "Content Health",
+              "Content Ingest",
               "Compare domains",
               "Growth report",
               "Compare by countries",
@@ -815,6 +817,8 @@ function App() {
                 <ContentHealthAuditor coreUrl={coreUrl} projectId={project.id} />
               </div>
             </section>
+          ) : pageTab === "Content Ingest" ? (
+            <ContentIngestor coreUrl={coreUrl} projectId={project.id} />
           ) : pageTab === "Overview" ? (
             <>
               <section className="kpi-row">
@@ -1337,7 +1341,9 @@ function App() {
                               <button
                                 className="button button--ghost button--tiny"
                                 onClick={() =>
-                                  copyToClipboard(draftFormat === "html" ? draftHtml : draftText)
+                                  copyToClipboard(
+                                    draftFormat === "html" ? draftHtml : draftText
+                                  )
                                 }
                                 disabled={draftFormat === "html" ? !draftHtml : !draftText}
                                 type="button"
@@ -1348,8 +1354,10 @@ function App() {
 
                             <pre className="raw-json-pre" style={{ marginTop: 6 }}>
                               {draftFormat === "html"
-                                ? draftHtml || "// Run the Blog Draft Engine to generate the article HTML here."
-                                : draftText || "// Run the Blog Draft Engine to generate the article text here."}
+                                ? draftHtml ||
+                                  "// Run the Blog Draft Engine to generate the article HTML here."
+                                : draftText ||
+                                  "// Run the Blog Draft Engine to generate the article text here."}
                             </pre>
                           </div>
                         </div>
