@@ -1,314 +1,375 @@
-// aura-console/src/components/ContentHealthAuditor.jsx
 import React, { useEffect, useMemo, useState } from "react";
+import "./ContentHealthAuditor.css";
 
-function ContentHealthAuditor({ coreUrl, projectId }) {
-  const [type, setType] = useState("");
+function clampNumber(value, min, max, fallback) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+}
+
+function normaliseCoreUrl(coreUrl) {
+  return String(coreUrl || "").replace(/\/+$/, "");
+}
+
+function buildQuery(params) {
+  const q = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === "") return;
+    q.set(k, String(v));
+  });
+  const s = q.toString();
+  return s ? `?${s}` : "";
+}
+
+function scoreTone(score) {
+  if (score <= 40) return "score-badge score-badge--bad";
+  if (score <= 70) return "score-badge score-badge--warn";
+  return "score-badge score-badge--good";
+}
+
+function truncate(str, max = 90) {
+  const s = String(str || "");
+  if (s.length <= max) return s;
+  return `${s.slice(0, max - 1)}…`;
+}
+
+function issuesPretty(issues) {
+  const list = Array.isArray(issues) ? issues : [];
+  if (!list.length) return [];
+  return list.map((i) =>
+    String(i)
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/^\w/, (c) => c.toUpperCase())
+  );
+}
+
+function safeCopy(value) {
+  const v = String(value || "");
+  if (!v.trim()) return;
+  navigator.clipboard.writeText(v).catch(() => {});
+}
+
+function toCsv(rows) {
+  const header = [
+    "score",
+    "type",
+    "url",
+    "title",
+    "metaDescription",
+    "h1",
+    "issues",
+    "updatedAt",
+  ];
+  const esc = (v) => {
+    const s = String(v ?? "");
+    const needs = /[,"\n]/.test(s);
+    const out = s.replace(/"/g, '""');
+    return needs ? `"${out}"` : out;
+  };
+  const lines = [header.join(",")];
+
+  for (const r of rows) {
+    lines.push(
+      [
+        r.score,
+        r.type,
+        r.url,
+        r.title,
+        r.metaDescription,
+        r.h1,
+        (Array.isArray(r.issues) ? r.issues.join("|") : "") || "",
+        r.updatedAt,
+      ]
+        .map(esc)
+        .join(",")
+    );
+  }
+  return lines.join("\n");
+}
+
+function download(filename, text) {
+  const blob = new Blob([text], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+export default function ContentHealthAuditor({ coreUrl, projectId }) {
+  // Filters (beginner-friendly)
+  const [type, setType] = useState(""); // "" = all
   const [maxScore, setMaxScore] = useState(70);
   const [limit, setLimit] = useState(100);
 
-  const [loading, setLoading] = useState(false);
-  const [refreshingUrl, setRefreshingUrl] = useState(null);
-  const [error, setError] = useState(null);
-
+  // UI state
+  const [status, setStatus] = useState("idle"); // idle | loading | ok | error
+  const [error, setError] = useState("");
   const [items, setItems] = useState([]);
 
-  const load = async () => {
-    if (!projectId) return;
-    setLoading(true);
-    setError(null);
+  const normalizedCoreUrl = useMemo(() => normaliseCoreUrl(coreUrl), [coreUrl]);
+
+  const endpoint = useMemo(() => {
+    const query = buildQuery({
+      type: type || undefined,
+      maxScore: clampNumber(maxScore, 0, 100, 70),
+      limit: clampNumber(limit, 1, 500, 100),
+    });
+    return `${normalizedCoreUrl}/projects/${projectId}/content/health${query}`;
+  }, [normalizedCoreUrl, projectId, type, maxScore, limit]);
+
+  const fetchHealth = async () => {
+    if (!normalizedCoreUrl || !projectId) return;
+
+    setStatus("loading");
+    setError("");
 
     try {
-      const qs = new URLSearchParams();
-      if (type) qs.set("type", type);
-      qs.set("maxScore", String(maxScore));
-      qs.set("limit", String(limit));
-
-      const res = await fetch(
-        `${coreUrl}/projects/${projectId}/content/health?${qs.toString()}`
-      );
+      const res = await fetch(endpoint);
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Failed (${res.status})`);
+        const t = await res.text().catch(() => "");
+        throw new Error(`Core API error (${res.status}): ${t || res.statusText}`);
       }
+
       const data = await res.json();
-      setItems(Array.isArray(data.items) ? data.items : []);
+      const rows = Array.isArray(data?.items) ? data.items : [];
+      setItems(rows);
+      setStatus("ok");
     } catch (e) {
-      setError(e.message || "Failed to load content health");
-    } finally {
-      setLoading(false);
+      setStatus("error");
+      setError(e?.message || "Failed to load content health");
+      setItems([]);
     }
   };
 
   useEffect(() => {
-    load();
+    // Auto-load on first open + whenever filters change
+    fetchHealth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
+  }, [endpoint]);
 
-  const summary = useMemo(() => {
-    const missingTitle = items.filter(
-      (r) => !((r.effectiveTitle || "").trim().length)
-    ).length;
-    const missingMeta = items.filter(
-      (r) => !((r.effectiveMetaDescription || "").trim().length)
-    ).length;
-    return { missingTitle, missingMeta };
+  const counts = useMemo(() => {
+    const total = items.length;
+    const worst = total ? items[0]?.score : null; // endpoint already sorts worst-first
+    return { total, worst };
   }, [items]);
 
-  const copy = async (text) => {
-    try {
-      await navigator.clipboard.writeText(text || "");
-    } catch (e) {
-      console.error("Clipboard copy failed", e);
-    }
-  };
-
-  const openUrl = (url) => {
-    if (!url) return;
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
-
-  const refreshMeta = async (url) => {
-    if (!url) return;
-    setRefreshingUrl(url);
-    setError(null);
-
-    try {
-      const res = await fetch(
-        `${coreUrl}/projects/${projectId}/content/refresh`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url }),
-        }
-      );
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Refresh failed (${res.status})`);
-      }
-
-      // Reload list so scores + fields update immediately
-      await load();
-    } catch (e) {
-      setError(e.message || "Failed to refresh URL meta");
-    } finally {
-      setRefreshingUrl(null);
-    }
-  };
-
-  const statusLabel = loading
-    ? "Loading…"
-    : `Loaded ${items.length} item(s) • missing title: ${summary.missingTitle} • missing meta: ${summary.missingMeta}`;
+  const csvName = useMemo(() => {
+    const t = type ? type : "all";
+    return `aura-content-health-${projectId}-${t}-max${clampNumber(
+      maxScore,
+      0,
+      100,
+      70
+    )}.csv`;
+  }, [projectId, type, maxScore]);
 
   return (
-    <div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "240px 1fr 1fr 1fr",
-          gap: 12,
-          alignItems: "end",
-          marginBottom: 12,
-        }}
-      >
-        <div>
-          <div className="filters-label">Type</div>
-          <select
-            className="core-api-input"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-          >
-            <option value="">All types</option>
-            <option value="page">page</option>
-            <option value="blog">blog</option>
-            <option value="product">product</option>
-            <option value="landing">landing</option>
-            <option value="category">category</option>
-            <option value="docs">docs</option>
-            <option value="other">other</option>
-          </select>
-        </div>
+    <div className="cha-wrap">
+      <div className="cha-toolbar">
+        <div className="cha-filters">
+          <div className="cha-filter">
+            <div className="cha-label">Type</div>
+            <select
+              className="cha-select"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+            >
+              <option value="">All</option>
+              <option value="product">Product</option>
+              <option value="blog">Blog</option>
+              <option value="landing">Landing</option>
+              <option value="category">Category</option>
+              <option value="docs">Docs</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
 
-        <div>
-          <div className="filters-label">Max score (show items at or below)</div>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <div className="cha-filter">
+            <div className="cha-label">Max score</div>
             <input
-              className="core-api-input"
+              className="cha-input"
               type="number"
               min={0}
               max={100}
               value={maxScore}
-              onChange={(e) => setMaxScore(Number(e.target.value))}
-              style={{ width: 90 }}
+              onChange={(e) => setMaxScore(e.target.value)}
             />
+            <div className="cha-help">Shows items at or below this score.</div>
+          </div>
+
+          <div className="cha-filter">
+            <div className="cha-label">Limit</div>
             <input
-              type="range"
-              min="0"
-              max="100"
-              value={maxScore}
-              onChange={(e) => setMaxScore(Number(e.target.value))}
-              style={{ width: "100%" }}
+              className="cha-input"
+              type="number"
+              min={1}
+              max={500}
+              value={limit}
+              onChange={(e) => setLimit(e.target.value)}
             />
-            <div style={{ width: 40, textAlign: "right", fontSize: 12 }}>
-              {maxScore}
-            </div>
+            <div className="cha-help">Max rows returned from Core.</div>
           </div>
         </div>
 
-        <div>
-          <div className="filters-label">Limit</div>
-          <input
-            className="core-api-input"
-            type="number"
-            min={1}
-            max={500}
-            value={limit}
-            onChange={(e) => setLimit(Number(e.target.value))}
-          />
-        </div>
-
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <div
-            className="core-status-chip core-status-chip--ok"
-            style={{ whiteSpace: "nowrap" }}
-          >
-            <span className="core-status-indicator" />
-            <span className="core-status-text">{statusLabel}</span>
-          </div>
+        <div className="cha-actions">
           <button
-            className="button button--primary"
-            onClick={load}
-            disabled={loading}
+            className="button button--ghost"
+            type="button"
+            onClick={fetchHealth}
+            disabled={status === "loading"}
           >
-            {loading ? "Refreshing…" : "Refresh"}
+            {status === "loading" ? "Refreshing…" : "Refresh"}
           </button>
+
+          <button
+            className="button button--ghost"
+            type="button"
+            onClick={() => download(csvName, toCsv(items))}
+            disabled={!items.length}
+          >
+            Export CSV
+          </button>
+
+          <a
+            className="button button--ghost"
+            href={endpoint}
+            target="_blank"
+            rel="noreferrer"
+            title="Open the Core API JSON for this view"
+          >
+            Open JSON
+          </a>
         </div>
       </div>
 
-      {error && (
-        <div className="error-banner" style={{ marginBottom: 12 }}>
-          <span className="error-dot" />
-          {error}
+      <div className="cha-summary">
+        <div className="cha-summary-item">
+          <div className="cha-summary-label">Rows</div>
+          <div className="cha-summary-value">{counts.total}</div>
+        </div>
+        <div className="cha-summary-item">
+          <div className="cha-summary-label">Worst score</div>
+          <div className="cha-summary-value">{counts.worst ?? "—"}</div>
+        </div>
+        <div className="cha-summary-item cha-summary-item--grow">
+          <div className="cha-summary-label">Tip</div>
+          <div className="cha-summary-value cha-summary-tip">
+            Work top-to-bottom. Fix title/meta/H1, then refresh and watch rows disappear.
+          </div>
+        </div>
+      </div>
+
+      {status === "error" && (
+        <div className="cha-error">
+          <div className="cha-error-title">Could not load Content Health</div>
+          <div className="cha-error-body">{error}</div>
         </div>
       )}
 
-      <div className="field-help" style={{ marginBottom: 8 }}>
-        Beginner workflow: open the URL, fix the title/meta in your platform,
-        then click Refresh. If your site is JS-rendered (Framer), the “Refresh
-        meta” button may not see tags in raw HTML — in that case ingest with
-        <code> url|title|meta </code> so we store manual overrides.
-      </div>
-
-      <div className="run-history-table-wrapper">
-        <table className="run-history-table">
+      <div className="cha-table-wrap">
+        <table className="cha-table">
           <thead>
             <tr>
               <th style={{ width: 90 }}>Score</th>
-              <th style={{ width: 120 }}>Type</th>
+              <th style={{ width: 110 }}>Type</th>
               <th>URL</th>
               <th>Title</th>
               <th>Meta description</th>
-              <th style={{ width: 360 }}>Actions</th>
+              <th style={{ width: 220 }}>Issues</th>
+              <th style={{ width: 150 }}>Updated</th>
+              <th style={{ width: 160 }}>Actions</th>
             </tr>
           </thead>
-
           <tbody>
-            {items.length === 0 ? (
+            {status === "loading" && !items.length ? (
               <tr>
-                <td colSpan={6}>
-                  {loading
-                    ? "Loading…"
-                    : "No items returned. Either your site is healthy at this threshold, or you need to ingest content first."}
+                <td colSpan={8} className="cha-empty">
+                  Loading content health from Core…
+                </td>
+              </tr>
+            ) : !items.length ? (
+              <tr>
+                <td colSpan={8} className="cha-empty">
+                  No items found for these filters. Either everything is healthy, or you have not ingested content yet.
                 </td>
               </tr>
             ) : (
               items.map((row) => {
-                const title =
-                  row.effectiveTitle ||
-                  row.manualTitle ||
-                  row.title ||
-                  "Missing title";
-                const meta =
-                  row.effectiveMetaDescription ||
-                  row.manualMetaDescription ||
-                  row.metaDescription ||
-                  "Missing meta description";
-
+                const prettyIssues = issuesPretty(row.issues);
                 return (
-                  <tr key={row.id}>
+                  <tr key={`${row.id}-${row.url}`}>
                     <td>
-                      <span
-                        className="system-health-chip"
-                        style={{
-                          display: "inline-flex",
-                          gap: 8,
-                          alignItems: "center",
-                        }}
-                        title={(row.issues || []).join(", ")}
-                      >
-                        <span className="system-health-dot" />
-                        <span style={{ fontWeight: 700 }}>
-                          {row.score}/100
-                        </span>
+                      <span className={scoreTone(row.score)}>
+                        {row.score ?? "—"}
                       </span>
+                      <div className="cha-sub">
+                        T{row.titleLength ?? "—"} · M{row.metaLength ?? "—"}
+                      </div>
                     </td>
-
-                    <td>{row.type || "other"}</td>
-
                     <td>
+                      <span className="cha-type">{row.type || "other"}</span>
+                      <div className="cha-sub">{row.platform || "—"}</div>
+                    </td>
+                    <td className="cha-url">
                       <a href={row.url} target="_blank" rel="noreferrer">
-                        {row.url}
+                        {truncate(row.url, 70)}
                       </a>
+                      <div className="cha-sub">{row.externalId || "—"}</div>
                     </td>
-
-                    <td style={{ maxWidth: 360 }}>
-                      {title || "Missing title"}
+                    <td title={row.title || ""}>{truncate(row.title || "—", 80)}</td>
+                    <td title={row.metaDescription || ""}>
+                      {truncate(row.metaDescription || "—", 95)}
                     </td>
-
-                    <td style={{ maxWidth: 420 }}>
-                      {meta || "Missing meta description"}
-                    </td>
-
                     <td>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {prettyIssues.length ? (
+                        <div className="cha-issues">
+                          {prettyIssues.map((i) => (
+                            <span key={i} className="cha-issue-pill">
+                              {i}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="cha-muted">—</span>
+                      )}
+                    </td>
+                    <td>
+                      <div className="cha-date">
+                        {row.updatedAt ? new Date(row.updatedAt).toLocaleString() : "—"}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="cha-action-row">
                         <button
                           className="button button--ghost button--tiny"
-                          onClick={() => openUrl(row.url)}
-                        >
-                          Open
-                        </button>
-
-                        <button
-                          className="button button--ghost button--tiny"
-                          onClick={() => copy(row.url)}
+                          type="button"
+                          onClick={() => safeCopy(row.url)}
+                          title="Copy URL"
                         >
                           Copy URL
                         </button>
-
                         <button
                           className="button button--ghost button--tiny"
-                          onClick={() => copy(title)}
-                          disabled={!title || title === "Missing title"}
+                          type="button"
+                          onClick={() => safeCopy(row.title)}
+                          title="Copy title"
+                          disabled={!row.title}
                         >
                           Copy title
                         </button>
-
                         <button
                           className="button button--ghost button--tiny"
-                          onClick={() => copy(meta)}
-                          disabled={!meta || meta === "Missing meta description"}
+                          type="button"
+                          onClick={() => safeCopy(row.metaDescription)}
+                          title="Copy meta description"
+                          disabled={!row.metaDescription}
                         >
                           Copy meta
-                        </button>
-
-                        <button
-                          className="button button--primary button--tiny"
-                          onClick={() => refreshMeta(row.url)}
-                          disabled={refreshingUrl === row.url}
-                          title="Fetch <title>, meta description, and H1 from the live URL and update this row"
-                        >
-                          {refreshingUrl === row.url
-                            ? "Refreshing…"
-                            : "Refresh meta"}
                         </button>
                       </div>
                     </td>
@@ -320,34 +381,16 @@ function ContentHealthAuditor({ coreUrl, projectId }) {
         </table>
       </div>
 
-      <div className="card" style={{ marginTop: 12 }}>
-        <div className="card-header">
-          <h3 className="card-title" style={{ fontSize: 14 }}>
-            What to fix first
-          </h3>
-          <p className="card-subtitle">
-            Focus on the fastest wins. When these are cleaned up, your overall
-            crawl quality improves quickly.
-          </p>
+      <div className="cha-footer">
+        <div className="cha-footer-left">
+          Endpoint: <span className="cha-mono">{endpoint}</span>
         </div>
-
-        <ol style={{ paddingLeft: 18, fontSize: 12, margin: 0 }}>
-          <li style={{ marginBottom: 6 }}>
-            <strong>Missing titles / metas</strong> — fill these first. They are
-            the easiest “score jumps”.
-          </li>
-          <li style={{ marginBottom: 6 }}>
-            <strong>Low scores</strong> — work bottom-up (worst to best).
-            Re-check after each batch.
-          </li>
-          <li>
-            <strong>Keep it beginner simple</strong> — aim for clear page names
-            and benefits; avoid keyword stuffing.
-          </li>
-        </ol>
+        <div className="cha-footer-right">
+          <span className="cha-muted">
+            Scoring is currently length-based (title/meta) + H1 present. We can upgrade this later to real SEO heuristics.
+          </span>
+        </div>
       </div>
     </div>
   );
 }
-
-export default ContentHealthAuditor;
