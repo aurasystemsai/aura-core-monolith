@@ -1,0 +1,30 @@
+.fq-wrap {
+  padding: 16px;
+}
+
+.fq-sub {
+  color: #9ca3af;
+  margin-bottom: 12px;
+}
+
+.fq-toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.fq-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.fq-table th,
+.fq-table td {
+  border-bottom: 1px solid #1f2937;
+  padding: 8px;
+  text-align: left;
+}
+
+.fq-table button {
+  margin-right: 6px;
+}

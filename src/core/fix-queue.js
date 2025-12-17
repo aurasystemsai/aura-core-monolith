@@ -1,35 +1,39 @@
-// src/core/fix-queue.js
-// -------------------------------------
-// AURA Fix Queue Core
-// Tracks SEO issues that need fixing
-// -------------------------------------
+"use strict";
 
 const db = require("./db");
 
-// Ensure table exists
-db.exec(`
-  CREATE TABLE IF NOT EXISTS fix_queue (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    projectId TEXT NOT NULL,
-    url TEXT NOT NULL,
-    issue TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'open', -- open | fixed | ignored
-    createdAt TEXT NOT NULL,
-    resolvedAt TEXT
-  );
+function ensureFixQueueTable() {
+  db.prepare(`
+    CREATE TABLE IF NOT EXISTS fix_queue (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      projectId TEXT NOT NULL,
+      url TEXT NOT NULL,
+      issue TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'open', -- open | fixed | ignored
+      createdAt TEXT NOT NULL,
+      resolvedAt TEXT
+    )
+  `).run();
 
-  CREATE INDEX IF NOT EXISTS idx_fix_queue_project
-    ON fix_queue(projectId);
+  db.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_fix_queue_project_status
+    ON fix_queue (projectId, status)
+  `).run();
+}
 
-  CREATE UNIQUE INDEX IF NOT EXISTS idx_fix_queue_unique
-    ON fix_queue(projectId, url, issue);
-`);
+function addToFixQueue(projectId, url, issues) {
+  ensureFixQueueTable();
 
-function addIssues(projectId, url, issues = []) {
+  if (!projectId || !url || !Array.isArray(issues) || !issues.length) {
+    const err = new Error("projectId, url and issues[] are required");
+    err.statusCode = 400;
+    throw err;
+  }
+
   const now = new Date().toISOString();
 
   const stmt = db.prepare(`
-    INSERT OR IGNORE INTO fix_queue (
+    INSERT INTO fix_queue (
       projectId,
       url,
       issue,
@@ -41,7 +45,7 @@ function addIssues(projectId, url, issues = []) {
 
   const tx = db.transaction(() => {
     for (const issue of issues) {
-      stmt.run(projectId, url, issue, now);
+      stmt.run(projectId, url, String(issue), now);
     }
   });
 
@@ -50,37 +54,48 @@ function addIssues(projectId, url, issues = []) {
   return { added: issues.length };
 }
 
-function listFixQueue(projectId) {
-  return db
-    .prepare(
-      `
+function listFixQueue(projectId, status) {
+  ensureFixQueueTable();
+
+  let sql = `
     SELECT *
     FROM fix_queue
     WHERE projectId = ?
-    ORDER BY createdAt DESC
-  `
-    )
-    .all(projectId);
+  `;
+  const params = [projectId];
+
+  if (status) {
+    sql += " AND status = ?";
+    params.push(status);
+  }
+
+  sql += " ORDER BY createdAt DESC";
+
+  return db.prepare(sql).all(...params);
 }
 
-function updateStatus(projectId, id, status) {
-  const resolvedAt = status === "fixed" ? new Date().toISOString() : null;
+function updateFixStatus(projectId, id, status) {
+  ensureFixQueueTable();
 
-  const res = db
-    .prepare(
-      `
+  if (!["open", "fixed", "ignored"].includes(status)) {
+    const err = new Error("Invalid status");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const resolvedAt = status === "open" ? null : new Date().toISOString();
+
+  const result = db.prepare(`
     UPDATE fix_queue
     SET status = ?, resolvedAt = ?
     WHERE projectId = ? AND id = ?
-  `
-    )
-    .run(status, resolvedAt, projectId, Number(id));
+  `).run(status, resolvedAt, projectId, Number(id));
 
-  return res.changes > 0;
+  return { updated: result.changes };
 }
 
 module.exports = {
-  addIssues,
+  addToFixQueue,
   listFixQueue,
-  updateStatus,
+  updateFixStatus,
 };
