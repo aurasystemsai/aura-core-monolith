@@ -1,30 +1,22 @@
 // src/routes/fix-queue.js
 // -------------------------------------
-// Fix Queue API routes
+// Fix Queue Routes
 // -------------------------------------
 
 const express = require("express");
-const {
-  addFixQueueItem,
-  listFixQueueItems,
-  markFixQueueDone,
-  removeFixQueueItem,
-  dedupeFixQueue,
-} = require("../core/fixQueue");
-
 const router = express.Router();
 
-/**
- * POST /projects/:projectId/fix-queue
- * Body: { url: string, issues?: string[] }
- * Adds (deduped) queue item.
- */
+// IMPORTANT: correct path + filename (kebab-case)
+const fixQueueCore = require("../core/fix-queue");
+
+// POST /projects/:projectId/fix-queue
+// Body: { url: string, issues: string[] }
 router.post("/projects/:projectId/fix-queue", (req, res) => {
-  const { projectId } = req.params;
+  const projectId = req.params.projectId;
 
   try {
     const { url, issues } = req.body || {};
-    const item = addFixQueueItem(projectId, { url, issues });
+    const item = fixQueueCore.addToFixQueue(projectId, { url, issues });
 
     return res.json({
       ok: true,
@@ -35,24 +27,19 @@ router.post("/projects/:projectId/fix-queue", (req, res) => {
     console.error("[FixQueue] add error", err);
     return res.status(400).json({
       ok: false,
-      error: err.message || "Failed to add fix queue item",
+      error: err.message || "Failed to add to fix queue",
     });
   }
 });
 
-/**
- * GET /projects/:projectId/fix-queue
- * Query: status=open|done (default open), limit=number (default 200)
- */
+// GET /projects/:projectId/fix-queue
+// Optional query: ?status=open|done
 router.get("/projects/:projectId/fix-queue", (req, res) => {
-  const { projectId } = req.params;
-  const { status, limit } = req.query;
+  const projectId = req.params.projectId;
 
   try {
-    const items = listFixQueueItems(projectId, {
-      status: status || "open",
-      limit: limit !== undefined ? Number(limit) : 200,
-    });
+    const { status } = req.query;
+    const items = fixQueueCore.listFixQueue(projectId, { status });
 
     return res.json({
       ok: true,
@@ -63,20 +50,18 @@ router.get("/projects/:projectId/fix-queue", (req, res) => {
     console.error("[FixQueue] list error", err);
     return res.status(400).json({
       ok: false,
-      error: err.message || "Failed to list fix queue items",
+      error: err.message || "Failed to fetch fix queue",
     });
   }
 });
 
-/**
- * POST /projects/:projectId/fix-queue/:id/done
- * Marks a queue item as done.
- */
+// POST /projects/:projectId/fix-queue/:id/done
 router.post("/projects/:projectId/fix-queue/:id/done", (req, res) => {
-  const { projectId, id } = req.params;
+  const projectId = req.params.projectId;
+  const id = req.params.id;
 
   try {
-    const result = markFixQueueDone(projectId, id);
+    const result = fixQueueCore.markDone(projectId, id);
     return res.json({
       ok: true,
       projectId,
@@ -92,15 +77,13 @@ router.post("/projects/:projectId/fix-queue/:id/done", (req, res) => {
   }
 });
 
-/**
- * DELETE /projects/:projectId/fix-queue/:id
- * Removes a queue item (optional, but useful).
- */
-router.delete("/projects/:projectId/fix-queue/:id", (req, res) => {
-  const { projectId, id } = req.params;
+// POST /projects/:projectId/fix-queue/:id/remove
+router.post("/projects/:projectId/fix-queue/:id/remove", (req, res) => {
+  const projectId = req.params.projectId;
+  const id = req.params.id;
 
   try {
-    const result = removeFixQueueItem(projectId, id);
+    const result = fixQueueCore.removeItem(projectId, id);
     return res.json({
       ok: true,
       projectId,
@@ -108,23 +91,20 @@ router.delete("/projects/:projectId/fix-queue/:id", (req, res) => {
       ...result,
     });
   } catch (err) {
-    console.error("[FixQueue] delete error", err);
+    console.error("[FixQueue] remove error", err);
     return res.status(400).json({
       ok: false,
-      error: err.message || "Failed to delete fix queue item",
+      error: err.message || "Failed to remove item",
     });
   }
 });
 
-/**
- * POST /projects/:projectId/fix-queue/dedupe
- * One-off cleanup for old duplicates already in DB.
- */
+// POST /projects/:projectId/fix-queue/dedupe
 router.post("/projects/:projectId/fix-queue/dedupe", (req, res) => {
-  const { projectId } = req.params;
+  const projectId = req.params.projectId;
 
   try {
-    const result = dedupeFixQueue(projectId);
+    const result = fixQueueCore.dedupeFixQueue(projectId);
     return res.json({
       ok: true,
       projectId,
