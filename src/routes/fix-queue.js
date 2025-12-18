@@ -1,62 +1,109 @@
-"use strict";
+// src/routes/fix-queue.js
+// -------------------------------------
+// Fix Queue API routes
+// -------------------------------------
 
 const express = require("express");
-const fixQueueCore = require("../core/fix-queue");
-
 const router = express.Router();
+
+const fixQueue = require("../core/fixQueue");
 
 /**
  * POST /projects/:projectId/fix-queue
+ * Body: { url, issues?: [], owner?: string, notes?: string }
+ *
+ * Dedupes by (projectId + url) and MERGES issues.
  */
 router.post("/projects/:projectId/fix-queue", (req, res) => {
   const projectId = req.params.projectId;
-  const { url, issues } = req.body || {};
 
   try {
-    const result = fixQueueCore.addToFixQueue(projectId, url, issues);
-    return res.json({ ok: true, result });
+    const { url, issues, owner, notes } = req.body || {};
+
+    const result = fixQueue.addOrMergeFixItem({
+      projectId,
+      url,
+      issues,
+      owner,
+      notes,
+    });
+
+    if (!result.ok) {
+      return res.status(400).json(result);
+    }
+
+    return res.json({
+      ok: true,
+      action: result.action,
+      item: result.item,
+    });
   } catch (err) {
-    return res.status(err.statusCode || 500).json({
+    console.error("[FixQueue] POST error", err);
+    return res.status(500).json({
       ok: false,
-      error: err.message || "Failed to add to Fix Queue",
+      error: "Failed to add to Fix Queue",
     });
   }
 });
 
 /**
- * GET /projects/:projectId/fix-queue
- * ?status=open|fixed|ignored
+ * GET /projects/:projectId/fix-queue?status=open|done&limit=200
  */
 router.get("/projects/:projectId/fix-queue", (req, res) => {
   const projectId = req.params.projectId;
-  const { status } = req.query;
+  const { status, limit } = req.query;
 
   try {
-    const items = fixQueueCore.listFixQueue(projectId, status);
-    return res.json({ ok: true, items });
+    const items = fixQueue.listFixQueue({
+      projectId,
+      status: status || "open",
+      limit: limit || 200,
+    });
+
+    return res.json({
+      ok: true,
+      projectId,
+      status: status || "open",
+      count: items.length,
+      items,
+    });
   } catch (err) {
+    console.error("[FixQueue] GET error", err);
     return res.status(500).json({
       ok: false,
-      error: "Failed to list Fix Queue",
+      error: "Failed to fetch Fix Queue",
     });
   }
 });
 
 /**
- * PATCH /projects/:projectId/fix-queue/:id
+ * POST /projects/:projectId/fix-queue/:id/done
+ * Marks item done.
  */
-router.patch("/projects/:projectId/fix-queue/:id", (req, res) => {
+router.post("/projects/:projectId/fix-queue/:id/done", (req, res) => {
   const projectId = req.params.projectId;
-  const { id } = req.params;
-  const { status } = req.body || {};
+  const id = req.params.id;
 
   try {
-    const result = fixQueueCore.updateFixStatus(projectId, id, status);
-    return res.json({ ok: true, result });
+    const result = fixQueue.setFixQueueStatus({
+      projectId,
+      id,
+      status: "done",
+    });
+
+    if (!result.ok) {
+      return res.status(400).json(result);
+    }
+
+    return res.json({
+      ok: true,
+      updated: result.updated,
+    });
   } catch (err) {
-    return res.status(err.statusCode || 500).json({
+    console.error("[FixQueue] DONE error", err);
+    return res.status(500).json({
       ok: false,
-      error: err.message || "Failed to update Fix Queue item",
+      error: "Failed to mark Fix Queue item done",
     });
   }
 });
