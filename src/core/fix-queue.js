@@ -1,37 +1,29 @@
 // src/core/fixQueue.js
 // -------------------------------------
 // AURA Fix Queue (SQLite)
-// Dedupes by (projectId + url) and merges issues on re-add.
+// Stores a deduped queue of URLs/issues to fix, per project.
 // -------------------------------------
 
 const db = require("./db");
 
-// Create table + unique constraint
+// Table + constraints
 db.exec(`
   CREATE TABLE IF NOT EXISTS fix_queue (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     projectId TEXT NOT NULL,
     url TEXT NOT NULL,
-    issues TEXT,              -- JSON array of strings
-    status TEXT NOT NULL,     -- open | done
-    owner TEXT,               -- optional
-    notes TEXT,               -- optional
+    issues TEXT,                -- JSON string array
+    status TEXT NOT NULL,       -- open | done
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL
   );
 
+  -- IMPORTANT: this enforces server-side dedupe (one row per projectId+url)
   CREATE UNIQUE INDEX IF NOT EXISTS idx_fix_queue_project_url
     ON fix_queue(projectId, url);
-`);
 
-// One-time cleanup: remove duplicates already stored (keep the earliest id)
-db.exec(`
-  DELETE FROM fix_queue
-  WHERE id NOT IN (
-    SELECT MIN(id)
-    FROM fix_queue
-    GROUP BY projectId, url
-  );
+  CREATE INDEX IF NOT EXISTS idx_fix_queue_project_status_updated
+    ON fix_queue(projectId, status, updatedAt);
 `);
 
 function normaliseString(value) {
@@ -43,213 +35,243 @@ function normaliseString(value) {
 function normaliseUrl(url) {
   const u = normaliseString(url);
   if (!u) return null;
-  return u.replace(/\/+$/, ""); // remove trailing slash to reduce dupes
+  // strip trailing slashes for canonical dedupe
+  return u.replace(/\/+$/, "");
 }
 
-function parseIssues(input) {
-  if (!input) return [];
-  const arr = Array.isArray(input) ? input : [];
-  const cleaned = arr
-    .map((x) => normaliseString(x))
-    .filter(Boolean);
-
-  // Unique + stable order
-  const seen = new Set();
-  const out = [];
-  for (const i of cleaned) {
-    if (!seen.has(i)) {
-      seen.add(i);
-      out.push(i);
-    }
-  }
-  return out;
-}
-
-function safeJsonParseArray(text) {
-  try {
-    const v = JSON.parse(text);
-    return Array.isArray(v) ? v : [];
-  } catch {
-    return [];
-  }
+function safeIssues(issues) {
+  const arr = Array.isArray(issues)
+    ? issues.map((x) => String(x || "").trim()).filter(Boolean)
+    : [];
+  // keep unique issues only
+  return Array.from(new Set(arr));
 }
 
 /**
- * Add (or update) a Fix Queue item.
- * - Enforces uniqueness by (projectId + url)
- * - Merges issues if the item already exists
- * - If it was "done", re-opening is allowed when re-added (status becomes open)
+ * Add (or upsert) a fix queue item.
+ * - Deduped by UNIQUE(projectId, url)
+ * - If already exists, updates issues + updatedAt and keeps status open
  */
-function addOrMergeFixItem({ projectId, url, issues, owner, notes }) {
+function addFixQueueItem(projectId, { url, issues }) {
   const now = new Date().toISOString();
-  const pid = normaliseString(projectId);
-  const u = normaliseUrl(url);
 
-  if (!pid || !u) {
-    return { ok: false, error: "projectId and url are required" };
+  const project = normaliseString(projectId);
+  const canonicalUrl = normaliseUrl(url);
+  if (!project || !canonicalUrl) {
+    throw new Error("projectId and url are required");
   }
 
-  const incomingIssues = parseIssues(issues);
-  const incomingOwner = normaliseString(owner);
-  const incomingNotes = normaliseString(notes);
+  const issuesArr = safeIssues(issues);
+  const issuesJson = JSON.stringify(issuesArr);
 
-  const selectStmt = db.prepare(`
-    SELECT id, issues, status, owner, notes, createdAt, updatedAt
-    FROM fix_queue
-    WHERE projectId = ? AND url = ?
-    LIMIT 1
-  `);
-
-  const insertStmt = db.prepare(`
+  const stmt = db.prepare(`
     INSERT INTO fix_queue (
-      projectId, url, issues, status, owner, notes, createdAt, updatedAt
-    ) VALUES (
-      @projectId, @url, @issues, @status, @owner, @notes, @createdAt, @updatedAt
+      projectId,
+      url,
+      issues,
+      status,
+      createdAt,
+      updatedAt
     )
+    VALUES (
+      @projectId,
+      @url,
+      @issues,
+      'open',
+      @createdAt,
+      @updatedAt
+    )
+    ON CONFLICT(projectId, url) DO UPDATE SET
+      issues    = excluded.issues,
+      status    = 'open',
+      updatedAt = excluded.updatedAt;
   `);
 
-  const updateStmt = db.prepare(`
-    UPDATE fix_queue
-    SET
-      issues    = @issues,
-      status    = @status,
-      owner     = @owner,
-      notes     = @notes,
-      updatedAt = @updatedAt
-    WHERE id = @id
-  `);
-
-  const tx = db.transaction(() => {
-    const existing = selectStmt.get(pid, u);
-
-    if (!existing) {
-      insertStmt.run({
-        projectId: pid,
-        url: u,
-        issues: JSON.stringify(incomingIssues),
-        status: "open",
-        owner: incomingOwner,
-        notes: incomingNotes,
-        createdAt: now,
-        updatedAt: now,
-      });
-
-      const created = selectStmt.get(pid, u);
-      return {
-        ok: true,
-        action: "inserted",
-        item: toPublicRow(pid, u, created),
-      };
-    }
-
-    const existingIssues = safeJsonParseArray(existing.issues || "[]");
-    const merged = parseIssues([...existingIssues, ...incomingIssues]);
-
-    // Re-add => always open (so you can re-queue something)
-    const nextStatus = "open";
-
-    // Only overwrite owner/notes if provided; otherwise preserve existing
-    const nextOwner = incomingOwner !== null ? incomingOwner : existing.owner || null;
-    const nextNotes = incomingNotes !== null ? incomingNotes : existing.notes || null;
-
-    updateStmt.run({
-      id: existing.id,
-      issues: JSON.stringify(merged),
-      status: nextStatus,
-      owner: nextOwner,
-      notes: nextNotes,
-      updatedAt: now,
-    });
-
-    const updated = selectStmt.get(pid, u);
-    return {
-      ok: true,
-      action: "merged",
-      item: toPublicRow(pid, u, updated),
-    };
+  stmt.run({
+    projectId: project,
+    url: canonicalUrl,
+    issues: issuesJson,
+    createdAt: now,
+    updatedAt: now,
   });
 
-  return tx();
+  // Return the current row
+  const row = db
+    .prepare(
+      `
+      SELECT *
+      FROM fix_queue
+      WHERE projectId = ? AND url = ?
+      LIMIT 1
+    `
+    )
+    .get(project, canonicalUrl);
+
+  return hydrateRow(row);
 }
 
-function toPublicRow(projectId, url, row) {
-  const issues = safeJsonParseArray(row.issues || "[]");
+/**
+ * List queue items (default: open).
+ */
+function listFixQueueItems(projectId, { status = "open", limit = 200 } = {}) {
+  const project = normaliseString(projectId);
+  if (!project) throw new Error("projectId is required");
+
+  const st = normaliseString(status) || "open";
+  const lim = Number(limit);
+  const safeLimit = Number.isFinite(lim) ? Math.min(Math.max(lim, 1), 1000) : 200;
+
+  const rows = db
+    .prepare(
+      `
+      SELECT *
+      FROM fix_queue
+      WHERE projectId = ? AND status = ?
+      ORDER BY updatedAt DESC
+      LIMIT ${safeLimit}
+    `
+    )
+    .all(project, st);
+
+  return rows.map(hydrateRow);
+}
+
+/**
+ * Mark done by id (must match projectId).
+ */
+function markFixQueueDone(projectId, id) {
+  const project = normaliseString(projectId);
+  const rowId = Number(id);
+  if (!project || !Number.isFinite(rowId)) {
+    throw new Error("projectId and numeric id are required");
+  }
+
+  const now = new Date().toISOString();
+
+  const res = db
+    .prepare(
+      `
+      UPDATE fix_queue
+      SET status = 'done', updatedAt = ?
+      WHERE projectId = ? AND id = ?
+    `
+    )
+    .run(now, project, rowId);
+
+  return { updated: res.changes || 0 };
+}
+
+/**
+ * Remove by id (must match projectId).
+ */
+function removeFixQueueItem(projectId, id) {
+  const project = normaliseString(projectId);
+  const rowId = Number(id);
+  if (!project || !Number.isFinite(rowId)) {
+    throw new Error("projectId and numeric id are required");
+  }
+
+  const res = db
+    .prepare(
+      `
+      DELETE FROM fix_queue
+      WHERE projectId = ? AND id = ?
+    `
+    )
+    .run(project, rowId);
+
+  return { deleted: res.changes || 0 };
+}
+
+/**
+ * One-off cleanup for existing duplicates (from before unique index existed).
+ * Keeps the newest row (max(updatedAt)) per url, deletes the rest.
+ */
+function dedupeFixQueue(projectId) {
+  const project = normaliseString(projectId);
+  if (!project) throw new Error("projectId is required");
+
+  // Find duplicates by URL
+  const dups = db
+    .prepare(
+      `
+      SELECT url, COUNT(*) as cnt
+      FROM fix_queue
+      WHERE projectId = ?
+      GROUP BY url
+      HAVING cnt > 1
+    `
+    )
+    .all(project);
+
+  let deleted = 0;
+
+  const delStmt = db.prepare(`DELETE FROM fix_queue WHERE id = ? AND projectId = ?`);
+
+  const tx = db.transaction(() => {
+    for (const d of dups) {
+      const url = d.url;
+
+      // Keep the newest row
+      const keep = db
+        .prepare(
+          `
+          SELECT id
+          FROM fix_queue
+          WHERE projectId = ? AND url = ?
+          ORDER BY updatedAt DESC, id DESC
+          LIMIT 1
+        `
+        )
+        .get(project, url);
+
+      // Delete all others
+      const others = db
+        .prepare(
+          `
+          SELECT id
+          FROM fix_queue
+          WHERE projectId = ? AND url = ? AND id != ?
+        `
+        )
+        .all(project, url, keep.id);
+
+      for (const o of others) {
+        const r = delStmt.run(o.id, project);
+        deleted += r.changes || 0;
+      }
+    }
+  });
+
+  tx();
+
+  return { deleted, duplicateGroups: dups.length };
+}
+
+function hydrateRow(row) {
+  if (!row) return null;
+  let issues = [];
+  try {
+    issues = row.issues ? JSON.parse(row.issues) : [];
+  } catch {
+    issues = [];
+  }
+
   return {
     id: row.id,
-    projectId,
-    url,
-    issues,
+    projectId: row.projectId,
+    url: row.url,
+    issues: Array.isArray(issues) ? issues : [],
     status: row.status,
-    owner: row.owner || null,
-    notes: row.notes || null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
 }
 
-/**
- * List Fix Queue items for a project.
- * Defaults to status=open.
- */
-function listFixQueue({ projectId, status = "open", limit = 200 }) {
-  const pid = normaliseString(projectId);
-  if (!pid) return [];
-
-  const st = normaliseString(status) || "open";
-  const lim = Number(limit);
-  const safeLimit = Number.isFinite(lim) ? Math.min(Math.max(lim, 1), 500) : 200;
-
-  const stmt = db.prepare(`
-    SELECT *
-    FROM fix_queue
-    WHERE projectId = ? AND status = ?
-    ORDER BY createdAt DESC
-    LIMIT ${safeLimit}
-  `);
-
-  const rows = stmt.all(pid, st);
-
-  return rows.map((r) => ({
-    id: r.id,
-    projectId: r.projectId,
-    url: r.url,
-    issues: safeJsonParseArray(r.issues || "[]"),
-    status: r.status,
-    owner: r.owner || null,
-    notes: r.notes || null,
-    createdAt: r.createdAt,
-    updatedAt: r.updatedAt,
-  }));
-}
-
-/**
- * Mark an item done (or open).
- */
-function setFixQueueStatus({ projectId, id, status }) {
-  const pid = normaliseString(projectId);
-  const st = normaliseString(status);
-  const numericId = Number(id);
-
-  if (!pid || !Number.isFinite(numericId)) {
-    return { ok: false, error: "projectId and numeric id are required" };
-  }
-
-  const nextStatus = st === "done" ? "done" : "open";
-  const now = new Date().toISOString();
-
-  const stmt = db.prepare(`
-    UPDATE fix_queue
-    SET status = ?, updatedAt = ?
-    WHERE projectId = ? AND id = ?
-  `);
-
-  const info = stmt.run(nextStatus, now, pid, numericId);
-
-  return { ok: true, updated: info.changes || 0 };
-}
-
 module.exports = {
-  addOrMergeFixItem,
-  listFixQueue,
-  setFixQueueStatus,
+  addFixQueueItem,
+  listFixQueueItems,
+  markFixQueueDone,
+  removeFixQueueItem,
+  dedupeFixQueue,
 };

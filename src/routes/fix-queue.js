@@ -4,106 +4,137 @@
 // -------------------------------------
 
 const express = require("express");
-const router = express.Router();
+const {
+  addFixQueueItem,
+  listFixQueueItems,
+  markFixQueueDone,
+  removeFixQueueItem,
+  dedupeFixQueue,
+} = require("../core/fixQueue");
 
-const fixQueue = require("../core/fixQueue");
+const router = express.Router();
 
 /**
  * POST /projects/:projectId/fix-queue
- * Body: { url, issues?: [], owner?: string, notes?: string }
- *
- * Dedupes by (projectId + url) and MERGES issues.
+ * Body: { url: string, issues?: string[] }
+ * Adds (deduped) queue item.
  */
 router.post("/projects/:projectId/fix-queue", (req, res) => {
-  const projectId = req.params.projectId;
+  const { projectId } = req.params;
 
   try {
-    const { url, issues, owner, notes } = req.body || {};
-
-    const result = fixQueue.addOrMergeFixItem({
-      projectId,
-      url,
-      issues,
-      owner,
-      notes,
-    });
-
-    if (!result.ok) {
-      return res.status(400).json(result);
-    }
+    const { url, issues } = req.body || {};
+    const item = addFixQueueItem(projectId, { url, issues });
 
     return res.json({
       ok: true,
-      action: result.action,
-      item: result.item,
+      projectId,
+      item,
     });
   } catch (err) {
-    console.error("[FixQueue] POST error", err);
-    return res.status(500).json({
+    console.error("[FixQueue] add error", err);
+    return res.status(400).json({
       ok: false,
-      error: "Failed to add to Fix Queue",
+      error: err.message || "Failed to add fix queue item",
     });
   }
 });
 
 /**
- * GET /projects/:projectId/fix-queue?status=open|done&limit=200
+ * GET /projects/:projectId/fix-queue
+ * Query: status=open|done (default open), limit=number (default 200)
  */
 router.get("/projects/:projectId/fix-queue", (req, res) => {
-  const projectId = req.params.projectId;
+  const { projectId } = req.params;
   const { status, limit } = req.query;
 
   try {
-    const items = fixQueue.listFixQueue({
-      projectId,
+    const items = listFixQueueItems(projectId, {
       status: status || "open",
-      limit: limit || 200,
+      limit: limit !== undefined ? Number(limit) : 200,
     });
 
     return res.json({
       ok: true,
       projectId,
-      status: status || "open",
-      count: items.length,
       items,
     });
   } catch (err) {
-    console.error("[FixQueue] GET error", err);
-    return res.status(500).json({
+    console.error("[FixQueue] list error", err);
+    return res.status(400).json({
       ok: false,
-      error: "Failed to fetch Fix Queue",
+      error: err.message || "Failed to list fix queue items",
     });
   }
 });
 
 /**
  * POST /projects/:projectId/fix-queue/:id/done
- * Marks item done.
+ * Marks a queue item as done.
  */
 router.post("/projects/:projectId/fix-queue/:id/done", (req, res) => {
-  const projectId = req.params.projectId;
-  const id = req.params.id;
+  const { projectId, id } = req.params;
 
   try {
-    const result = fixQueue.setFixQueueStatus({
-      projectId,
-      id,
-      status: "done",
-    });
-
-    if (!result.ok) {
-      return res.status(400).json(result);
-    }
-
+    const result = markFixQueueDone(projectId, id);
     return res.json({
       ok: true,
-      updated: result.updated,
+      projectId,
+      id: Number(id),
+      ...result,
     });
   } catch (err) {
-    console.error("[FixQueue] DONE error", err);
-    return res.status(500).json({
+    console.error("[FixQueue] done error", err);
+    return res.status(400).json({
       ok: false,
-      error: "Failed to mark Fix Queue item done",
+      error: err.message || "Failed to mark done",
+    });
+  }
+});
+
+/**
+ * DELETE /projects/:projectId/fix-queue/:id
+ * Removes a queue item (optional, but useful).
+ */
+router.delete("/projects/:projectId/fix-queue/:id", (req, res) => {
+  const { projectId, id } = req.params;
+
+  try {
+    const result = removeFixQueueItem(projectId, id);
+    return res.json({
+      ok: true,
+      projectId,
+      id: Number(id),
+      ...result,
+    });
+  } catch (err) {
+    console.error("[FixQueue] delete error", err);
+    return res.status(400).json({
+      ok: false,
+      error: err.message || "Failed to delete fix queue item",
+    });
+  }
+});
+
+/**
+ * POST /projects/:projectId/fix-queue/dedupe
+ * One-off cleanup for old duplicates already in DB.
+ */
+router.post("/projects/:projectId/fix-queue/dedupe", (req, res) => {
+  const { projectId } = req.params;
+
+  try {
+    const result = dedupeFixQueue(projectId);
+    return res.json({
+      ok: true,
+      projectId,
+      ...result,
+    });
+  } catch (err) {
+    console.error("[FixQueue] dedupe error", err);
+    return res.status(400).json({
+      ok: false,
+      error: err.message || "Failed to dedupe fix queue",
     });
   }
 });
