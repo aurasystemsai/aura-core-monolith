@@ -8,6 +8,12 @@ const router = express.Router();
 
 const fixQueue = require("../core/fix-queue");
 
+function actorFromReq(req) {
+  // Optional: pass x-aura-actor from console later (e.g. Darren)
+  const h = req.headers["x-aura-actor"];
+  return h ? String(h).trim() : "console";
+}
+
 // LIST
 router.get("/projects/:projectId/fix-queue", (req, res) => {
   const projectId = req.params.projectId;
@@ -33,25 +39,75 @@ router.get("/projects/:projectId/fix-queue", (req, res) => {
   }
 });
 
-// EXPORT CSV (your UI uses this)
+// CSV EXPORT
 router.get("/projects/:projectId/fix-queue/export.csv", (req, res) => {
   const projectId = req.params.projectId;
-  const { status, limit } = req.query;
+  const { status } = req.query;
 
   try {
-    const csv = fixQueue.exportFixQueueCsv(projectId, {
+    const result = fixQueue.listFixQueue(projectId, {
       status: status || "open",
-      limit: limit !== undefined ? Number(limit) : 1000,
+      limit: 1000,
     });
 
+    const rows = Array.isArray(result.items) ? result.items : [];
+
+    const escapeCsv = (v) => {
+      const s = String(v ?? "");
+      if (s.includes('"') || s.includes(",") || s.includes("\n")) {
+        return `"${s.replace(/"/g, '""')}"`;
+      }
+      return s;
+    };
+
+    const header = [
+      "id",
+      "url",
+      "status",
+      "owner",
+      "issues",
+      "notes",
+      "suggestedTitle",
+      "suggestedMetaDescription",
+      "suggestedH1",
+      "lastSuggestedAt",
+      "createdAt",
+      "updatedAt",
+      "doneAt",
+    ];
+
+    const lines = [header.join(",")];
+
+    for (const r of rows) {
+      lines.push(
+        [
+          r.id,
+          r.url,
+          r.status,
+          r.owner || "",
+          (Array.isArray(r.issues) ? r.issues.join("|") : "") || "",
+          r.notes || "",
+          r.suggestedTitle || "",
+          r.suggestedMetaDescription || "",
+          r.suggestedH1 || "",
+          r.lastSuggestedAt || "",
+          r.createdAt || "",
+          r.updatedAt || "",
+          r.doneAt || "",
+        ]
+          .map(escapeCsv)
+          .join(",")
+      );
+    }
+
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
-    res.setHeader("Content-Disposition", 'attachment; filename="fix-queue.csv"');
-    return res.status(200).send(csv);
+    res.setHeader("Content-Disposition", `attachment; filename="fix-queue-${projectId}.csv"`);
+    return res.send(lines.join("\n"));
   } catch (err) {
     console.error("[FixQueue] export error", err);
     return res.status(400).json({
       ok: false,
-      error: err.message || "Failed to export CSV",
+      error: err.message || "Failed to export fix queue",
     });
   }
 });
@@ -84,7 +140,7 @@ router.patch("/projects/:projectId/fix-queue/:id", (req, res) => {
   const id = req.params.id;
 
   try {
-    fixQueue.updateFixQueueItem(projectId, id, req.body || {});
+    fixQueue.updateFixQueueItem(projectId, id, req.body || {}, actorFromReq(req));
     return res.json({ ok: true, projectId, id: Number(id) });
   } catch (err) {
     console.error("[FixQueue] patch error", err);
@@ -95,13 +151,13 @@ router.patch("/projects/:projectId/fix-queue/:id", (req, res) => {
   }
 });
 
-// BACKWARDS-COMPAT: DONE endpoint (your UI currently calls this)
+// BACKWARDS-COMPAT: DONE endpoint (UI calls this)
 router.post("/projects/:projectId/fix-queue/:id/done", (req, res) => {
   const projectId = req.params.projectId;
   const id = req.params.id;
 
   try {
-    fixQueue.updateFixQueueItem(projectId, id, { status: "done" });
+    fixQueue.updateFixQueueItem(projectId, id, { status: "done" }, actorFromReq(req));
     return res.json({ ok: true, projectId, id: Number(id) });
   } catch (err) {
     console.error("[FixQueue] done error", err);
@@ -118,7 +174,7 @@ router.post("/projects/:projectId/fix-queue/bulk-done", (req, res) => {
 
   try {
     const { ids } = req.body || {};
-    const result = fixQueue.bulkMarkDone(projectId, ids);
+    const result = fixQueue.bulkMarkDone(projectId, ids, actorFromReq(req));
     return res.json({ ok: true, projectId, ...result });
   } catch (err) {
     console.error("[FixQueue] bulk done error", err);
@@ -145,14 +201,19 @@ router.post("/projects/:projectId/fix-queue/dedupe", (req, res) => {
   }
 });
 
-// AUTO-FIX (single item)
+// AUTO-FIX (AI suggestions)
 router.post("/projects/:projectId/fix-queue/:id/auto-fix", async (req, res) => {
   const projectId = req.params.projectId;
   const id = req.params.id;
 
   try {
     const { brand, tone, market } = req.body || {};
-    const result = await fixQueue.autoFixItem(projectId, id, { brand, tone, market });
+    const result = await fixQueue.autoFixItem(projectId, id, {
+      brand,
+      tone,
+      market,
+      actor: actorFromReq(req),
+    });
 
     return res.json({
       ok: true,
@@ -168,20 +229,18 @@ router.post("/projects/:projectId/fix-queue/:id/auto-fix", async (req, res) => {
   }
 });
 
-// AUTO-FIX MANY (optional, for “do all of them in one go”)
-router.post("/projects/:projectId/fix-queue/auto-fix-many", async (req, res) => {
+// BULK AUTO-FIX
+router.post("/projects/:projectId/fix-queue/bulk-auto-fix", async (req, res) => {
   const projectId = req.params.projectId;
 
   try {
-    const { ids, status, limit, brand, tone, market, concurrency } = req.body || {};
-    const result = await fixQueue.autoFixMany(projectId, {
-      ids,
-      status,
-      limit,
+    const { ids, brand, tone, market, concurrency } = req.body || {};
+    const result = await fixQueue.bulkAutoFix(projectId, ids, {
       brand,
       tone,
       market,
       concurrency,
+      actor: actorFromReq(req),
     });
 
     return res.json({
@@ -190,10 +249,36 @@ router.post("/projects/:projectId/fix-queue/auto-fix-many", async (req, res) => 
       ...result,
     });
   } catch (err) {
-    console.error("[FixQueue] auto-fix-many error", err);
+    console.error("[FixQueue] bulk auto-fix error", err);
     return res.status(400).json({
       ok: false,
-      error: err.message || "Failed to auto-fix many",
+      error: err.message || "Failed bulk auto-fix",
+    });
+  }
+});
+
+// APPLY SUGGESTION
+router.post("/projects/:projectId/fix-queue/:id/apply", (req, res) => {
+  const projectId = req.params.projectId;
+  const id = req.params.id;
+
+  try {
+    const { field } = req.body || {};
+    const result = fixQueue.applySuggestion(projectId, id, {
+      field,
+      actor: actorFromReq(req),
+    });
+
+    return res.json({
+      ok: true,
+      projectId,
+      ...result,
+    });
+  } catch (err) {
+    console.error("[FixQueue] apply error", err);
+    return res.status(400).json({
+      ok: false,
+      error: err.message || "Failed to apply suggestion",
     });
   }
 });

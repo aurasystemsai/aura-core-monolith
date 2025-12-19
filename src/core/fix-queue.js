@@ -2,94 +2,33 @@
 // -------------------------------------
 // AURA Fix Queue Core
 // Stores actionable SEO issues queued from Content Health.
+// Adds: audit trail, bulk auto-fix, apply suggestion actions.
 // -------------------------------------
 
 const db = require("./db");
 const { fetchPageMeta } = require("./fetchPageMeta");
 
-// -------------------------------------
-// DB bootstrap + migrations (safe on old DBs)
-// -------------------------------------
-
-// 1) Base table (minimal)
+// Table + indexes
 db.exec(`
   CREATE TABLE IF NOT EXISTS fix_queue (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     projectId TEXT NOT NULL,
     url TEXT NOT NULL,
-    issues TEXT,
-    status TEXT NOT NULL DEFAULT 'open',
+    issues TEXT, -- JSON array of issue codes
+    status TEXT NOT NULL DEFAULT 'open', -- open | done
     owner TEXT,
     notes TEXT,
+
     suggestedTitle TEXT,
     suggestedMetaDescription TEXT,
     suggestedH1 TEXT,
     lastSuggestedAt TEXT,
-    createdAt TEXT,
-    updatedAt TEXT,
+
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL,
     doneAt TEXT
   );
-`);
 
-// 2) Ensure columns exist for older DBs (SQLite has no "ADD COLUMN IF NOT EXISTS")
-function ensureColumn(col, typeSql) {
-  const cols = db.prepare("PRAGMA table_info(fix_queue);").all();
-  const has = cols.some((c) => String(c.name).toLowerCase() === String(col).toLowerCase());
-  if (has) return;
-
-  try {
-    db.exec(`ALTER TABLE fix_queue ADD COLUMN ${col} ${typeSql};`);
-    console.log(`[FixQueue] added missing column: ${col}`);
-  } catch (e) {
-    console.error(`[FixQueue] failed adding column ${col}:`, e?.message || e);
-  }
-}
-
-// Add any columns that might be missing on old installs
-ensureColumn("issues", "TEXT");
-ensureColumn("status", "TEXT NOT NULL DEFAULT 'open'");
-ensureColumn("owner", "TEXT");
-ensureColumn("notes", "TEXT");
-ensureColumn("suggestedTitle", "TEXT");
-ensureColumn("suggestedMetaDescription", "TEXT");
-ensureColumn("suggestedH1", "TEXT");
-ensureColumn("lastSuggestedAt", "TEXT");
-ensureColumn("createdAt", "TEXT");
-ensureColumn("updatedAt", "TEXT");
-ensureColumn("doneAt", "TEXT");
-
-// Backfill timestamps if they are null (older rows)
-try {
-  const now = new Date().toISOString();
-  db.prepare(
-    `
-    UPDATE fix_queue
-    SET
-      createdAt = COALESCE(createdAt, ?),
-      updatedAt = COALESCE(updatedAt, createdAt, ?)
-  `
-  ).run(now, now);
-} catch (e) {
-  console.error("[FixQueue] timestamp backfill failed (continuing):", e?.message || e);
-}
-
-// 3) Dedupe BEFORE unique index.
-//    This version does NOT rely on updatedAt existing; it keeps the highest id per (projectId,url).
-try {
-  db.exec(`
-    DELETE FROM fix_queue
-    WHERE id NOT IN (
-      SELECT MAX(id)
-      FROM fix_queue
-      GROUP BY projectId, url
-    );
-  `);
-} catch (e) {
-  console.error("[FixQueue] dedupe migration failed (continuing):", e?.message || e);
-}
-
-// 4) Now create indexes
-db.exec(`
   CREATE UNIQUE INDEX IF NOT EXISTS idx_fix_queue_project_url
     ON fix_queue(projectId, url);
 
@@ -98,6 +37,30 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_fix_queue_project_updated
     ON fix_queue(projectId, updatedAt);
+`);
+
+// NEW: Audit table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS fix_queue_audit (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    projectId TEXT NOT NULL,
+    fixQueueId INTEGER NOT NULL,
+    actionType TEXT NOT NULL, -- owner_update | notes_update | status_update | suggest | apply
+    field TEXT,               -- owner | notes | status | title | meta | h1
+    oldValue TEXT,
+    newValue TEXT,
+    actor TEXT,               -- optional (e.g. "Darren", "Dev", "system")
+    createdAt TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_fix_queue_audit_project
+    ON fix_queue_audit(projectId);
+
+  CREATE INDEX IF NOT EXISTS idx_fix_queue_audit_item
+    ON fix_queue_audit(projectId, fixQueueId);
+
+  CREATE INDEX IF NOT EXISTS idx_fix_queue_audit_time
+    ON fix_queue_audit(createdAt);
 `);
 
 function nowIso() {
@@ -130,13 +93,44 @@ function parseIssues(text) {
 }
 
 function issueUnion(a, b) {
-  return Array.from(new Set([...(safeIssues(a) || []), ...(safeIssues(b) || [])]));
+  return Array.from(
+    new Set([...(safeIssues(a) || []), ...(safeIssues(b) || [])])
+  );
 }
 
 function clampText(value, maxLen) {
   const s = normaliseString(value);
   if (!s) return null;
   return s.length > maxLen ? s.slice(0, maxLen) : s;
+}
+
+function logAudit({
+  projectId,
+  fixQueueId,
+  actionType,
+  field,
+  oldValue,
+  newValue,
+  actor,
+}) {
+  const now = nowIso();
+  db.prepare(
+    `
+    INSERT INTO fix_queue_audit (
+      projectId, fixQueueId, actionType, field,
+      oldValue, newValue, actor, createdAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `
+  ).run(
+    projectId,
+    Number(fixQueueId),
+    String(actionType),
+    field ? String(field) : null,
+    oldValue !== undefined && oldValue !== null ? String(oldValue) : null,
+    newValue !== undefined && newValue !== null ? String(newValue) : null,
+    actor ? String(actor) : null,
+    now
+  );
 }
 
 function getCounts(projectId) {
@@ -162,7 +156,9 @@ function getCounts(projectId) {
 
 function listFixQueue(projectId, { status = "open", limit = 200 } = {}) {
   const lim = Number(limit);
-  const safeLimit = Number.isFinite(lim) ? Math.min(Math.max(lim, 1), 1000) : 200;
+  const safeLimit = Number.isFinite(lim)
+    ? Math.min(Math.max(lim, 1), 1000)
+    : 200;
 
   let where = "projectId = ?";
   const params = [projectId];
@@ -180,8 +176,7 @@ function listFixQueue(projectId, { status = "open", limit = 200 } = {}) {
     WHERE ${where}
     ORDER BY
       CASE status WHEN 'open' THEN 0 ELSE 1 END ASC,
-      datetime(updatedAt) DESC,
-      id DESC
+      updatedAt DESC
     LIMIT ${safeLimit}
   `
     )
@@ -201,8 +196,8 @@ function listFixQueue(projectId, { status = "open", limit = 200 } = {}) {
     suggestedH1: r.suggestedH1 || null,
     lastSuggestedAt: r.lastSuggestedAt || null,
 
-    createdAt: r.createdAt || null,
-    updatedAt: r.updatedAt || null,
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
     doneAt: r.doneAt || null,
   }));
 
@@ -248,6 +243,8 @@ function addFixQueueItem(projectId, { url, issues } = {}) {
     }
 
     const mergedIssues = issueUnion(parseIssues(existing.issues), nextIssues);
+
+    // If it was marked done, re-open if re-queued
     const nextStatus = existing.status === "done" ? "open" : existing.status;
 
     db.prepare(
@@ -269,7 +266,7 @@ function addFixQueueItem(projectId, { url, issues } = {}) {
   return { ok: true, ...result };
 }
 
-function updateFixQueueItem(projectId, id, patch = {}) {
+function updateFixQueueItem(projectId, id, patch = {}, actor) {
   const itemId = Number(id);
   if (!Number.isFinite(itemId)) throw new Error("invalid id");
 
@@ -287,99 +284,208 @@ function updateFixQueueItem(projectId, id, patch = {}) {
 
   if (!existing) throw new Error("fix queue item not found");
 
-  const nextOwner = clampText(patch.owner, 120);
-  const nextNotes = clampText(patch.notes, 5000);
+  const nextOwner =
+    patch.owner !== undefined ? clampText(patch.owner, 120) : undefined;
+  const nextNotes =
+    patch.notes !== undefined ? clampText(patch.notes, 5000) : undefined;
 
-  let nextStatus = normaliseString(patch.status);
+  let nextStatus =
+    patch.status !== undefined ? normaliseString(patch.status) : undefined;
   if (nextStatus) nextStatus = nextStatus.toLowerCase();
   if (nextStatus && !["open", "done"].includes(nextStatus)) {
     throw new Error("status must be 'open' or 'done'");
   }
 
-  const nextIssues = patch.issues !== undefined ? safeIssues(patch.issues) : null;
+  const nextIssues =
+    patch.issues !== undefined ? safeIssues(patch.issues) : undefined;
 
   const nextSuggestedTitle =
-    patch.suggestedTitle !== undefined ? clampText(patch.suggestedTitle, 120) : null;
+    patch.suggestedTitle !== undefined
+      ? clampText(patch.suggestedTitle, 120)
+      : undefined;
   const nextSuggestedMeta =
     patch.suggestedMetaDescription !== undefined
       ? clampText(patch.suggestedMetaDescription, 220)
-      : null;
+      : undefined;
   const nextSuggestedH1 =
-    patch.suggestedH1 !== undefined ? clampText(patch.suggestedH1, 140) : null;
+    patch.suggestedH1 !== undefined ? clampText(patch.suggestedH1, 140) : undefined;
 
-  db.prepare(
+  const setSuggestedAt =
+    patch.lastSuggestedAt !== undefined ? now : undefined;
+
+  const tx = db.transaction(() => {
+    // audit diffs
+    if (nextOwner !== undefined && (existing.owner || null) !== (nextOwner || null)) {
+      logAudit({
+        projectId,
+        fixQueueId: itemId,
+        actionType: "owner_update",
+        field: "owner",
+        oldValue: existing.owner || "",
+        newValue: nextOwner || "",
+        actor,
+      });
+    }
+
+    if (nextNotes !== undefined && (existing.notes || null) !== (nextNotes || null)) {
+      logAudit({
+        projectId,
+        fixQueueId: itemId,
+        actionType: "notes_update",
+        field: "notes",
+        oldValue: existing.notes || "",
+        newValue: nextNotes || "",
+        actor,
+      });
+    }
+
+    if (nextStatus !== undefined && existing.status !== nextStatus) {
+      logAudit({
+        projectId,
+        fixQueueId: itemId,
+        actionType: "status_update",
+        field: "status",
+        oldValue: existing.status,
+        newValue: nextStatus,
+        actor,
+      });
+    }
+
+    if (nextIssues !== undefined) {
+      logAudit({
+        projectId,
+        fixQueueId: itemId,
+        actionType: "issues_update",
+        field: "issues",
+        oldValue: existing.issues || "[]",
+        newValue: JSON.stringify(nextIssues),
+        actor,
+      });
+    }
+
+    if (nextSuggestedTitle !== undefined && (existing.suggestedTitle || "") !== (nextSuggestedTitle || "")) {
+      logAudit({
+        projectId,
+        fixQueueId: itemId,
+        actionType: "suggest",
+        field: "title",
+        oldValue: existing.suggestedTitle || "",
+        newValue: nextSuggestedTitle || "",
+        actor,
+      });
+    }
+
+    if (nextSuggestedMeta !== undefined && (existing.suggestedMetaDescription || "") !== (nextSuggestedMeta || "")) {
+      logAudit({
+        projectId,
+        fixQueueId: itemId,
+        actionType: "suggest",
+        field: "meta",
+        oldValue: existing.suggestedMetaDescription || "",
+        newValue: nextSuggestedMeta || "",
+        actor,
+      });
+    }
+
+    if (nextSuggestedH1 !== undefined && (existing.suggestedH1 || "") !== (nextSuggestedH1 || "")) {
+      logAudit({
+        projectId,
+        fixQueueId: itemId,
+        actionType: "suggest",
+        field: "h1",
+        oldValue: existing.suggestedH1 || "",
+        newValue: nextSuggestedH1 || "",
+        actor,
+      });
+    }
+
+    db.prepare(
+      `
+      UPDATE fix_queue
+      SET
+        owner = CASE WHEN ? IS NULL THEN owner ELSE ? END,
+        notes = CASE WHEN ? IS NULL THEN notes ELSE ? END,
+
+        status = CASE WHEN ? IS NULL THEN status ELSE ? END,
+        doneAt = CASE
+          WHEN COALESCE(?, status) = 'done' THEN COALESCE(doneAt, ?)
+          ELSE NULL
+        END,
+
+        issues = CASE
+          WHEN ? IS NULL THEN issues
+          ELSE ?
+        END,
+
+        suggestedTitle = CASE
+          WHEN ? IS NULL THEN suggestedTitle
+          ELSE ?
+        END,
+
+        suggestedMetaDescription = CASE
+          WHEN ? IS NULL THEN suggestedMetaDescription
+          ELSE ?
+        END,
+
+        suggestedH1 = CASE
+          WHEN ? IS NULL THEN suggestedH1
+          ELSE ?
+        END,
+
+        lastSuggestedAt = CASE
+          WHEN ? IS NULL THEN lastSuggestedAt
+          ELSE ?
+        END,
+
+        updatedAt = ?
+      WHERE projectId = ? AND id = ?
     `
-    UPDATE fix_queue
-    SET
-      owner = COALESCE(?, owner),
-      notes = COALESCE(?, notes),
+    ).run(
+      // owner
+      nextOwner === undefined ? null : "set",
+      nextOwner === undefined ? null : nextOwner,
 
-      status = COALESCE(?, status),
-      doneAt = CASE
-        WHEN COALESCE(?, status) = 'done' THEN COALESCE(doneAt, ?)
-        ELSE NULL
-      END,
+      // notes
+      nextNotes === undefined ? null : "set",
+      nextNotes === undefined ? null : nextNotes,
 
-      issues = CASE
-        WHEN ? IS NULL THEN issues
-        ELSE ?
-      END,
+      // status + doneAt
+      nextStatus === undefined ? null : "set",
+      nextStatus === undefined ? null : nextStatus,
+      nextStatus === undefined ? null : nextStatus,
+      now,
 
-      suggestedTitle = CASE
-        WHEN ? IS NULL THEN suggestedTitle
-        ELSE ?
-      END,
+      // issues
+      nextIssues === undefined ? null : "set",
+      nextIssues === undefined ? null : JSON.stringify(nextIssues),
 
-      suggestedMetaDescription = CASE
-        WHEN ? IS NULL THEN suggestedMetaDescription
-        ELSE ?
-      END,
+      // suggestedTitle
+      nextSuggestedTitle === undefined ? null : "set",
+      nextSuggestedTitle === undefined ? null : nextSuggestedTitle,
 
-      suggestedH1 = CASE
-        WHEN ? IS NULL THEN suggestedH1
-        ELSE ?
-      END,
+      // suggestedMeta
+      nextSuggestedMeta === undefined ? null : "set",
+      nextSuggestedMeta === undefined ? null : nextSuggestedMeta,
 
-      lastSuggestedAt = CASE
-        WHEN ? IS NULL THEN lastSuggestedAt
-        ELSE ?
-      END,
+      // suggestedH1
+      nextSuggestedH1 === undefined ? null : "set",
+      nextSuggestedH1 === undefined ? null : nextSuggestedH1,
 
-      updatedAt = ?
-    WHERE projectId = ? AND id = ?
-  `
-  ).run(
-    nextOwner,
-    nextNotes,
+      // lastSuggestedAt
+      setSuggestedAt === undefined ? null : "set",
+      setSuggestedAt === undefined ? null : setSuggestedAt,
 
-    nextStatus,
-    nextStatus,
-    now,
+      now,
+      projectId,
+      itemId
+    );
+  });
 
-    nextIssues ? "set" : null,
-    nextIssues ? JSON.stringify(nextIssues) : null,
-
-    nextSuggestedTitle ? "set" : null,
-    nextSuggestedTitle,
-
-    nextSuggestedMeta ? "set" : null,
-    nextSuggestedMeta,
-
-    nextSuggestedH1 ? "set" : null,
-    nextSuggestedH1,
-
-    patch.lastSuggestedAt !== undefined ? "set" : null,
-    patch.lastSuggestedAt !== undefined ? now : null,
-
-    now,
-    projectId,
-    itemId
-  );
-
+  tx();
   return { ok: true };
 }
 
-function bulkMarkDone(projectId, ids = []) {
+function bulkMarkDone(projectId, ids = [], actor) {
   const list = Array.isArray(ids) ? ids : [];
   const clean = list.map((x) => Number(x)).filter((n) => Number.isFinite(n));
   if (!clean.length) return { ok: true, updated: 0 };
@@ -397,8 +503,24 @@ function bulkMarkDone(projectId, ids = []) {
     );
 
     for (const id of clean) {
+      const before = db
+        .prepare(`SELECT status FROM fix_queue WHERE projectId = ? AND id = ?`)
+        .get(projectId, id);
+
       const res = stmt.run(now, now, projectId, id);
       updated += res.changes || 0;
+
+      if (res.changes) {
+        logAudit({
+          projectId,
+          fixQueueId: id,
+          actionType: "status_update",
+          field: "status",
+          oldValue: before?.status || "open",
+          newValue: "done",
+          actor,
+        });
+      }
     }
     return updated;
   });
@@ -411,10 +533,10 @@ function dedupeFixQueue(projectId) {
   const rows = db
     .prepare(
       `
-      SELECT id, url
+      SELECT id, url, updatedAt
       FROM fix_queue
       WHERE projectId = ?
-      ORDER BY id DESC
+      ORDER BY datetime(updatedAt) DESC
     `
     )
     .all(projectId);
@@ -429,7 +551,9 @@ function dedupeFixQueue(projectId) {
     else seen.add(key);
   }
 
-  if (!toDelete.length) return { ok: true, deleted: 0 };
+  if (!toDelete.length) {
+    return { ok: true, deleted: 0 };
+  }
 
   const tx = db.transaction(() => {
     const stmt = db.prepare(`DELETE FROM fix_queue WHERE projectId = ? AND id = ?`);
@@ -518,7 +642,7 @@ async function openAiJson({ prompt, model }) {
   }
 }
 
-async function autoFixItem(projectId, id, { brand, tone, market } = {}) {
+async function autoFixItem(projectId, id, { brand, tone, market, actor } = {}) {
   const itemId = Number(id);
   if (!Number.isFinite(itemId)) throw new Error("invalid id");
 
@@ -596,26 +720,67 @@ async function autoFixItem(projectId, id, { brand, tone, market } = {}) {
 
   const now = nowIso();
 
-  db.prepare(
+  const tx = db.transaction(() => {
+    // audit suggestion changes vs previous
+    if ((row.suggestedTitle || "") !== (suggestedTitle || "")) {
+      logAudit({
+        projectId,
+        fixQueueId: itemId,
+        actionType: "suggest",
+        field: "title",
+        oldValue: row.suggestedTitle || "",
+        newValue: suggestedTitle || "",
+        actor: actor || "system",
+      });
+    }
+
+    if ((row.suggestedMetaDescription || "") !== (suggestedMetaDescription || "")) {
+      logAudit({
+        projectId,
+        fixQueueId: itemId,
+        actionType: "suggest",
+        field: "meta",
+        oldValue: row.suggestedMetaDescription || "",
+        newValue: suggestedMetaDescription || "",
+        actor: actor || "system",
+      });
+    }
+
+    if ((row.suggestedH1 || "") !== (suggestedH1 || "")) {
+      logAudit({
+        projectId,
+        fixQueueId: itemId,
+        actionType: "suggest",
+        field: "h1",
+        oldValue: row.suggestedH1 || "",
+        newValue: suggestedH1 || "",
+        actor: actor || "system",
+      });
+    }
+
+    db.prepare(
+      `
+      UPDATE fix_queue
+      SET
+        suggestedTitle = ?,
+        suggestedMetaDescription = ?,
+        suggestedH1 = ?,
+        lastSuggestedAt = ?,
+        updatedAt = ?
+      WHERE projectId = ? AND id = ?
     `
-    UPDATE fix_queue
-    SET
-      suggestedTitle = ?,
-      suggestedMetaDescription = ?,
-      suggestedH1 = ?,
-      lastSuggestedAt = ?,
-      updatedAt = ?
-    WHERE projectId = ? AND id = ?
-  `
-  ).run(
-    suggestedTitle,
-    suggestedMetaDescription,
-    suggestedH1,
-    now,
-    now,
-    projectId,
-    itemId
-  );
+    ).run(
+      suggestedTitle,
+      suggestedMetaDescription,
+      suggestedH1,
+      now,
+      now,
+      projectId,
+      itemId
+    );
+  });
+
+  tx();
 
   return {
     ok: true,
@@ -629,6 +794,113 @@ async function autoFixItem(projectId, id, { brand, tone, market } = {}) {
   };
 }
 
+// NEW: bulk auto-fix with small concurrency
+async function bulkAutoFix(projectId, ids = [], opts = {}) {
+  const list = Array.isArray(ids) ? ids : [];
+  const clean = list.map((x) => Number(x)).filter((n) => Number.isFinite(n));
+  if (!clean.length) return { ok: true, results: [] };
+
+  const concurrency = Number.isFinite(Number(opts.concurrency))
+    ? Math.min(Math.max(Number(opts.concurrency), 1), 5)
+    : 2;
+
+  const queue = clean.slice();
+  const results = [];
+  const errors = [];
+
+  const worker = async () => {
+    while (queue.length) {
+      const id = queue.shift();
+      try {
+        const r = await autoFixItem(projectId, id, {
+          brand: opts.brand,
+          tone: opts.tone,
+          market: opts.market,
+          actor: opts.actor || "system",
+        });
+        results.push(r);
+      } catch (e) {
+        errors.push({ id, error: e?.message || "auto-fix failed" });
+      }
+    }
+  };
+
+  const workers = Array.from({ length: concurrency }, () => worker());
+  await Promise.all(workers);
+
+  return { ok: true, results, errors };
+}
+
+// NEW: apply a suggestion (initially applies to AURA record + audit trail).
+// External platform writeback can be layered on once creds/integration exists.
+function applySuggestion(projectId, id, { field, actor } = {}) {
+  const itemId = Number(id);
+  if (!Number.isFinite(itemId)) throw new Error("invalid id");
+
+  const row = db
+    .prepare(`SELECT * FROM fix_queue WHERE projectId = ? AND id = ?`)
+    .get(projectId, itemId);
+
+  if (!row) throw new Error("fix queue item not found");
+
+  const f = normaliseString(field);
+  if (!f || !["title", "meta", "h1"].includes(f)) {
+    throw new Error("field must be one of: title, meta, h1");
+  }
+
+  const now = nowIso();
+
+  const tx = db.transaction(() => {
+    // audit the apply action
+    const newValue =
+      f === "title"
+        ? row.suggestedTitle || ""
+        : f === "meta"
+        ? row.suggestedMetaDescription || ""
+        : row.suggestedH1 || "";
+
+    logAudit({
+      projectId,
+      fixQueueId: itemId,
+      actionType: "apply",
+      field: f,
+      oldValue: "(not applied)",
+      newValue: newValue,
+      actor: actor || "system",
+    });
+
+    // For now: add an audit/notes marker so it’s “actioned”.
+    const nextNotes = clampText(
+      `${row.notes ? String(row.notes).trim() + "\n\n" : ""}Applied ${f} suggestion at ${now}.`,
+      5000
+    );
+
+    db.prepare(
+      `
+      UPDATE fix_queue
+      SET
+        notes = ?,
+        updatedAt = ?
+      WHERE projectId = ? AND id = ?
+    `
+    ).run(nextNotes || null, now, projectId, itemId);
+  });
+
+  tx();
+
+  const updated = db
+    .prepare(`SELECT * FROM fix_queue WHERE projectId = ? AND id = ?`)
+    .get(projectId, itemId);
+
+  return {
+    ok: true,
+    id: itemId,
+    status: updated.status,
+    notes: updated.notes || null,
+    updatedAt: updated.updatedAt,
+  };
+}
+
 module.exports = {
   listFixQueue,
   addFixQueueItem,
@@ -636,4 +908,6 @@ module.exports = {
   bulkMarkDone,
   dedupeFixQueue,
   autoFixItem,
+  bulkAutoFix,
+  applySuggestion,
 };
