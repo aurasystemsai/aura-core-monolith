@@ -108,9 +108,10 @@ export default function FixQueue({ coreUrl, projectId }) {
 
   const handleDone = async (id) => {
     try {
-      await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/done`, {
-        method: "POST",
-      });
+      await callJson(
+        `${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/done`,
+        { method: "POST" }
+      );
       showToast("Marked done");
       fetchQueue();
     } catch (e) {
@@ -135,9 +136,10 @@ export default function FixQueue({ coreUrl, projectId }) {
 
   const handleDedupe = async () => {
     try {
-      const data = await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/dedupe`, {
-        method: "POST",
-      });
+      const data = await callJson(
+        `${normalizedCoreUrl}/projects/${projectId}/fix-queue/dedupe`,
+        { method: "POST" }
+      );
       showToast(`Deduped (deleted ${data?.deleted || 0})`);
       fetchQueue();
     } catch (e) {
@@ -147,13 +149,10 @@ export default function FixQueue({ coreUrl, projectId }) {
 
   const handleOwner = async (id, owner) => {
     try {
-      // IMPORTANT: Send null for "Unassigned" so backend can clear it.
-      const payloadOwner = owner && String(owner).trim() ? owner : null;
-
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ owner: payloadOwner }),
+        body: JSON.stringify({ owner }),
       });
       showToast("Owner updated");
       fetchQueue();
@@ -169,13 +168,10 @@ export default function FixQueue({ coreUrl, projectId }) {
     if (next === null) return;
 
     try {
-      // Allow clearing notes by sending null
-      const payloadNotes = String(next).trim() ? next : null;
-
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes: payloadNotes }),
+        body: JSON.stringify({ notes: next }),
       });
       showToast("Notes saved");
       fetchQueue();
@@ -186,9 +182,10 @@ export default function FixQueue({ coreUrl, projectId }) {
 
   const handleAutoFix = async (id) => {
     try {
-      await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/auto-fix`, {
-        method: "POST",
-      });
+      await callJson(
+        `${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/auto-fix`,
+        { method: "POST" }
+      );
       showToast("Suggestions generated");
       fetchQueue();
     } catch (e) {
@@ -389,9 +386,7 @@ export default function FixQueue({ coreUrl, projectId }) {
                           </div>
                           <div className="fq-suggest-row">
                             <div className="fq-suggest-label">Meta</div>
-                            <div className="fq-suggest-value">
-                              {row.suggestedMetaDescription || "—"}
-                            </div>
+                            <div className="fq-suggest-value">{row.suggestedMetaDescription || "—"}</div>
                             <button
                               className="button button--ghost button--tiny"
                               type="button"
@@ -401,12 +396,9 @@ export default function FixQueue({ coreUrl, projectId }) {
                               Copy
                             </button>
                           </div>
-
                           <div className="fq-sub">
                             Suggested:{" "}
-                            {row.lastSuggestedAt
-                              ? new Date(row.lastSuggestedAt).toLocaleString()
-                              : "—"}
+                            {row.lastSuggestedAt ? new Date(row.lastSuggestedAt).toLocaleString() : "—"}
                           </div>
                         </div>
                       )}
