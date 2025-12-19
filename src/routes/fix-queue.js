@@ -1,6 +1,7 @@
 // src/routes/fix-queue.js
 // -------------------------------------
 // Fix Queue API Routes
+// Adds: export.csv, audit, bulk-auto-fix (job + progress polling)
 // -------------------------------------
 
 const express = require("express");
@@ -9,8 +10,14 @@ const router = express.Router();
 const fixQueue = require("../core/fix-queue");
 
 function getUpdatedBy(req) {
-  const h = req.headers["x-aura-user"];
-  return h ? String(h).trim() : null;
+  // Optional: allow UI or scripts to tag who performed the action.
+  // You can pass either a header or JSON body field.
+  return (
+    req.headers["x-aura-user"] ||
+    req.headers["x-aura-updated-by"] ||
+    (req.body && req.body.updatedBy) ||
+    null
+  );
 }
 
 // LIST
@@ -34,6 +41,25 @@ router.get("/projects/:projectId/fix-queue", (req, res) => {
     return res.status(400).json({
       ok: false,
       error: err.message || "Failed to list fix queue",
+    });
+  }
+});
+
+// EXPORT CSV
+router.get("/projects/:projectId/fix-queue/export.csv", (req, res) => {
+  const projectId = req.params.projectId;
+  const { status } = req.query;
+
+  try {
+    const csv = fixQueue.exportFixQueueCsv(projectId, { status: status || "open" });
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="fix-queue-${projectId}.csv"`);
+    return res.status(200).send(csv);
+  } catch (err) {
+    console.error("[FixQueue] export error", err);
+    return res.status(400).json({
+      ok: false,
+      error: err.message || "Failed to export fix queue",
     });
   }
 });
@@ -116,7 +142,7 @@ router.post("/projects/:projectId/fix-queue/dedupe", (req, res) => {
   const projectId = req.params.projectId;
 
   try {
-    const result = fixQueue.dedupeFixQueue(projectId, { updatedBy: getUpdatedBy(req) });
+    const result = fixQueue.dedupeFixQueue(projectId);
     return res.json({ ok: true, projectId, ...result });
   } catch (err) {
     console.error("[FixQueue] dedupe error", err);
@@ -127,7 +153,7 @@ router.post("/projects/:projectId/fix-queue/dedupe", (req, res) => {
   }
 });
 
-// AUTO-FIX (AI suggestions)
+// AUTO-FIX (AI suggestions) single item
 router.post("/projects/:projectId/fix-queue/:id/auto-fix", async (req, res) => {
   const projectId = req.params.projectId;
   const id = req.params.id;
@@ -155,110 +181,93 @@ router.post("/projects/:projectId/fix-queue/:id/auto-fix", async (req, res) => {
   }
 });
 
-// BULK AUTO-FIX (suggestions)
-router.post("/projects/:projectId/fix-queue/bulk-auto-fix", async (req, res) => {
+// BULK AUTO-FIX (server-side job)
+// POST -> returns jobId immediately
+router.post("/projects/:projectId/fix-queue/bulk-auto-fix", (req, res) => {
   const projectId = req.params.projectId;
 
   try {
-    const { ids, brand, tone, market } = req.body || {};
-    const result = await fixQueue.bulkAutoFix(projectId, ids, {
+    const { ids, brand, tone, market, concurrency, delayMs } = req.body || {};
+    const result = fixQueue.createBulkAutoFixJob(projectId, ids, {
       brand,
       tone,
       market,
+      concurrency,
+      delayMs,
       updatedBy: getUpdatedBy(req),
     });
 
     return res.json({ ok: true, projectId, ...result });
   } catch (err) {
-    console.error("[FixQueue] bulk auto-fix error", err);
+    console.error("[FixQueue] bulk-auto-fix create error", err);
     return res.status(400).json({
       ok: false,
-      error: err.message || "Failed bulk auto-fix",
+      error: err.message || "Failed to start bulk auto-fix",
     });
   }
 });
 
-// APPLY (enqueue write-back for Framer plugin)
-router.post("/projects/:projectId/fix-queue/:id/apply", (req, res) => {
+// GET job progress
+router.get("/projects/:projectId/fix-queue/bulk-auto-fix/:jobId", (req, res) => {
   const projectId = req.params.projectId;
-  const id = req.params.id;
+  const jobId = req.params.jobId;
+  const { includeItems, itemsLimit } = req.query;
 
   try {
-    const { target, field, value } = req.body || {};
-    if (String(target || "") !== "framer") {
-      return res.status(400).json({ ok: false, error: "target must be 'framer' for now" });
+    const job = fixQueue.getJob(projectId, jobId);
+    if (!job) {
+      return res.status(404).json({ ok: false, error: "job not found" });
     }
 
-    const result = fixQueue.enqueueApplyToFramer(projectId, id, {
-      field,
-      value,
-      updatedBy: getUpdatedBy(req),
-    });
+    const payload = { ok: true, projectId, job };
 
-    return res.json({ ok: true, projectId, ...result });
+    if (String(includeItems || "") === "1") {
+      payload.items = fixQueue.listJobItems(projectId, jobId, {
+        limit: itemsLimit !== undefined ? Number(itemsLimit) : 200,
+      });
+    }
+
+    return res.json(payload);
   } catch (err) {
-    console.error("[FixQueue] apply enqueue error", err);
+    console.error("[FixQueue] bulk-auto-fix get error", err);
     return res.status(400).json({
       ok: false,
-      error: err.message || "Failed to enqueue apply",
+      error: err.message || "Failed to fetch job",
     });
   }
 });
 
-// FRAMER APPLY QUEUE (plugin reads this)
-router.get("/projects/:projectId/framer-apply-queue", (req, res) => {
+// Cancel job
+router.post("/projects/:projectId/fix-queue/bulk-auto-fix/:jobId/cancel", (req, res) => {
   const projectId = req.params.projectId;
-  const { status, limit } = req.query;
+  const jobId = req.params.jobId;
 
   try {
-    const result = fixQueue.listApplyQueue(projectId, {
-      status: status || "open",
-      limit: limit !== undefined ? Number(limit) : 200,
-    });
+    const result = fixQueue.cancelJob(projectId, jobId);
     return res.json({ ok: true, projectId, ...result });
   } catch (err) {
-    console.error("[FixQueue] list apply queue error", err);
+    console.error("[FixQueue] bulk-auto-fix cancel error", err);
     return res.status(400).json({
       ok: false,
-      error: err.message || "Failed to list apply queue",
+      error: err.message || "Failed to cancel job",
     });
   }
 });
 
-// FRAMER APPLY QUEUE MARK (plugin reports applied/failed)
-router.post("/projects/:projectId/framer-apply-queue/:queueId/mark", (req, res) => {
-  const projectId = req.params.projectId;
-  const queueId = req.params.queueId;
-  const { status, error } = req.body || {};
-
-  try {
-    const result = fixQueue.markApplyQueueItem(projectId, queueId, { status, error });
-    return res.json({ ok: true, projectId, ...result });
-  } catch (err) {
-    console.error("[FixQueue] mark apply queue error", err);
-    return res.status(400).json({
-      ok: false,
-      error: err.message || "Failed to mark apply queue item",
-    });
-  }
-});
-
-// AUDIT (per item)
+// AUDIT trail for a specific item
 router.get("/projects/:projectId/fix-queue/:id/audit", (req, res) => {
   const projectId = req.params.projectId;
   const id = req.params.id;
   const { limit } = req.query;
 
   try {
-    const result = fixQueue.getAudit(projectId, id, {
-      limit: limit !== undefined ? Number(limit) : 200,
-    });
-    return res.json({ ok: true, projectId, ...result });
+    const items = fixQueue.listAudit(projectId, id, { limit: limit !== undefined ? Number(limit) : 200 });
+    return res.json({ ok: true, projectId, id: Number(id), items });
   } catch (err) {
     console.error("[FixQueue] audit error", err);
     return res.status(400).json({
       ok: false,
-      error: err.message || "Failed to fetch audit",
+      error: err.message || "Failed to load audit trail",
     });
   }
 });
