@@ -33,6 +33,29 @@ router.get("/projects/:projectId/fix-queue", (req, res) => {
   }
 });
 
+// EXPORT CSV (your UI uses this)
+router.get("/projects/:projectId/fix-queue/export.csv", (req, res) => {
+  const projectId = req.params.projectId;
+  const { status, limit } = req.query;
+
+  try {
+    const csv = fixQueue.exportFixQueueCsv(projectId, {
+      status: status || "open",
+      limit: limit !== undefined ? Number(limit) : 1000,
+    });
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", 'attachment; filename="fix-queue.csv"');
+    return res.status(200).send(csv);
+  } catch (err) {
+    console.error("[FixQueue] export error", err);
+    return res.status(400).json({
+      ok: false,
+      error: err.message || "Failed to export CSV",
+    });
+  }
+});
+
 // ADD (UPSERT BY projectId+url)
 router.post("/projects/:projectId/fix-queue", (req, res) => {
   const projectId = req.params.projectId;
@@ -122,7 +145,7 @@ router.post("/projects/:projectId/fix-queue/dedupe", (req, res) => {
   }
 });
 
-// AUTO-FIX (AI suggestions)
+// AUTO-FIX (single item)
 router.post("/projects/:projectId/fix-queue/:id/auto-fix", async (req, res) => {
   const projectId = req.params.projectId;
   const id = req.params.id;
@@ -141,6 +164,36 @@ router.post("/projects/:projectId/fix-queue/:id/auto-fix", async (req, res) => {
     return res.status(400).json({
       ok: false,
       error: err.message || "Failed to generate auto-fix",
+    });
+  }
+});
+
+// AUTO-FIX MANY (optional, for “do all of them in one go”)
+router.post("/projects/:projectId/fix-queue/auto-fix-many", async (req, res) => {
+  const projectId = req.params.projectId;
+
+  try {
+    const { ids, status, limit, brand, tone, market, concurrency } = req.body || {};
+    const result = await fixQueue.autoFixMany(projectId, {
+      ids,
+      status,
+      limit,
+      brand,
+      tone,
+      market,
+      concurrency,
+    });
+
+    return res.json({
+      ok: true,
+      projectId,
+      ...result,
+    });
+  } catch (err) {
+    console.error("[FixQueue] auto-fix-many error", err);
+    return res.status(400).json({
+      ok: false,
+      error: err.message || "Failed to auto-fix many",
     });
   }
 });

@@ -108,25 +108,13 @@ export default function FixQueue({ coreUrl, projectId }) {
 
   const handleDone = async (id) => {
     try {
-      // Preferred: PATCH status done
-      await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "done" }),
+      await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/done`, {
+        method: "POST",
       });
       showToast("Marked done");
       fetchQueue();
     } catch (e) {
-      // Backwards-compat fallback (if someone keeps /done)
-      try {
-        await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/done`, {
-          method: "POST",
-        });
-        showToast("Marked done");
-        fetchQueue();
-      } catch (e2) {
-        showToast(e2?.message || e?.message || "Failed to mark done");
-      }
+      showToast(e?.message || "Failed to mark done");
     }
   };
 
@@ -159,10 +147,13 @@ export default function FixQueue({ coreUrl, projectId }) {
 
   const handleOwner = async (id, owner) => {
     try {
+      // IMPORTANT: Send null for "Unassigned" so backend can clear it.
+      const payloadOwner = owner && String(owner).trim() ? owner : null;
+
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ owner }),
+        body: JSON.stringify({ owner: payloadOwner }),
       });
       showToast("Owner updated");
       fetchQueue();
@@ -178,10 +169,13 @@ export default function FixQueue({ coreUrl, projectId }) {
     if (next === null) return;
 
     try {
+      // Allow clearing notes by sending null
+      const payloadNotes = String(next).trim() ? next : null;
+
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes: next }),
+        body: JSON.stringify({ notes: payloadNotes }),
       });
       showToast("Notes saved");
       fetchQueue();
@@ -233,7 +227,7 @@ export default function FixQueue({ coreUrl, projectId }) {
               min={1}
               max={1000}
               value={limit}
-              onChange={(e) => setLimit(Number(e.target.value || 200))}
+              onChange={(e) => setLimit(e.target.value)}
             />
           </div>
 
@@ -292,11 +286,10 @@ export default function FixQueue({ coreUrl, projectId }) {
               <th style={{ width: 220 }}>Issues</th>
               <th style={{ width: 160 }}>Owner</th>
               <th style={{ width: 160 }}>Added</th>
-              <th style={{ width: 260 }}>Auto-fix suggestions</th>
+              <th style={{ width: 220 }}>Auto-fix suggestions</th>
               <th style={{ width: 220 }}>Actions</th>
             </tr>
           </thead>
-
           <tbody>
             {status === "loading" && !items.length ? (
               <tr>
@@ -394,7 +387,6 @@ export default function FixQueue({ coreUrl, projectId }) {
                               Copy
                             </button>
                           </div>
-
                           <div className="fq-suggest-row">
                             <div className="fq-suggest-label">Meta</div>
                             <div className="fq-suggest-value">

@@ -69,9 +69,7 @@ function parseIssues(text) {
 }
 
 function issueUnion(a, b) {
-  return Array.from(
-    new Set([...(safeIssues(a) || []), ...(safeIssues(b) || [])])
-  );
+  return Array.from(new Set([...(safeIssues(a) || []), ...(safeIssues(b) || [])]));
 }
 
 function clampText(value, maxLen) {
@@ -103,9 +101,7 @@ function getCounts(projectId) {
 
 function listFixQueue(projectId, { status = "open", limit = 200 } = {}) {
   const lim = Number(limit);
-  const safeLimit = Number.isFinite(lim)
-    ? Math.min(Math.max(lim, 1), 1000)
-    : 200;
+  const safeLimit = Number.isFinite(lim) ? Math.min(Math.max(lim, 1), 1000) : 200;
 
   let where = "projectId = ?";
   const params = [projectId];
@@ -232,91 +228,126 @@ function updateFixQueueItem(projectId, id, patch = {}) {
 
   if (!existing) throw new Error("fix queue item not found");
 
-  const nextOwner = clampText(patch.owner, 120);
-  const nextNotes = clampText(patch.notes, 5000);
+  // IMPORTANT:
+  // We must distinguish between "field not provided" and "field provided but empty/clear".
+  const ownerProvided = Object.prototype.hasOwnProperty.call(patch, "owner");
+  const notesProvided = Object.prototype.hasOwnProperty.call(patch, "notes");
+  const statusProvided = Object.prototype.hasOwnProperty.call(patch, "status");
+  const issuesProvided = Object.prototype.hasOwnProperty.call(patch, "issues");
+  const suggestedTitleProvided = Object.prototype.hasOwnProperty.call(patch, "suggestedTitle");
+  const suggestedMetaProvided = Object.prototype.hasOwnProperty.call(
+    patch,
+    "suggestedMetaDescription"
+  );
+  const suggestedH1Provided = Object.prototype.hasOwnProperty.call(patch, "suggestedH1");
+  const lastSuggestedProvided = Object.prototype.hasOwnProperty.call(patch, "lastSuggestedAt");
 
-  let nextStatus = normaliseString(patch.status);
+  const nextOwner = ownerProvided ? clampText(patch.owner, 120) : undefined; // can be null to clear
+  const nextNotes = notesProvided ? clampText(patch.notes, 5000) : undefined; // can be null to clear
+
+  let nextStatus = statusProvided ? normaliseString(patch.status) : undefined;
   if (nextStatus) nextStatus = nextStatus.toLowerCase();
   if (nextStatus && !["open", "done"].includes(nextStatus)) {
     throw new Error("status must be 'open' or 'done'");
   }
 
-  const nextIssues = patch.issues !== undefined ? safeIssues(patch.issues) : null;
+  const nextIssues = issuesProvided ? safeIssues(patch.issues) : undefined;
 
-  const nextSuggestedTitle =
-    patch.suggestedTitle !== undefined
-      ? clampText(patch.suggestedTitle, 120)
-      : null;
-  const nextSuggestedMeta =
-    patch.suggestedMetaDescription !== undefined
-      ? clampText(patch.suggestedMetaDescription, 220)
-      : null;
-  const nextSuggestedH1 =
-    patch.suggestedH1 !== undefined ? clampText(patch.suggestedH1, 140) : null;
+  const nextSuggestedTitle = suggestedTitleProvided
+    ? clampText(patch.suggestedTitle, 120)
+    : undefined;
+  const nextSuggestedMeta = suggestedMetaProvided
+    ? clampText(patch.suggestedMetaDescription, 220)
+    : undefined;
+  const nextSuggestedH1 = suggestedH1Provided ? clampText(patch.suggestedH1, 140) : undefined;
+
+  // lastSuggestedAt:
+  // if provided, we set lastSuggestedAt = now (or clear if explicitly null/empty)
+  const nextLastSuggestedAt = lastSuggestedProvided
+    ? normaliseString(patch.lastSuggestedAt) === null
+      ? null
+      : now
+    : undefined;
+
+  // For doneAt: if status becomes done, set doneAt if missing.
+  const finalStatus = nextStatus !== undefined ? nextStatus : existing.status;
+  const nextDoneAt = finalStatus === "done" ? existing.doneAt || now : null;
 
   db.prepare(
     `
     UPDATE fix_queue
     SET
-      owner = COALESCE(?, owner),
-      notes = COALESCE(?, notes),
-
-      status = COALESCE(?, status),
-      doneAt = CASE
-        WHEN COALESCE(?, status) = 'done' THEN COALESCE(doneAt, ?)
-        ELSE NULL
+      owner = CASE
+        WHEN ? = 1 THEN ?
+        ELSE owner
       END,
 
+      notes = CASE
+        WHEN ? = 1 THEN ?
+        ELSE notes
+      END,
+
+      status = CASE
+        WHEN ? = 1 THEN ?
+        ELSE status
+      END,
+
+      doneAt = ?,
+
       issues = CASE
-        WHEN ? IS NULL THEN issues
-        ELSE ?
+        WHEN ? = 1 THEN ?
+        ELSE issues
       END,
 
       suggestedTitle = CASE
-        WHEN ? IS NULL THEN suggestedTitle
-        ELSE ?
+        WHEN ? = 1 THEN ?
+        ELSE suggestedTitle
       END,
 
       suggestedMetaDescription = CASE
-        WHEN ? IS NULL THEN suggestedMetaDescription
-        ELSE ?
+        WHEN ? = 1 THEN ?
+        ELSE suggestedMetaDescription
       END,
 
       suggestedH1 = CASE
-        WHEN ? IS NULL THEN suggestedH1
-        ELSE ?
+        WHEN ? = 1 THEN ?
+        ELSE suggestedH1
       END,
 
       lastSuggestedAt = CASE
-        WHEN ? IS NULL THEN lastSuggestedAt
-        ELSE ?
+        WHEN ? = 1 THEN ?
+        ELSE lastSuggestedAt
       END,
 
       updatedAt = ?
     WHERE projectId = ? AND id = ?
   `
   ).run(
-    nextOwner,
-    nextNotes,
+    ownerProvided ? 1 : 0,
+    nextOwner === undefined ? null : nextOwner,
 
-    nextStatus,
-    nextStatus,
-    now,
+    notesProvided ? 1 : 0,
+    nextNotes === undefined ? null : nextNotes,
 
-    nextIssues ? "set" : null,
-    nextIssues ? JSON.stringify(nextIssues) : null,
+    statusProvided ? 1 : 0,
+    nextStatus === undefined ? null : nextStatus,
 
-    nextSuggestedTitle ? "set" : null,
-    nextSuggestedTitle,
+    nextDoneAt,
 
-    nextSuggestedMeta ? "set" : null,
-    nextSuggestedMeta,
+    issuesProvided ? 1 : 0,
+    nextIssues === undefined ? null : JSON.stringify(nextIssues),
 
-    nextSuggestedH1 ? "set" : null,
-    nextSuggestedH1,
+    suggestedTitleProvided ? 1 : 0,
+    nextSuggestedTitle === undefined ? null : nextSuggestedTitle,
 
-    patch.lastSuggestedAt !== undefined ? "set" : null,
-    patch.lastSuggestedAt !== undefined ? now : null,
+    suggestedMetaProvided ? 1 : 0,
+    nextSuggestedMeta === undefined ? null : nextSuggestedMeta,
+
+    suggestedH1Provided ? 1 : 0,
+    nextSuggestedH1 === undefined ? null : nextSuggestedH1,
+
+    lastSuggestedProvided ? 1 : 0,
+    nextLastSuggestedAt === undefined ? null : nextLastSuggestedAt,
 
     now,
     projectId,
@@ -382,9 +413,7 @@ function dedupeFixQueue(projectId) {
   }
 
   const tx = db.transaction(() => {
-    const stmt = db.prepare(
-      `DELETE FROM fix_queue WHERE projectId = ? AND id = ?`
-    );
+    const stmt = db.prepare(`DELETE FROM fix_queue WHERE projectId = ? AND id = ?`);
     let deleted = 0;
     for (const id of toDelete) {
       const res = stmt.run(projectId, id);
@@ -448,10 +477,7 @@ async function openAiJson({ prompt, model }) {
 
   if (!res.ok) {
     const t = await res.text().catch(() => "");
-    return {
-      ok: false,
-      error: `OpenAI error ${res.status}: ${t || res.statusText}`,
-    };
+    return { ok: false, error: `OpenAI error ${res.status}: ${t || res.statusText}` };
   }
 
   const data = await res.json();
@@ -592,72 +618,110 @@ async function autoFixItem(projectId, id, { brand, tone, market } = {}) {
   };
 }
 
-// -------------------------------------
-// NEW: Fix Pack (one-click) for all OPEN items
-// Calls autoFixItem for each queued page with concurrency.
-// -------------------------------------
-async function buildFixPack(
+// NEW: Auto-fix many items in one go
+async function autoFixMany(
   projectId,
-  { limit = 250, brand, tone, market } = {}
+  { ids, status = "open", limit = 200, brand, tone, market, concurrency = 3 } = {}
 ) {
-  const { items } = listFixQueue(projectId, { status: "open", limit });
+  const safeConcurrency = Math.min(Math.max(Number(concurrency) || 3, 1), 8);
 
-  const concurrency = 4;
-  const queue = items.slice();
-  const out = [];
+  let targetIds = Array.isArray(ids)
+    ? ids.map((x) => Number(x)).filter((n) => Number.isFinite(n))
+    : [];
 
-  let okCount = 0;
-  let errCount = 0;
+  if (!targetIds.length) {
+    const listed = listFixQueue(projectId, { status, limit });
+    targetIds = (listed.items || [])
+      .map((x) => Number(x.id))
+      .filter((n) => Number.isFinite(n));
+  }
+
+  if (!targetIds.length) {
+    return { ok: true, requested: 0, succeeded: 0, failed: 0, results: [] };
+  }
+
+  const queue = targetIds.slice();
+  const results = [];
+  let succeeded = 0;
+  let failed = 0;
 
   const worker = async () => {
     while (queue.length) {
-      const item = queue.shift();
-      if (!item) continue;
-
+      const id = queue.shift();
       try {
-        const fixed = await autoFixItem(projectId, item.id, { brand, tone, market });
-        okCount += 1;
-
-        out.push({
-          id: item.id,
-          url: item.url,
-          issues: item.issues || [],
-          addedAt: item.createdAt,
-          suggestions: {
-            title: fixed.suggestedTitle || null,
-            metaDescription: fixed.suggestedMetaDescription || null,
-            h1: fixed.suggestedH1 || null,
-          },
-          usedAi: !!fixed.usedAi,
-        });
+        const r = await autoFixItem(projectId, id, { brand, tone, market });
+        results.push({ id, ok: true, url: r.url, usedAi: r.usedAi });
+        succeeded += 1;
       } catch (e) {
-        errCount += 1;
-        out.push({
-          id: item.id,
-          url: item.url,
-          issues: item.issues || [],
-          addedAt: item.createdAt,
-          suggestions: { title: null, metaDescription: null, h1: null },
-          usedAi: false,
-          error: e?.message || "Failed",
-        });
+        results.push({ id, ok: false, error: e?.message || "auto-fix failed" });
+        failed += 1;
       }
     }
   };
 
-  await Promise.all(Array.from({ length: concurrency }, () => worker()));
-
-  // preserve "updatedAt DESC" from list view as best we can:
-  out.sort((a, b) => String(b.addedAt).localeCompare(String(a.addedAt)));
+  const workers = Array.from({ length: safeConcurrency }, () => worker());
+  await Promise.all(workers);
 
   return {
     ok: true,
-    projectId: String(projectId),
-    count: out.length,
-    okCount,
-    errCount,
-    items: out,
+    requested: targetIds.length,
+    succeeded,
+    failed,
+    results,
   };
+}
+
+// NEW: Export CSV for Fix Queue
+function exportFixQueueCsv(projectId, { status = "open", limit = 200 } = {}) {
+  const { items } = listFixQueue(projectId, { status, limit });
+
+  const esc = (v) => {
+    const s = String(v ?? "");
+    if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  };
+
+  const header = [
+    "id",
+    "projectId",
+    "url",
+    "status",
+    "issues",
+    "owner",
+    "notes",
+    "suggestedTitle",
+    "suggestedMetaDescription",
+    "suggestedH1",
+    "lastSuggestedAt",
+    "createdAt",
+    "updatedAt",
+    "doneAt",
+  ].join(",");
+
+  const lines = [header];
+
+  for (const it of items || []) {
+    lines.push(
+      [
+        esc(it.id),
+        esc(it.projectId),
+        esc(it.url),
+        esc(it.status),
+        esc((Array.isArray(it.issues) ? it.issues : []).join("|")),
+        esc(it.owner || ""),
+        esc(it.notes || ""),
+        esc(it.suggestedTitle || ""),
+        esc(it.suggestedMetaDescription || ""),
+        esc(it.suggestedH1 || ""),
+        esc(it.lastSuggestedAt || ""),
+        esc(it.createdAt || ""),
+        esc(it.updatedAt || ""),
+        esc(it.doneAt || ""),
+      ].join(",")
+    );
+  }
+
+  return lines.join("\n");
 }
 
 module.exports = {
@@ -667,5 +731,8 @@ module.exports = {
   bulkMarkDone,
   dedupeFixQueue,
   autoFixItem,
-  buildFixPack,
+
+  // NEW exports
+  autoFixMany,
+  exportFixQueueCsv,
 };
