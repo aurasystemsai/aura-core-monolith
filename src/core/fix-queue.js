@@ -1,32 +1,46 @@
 // src/core/fix-queue.js
 // -------------------------------------
 // AURA Fix Queue Core
-// Stores "things to fix" (URLs + issues) per project.
-// Includes server-side dedupe and a UNIQUE index to prevent duplicates.
+// Stores actionable SEO issues queued from Content Health.
 // -------------------------------------
 
 const db = require("./db");
+const { fetchPageMeta } = require("./fetchPageMeta");
 
+// Table + indexes
 db.exec(`
-  CREATE TABLE IF NOT EXISTS fix_queue_items (
+  CREATE TABLE IF NOT EXISTS fix_queue (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     projectId TEXT NOT NULL,
     url TEXT NOT NULL,
-    issues TEXT,                 -- JSON array string
-    status TEXT NOT NULL DEFAULT 'open',  -- open | done
+    issues TEXT, -- JSON array of issue codes
+    status TEXT NOT NULL DEFAULT 'open', -- open | done
     owner TEXT,
     notes TEXT,
+
+    suggestedTitle TEXT,
+    suggestedMetaDescription TEXT,
+    suggestedH1 TEXT,
+    lastSuggestedAt TEXT,
+
     createdAt TEXT NOT NULL,
-    updatedAt TEXT NOT NULL
+    updatedAt TEXT NOT NULL,
+    doneAt TEXT
   );
 
-  CREATE INDEX IF NOT EXISTS idx_fix_queue_project
-    ON fix_queue_items(projectId);
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_fix_queue_project_url
+    ON fix_queue(projectId, url);
 
-  -- Prevent duplicates (this is the main fix for "3 times" long term)
-  CREATE UNIQUE INDEX IF NOT EXISTS idx_fix_queue_project_url_unique
-    ON fix_queue_items(projectId, url);
+  CREATE INDEX IF NOT EXISTS idx_fix_queue_project_status
+    ON fix_queue(projectId, status);
+
+  CREATE INDEX IF NOT EXISTS idx_fix_queue_project_updated
+    ON fix_queue(projectId, updatedAt);
 `);
+
+function nowIso() {
+  return new Date().toISOString();
+}
 
 function normaliseString(value) {
   if (value === undefined || value === null) return null;
@@ -34,194 +48,624 @@ function normaliseString(value) {
   return trimmed.length ? trimmed : null;
 }
 
-function normaliseUrl(value) {
-  const v = normaliseString(value);
-  if (!v) return null;
-  // Keep it simple: trim trailing spaces, do not rewrite protocol, etc.
-  return v;
-}
-
 function safeIssues(value) {
-  if (!value) return [];
-  if (Array.isArray(value)) return value.map(String);
-  return [];
+  const list = Array.isArray(value) ? value : [];
+  const cleaned = list
+    .map((x) => normaliseString(x))
+    .filter(Boolean)
+    .map((x) => String(x).toUpperCase());
+  // unique
+  return Array.from(new Set(cleaned));
 }
 
-/**
- * Add an item to fix queue.
- * Uses UNIQUE(projectId,url) to avoid duplicates.
- * If it already exists, we update issues + updatedAt (id stays the same).
- */
-function addToFixQueue(projectId, { url, issues }) {
-  const now = new Date().toISOString();
-  const cleanUrl = normaliseUrl(url);
-  if (!cleanUrl) {
-    throw new Error("url is required");
+function parseIssues(text) {
+  if (!text) return [];
+  try {
+    const arr = JSON.parse(text);
+    return safeIssues(arr);
+  } catch {
+    return [];
   }
-
-  const cleanIssues = safeIssues(issues);
-  const issuesJson = JSON.stringify(cleanIssues);
-
-  const stmt = db.prepare(`
-    INSERT INTO fix_queue_items (
-      projectId, url, issues, status, owner, notes, createdAt, updatedAt
-    ) VALUES (
-      @projectId, @url, @issues, 'open', NULL, NULL, @createdAt, @updatedAt
-    )
-    ON CONFLICT(projectId, url) DO UPDATE SET
-      issues    = excluded.issues,
-      status    = CASE
-                    WHEN fix_queue_items.status IS NULL OR fix_queue_items.status = ''
-                      THEN 'open'
-                    ELSE fix_queue_items.status
-                  END,
-      updatedAt = excluded.updatedAt;
-  `);
-
-  stmt.run({
-    projectId: String(projectId),
-    url: cleanUrl,
-    issues: issuesJson,
-    createdAt: now,
-    updatedAt: now,
-  });
-
-  const row = db
-    .prepare(
-      `SELECT * FROM fix_queue_items WHERE projectId = ? AND url = ? LIMIT 1`
-    )
-    .get(String(projectId), cleanUrl);
-
-  return mapRow(row);
 }
 
-function listFixQueue(projectId, { status } = {}) {
-  const params = [String(projectId)];
-  let where = "projectId = ?";
+function issueUnion(a, b) {
+  return Array.from(
+    new Set([...(safeIssues(a) || []), ...(safeIssues(b) || [])])
+  );
+}
 
-  const cleanStatus = normaliseString(status);
-  if (cleanStatus) {
+function clampText(value, maxLen) {
+  const s = normaliseString(value);
+  if (!s) return null;
+  return s.length > maxLen ? s.slice(0, maxLen) : s;
+}
+
+function getCounts(projectId) {
+  const rows = db
+    .prepare(
+      `
+    SELECT status, COUNT(*) as c
+    FROM fix_queue
+    WHERE projectId = ?
+    GROUP BY status
+  `
+    )
+    .all(projectId);
+
+  let open = 0;
+  let done = 0;
+  for (const r of rows) {
+    if (r.status === "open") open = r.c || 0;
+    if (r.status === "done") done = r.c || 0;
+  }
+  return { open, done, total: open + done };
+}
+
+function listFixQueue(projectId, { status = "open", limit = 200 } = {}) {
+  const lim = Number(limit);
+  const safeLimit = Number.isFinite(lim)
+    ? Math.min(Math.max(lim, 1), 1000)
+    : 200;
+
+  let where = "projectId = ?";
+  const params = [projectId];
+
+  if (status && status !== "all") {
     where += " AND status = ?";
-    params.push(cleanStatus);
+    params.push(status);
   }
 
   const rows = db
     .prepare(
       `
-      SELECT *
-      FROM fix_queue_items
-      WHERE ${where}
-      ORDER BY
-        CASE WHEN status = 'open' THEN 0 ELSE 1 END,
-        updatedAt DESC
-    `
+    SELECT *
+    FROM fix_queue
+    WHERE ${where}
+    ORDER BY
+      CASE status WHEN 'open' THEN 0 ELSE 1 END ASC,
+      updatedAt DESC
+    LIMIT ${safeLimit}
+  `
     )
     .all(...params);
 
-  return rows.map(mapRow);
+  const items = rows.map((r) => ({
+    id: r.id,
+    projectId: r.projectId,
+    url: r.url,
+    issues: parseIssues(r.issues),
+    status: r.status,
+    owner: r.owner || null,
+    notes: r.notes || null,
+
+    suggestedTitle: r.suggestedTitle || null,
+    suggestedMetaDescription: r.suggestedMetaDescription || null,
+    suggestedH1: r.suggestedH1 || null,
+    lastSuggestedAt: r.lastSuggestedAt || null,
+
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
+    doneAt: r.doneAt || null,
+  }));
+
+  return { items, counts: getCounts(projectId) };
 }
 
-function markDone(projectId, id) {
-  const now = new Date().toISOString();
+function addFixQueueItem(projectId, { url, issues } = {}) {
+  const u = normaliseString(url);
+  if (!u) throw new Error("url is required");
 
-  const stmt = db.prepare(`
-    UPDATE fix_queue_items
-    SET status = 'done', updatedAt = ?
-    WHERE projectId = ? AND id = ?
-  `);
+  const nextIssues = safeIssues(issues);
+  const now = nowIso();
 
-  const info = stmt.run(now, String(projectId), Number(id));
-  return { updated: info.changes || 0 };
-}
-
-function removeItem(projectId, id) {
-  const stmt = db.prepare(`
-    DELETE FROM fix_queue_items
-    WHERE projectId = ? AND id = ?
-  `);
-
-  const info = stmt.run(String(projectId), Number(id));
-  return { deleted: info.changes || 0 };
-}
-
-/**
- * One-time cleanup for older data where duplicates already exist.
- * Keeps the lowest id per (projectId,url), deletes the rest.
- */
-function dedupeFixQueue(projectId) {
-  const pid = String(projectId);
-
-  const duplicates = db
-    .prepare(
-      `
-      SELECT url, COUNT(*) as c
-      FROM fix_queue_items
-      WHERE projectId = ?
-      GROUP BY url
-      HAVING c > 1
-    `
-    )
-    .all(pid);
-
-  let removed = 0;
-  for (const d of duplicates) {
-    const url = d.url;
-
-    const ids = db
+  const tx = db.transaction(() => {
+    const existing = db
       .prepare(
         `
-        SELECT id
-        FROM fix_queue_items
+        SELECT id, issues, status
+        FROM fix_queue
         WHERE projectId = ? AND url = ?
-        ORDER BY id ASC
       `
       )
-      .all(pid, url)
-      .map((r) => r.id);
+      .get(projectId, u);
 
-    const keep = ids.shift(); // keep smallest id
-    const toDelete = ids;
+    if (!existing) {
+      db.prepare(
+        `
+        INSERT INTO fix_queue (
+          projectId, url, issues, status,
+          owner, notes,
+          suggestedTitle, suggestedMetaDescription, suggestedH1, lastSuggestedAt,
+          createdAt, updatedAt, doneAt
+        ) VALUES (
+          ?, ?, ?, 'open',
+          NULL, NULL,
+          NULL, NULL, NULL, NULL,
+          ?, ?, NULL
+        )
+      `
+      ).run(projectId, u, JSON.stringify(nextIssues), now, now);
 
-    if (toDelete.length) {
-      const del = db.prepare(
-        `DELETE FROM fix_queue_items WHERE projectId = ? AND url = ? AND id != ?`
-      );
-      const info = del.run(pid, url, keep);
-      removed += info.changes || 0;
+      return { created: true, updated: false };
     }
-  }
 
-  return { removed, duplicateUrls: duplicates.length };
+    const mergedIssues = issueUnion(parseIssues(existing.issues), nextIssues);
+
+    // If it was marked done, re-open if re-queued
+    const nextStatus = existing.status === "done" ? "open" : existing.status;
+
+    db.prepare(
+      `
+      UPDATE fix_queue
+      SET
+        issues = ?,
+        status = ?,
+        updatedAt = ?,
+        doneAt = CASE WHEN ? = 'done' THEN doneAt ELSE NULL END
+      WHERE id = ?
+    `
+    ).run(JSON.stringify(mergedIssues), nextStatus, now, nextStatus, existing.id);
+
+    return { created: false, updated: true };
+  });
+
+  const result = tx();
+  return { ok: true, ...result };
 }
 
-function mapRow(row) {
-  if (!row) return null;
+function updateFixQueueItem(projectId, id, patch = {}) {
+  const itemId = Number(id);
+  if (!Number.isFinite(itemId)) throw new Error("invalid id");
 
-  let issues = [];
-  try {
-    issues = row.issues ? JSON.parse(row.issues) : [];
-    if (!Array.isArray(issues)) issues = [];
-  } catch {
-    issues = [];
+  const now = nowIso();
+
+  // Fetch to validate ownership + existing values
+  const existing = db
+    .prepare(
+      `
+      SELECT *
+      FROM fix_queue
+      WHERE projectId = ? AND id = ?
+    `
+    )
+    .get(projectId, itemId);
+
+  if (!existing) throw new Error("fix queue item not found");
+
+  const nextOwner = clampText(patch.owner, 120);
+  const nextNotes = clampText(patch.notes, 5000);
+
+  let nextStatus = normaliseString(patch.status);
+  if (nextStatus) nextStatus = nextStatus.toLowerCase();
+  if (nextStatus && !["open", "done"].includes(nextStatus)) {
+    throw new Error("status must be 'open' or 'done'");
   }
 
+  const nextIssues = patch.issues !== undefined ? safeIssues(patch.issues) : null;
+
+  const nextSuggestedTitle =
+    patch.suggestedTitle !== undefined
+      ? clampText(patch.suggestedTitle, 120)
+      : null;
+  const nextSuggestedMeta =
+    patch.suggestedMetaDescription !== undefined
+      ? clampText(patch.suggestedMetaDescription, 220)
+      : null;
+  const nextSuggestedH1 =
+    patch.suggestedH1 !== undefined ? clampText(patch.suggestedH1, 140) : null;
+
+  db.prepare(
+    `
+    UPDATE fix_queue
+    SET
+      owner = COALESCE(?, owner),
+      notes = COALESCE(?, notes),
+
+      status = COALESCE(?, status),
+      doneAt = CASE
+        WHEN COALESCE(?, status) = 'done' THEN COALESCE(doneAt, ?)
+        ELSE NULL
+      END,
+
+      issues = CASE
+        WHEN ? IS NULL THEN issues
+        ELSE ?
+      END,
+
+      suggestedTitle = CASE
+        WHEN ? IS NULL THEN suggestedTitle
+        ELSE ?
+      END,
+
+      suggestedMetaDescription = CASE
+        WHEN ? IS NULL THEN suggestedMetaDescription
+        ELSE ?
+      END,
+
+      suggestedH1 = CASE
+        WHEN ? IS NULL THEN suggestedH1
+        ELSE ?
+      END,
+
+      lastSuggestedAt = CASE
+        WHEN ? IS NULL THEN lastSuggestedAt
+        ELSE ?
+      END,
+
+      updatedAt = ?
+    WHERE projectId = ? AND id = ?
+  `
+  ).run(
+    nextOwner,
+    nextNotes,
+
+    nextStatus,
+    nextStatus,
+    now,
+
+    nextIssues ? "set" : null,
+    nextIssues ? JSON.stringify(nextIssues) : null,
+
+    nextSuggestedTitle ? "set" : null,
+    nextSuggestedTitle,
+
+    nextSuggestedMeta ? "set" : null,
+    nextSuggestedMeta,
+
+    nextSuggestedH1 ? "set" : null,
+    nextSuggestedH1,
+
+    patch.lastSuggestedAt !== undefined ? "set" : null,
+    patch.lastSuggestedAt !== undefined ? now : null,
+
+    now,
+    projectId,
+    itemId
+  );
+
+  return { ok: true };
+}
+
+function bulkMarkDone(projectId, ids = []) {
+  const list = Array.isArray(ids) ? ids : [];
+  const clean = list.map((x) => Number(x)).filter((n) => Number.isFinite(n));
+  if (!clean.length) return { ok: true, updated: 0 };
+
+  const now = nowIso();
+
+  const tx = db.transaction(() => {
+    let updated = 0;
+    const stmt = db.prepare(
+      `
+      UPDATE fix_queue
+      SET status = 'done', doneAt = ?, updatedAt = ?
+      WHERE projectId = ? AND id = ? AND status != 'done'
+    `
+    );
+
+    for (const id of clean) {
+      const res = stmt.run(now, now, projectId, id);
+      updated += res.changes || 0;
+    }
+    return updated;
+  });
+
+  const updated = tx();
+  return { ok: true, updated };
+}
+
+function dedupeFixQueue(projectId) {
+  // If duplicates exist from older versions, keep the newest updatedAt per url.
+  const rows = db
+    .prepare(
+      `
+      SELECT id, url, updatedAt
+      FROM fix_queue
+      WHERE projectId = ?
+      ORDER BY datetime(updatedAt) DESC
+    `
+    )
+    .all(projectId);
+
+  const seen = new Set();
+  const toDelete = [];
+
+  for (const r of rows) {
+    const key = String(r.url || "").trim();
+    if (!key) continue;
+    if (seen.has(key)) toDelete.push(r.id);
+    else seen.add(key);
+  }
+
+  if (!toDelete.length) {
+    return { ok: true, deleted: 0 };
+  }
+
+  const tx = db.transaction(() => {
+    const stmt = db.prepare(
+      `DELETE FROM fix_queue WHERE projectId = ? AND id = ?`
+    );
+    let deleted = 0;
+    for (const id of toDelete) {
+      const res = stmt.run(projectId, id);
+      deleted += res.changes || 0;
+    }
+    return deleted;
+  });
+
+  const deleted = tx();
+  return { ok: true, deleted };
+}
+
+function urlToPrettyName(url) {
+  try {
+    const u = new URL(url);
+    const path = u.pathname || "/";
+    const last = path.split("/").filter(Boolean).slice(-1)[0] || u.hostname;
+    const name = last
+      .replace(/[-_]+/g, " ")
+      .replace(/\.(html|htm|php)$/i, "")
+      .trim();
+    return name ? name.replace(/^\w/, (c) => c.toUpperCase()) : u.hostname;
+  } catch {
+    return "Page";
+  }
+}
+
+function trimToLen(str, max) {
+  const s = String(str || "").trim();
+  if (!s) return "";
+  return s.length > max ? s.slice(0, max - 1).trimEnd() + "…" : s;
+}
+
+async function openAiJson({ prompt, model }) {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) return { ok: false, error: "OPENAI_API_KEY not set" };
+
+  const chosenModel = model || process.env.OPENAI_MODEL || "gpt-4o-mini";
+
+  // Use Chat Completions for maximum compatibility.
+  // Output must be strict JSON (no markdown).
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: chosenModel,
+      temperature: 0.3,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an SEO copywriter. Return STRICT JSON only. No markdown. Keys: title, metaDescription, h1. Title 45-60 chars. Meta 130-155 chars. Use UK English. No keyword stuffing.",
+        },
+        { role: "user", content: prompt },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    return {
+      ok: false,
+      error: `OpenAI error ${res.status}: ${t || res.statusText}`,
+    };
+  }
+
+  const data = await res.json();
+  const text = data?.choices?.[0]?.message?.content || "";
+  const raw = String(text).trim();
+
+  // Best-effort JSON parse
+  try {
+    const parsed = JSON.parse(raw);
+    return { ok: true, json: parsed };
+  } catch {
+    // attempt to extract json object
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      try {
+        const sliced = raw.slice(start, end + 1);
+        const parsed = JSON.parse(sliced);
+        return { ok: true, json: parsed };
+      } catch {}
+    }
+    return { ok: false, error: "Failed to parse JSON from OpenAI" };
+  }
+}
+
+async function autoFixItem(projectId, id, { brand, tone, market } = {}) {
+  const itemId = Number(id);
+  if (!Number.isFinite(itemId)) throw new Error("invalid id");
+
+  const row = db
+    .prepare(
+      `
+      SELECT *
+      FROM fix_queue
+      WHERE projectId = ? AND id = ?
+    `
+    )
+    .get(projectId, itemId);
+
+  if (!row) throw new Error("fix queue item not found");
+
+  const url = row.url;
+  const issues = parseIssues(row.issues);
+  const prettyName = urlToPrettyName(url);
+
+  // Pull current page signals for context
+  const fetched = await fetchPageMeta(url);
+
+  const currentTitle = fetched?.ok ? fetched.title || "" : "";
+  const currentMeta = fetched?.ok ? fetched.metaDescription || "" : "";
+
+  const b = normaliseString(brand) || "AURA Systems";
+  const t = normaliseString(tone) || "Elevated, modern, UK English";
+  const m = normaliseString(market) || "Worldwide";
+
+  const prompt = [
+    `URL: ${url}`,
+    `Market: ${m}`,
+    `Brand: ${b}`,
+    `Tone: ${t}`,
+    `Issues: ${issues.join(", ") || "unknown"}`,
+    `Current title: ${currentTitle || "(missing)"}`,
+    `Current meta: ${currentMeta || "(missing)"}`,
+    "",
+    "Write improved SEO fields for this page.",
+    "Constraints:",
+    "- Title: 45-60 chars",
+    "- Meta description: 130-155 chars",
+    "- H1: clear, human, matches intent",
+    "- Prefer benefit-led language and clarity",
+    "- Use UK English spelling",
+    "",
+    `If page topic is unclear, assume it is about: ${prettyName}`,
+    "Return JSON only with keys title, metaDescription, h1.",
+  ].join("\n");
+
+  let suggestedTitle = "";
+  let suggestedMetaDescription = "";
+  let suggestedH1 = "";
+
+  // Try OpenAI; fallback if unavailable
+  const ai = await openAiJson({ prompt });
+  if (ai.ok && ai.json) {
+    suggestedTitle = clampText(ai.json.title, 120) || "";
+    suggestedMetaDescription = clampText(ai.json.metaDescription, 220) || "";
+    suggestedH1 = clampText(ai.json.h1, 140) || "";
+  } else {
+    // Deterministic fallback
+    suggestedH1 = prettyName;
+    suggestedTitle = trimToLen(`${prettyName} | ${b}`, 60);
+    suggestedMetaDescription = trimToLen(
+      `Explore ${prettyName} from ${b}. Clear details, key benefits and next steps — built for ${m}.`,
+      155
+    );
+  }
+
+  // Ensure not empty if issues demand them
+  if (!suggestedH1) suggestedH1 = prettyName;
+  if (!suggestedTitle) suggestedTitle = trimToLen(`${prettyName} | ${b}`, 60);
+  if (!suggestedMetaDescription) {
+    suggestedMetaDescription = trimToLen(
+      `Explore ${prettyName} from ${b}. Practical details, benefits and next steps.`,
+      155
+    );
+  }
+
+  const now = nowIso();
+
+  db.prepare(
+    `
+    UPDATE fix_queue
+    SET
+      suggestedTitle = ?,
+      suggestedMetaDescription = ?,
+      suggestedH1 = ?,
+      lastSuggestedAt = ?,
+      updatedAt = ?
+    WHERE projectId = ? AND id = ?
+  `
+  ).run(
+    suggestedTitle,
+    suggestedMetaDescription,
+    suggestedH1,
+    now,
+    now,
+    projectId,
+    itemId
+  );
+
   return {
-    id: row.id,
-    projectId: row.projectId,
-    url: row.url,
-    issues,
-    status: row.status || "open",
-    owner: row.owner || null,
-    notes: row.notes || null,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
+    ok: true,
+    id: itemId,
+    url,
+    suggestedTitle,
+    suggestedMetaDescription,
+    suggestedH1,
+    usedAi: !!(ai.ok && ai.json),
+  };
+}
+
+// -------------------------------------
+// NEW: Fix Pack (one-click) for all OPEN items
+// Calls autoFixItem for each queued page with concurrency.
+// -------------------------------------
+async function buildFixPack(
+  projectId,
+  { limit = 250, brand, tone, market } = {}
+) {
+  const { items } = listFixQueue(projectId, { status: "open", limit });
+
+  const concurrency = 4;
+  const queue = items.slice();
+  const out = [];
+
+  let okCount = 0;
+  let errCount = 0;
+
+  const worker = async () => {
+    while (queue.length) {
+      const item = queue.shift();
+      if (!item) continue;
+
+      try {
+        const fixed = await autoFixItem(projectId, item.id, { brand, tone, market });
+        okCount += 1;
+
+        out.push({
+          id: item.id,
+          url: item.url,
+          issues: item.issues || [],
+          addedAt: item.createdAt,
+          suggestions: {
+            title: fixed.suggestedTitle || null,
+            metaDescription: fixed.suggestedMetaDescription || null,
+            h1: fixed.suggestedH1 || null,
+          },
+          usedAi: !!fixed.usedAi,
+        });
+      } catch (e) {
+        errCount += 1;
+        out.push({
+          id: item.id,
+          url: item.url,
+          issues: item.issues || [],
+          addedAt: item.createdAt,
+          suggestions: { title: null, metaDescription: null, h1: null },
+          usedAi: false,
+          error: e?.message || "Failed",
+        });
+      }
+    }
+  };
+
+  await Promise.all(Array.from({ length: concurrency }, () => worker()));
+
+  // preserve "updatedAt DESC" from list view as best we can:
+  out.sort((a, b) => String(b.addedAt).localeCompare(String(a.addedAt)));
+
+  return {
+    ok: true,
+    projectId: String(projectId),
+    count: out.length,
+    okCount,
+    errCount,
+    items: out,
   };
 }
 
 module.exports = {
-  addToFixQueue,
   listFixQueue,
-  markDone,
-  removeItem,
+  addFixQueueItem,
+  updateFixQueueItem,
+  bulkMarkDone,
   dedupeFixQueue,
+  autoFixItem,
+  buildFixPack,
 };
