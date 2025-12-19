@@ -44,7 +44,6 @@ function parseIssues(text) {
     const arr = JSON.parse(text);
     return safeIssues(arr);
   } catch {
-    // legacy: a single string code
     const single = normaliseString(text);
     return single ? safeIssues([single]) : [];
   }
@@ -80,8 +79,40 @@ function sleep(ms) {
 }
 
 function makeJobId() {
-  // short + readable
   return `job_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
+}
+
+function safeJsonParse(s) {
+  try {
+    return JSON.parse(s);
+  } catch {
+    return null;
+  }
+}
+
+function tableExists(name) {
+  const row = db
+    .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`)
+    .get(name);
+  return !!row;
+}
+
+function getTableColumns(name) {
+  try {
+    const cols = db.prepare(`PRAGMA table_info(${name})`).all();
+    return new Set(cols.map((c) => c.name));
+  } catch {
+    return new Set();
+  }
+}
+
+function safeExec(sql) {
+  try {
+    db.exec(sql);
+  } catch (e) {
+    // do not crash boot for non-critical index creation
+    console.warn("[FixQueue] schema exec warning:", e?.message || e);
+  }
 }
 
 // ---------------------------
@@ -89,8 +120,8 @@ function makeJobId() {
 // ---------------------------
 
 function ensureFixQueueSchema() {
-  // Create target tables if missing (no-op if already present)
-  db.exec(`
+  // ---- fix_queue main table ----
+  safeExec(`
     CREATE TABLE IF NOT EXISTS fix_queue (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       projectId TEXT NOT NULL,
@@ -109,7 +140,9 @@ function ensureFixQueueSchema() {
       updatedAt TEXT NOT NULL,
       doneAt TEXT
     );
+  `);
 
+  safeExec(`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_fix_queue_project_url
       ON fix_queue(projectId, url);
 
@@ -120,18 +153,73 @@ function ensureFixQueueSchema() {
       ON fix_queue(projectId, updatedAt);
   `);
 
-  // Audit
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS fix_queue_audit (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      projectId TEXT NOT NULL,
-      itemId INTEGER,
-      actionType TEXT NOT NULL,
-      updatedBy TEXT,
-      meta TEXT, -- JSON
-      createdAt TEXT NOT NULL
-    );
+  // ---- fix_queue_audit (MIGRATE if legacy schema) ----
+  // We need to ensure `itemId` exists. If the table exists without it, rebuild.
+  if (!tableExists("fix_queue_audit")) {
+    safeExec(`
+      CREATE TABLE IF NOT EXISTS fix_queue_audit (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        projectId TEXT NOT NULL,
+        itemId INTEGER,
+        actionType TEXT NOT NULL,
+        updatedBy TEXT,
+        meta TEXT, -- JSON
+        createdAt TEXT NOT NULL
+      );
+    `);
+  } else {
+    const cols = getTableColumns("fix_queue_audit");
+    if (!cols.has("itemId")) {
+      // Legacy table exists. Rename and rebuild.
+      const tmp = `fix_queue_audit_legacy_${Date.now()}`;
+      safeExec(`ALTER TABLE fix_queue_audit RENAME TO ${tmp};`);
 
+      safeExec(`
+        CREATE TABLE IF NOT EXISTS fix_queue_audit (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          projectId TEXT NOT NULL,
+          itemId INTEGER,
+          actionType TEXT NOT NULL,
+          updatedBy TEXT,
+          meta TEXT, -- JSON
+          createdAt TEXT NOT NULL
+        );
+      `);
+
+      // Try to map common legacy column names to itemId
+      const legacyCols = getTableColumns(tmp);
+      const itemExpr = legacyCols.has("fixQueueId")
+        ? "fixQueueId"
+        : legacyCols.has("queueId")
+        ? "queueId"
+        : legacyCols.has("fix_queue_id")
+        ? "fix_queue_id"
+        : "NULL";
+
+      // Copy whatever columns exist safely
+      // actionType / createdAt are required in new schema; if missing, default.
+      const actionExpr = legacyCols.has("actionType") ? "actionType" : "'legacy'";
+      const byExpr = legacyCols.has("updatedBy") ? "updatedBy" : "NULL";
+      const metaExpr = legacyCols.has("meta") ? "meta" : "NULL";
+      const createdExpr = legacyCols.has("createdAt") ? "createdAt" : `'${nowIso()}'`;
+
+      safeExec(`
+        INSERT INTO fix_queue_audit (projectId, itemId, actionType, updatedBy, meta, createdAt)
+        SELECT
+          projectId,
+          ${itemExpr},
+          ${actionExpr},
+          ${byExpr},
+          ${metaExpr},
+          ${createdExpr}
+        FROM ${tmp};
+      `);
+
+      safeExec(`DROP TABLE IF EXISTS ${tmp};`);
+    }
+  }
+
+  safeExec(`
     CREATE INDEX IF NOT EXISTS idx_fix_queue_audit_project_item
       ON fix_queue_audit(projectId, itemId);
 
@@ -139,8 +227,8 @@ function ensureFixQueueSchema() {
       ON fix_queue_audit(projectId, createdAt);
   `);
 
-  // Bulk jobs
-  db.exec(`
+  // ---- Bulk jobs tables ----
+  safeExec(`
     CREATE TABLE IF NOT EXISTS fix_queue_jobs (
       jobId TEXT PRIMARY KEY,
       projectId TEXT NOT NULL,
@@ -167,7 +255,7 @@ function ensureFixQueueSchema() {
       ON fix_queue_jobs(projectId, createdAt);
   `);
 
-  db.exec(`
+  safeExec(`
     CREATE TABLE IF NOT EXISTS fix_queue_job_items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       jobId TEXT NOT NULL,
@@ -192,20 +280,17 @@ function ensureFixQueueSchema() {
       ON fix_queue_job_items(jobId, status);
   `);
 
-  // --- Legacy migration safety ---
-  // If an older table exists with column `issue` (singular) and/or missing updatedAt,
-  // we migrate it into the modern schema without crashing startup.
+  // ---- Legacy migration safety for fix_queue ----
+  // If older table exists with column `issue` (singular) OR missing updatedAt,
+  // rebuild it into the modern schema.
   try {
-    const cols = db.prepare(`PRAGMA table_info(fix_queue)`).all();
-    const names = new Set(cols.map((c) => c.name));
+    const cols = getTableColumns("fix_queue");
 
-    // If it has legacy "issue" column OR is missing "updatedAt", rebuild cleanly
-    if (names.has("issue") || !names.has("updatedAt")) {
+    if (cols.has("issue") || !cols.has("updatedAt")) {
       const tmp = `fix_queue_legacy_${Date.now()}`;
-      db.exec(`ALTER TABLE fix_queue RENAME TO ${tmp};`);
+      safeExec(`ALTER TABLE fix_queue RENAME TO ${tmp};`);
 
-      // Recreate fresh table
-      db.exec(`
+      safeExec(`
         CREATE TABLE IF NOT EXISTS fix_queue (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           projectId TEXT NOT NULL,
@@ -226,10 +311,40 @@ function ensureFixQueueSchema() {
         );
       `);
 
-      // Dedup by (projectId,url): keep newest by updatedAt/createdAt
-      // Convert legacy issue->issues JSON array if needed.
-      db.exec(`
-        INSERT INTO fix_queue (
+      // Note: Window functions may not be available depending on SQLite build;
+      // keep this migration simple and safe: insert all, then dedupe by unique index.
+      // We insert in newest-first order and keep first per (projectId,url) via INSERT OR IGNORE.
+      safeExec(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_fix_queue_project_url
+          ON fix_queue(projectId, url);
+      `);
+
+      const legacyCols = getTableColumns(tmp);
+      const hasIssues = legacyCols.has("issues");
+      const hasIssue = legacyCols.has("issue");
+
+      const issuesExpr = hasIssues
+        ? `
+          CASE
+            WHEN issues IS NOT NULL AND trim(issues) != '' THEN
+              CASE WHEN substr(trim(issues), 1, 1) = '[' THEN issues ELSE json_array(upper(trim(issues))) END
+            ELSE '[]'
+          END
+        `
+        : hasIssue
+        ? `
+          CASE
+            WHEN issue IS NOT NULL AND trim(issue) != '' THEN json_array(upper(trim(issue)))
+            ELSE '[]'
+          END
+        `
+        : `'[]'`;
+
+      const createdExpr = legacyCols.has("createdAt") ? "createdAt" : `'${nowIso()}'`;
+      const updatedExpr = legacyCols.has("updatedAt") ? "updatedAt" : createdExpr;
+
+      safeExec(`
+        INSERT OR IGNORE INTO fix_queue (
           projectId, url, issues, status, owner, notes,
           suggestedTitle, suggestedMetaDescription, suggestedH1, lastSuggestedAt,
           createdAt, updatedAt, doneAt
@@ -237,40 +352,22 @@ function ensureFixQueueSchema() {
         SELECT
           projectId,
           url,
-          CASE
-            WHEN issues IS NOT NULL AND trim(issues) != '' THEN
-              CASE
-                WHEN substr(trim(issues), 1, 1) = '[' THEN issues
-                ELSE json_array(upper(trim(issues)))
-              END
-            WHEN issue IS NOT NULL AND trim(issue) != '' THEN json_array(upper(trim(issue)))
-            ELSE '[]'
-          END AS issuesJson,
+          ${issuesExpr},
           COALESCE(status, 'open') AS status,
-          owner,
-          notes,
-          suggestedTitle,
-          suggestedMetaDescription,
-          suggestedH1,
-          lastSuggestedAt,
-          COALESCE(createdAt, '${nowIso()}') AS createdAt,
-          COALESCE(updatedAt, createdAt, '${nowIso()}') AS updatedAt,
-          doneAt
-        FROM (
-          SELECT *,
-                 ROW_NUMBER() OVER (
-                   PARTITION BY projectId, url
-                   ORDER BY datetime(COALESCE(updatedAt, createdAt)) DESC
-                 ) AS rn
-          FROM ${tmp}
-        )
-        WHERE rn = 1;
+          ${legacyCols.has("owner") ? "owner" : "NULL"} AS owner,
+          ${legacyCols.has("notes") ? "notes" : "NULL"} AS notes,
+          ${legacyCols.has("suggestedTitle") ? "suggestedTitle" : "NULL"} AS suggestedTitle,
+          ${legacyCols.has("suggestedMetaDescription") ? "suggestedMetaDescription" : "NULL"} AS suggestedMetaDescription,
+          ${legacyCols.has("suggestedH1") ? "suggestedH1" : "NULL"} AS suggestedH1,
+          ${legacyCols.has("lastSuggestedAt") ? "lastSuggestedAt" : "NULL"} AS lastSuggestedAt,
+          ${createdExpr} AS createdAt,
+          COALESCE(${updatedExpr}, ${createdExpr}) AS updatedAt,
+          ${legacyCols.has("doneAt") ? "doneAt" : "NULL"} AS doneAt
+        FROM ${tmp}
+        ORDER BY datetime(COALESCE(${updatedExpr}, ${createdExpr})) DESC;
       `);
 
-      db.exec(`
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_fix_queue_project_url
-          ON fix_queue(projectId, url);
-
+      safeExec(`
         CREATE INDEX IF NOT EXISTS idx_fix_queue_project_status
           ON fix_queue(projectId, status);
 
@@ -278,7 +375,7 @@ function ensureFixQueueSchema() {
           ON fix_queue(projectId, updatedAt);
       `);
 
-      db.exec(`DROP TABLE IF EXISTS ${tmp};`);
+      safeExec(`DROP TABLE IF EXISTS ${tmp};`);
     }
   } catch (e) {
     console.warn("[FixQueue] schema migration warning (continuing):", e?.message || e);
@@ -331,14 +428,6 @@ function listAudit(projectId, itemId, { limit = 200 } = {}) {
     meta: r.meta ? safeJsonParse(r.meta) : null,
     createdAt: r.createdAt,
   }));
-}
-
-function safeJsonParse(s) {
-  try {
-    return JSON.parse(s);
-  } catch {
-    return null;
-  }
 }
 
 // ---------------------------
@@ -405,7 +494,6 @@ function listFixQueue(projectId, { status = "open", limit = 200 } = {}) {
     suggestedMetaDescription: r.suggestedMetaDescription || null,
     suggestedH1: r.suggestedH1 || null,
 
-    // UI-friendly alias
     suggestedAt: r.lastSuggestedAt || null,
     lastSuggestedAt: r.lastSuggestedAt || null,
 
@@ -456,7 +544,6 @@ function addFixQueueItem(projectId, { url, issues } = {}) {
       `
       ).run(projectId, u, JSON.stringify(nextIssues), now, now);
 
-      // audit (itemId unknown here; read it)
       const inserted = db
         .prepare(`SELECT id FROM fix_queue WHERE projectId = ? AND url = ?`)
         .get(projectId, u);
@@ -466,8 +553,6 @@ function addFixQueueItem(projectId, { url, issues } = {}) {
     }
 
     const mergedIssues = issueUnion(parseIssues(existing.issues), nextIssues);
-
-    // If it was marked done, re-open if re-queued
     const nextStatus = existing.status === "done" ? "open" : existing.status;
 
     db.prepare(
@@ -573,50 +658,39 @@ function updateFixQueueItem(projectId, id, patch = {}, { updatedBy } = {}) {
     WHERE projectId = ? AND id = ?
   `
   ).run(
-    // owner
     nextOwner === null ? null : "set",
     nextOwner,
 
-    // notes
     nextNotes === null ? null : "set",
     nextNotes,
 
-    // status
     nextStatus === null ? null : "set",
     nextStatus,
 
-    // doneAt logic
     nextStatus === null ? null : "set",
     nextStatus,
     now,
 
-    // issues
     nextIssues === null ? null : "set",
     nextIssues === null ? null : JSON.stringify(nextIssues),
 
-    // suggestedTitle
     nextSuggestedTitle === null ? null : "set",
     nextSuggestedTitle,
 
-    // suggestedMeta
     nextSuggestedMeta === null ? null : "set",
     nextSuggestedMeta,
 
-    // suggestedH1
     nextSuggestedH1 === null ? null : "set",
     nextSuggestedH1,
 
-    // lastSuggestedAt
     setSuggestedAt ? 1 : 0,
     now,
 
-    // updatedAt
     now,
     projectId,
     itemId
   );
 
-  // audit
   const meta = {};
   if (patch.owner !== undefined) meta.owner = nextOwner;
   if (patch.notes !== undefined) meta.notes = nextNotes;
@@ -1046,11 +1120,12 @@ function createBulkAutoFixJob(projectId, ids = [], options = {}) {
     market: normaliseString(options.market) || null,
     updatedBy: normaliseString(options.updatedBy) || null,
 
-    // throttling
     concurrency: Number.isFinite(Number(options.concurrency))
       ? Math.min(Math.max(Number(options.concurrency), 1), 3)
       : 1,
-    delayMs: Number.isFinite(Number(options.delayMs)) ? Math.min(Math.max(Number(options.delayMs), 0), 5000) : 750,
+    delayMs: Number.isFinite(Number(options.delayMs))
+      ? Math.min(Math.max(Number(options.delayMs), 0), 5000)
+      : 750,
   };
 
   db.transaction(() => {
@@ -1089,7 +1164,6 @@ function createBulkAutoFixJob(projectId, ids = [], options = {}) {
     }
   })();
 
-  // fire-and-forget processing (same Node process)
   setImmediate(() => {
     runBulkAutoFixJob(projectId, jobId).catch((e) => {
       console.error("[FixQueue] bulk job fatal error:", e);
@@ -1109,8 +1183,6 @@ function createBulkAutoFixJob(projectId, ids = [], options = {}) {
 async function runBulkAutoFixJob(projectId, jobId) {
   const job = getJob(projectId, jobId);
   if (!job) return;
-
-  // If already started/finished, don't double-run
   if (!["queued"].includes(job.status)) return;
 
   const now = nowIso();
@@ -1134,8 +1206,6 @@ async function runBulkAutoFixJob(projectId, jobId) {
 
   let cancelled = false;
   let fatalError = null;
-
-  // work queue
   let idx = 0;
 
   const updateJobProgress = () => {
