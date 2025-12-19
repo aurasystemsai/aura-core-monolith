@@ -1,5 +1,5 @@
 // aura-console/src/components/FixQueue.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./FixQueue.css";
 
 function normaliseCoreUrl(coreUrl) {
@@ -23,6 +23,15 @@ function issuesPretty(issues) {
   );
 }
 
+function toLocalDateTime(value) {
+  if (!value) return "—";
+  try {
+    return new Date(value).toLocaleString();
+  } catch {
+    return "—";
+  }
+}
+
 export default function FixQueue({ coreUrl, projectId }) {
   const normalizedCoreUrl = useMemo(() => normaliseCoreUrl(coreUrl), [coreUrl]);
 
@@ -39,6 +48,9 @@ export default function FixQueue({ coreUrl, projectId }) {
     [selected]
   );
 
+  // Per-row busy flags: { [id]: { owner: true, notes: true, done: true, autoFix: true } }
+  const [rowBusy, setRowBusy] = useState({});
+
   const [toast, setToast] = useState("");
 
   const endpoint = useMemo(() => {
@@ -50,16 +62,56 @@ export default function FixQueue({ coreUrl, projectId }) {
 
   const showToast = (msg) => {
     setToast(msg);
-    setTimeout(() => setToast(""), 1800);
+    window.clearTimeout(showToast._t);
+    showToast._t = window.setTimeout(() => setToast(""), 1800);
   };
+
+  const setBusy = (id, key, on) => {
+    setRowBusy((prev) => {
+      const next = { ...prev };
+      const row = { ...(next[String(id)] || {}) };
+      if (on) row[key] = true;
+      else delete row[key];
+
+      if (Object.keys(row).length) next[String(id)] = row;
+      else delete next[String(id)];
+      return next;
+    });
+  };
+
+  const isRowBusy = (id) => {
+    const row = rowBusy[String(id)];
+    return !!(row && Object.keys(row).length);
+  };
+
+  const updateItemLocal = (id, patch) => {
+    setItems((prev) =>
+      prev.map((x) => {
+        if (x.id !== id) return x;
+        return { ...x, ...patch };
+      })
+    );
+  };
+
+  const fetchAbortRef = useRef(null);
 
   const fetchQueue = async () => {
     if (!normalizedCoreUrl || !projectId) return;
+
+    // Abort any in-flight fetch
+    if (fetchAbortRef.current) {
+      try {
+        fetchAbortRef.current.abort();
+      } catch {}
+    }
+    const ac = new AbortController();
+    fetchAbortRef.current = ac;
+
     setStatus("loading");
     setError("");
 
     try {
-      const res = await fetch(endpoint);
+      const res = await fetch(endpoint, { signal: ac.signal });
       if (!res.ok) {
         const t = await res.text().catch(() => "");
         throw new Error(`Core API error (${res.status}): ${t || res.statusText}`);
@@ -70,6 +122,7 @@ export default function FixQueue({ coreUrl, projectId }) {
       setStatus("ok");
       setSelected({});
     } catch (e) {
+      if (e?.name === "AbortError") return;
       setStatus("error");
       setError(e?.message || "Failed to load Fix Queue");
       setItems([]);
@@ -107,20 +160,62 @@ export default function FixQueue({ coreUrl, projectId }) {
   };
 
   const handleDone = async (id) => {
+    const row = items.find((x) => x.id === id);
+    if (!row) return;
+
+    setBusy(id, "done", true);
+
+    // Optimistic: mark done locally (and optionally remove if viewing open)
+    const prevRow = { ...row };
+    if (statusFilter === "open") {
+      setItems((prev) => prev.filter((x) => x.id !== id));
+    } else {
+      updateItemLocal(id, { status: "done" });
+    }
+
     try {
-      await callJson(
-        `${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/done`,
-        { method: "POST" }
-      );
+      await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/done`, {
+        method: "POST",
+      });
       showToast("Marked done");
-      fetchQueue();
+      setSelected((prev) => {
+        const next = { ...prev };
+        delete next[String(id)];
+        return next;
+      });
     } catch (e) {
+      // Revert
+      if (statusFilter === "open") {
+        setItems((prev) => {
+          const exists = prev.some((x) => x.id === id);
+          if (exists) return prev;
+          return [prevRow, ...prev];
+        });
+      } else {
+        updateItemLocal(id, { status: prevRow.status });
+      }
       showToast(e?.message || "Failed to mark done");
+    } finally {
+      setBusy(id, "done", false);
     }
   };
 
   const handleBulkDone = async () => {
     if (!selectedIds.length) return;
+
+    // Optimistic removal/marking
+    const selectedSet = new Set(selectedIds);
+    const prevItems = items;
+
+    if (statusFilter === "open") {
+      setItems((prev) => prev.filter((x) => !selectedSet.has(x.id)));
+    } else {
+      setItems((prev) =>
+        prev.map((x) => (selectedSet.has(x.id) ? { ...x, status: "done" } : x))
+      );
+    }
+    setSelected({});
+
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/bulk-done`, {
         method: "POST",
@@ -128,18 +223,18 @@ export default function FixQueue({ coreUrl, projectId }) {
         body: JSON.stringify({ ids: selectedIds }),
       });
       showToast(`Done: ${selectedIds.length}`);
-      fetchQueue();
     } catch (e) {
+      // Revert to known-good state
+      setItems(prevItems);
       showToast(e?.message || "Failed bulk done");
     }
   };
 
   const handleDedupe = async () => {
     try {
-      const data = await callJson(
-        `${normalizedCoreUrl}/projects/${projectId}/fix-queue/dedupe`,
-        { method: "POST" }
-      );
+      const data = await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/dedupe`, {
+        method: "POST",
+      });
       showToast(`Deduped (deleted ${data?.deleted || 0})`);
       fetchQueue();
     } catch (e) {
@@ -148,6 +243,15 @@ export default function FixQueue({ coreUrl, projectId }) {
   };
 
   const handleOwner = async (id, owner) => {
+    const row = items.find((x) => x.id === id);
+    if (!row) return;
+
+    setBusy(id, "owner", true);
+
+    // Optimistic owner update
+    const prevOwner = row.owner || "";
+    updateItemLocal(id, { owner });
+
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}`, {
         method: "PATCH",
@@ -155,17 +259,29 @@ export default function FixQueue({ coreUrl, projectId }) {
         body: JSON.stringify({ owner }),
       });
       showToast("Owner updated");
-      fetchQueue();
+      // No refetch (optimistic is now source of truth)
     } catch (e) {
+      // Revert
+      updateItemLocal(id, { owner: prevOwner || null });
       showToast(e?.message || "Failed to update owner");
+    } finally {
+      setBusy(id, "owner", false);
     }
   };
 
   const handleNotes = async (id) => {
-    const current = items.find((x) => x.id === id);
-    const existing = current?.notes || "";
+    const row = items.find((x) => x.id === id);
+    if (!row) return;
+
+    const existing = row?.notes || "";
     const next = window.prompt("Notes for this item:", existing);
     if (next === null) return;
+
+    setBusy(id, "notes", true);
+
+    // Optimistic notes update
+    const prevNotes = existing;
+    updateItemLocal(id, { notes: next });
 
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}`, {
@@ -174,22 +290,39 @@ export default function FixQueue({ coreUrl, projectId }) {
         body: JSON.stringify({ notes: next }),
       });
       showToast("Notes saved");
-      fetchQueue();
+      // No refetch
     } catch (e) {
+      // Revert
+      updateItemLocal(id, { notes: prevNotes || null });
       showToast(e?.message || "Failed to save notes");
+    } finally {
+      setBusy(id, "notes", false);
     }
   };
 
   const handleAutoFix = async (id) => {
+    setBusy(id, "autoFix", true);
+
     try {
-      await callJson(
+      const data = await callJson(
         `${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/auto-fix`,
         { method: "POST" }
       );
+
+      // Optimistic update from response payload (no refetch)
+      // Your route returns: { ok, projectId, id, url, suggestedTitle, suggestedMetaDescription, suggestedH1, lastSuggestedAt?, ... }
+      updateItemLocal(id, {
+        suggestedTitle: data?.suggestedTitle || null,
+        suggestedMetaDescription: data?.suggestedMetaDescription || null,
+        suggestedH1: data?.suggestedH1 || null,
+        lastSuggestedAt: data?.lastSuggestedAt || data?.suggestedAt || new Date().toISOString(),
+      });
+
       showToast("Suggestions generated");
-      fetchQueue();
     } catch (e) {
       showToast(e?.message || "Failed to generate suggestions");
+    } finally {
+      setBusy(id, "autoFix", false);
     }
   };
 
@@ -224,7 +357,7 @@ export default function FixQueue({ coreUrl, projectId }) {
               min={1}
               max={1000}
               value={limit}
-              onChange={(e) => setLimit(e.target.value)}
+              onChange={(e) => setLimit(Number(e.target.value || 200))}
             />
           </div>
 
@@ -283,10 +416,11 @@ export default function FixQueue({ coreUrl, projectId }) {
               <th style={{ width: 220 }}>Issues</th>
               <th style={{ width: 160 }}>Owner</th>
               <th style={{ width: 160 }}>Added</th>
-              <th style={{ width: 220 }}>Auto-fix suggestions</th>
+              <th style={{ width: 260 }}>Auto-fix suggestions</th>
               <th style={{ width: 220 }}>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {status === "loading" && !items.length ? (
               <tr>
@@ -304,14 +438,16 @@ export default function FixQueue({ coreUrl, projectId }) {
               items.map((row) => {
                 const prettyIssues = issuesPretty(row.issues);
                 const hasSuggestion = !!row.suggestedTitle || !!row.suggestedMetaDescription;
+                const busy = isRowBusy(row.id);
 
                 return (
-                  <tr key={row.id}>
+                  <tr key={row.id} className={busy ? "fq-row-busy" : ""}>
                     <td>
                       <input
                         type="checkbox"
                         checked={!!selected[String(row.id)]}
                         onChange={(e) => setRowSelected(row.id, e.target.checked)}
+                        disabled={busy}
                       />
                     </td>
 
@@ -341,6 +477,7 @@ export default function FixQueue({ coreUrl, projectId }) {
                         className="fq-select"
                         value={row.owner || ""}
                         onChange={(e) => handleOwner(row.id, e.target.value)}
+                        disabled={!!rowBusy[String(row.id)]?.owner || busy}
                       >
                         <option value="">Unassigned</option>
                         <option value="Darren">Darren</option>
@@ -348,12 +485,13 @@ export default function FixQueue({ coreUrl, projectId }) {
                         <option value="Writer">Writer</option>
                         <option value="VA">VA</option>
                       </select>
+                      {rowBusy[String(row.id)]?.owner ? (
+                        <div className="fq-sub fq-muted">Saving owner…</div>
+                      ) : null}
                     </td>
 
                     <td>
-                      <div className="fq-date">
-                        {row.createdAt ? new Date(row.createdAt).toLocaleString() : "—"}
-                      </div>
+                      <div className="fq-date">{toLocalDateTime(row.createdAt)}</div>
                     </td>
 
                     <td>
@@ -365,8 +503,9 @@ export default function FixQueue({ coreUrl, projectId }) {
                               className="button button--ghost button--tiny"
                               type="button"
                               onClick={() => handleAutoFix(row.id)}
+                              disabled={!!rowBusy[String(row.id)]?.autoFix || busy}
                             >
-                              Generate
+                              {rowBusy[String(row.id)]?.autoFix ? "Generating…" : "Generate"}
                             </button>
                           </div>
                         </div>
@@ -379,26 +518,30 @@ export default function FixQueue({ coreUrl, projectId }) {
                               className="button button--ghost button--tiny"
                               type="button"
                               onClick={() => safeCopy(row.suggestedTitle)}
-                              disabled={!row.suggestedTitle}
+                              disabled={!row.suggestedTitle || busy}
                             >
                               Copy
                             </button>
                           </div>
+
                           <div className="fq-suggest-row">
                             <div className="fq-suggest-label">Meta</div>
-                            <div className="fq-suggest-value">{row.suggestedMetaDescription || "—"}</div>
+                            <div className="fq-suggest-value">
+                              {row.suggestedMetaDescription || "—"}
+                            </div>
                             <button
                               className="button button--ghost button--tiny"
                               type="button"
                               onClick={() => safeCopy(row.suggestedMetaDescription)}
-                              disabled={!row.suggestedMetaDescription}
+                              disabled={!row.suggestedMetaDescription || busy}
                             >
                               Copy
                             </button>
                           </div>
+
                           <div className="fq-sub">
-                            Suggested:{" "}
-                            {row.lastSuggestedAt ? new Date(row.lastSuggestedAt).toLocaleString() : "—"}
+                            Last suggested:{" "}
+                            {row.lastSuggestedAt ? toLocalDateTime(row.lastSuggestedAt) : "—"}
                           </div>
                         </div>
                       )}
@@ -410,6 +553,7 @@ export default function FixQueue({ coreUrl, projectId }) {
                           className="button button--ghost button--tiny"
                           type="button"
                           onClick={() => safeCopy(row.url)}
+                          disabled={busy}
                         >
                           Copy URL
                         </button>
@@ -418,17 +562,18 @@ export default function FixQueue({ coreUrl, projectId }) {
                           className="button button--ghost button--tiny"
                           type="button"
                           onClick={() => handleNotes(row.id)}
+                          disabled={!!rowBusy[String(row.id)]?.notes || busy}
                         >
-                          Notes
+                          {rowBusy[String(row.id)]?.notes ? "Saving…" : "Notes"}
                         </button>
 
                         <button
                           className="button button--ghost button--tiny"
                           type="button"
                           onClick={() => handleDone(row.id)}
-                          disabled={row.status === "done"}
+                          disabled={row.status === "done" || !!rowBusy[String(row.id)]?.done || busy}
                         >
-                          Done
+                          {rowBusy[String(row.id)]?.done ? "…" : "Done"}
                         </button>
                       </div>
                     </td>
