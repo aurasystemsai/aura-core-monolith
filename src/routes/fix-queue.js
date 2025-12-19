@@ -8,10 +8,9 @@ const router = express.Router();
 
 const fixQueue = require("../core/fix-queue");
 
-function actorFromReq(req) {
-  // Optional: pass x-aura-actor from console later (e.g. Darren)
-  const h = req.headers["x-aura-actor"];
-  return h ? String(h).trim() : "console";
+function getUpdatedBy(req) {
+  const h = req.headers["x-aura-user"];
+  return h ? String(h).trim() : null;
 }
 
 // LIST
@@ -35,79 +34,6 @@ router.get("/projects/:projectId/fix-queue", (req, res) => {
     return res.status(400).json({
       ok: false,
       error: err.message || "Failed to list fix queue",
-    });
-  }
-});
-
-// CSV EXPORT
-router.get("/projects/:projectId/fix-queue/export.csv", (req, res) => {
-  const projectId = req.params.projectId;
-  const { status } = req.query;
-
-  try {
-    const result = fixQueue.listFixQueue(projectId, {
-      status: status || "open",
-      limit: 1000,
-    });
-
-    const rows = Array.isArray(result.items) ? result.items : [];
-
-    const escapeCsv = (v) => {
-      const s = String(v ?? "");
-      if (s.includes('"') || s.includes(",") || s.includes("\n")) {
-        return `"${s.replace(/"/g, '""')}"`;
-      }
-      return s;
-    };
-
-    const header = [
-      "id",
-      "url",
-      "status",
-      "owner",
-      "issues",
-      "notes",
-      "suggestedTitle",
-      "suggestedMetaDescription",
-      "suggestedH1",
-      "lastSuggestedAt",
-      "createdAt",
-      "updatedAt",
-      "doneAt",
-    ];
-
-    const lines = [header.join(",")];
-
-    for (const r of rows) {
-      lines.push(
-        [
-          r.id,
-          r.url,
-          r.status,
-          r.owner || "",
-          (Array.isArray(r.issues) ? r.issues.join("|") : "") || "",
-          r.notes || "",
-          r.suggestedTitle || "",
-          r.suggestedMetaDescription || "",
-          r.suggestedH1 || "",
-          r.lastSuggestedAt || "",
-          r.createdAt || "",
-          r.updatedAt || "",
-          r.doneAt || "",
-        ]
-          .map(escapeCsv)
-          .join(",")
-      );
-    }
-
-    res.setHeader("Content-Type", "text/csv; charset=utf-8");
-    res.setHeader("Content-Disposition", `attachment; filename="fix-queue-${projectId}.csv"`);
-    return res.send(lines.join("\n"));
-  } catch (err) {
-    console.error("[FixQueue] export error", err);
-    return res.status(400).json({
-      ok: false,
-      error: err.message || "Failed to export fix queue",
     });
   }
 });
@@ -140,7 +66,7 @@ router.patch("/projects/:projectId/fix-queue/:id", (req, res) => {
   const id = req.params.id;
 
   try {
-    fixQueue.updateFixQueueItem(projectId, id, req.body || {}, actorFromReq(req));
+    fixQueue.updateFixQueueItem(projectId, id, req.body || {}, { updatedBy: getUpdatedBy(req) });
     return res.json({ ok: true, projectId, id: Number(id) });
   } catch (err) {
     console.error("[FixQueue] patch error", err);
@@ -157,7 +83,7 @@ router.post("/projects/:projectId/fix-queue/:id/done", (req, res) => {
   const id = req.params.id;
 
   try {
-    fixQueue.updateFixQueueItem(projectId, id, { status: "done" }, actorFromReq(req));
+    fixQueue.updateFixQueueItem(projectId, id, { status: "done" }, { updatedBy: getUpdatedBy(req) });
     return res.json({ ok: true, projectId, id: Number(id) });
   } catch (err) {
     console.error("[FixQueue] done error", err);
@@ -174,7 +100,7 @@ router.post("/projects/:projectId/fix-queue/bulk-done", (req, res) => {
 
   try {
     const { ids } = req.body || {};
-    const result = fixQueue.bulkMarkDone(projectId, ids, actorFromReq(req));
+    const result = fixQueue.bulkMarkDone(projectId, ids, { updatedBy: getUpdatedBy(req) });
     return res.json({ ok: true, projectId, ...result });
   } catch (err) {
     console.error("[FixQueue] bulk done error", err);
@@ -190,7 +116,7 @@ router.post("/projects/:projectId/fix-queue/dedupe", (req, res) => {
   const projectId = req.params.projectId;
 
   try {
-    const result = fixQueue.dedupeFixQueue(projectId);
+    const result = fixQueue.dedupeFixQueue(projectId, { updatedBy: getUpdatedBy(req) });
     return res.json({ ok: true, projectId, ...result });
   } catch (err) {
     console.error("[FixQueue] dedupe error", err);
@@ -212,7 +138,7 @@ router.post("/projects/:projectId/fix-queue/:id/auto-fix", async (req, res) => {
       brand,
       tone,
       market,
-      actor: actorFromReq(req),
+      updatedBy: getUpdatedBy(req),
     });
 
     return res.json({
@@ -229,25 +155,20 @@ router.post("/projects/:projectId/fix-queue/:id/auto-fix", async (req, res) => {
   }
 });
 
-// BULK AUTO-FIX
+// BULK AUTO-FIX (suggestions)
 router.post("/projects/:projectId/fix-queue/bulk-auto-fix", async (req, res) => {
   const projectId = req.params.projectId;
 
   try {
-    const { ids, brand, tone, market, concurrency } = req.body || {};
+    const { ids, brand, tone, market } = req.body || {};
     const result = await fixQueue.bulkAutoFix(projectId, ids, {
       brand,
       tone,
       market,
-      concurrency,
-      actor: actorFromReq(req),
+      updatedBy: getUpdatedBy(req),
     });
 
-    return res.json({
-      ok: true,
-      projectId,
-      ...result,
-    });
+    return res.json({ ok: true, projectId, ...result });
   } catch (err) {
     console.error("[FixQueue] bulk auto-fix error", err);
     return res.status(400).json({
@@ -257,28 +178,87 @@ router.post("/projects/:projectId/fix-queue/bulk-auto-fix", async (req, res) => 
   }
 });
 
-// APPLY SUGGESTION
+// APPLY (enqueue write-back for Framer plugin)
 router.post("/projects/:projectId/fix-queue/:id/apply", (req, res) => {
   const projectId = req.params.projectId;
   const id = req.params.id;
 
   try {
-    const { field } = req.body || {};
-    const result = fixQueue.applySuggestion(projectId, id, {
+    const { target, field, value } = req.body || {};
+    if (String(target || "") !== "framer") {
+      return res.status(400).json({ ok: false, error: "target must be 'framer' for now" });
+    }
+
+    const result = fixQueue.enqueueApplyToFramer(projectId, id, {
       field,
-      actor: actorFromReq(req),
+      value,
+      updatedBy: getUpdatedBy(req),
     });
 
-    return res.json({
-      ok: true,
-      projectId,
-      ...result,
-    });
+    return res.json({ ok: true, projectId, ...result });
   } catch (err) {
-    console.error("[FixQueue] apply error", err);
+    console.error("[FixQueue] apply enqueue error", err);
     return res.status(400).json({
       ok: false,
-      error: err.message || "Failed to apply suggestion",
+      error: err.message || "Failed to enqueue apply",
+    });
+  }
+});
+
+// FRAMER APPLY QUEUE (plugin reads this)
+router.get("/projects/:projectId/framer-apply-queue", (req, res) => {
+  const projectId = req.params.projectId;
+  const { status, limit } = req.query;
+
+  try {
+    const result = fixQueue.listApplyQueue(projectId, {
+      status: status || "open",
+      limit: limit !== undefined ? Number(limit) : 200,
+    });
+    return res.json({ ok: true, projectId, ...result });
+  } catch (err) {
+    console.error("[FixQueue] list apply queue error", err);
+    return res.status(400).json({
+      ok: false,
+      error: err.message || "Failed to list apply queue",
+    });
+  }
+});
+
+// FRAMER APPLY QUEUE MARK (plugin reports applied/failed)
+router.post("/projects/:projectId/framer-apply-queue/:queueId/mark", (req, res) => {
+  const projectId = req.params.projectId;
+  const queueId = req.params.queueId;
+  const { status, error } = req.body || {};
+
+  try {
+    const result = fixQueue.markApplyQueueItem(projectId, queueId, { status, error });
+    return res.json({ ok: true, projectId, ...result });
+  } catch (err) {
+    console.error("[FixQueue] mark apply queue error", err);
+    return res.status(400).json({
+      ok: false,
+      error: err.message || "Failed to mark apply queue item",
+    });
+  }
+});
+
+// AUDIT (per item)
+router.get("/projects/:projectId/fix-queue/:id/audit", (req, res) => {
+  const projectId = req.params.projectId;
+  const id = req.params.id;
+  const { limit } = req.query;
+
+  try {
+    const result = fixQueue.getAudit(projectId, id, {
+      limit: limit !== undefined ? Number(limit) : 200,
+    });
+    return res.json({ ok: true, projectId, ...result });
+  } catch (err) {
+    console.error("[FixQueue] audit error", err);
+    return res.status(400).json({
+      ok: false,
+      error: err.message || "Failed to fetch audit",
     });
   }
 });
