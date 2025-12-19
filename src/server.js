@@ -24,6 +24,9 @@ const draftsRoutes = require("./routes/drafts");
 // NEW: Fix Queue API routes
 const fixQueueRoutes = require("./routes/fix-queue");
 
+// NEW: Make Webhook forwarder routes
+const makeRoutes = require("./routes/make");
+
 const app = express();
 const PORT = process.env.PORT || 10000;
 
@@ -52,6 +55,9 @@ app.use(draftsRoutes);
 // Fix Queue API
 app.use(fixQueueRoutes);
 
+// Make Integration API (forward to Make webhooks)
+app.use(makeRoutes);
+
 // ---------- HEALTH CHECK ----------
 
 app.get("/health", (_req, res) => {
@@ -60,6 +66,9 @@ app.get("/health", (_req, res) => {
     service: "aura-core-monolith",
     env: process.env.NODE_ENV || "production",
     timestamp: new Date().toISOString(),
+    integrations: {
+      makeApplyFixQueueWebhookConfigured: !!process.env.MAKE_APPLY_FIX_QUEUE_WEBHOOK,
+    },
   });
 });
 
@@ -310,7 +319,7 @@ app.get("*", (_req, res) => {
 app.listen(PORT, () => {
   console.log(
     `[Core] AURA Core API running on port ${PORT}\n` +
-      "==> Your service is live 🎉\n" +
+      "==> Your service is live\n" +
       `==> Available at your primary URL ${
         process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`
       }\n`
