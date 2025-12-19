@@ -8,56 +8,87 @@ const db = require("./db");
 const { fetchPageMeta } = require("./fetchPageMeta");
 
 // -------------------------------------
-// DB bootstrap + migrations
+// DB bootstrap + migrations (safe on old DBs)
 // -------------------------------------
 
-// 1) Create table first (NO unique index yet)
+// 1) Base table (minimal)
 db.exec(`
   CREATE TABLE IF NOT EXISTS fix_queue (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     projectId TEXT NOT NULL,
     url TEXT NOT NULL,
-    issues TEXT, -- JSON array of issue codes
-    status TEXT NOT NULL DEFAULT 'open', -- open | done
+    issues TEXT,
+    status TEXT NOT NULL DEFAULT 'open',
     owner TEXT,
     notes TEXT,
-
     suggestedTitle TEXT,
     suggestedMetaDescription TEXT,
     suggestedH1 TEXT,
     lastSuggestedAt TEXT,
-
-    createdAt TEXT NOT NULL,
-    updatedAt TEXT NOT NULL,
+    createdAt TEXT,
+    updatedAt TEXT,
     doneAt TEXT
   );
 `);
 
-// 2) Migration: remove duplicates BEFORE creating the unique index.
-//    Keep the newest record per (projectId, url) by highest updatedAt, then highest id.
+// 2) Ensure columns exist for older DBs (SQLite has no "ADD COLUMN IF NOT EXISTS")
+function ensureColumn(col, typeSql) {
+  const cols = db.prepare("PRAGMA table_info(fix_queue);").all();
+  const has = cols.some((c) => String(c.name).toLowerCase() === String(col).toLowerCase());
+  if (has) return;
+
+  try {
+    db.exec(`ALTER TABLE fix_queue ADD COLUMN ${col} ${typeSql};`);
+    console.log(`[FixQueue] added missing column: ${col}`);
+  } catch (e) {
+    console.error(`[FixQueue] failed adding column ${col}:`, e?.message || e);
+  }
+}
+
+// Add any columns that might be missing on old installs
+ensureColumn("issues", "TEXT");
+ensureColumn("status", "TEXT NOT NULL DEFAULT 'open'");
+ensureColumn("owner", "TEXT");
+ensureColumn("notes", "TEXT");
+ensureColumn("suggestedTitle", "TEXT");
+ensureColumn("suggestedMetaDescription", "TEXT");
+ensureColumn("suggestedH1", "TEXT");
+ensureColumn("lastSuggestedAt", "TEXT");
+ensureColumn("createdAt", "TEXT");
+ensureColumn("updatedAt", "TEXT");
+ensureColumn("doneAt", "TEXT");
+
+// Backfill timestamps if they are null (older rows)
 try {
-  // Delete older duplicates, keep the "best" row for each (projectId,url)
+  const now = new Date().toISOString();
+  db.prepare(
+    `
+    UPDATE fix_queue
+    SET
+      createdAt = COALESCE(createdAt, ?),
+      updatedAt = COALESCE(updatedAt, createdAt, ?)
+  `
+  ).run(now, now);
+} catch (e) {
+  console.error("[FixQueue] timestamp backfill failed (continuing):", e?.message || e);
+}
+
+// 3) Dedupe BEFORE unique index.
+//    This version does NOT rely on updatedAt existing; it keeps the highest id per (projectId,url).
+try {
   db.exec(`
     DELETE FROM fix_queue
     WHERE id NOT IN (
-      SELECT id FROM (
-        SELECT id
-        FROM fix_queue
-        ORDER BY
-          projectId ASC,
-          url ASC,
-          datetime(updatedAt) DESC,
-          id DESC
-      )
+      SELECT MAX(id)
+      FROM fix_queue
       GROUP BY projectId, url
     );
   `);
 } catch (e) {
-  // If anything goes wrong, don't hard-crash the service.
   console.error("[FixQueue] dedupe migration failed (continuing):", e?.message || e);
 }
 
-// 3) Now create indexes (unique index last now that duplicates are removed)
+// 4) Now create indexes
 db.exec(`
   CREATE UNIQUE INDEX IF NOT EXISTS idx_fix_queue_project_url
     ON fix_queue(projectId, url);
@@ -85,7 +116,6 @@ function safeIssues(value) {
     .map((x) => normaliseString(x))
     .filter(Boolean)
     .map((x) => String(x).toUpperCase());
-  // unique
   return Array.from(new Set(cleaned));
 }
 
@@ -100,9 +130,7 @@ function parseIssues(text) {
 }
 
 function issueUnion(a, b) {
-  return Array.from(
-    new Set([...(safeIssues(a) || []), ...(safeIssues(b) || [])])
-  );
+  return Array.from(new Set([...(safeIssues(a) || []), ...(safeIssues(b) || [])]));
 }
 
 function clampText(value, maxLen) {
@@ -134,9 +162,7 @@ function getCounts(projectId) {
 
 function listFixQueue(projectId, { status = "open", limit = 200 } = {}) {
   const lim = Number(limit);
-  const safeLimit = Number.isFinite(lim)
-    ? Math.min(Math.max(lim, 1), 1000)
-    : 200;
+  const safeLimit = Number.isFinite(lim) ? Math.min(Math.max(lim, 1), 1000) : 200;
 
   let where = "projectId = ?";
   const params = [projectId];
@@ -175,8 +201,8 @@ function listFixQueue(projectId, { status = "open", limit = 200 } = {}) {
     suggestedH1: r.suggestedH1 || null,
     lastSuggestedAt: r.lastSuggestedAt || null,
 
-    createdAt: r.createdAt,
-    updatedAt: r.updatedAt,
+    createdAt: r.createdAt || null,
+    updatedAt: r.updatedAt || null,
     doneAt: r.doneAt || null,
   }));
 
@@ -222,8 +248,6 @@ function addFixQueueItem(projectId, { url, issues } = {}) {
     }
 
     const mergedIssues = issueUnion(parseIssues(existing.issues), nextIssues);
-
-    // If it was marked done, re-open if re-queued
     const nextStatus = existing.status === "done" ? "open" : existing.status;
 
     db.prepare(
@@ -236,13 +260,7 @@ function addFixQueueItem(projectId, { url, issues } = {}) {
         doneAt = CASE WHEN ? = 'done' THEN doneAt ELSE NULL END
       WHERE id = ?
     `
-    ).run(
-      JSON.stringify(mergedIssues),
-      nextStatus,
-      now,
-      nextStatus,
-      existing.id
-    );
+    ).run(JSON.stringify(mergedIssues), nextStatus, now, nextStatus, existing.id);
 
     return { created: false, updated: true };
   });
@@ -257,7 +275,6 @@ function updateFixQueueItem(projectId, id, patch = {}) {
 
   const now = nowIso();
 
-  // Fetch to validate ownership + existing values
   const existing = db
     .prepare(
       `
@@ -282,9 +299,7 @@ function updateFixQueueItem(projectId, id, patch = {}) {
   const nextIssues = patch.issues !== undefined ? safeIssues(patch.issues) : null;
 
   const nextSuggestedTitle =
-    patch.suggestedTitle !== undefined
-      ? clampText(patch.suggestedTitle, 120)
-      : null;
+    patch.suggestedTitle !== undefined ? clampText(patch.suggestedTitle, 120) : null;
   const nextSuggestedMeta =
     patch.suggestedMetaDescription !== undefined
       ? clampText(patch.suggestedMetaDescription, 220)
@@ -393,14 +408,13 @@ function bulkMarkDone(projectId, ids = []) {
 }
 
 function dedupeFixQueue(projectId) {
-  // If duplicates exist from older versions, keep the newest updatedAt per url.
   const rows = db
     .prepare(
       `
-      SELECT id, url, updatedAt
+      SELECT id, url
       FROM fix_queue
       WHERE projectId = ?
-      ORDER BY datetime(updatedAt) DESC, id DESC
+      ORDER BY id DESC
     `
     )
     .all(projectId);
@@ -415,14 +429,10 @@ function dedupeFixQueue(projectId) {
     else seen.add(key);
   }
 
-  if (!toDelete.length) {
-    return { ok: true, deleted: 0 };
-  }
+  if (!toDelete.length) return { ok: true, deleted: 0 };
 
   const tx = db.transaction(() => {
-    const stmt = db.prepare(
-      `DELETE FROM fix_queue WHERE projectId = ? AND id = ?`
-    );
+    const stmt = db.prepare(`DELETE FROM fix_queue WHERE projectId = ? AND id = ?`);
     let deleted = 0;
     for (const id of toDelete) {
       const res = stmt.run(projectId, id);
@@ -462,8 +472,6 @@ async function openAiJson({ prompt, model }) {
 
   const chosenModel = model || process.env.OPENAI_MODEL || "gpt-4o-mini";
 
-  // Use Chat Completions for maximum compatibility.
-  // Output must be strict JSON (no markdown).
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -486,22 +494,17 @@ async function openAiJson({ prompt, model }) {
 
   if (!res.ok) {
     const t = await res.text().catch(() => "");
-    return {
-      ok: false,
-      error: `OpenAI error ${res.status}: ${t || res.statusText}`,
-    };
+    return { ok: false, error: `OpenAI error ${res.status}: ${t || res.statusText}` };
   }
 
   const data = await res.json();
   const text = data?.choices?.[0]?.message?.content || "";
   const raw = String(text).trim();
 
-  // Best-effort JSON parse
   try {
     const parsed = JSON.parse(raw);
     return { ok: true, json: parsed };
   } catch {
-    // attempt to extract json object
     const start = raw.indexOf("{");
     const end = raw.lastIndexOf("}");
     if (start >= 0 && end > start) {
@@ -535,9 +538,7 @@ async function autoFixItem(projectId, id, { brand, tone, market } = {}) {
   const issues = parseIssues(row.issues);
   const prettyName = urlToPrettyName(url);
 
-  // Pull current page signals for context
   const fetched = await fetchPageMeta(url);
-
   const currentTitle = fetched?.ok ? fetched.title || "" : "";
   const currentMeta = fetched?.ok ? fetched.metaDescription || "" : "";
 
@@ -570,14 +571,12 @@ async function autoFixItem(projectId, id, { brand, tone, market } = {}) {
   let suggestedMetaDescription = "";
   let suggestedH1 = "";
 
-  // Try OpenAI; fallback if unavailable
   const ai = await openAiJson({ prompt });
   if (ai.ok && ai.json) {
     suggestedTitle = clampText(ai.json.title, 120) || "";
     suggestedMetaDescription = clampText(ai.json.metaDescription, 220) || "";
     suggestedH1 = clampText(ai.json.h1, 140) || "";
   } else {
-    // Deterministic fallback
     suggestedH1 = prettyName;
     suggestedTitle = trimToLen(`${prettyName} | ${b}`, 60);
     suggestedMetaDescription = trimToLen(
@@ -586,7 +585,6 @@ async function autoFixItem(projectId, id, { brand, tone, market } = {}) {
     );
   }
 
-  // Ensure not empty if issues demand them
   if (!suggestedH1) suggestedH1 = prettyName;
   if (!suggestedTitle) suggestedTitle = trimToLen(`${prettyName} | ${b}`, 60);
   if (!suggestedMetaDescription) {
