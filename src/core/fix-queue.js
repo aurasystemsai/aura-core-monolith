@@ -2,7 +2,8 @@
 // -------------------------------------
 // AURA Fix Queue Core
 // Stores actionable SEO issues queued from Content Health.
-// Adds: audit trail + bulk auto-fix jobs (server-side throttled).
+// Adds: audit trail + bulk auto-fix jobs (server-side throttled),
+//       job history listing, and "apply suggestion" via webhook (Framer-friendly).
 // -------------------------------------
 
 const crypto = require("crypto");
@@ -110,9 +111,19 @@ function safeExec(sql) {
   try {
     db.exec(sql);
   } catch (e) {
-    // do not crash boot for non-critical index creation
     console.warn("[FixQueue] schema exec warning:", e?.message || e);
   }
+}
+
+function jitter(ms, pct = 0.2) {
+  const delta = ms * pct;
+  const rand = (Math.random() * 2 - 1) * delta;
+  return Math.max(0, Math.round(ms + rand));
+}
+
+function coerceNumber(value, fallback) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
 }
 
 // ---------------------------
@@ -153,8 +164,7 @@ function ensureFixQueueSchema() {
       ON fix_queue(projectId, updatedAt);
   `);
 
-  // ---- fix_queue_audit (MIGRATE if legacy schema) ----
-  // We need to ensure `itemId` exists. If the table exists without it, rebuild.
+  // ---- fix_queue_audit ----
   if (!tableExists("fix_queue_audit")) {
     safeExec(`
       CREATE TABLE IF NOT EXISTS fix_queue_audit (
@@ -170,7 +180,6 @@ function ensureFixQueueSchema() {
   } else {
     const cols = getTableColumns("fix_queue_audit");
     if (!cols.has("itemId")) {
-      // Legacy table exists. Rename and rebuild.
       const tmp = `fix_queue_audit_legacy_${Date.now()}`;
       safeExec(`ALTER TABLE fix_queue_audit RENAME TO ${tmp};`);
 
@@ -186,7 +195,6 @@ function ensureFixQueueSchema() {
         );
       `);
 
-      // Try to map common legacy column names to itemId
       const legacyCols = getTableColumns(tmp);
       const itemExpr = legacyCols.has("fixQueueId")
         ? "fixQueueId"
@@ -196,8 +204,6 @@ function ensureFixQueueSchema() {
         ? "fix_queue_id"
         : "NULL";
 
-      // Copy whatever columns exist safely
-      // actionType / createdAt are required in new schema; if missing, default.
       const actionExpr = legacyCols.has("actionType") ? "actionType" : "'legacy'";
       const byExpr = legacyCols.has("updatedBy") ? "updatedBy" : "NULL";
       const metaExpr = legacyCols.has("meta") ? "meta" : "NULL";
@@ -281,8 +287,6 @@ function ensureFixQueueSchema() {
   `);
 
   // ---- Legacy migration safety for fix_queue ----
-  // If older table exists with column `issue` (singular) OR missing updatedAt,
-  // rebuild it into the modern schema.
   try {
     const cols = getTableColumns("fix_queue");
 
@@ -311,9 +315,6 @@ function ensureFixQueueSchema() {
         );
       `);
 
-      // Note: Window functions may not be available depending on SQLite build;
-      // keep this migration simple and safe: insert all, then dedupe by unique index.
-      // We insert in newest-first order and keep first per (projectId,url) via INSERT OR IGNORE.
       safeExec(`
         CREATE UNIQUE INDEX IF NOT EXISTS idx_fix_queue_project_url
           ON fix_queue(projectId, url);
@@ -404,8 +405,7 @@ function logAudit(projectId, itemId, actionType, updatedBy, meta) {
 }
 
 function listAudit(projectId, itemId, { limit = 200 } = {}) {
-  const lim = Number(limit);
-  const safeLimit = Number.isFinite(lim) ? Math.min(Math.max(lim, 1), 500) : 200;
+  const safeLimit = Math.min(Math.max(coerceNumber(limit, 200), 1), 500);
 
   const rows = db
     .prepare(
@@ -456,8 +456,7 @@ function getCounts(projectId) {
 }
 
 function listFixQueue(projectId, { status = "open", limit = 200 } = {}) {
-  const lim = Number(limit);
-  const safeLimit = Number.isFinite(lim) ? Math.min(Math.max(lim, 1), 1000) : 200;
+  const safeLimit = Math.min(Math.max(coerceNumber(limit, 200), 1), 1000);
 
   let where = "projectId = ?";
   const params = [projectId];
@@ -506,7 +505,7 @@ function listFixQueue(projectId, { status = "open", limit = 200 } = {}) {
 }
 
 // ---------------------------
-// Add / Update / Done / Bulk Done / Dedupe
+// Add / Update / Bulk Done / Dedupe
 // ---------------------------
 
 function addFixQueueItem(projectId, { url, issues } = {}) {
@@ -547,7 +546,8 @@ function addFixQueueItem(projectId, { url, issues } = {}) {
       const inserted = db
         .prepare(`SELECT id FROM fix_queue WHERE projectId = ? AND url = ?`)
         .get(projectId, u);
-      if (inserted?.id) logAudit(projectId, inserted.id, "create", null, { url: u, issues: nextIssues });
+      if (inserted?.id)
+        logAudit(projectId, inserted.id, "create", null, { url: u, issues: nextIssues });
 
       return { created: true, updated: false };
     }
@@ -567,7 +567,11 @@ function addFixQueueItem(projectId, { url, issues } = {}) {
     `
     ).run(JSON.stringify(mergedIssues), nextStatus, now, nextStatus, existing.id);
 
-    logAudit(projectId, existing.id, "upsert", null, { url: u, issues: mergedIssues, status: nextStatus });
+    logAudit(projectId, existing.id, "upsert", null, {
+      url: u,
+      issues: mergedIssues,
+      status: nextStatus,
+    });
 
     return { created: false, updated: true };
   });
@@ -697,7 +701,8 @@ function updateFixQueueItem(projectId, id, patch = {}, { updatedBy } = {}) {
   if (patch.status !== undefined) meta.status = nextStatus;
   if (patch.issues !== undefined) meta.issues = nextIssues;
   if (patch.suggestedTitle !== undefined) meta.suggestedTitle = nextSuggestedTitle;
-  if (patch.suggestedMetaDescription !== undefined) meta.suggestedMetaDescription = nextSuggestedMeta;
+  if (patch.suggestedMetaDescription !== undefined)
+    meta.suggestedMetaDescription = nextSuggestedMeta;
   if (patch.suggestedH1 !== undefined) meta.suggestedH1 = nextSuggestedH1;
   if (setSuggestedAt) meta.suggestedAt = now;
 
@@ -707,8 +712,9 @@ function updateFixQueueItem(projectId, id, patch = {}, { updatedBy } = {}) {
 }
 
 function bulkMarkDone(projectId, ids = [], { updatedBy } = {}) {
-  const list = Array.isArray(ids) ? ids : [];
-  const clean = list.map((x) => Number(x)).filter((n) => Number.isFinite(n));
+  const clean = (Array.isArray(ids) ? ids : [])
+    .map((x) => Number(x))
+    .filter((n) => Number.isFinite(n));
   if (!clean.length) return { ok: true, updated: 0 };
 
   const now = nowIso();
@@ -759,9 +765,7 @@ function dedupeFixQueue(projectId) {
     else seen.add(key);
   }
 
-  if (!toDelete.length) {
-    return { ok: true, deleted: 0 };
-  }
+  if (!toDelete.length) return { ok: true, deleted: 0 };
 
   const tx = db.transaction(() => {
     const stmt = db.prepare(`DELETE FROM fix_queue WHERE projectId = ? AND id = ?`);
@@ -778,35 +782,96 @@ function dedupeFixQueue(projectId) {
 }
 
 // ---------------------------
-// OpenAI JSON helper
+// OpenAI JSON helper (safe throughput: retries/backoff)
 // ---------------------------
 
-async function openAiJson({ prompt, model }) {
+async function fetchWithRetry(url, options, retryOpts = {}) {
+  const maxRetries = Math.min(Math.max(coerceNumber(retryOpts.maxRetries, 3), 0), 8);
+  const baseDelayMs = Math.min(Math.max(coerceNumber(retryOpts.baseDelayMs, 750), 0), 10000);
+  const maxDelayMs = Math.min(Math.max(coerceNumber(retryOpts.maxDelayMs, 8000), 0), 30000);
+
+  let attempt = 0;
+  let lastErr = null;
+
+  while (attempt <= maxRetries) {
+    try {
+      const res = await fetch(url, options);
+
+      // Retry on rate limit or transient server errors
+      if (res.status === 429 || (res.status >= 500 && res.status <= 599)) {
+        const retryAfter = res.headers.get("retry-after");
+        let waitMs = 0;
+
+        if (retryAfter) {
+          const asNum = Number(retryAfter);
+          if (Number.isFinite(asNum)) waitMs = Math.round(asNum * 1000);
+        }
+
+        if (!waitMs) {
+          const exp = Math.min(maxDelayMs, baseDelayMs * Math.pow(2, attempt));
+          waitMs = jitter(exp, 0.25);
+        }
+
+        const text = await res.text().catch(() => "");
+        lastErr = new Error(`HTTP ${res.status}: ${text || res.statusText}`);
+
+        if (attempt === maxRetries) return { ok: false, res, error: lastErr };
+        await sleep(waitMs);
+        attempt += 1;
+        continue;
+      }
+
+      return { ok: true, res };
+    } catch (e) {
+      lastErr = e;
+      if (attempt === maxRetries) return { ok: false, res: null, error: lastErr };
+      const exp = Math.min(maxDelayMs, baseDelayMs * Math.pow(2, attempt));
+      await sleep(jitter(exp, 0.25));
+      attempt += 1;
+    }
+  }
+
+  return { ok: false, res: null, error: lastErr || new Error("fetch failed") };
+}
+
+async function openAiJson({ prompt, model, retry } = {}) {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return { ok: false, error: "OPENAI_API_KEY not set" };
 
   const chosenModel = model || process.env.OPENAI_MODEL || "gpt-4o-mini";
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: chosenModel,
-      temperature: 0.3,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are an SEO copywriter. Return STRICT JSON only. No markdown. Keys: title, metaDescription, h1. Title 45-60 chars. Meta 130-155 chars. Use UK English. No keyword stuffing.",
-        },
-        { role: "user", content: prompt },
-      ],
-    }),
-  });
+  const payload = {
+    model: chosenModel,
+    temperature: 0.3,
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are an SEO copywriter. Return STRICT JSON only. No markdown. Keys: title, metaDescription, h1. Title 45-60 chars. Meta 130-155 chars. Use UK English. No keyword stuffing.",
+      },
+      { role: "user", content: prompt },
+    ],
+  };
 
+  const resWrap = await fetchWithRetry(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    },
+    retry || {}
+  );
+
+  if (!resWrap.ok) {
+    const msg = resWrap?.error?.message || "OpenAI request failed";
+    return { ok: false, error: msg };
+  }
+
+  const res = resWrap.res;
   if (!res.ok) {
     const t = await res.text().catch(() => "");
     return { ok: false, error: `OpenAI error ${res.status}: ${t || res.statusText}` };
@@ -890,7 +955,15 @@ async function autoFixItem(projectId, id, { brand, tone, market, updatedBy } = {
   let suggestedMetaDescription = "";
   let suggestedH1 = "";
 
-  const ai = await openAiJson({ prompt });
+  const ai = await openAiJson({
+    prompt,
+    retry: {
+      maxRetries: coerceNumber(process.env.AURA_OPENAI_MAX_RETRIES, 3),
+      baseDelayMs: coerceNumber(process.env.AURA_OPENAI_BASE_DELAY_MS, 750),
+      maxDelayMs: coerceNumber(process.env.AURA_OPENAI_MAX_DELAY_MS, 8000),
+    },
+  });
+
   if (ai.ok && ai.json) {
     suggestedTitle = clampText(ai.json.title, 120) || "";
     suggestedMetaDescription = clampText(ai.json.metaDescription, 220) || "";
@@ -1060,9 +1133,41 @@ function getJob(projectId, jobId) {
   };
 }
 
+function listJobs(projectId, { limit = 20 } = {}) {
+  const safeLimit = Math.min(Math.max(coerceNumber(limit, 20), 1), 100);
+
+  const rows = db
+    .prepare(
+      `
+      SELECT jobId, projectId, type, status, total, processed, okCount, failCount, lastError,
+             createdAt, updatedAt, startedAt, finishedAt
+      FROM fix_queue_jobs
+      WHERE projectId = ?
+      ORDER BY datetime(createdAt) DESC
+      LIMIT ${safeLimit}
+    `
+    )
+    .all(projectId);
+
+  return rows.map((r) => ({
+    jobId: r.jobId,
+    projectId: r.projectId,
+    type: r.type,
+    status: r.status,
+    total: r.total,
+    processed: r.processed,
+    okCount: r.okCount,
+    failCount: r.failCount,
+    lastError: r.lastError || null,
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
+    startedAt: r.startedAt || null,
+    finishedAt: r.finishedAt || null,
+  }));
+}
+
 function listJobItems(projectId, jobId, { limit = 200 } = {}) {
-  const lim = Number(limit);
-  const safeLimit = Number.isFinite(lim) ? Math.min(Math.max(lim, 1), 500) : 200;
+  const safeLimit = Math.min(Math.max(coerceNumber(limit, 200), 1), 500);
 
   const rows = db
     .prepare(
@@ -1120,12 +1225,9 @@ function createBulkAutoFixJob(projectId, ids = [], options = {}) {
     market: normaliseString(options.market) || null,
     updatedBy: normaliseString(options.updatedBy) || null,
 
-    concurrency: Number.isFinite(Number(options.concurrency))
-      ? Math.min(Math.max(Number(options.concurrency), 1), 3)
-      : 1,
-    delayMs: Number.isFinite(Number(options.delayMs))
-      ? Math.min(Math.max(Number(options.delayMs), 0), 5000)
-      : 750,
+    // concurrency: keep low to protect OpenAI + your Render CPU
+    concurrency: Math.min(Math.max(coerceNumber(options.concurrency, 1), 1), 3),
+    delayMs: Math.min(Math.max(coerceNumber(options.delayMs, 750), 0), 5000),
   };
 
   db.transaction(() => {
@@ -1197,8 +1299,8 @@ async function runBulkAutoFixJob(projectId, jobId) {
   const refreshed = getJob(projectId, jobId);
   const ids = Array.isArray(refreshed?.ids) ? refreshed.ids : [];
   const opts = refreshed?.options || {};
-  const concurrency = Number(opts.concurrency || 1);
-  const delayMs = Number(opts.delayMs || 0);
+  const concurrency = Math.max(1, Math.min(Number(opts.concurrency || 1), 3));
+  const delayMs = Math.max(0, Math.min(Number(opts.delayMs || 0), 5000));
 
   let processed = 0;
   let okCount = 0;
@@ -1272,6 +1374,7 @@ async function runBulkAutoFixJob(projectId, jobId) {
 
       try {
         markItem(itemId, "running");
+
         const result = await autoFixItem(projectId, itemId, {
           brand: opts.brand,
           tone: opts.tone,
@@ -1298,7 +1401,10 @@ async function runBulkAutoFixJob(projectId, jobId) {
   };
 
   try {
-    const workers = Array.from({ length: Math.max(1, Math.min(concurrency, 3)) }, () => worker());
+    const workers = Array.from(
+      { length: Math.max(1, Math.min(concurrency, 3)) },
+      () => worker()
+    );
     await Promise.all(workers);
   } catch (e) {
     fatalError = e?.message || String(e);
@@ -1362,17 +1468,110 @@ async function runBulkAutoFixJob(projectId, jobId) {
 }
 
 // ---------------------------
+// Apply suggestion (Framer-friendly via webhook)
+// ---------------------------
+//
+// You do NOT have Shopify right now.
+// For Framer: the correct approach is a webhook that triggers Make.com (or your own worker)
+// to update Framer CMS / page meta.
+// Set env var on Render:
+//   AURA_APPLY_WEBHOOK_URL=https://hook.make.com/xxxxx   (or your endpoint)
+//
+// This function posts:
+// {
+//   projectId, itemId, url,
+//   field: "title" | "metaDescription" | "h1",
+//   value: "...",
+//   suggestedTitle, suggestedMetaDescription, suggestedH1,
+//   updatedBy,
+//   at
+// }
+
+function getApplyWebhookUrl() {
+  return normaliseString(process.env.AURA_APPLY_WEBHOOK_URL);
+}
+
+async function applySuggestion(projectId, itemId, { field, updatedBy } = {}) {
+  const id = Number(itemId);
+  if (!Number.isFinite(id)) throw new Error("invalid id");
+
+  const fieldNorm = normaliseString(field);
+  if (!fieldNorm) throw new Error("field is required");
+
+  const allowed = new Set(["title", "metaDescription", "h1"]);
+  if (!allowed.has(fieldNorm)) throw new Error("field must be title|metaDescription|h1");
+
+  const hook = getApplyWebhookUrl();
+  if (!hook) throw new Error("AURA_APPLY_WEBHOOK_URL not set on server");
+
+  const row = db
+    .prepare(`SELECT * FROM fix_queue WHERE projectId = ? AND id = ?`)
+    .get(projectId, id);
+
+  if (!row) throw new Error("fix queue item not found");
+
+  const suggestedTitle = row.suggestedTitle || "";
+  const suggestedMetaDescription = row.suggestedMetaDescription || "";
+  const suggestedH1 = row.suggestedH1 || "";
+
+  let value = "";
+  if (fieldNorm === "title") value = suggestedTitle;
+  if (fieldNorm === "metaDescription") value = suggestedMetaDescription;
+  if (fieldNorm === "h1") value = suggestedH1;
+
+  if (!value) throw new Error(`No suggested value available for ${fieldNorm}`);
+
+  const payload = {
+    projectId,
+    itemId: id,
+    url: row.url,
+    field: fieldNorm,
+    value,
+    suggestedTitle,
+    suggestedMetaDescription,
+    suggestedH1,
+    updatedBy: normaliseString(updatedBy) || null,
+    at: nowIso(),
+  };
+
+  const resWrap = await fetchWithRetry(
+    hook,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+    { maxRetries: 2, baseDelayMs: 500, maxDelayMs: 2000 }
+  );
+
+  if (!resWrap.ok) {
+    const msg = resWrap?.error?.message || "apply webhook failed";
+    throw new Error(msg);
+  }
+
+  const res = resWrap.res;
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error(`apply webhook error ${res.status}: ${t || res.statusText}`);
+  }
+
+  logAudit(projectId, id, "apply", updatedBy || null, { field: fieldNorm, valueLen: value.length });
+
+  return { ok: true, projectId, id, field: fieldNorm, value };
+}
+
+// ---------------------------
 // Exports
 // ---------------------------
 
 module.exports = {
+  // fix queue
   listFixQueue,
   addFixQueueItem,
   updateFixQueueItem,
   bulkMarkDone,
   dedupeFixQueue,
   autoFixItem,
-
   exportFixQueueCsv,
 
   // audit
@@ -1382,6 +1581,10 @@ module.exports = {
   // jobs
   createBulkAutoFixJob,
   getJob,
+  listJobs,
   listJobItems,
   cancelJob,
+
+  // apply
+  applySuggestion,
 };

@@ -1,8 +1,8 @@
 // src/routes/fix-queue.js
 // -------------------------------------
 // Fix Queue API Routes
-// Adds: export.csv, audit, bulk-auto-fix (job + progress polling)
-// Also includes backwards-compatible aliases under /jobs/*
+// Adds: export.csv, audit, bulk-auto-fix (job + progress polling),
+//       job history list, apply suggestion (webhook).
 // -------------------------------------
 
 const express = require("express");
@@ -11,8 +11,6 @@ const router = express.Router();
 const fixQueue = require("../core/fix-queue");
 
 function getUpdatedBy(req) {
-  // Optional: allow UI or scripts to tag who performed the action.
-  // You can pass either a header or JSON body field.
   return (
     req.headers["x-aura-user"] ||
     req.headers["x-aura-updated-by"] ||
@@ -42,6 +40,23 @@ router.get("/projects/:projectId/fix-queue", (req, res) => {
     return res.status(400).json({
       ok: false,
       error: err.message || "Failed to list fix queue",
+    });
+  }
+});
+
+// JOB HISTORY LIST
+router.get("/projects/:projectId/fix-queue/jobs", (req, res) => {
+  const projectId = req.params.projectId;
+  const { limit } = req.query;
+
+  try {
+    const jobs = fixQueue.listJobs(projectId, { limit: limit !== undefined ? Number(limit) : 20 });
+    return res.json({ ok: true, projectId, jobs });
+  } catch (err) {
+    console.error("[FixQueue] jobs list error", err);
+    return res.status(400).json({
+      ok: false,
+      error: err.message || "Failed to list jobs",
     });
   }
 });
@@ -208,7 +223,7 @@ router.post("/projects/:projectId/fix-queue/bulk-auto-fix", (req, res) => {
   }
 });
 
-// GET job progress (primary endpoint)
+// GET job progress
 router.get("/projects/:projectId/fix-queue/bulk-auto-fix/:jobId", (req, res) => {
   const projectId = req.params.projectId;
   const jobId = req.params.jobId;
@@ -238,7 +253,7 @@ router.get("/projects/:projectId/fix-queue/bulk-auto-fix/:jobId", (req, res) => 
   }
 });
 
-// Cancel job (primary endpoint)
+// Cancel job
 router.post("/projects/:projectId/fix-queue/bulk-auto-fix/:jobId/cancel", (req, res) => {
   const projectId = req.params.projectId;
   const jobId = req.params.jobId;
@@ -255,58 +270,25 @@ router.post("/projects/:projectId/fix-queue/bulk-auto-fix/:jobId/cancel", (req, 
   }
 });
 
-// -------------------------------
-// Backwards-compatible aliases
-// (matches your earlier PowerShell calls)
-// -------------------------------
-
-// GET job progress alias: /jobs/:jobId
-router.get("/projects/:projectId/fix-queue/jobs/:jobId", (req, res) => {
+// APPLY suggestion (webhook)
+router.post("/projects/:projectId/fix-queue/:id/apply", async (req, res) => {
   const projectId = req.params.projectId;
-  const jobId = req.params.jobId;
+  const id = req.params.id;
 
   try {
-    const job = fixQueue.getJob(projectId, jobId);
-    if (!job) return res.status(404).json({ ok: false, error: "job not found" });
-    return res.json({ ok: true, projectId, job });
-  } catch (err) {
-    console.error("[FixQueue] jobs get error", err);
-    return res.status(400).json({ ok: false, error: err.message || "Failed to fetch job" });
-  }
-});
-
-// GET job items alias: /jobs/:jobId/items
-router.get("/projects/:projectId/fix-queue/jobs/:jobId/items", (req, res) => {
-  const projectId = req.params.projectId;
-  const jobId = req.params.jobId;
-  const { limit } = req.query;
-
-  try {
-    const job = fixQueue.getJob(projectId, jobId);
-    if (!job) return res.status(404).json({ ok: false, error: "job not found" });
-
-    const items = fixQueue.listJobItems(projectId, jobId, {
-      limit: limit !== undefined ? Number(limit) : 200,
+    const { field } = req.body || {};
+    const result = await fixQueue.applySuggestion(projectId, id, {
+      field,
+      updatedBy: getUpdatedBy(req),
     });
 
-    return res.json({ ok: true, projectId, jobId, items });
-  } catch (err) {
-    console.error("[FixQueue] jobs items error", err);
-    return res.status(400).json({ ok: false, error: err.message || "Failed to fetch job items" });
-  }
-});
-
-// Cancel job alias: /jobs/:jobId/cancel
-router.post("/projects/:projectId/fix-queue/jobs/:jobId/cancel", (req, res) => {
-  const projectId = req.params.projectId;
-  const jobId = req.params.jobId;
-
-  try {
-    const result = fixQueue.cancelJob(projectId, jobId);
     return res.json({ ok: true, projectId, ...result });
   } catch (err) {
-    console.error("[FixQueue] jobs cancel error", err);
-    return res.status(400).json({ ok: false, error: err.message || "Failed to cancel job" });
+    console.error("[FixQueue] apply error", err);
+    return res.status(400).json({
+      ok: false,
+      error: err.message || "Failed to apply suggestion",
+    });
   }
 });
 

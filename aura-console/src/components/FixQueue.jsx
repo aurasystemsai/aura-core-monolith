@@ -30,16 +30,9 @@ function lsKey(projectId) {
 export default function FixQueue({ coreUrl, projectId }) {
   const normalizedCoreUrl = useMemo(() => normaliseCoreUrl(coreUrl), [coreUrl]);
 
-  // Tag audit trail with a consistent actor (you can change this later to be dynamic)
-  const updatedBy = "Darren";
-
   // ---------- Persisted UI state ----------
   const [statusFilter, setStatusFilter] = useState("open"); // open | done | all
   const [limit, setLimit] = useState(200);
-
-  // Optional bulk controls (safe defaults)
-  const [bulkConcurrency, setBulkConcurrency] = useState(1);
-  const [bulkDelayMs, setBulkDelayMs] = useState(750);
 
   useEffect(() => {
     if (!projectId) return;
@@ -49,8 +42,6 @@ export default function FixQueue({ coreUrl, projectId }) {
       const parsed = JSON.parse(raw);
       if (parsed.statusFilter) setStatusFilter(parsed.statusFilter);
       if (parsed.limit) setLimit(parsed.limit);
-      if (parsed.bulkConcurrency) setBulkConcurrency(Number(parsed.bulkConcurrency) || 1);
-      if (parsed.bulkDelayMs !== undefined) setBulkDelayMs(Number(parsed.bulkDelayMs) || 0);
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
@@ -63,12 +54,10 @@ export default function FixQueue({ coreUrl, projectId }) {
         JSON.stringify({
           statusFilter,
           limit,
-          bulkConcurrency,
-          bulkDelayMs,
         })
       );
     } catch {}
-  }, [projectId, statusFilter, limit, bulkConcurrency, bulkDelayMs]);
+  }, [projectId, statusFilter, limit]);
 
   // ---------- Data ----------
   const [status, setStatus] = useState("idle"); // idle | loading | ok | error
@@ -84,11 +73,19 @@ export default function FixQueue({ coreUrl, projectId }) {
   const [toast, setToast] = useState("");
 
   // per-row loading states
-  const [rowBusy, setRowBusy] = useState({}); // { [id]: { owner?:bool, notes?:bool, done?:bool, gen?:bool } }
+  const [rowBusy, setRowBusy] = useState({}); // { [id]: { owner?:bool, notes?:bool, done?:bool, gen?:bool, applyTitle?:bool, applyMeta?:bool, applyH1?:bool } }
 
   // bulk job UI
-  const [bulkJob, setBulkJob] = useState(null); // { jobId, status, processed, total, okCount, failCount }
+  const [bulkJob, setBulkJob] = useState(null); // { jobId, status, processed, total, okCount, failCount, lastError }
   const bulkPollRef = useRef(null);
+
+  // job history
+  const [jobsStatus, setJobsStatus] = useState("idle"); // idle | loading | ok | error
+  const [jobsError, setJobsError] = useState("");
+  const [jobs, setJobs] = useState([]);
+  const [jobDetailOpen, setJobDetailOpen] = useState(null); // jobId string
+  const [jobItems, setJobItems] = useState([]);
+  const jobDetailPollRef = useRef(null);
 
   const endpoint = useMemo(() => {
     const q = new URLSearchParams();
@@ -101,14 +98,6 @@ export default function FixQueue({ coreUrl, projectId }) {
     setToast(msg);
     setTimeout(() => setToast(""), 1800);
   };
-
-  const baseHeaders = useMemo(
-    () => ({
-      "Content-Type": "application/json",
-      "x-aura-updated-by": updatedBy,
-    }),
-    [updatedBy]
-  );
 
   const callJson = async (url, opts) => {
     const res = await fetch(url, opts);
@@ -142,8 +131,28 @@ export default function FixQueue({ coreUrl, projectId }) {
     }
   };
 
+  const fetchJobs = async () => {
+    if (!normalizedCoreUrl || !projectId) return;
+    setJobsStatus("loading");
+    setJobsError("");
+
+    try {
+      const data = await callJson(
+        `${normalizedCoreUrl}/projects/${projectId}/fix-queue/jobs?limit=20`,
+        { method: "GET" }
+      );
+      setJobs(Array.isArray(data?.jobs) ? data.jobs : []);
+      setJobsStatus("ok");
+    } catch (e) {
+      setJobsStatus("error");
+      setJobsError(e?.message || "Failed to load job history");
+      setJobs([]);
+    }
+  };
+
   useEffect(() => {
     fetchQueue();
+    fetchJobs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endpoint]);
 
@@ -196,7 +205,7 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/done`, {
         method: "POST",
-        headers: baseHeaders,
+        headers: { "Content-Type": "application/json" },
       });
       showToast("Marked done");
     } catch (e) {
@@ -210,7 +219,6 @@ export default function FixQueue({ coreUrl, projectId }) {
   const handleBulkDone = async () => {
     if (!selectedIds.length) return;
 
-    // optimistic: remove from list if open filter
     const toMark = new Set(selectedIds);
     setItems((prev) => {
       if (statusFilter === "open") return prev.filter((x) => !toMark.has(x.id));
@@ -222,7 +230,7 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/bulk-done`, {
         method: "POST",
-        headers: baseHeaders,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: selectedIds }),
       });
     } catch (e) {
@@ -235,7 +243,7 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       const data = await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/dedupe`, {
         method: "POST",
-        headers: baseHeaders,
+        headers: { "Content-Type": "application/json" },
       });
       showToast(`Deduped (deleted ${data?.deleted || 0})`);
       fetchQueue();
@@ -249,20 +257,17 @@ export default function FixQueue({ coreUrl, projectId }) {
     if (!before) return;
 
     setBusy(id, { owner: true });
-
-    // optimistic
     setItems((prev) => prev.map((x) => (x.id === id ? { ...x, owner } : x)));
 
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}`, {
         method: "PATCH",
-        headers: baseHeaders,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ owner }),
       });
       showToast("Owner updated");
     } catch (e) {
       showToast(e?.message || "Failed to update owner");
-      // revert
       setItems((prev) => prev.map((x) => (x.id === id ? { ...x, owner: before.owner || "" } : x)));
     } finally {
       setBusy(id, { owner: false });
@@ -276,20 +281,17 @@ export default function FixQueue({ coreUrl, projectId }) {
     if (next === null) return;
 
     setBusy(id, { notes: true });
-
-    // optimistic
     setItems((prev) => prev.map((x) => (x.id === id ? { ...x, notes: next } : x)));
 
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}`, {
         method: "PATCH",
-        headers: baseHeaders,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes: next }),
       });
       showToast("Notes saved");
     } catch (e) {
       showToast(e?.message || "Failed to save notes");
-      // revert
       setItems((prev) => prev.map((x) => (x.id === id ? { ...x, notes: existing } : x)));
     } finally {
       setBusy(id, { notes: false });
@@ -298,19 +300,17 @@ export default function FixQueue({ coreUrl, projectId }) {
 
   const handleAutoFix = async (id) => {
     setBusy(id, { gen: true });
-
-    // optimistic: show "Generating…" by setting a temporary flag
     setItems((prev) => prev.map((x) => (x.id === id ? { ...x, _generating: true } : x)));
 
     try {
-      const data = await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/auto-fix`, {
-        method: "POST",
-        headers: baseHeaders,
-        body: JSON.stringify({}),
-      });
+      const data = await callJson(
+        `${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/auto-fix`,
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }
+      );
 
       const suggestedTitle = data?.suggestedTitle || data?.result?.suggestedTitle;
-      const suggestedMetaDescription = data?.suggestedMetaDescription || data?.result?.suggestedMetaDescription;
+      const suggestedMetaDescription =
+        data?.suggestedMetaDescription || data?.result?.suggestedMetaDescription;
       const suggestedH1 = data?.suggestedH1 || data?.result?.suggestedH1;
       const suggestedAt = data?.suggestedAt || data?.result?.suggestedAt || new Date().toISOString();
 
@@ -331,11 +331,35 @@ export default function FixQueue({ coreUrl, projectId }) {
       );
 
       showToast("Suggestions generated");
+      fetchJobs();
     } catch (e) {
       showToast(e?.message || "Failed to generate suggestions");
       setItems((prev) => prev.map((x) => (x.id === id ? { ...x, _generating: false } : x)));
     } finally {
       setBusy(id, { gen: false });
+    }
+  };
+
+  // ---------- Apply suggestion (webhook) ----------
+
+  const handleApply = async (id, field) => {
+    const busyKey =
+      field === "title" ? "applyTitle" : field === "metaDescription" ? "applyMeta" : "applyH1";
+
+    setBusy(id, { [busyKey]: true });
+
+    try {
+      await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/apply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ field }),
+      });
+      showToast(`Applied ${field}`);
+      fetchJobs(); // apply logs audit server-side; jobs list may not change but keep consistent
+    } catch (e) {
+      showToast(e?.message || "Failed to apply");
+    } finally {
+      setBusy(id, { [busyKey]: false });
     }
   };
 
@@ -372,9 +396,10 @@ export default function FixQueue({ coreUrl, projectId }) {
           if (j.status === "cancelled") showToast(`Bulk cancelled`);
 
           fetchQueue();
+          fetchJobs();
         }
       } catch {
-        // ignore poll errors (temporary)
+        // ignore poll errors
       }
     }, 1000);
   };
@@ -382,6 +407,7 @@ export default function FixQueue({ coreUrl, projectId }) {
   useEffect(() => {
     return () => {
       if (bulkPollRef.current) clearInterval(bulkPollRef.current);
+      if (jobDetailPollRef.current) clearInterval(jobDetailPollRef.current);
     };
   }, []);
 
@@ -401,25 +427,20 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       const data = await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/bulk-auto-fix`, {
         method: "POST",
-        headers: baseHeaders,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ids: selectedIds,
-          concurrency: bulkConcurrency,
-          delayMs: bulkDelayMs,
+          // leave concurrency/delay defaults server-side (safe)
         }),
       });
 
       const jobId = data?.jobId || data?.result?.jobId;
       if (!jobId) throw new Error("No jobId returned");
 
-      setBulkJob((prev) => ({
-        ...(prev || {}),
-        jobId,
-        status: "queued",
-      }));
-
+      setBulkJob((prev) => ({ ...(prev || {}), jobId, status: "queued" }));
       showToast(`Bulk started (${selectedIds.length})`);
       startBulkPoll(jobId);
+      fetchJobs();
     } catch (e) {
       showToast(e?.message || "Failed to start bulk auto-fix");
       setBulkJob(null);
@@ -429,13 +450,66 @@ export default function FixQueue({ coreUrl, projectId }) {
   const handleCancelBulk = async () => {
     if (!bulkJob?.jobId || bulkJob.jobId === "starting") return;
     try {
-      await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/bulk-auto-fix/${bulkJob.jobId}/cancel`, {
-        method: "POST",
-        headers: baseHeaders,
-      });
+      await callJson(
+        `${normalizedCoreUrl}/projects/${projectId}/fix-queue/bulk-auto-fix/${bulkJob.jobId}/cancel`,
+        { method: "POST", headers: { "Content-Type": "application/json" } }
+      );
       showToast("Cancelling…");
     } catch (e) {
       showToast(e?.message || "Failed to cancel");
+    }
+  };
+
+  // ---------- Job detail (history) ----------
+
+  const openJobDetail = async (jobId) => {
+    setJobDetailOpen(jobId);
+    setJobItems([]);
+
+    // poll job detail with items
+    if (jobDetailPollRef.current) clearInterval(jobDetailPollRef.current);
+
+    const poll = async () => {
+      try {
+        const data = await callJson(
+          `${normalizedCoreUrl}/projects/${projectId}/fix-queue/bulk-auto-fix/${jobId}?includeItems=1&itemsLimit=200`,
+          { method: "GET" }
+        );
+        const j = data?.job;
+        if (j) {
+          setBulkJob({
+            jobId: j.jobId,
+            status: j.status,
+            total: j.total,
+            processed: j.processed,
+            okCount: j.okCount,
+            failCount: j.failCount,
+            lastError: j.lastError || "",
+          });
+        }
+        setJobItems(Array.isArray(data?.items) ? data.items : []);
+        if (j && ["done", "failed", "cancelled"].includes(j.status)) {
+          // stop polling when finished
+          if (jobDetailPollRef.current) {
+            clearInterval(jobDetailPollRef.current);
+            jobDetailPollRef.current = null;
+          }
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    await poll();
+    jobDetailPollRef.current = setInterval(poll, 1200);
+  };
+
+  const closeJobDetail = () => {
+    setJobDetailOpen(null);
+    setJobItems([]);
+    if (jobDetailPollRef.current) {
+      clearInterval(jobDetailPollRef.current);
+      jobDetailPollRef.current = null;
     }
   };
 
@@ -451,7 +525,11 @@ export default function FixQueue({ coreUrl, projectId }) {
         <div className="fq-left">
           <div className="fq-filter">
             <div className="fq-label">Status</div>
-            <select className="fq-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <select
+              className="fq-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
               <option value="open">Open</option>
               <option value="done">Done</option>
               <option value="all">All</option>
@@ -478,36 +556,16 @@ export default function FixQueue({ coreUrl, projectId }) {
             Dedupe
           </button>
 
+          <button className="button button--ghost" type="button" onClick={fetchJobs} disabled={jobsStatus === "loading"}>
+            {jobsStatus === "loading" ? "Loading jobs…" : "Refresh jobs"}
+          </button>
+
           <a className="button button--ghost" href={exportCsvUrl} target="_blank" rel="noreferrer">
             Export CSV
           </a>
         </div>
 
-        <div className="fq-right" style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-          <div className="fq-filter" style={{ minWidth: 140 }}>
-            <div className="fq-label">Bulk concurrency</div>
-            <input
-              className="fq-input"
-              type="number"
-              min={1}
-              max={3}
-              value={bulkConcurrency}
-              onChange={(e) => setBulkConcurrency(Number(e.target.value))}
-            />
-          </div>
-
-          <div className="fq-filter" style={{ minWidth: 140 }}>
-            <div className="fq-label">Delay (ms)</div>
-            <input
-              className="fq-input"
-              type="number"
-              min={0}
-              max={5000}
-              value={bulkDelayMs}
-              onChange={(e) => setBulkDelayMs(Number(e.target.value))}
-            />
-          </div>
-
+        <div className="fq-right" style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <button
             className="button button--ghost"
             type="button"
@@ -532,11 +590,147 @@ export default function FixQueue({ coreUrl, projectId }) {
 
       {toast ? <div className="fq-toast">{toast}</div> : null}
 
+      {/* Job history */}
+      <div className="fq-sub" style={{ marginBottom: 10 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div>
+            <strong>Job history</strong>{" "}
+            <span className="fq-muted">(last 20)</span>
+          </div>
+          {jobsStatus === "error" ? <span className="fq-muted">Error: {jobsError}</span> : null}
+        </div>
+
+        {!jobs.length ? (
+          <div className="fq-muted" style={{ marginTop: 6 }}>
+            No jobs yet. Run “Generate selected” to create one.
+          </div>
+        ) : (
+          <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+            {jobs.slice(0, 8).map((j) => (
+              <div
+                key={j.jobId}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  padding: "8px 10px",
+                  borderRadius: 12,
+                  border: "1px solid rgba(148, 163, 184, 0.12)",
+                  background: "rgba(2, 6, 23, 0.35)",
+                }}
+              >
+                <div>
+                  <span className="fq-mono">{j.jobId}</span>{" "}
+                  <span className="fq-muted">({j.status})</span>{" "}
+                  <span className="fq-muted">
+                    · {j.processed}/{j.total} · ok {j.okCount} · fail {j.failCount}
+                  </span>
+                </div>
+
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <button
+                    className="button button--ghost button--tiny"
+                    type="button"
+                    onClick={() => openJobDetail(j.jobId)}
+                  >
+                    View
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Job detail modal-ish */}
+      {jobDetailOpen ? (
+        <div className="fq-table-wrap" style={{ marginBottom: 12 }}>
+          <div style={{ padding: 12, borderBottom: "1px solid rgba(148, 163, 184, 0.1)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+              <div>
+                <strong>Job:</strong> <span className="fq-mono">{jobDetailOpen}</span>
+                {bulkJob?.status ? <span className="fq-muted"> ({bulkJob.status})</span> : null}
+              </div>
+
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                {bulkJob && ["queued", "running"].includes(bulkJob.status) ? (
+                  <button className="button button--ghost button--tiny" type="button" onClick={handleCancelBulk}>
+                    Cancel
+                  </button>
+                ) : null}
+
+                <button className="button button--ghost button--tiny" type="button" onClick={closeJobDetail}>
+                  Close
+                </button>
+              </div>
+            </div>
+
+            {bulkJob ? (
+              <div className="fq-muted" style={{ marginTop: 6 }}>
+                {bulkJob.processed}/{bulkJob.total} processed · {bulkJob.okCount} ok · {bulkJob.failCount} failed
+                {bulkJob.lastError ? <> · last error: {bulkJob.lastError}</> : null}
+              </div>
+            ) : null}
+          </div>
+
+          <div style={{ padding: 12 }}>
+            {!jobItems.length ? (
+              <div className="fq-muted">No job items loaded yet…</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {jobItems.slice(0, 50).map((it) => (
+                  <div
+                    key={it.itemId}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 10,
+                      flexWrap: "wrap",
+                      border: "1px solid rgba(148, 163, 184, 0.12)",
+                      borderRadius: 12,
+                      padding: "8px 10px",
+                      background: "rgba(2, 6, 23, 0.25)",
+                    }}
+                  >
+                    <div>
+                      <span className="fq-mono">#{it.itemId}</span>{" "}
+                      <span className="fq-muted">({it.status})</span>
+                      {it.error ? <div className="fq-muted">Error: {it.error}</div> : null}
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      {it.suggestedTitle ? (
+                        <button className="button button--ghost button--tiny" type="button" onClick={() => safeCopy(it.suggestedTitle)}>
+                          Copy title
+                        </button>
+                      ) : null}
+                      {it.suggestedMetaDescription ? (
+                        <button className="button button--ghost button--tiny" type="button" onClick={() => safeCopy(it.suggestedMetaDescription)}>
+                          Copy meta
+                        </button>
+                      ) : null}
+                      {it.suggestedH1 ? (
+                        <button className="button button--ghost button--tiny" type="button" onClick={() => safeCopy(it.suggestedH1)}>
+                          Copy H1
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
+                {jobItems.length > 50 ? <div className="fq-muted">Showing first 50 items.</div> : null}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
+
       {bulkJob ? (
         <div className="fq-sub" style={{ marginBottom: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
             <div>
-              <strong>Bulk job:</strong> <span className="fq-mono">{bulkJob.jobId}</span>{" "}
+              <strong>Active bulk job:</strong>{" "}
+              <span className="fq-mono">{bulkJob.jobId}</span>{" "}
               <span className="fq-muted">({bulkJob.status})</span>
             </div>
             <div>
@@ -578,8 +772,8 @@ export default function FixQueue({ coreUrl, projectId }) {
               <th style={{ width: 220 }}>Issues</th>
               <th style={{ width: 160 }}>Owner</th>
               <th style={{ width: 160 }}>Added</th>
-              <th style={{ width: 220 }}>Auto-fix suggestions</th>
-              <th style={{ width: 220 }}>Actions</th>
+              <th style={{ width: 280 }}>Auto-fix suggestions</th>
+              <th style={{ width: 260 }}>Actions</th>
             </tr>
           </thead>
 
@@ -601,7 +795,8 @@ export default function FixQueue({ coreUrl, projectId }) {
                 const prettyIssues = issuesPretty(row.issues);
                 const suggestedAt = row.suggestedAt || row.lastSuggestedAt || null;
 
-                const hasSuggestion = !!row.suggestedTitle || !!row.suggestedMetaDescription || !!row.suggestedH1;
+                const hasSuggestion =
+                  !!row.suggestedTitle || !!row.suggestedMetaDescription || !!row.suggestedH1;
 
                 const busy = rowBusy[String(row.id)] || {};
                 const generating = !!row._generating || !!busy.gen;
@@ -654,7 +849,9 @@ export default function FixQueue({ coreUrl, projectId }) {
                     </td>
 
                     <td>
-                      <div className="fq-date">{row.createdAt ? new Date(row.createdAt).toLocaleString() : "—"}</div>
+                      <div className="fq-date">
+                        {row.createdAt ? new Date(row.createdAt).toLocaleString() : "—"}
+                      </div>
                     </td>
 
                     <td>
@@ -673,7 +870,8 @@ export default function FixQueue({ coreUrl, projectId }) {
                           </div>
 
                           <div className="fq-sub" style={{ marginTop: 6 }}>
-                            Last suggested: {suggestedAt ? new Date(suggestedAt).toLocaleString() : "—"}
+                            Last suggested:{" "}
+                            {suggestedAt ? new Date(suggestedAt).toLocaleString() : "—"}
                           </div>
                         </div>
                       ) : (
@@ -689,6 +887,15 @@ export default function FixQueue({ coreUrl, projectId }) {
                             >
                               Copy
                             </button>
+                            <button
+                              className="button button--ghost button--tiny"
+                              type="button"
+                              onClick={() => handleApply(row.id, "title")}
+                              disabled={!row.suggestedTitle || !!busy.applyTitle}
+                              title="Apply Title via webhook"
+                            >
+                              {busy.applyTitle ? "Applying…" : "Apply"}
+                            </button>
                           </div>
 
                           <div className="fq-suggest-row">
@@ -701,6 +908,15 @@ export default function FixQueue({ coreUrl, projectId }) {
                               disabled={!row.suggestedMetaDescription}
                             >
                               Copy
+                            </button>
+                            <button
+                              className="button button--ghost button--tiny"
+                              type="button"
+                              onClick={() => handleApply(row.id, "metaDescription")}
+                              disabled={!row.suggestedMetaDescription || !!busy.applyMeta}
+                              title="Apply Meta via webhook"
+                            >
+                              {busy.applyMeta ? "Applying…" : "Apply"}
                             </button>
                           </div>
 
@@ -715,10 +931,20 @@ export default function FixQueue({ coreUrl, projectId }) {
                             >
                               Copy
                             </button>
+                            <button
+                              className="button button--ghost button--tiny"
+                              type="button"
+                              onClick={() => handleApply(row.id, "h1")}
+                              disabled={!row.suggestedH1 || !!busy.applyH1}
+                              title="Apply H1 via webhook"
+                            >
+                              {busy.applyH1 ? "Applying…" : "Apply"}
+                            </button>
                           </div>
 
                           <div className="fq-sub">
-                            Last suggested: {suggestedAt ? new Date(suggestedAt).toLocaleString() : "—"}
+                            Last suggested:{" "}
+                            {suggestedAt ? new Date(suggestedAt).toLocaleString() : "—"}
                           </div>
                         </div>
                       )}
@@ -726,7 +952,11 @@ export default function FixQueue({ coreUrl, projectId }) {
 
                     <td>
                       <div className="fq-action-row">
-                        <button className="button button--ghost button--tiny" type="button" onClick={() => safeCopy(row.url)}>
+                        <button
+                          className="button button--ghost button--tiny"
+                          type="button"
+                          onClick={() => safeCopy(row.url)}
+                        >
                           Copy URL
                         </button>
 
