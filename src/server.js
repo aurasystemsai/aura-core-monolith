@@ -15,17 +15,20 @@ const { getTool } = require("./core/tools-registry.cjs");
 const projectsCore = require("./core/projects");
 const contentCore = require("./core/content");
 
-// NEW: Auto-fetch title/meta for ingestion
+// Auto-fetch title/meta for ingestion
 const { fetchPageMeta } = require("./core/fetchPageMeta");
 
-// NEW: Drafts API routes (Draft Library)
+// Draft Library API routes
 const draftsRoutes = require("./routes/drafts");
 
-// NEW: Fix Queue API routes
+// Fix Queue API routes
 const fixQueueRoutes = require("./routes/fix-queue");
 
-// NEW: Make Webhook forwarder routes
+// Make Integration routes (outbound to Make webhooks)
 const makeRoutes = require("./routes/make");
+
+// Fix Queue background worker (retry + DLQ)
+const { startFixQueueWorker } = require("./workers/fixQueueWorker");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -55,7 +58,7 @@ app.use(draftsRoutes);
 // Fix Queue API
 app.use(fixQueueRoutes);
 
-// Make Integration API (forward to Make webhooks)
+// Make outbound integration API
 app.use(makeRoutes);
 
 // ---------- HEALTH CHECK ----------
@@ -66,9 +69,10 @@ app.get("/health", (_req, res) => {
     service: "aura-core-monolith",
     env: process.env.NODE_ENV || "production",
     timestamp: new Date().toISOString(),
-    integrations: {
-      makeApplyFixQueueWebhookConfigured: !!process.env.MAKE_APPLY_FIX_QUEUE_WEBHOOK,
-    },
+    makeApplyFixQueueWebhookConfigured:
+      !!process.env.MAKE_APPLY_FIX_QUEUE_WEBHOOK_URL,
+    fixQueueWorkerEnabled:
+      String(process.env.FIX_QUEUE_WORKER_ENABLED || "true") !== "false",
   });
 });
 
@@ -128,24 +132,6 @@ app.get("/projects", (_req, res) => {
  * POST /projects/:projectId/content/batch
  *
  * Ingest / update content items for a project.
- * Used by any platform to push pages/posts/products into AURA.
- *
- * Body:
- * {
- *   "items": [
- *     {
- *       "type": "blog",          // optional, default "other"
- *       "platform": "wordpress", // optional
- *       "externalId": "123",     // optional
- *       "url": "https://site.com/blog/post-1",
- *       "title": "How to style waterproof jewellery",
- *       "metaDescription": "Our guide to styling waterproof jewellery…",
- *       "h1": "How to style waterproof jewellery",
- *       "bodyExcerpt": "In this guide we cover…",
- *       "raw": { ... }           // optional, raw source row
- *     }
- *   ]
- * }
  *
  * NEW BEHAVIOUR:
  * - If title/metaDescription are missing, Core will fetch the URL and attempt
@@ -234,13 +220,6 @@ app.post("/projects/:projectId/content/batch", async (req, res) => {
 
 /**
  * GET /projects/:projectId/content/health
- *
- * Returns "bad SEO" items for that project so the user knows what to fix.
- *
- * Query params:
- *  - type     (optional): product | blog | landing | category | docs | other
- *  - maxScore (optional): number (default 70) – return items at or below this score
- *  - limit    (optional): number (default 100)
  */
 app.get("/projects/:projectId/content/health", (req, res) => {
   const projectId = req.params.projectId;
@@ -307,7 +286,6 @@ app.post("/run/:toolId", async (req, res) => {
 // ---------- STATIC CONSOLE (built React app) ----------
 
 const consoleDist = path.join(__dirname, "..", "aura-console", "dist");
-
 app.use(express.static(consoleDist));
 
 app.get("*", (_req, res) => {
@@ -319,9 +297,11 @@ app.get("*", (_req, res) => {
 app.listen(PORT, () => {
   console.log(
     `[Core] AURA Core API running on port ${PORT}\n` +
-      "==> Your service is live\n" +
-      `==> Available at your primary URL ${
+      `==> Available at ${
         process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`
       }\n`
   );
+
+  // Start background retry worker
+  startFixQueueWorker();
 });
