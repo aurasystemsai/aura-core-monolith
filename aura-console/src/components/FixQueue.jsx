@@ -35,10 +35,7 @@ export default function FixQueue({ coreUrl, projectId }) {
 
   const [selected, setSelected] = useState({});
   const selectedIds = useMemo(
-    () =>
-      Object.entries(selected)
-        .filter(([, v]) => v)
-        .map(([k]) => Number(k)),
+    () => Object.entries(selected).filter(([, v]) => v).map(([k]) => Number(k)),
     [selected]
   );
 
@@ -54,15 +51,6 @@ export default function FixQueue({ coreUrl, projectId }) {
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(""), 1800);
-  };
-
-  const callJson = async (url, opts) => {
-    const res = await fetch(url, opts);
-    if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      throw new Error(`Core API error (${res.status}): ${t || res.statusText}`);
-    }
-    return res.json();
   };
 
   const fetchQueue = async () => {
@@ -109,11 +97,18 @@ export default function FixQueue({ coreUrl, projectId }) {
     setSelected((prev) => ({ ...prev, [String(id)]: !!on }));
   };
 
-  // IMPORTANT:
-  // Your Core API does NOT implement POST /fix-queue/:id/done
-  // So "Done" is implemented as PATCH { status: "done" }.
-  const handleMarkDone = async (id) => {
+  const callJson = async (url, opts) => {
+    const res = await fetch(url, opts);
+    if (!res.ok) {
+      const t = await res.text().catch(() => "");
+      throw new Error(`Core API error (${res.status}): ${t || res.statusText}`);
+    }
+    return res.json();
+  };
+
+  const handleDone = async (id) => {
     try {
+      // Preferred: PATCH status done
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -122,7 +117,16 @@ export default function FixQueue({ coreUrl, projectId }) {
       showToast("Marked done");
       fetchQueue();
     } catch (e) {
-      showToast(e?.message || "Failed to mark done");
+      // Backwards-compat fallback (if someone keeps /done)
+      try {
+        await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/done`, {
+          method: "POST",
+        });
+        showToast("Marked done");
+        fetchQueue();
+      } catch (e2) {
+        showToast(e2?.message || e?.message || "Failed to mark done");
+      }
     }
   };
 
@@ -190,8 +194,6 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/auto-fix`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
       });
       showToast("Suggestions generated");
       fetchQueue();
@@ -200,8 +202,6 @@ export default function FixQueue({ coreUrl, projectId }) {
     }
   };
 
-  // NOTE: this link assumes you later add an export route on Core.
-  // It’s safe to keep in UI; it won’t break compilation.
   const exportCsvUrl = useMemo(() => {
     const q = new URLSearchParams();
     q.set("status", statusFilter || "open");
@@ -233,7 +233,7 @@ export default function FixQueue({ coreUrl, projectId }) {
               min={1}
               max={1000}
               value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
+              onChange={(e) => setLimit(Number(e.target.value || 200))}
             />
           </div>
 
@@ -291,7 +291,7 @@ export default function FixQueue({ coreUrl, projectId }) {
               <th>URL</th>
               <th style={{ width: 220 }}>Issues</th>
               <th style={{ width: 160 }}>Owner</th>
-              <th style={{ width: 170 }}>Added</th>
+              <th style={{ width: 160 }}>Added</th>
               <th style={{ width: 260 }}>Auto-fix suggestions</th>
               <th style={{ width: 220 }}>Actions</th>
             </tr>
@@ -313,8 +313,7 @@ export default function FixQueue({ coreUrl, projectId }) {
             ) : (
               items.map((row) => {
                 const prettyIssues = issuesPretty(row.issues);
-                const hasSuggestion =
-                  !!row.suggestedTitle || !!row.suggestedMetaDescription || !!row.suggestedH1;
+                const hasSuggestion = !!row.suggestedTitle || !!row.suggestedMetaDescription;
 
                 return (
                   <tr key={row.id}>
@@ -442,7 +441,7 @@ export default function FixQueue({ coreUrl, projectId }) {
                         <button
                           className="button button--ghost button--tiny"
                           type="button"
-                          onClick={() => handleMarkDone(row.id)}
+                          onClick={() => handleDone(row.id)}
                           disabled={row.status === "done"}
                         >
                           Done
