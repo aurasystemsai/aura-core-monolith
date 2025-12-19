@@ -7,80 +7,259 @@
 const db = require("./db");
 const { fetchPageMeta } = require("./fetchPageMeta");
 
-// --------------------
-// Tables + indexes
-// --------------------
-db.exec(`
-  CREATE TABLE IF NOT EXISTS fix_queue (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    projectId TEXT NOT NULL,
-    url TEXT NOT NULL,
-    issues TEXT, -- JSON array of issue codes
-    status TEXT NOT NULL DEFAULT 'open', -- open | done
-    owner TEXT,
-    notes TEXT,
-
-    suggestedTitle TEXT,
-    suggestedMetaDescription TEXT,
-    suggestedH1 TEXT,
-    lastSuggestedAt TEXT,
-
-    createdAt TEXT NOT NULL,
-    updatedAt TEXT NOT NULL,
-    doneAt TEXT
-  );
-
-  CREATE UNIQUE INDEX IF NOT EXISTS idx_fix_queue_project_url
-    ON fix_queue(projectId, url);
-
-  CREATE INDEX IF NOT EXISTS idx_fix_queue_project_status
-    ON fix_queue(projectId, status);
-
-  CREATE INDEX IF NOT EXISTS idx_fix_queue_project_updated
-    ON fix_queue(projectId, updatedAt);
-
-  -- Audit trail for agencies
-  CREATE TABLE IF NOT EXISTS fix_queue_audit (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    projectId TEXT NOT NULL,
-    fixQueueId INTEGER NOT NULL,
-    actionType TEXT NOT NULL,         -- update | mark_done | auto_suggest | bulk_auto_suggest | apply_enqueue | dedupe
-    updatedBy TEXT,                   -- from header x-aura-user
-    actionAt TEXT NOT NULL,
-    details TEXT                      -- JSON string
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_fix_queue_audit_project
-    ON fix_queue_audit(projectId, actionAt);
-
-  CREATE INDEX IF NOT EXISTS idx_fix_queue_audit_item
-    ON fix_queue_audit(projectId, fixQueueId, actionAt);
-
-  -- Queue to "apply" suggestions to Framer (executed by a Framer plugin)
-  CREATE TABLE IF NOT EXISTS framer_apply_queue (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    projectId TEXT NOT NULL,
-    fixQueueId INTEGER NOT NULL,
-    url TEXT NOT NULL,
-    field TEXT NOT NULL,              -- title | metaDescription | h1
-    value TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'open',  -- open | applied | failed
-    error TEXT,
-    createdAt TEXT NOT NULL,
-    updatedAt TEXT NOT NULL,
-    appliedAt TEXT
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_framer_apply_project_status
-    ON framer_apply_queue(projectId, status, updatedAt);
-
-  CREATE INDEX IF NOT EXISTS idx_framer_apply_project_url
-    ON framer_apply_queue(projectId, url);
-`);
+// ----------------------
+// Schema / migrations
+// ----------------------
 
 function nowIso() {
   return new Date().toISOString();
 }
+
+function tableExists(name) {
+  const row = db
+    .prepare(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name = ? LIMIT 1`
+    )
+    .get(name);
+  return !!row;
+}
+
+function getColumns(tableName) {
+  if (!tableExists(tableName)) return [];
+  try {
+    return db
+      .prepare(`PRAGMA table_info(${tableName})`)
+      .all()
+      .map((r) => String(r.name));
+  } catch {
+    return [];
+  }
+}
+
+function ensureFixQueueSchema() {
+  // If no table, create the modern one directly.
+  if (!tableExists("fix_queue")) {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS fix_queue (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        projectId TEXT NOT NULL,
+        url TEXT NOT NULL,
+        issues TEXT, -- JSON array of issue codes
+        status TEXT NOT NULL DEFAULT 'open', -- open | done
+        owner TEXT,
+        notes TEXT,
+
+        suggestedTitle TEXT,
+        suggestedMetaDescription TEXT,
+        suggestedH1 TEXT,
+        lastSuggestedAt TEXT,
+
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL,
+        doneAt TEXT
+      );
+
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_fix_queue_project_url
+        ON fix_queue(projectId, url);
+
+      CREATE INDEX IF NOT EXISTS idx_fix_queue_project_status
+        ON fix_queue(projectId, status);
+
+      CREATE INDEX IF NOT EXISTS idx_fix_queue_project_updated
+        ON fix_queue(projectId, updatedAt);
+    `);
+    return;
+  }
+
+  const cols = getColumns("fix_queue");
+
+  // Legacy signals we've seen on Render:
+  // - issues stored in column `issue` (singular) and NOT NULL
+  // - timestamps as created_at / updated_at
+  // - missing modern columns like suggestedTitle, lastSuggestedAt, etc.
+  const isLegacy =
+    cols.includes("issue") ||
+    cols.includes("created_at") ||
+    cols.includes("updated_at") ||
+    !cols.includes("issues") ||
+    !cols.includes("createdAt") ||
+    !cols.includes("updatedAt");
+
+  if (!isLegacy) {
+    // Modern enough: just ensure indexes exist (safe no-ops).
+    try {
+      db.exec(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_fix_queue_project_url
+          ON fix_queue(projectId, url);
+
+        CREATE INDEX IF NOT EXISTS idx_fix_queue_project_status
+          ON fix_queue(projectId, status);
+
+        CREATE INDEX IF NOT EXISTS idx_fix_queue_project_updated
+          ON fix_queue(projectId, updatedAt);
+      `);
+    } catch {
+      // ignore
+    }
+    return;
+  }
+
+  // Migrate legacy -> modern using a new table, then swap.
+  // This avoids "ALTER TABLE add/drop column" limitations and fixes NOT NULL constraint issues.
+  const tx = db.transaction(() => {
+    // Create the v2 table (modern schema)
+    db.exec(`
+      DROP TABLE IF EXISTS fix_queue_v2;
+
+      CREATE TABLE fix_queue_v2 (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        projectId TEXT NOT NULL,
+        url TEXT NOT NULL,
+        issues TEXT,
+        status TEXT NOT NULL DEFAULT 'open',
+        owner TEXT,
+        notes TEXT,
+
+        suggestedTitle TEXT,
+        suggestedMetaDescription TEXT,
+        suggestedH1 TEXT,
+        lastSuggestedAt TEXT,
+
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL,
+        doneAt TEXT
+      );
+    `);
+
+    // Build the SELECT mapping dynamically based on what legacy columns exist
+    const has = (c) => cols.includes(c);
+
+    const colIssues = has("issues")
+      ? "issues"
+      : has("issue")
+      ? "issue"
+      : "NULL";
+
+    const colCreated = has("createdAt")
+      ? "createdAt"
+      : has("created_at")
+      ? "created_at"
+      : "NULL";
+
+    const colUpdated = has("updatedAt")
+      ? "updatedAt"
+      : has("updated_at")
+      ? "updated_at"
+      : "NULL";
+
+    const colStatus = has("status") ? "status" : "NULL";
+    const colOwner = has("owner") ? "owner" : "NULL";
+    const colNotes = has("notes") ? "notes" : "NULL";
+    const colDoneAt = has("doneAt")
+      ? "doneAt"
+      : has("done_at")
+      ? "done_at"
+      : "NULL";
+
+    const colSuggestedTitle = has("suggestedTitle") ? "suggestedTitle" : "NULL";
+    const colSuggestedMeta = has("suggestedMetaDescription")
+      ? "suggestedMetaDescription"
+      : "NULL";
+    const colSuggestedH1 = has("suggestedH1") ? "suggestedH1" : "NULL";
+    const colLastSuggestedAt = has("lastSuggestedAt") ? "lastSuggestedAt" : "NULL";
+
+    // Deduplicate by (projectId, url), keeping the newest by updatedAt-ish.
+    // We normalise timestamps into updatedAt/createdAt for new table.
+    //
+    // NOTE: We use window functions (SQLite 3.25+). Render/better-sqlite3 is modern enough.
+    const migrationSql = `
+      INSERT INTO fix_queue_v2 (
+        id, projectId, url, issues, status, owner, notes,
+        suggestedTitle, suggestedMetaDescription, suggestedH1, lastSuggestedAt,
+        createdAt, updatedAt, doneAt
+      )
+      SELECT
+        id,
+        projectId,
+        url,
+        ${colIssues} AS issues,
+        COALESCE(${colStatus}, 'open') AS status,
+        ${colOwner} AS owner,
+        ${colNotes} AS notes,
+        ${colSuggestedTitle} AS suggestedTitle,
+        ${colSuggestedMeta} AS suggestedMetaDescription,
+        ${colSuggestedH1} AS suggestedH1,
+        ${colLastSuggestedAt} AS lastSuggestedAt,
+        COALESCE(${colCreated}, datetime('now')) AS createdAt,
+        COALESCE(${colUpdated}, ${colCreated}, datetime('now')) AS updatedAt,
+        ${colDoneAt} AS doneAt
+      FROM (
+        SELECT
+          *,
+          ROW_NUMBER() OVER (
+            PARTITION BY projectId, url
+            ORDER BY datetime(COALESCE(${colUpdated}, ${colCreated}, datetime('now'))) DESC
+          ) AS rn
+        FROM fix_queue
+      )
+      WHERE rn = 1;
+    `;
+
+    db.exec(migrationSql);
+
+    // Swap tables
+    db.exec(`
+      DROP TABLE fix_queue;
+      ALTER TABLE fix_queue_v2 RENAME TO fix_queue;
+
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_fix_queue_project_url
+        ON fix_queue(projectId, url);
+
+      CREATE INDEX IF NOT EXISTS idx_fix_queue_project_status
+        ON fix_queue(projectId, status);
+
+      CREATE INDEX IF NOT EXISTS idx_fix_queue_project_updated
+        ON fix_queue(projectId, updatedAt);
+    `);
+  });
+
+  try {
+    tx();
+    console.log("[FixQueue] migrated legacy fix_queue schema to v2");
+  } catch (e) {
+    console.error("[FixQueue] schema migration failed (continuing):", e?.message || e);
+    // Last resort: do NOT crash the service, but at least ensure table exists.
+    try {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS fix_queue (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          projectId TEXT NOT NULL,
+          url TEXT NOT NULL,
+          issues TEXT,
+          status TEXT NOT NULL DEFAULT 'open',
+          owner TEXT,
+          notes TEXT,
+          suggestedTitle TEXT,
+          suggestedMetaDescription TEXT,
+          suggestedH1 TEXT,
+          lastSuggestedAt TEXT,
+          createdAt TEXT NOT NULL,
+          updatedAt TEXT NOT NULL,
+          doneAt TEXT
+        );
+      `);
+    } catch {
+      // ignore
+    }
+  }
+}
+
+// Run on module load (so Render is fixed on boot)
+ensureFixQueueSchema();
+
+// ----------------------
+// helpers
+// ----------------------
 
 function normaliseString(value) {
   if (value === undefined || value === null) return null;
@@ -117,23 +296,6 @@ function clampText(value, maxLen) {
   return s.length > maxLen ? s.slice(0, maxLen) : s;
 }
 
-function auditLog(projectId, fixQueueId, { actionType, updatedBy, details } = {}) {
-  const now = nowIso();
-  const aType = normaliseString(actionType) || "update";
-  const who = normaliseString(updatedBy) || null;
-  const payload = details ? JSON.stringify(details) : null;
-
-  db.prepare(
-    `
-    INSERT INTO fix_queue_audit (
-      projectId, fixQueueId, actionType, updatedBy, actionAt, details
-    ) VALUES (?, ?, ?, ?, ?, ?)
-  `
-  ).run(projectId, Number(fixQueueId), aType, who, now, payload);
-
-  return { ok: true };
-}
-
 function getCounts(projectId) {
   const rows = db
     .prepare(
@@ -155,6 +317,10 @@ function getCounts(projectId) {
   return { open, done, total: open + done };
 }
 
+// ----------------------
+// core operations
+// ----------------------
+
 function listFixQueue(projectId, { status = "open", limit = 200 } = {}) {
   const lim = Number(limit);
   const safeLimit = Number.isFinite(lim) ? Math.min(Math.max(lim, 1), 1000) : 200;
@@ -175,7 +341,7 @@ function listFixQueue(projectId, { status = "open", limit = 200 } = {}) {
     WHERE ${where}
     ORDER BY
       CASE status WHEN 'open' THEN 0 ELSE 1 END ASC,
-      updatedAt DESC
+      datetime(updatedAt) DESC
     LIMIT ${safeLimit}
   `
     )
@@ -238,13 +404,10 @@ function addFixQueueItem(projectId, { url, issues } = {}) {
       `
       ).run(projectId, u, JSON.stringify(nextIssues), now, now);
 
-      // no audit here (ingest can be noisy); keep clean
       return { created: true, updated: false };
     }
 
     const mergedIssues = issueUnion(parseIssues(existing.issues), nextIssues);
-
-    // If it was marked done, re-open if re-queued
     const nextStatus = existing.status === "done" ? "open" : existing.status;
 
     db.prepare(
@@ -266,7 +429,7 @@ function addFixQueueItem(projectId, { url, issues } = {}) {
   return { ok: true, ...result };
 }
 
-function updateFixQueueItem(projectId, id, patch = {}, { updatedBy } = {}) {
+function updateFixQueueItem(projectId, id, patch = {}) {
   const itemId = Number(id);
   if (!Number.isFinite(itemId)) throw new Error("invalid id");
 
@@ -373,23 +536,10 @@ function updateFixQueueItem(projectId, id, patch = {}, { updatedBy } = {}) {
     itemId
   );
 
-  // Audit
-  const changedKeys = Object.keys(patch || {});
-  if (changedKeys.length) {
-    auditLog(projectId, itemId, {
-      actionType: patch.status === "done" ? "mark_done" : "update",
-      updatedBy,
-      details: {
-        changedKeys,
-        patch: patch,
-      },
-    });
-  }
-
   return { ok: true };
 }
 
-function bulkMarkDone(projectId, ids = [], { updatedBy } = {}) {
+function bulkMarkDone(projectId, ids = []) {
   const list = Array.isArray(ids) ? ids : [];
   const clean = list.map((x) => Number(x)).filter((n) => Number.isFinite(n));
   if (!clean.length) return { ok: true, updated: 0 };
@@ -409,13 +559,6 @@ function bulkMarkDone(projectId, ids = [], { updatedBy } = {}) {
     for (const id of clean) {
       const res = stmt.run(now, now, projectId, id);
       updated += res.changes || 0;
-      if (res.changes) {
-        auditLog(projectId, id, {
-          actionType: "mark_done",
-          updatedBy,
-          details: { via: "bulk", status: "done" },
-        });
-      }
     }
     return updated;
   });
@@ -424,7 +567,7 @@ function bulkMarkDone(projectId, ids = [], { updatedBy } = {}) {
   return { ok: true, updated };
 }
 
-function dedupeFixQueue(projectId, { updatedBy } = {}) {
+function dedupeFixQueue(projectId) {
   const rows = db
     .prepare(
       `
@@ -461,13 +604,6 @@ function dedupeFixQueue(projectId, { updatedBy } = {}) {
   });
 
   const deleted = tx();
-
-  auditLog(projectId, toDelete[0] || 0, {
-    actionType: "dedupe",
-    updatedBy,
-    details: { deletedIds: toDelete, deleted },
-  });
-
   return { ok: true, deleted };
 }
 
@@ -544,7 +680,7 @@ async function openAiJson({ prompt, model }) {
   }
 }
 
-async function autoFixItem(projectId, id, { brand, tone, market, updatedBy } = {}) {
+async function autoFixItem(projectId, id, { brand, tone, market } = {}) {
   const itemId = Number(id);
   if (!Number.isFinite(itemId)) throw new Error("invalid id");
 
@@ -643,16 +779,6 @@ async function autoFixItem(projectId, id, { brand, tone, market, updatedBy } = {
     itemId
   );
 
-  auditLog(projectId, itemId, {
-    actionType: "auto_suggest",
-    updatedBy,
-    details: {
-      usedAi: !!(ai.ok && ai.json),
-      market: m,
-      issues,
-    },
-  });
-
   return {
     ok: true,
     id: itemId,
@@ -660,200 +786,7 @@ async function autoFixItem(projectId, id, { brand, tone, market, updatedBy } = {
     suggestedTitle,
     suggestedMetaDescription,
     suggestedH1,
-    lastSuggestedAt: now,
     usedAi: !!(ai.ok && ai.json),
-  };
-}
-
-async function bulkAutoFix(projectId, ids = [], opts = {}) {
-  const list = Array.isArray(ids) ? ids : [];
-  const clean = list.map((x) => Number(x)).filter((n) => Number.isFinite(n));
-  if (!clean.length) return { ok: true, results: [], attempted: 0 };
-
-  const results = [];
-  for (const id of clean) {
-    try {
-      // mild throttle so you don’t spike meta fetch / OpenAI
-      // eslint-disable-next-line no-await-in-loop
-      const r = await autoFixItem(projectId, id, opts);
-      results.push(r);
-      // eslint-disable-next-line no-await-in-loop
-      await new Promise((resolve) => setTimeout(resolve, 250));
-    } catch (e) {
-      results.push({
-        ok: false,
-        id,
-        error: e?.message || "bulk auto-fix failed",
-      });
-    }
-  }
-
-  auditLog(projectId, clean[0], {
-    actionType: "bulk_auto_suggest",
-    updatedBy: opts.updatedBy,
-    details: { ids: clean, attempted: clean.length, ok: results.filter((r) => r.ok).length },
-  });
-
-  return { ok: true, attempted: clean.length, results };
-}
-
-// --------------------
-// Framer Apply Queue
-// --------------------
-function enqueueApplyToFramer(projectId, fixQueueId, { field, value, updatedBy } = {}) {
-  const itemId = Number(fixQueueId);
-  if (!Number.isFinite(itemId)) throw new Error("invalid id");
-
-  const f = normaliseString(field);
-  if (!f || !["title", "metaDescription", "h1"].includes(f)) {
-    throw new Error("field must be one of: title, metaDescription, h1");
-  }
-
-  const v = clampText(value, 5000);
-  if (!v) throw new Error("value is required");
-
-  const row = db
-    .prepare(
-      `
-      SELECT id, url
-      FROM fix_queue
-      WHERE projectId = ? AND id = ?
-    `
-    )
-    .get(projectId, itemId);
-
-  if (!row) throw new Error("fix queue item not found");
-
-  const now = nowIso();
-
-  db.prepare(
-    `
-    INSERT INTO framer_apply_queue (
-      projectId, fixQueueId, url, field, value, status, error, createdAt, updatedAt, appliedAt
-    ) VALUES (?, ?, ?, ?, ?, 'open', NULL, ?, ?, NULL)
-  `
-  ).run(projectId, itemId, row.url, f, v, now, now);
-
-  auditLog(projectId, itemId, {
-    actionType: "apply_enqueue",
-    updatedBy,
-    details: { target: "framer", field: f, valuePreview: v.slice(0, 140) },
-  });
-
-  return { ok: true };
-}
-
-function listApplyQueue(projectId, { status = "open", limit = 200 } = {}) {
-  const lim = Number(limit);
-  const safeLimit = Number.isFinite(lim) ? Math.min(Math.max(lim, 1), 1000) : 200;
-
-  let where = "projectId = ?";
-  const params = [projectId];
-
-  if (status && status !== "all") {
-    where += " AND status = ?";
-    params.push(status);
-  }
-
-  const rows = db
-    .prepare(
-      `
-      SELECT *
-      FROM framer_apply_queue
-      WHERE ${where}
-      ORDER BY datetime(updatedAt) DESC
-      LIMIT ${safeLimit}
-    `
-    )
-    .all(...params);
-
-  return {
-    ok: true,
-    items: rows.map((r) => ({
-      id: r.id,
-      projectId: r.projectId,
-      fixQueueId: r.fixQueueId,
-      url: r.url,
-      field: r.field,
-      value: r.value,
-      status: r.status,
-      error: r.error || null,
-      createdAt: r.createdAt,
-      updatedAt: r.updatedAt,
-      appliedAt: r.appliedAt || null,
-    })),
-  };
-}
-
-function markApplyQueueItem(projectId, queueId, { status, error } = {}) {
-  const qid = Number(queueId);
-  if (!Number.isFinite(qid)) throw new Error("invalid queue id");
-
-  const s = normaliseString(status);
-  if (!s || !["applied", "failed"].includes(s)) {
-    throw new Error("status must be 'applied' or 'failed'");
-  }
-
-  const now = nowIso();
-  const err = clampText(error, 5000);
-
-  const row = db
-    .prepare(
-      `
-      SELECT *
-      FROM framer_apply_queue
-      WHERE projectId = ? AND id = ?
-    `
-    )
-    .get(projectId, qid);
-
-  if (!row) throw new Error("apply queue item not found");
-
-  db.prepare(
-    `
-    UPDATE framer_apply_queue
-    SET
-      status = ?,
-      error = ?,
-      appliedAt = CASE WHEN ? = 'applied' THEN COALESCE(appliedAt, ?) ELSE appliedAt END,
-      updatedAt = ?
-    WHERE projectId = ? AND id = ?
-  `
-  ).run(s, err || null, s, now, now, projectId, qid);
-
-  return { ok: true };
-}
-
-function getAudit(projectId, fixQueueId, { limit = 200 } = {}) {
-  const itemId = Number(fixQueueId);
-  if (!Number.isFinite(itemId)) throw new Error("invalid id");
-
-  const lim = Number(limit);
-  const safeLimit = Number.isFinite(lim) ? Math.min(Math.max(lim, 1), 1000) : 200;
-
-  const rows = db
-    .prepare(
-      `
-      SELECT *
-      FROM fix_queue_audit
-      WHERE projectId = ? AND fixQueueId = ?
-      ORDER BY datetime(actionAt) DESC
-      LIMIT ${safeLimit}
-    `
-    )
-    .all(projectId, itemId);
-
-  return {
-    ok: true,
-    items: rows.map((r) => ({
-      id: r.id,
-      projectId: r.projectId,
-      fixQueueId: r.fixQueueId,
-      actionType: r.actionType,
-      updatedBy: r.updatedBy || null,
-      actionAt: r.actionAt,
-      details: r.details ? (() => { try { return JSON.parse(r.details); } catch { return r.details; } })() : null,
-    })),
   };
 }
 
@@ -864,13 +797,4 @@ module.exports = {
   bulkMarkDone,
   dedupeFixQueue,
   autoFixItem,
-  bulkAutoFix,
-
-  // Framer apply queue
-  enqueueApplyToFramer,
-  listApplyQueue,
-  markApplyQueueItem,
-
-  // Audit
-  getAudit,
 };
