@@ -2,6 +2,7 @@
 // -------------------------------------
 // Fix Queue API Routes
 // Adds: export.csv, audit, bulk-auto-fix (job + progress polling)
+// Also includes backwards-compatible aliases under /jobs/*
 // -------------------------------------
 
 const express = require("express");
@@ -207,7 +208,7 @@ router.post("/projects/:projectId/fix-queue/bulk-auto-fix", (req, res) => {
   }
 });
 
-// GET job progress
+// GET job progress (primary endpoint)
 router.get("/projects/:projectId/fix-queue/bulk-auto-fix/:jobId", (req, res) => {
   const projectId = req.params.projectId;
   const jobId = req.params.jobId;
@@ -237,7 +238,7 @@ router.get("/projects/:projectId/fix-queue/bulk-auto-fix/:jobId", (req, res) => 
   }
 });
 
-// Cancel job
+// Cancel job (primary endpoint)
 router.post("/projects/:projectId/fix-queue/bulk-auto-fix/:jobId/cancel", (req, res) => {
   const projectId = req.params.projectId;
   const jobId = req.params.jobId;
@@ -254,6 +255,61 @@ router.post("/projects/:projectId/fix-queue/bulk-auto-fix/:jobId/cancel", (req, 
   }
 });
 
+// -------------------------------
+// Backwards-compatible aliases
+// (matches your earlier PowerShell calls)
+// -------------------------------
+
+// GET job progress alias: /jobs/:jobId
+router.get("/projects/:projectId/fix-queue/jobs/:jobId", (req, res) => {
+  const projectId = req.params.projectId;
+  const jobId = req.params.jobId;
+
+  try {
+    const job = fixQueue.getJob(projectId, jobId);
+    if (!job) return res.status(404).json({ ok: false, error: "job not found" });
+    return res.json({ ok: true, projectId, job });
+  } catch (err) {
+    console.error("[FixQueue] jobs get error", err);
+    return res.status(400).json({ ok: false, error: err.message || "Failed to fetch job" });
+  }
+});
+
+// GET job items alias: /jobs/:jobId/items
+router.get("/projects/:projectId/fix-queue/jobs/:jobId/items", (req, res) => {
+  const projectId = req.params.projectId;
+  const jobId = req.params.jobId;
+  const { limit } = req.query;
+
+  try {
+    const job = fixQueue.getJob(projectId, jobId);
+    if (!job) return res.status(404).json({ ok: false, error: "job not found" });
+
+    const items = fixQueue.listJobItems(projectId, jobId, {
+      limit: limit !== undefined ? Number(limit) : 200,
+    });
+
+    return res.json({ ok: true, projectId, jobId, items });
+  } catch (err) {
+    console.error("[FixQueue] jobs items error", err);
+    return res.status(400).json({ ok: false, error: err.message || "Failed to fetch job items" });
+  }
+});
+
+// Cancel job alias: /jobs/:jobId/cancel
+router.post("/projects/:projectId/fix-queue/jobs/:jobId/cancel", (req, res) => {
+  const projectId = req.params.projectId;
+  const jobId = req.params.jobId;
+
+  try {
+    const result = fixQueue.cancelJob(projectId, jobId);
+    return res.json({ ok: true, projectId, ...result });
+  } catch (err) {
+    console.error("[FixQueue] jobs cancel error", err);
+    return res.status(400).json({ ok: false, error: err.message || "Failed to cancel job" });
+  }
+});
+
 // AUDIT trail for a specific item
 router.get("/projects/:projectId/fix-queue/:id/audit", (req, res) => {
   const projectId = req.params.projectId;
@@ -261,7 +317,9 @@ router.get("/projects/:projectId/fix-queue/:id/audit", (req, res) => {
   const { limit } = req.query;
 
   try {
-    const items = fixQueue.listAudit(projectId, id, { limit: limit !== undefined ? Number(limit) : 200 });
+    const items = fixQueue.listAudit(projectId, id, {
+      limit: limit !== undefined ? Number(limit) : 200,
+    });
     return res.json({ ok: true, projectId, id: Number(id), items });
   } catch (err) {
     console.error("[FixQueue] audit error", err);

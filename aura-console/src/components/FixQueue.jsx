@@ -30,9 +30,16 @@ function lsKey(projectId) {
 export default function FixQueue({ coreUrl, projectId }) {
   const normalizedCoreUrl = useMemo(() => normaliseCoreUrl(coreUrl), [coreUrl]);
 
+  // Tag audit trail with a consistent actor (you can change this later to be dynamic)
+  const updatedBy = "Darren";
+
   // ---------- Persisted UI state ----------
   const [statusFilter, setStatusFilter] = useState("open"); // open | done | all
   const [limit, setLimit] = useState(200);
+
+  // Optional bulk controls (safe defaults)
+  const [bulkConcurrency, setBulkConcurrency] = useState(1);
+  const [bulkDelayMs, setBulkDelayMs] = useState(750);
 
   useEffect(() => {
     if (!projectId) return;
@@ -42,6 +49,8 @@ export default function FixQueue({ coreUrl, projectId }) {
       const parsed = JSON.parse(raw);
       if (parsed.statusFilter) setStatusFilter(parsed.statusFilter);
       if (parsed.limit) setLimit(parsed.limit);
+      if (parsed.bulkConcurrency) setBulkConcurrency(Number(parsed.bulkConcurrency) || 1);
+      if (parsed.bulkDelayMs !== undefined) setBulkDelayMs(Number(parsed.bulkDelayMs) || 0);
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
@@ -54,10 +63,12 @@ export default function FixQueue({ coreUrl, projectId }) {
         JSON.stringify({
           statusFilter,
           limit,
+          bulkConcurrency,
+          bulkDelayMs,
         })
       );
     } catch {}
-  }, [projectId, statusFilter, limit]);
+  }, [projectId, statusFilter, limit, bulkConcurrency, bulkDelayMs]);
 
   // ---------- Data ----------
   const [status, setStatus] = useState("idle"); // idle | loading | ok | error
@@ -90,6 +101,14 @@ export default function FixQueue({ coreUrl, projectId }) {
     setToast(msg);
     setTimeout(() => setToast(""), 1800);
   };
+
+  const baseHeaders = useMemo(
+    () => ({
+      "Content-Type": "application/json",
+      "x-aura-updated-by": updatedBy,
+    }),
+    [updatedBy]
+  );
 
   const callJson = async (url, opts) => {
     const res = await fetch(url, opts);
@@ -177,11 +196,10 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/done`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: baseHeaders,
       });
       showToast("Marked done");
     } catch (e) {
-      // revert
       showToast(e?.message || "Failed to mark done");
       await fetchQueue();
     } finally {
@@ -204,7 +222,7 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/bulk-done`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: baseHeaders,
         body: JSON.stringify({ ids: selectedIds }),
       });
     } catch (e) {
@@ -217,7 +235,7 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       const data = await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/dedupe`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: baseHeaders,
       });
       showToast(`Deduped (deleted ${data?.deleted || 0})`);
       fetchQueue();
@@ -238,7 +256,7 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: baseHeaders,
         body: JSON.stringify({ owner }),
       });
       showToast("Owner updated");
@@ -265,7 +283,7 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: baseHeaders,
         body: JSON.stringify({ notes: next }),
       });
       showToast("Notes saved");
@@ -282,17 +300,15 @@ export default function FixQueue({ coreUrl, projectId }) {
     setBusy(id, { gen: true });
 
     // optimistic: show "Generating…" by setting a temporary flag
-    setItems((prev) =>
-      prev.map((x) => (x.id === id ? { ...x, _generating: true } : x))
-    );
+    setItems((prev) => prev.map((x) => (x.id === id ? { ...x, _generating: true } : x)));
 
     try {
-      const data = await callJson(
-        `${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/auto-fix`,
-        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }
-      );
+      const data = await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/auto-fix`, {
+        method: "POST",
+        headers: baseHeaders,
+        body: JSON.stringify({}),
+      });
 
-      // Update in-place using returned payload if present
       const suggestedTitle = data?.suggestedTitle || data?.result?.suggestedTitle;
       const suggestedMetaDescription = data?.suggestedMetaDescription || data?.result?.suggestedMetaDescription;
       const suggestedH1 = data?.suggestedH1 || data?.result?.suggestedH1;
@@ -355,7 +371,6 @@ export default function FixQueue({ coreUrl, projectId }) {
           if (j.status === "failed") showToast(`Bulk failed: ${j.lastError || "unknown error"}`);
           if (j.status === "cancelled") showToast(`Bulk cancelled`);
 
-          // refresh once at the end so suggestions appear
           fetchQueue();
         }
       } catch {
@@ -384,17 +399,15 @@ export default function FixQueue({ coreUrl, projectId }) {
     });
 
     try {
-      const data = await callJson(
-        `${normalizedCoreUrl}/projects/${projectId}/fix-queue/bulk-auto-fix`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          // defaults: concurrency 1, delay 750ms (server)
-          body: JSON.stringify({
-            ids: selectedIds,
-          }),
-        }
-      );
+      const data = await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/bulk-auto-fix`, {
+        method: "POST",
+        headers: baseHeaders,
+        body: JSON.stringify({
+          ids: selectedIds,
+          concurrency: bulkConcurrency,
+          delayMs: bulkDelayMs,
+        }),
+      });
 
       const jobId = data?.jobId || data?.result?.jobId;
       if (!jobId) throw new Error("No jobId returned");
@@ -416,10 +429,10 @@ export default function FixQueue({ coreUrl, projectId }) {
   const handleCancelBulk = async () => {
     if (!bulkJob?.jobId || bulkJob.jobId === "starting") return;
     try {
-      await callJson(
-        `${normalizedCoreUrl}/projects/${projectId}/fix-queue/bulk-auto-fix/${bulkJob.jobId}/cancel`,
-        { method: "POST", headers: { "Content-Type": "application/json" } }
-      );
+      await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/bulk-auto-fix/${bulkJob.jobId}/cancel`, {
+        method: "POST",
+        headers: baseHeaders,
+      });
       showToast("Cancelling…");
     } catch (e) {
       showToast(e?.message || "Failed to cancel");
@@ -438,11 +451,7 @@ export default function FixQueue({ coreUrl, projectId }) {
         <div className="fq-left">
           <div className="fq-filter">
             <div className="fq-label">Status</div>
-            <select
-              className="fq-select"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
+            <select className="fq-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
               <option value="open">Open</option>
               <option value="done">Done</option>
               <option value="all">All</option>
@@ -461,12 +470,7 @@ export default function FixQueue({ coreUrl, projectId }) {
             />
           </div>
 
-          <button
-            className="button button--ghost"
-            type="button"
-            onClick={fetchQueue}
-            disabled={status === "loading"}
-          >
+          <button className="button button--ghost" type="button" onClick={fetchQueue} disabled={status === "loading"}>
             {status === "loading" ? "Refreshing…" : "Refresh"}
           </button>
 
@@ -479,7 +483,31 @@ export default function FixQueue({ coreUrl, projectId }) {
           </a>
         </div>
 
-        <div className="fq-right" style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <div className="fq-right" style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <div className="fq-filter" style={{ minWidth: 140 }}>
+            <div className="fq-label">Bulk concurrency</div>
+            <input
+              className="fq-input"
+              type="number"
+              min={1}
+              max={3}
+              value={bulkConcurrency}
+              onChange={(e) => setBulkConcurrency(Number(e.target.value))}
+            />
+          </div>
+
+          <div className="fq-filter" style={{ minWidth: 140 }}>
+            <div className="fq-label">Delay (ms)</div>
+            <input
+              className="fq-input"
+              type="number"
+              min={0}
+              max={5000}
+              value={bulkDelayMs}
+              onChange={(e) => setBulkDelayMs(Number(e.target.value))}
+            />
+          </div>
+
           <button
             className="button button--ghost"
             type="button"
@@ -508,8 +536,7 @@ export default function FixQueue({ coreUrl, projectId }) {
         <div className="fq-sub" style={{ marginBottom: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
             <div>
-              <strong>Bulk job:</strong>{" "}
-              <span className="fq-mono">{bulkJob.jobId}</span>{" "}
+              <strong>Bulk job:</strong> <span className="fq-mono">{bulkJob.jobId}</span>{" "}
               <span className="fq-muted">({bulkJob.status})</span>
             </div>
             <div>
@@ -574,8 +601,7 @@ export default function FixQueue({ coreUrl, projectId }) {
                 const prettyIssues = issuesPretty(row.issues);
                 const suggestedAt = row.suggestedAt || row.lastSuggestedAt || null;
 
-                const hasSuggestion =
-                  !!row.suggestedTitle || !!row.suggestedMetaDescription || !!row.suggestedH1;
+                const hasSuggestion = !!row.suggestedTitle || !!row.suggestedMetaDescription || !!row.suggestedH1;
 
                 const busy = rowBusy[String(row.id)] || {};
                 const generating = !!row._generating || !!busy.gen;
@@ -628,9 +654,7 @@ export default function FixQueue({ coreUrl, projectId }) {
                     </td>
 
                     <td>
-                      <div className="fq-date">
-                        {row.createdAt ? new Date(row.createdAt).toLocaleString() : "—"}
-                      </div>
+                      <div className="fq-date">{row.createdAt ? new Date(row.createdAt).toLocaleString() : "—"}</div>
                     </td>
 
                     <td>
@@ -649,8 +673,7 @@ export default function FixQueue({ coreUrl, projectId }) {
                           </div>
 
                           <div className="fq-sub" style={{ marginTop: 6 }}>
-                            Last suggested:{" "}
-                            {suggestedAt ? new Date(suggestedAt).toLocaleString() : "—"}
+                            Last suggested: {suggestedAt ? new Date(suggestedAt).toLocaleString() : "—"}
                           </div>
                         </div>
                       ) : (
@@ -670,9 +693,7 @@ export default function FixQueue({ coreUrl, projectId }) {
 
                           <div className="fq-suggest-row">
                             <div className="fq-suggest-label">Meta</div>
-                            <div className="fq-suggest-value">
-                              {row.suggestedMetaDescription || "—"}
-                            </div>
+                            <div className="fq-suggest-value">{row.suggestedMetaDescription || "—"}</div>
                             <button
                               className="button button--ghost button--tiny"
                               type="button"
@@ -697,8 +718,7 @@ export default function FixQueue({ coreUrl, projectId }) {
                           </div>
 
                           <div className="fq-sub">
-                            Last suggested:{" "}
-                            {suggestedAt ? new Date(suggestedAt).toLocaleString() : "—"}
+                            Last suggested: {suggestedAt ? new Date(suggestedAt).toLocaleString() : "—"}
                           </div>
                         </div>
                       )}
@@ -706,11 +726,7 @@ export default function FixQueue({ coreUrl, projectId }) {
 
                     <td>
                       <div className="fq-action-row">
-                        <button
-                          className="button button--ghost button--tiny"
-                          type="button"
-                          onClick={() => safeCopy(row.url)}
-                        >
+                        <button className="button button--ghost button--tiny" type="button" onClick={() => safeCopy(row.url)}>
                           Copy URL
                         </button>
 
