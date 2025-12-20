@@ -1,0 +1,21 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "98db68ecd4abcd07721d14949514de8a"
+name = "AURA Systems – SEO Autopilot"
+application_url = "https://aura-core-monolith.onrender.com/shopify"
+embedded = true
+
+[webhooks]
+api_version = "2025-10"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_metaobject_definitions,write_metaobject_definitions,read_metaobjects,write_metaobjects,read_products,write_products,read_content,write_content,write_theme_code,read_themes,write_themes,unauthenticated_read_metaobjects,unauthenticated_read_content"
+optional_scopes = [ ]
+use_legacy_install_flow = false
+
+[auth]
+redirect_urls = [
+  "https://aura-core-monolith.onrender.com/shopify/auth/callback",
+  "https://aura-core-monolith.onrender.com/shopify/callback"
+]
