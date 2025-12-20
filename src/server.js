@@ -30,7 +30,6 @@ const makeRoutes = require("./routes/make");
 // Fix Queue background worker (retry + DLQ)
 const { startFixQueueWorker } = require("./core/fixQueueWorker");
 
-
 const app = express();
 const PORT = process.env.PORT || 10000;
 
@@ -52,15 +51,23 @@ app.use((req, _res, next) => {
 });
 
 // ---------- API ROUTES (must be before static + catch-all) ----------
+//
+// IMPORTANT:
+// We mount the SAME routes both with and without /api prefix.
+// This fixes Make scenarios that call /api/... while keeping existing clients working.
+//
 
 // Draft Library API
 app.use(draftsRoutes);
+app.use("/api", draftsRoutes);
 
 // Fix Queue API
 app.use(fixQueueRoutes);
+app.use("/api", fixQueueRoutes);
 
 // Make outbound integration API
 app.use(makeRoutes);
+app.use("/api", makeRoutes);
 
 // ---------- HEALTH CHECK ----------
 
@@ -77,184 +84,209 @@ app.get("/health", (_req, res) => {
   });
 });
 
+// Also expose the same health under /api/health for consistency
+app.get("/api/health", (_req, res) => {
+  res.json({
+    ok: true,
+    service: "aura-core-monolith",
+    env: process.env.NODE_ENV || "production",
+    timestamp: new Date().toISOString(),
+    makeApplyFixQueueWebhookConfigured:
+      !!process.env.MAKE_APPLY_FIX_QUEUE_WEBHOOK_URL,
+    fixQueueWorkerEnabled:
+      String(process.env.FIX_QUEUE_WORKER_ENABLED || "true") !== "false",
+  });
+});
+
 // ---------- PROJECTS API (Connect Store) ----------
+//
+// Existing routes: /projects, /projects/:projectId/content/...
+// Add /api equivalents as well.
+//
 
-// Create a new project from the Connect Store screen
-app.post("/projects", (req, res) => {
-  try {
-    const { name, domain, platform } = req.body || {};
+function registerProjectsAndContentRoutes(prefix = "") {
+  // Create a new project from the Connect Store screen
+  app.post(`${prefix}/projects`, (req, res) => {
+    try {
+      const { name, domain, platform } = req.body || {};
 
-    if (!name || !domain) {
-      return res.status(400).json({
-        ok: false,
-        error: "name and domain are required",
-      });
-    }
-
-    const project = projectsCore.createProject({
-      name: String(name).trim(),
-      domain: String(domain).trim(),
-      platform: (platform || "other").trim(),
-    });
-
-    return res.json({
-      ok: true,
-      project,
-    });
-  } catch (err) {
-    console.error("[Core] Error creating project", err);
-    return res.status(500).json({
-      ok: false,
-      error: "Failed to create project",
-    });
-  }
-});
-
-// List all projects (used by console project switcher)
-app.get("/projects", (_req, res) => {
-  try {
-    const projects = projectsCore.listProjects();
-    return res.json({
-      ok: true,
-      projects,
-    });
-  } catch (err) {
-    console.error("[Core] Error listing projects", err);
-    return res.status(500).json({
-      ok: false,
-      error: "Failed to list projects",
-    });
-  }
-});
-
-// ---------- CONTENT SEO API (generic, not just shops) ----------
-
-/**
- * POST /projects/:projectId/content/batch
- *
- * Ingest / update content items for a project.
- *
- * NEW BEHAVIOUR:
- * - If title/metaDescription are missing, Core will fetch the URL and attempt
- *   to fill them automatically before saving (beginner-friendly).
- */
-app.post("/projects/:projectId/content/batch", async (req, res) => {
-  const projectId = req.params.projectId;
-
-  try {
-    const { items } = req.body || {};
-
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({
-        ok: false,
-        error: "items[] array is required",
-      });
-    }
-
-    // Normalise + enrich missing title/meta (with small concurrency limit)
-    const concurrency = 5;
-    let autoFilledTitle = 0;
-    let autoFilledMeta = 0;
-    let fetchErrors = 0;
-
-    const queue = items.slice();
-    const enriched = [];
-
-    const worker = async () => {
-      while (queue.length) {
-        const item = queue.shift();
-        if (!item || typeof item !== "object") {
-          enriched.push(item);
-          continue;
-        }
-
-        const next = { ...item };
-
-        const hasUrl = !!next.url;
-        const needsTitle = !next.title || String(next.title).trim() === "";
-        const needsMeta =
-          !next.metaDescription || String(next.metaDescription).trim() === "";
-
-        if (hasUrl && (needsTitle || needsMeta)) {
-          const fetched = await fetchPageMeta(String(next.url).trim());
-          if (fetched.ok) {
-            if (needsTitle && fetched.title) {
-              next.title = fetched.title;
-              autoFilledTitle += 1;
-            }
-            if (needsMeta && fetched.metaDescription) {
-              next.metaDescription = fetched.metaDescription;
-              autoFilledMeta += 1;
-            }
-          } else {
-            fetchErrors += 1;
-          }
-        }
-
-        enriched.push(next);
+      if (!name || !domain) {
+        return res.status(400).json({
+          ok: false,
+          error: "name and domain are required",
+        });
       }
-    };
 
-    const workers = Array.from({ length: concurrency }, () => worker());
-    await Promise.all(workers);
+      const project = projectsCore.createProject({
+        name: String(name).trim(),
+        domain: String(domain).trim(),
+        platform: (platform || "other").trim(),
+      });
 
-    const result = contentCore.upsertContentItems(projectId, enriched);
+      return res.json({
+        ok: true,
+        project,
+      });
+    } catch (err) {
+      console.error("[Core] Error creating project", err);
+      return res.status(500).json({
+        ok: false,
+        error: "Failed to create project",
+      });
+    }
+  });
 
-    return res.json({
-      ok: true,
-      projectId,
-      inserted: result.inserted,
-      enriched: {
-        autoFilledTitle,
-        autoFilledMeta,
-        fetchErrors,
-      },
-    });
-  } catch (err) {
-    console.error("[Core] Error in content batch", err);
-    return res.status(500).json({
-      ok: false,
-      error: "Failed to upsert content items",
-    });
-  }
-});
+  // List all projects (used by console project switcher)
+  app.get(`${prefix}/projects`, (_req, res) => {
+    try {
+      const projects = projectsCore.listProjects();
+      return res.json({
+        ok: true,
+        projects,
+      });
+    } catch (err) {
+      console.error("[Core] Error listing projects", err);
+      return res.status(500).json({
+        ok: false,
+        error: "Failed to list projects",
+      });
+    }
+  });
 
-/**
- * GET /projects/:projectId/content/health
- */
-app.get("/projects/:projectId/content/health", (req, res) => {
-  const projectId = req.params.projectId;
-  const { type, maxScore, limit } = req.query;
+  /**
+   * POST /projects/:projectId/content/batch
+   *
+   * Ingest / update content items for a project.
+   *
+   * NEW BEHAVIOUR:
+   * - If title/metaDescription are missing, Core will fetch the URL and attempt
+   *   to fill them automatically before saving (beginner-friendly).
+   */
+  app.post(`${prefix}/projects/:projectId/content/batch`, async (req, res) => {
+    const projectId = req.params.projectId;
 
-  try {
-    const items = contentCore.getContentHealth({
-      projectId,
-      type: type || undefined,
-      maxScore:
-        maxScore !== undefined && maxScore !== "" ? Number(maxScore) : 70,
-      limit: limit !== undefined && limit !== "" ? Number(limit) : 100,
-    });
+    try {
+      const { items } = req.body || {};
 
-    return res.json({
-      ok: true,
-      projectId,
-      type: type || null,
-      maxScore: maxScore !== undefined ? Number(maxScore) : 70,
-      limit: limit !== undefined ? Number(limit) : 100,
-      items,
-    });
-  } catch (err) {
-    console.error("[Core] Error in content health", err);
-    return res.status(500).json({
-      ok: false,
-      error: "Failed to fetch content health",
-    });
-  }
-});
+      if (!Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({
+          ok: false,
+          error: "items[] array is required",
+        });
+      }
+
+      // Normalise + enrich missing title/meta (with small concurrency limit)
+      const concurrency = 5;
+      let autoFilledTitle = 0;
+      let autoFilledMeta = 0;
+      let fetchErrors = 0;
+
+      const queue = items.slice();
+      const enriched = [];
+
+      const worker = async () => {
+        while (queue.length) {
+          const item = queue.shift();
+          if (!item || typeof item !== "object") {
+            enriched.push(item);
+            continue;
+          }
+
+          const next = { ...item };
+
+          const hasUrl = !!next.url;
+          const needsTitle = !next.title || String(next.title).trim() === "";
+          const needsMeta =
+            !next.metaDescription || String(next.metaDescription).trim() === "";
+
+          if (hasUrl && (needsTitle || needsMeta)) {
+            const fetched = await fetchPageMeta(String(next.url).trim());
+            if (fetched.ok) {
+              if (needsTitle && fetched.title) {
+                next.title = fetched.title;
+                autoFilledTitle += 1;
+              }
+              if (needsMeta && fetched.metaDescription) {
+                next.metaDescription = fetched.metaDescription;
+                autoFilledMeta += 1;
+              }
+            } else {
+              fetchErrors += 1;
+            }
+          }
+
+          enriched.push(next);
+        }
+      };
+
+      const workers = Array.from({ length: concurrency }, () => worker());
+      await Promise.all(workers);
+
+      const result = contentCore.upsertContentItems(projectId, enriched);
+
+      return res.json({
+        ok: true,
+        projectId,
+        inserted: result.inserted,
+        enriched: {
+          autoFilledTitle,
+          autoFilledMeta,
+          fetchErrors,
+        },
+      });
+    } catch (err) {
+      console.error("[Core] Error in content batch", err);
+      return res.status(500).json({
+        ok: false,
+        error: "Failed to upsert content items",
+      });
+    }
+  });
+
+  /**
+   * GET /projects/:projectId/content/health
+   */
+  app.get(`${prefix}/projects/:projectId/content/health`, (req, res) => {
+    const projectId = req.params.projectId;
+    const { type, maxScore, limit } = req.query;
+
+    try {
+      const items = contentCore.getContentHealth({
+        projectId,
+        type: type || undefined,
+        maxScore:
+          maxScore !== undefined && maxScore !== "" ? Number(maxScore) : 70,
+        limit: limit !== undefined && limit !== "" ? Number(limit) : 100,
+      });
+
+      return res.json({
+        ok: true,
+        projectId,
+        type: type || null,
+        maxScore: maxScore !== undefined ? Number(maxScore) : 70,
+        limit: limit !== undefined ? Number(limit) : 100,
+        items,
+      });
+    } catch (err) {
+      console.error("[Core] Error in content health", err);
+      return res.status(500).json({
+        ok: false,
+        error: "Failed to fetch content health",
+      });
+    }
+  });
+}
+
+// register both non-/api and /api variants
+registerProjectsAndContentRoutes("");
+registerProjectsAndContentRoutes("/api");
 
 // ---------- TOOL RUN ROUTE ----------
-
-app.post("/run/:toolId", async (req, res) => {
+//
+// Existing: /run/:toolId
+// Add: /api/run/:toolId
+//
+async function toolRunHandler(req, res) {
   const toolId = req.params.toolId;
   const projectId = req.headers["x-aura-project-id"];
 
@@ -282,7 +314,10 @@ app.post("/run/:toolId", async (req, res) => {
       error: err.message || "Tool run failed",
     });
   }
-});
+}
+
+app.post("/run/:toolId", toolRunHandler);
+app.post("/api/run/:toolId", toolRunHandler);
 
 // ---------- STATIC CONSOLE (built React app) ----------
 
