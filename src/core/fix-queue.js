@@ -51,7 +51,9 @@ function parseIssues(text) {
 }
 
 function issueUnion(a, b) {
-  return Array.from(new Set([...(safeIssues(a) || []), ...(safeIssues(b) || [])]));
+  return Array.from(
+    new Set([...(safeIssues(a) || []), ...(safeIssues(b) || [])])
+  );
 }
 
 function urlToPrettyName(url) {
@@ -207,7 +209,9 @@ function ensureFixQueueSchema() {
       const actionExpr = legacyCols.has("actionType") ? "actionType" : "'legacy'";
       const byExpr = legacyCols.has("updatedBy") ? "updatedBy" : "NULL";
       const metaExpr = legacyCols.has("meta") ? "meta" : "NULL";
-      const createdExpr = legacyCols.has("createdAt") ? "createdAt" : `'${nowIso()}'`;
+      const createdExpr = legacyCols.has("createdAt")
+        ? "createdAt"
+        : `'${nowIso()}'`;
 
       safeExec(`
         INSERT INTO fix_queue_audit (projectId, itemId, actionType, updatedBy, meta, createdAt)
@@ -358,7 +362,11 @@ function ensureFixQueueSchema() {
           ${legacyCols.has("owner") ? "owner" : "NULL"} AS owner,
           ${legacyCols.has("notes") ? "notes" : "NULL"} AS notes,
           ${legacyCols.has("suggestedTitle") ? "suggestedTitle" : "NULL"} AS suggestedTitle,
-          ${legacyCols.has("suggestedMetaDescription") ? "suggestedMetaDescription" : "NULL"} AS suggestedMetaDescription,
+          ${
+            legacyCols.has("suggestedMetaDescription")
+              ? "suggestedMetaDescription"
+              : "NULL"
+          } AS suggestedMetaDescription,
           ${legacyCols.has("suggestedH1") ? "suggestedH1" : "NULL"} AS suggestedH1,
           ${legacyCols.has("lastSuggestedAt") ? "lastSuggestedAt" : "NULL"} AS lastSuggestedAt,
           ${createdExpr} AS createdAt,
@@ -546,8 +554,10 @@ function addFixQueueItem(projectId, { url, issues } = {}) {
       const inserted = db
         .prepare(`SELECT id FROM fix_queue WHERE projectId = ? AND url = ?`)
         .get(projectId, u);
-      if (inserted?.id)
+
+      if (inserted?.id) {
         logAudit(projectId, inserted.id, "create", null, { url: u, issues: nextIssues });
+      }
 
       return { created: true, updated: false };
     }
@@ -565,7 +575,13 @@ function addFixQueueItem(projectId, { url, issues } = {}) {
         doneAt = CASE WHEN ? = 'done' THEN doneAt ELSE NULL END
       WHERE id = ?
     `
-    ).run(JSON.stringify(mergedIssues), nextStatus, now, nextStatus, existing.id);
+    ).run(
+      JSON.stringify(mergedIssues),
+      nextStatus,
+      now,
+      nextStatus,
+      existing.id
+    );
 
     logAudit(projectId, existing.id, "upsert", null, {
       url: u,
@@ -999,7 +1015,15 @@ async function autoFixItem(projectId, id, { brand, tone, market, updatedBy } = {
       updatedAt = ?
     WHERE projectId = ? AND id = ?
   `
-  ).run(suggestedTitle, suggestedMetaDescription, suggestedH1, now, now, projectId, itemId);
+  ).run(
+    suggestedTitle,
+    suggestedMetaDescription,
+    suggestedH1,
+    now,
+    now,
+    projectId,
+    itemId
+  );
 
   logAudit(projectId, itemId, "auto-fix", updatedBy || null, {
     url,
@@ -1247,7 +1271,15 @@ function createBulkAutoFixJob(projectId, ids = [], options = {}) {
         ?, ?, NULL, NULL
       )
     `
-    ).run(jobId, projectId, cleanIds.length, JSON.stringify(opts), JSON.stringify(cleanIds), now, now);
+    ).run(
+      jobId,
+      projectId,
+      cleanIds.length,
+      JSON.stringify(opts),
+      JSON.stringify(cleanIds),
+      now,
+      now
+    );
 
     const stmt = db.prepare(
       `
@@ -1323,7 +1355,15 @@ async function runBulkAutoFixJob(projectId, jobId) {
         lastError = ?
       WHERE projectId = ? AND jobId = ?
     `
-    ).run(processed, okCount, failCount, t, fatalError ? String(fatalError) : null, projectId, jobId);
+    ).run(
+      processed,
+      okCount,
+      failCount,
+      t,
+      fatalError ? String(fatalError) : null,
+      projectId,
+      jobId
+    );
   };
 
   const markItem = (itemId, status, fields = {}) => {
@@ -1471,12 +1511,6 @@ async function runBulkAutoFixJob(projectId, jobId) {
 // Apply suggestion (Framer-friendly via webhook)
 // ---------------------------
 //
-// You do NOT have Shopify right now.
-// For Framer: the correct approach is a webhook that triggers Make.com (or your own worker)
-// to update Framer CMS / page meta.
-// Set env var on Render:
-//   AURA_APPLY_WEBHOOK_URL=https://hook.make.com/xxxxx   (or your endpoint)
-//
 // This function posts:
 // {
 //   projectId, itemId, url,
@@ -1486,9 +1520,19 @@ async function runBulkAutoFixJob(projectId, jobId) {
 //   updatedBy,
 //   at
 // }
+//
+// Supported env vars (priority order):
+//   1) MAKE_APPLY_FIX_QUEUE_WEBHOOK_URL   (recommended)
+//   2) MAKE_APPLY_FIX_QUEUE_WEBHOOK       (legacy in your Render screenshot)
+//   3) AURA_APPLY_WEBHOOK_URL             (older name used by earlier builds)
+//
 
 function getApplyWebhookUrl() {
-  return normaliseString(process.env.AURA_APPLY_WEBHOOK_URL);
+  return (
+    normaliseString(process.env.MAKE_APPLY_FIX_QUEUE_WEBHOOK_URL) ||
+    normaliseString(process.env.MAKE_APPLY_FIX_QUEUE_WEBHOOK) ||
+    normaliseString(process.env.AURA_APPLY_WEBHOOK_URL)
+  );
 }
 
 async function applySuggestion(projectId, itemId, { field, updatedBy } = {}) {
@@ -1502,7 +1546,11 @@ async function applySuggestion(projectId, itemId, { field, updatedBy } = {}) {
   if (!allowed.has(fieldNorm)) throw new Error("field must be title|metaDescription|h1");
 
   const hook = getApplyWebhookUrl();
-  if (!hook) throw new Error("AURA_APPLY_WEBHOOK_URL not set on server");
+  if (!hook) {
+    throw new Error(
+      "Apply webhook URL not set. Configure one of: MAKE_APPLY_FIX_QUEUE_WEBHOOK_URL, MAKE_APPLY_FIX_QUEUE_WEBHOOK, AURA_APPLY_WEBHOOK_URL"
+    );
+  }
 
   const row = db
     .prepare(`SELECT * FROM fix_queue WHERE projectId = ? AND id = ?`)
@@ -1555,7 +1603,17 @@ async function applySuggestion(projectId, itemId, { field, updatedBy } = {}) {
     throw new Error(`apply webhook error ${res.status}: ${t || res.statusText}`);
   }
 
-  logAudit(projectId, id, "apply", updatedBy || null, { field: fieldNorm, valueLen: value.length });
+  logAudit(projectId, id, "apply", updatedBy || null, {
+    field: fieldNorm,
+    valueLen: value.length,
+    hookHost: (() => {
+      try {
+        return new URL(hook).host;
+      } catch {
+        return null;
+      }
+    })(),
+  });
 
   return { ok: true, projectId, id, field: fieldNorm, value };
 }
