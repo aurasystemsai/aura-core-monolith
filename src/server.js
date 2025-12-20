@@ -28,7 +28,8 @@ const fixQueueRoutes = require("./routes/fix-queue");
 const makeRoutes = require("./routes/make");
 
 // Fix Queue background worker (retry + DLQ)
-const { startFixQueueWorker } = require("./workers/fixQueueWorker");
+const { startFixQueueWorker } = require("./core/fixQueueWorker");
+
 
 const app = express();
 const PORT = process.env.PORT || 10000;
