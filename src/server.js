@@ -98,6 +98,140 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
+// ---------- DEBUG: SHOPIFY PRODUCTS (TEMPORARY) ----------
+//
+// Purpose:
+// - Prove we can read products from the shop using an Admin token.
+// - This does NOT rely on your embedded-app session wiring.
+// - Remove or protect this before any real release.
+//
+// Usage:
+//   GET /debug/shopify/products?shop=aurasystemsai.myshopify.com
+//   Optional: &limit=10
+//   Token: pass ?token=shpat_... OR set env SHOPIFY_ADMIN_TOKEN
+//   Optional safety: set env DEBUG_KEY and pass ?key=thevalue
+//
+
+async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
+  const safeShop = String(shop || "").trim();
+  if (!safeShop.endsWith(".myshopify.com")) {
+    throw new Error("Invalid shop. Expected *.myshopify.com");
+  }
+
+  const ver = apiVersion || process.env.SHOPIFY_API_VERSION || "2025-10";
+  const url = `https://${safeShop}/admin/api/${ver}/graphql.json`;
+
+  const first = Number.isFinite(Number(limit)) ? Math.min(Number(limit), 50) : 10;
+
+  const query = `
+    query Products($first: Int!) {
+      products(first: $first) {
+        edges {
+          node {
+            id
+            title
+            handle
+            status
+            totalInventory
+            createdAt
+            updatedAt
+          }
+        }
+      }
+    }
+  `;
+
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Shopify-Access-Token": token,
+    },
+    body: JSON.stringify({
+      query,
+      variables: { first },
+    }),
+  });
+
+  const text = await resp.text();
+  let json = null;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    // leave null; we’ll throw a readable error below
+  }
+
+  if (!resp.ok) {
+    throw new Error(
+      `Shopify HTTP ${resp.status}: ${text.slice(0, 500)}`
+    );
+  }
+
+  if (json && json.errors && json.errors.length) {
+    throw new Error(`Shopify GraphQL errors: ${JSON.stringify(json.errors)}`);
+  }
+
+  const edges = json?.data?.products?.edges || [];
+  const products = edges.map((e) => e.node);
+
+  return { products, rawCount: products.length };
+}
+
+function debugGuard(req) {
+  const required = process.env.DEBUG_KEY;
+  if (!required) return true; // no guard configured
+  const provided = req.query.key;
+  return String(provided || "") === String(required);
+}
+
+app.get("/debug/shopify/products", async (req, res) => {
+  try {
+    if (!debugGuard(req)) {
+      return res.status(401).json({ ok: false, error: "Unauthorized (bad key)" });
+    }
+
+    const shop = req.query.shop;
+    const limit = req.query.limit;
+    const apiVersion = req.query.apiVersion;
+
+    const token =
+      req.query.token ||
+      process.env.SHOPIFY_ADMIN_TOKEN || // recommended for Render
+      "";
+
+    if (!shop) {
+      return res.status(400).json({ ok: false, error: "Missing ?shop=" });
+    }
+    if (!token) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "Missing token. Pass ?token=shpat_... or set env SHOPIFY_ADMIN_TOKEN on Render.",
+      });
+    }
+
+    const out = await fetchShopifyProducts({ shop, token, apiVersion, limit });
+
+    return res.json({
+      ok: true,
+      shop,
+      apiVersion: apiVersion || process.env.SHOPIFY_API_VERSION || "2025-10",
+      count: out.rawCount,
+      products: out.products,
+    });
+  } catch (err) {
+    console.error("[Core] debug shopify products error", err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Optional: same endpoint under /api for consistency
+app.get("/api/debug/shopify/products", async (req, res) => {
+  // delegate to the non-/api handler behaviour
+  req.url = req.url.replace(/^\/api/, "");
+  return app._router.handle(req, res, () => {});
+});
+
 // ---------- PROJECTS API (Connect Store) ----------
 //
 // Existing routes: /projects, /projects/:projectId/content/...
