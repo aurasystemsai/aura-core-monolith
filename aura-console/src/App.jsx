@@ -12,17 +12,14 @@ import FixQueue from "./components/FixQueue"; // ✅ NEW
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
 // Shopify product fetching integration
-const [products, setProducts] = useState([]);
+const [products, setProducts] = useState([]); // Correct use of useState
 const [loading, setLoading] = useState(false);
 
 // Fetch products from Shopify API
 useEffect(() => {
     const fetchProducts = async () => {
-        setLoading(true);
         try {
-            const res = await fetch(
-                `${coreUrl}/debug/shopify/products?shop=your-shop-name.myshopify.com&token=your-shopify-access-token`
-            );
+            const res = await fetch(`${coreUrl}/debug/shopify/products?shop=your-shop-name`);
             const data = await res.json();
             setProducts(data.products || []);
         } catch (error) {
