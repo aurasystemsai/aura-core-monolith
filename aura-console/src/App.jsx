@@ -879,8 +879,8 @@ function App() {
                     className="button button--ghost"
                     onClick={() => {
                       const domain = normalizeShopDomain(shopDomain || initialShopDomain);
-                      // Open Core OAuth entrypoint to start Shopify OAuth flow
-                      const url = `${coreUrl}/shopify/auth?shop=${encodeURIComponent(domain)}`;
+                      // Always use production backend for OAuth
+                      const url = `https://aura-core-monolith.onrender.com/shopify/auth?shop=${encodeURIComponent(domain)}`;
                       window.open(url, "_blank", "noopener");
                     }}
                     type="button"
