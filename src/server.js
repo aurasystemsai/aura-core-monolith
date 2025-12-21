@@ -54,6 +54,15 @@ app.get("/shopify/auth", (req, res) => {
     return res.status(400).json({ error: "Missing shop parameter" });
   }
 
+  // Validate critical env vars early and return helpful errors if missing.
+  const clientId = process.env.SHOPIFY_CLIENT_ID;
+  if (!clientId) {
+    console.error("[Core] Missing SHOPIFY_CLIENT_ID environment variable");
+    return res
+      .status(500)
+      .json({ error: "Server misconfiguration: missing SHOPIFY_CLIENT_ID" });
+  }
+
   // Derive a safe host URL for the OAuth redirect. Prefer explicit env, then Render,
   // then fall back to the current request's protocol+host. This prevents `undefined`
   // values when HOST_URL isn't set in the environment (e.g. during quick deploys).
@@ -64,8 +73,25 @@ app.get("/shopify/auth", (req, res) => {
     `${req.protocol}://${req.get("host")}`;
 
   const redirectUri = `${String(hostUrl).replace(/\/$/, "")}/shopify/auth/callback`;
-  const authUrl = `https://${shop}/admin/oauth/authorize?client_id=${process.env.SHOPIFY_CLIENT_ID}&scope=read_products,write_products&redirect_uri=${redirectUri}`;
-  
+
+  // Allow configuring scopes via env but fall back to sensible defaults.
+  const scope = process.env.SHOPIFY_SCOPES || "read_products,write_products";
+
+  // Sanitize provided shop value (strip protocol/path if present)
+  const safeShop = String(shop).replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+
+  // Build query params with URLSearchParams to ensure proper encoding
+  const params = new URLSearchParams({
+    client_id: clientId,
+    scope,
+    redirect_uri: redirectUri,
+  });
+
+  const authUrl = `https://${safeShop}/admin/oauth/authorize?${params.toString()}`;
+
+  // Helpful debug log so we can see what we redirect to in server logs.
+  console.log("[Core] Redirecting to Shopify OAuth:", authUrl);
+
   res.redirect(authUrl);
 });
 
