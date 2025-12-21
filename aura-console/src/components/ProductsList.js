@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
 
+import React, { useState, useEffect } from 'react';
 
 const ProductsList = ({ shopDomain, shopToken }) => {
   const [products, setProducts] = useState([]);
@@ -9,20 +9,19 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   useEffect(() => {
     if (!shopDomain || !shopToken) {
       setProducts([]);
-      setError("Missing shop domain or token.");
+      setError('Missing shop domain or token.');
       setLoading(false);
       return;
     }
     setLoading(true);
     setError(null);
-    // Example fetch, replace with your actual endpoint
     fetch(`/api/shopify/products?shop=${encodeURIComponent(shopDomain)}`, {
       headers: {
         Authorization: `Bearer ${shopToken}`,
       },
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch products");
+        if (!res.ok) throw new Error('Failed to fetch products');
         return res.json();
       })
       .then((data) => {
@@ -30,7 +29,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
         setLoading(false);
       })
       .catch((err) => {
-        setError(err.message || "Error loading products");
+        setError(err.message || 'Error loading products');
         setLoading(false);
       });
   }, [shopDomain, shopToken]);
