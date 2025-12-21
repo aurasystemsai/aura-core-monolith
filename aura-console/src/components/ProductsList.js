@@ -5,19 +5,11 @@ const ProductsList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // Fetch products from the backend API
-    fetch('/debug/shopify/products?shop=your-shop-name.myshopify.com&token=your-api-token') // Make sure to replace with correct parameters
-      .then((response) => response.json())
-      .then((data) => {
-        setProducts(data.products); // Store the products in state
-        setLoading(false); // Done loading
-      })
-      .catch((err) => {
-        console.error('Error fetching products:', err);
-        setError('Failed to load products');
-        setLoading(false); // Done loading even if there's an error
-      });
+  // This component should receive shopDomain and shopToken as props, or get them from context or parent state
+  // For now, do not fetch with a hardcoded placeholder. Only fetch if valid shopDomain and token are provided.
+  // Example usage: <ProductsList shopDomain={shopDomain} shopToken={shopToken} />
+
+  // Remove the useEffect with the hardcoded fetch. The parent should control when/how to fetch.
   }, []);
 
   if (loading) {

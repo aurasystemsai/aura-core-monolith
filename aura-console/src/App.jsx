@@ -150,7 +150,7 @@ function App() {
   const rawInitialShopDomain =
     (typeof import.meta !== "undefined" && import.meta.env?.VITE_SHOP_DOMAIN) ||
     localStorage.getItem("shopDomain") ||
-    "your-shop-name.myshopify.com";
+    ""; // No default, force user to enter
 
   const normalizeShopDomain = (d) => {
     if (!d) return "";
