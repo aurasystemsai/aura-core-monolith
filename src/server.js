@@ -1,4 +1,3 @@
-// ...existing code...
 // src/server.js
 // ----------------------------------------
 // AURA Core Monolith API
@@ -354,6 +353,48 @@ app.get("/api/debug/shopify/products", async (req, res) => {
   // delegate to the non-/api handler behaviour
   req.url = req.url.replace(/^\/api/, "");
   return app._router.handle(req, res, () => {});
+});
+
+// Correct /api/shopify/products route (must be after all middleware, before SPA fallback)
+app.get("/api/shopify/products", async (req, res) => {
+  try {
+    if (!debugGuard(req)) {
+      return res.status(401).json({ ok: false, error: "Unauthorized (bad key)" });
+    }
+
+    const shop = req.query.shop;
+    const limit = req.query.limit;
+    const apiVersion = req.query.apiVersion;
+
+    const token =
+      req.query.token ||
+      process.env.SHOPIFY_ADMIN_TOKEN || // recommended for Render
+      "";
+
+    if (!shop) {
+      return res.status(400).json({ ok: false, error: "Missing ?shop=" });
+    }
+    if (!token) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "Missing token. Pass ?token=shpat_... or set env SHOPIFY_ADMIN_TOKEN on Render.",
+      });
+    }
+
+    const out = await fetchShopifyProducts({ shop, token, apiVersion, limit });
+
+    return res.json({
+      ok: true,
+      shop,
+      apiVersion: apiVersion || process.env.SHOPIFY_API_VERSION || "2025-10",
+      count: out.rawCount,
+      products: out.products,
+    });
+  } catch (err) {
+    console.error("[Core] /api/shopify/products error", err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 // ---------- PROJECTS API (Connect Store) ----------
