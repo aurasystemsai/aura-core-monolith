@@ -9,10 +9,10 @@ import DraftLibrary from "./components/DraftLibrary";
 import ContentHealthAuditor from "./components/ContentHealthAuditor";
 import ContentIngestor from "./components/ContentIngestor";
 import ProductsList from "./components/ProductsList.jsx";
+import ConnectShopifyBanner from "./components/ConnectShopifyBanner";
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
-// ...existing code...
 // Single place to define engines used by the console
 const ENGINES = {
   product: {
@@ -1715,6 +1715,11 @@ function App() {
           )}
         </div>
       </main>
+
+      {/* Show ConnectShopifyBanner if not connected */}
+      {!localStorage.getItem("shopToken") && (
+        <ConnectShopifyBanner shopDomain={project && project.domain} />
+      )}
     </div>
   );
 }
