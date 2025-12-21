@@ -41,6 +41,172 @@ app.use(
     limit: "1mb",
   })
 );
+// ---------- SHOPIFY AUTHENTICATION ROUTES ----------
+
+// Shopify OAuth Authentication - Step 1: Redirect to Shopify OAuth screen
+app.get("/shopify/auth", (req, res) => {
+  const { shop } = req.query;
+
+  if (!shop) {
+    return res.status(400).json({ error: "Missing shop parameter" });
+  }
+
+  const redirectUri = `${process.env.HOST_URL}/shopify/auth/callback`; // Define your callback URL here
+  const authUrl = `https://${shop}/admin/oauth/authorize?client_id=${process.env.SHOPIFY_CLIENT_ID}&scope=read_products,write_products&redirect_uri=${redirectUri}`;
+  
+  res.redirect(authUrl);
+});
+
+// Shopify OAuth Callback - Step 2: Receive the code and exchange it for an access token
+app.get("/shopify/auth/callback", async (req, res) => {
+  const { code, shop } = req.query;
+  
+  if (!code || !shop) {
+    return res.status(400).json({ error: "Missing code or shop parameter" });
+  }
+
+  const tokenUrl = `https://${shop}/admin/oauth/access_token`;
+  const payload = {
+    client_id: process.env.SHOPIFY_CLIENT_ID,
+    client_secret: process.env.SHOPIFY_CLIENT_SECRET,
+    code,
+  };
+
+  try {
+    const tokenRes = await fetch(tokenUrl, {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const tokenData = await tokenRes.json();
+    const accessToken = tokenData.access_token;
+
+    // Store the token for future API calls (can be stored in a session or database)
+    res.send("Shopify authentication successful!");
+  } catch (err) {
+    console.error("Error during Shopify authentication", err);
+    res.status(500).send("Authentication failed");
+  }
+});
+// ---------- DEBUG: SHOPIFY PRODUCTS (TEMPORARY) ----------
+
+async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
+  const safeShop = String(shop || "").trim();
+  if (!safeShop.endsWith(".myshopify.com")) {
+    throw new Error("Invalid shop. Expected *.myshopify.com");
+  }
+
+  const ver = apiVersion || process.env.SHOPIFY_API_VERSION || "2025-10";
+  const url = `https://${safeShop}/admin/api/${ver}/graphql.json`;
+
+  const first = Number.isFinite(Number(limit)) ? Math.min(Number(limit), 50) : 10;
+
+  const query = `
+    query Products($first: Int!) {
+      products(first: $first) {
+        edges {
+          node {
+            id
+            title
+            handle
+            status
+            totalInventory
+            createdAt
+            updatedAt
+          }
+        }
+      }
+    }
+  `;
+
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Shopify-Access-Token": token,
+    },
+    body: JSON.stringify({
+      query,
+      variables: { first },
+    }),
+  });
+
+  const text = await resp.text();
+  let json = null;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    // leave null; we’ll throw a readable error below
+  }
+
+  if (!resp.ok) {
+    throw new Error(`Shopify HTTP ${resp.status}: ${text.slice(0, 500)}`);
+  }
+
+  if (json && json.errors && json.errors.length) {
+    throw new Error(`Shopify GraphQL errors: ${JSON.stringify(json.errors)}`);
+  }
+
+  const edges = json?.data?.products?.edges || [];
+  const products = edges.map((e) => e.node);
+
+  return { products, rawCount: products.length };
+}
+
+function debugGuard(req) {
+  const required = process.env.DEBUG_KEY;
+  if (!required) return true; // no guard configured
+  const provided = req.query.key;
+  return String(provided || "") === String(required);
+}
+
+app.get("/debug/shopify/products", async (req, res) => {
+  try {
+    if (!debugGuard(req)) {
+      return res.status(401).json({ ok: false, error: "Unauthorized (bad key)" });
+    }
+
+    const shop = req.query.shop;
+    const limit = req.query.limit;
+    const apiVersion = req.query.apiVersion;
+
+    const token =
+      req.query.token ||
+      process.env.SHOPIFY_ADMIN_TOKEN || // recommended for Render
+      "";
+
+    if (!shop) {
+      return res.status(400).json({ ok: false, error: "Missing ?shop=" });
+    }
+    if (!token) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "Missing token. Pass ?token=shpat_... or set env SHOPIFY_ADMIN_TOKEN on Render.",
+      });
+    }
+
+    const out = await fetchShopifyProducts({ shop, token, apiVersion, limit });
+
+    return res.json({
+      ok: true,
+      shop,
+      apiVersion: apiVersion || process.env.SHOPIFY_API_VERSION || "2025-10",
+      count: out.rawCount,
+      products: out.products,
+    });
+  } catch (err) {
+    console.error("[Core] debug shopify products error", err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Optional: same endpoint under /api for consistency
+app.get("/api/debug/shopify/products", async (req, res) => {
+  req.url = req.url.replace(/^\/api/, "");
+  return app._router.handle(req, res, () => {});
+});
 
 // Simple request logging
 app.use((req, _res, next) => {
