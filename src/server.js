@@ -200,12 +200,16 @@ app.get("/debug/shopify/products", async (req, res) => {
       req.query.token ||
       process.env.SHOPIFY_ADMIN_TOKEN || // recommended for Render
       "";
+    let tokenSource = token ? (req.query.token ? "query" : "env") : null;
 
     // If token not provided via query or env, try stored tokens for this shop
     if (!token && shop) {
       try {
         const stored = shopTokens.getToken(shop);
-        if (stored && stored.token) token = stored.token;
+        if (stored && stored.token) {
+          token = stored.token;
+          tokenSource = "db";
+        }
       } catch (e) {
         console.error("Failed to lookup stored shop token", e);
       }
@@ -221,6 +225,9 @@ app.get("/debug/shopify/products", async (req, res) => {
           "Missing token. Pass ?token=shpat_... or set env SHOPIFY_ADMIN_TOKEN on Render, or install the app for this shop so the server stores its Admin token.",
       });
     }
+
+    // Log token source for debugging (only when DEBUG_KEY is configured or in server logs)
+    console.log(`[Core] debug/shopify/products tokenSource=${tokenSource || "none"} shop=${shop}`);
 
     const out = await fetchShopifyProducts({ shop, token, apiVersion, limit });
 
@@ -427,6 +434,7 @@ app.get("/debug/shopify/products", async (req, res) => {
       ok: true,
       shop,
       apiVersion: apiVersion || process.env.SHOPIFY_API_VERSION || "2025-10",
+      tokenSource: tokenSource || "none",
       count: out.rawCount,
       products: out.products,
     });
@@ -441,6 +449,21 @@ app.get("/api/debug/shopify/products", async (req, res) => {
   // delegate to the non-/api handler behaviour
   req.url = req.url.replace(/^\/api/, "");
   return app._router.handle(req, res, () => {});
+});
+
+// ---------- ADMIN: list connected shops / tokens (protected by DEBUG_KEY)
+app.get("/admin/shop-tokens", async (req, res) => {
+  try {
+    if (!debugGuard(req)) {
+      return res.status(401).json({ ok: false, error: "Unauthorized (bad key)" });
+    }
+
+    const list = shopTokens.listTokens();
+    return res.json({ ok: true, count: list.length, shops: list });
+  } catch (err) {
+    console.error("[Core] admin shop-tokens error", err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 // ---------- PROJECTS API (Connect Store) ----------
