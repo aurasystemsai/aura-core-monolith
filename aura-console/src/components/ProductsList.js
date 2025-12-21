@@ -16,6 +16,7 @@ const ProductsList = () => {
     return <div>Loading products...</div>;
   }
 
+
   if (error) {
     return <div>{error}</div>;
   }
@@ -26,12 +27,12 @@ const ProductsList = () => {
       <ul>
         {products.map((product) => (
           <li key={product.id}>
-            <strong>{product.title}</strong> - ${product.variants[0].price}
+            <strong>{product.title}</strong> - ${product.variants && product.variants[0] ? product.variants[0].price : 'N/A'}
           </li>
         ))}
       </ul>
     </div>
   );
-};
+}
 
 export default ProductsList;
