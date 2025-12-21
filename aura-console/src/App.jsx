@@ -7,10 +7,10 @@ import SystemHealthPanel from "./components/SystemHealthPanel";
 import DraftLibrary from "./components/DraftLibrary";
 import ContentHealthAuditor from "./components/ContentHealthAuditor";
 import ContentIngestor from "./components/ContentIngestor";
-import FixQueue from "./components/FixQueue"; // ✅ NEW
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
+// ...existing code...
 // Single place to define engines used by the console
 const ENGINES = {
   product: {
@@ -76,6 +76,10 @@ function App() {
   // Connected project / store
   const [project, setProject] = useState(null);
 
+  // Shopify products state
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
   // Which engine is active in the UI
   const [activeEngine, setActiveEngine] = useState("product");
   const currentEngine = ENGINES[activeEngine];
@@ -143,47 +147,6 @@ function App() {
   // Simple run history (shared across engines, filtered later)
   const [runHistory, setRunHistory] = useState([]);
   const [historyView, setHistoryView] = useState("score"); // "score" | "meta"
-  // Shopify products + loading state (added for product listing)
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  // Shop credentials: prefer Vite env vars, otherwise localStorage / user input
-  const rawInitialShopDomain =
-    (typeof import.meta !== "undefined" && import.meta.env?.VITE_SHOP_DOMAIN) ||
-    localStorage.getItem("shopDomain") ||
-    ""; // No default, force user to enter
-
-  // Always use production URL for redirects
-  const PRODUCTION_BASE_URL = "https://aura-core-monolith.onrender.com";
-
-  // Example OAuth handler (replace your actual handler logic as needed)
-  const handleOAuth = () => {
-    if (!shopDomain) {
-      alert("Please enter your shop domain.");
-      return;
-    }
-    // Redirect to production backend for OAuth
-    window.location.href = `${PRODUCTION_BASE_URL}/shopify/auth?shop=${encodeURIComponent(shopDomain)}`;
-  };
-
-  const normalizeShopDomain = (d) => {
-    if (!d) return "";
-    let v = String(d).trim();
-    // remove protocol
-    v = v.replace(/^https?:\/\//i, "");
-    // remove any trailing slashes
-    v = v.replace(/\/+$/g, "");
-    return v;
-  };
-
-  const initialShopDomain = normalizeShopDomain(rawInitialShopDomain);
-  const initialShopToken =
-    (typeof import.meta !== "undefined" && import.meta.env?.VITE_SHOP_TOKEN) ||
-    localStorage.getItem("shopToken") ||
-    "your-shopify-access-token";
-
-  const [shopDomain, setShopDomain] = useState(initialShopDomain);
-  const [shopToken, setShopToken] = useState(initialShopToken);
-  const [fetchError, setFetchError] = useState(null);
 
   // Ideal bands
   const TITLE_MIN = 45;
@@ -215,39 +178,6 @@ function App() {
         platform: localStorage.getItem("auraPlatform") || "other",
       });
     }
-  }, []);
-
-  // Auto-connect flow: if the console was opened after OAuth, the URL will contain ?shop=shop-domain
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const installedShop = params.get("shop");
-    if (!installedShop) return;
-
-    // Try to find a project with this domain via Core API and set it as connected
-    (async () => {
-      try {
-        const res = await fetch(`${coreUrl}/projects`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!data.ok || !Array.isArray(data.projects)) return;
-        const normalized = String(installedShop).replace(/^https?:\/\//i, "").replace(/\/+$/g, "");
-        const found = data.projects.find((p) => p.domain === normalized || p.domain === installedShop);
-        if (found) {
-          setProject(found);
-          localStorage.setItem("auraProjectId", found.id);
-          localStorage.setItem("auraProjectName", found.name);
-          localStorage.setItem("auraProjectDomain", found.domain);
-          localStorage.setItem("auraPlatform", found.platform || "shopify");
-          // remove the query param to keep the URL clean
-          const url = new URL(window.location.href);
-          url.searchParams.delete("shop");
-          window.history.replaceState({}, document.title, url.toString());
-        }
-      } catch (err) {
-        console.error("Auto-connect failed", err);
-      }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // -------------------------------------------------
@@ -308,59 +238,6 @@ function App() {
   }, [project, coreUrl]);
 
   // -------------------------------------------------
-  // -------------------------------------------------
-  // Fetch Shopify products (debug endpoint on Core)
-  // IMPORTANT: replace `your-shop-name.myshopify.com` and `your-shopify-access-token`
-  // with your actual shop domain and token.
-  const fetchProducts = async () => {
-    setLoading(true);
-    setFetchError(null);
-    try {
-      if (!shopDomain || !shopToken) {
-        throw new Error("Shop domain or token missing");
-      }
-
-      const domain = normalizeShopDomain(shopDomain || initialShopDomain);
-      const url = `${coreUrl}/debug/shopify/products?shop=${encodeURIComponent(
-        domain
-      )}&token=${encodeURIComponent(shopToken)}`;
-
-      const res = await fetch(url);
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Failed to fetch products (${res.status}): ${text}`);
-      }
-
-      const data = await res.json();
-      setProducts(data.products || []);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      const raw = error && error.message ? String(error.message) : String(error);
-
-      // Map known Shopify/server errors to clearer user messages
-      let userMessage = raw;
-      if (/Shopify HTTP 401/i.test(raw) || /Invalid API key|access token/i.test(raw)) {
-        userMessage =
-          "Shopify authentication failed (401). The Admin API access token appears invalid. Make sure you are using a valid Admin access token (starts with `shpat_...`) or set `SHOPIFY_ADMIN_TOKEN` on the Core server. Do not use a storefront token.";
-      } else if (/Invalid shop\. Expected \*\.myshopify\.com/i.test(raw)) {
-        userMessage = "Invalid shop domain. Use the shop domain only, e.g. `your-store.myshopify.com` (no protocol).";
-      } else if (/Unauthorized \(bad key\)/i.test(raw)) {
-        userMessage = "Core debug endpoint is protected. Set the matching `DEBUG_KEY` on the Core server or omit the key if not configured.";
-      }
-
-      setFetchError(userMessage);
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProducts();
-    // intentionally only run once on mount; credentials can be saved and Retry used
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Scoring helpers
   // -------------------------------------------------
   const scoreLength = (len, min, max) => {
@@ -826,124 +703,6 @@ function App() {
               coreStatusLabel={coreStatusLabel}
               lastRunAt={lastRunAt}
             />
-          </section>
-
-          <section style={{ marginTop: 10, marginBottom: 6 }}>
-            <div className="card">
-              <div className="card-header">
-                <h2 className="card-title">Products</h2>
-                <p className="card-subtitle">Products fetched from Shopify (debug)</p>
-              </div>
-
-              <div style={{ padding: 12, borderBottom: "1px solid #eee" }}>
-                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                  <input
-                    className="inspector-input"
-                    style={{ minWidth: 220 }}
-                    value={shopDomain}
-                    onChange={(e) => setShopDomain(e.target.value)}
-                    placeholder="your-shop-name.myshopify.com"
-                  />
-                  <input
-                    className="inspector-input"
-                    style={{ minWidth: 320 }}
-                    value={shopToken}
-                    onChange={(e) => setShopToken(e.target.value)}
-                    placeholder="your-shopify-access-token"
-                  />
-                  <button
-                    className="button button--ghost"
-                    onClick={() => {
-                      const nd = normalizeShopDomain(shopDomain);
-                      setShopDomain(nd);
-                      localStorage.setItem("shopDomain", nd);
-                      localStorage.setItem("shopToken", shopToken);
-                    }}
-                    type="button"
-                  >
-                    Save
-                  </button>
-                  <button
-                    className="button button--ghost"
-                    onClick={() => {
-                      setShopDomain("");
-                      setShopToken("");
-                      localStorage.removeItem("shopDomain");
-                      localStorage.removeItem("shopToken");
-                    }}
-                    type="button"
-                  >
-                    Clear
-                  </button>
-                  <button
-                    className="button button--ghost"
-                    onClick={() => {
-                      const domain = normalizeShopDomain(shopDomain || initialShopDomain);
-                      // Always use production backend for OAuth
-                      const url = `https://aura-core-monolith.onrender.com/shopify/auth?shop=${encodeURIComponent(domain)}`;
-                      window.open(url, "_blank", "noopener");
-                    }}
-                    type="button"
-                  >
-                    Connect via OAuth
-                  </button>
-                  <button
-                    className="button button--primary"
-                    onClick={() => fetchProducts()}
-                    disabled={loading}
-                    type="button"
-                  >
-                    {loading ? "Loading…" : "Fetch products"}
-                  </button>
-                </div>
-                {fetchError && (
-                  <div style={{ marginTop: 8 }} className="error-banner">
-                    <span className="error-dot" />
-                    Error: {fetchError}{" "}
-                    <button className="button button--ghost" onClick={() => fetchProducts()} type="button">Retry</button>
-                    <div style={{ marginTop: 8, fontSize: 12 }}>
-                      <a
-                        href="https://shopify.dev/apps/auth/admin"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: "#fff", textDecoration: "underline" }}
-                      >
-                        How to create an Admin API token
-                      </a>
-                      {" — or use "}
-                      <strong>Connect via OAuth</strong>
-                      {" above to install the app for this shop."}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div style={{ padding: 12 }}>
-                {loading ? (
-                  <p>Loading products...</p>
-                ) : products.length > 0 ? (
-                  <ul style={{ paddingLeft: 18 }}>
-                    {products.map((product) => (
-                      <li key={product.id} style={{ marginBottom: 12 }}>
-                        <h3 style={{ margin: 0 }}>{product.title}</h3>
-                        <div style={{ fontSize: 12, opacity: 0.8 }}>
-                          <div>Status: {product.status}</div>
-                          <div>Inventory: {product.totalInventory}</div>
-                          <div>
-                            Created at: {product.createdAt ? new Date(product.createdAt).toLocaleString() : "—"}
-                          </div>
-                          <div>
-                            Updated at: {product.updatedAt ? new Date(product.updatedAt).toLocaleString() : "—"}
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>No products found</p>
-                )}
-              </div>
-            </div>
           </section>
 
           <section className="page-tabs">
