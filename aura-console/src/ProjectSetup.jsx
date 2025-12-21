@@ -6,12 +6,55 @@
 
 import React, { useState } from "react";
 
+// Helper to get query param from URL
+function getQueryParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
 function ProjectSetup({ coreUrl, onConnected }) {
   const [name, setName] = useState("");
   const [domain, setDomain] = useState("");
   const [platform, setPlatform] = useState("shopify");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [shopifyDomain, setShopifyDomain] = useState("");
+  const [shopifyLoading, setShopifyLoading] = useState(false);
+  // Handle Shopify OAuth redirect
+  React.useEffect(() => {
+    const shop = getQueryParam("shop");
+    const projectId = getQueryParam("projectId");
+    const projectName = getQueryParam("projectName");
+    const projectDomain = getQueryParam("projectDomain");
+    const platform = getQueryParam("platform");
+    if (shop && projectId) {
+      // Persist to localStorage
+      localStorage.setItem("auraProjectId", projectId);
+      localStorage.setItem("auraProjectName", projectName || shop);
+      localStorage.setItem("auraProjectDomain", projectDomain || shop);
+      localStorage.setItem("auraPlatform", platform || "shopify");
+      if (onConnected) {
+        onConnected({
+          id: projectId,
+          name: projectName || shop,
+          domain: projectDomain || shop,
+          platform: platform || "shopify",
+        });
+      }
+    }
+  }, [onConnected]);
+  // Start Shopify OAuth flow
+  const handleShopifyConnect = async (e) => {
+    e.preventDefault();
+    setError(null);
+    if (!shopifyDomain.trim()) {
+      setError("Enter your Shopify store domain (e.g. mystore.myshopify.com)");
+      return;
+    }
+    setShopifyLoading(true);
+    // Redirect to backend OAuth endpoint
+    const url = `${coreUrl.replace(/\/$/, "")}/api/auth?shop=${encodeURIComponent(shopifyDomain.trim())}`;
+    window.location.href = url;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -82,6 +125,29 @@ function ProjectSetup({ coreUrl, onConnected }) {
         </p>
 
         <form className="project-setup-form" onSubmit={handleSubmit}>
+                    <div style={{ marginBottom: 16, marginTop: 8 }}>
+                      <div style={{ fontWeight: 500, marginBottom: 4 }}>Or connect with Shopify:</div>
+                      <form onSubmit={handleShopifyConnect} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <input
+                          type="text"
+                          placeholder="yourstore.myshopify.com"
+                          value={shopifyDomain}
+                          onChange={e => setShopifyDomain(e.target.value)}
+                          style={{ flex: 1 }}
+                          disabled={shopifyLoading}
+                        />
+                        <button
+                          type="submit"
+                          className="button button--primary"
+                          disabled={shopifyLoading}
+                        >
+                          {shopifyLoading ? "Redirecting…" : "Connect with Shopify"}
+                        </button>
+                      </form>
+                      <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 2 }}>
+                        You’ll be redirected to Shopify to approve the app.
+                      </div>
+                    </div>
           <label>
             Store / brand name
             <input
@@ -136,8 +202,9 @@ function ProjectSetup({ coreUrl, onConnected }) {
             type="submit"
             className="button button--primary"
             disabled={loading}
+            style={{ marginTop: 8 }}
           >
-            {loading ? "Connecting…" : "Connect store"}
+            {loading ? "Connecting…" : "Connect store manually"}
           </button>
 
           <div
