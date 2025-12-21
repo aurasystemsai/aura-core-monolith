@@ -382,15 +382,26 @@ app.get("/api/shopify/products", async (req, res) => {
       });
     }
 
-    const out = await fetchShopifyProducts({ shop, token, apiVersion, limit });
-
-    return res.json({
-      ok: true,
-      shop,
-      apiVersion: apiVersion || process.env.SHOPIFY_API_VERSION || "2025-10",
-      count: out.rawCount,
-      products: out.products,
-    });
+    try {
+      const out = await fetchShopifyProducts({ shop, token, apiVersion, limit });
+      return res.json({
+        ok: true,
+        shop,
+        apiVersion: apiVersion || process.env.SHOPIFY_API_VERSION || "2025-10",
+        count: out.rawCount,
+        products: out.products,
+      });
+    } catch (shopifyErr) {
+      console.error("[Core] Shopify fetch error", {
+        shop,
+        token: token ? token.slice(0, 6) + '...' : undefined,
+        apiVersion,
+        limit,
+        error: shopifyErr && shopifyErr.message,
+        stack: shopifyErr && shopifyErr.stack,
+      });
+      return res.status(500).json({ ok: false, error: shopifyErr.message });
+    }
   } catch (err) {
     console.error("[Core] /api/shopify/products error", err);
     return res.status(500).json({ ok: false, error: err.message });
