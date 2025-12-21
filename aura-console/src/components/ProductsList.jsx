@@ -1,13 +1,14 @@
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+
 
 const ProductsList = ({ shopDomain, shopToken }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const fetchProducts = useCallback(() => {
     if (!shopDomain || !shopToken) {
       setProducts([]);
       setError('Missing shop domain or token.');
@@ -35,28 +36,32 @@ const ProductsList = ({ shopDomain, shopToken }) => {
       });
   }, [shopDomain, shopToken]);
 
-  if (loading) {
-    return <div>Loading products...</div>;
-  }
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
-  if (error) {
-    return <div style={{ color: 'red' }}>{error}</div>;
-  }
 
   return (
     <div>
       <h1>Shopify Products</h1>
-      {products.length === 0 ? (
-        <div>No products found.</div>
-      ) : (
-        <ul>
-          {products.map((product) => (
-            <li key={product.id}>
-              <strong>{product.title}</strong> - $
-              {product.variants && product.variants[0] ? product.variants[0].price : 'N/A'}
-            </li>
-          ))}
-        </ul>
+      <button onClick={fetchProducts} disabled={loading} style={{ marginBottom: 16 }}>
+        {loading ? 'Refreshing...' : 'Refresh'}
+      </button>
+      {loading && <div>Loading products...</div>}
+      {error && <div style={{ color: 'red' }}>{error}</div>}
+      {!loading && !error && (
+        products.length === 0 ? (
+          <div>No products found.</div>
+        ) : (
+          <ul>
+            {products.map((product) => (
+              <li key={product.id}>
+                <strong>{product.title}</strong> - $
+                {product.variants && product.variants[0] ? product.variants[0].price : 'N/A'}
+              </li>
+            ))}
+          </ul>
+        )
       )}
     </div>
   );
