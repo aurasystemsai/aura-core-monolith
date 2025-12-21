@@ -830,6 +830,18 @@ function App() {
                     Clear
                   </button>
                   <button
+                    className="button button--ghost"
+                    onClick={() => {
+                      const domain = normalizeShopDomain(shopDomain || initialShopDomain);
+                      // Open Core OAuth entrypoint to start Shopify OAuth flow
+                      const url = `${coreUrl}/shopify/auth?shop=${encodeURIComponent(domain)}`;
+                      window.open(url, "_blank", "noopener");
+                    }}
+                    type="button"
+                  >
+                    Connect via OAuth
+                  </button>
+                  <button
                     className="button button--primary"
                     onClick={() => fetchProducts()}
                     disabled={loading}
@@ -841,7 +853,21 @@ function App() {
                 {fetchError && (
                   <div style={{ marginTop: 8 }} className="error-banner">
                     <span className="error-dot" />
-                    Error: {fetchError} <button className="button button--ghost" onClick={() => fetchProducts()} type="button">Retry</button>
+                    Error: {fetchError}{" "}
+                    <button className="button button--ghost" onClick={() => fetchProducts()} type="button">Retry</button>
+                    <div style={{ marginTop: 8, fontSize: 12 }}>
+                      <a
+                        href="https://shopify.dev/apps/auth/admin"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#fff", textDecoration: "underline" }}
+                      >
+                        How to create an Admin API token
+                      </a>
+                      {" — or use "}
+                      <strong>Connect via OAuth</strong>
+                      {" above to install the app for this shop."}
+                    </div>
                   </div>
                 )}
               </div>
