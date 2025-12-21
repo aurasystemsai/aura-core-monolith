@@ -75,6 +75,7 @@ function App() {
 
   // Connected project / store
   const [project, setProject] = useState(null);
+  const [autoCreating, setAutoCreating] = useState(false);
 
   // Shopify products state
   const [products, setProducts] = useState([]);
@@ -166,7 +167,7 @@ function App() {
     : "blog post";
 
   // -------------------------------------------------
-  // Load project from localStorage (if already connected)
+  // Auto-create or load project (no manual onboarding)
   // -------------------------------------------------
   useEffect(() => {
     const id = localStorage.getItem("auraProjectId");
@@ -177,8 +178,41 @@ function App() {
         domain: localStorage.getItem("auraProjectDomain") || "—",
         platform: localStorage.getItem("auraPlatform") || "other",
       });
+      return;
     }
-  }, []);
+    // No project found, auto-create one
+    setAutoCreating(true);
+    fetch(`${coreUrl}/projects`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "My Project",
+        domain: window.location.hostname || "localhost",
+        platform: "shopify",
+      }),
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Failed to create project");
+        const data = await res.json();
+        if (!data.ok || !data.project) throw new Error("Invalid project response");
+        const proj = data.project;
+        localStorage.setItem("auraProjectId", proj.id);
+        localStorage.setItem("auraProjectName", proj.name || "Untitled project");
+        localStorage.setItem("auraProjectDomain", proj.domain || "—");
+        localStorage.setItem("auraPlatform", proj.platform || "shopify");
+        setProject({
+          id: proj.id,
+          name: proj.name || "Untitled project",
+          domain: proj.domain || "—",
+          platform: proj.platform || "shopify",
+        });
+      })
+      .catch((err) => {
+        console.error("Auto-create project failed", err);
+        setProject(null);
+      })
+      .finally(() => setAutoCreating(false));
+  }, [coreUrl]);
 
   // -------------------------------------------------
   // Health check Core API
@@ -568,9 +602,12 @@ function App() {
     return `Your meta description is ${currentMetaLength} characters, which is on target. Focus on clarity and benefits rather than adding more words.`;
   };
 
-  if (!project) {
+
+  if (!project || autoCreating) {
     return (
-      <ProjectSetup coreUrl={coreUrl} onConnected={(proj) => setProject(proj)} />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", fontSize: 20 }}>
+        {autoCreating ? "Setting up your project…" : "Loading…"}
+      </div>
     );
   }
 
