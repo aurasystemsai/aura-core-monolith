@@ -1,0 +1,33 @@
+[dotenv@17.2.3] injecting env (9) from .env -- tip: ÔÜÖ´©Å  override existing env vars with { override: true }
+[Core] SQLite DB path: C:\Users\soren\Desktop\aura-systems-core\aura-core-monolith\src\data\aura-core.sqlite
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[tools-registry] Skipping module without meta.id; keys= [ 'key', 'run' ]
+[Core] AURA Core API running on port 10000
+==> Available at http://localhost:10000
+
