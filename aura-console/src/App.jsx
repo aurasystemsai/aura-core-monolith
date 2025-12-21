@@ -147,10 +147,22 @@ function App() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   // Shop credentials: prefer Vite env vars, otherwise localStorage / user input
-  const initialShopDomain =
+  const rawInitialShopDomain =
     (typeof import.meta !== "undefined" && import.meta.env?.VITE_SHOP_DOMAIN) ||
     localStorage.getItem("shopDomain") ||
     "your-shop-name.myshopify.com";
+
+  const normalizeShopDomain = (d) => {
+    if (!d) return "";
+    let v = String(d).trim();
+    // remove protocol
+    v = v.replace(/^https?:\/\//i, "");
+    // remove any trailing slashes
+    v = v.replace(/\/+$/g, "");
+    return v;
+  };
+
+  const initialShopDomain = normalizeShopDomain(rawInitialShopDomain);
   const initialShopToken =
     (typeof import.meta !== "undefined" && import.meta.env?.VITE_SHOP_TOKEN) ||
     localStorage.getItem("shopToken") ||
@@ -262,8 +274,9 @@ function App() {
         throw new Error("Shop domain or token missing");
       }
 
+      const domain = normalizeShopDomain(shopDomain || initialShopDomain);
       const url = `${coreUrl}/debug/shopify/products?shop=${encodeURIComponent(
-        shopDomain
+        domain
       )}&token=${encodeURIComponent(shopToken)}`;
 
       const res = await fetch(url);
@@ -276,7 +289,20 @@ function App() {
       setProducts(data.products || []);
     } catch (error) {
       console.error("Error fetching products:", error);
-      setFetchError(error.message || String(error));
+      const raw = error && error.message ? String(error.message) : String(error);
+
+      // Map known Shopify/server errors to clearer user messages
+      let userMessage = raw;
+      if (/Shopify HTTP 401/i.test(raw) || /Invalid API key|access token/i.test(raw)) {
+        userMessage =
+          "Shopify authentication failed (401). The Admin API access token appears invalid. Make sure you are using a valid Admin access token (starts with `shpat_...`) or set `SHOPIFY_ADMIN_TOKEN` on the Core server. Do not use a storefront token.";
+      } else if (/Invalid shop\. Expected \*\.myshopify\.com/i.test(raw)) {
+        userMessage = "Invalid shop domain. Use the shop domain only, e.g. `your-store.myshopify.com` (no protocol).";
+      } else if (/Unauthorized \(bad key\)/i.test(raw)) {
+        userMessage = "Core debug endpoint is protected. Set the matching `DEBUG_KEY` on the Core server or omit the key if not configured.";
+      }
+
+      setFetchError(userMessage);
       setProducts([]);
     } finally {
       setLoading(false);
@@ -782,7 +808,9 @@ function App() {
                   <button
                     className="button button--ghost"
                     onClick={() => {
-                      localStorage.setItem("shopDomain", shopDomain);
+                      const nd = normalizeShopDomain(shopDomain);
+                      setShopDomain(nd);
+                      localStorage.setItem("shopDomain", nd);
                       localStorage.setItem("shopToken", shopToken);
                     }}
                     type="button"
