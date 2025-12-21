@@ -74,6 +74,9 @@ app.get("/shopify/auth", (req, res) => {
 
   const redirectUri = `${String(hostUrl).replace(/\/$/, "")}/shopify/auth/callback`;
 
+  // Log the redirectUri for debugging OAuth issues
+  console.log("[Core] Shopify OAuth redirectUri:", redirectUri);
+
   // Allow configuring scopes via env but fall back to sensible defaults.
   const scope = process.env.SHOPIFY_SCOPES || "read_products,write_products";
 
