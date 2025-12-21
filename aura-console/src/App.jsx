@@ -152,6 +152,19 @@ function App() {
     localStorage.getItem("shopDomain") ||
     ""; // No default, force user to enter
 
+  // Always use production URL for redirects
+  const PRODUCTION_BASE_URL = "https://aura-core-monolith.onrender.com";
+
+  // Example OAuth handler (replace your actual handler logic as needed)
+  const handleOAuth = () => {
+    if (!shopDomain) {
+      alert("Please enter your shop domain.");
+      return;
+    }
+    // Redirect to production backend for OAuth
+    window.location.href = `${PRODUCTION_BASE_URL}/shopify/auth?shop=${encodeURIComponent(shopDomain)}`;
+  };
+
   const normalizeShopDomain = (d) => {
     if (!d) return "";
     let v = String(d).trim();
