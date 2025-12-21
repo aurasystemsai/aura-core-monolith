@@ -204,6 +204,39 @@ function App() {
     }
   }, []);
 
+  // Auto-connect flow: if the console was opened after OAuth, the URL will contain ?shop=shop-domain
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const installedShop = params.get("shop");
+    if (!installedShop) return;
+
+    // Try to find a project with this domain via Core API and set it as connected
+    (async () => {
+      try {
+        const res = await fetch(`${coreUrl}/projects`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.ok || !Array.isArray(data.projects)) return;
+        const normalized = String(installedShop).replace(/^https?:\/\//i, "").replace(/\/+$/g, "");
+        const found = data.projects.find((p) => p.domain === normalized || p.domain === installedShop);
+        if (found) {
+          setProject(found);
+          localStorage.setItem("auraProjectId", found.id);
+          localStorage.setItem("auraProjectName", found.name);
+          localStorage.setItem("auraProjectDomain", found.domain);
+          localStorage.setItem("auraPlatform", found.platform || "shopify");
+          // remove the query param to keep the URL clean
+          const url = new URL(window.location.href);
+          url.searchParams.delete("shop");
+          window.history.replaceState({}, document.title, url.toString());
+        }
+      } catch (err) {
+        console.error("Auto-connect failed", err);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // -------------------------------------------------
   // Health check Core API
   // -------------------------------------------------

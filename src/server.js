@@ -13,6 +13,7 @@ dotenv.config();
 
 const { getTool } = require("./core/tools-registry.cjs");
 const projectsCore = require("./core/projects");
+const shopTokens = require("./core/shopTokens");
 const contentCore = require("./core/content");
 
 // Auto-fetch title/meta for ingestion
@@ -83,7 +84,31 @@ app.get("/shopify/auth/callback", async (req, res) => {
     const accessToken = tokenData.access_token;
 
     // Store the token for future API calls (can be stored in a session or database)
-    res.send("Shopify authentication successful!");
+    try {
+      // persist admin token for this shop
+      if (accessToken) {
+        shopTokens.upsertToken(shop, accessToken);
+      }
+
+      // ensure a project exists for this shop (auto-create)
+      const normalized = String(shop).trim();
+      let project = projectsCore.getProjectByDomain(normalized);
+      if (!project) {
+        project = projectsCore.createProject({
+          name: normalized,
+          domain: normalized,
+          platform: "shopify",
+        });
+      }
+
+      // Redirect merchant back to the console and include the shop param so UI can auto-connect
+      const consoleUrl = process.env.CONSOLE_URL || process.env.HOST_URL || "http://localhost:5173";
+      const redirect = `${consoleUrl.replace(/\/$/, "")}/?shop=${encodeURIComponent(normalized)}`;
+      return res.redirect(redirect);
+    } catch (innerErr) {
+      console.error("Error storing shop token or creating project", innerErr);
+      return res.status(500).send("Shopify authentication succeeded but failed to save installation.");
+    }
   } catch (err) {
     console.error("Error during Shopify authentication", err);
     res.status(500).send("Authentication failed");

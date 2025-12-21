@@ -102,4 +102,23 @@ function listProjects() {
 module.exports = {
   createProject,
   listProjects,
+  // find a project by domain (returns null if not found)
+  getProjectByDomain: (domain) => {
+    const d = String(domain || "").trim();
+    if (!d) return null;
+    const row = db
+      .prepare(
+        `SELECT id, name, domain, platform, created_at, updated_at FROM projects WHERE domain = ? LIMIT 1`
+      )
+      .get(d);
+    if (!row) return null;
+    return {
+      id: row.id,
+      name: row.name,
+      domain: row.domain,
+      platform: row.platform,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  },
 };
