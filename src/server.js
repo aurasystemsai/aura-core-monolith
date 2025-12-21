@@ -32,6 +32,8 @@ const makeRoutes = require("./routes/make");
 const { startFixQueueWorker } = require("./core/fixQueueWorker");
 
 const app = express();
+// trust proxy so req.protocol reflects X-Forwarded-Proto when behind Render/ngrok
+app.set("trust proxy", true);
 const PORT = process.env.PORT || 10000;
 
 // ---------- MIDDLEWARE ----------
@@ -52,7 +54,16 @@ app.get("/shopify/auth", (req, res) => {
     return res.status(400).json({ error: "Missing shop parameter" });
   }
 
-  const redirectUri = `${process.env.HOST_URL}/shopify/auth/callback`; // Define your callback URL here
+  // Derive a safe host URL for the OAuth redirect. Prefer explicit env, then Render,
+  // then fall back to the current request's protocol+host. This prevents `undefined`
+  // values when HOST_URL isn't set in the environment (e.g. during quick deploys).
+  const hostUrl =
+    process.env.HOST_URL ||
+    process.env.SHOPIFY_APP_URL ||
+    process.env.RENDER_EXTERNAL_URL ||
+    `${req.protocol}://${req.get("host")}`;
+
+  const redirectUri = `${String(hostUrl).replace(/\/$/, "")}/shopify/auth/callback`;
   const authUrl = `https://${shop}/admin/oauth/authorize?client_id=${process.env.SHOPIFY_CLIENT_ID}&scope=read_products,write_products&redirect_uri=${redirectUri}`;
   
   res.redirect(authUrl);
