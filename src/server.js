@@ -1,3 +1,4 @@
+// ...existing code...
 // Alias: /api/shopify/products → /api/debug/shopify/products
 app.get("/api/shopify/products", async (req, res) => {
   req.url = req.url.replace(/^\/api\/shopify\/products/, "/api/debug/shopify/products");
