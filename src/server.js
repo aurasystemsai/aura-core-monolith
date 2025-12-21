@@ -227,9 +227,18 @@ app.get("/api/health", (_req, res) => {
 //
 
 async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
+
   const safeShop = String(shop || "").trim();
   if (!safeShop.endsWith(".myshopify.com")) {
     throw new Error("Invalid shop. Expected *.myshopify.com");
+  }
+
+  // Log the token being used for debugging 401 errors (mask most of it for safety)
+  if (token) {
+    const masked = token.length > 10 ? token.slice(0, 6) + "..." + token.slice(-4) : token;
+    console.log(`[Core] Using Shopify Admin API token for ${safeShop}:`, masked);
+  } else {
+    console.warn(`[Core] No Shopify Admin API token provided for ${safeShop}`);
   }
 
   const ver = apiVersion || process.env.SHOPIFY_API_VERSION || "2025-10";
