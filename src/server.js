@@ -196,10 +196,20 @@ app.get("/debug/shopify/products", async (req, res) => {
     const limit = req.query.limit;
     const apiVersion = req.query.apiVersion;
 
-    const token =
+    let token =
       req.query.token ||
       process.env.SHOPIFY_ADMIN_TOKEN || // recommended for Render
       "";
+
+    // If token not provided via query or env, try stored tokens for this shop
+    if (!token && shop) {
+      try {
+        const stored = shopTokens.getToken(shop);
+        if (stored && stored.token) token = stored.token;
+      } catch (e) {
+        console.error("Failed to lookup stored shop token", e);
+      }
+    }
 
     if (!shop) {
       return res.status(400).json({ ok: false, error: "Missing ?shop=" });
@@ -208,7 +218,7 @@ app.get("/debug/shopify/products", async (req, res) => {
       return res.status(400).json({
         ok: false,
         error:
-          "Missing token. Pass ?token=shpat_... or set env SHOPIFY_ADMIN_TOKEN on Render.",
+          "Missing token. Pass ?token=shpat_... or set env SHOPIFY_ADMIN_TOKEN on Render, or install the app for this shop so the server stores its Admin token.",
       });
     }
 
@@ -223,21 +233,31 @@ app.get("/debug/shopify/products", async (req, res) => {
     });
   } catch (err) {
     console.error("[Core] debug shopify products error", err);
-    return res.status(500).json({ ok: false, error: err.message });
-  }
-});
+          let token =
+            req.query.token ||
+            process.env.SHOPIFY_ADMIN_TOKEN || // recommended for Render
+            "";
 
+          // If token not provided via query or env, try stored tokens for this shop
+          if (!token && shop) {
+            try {
+              const stored = shopTokens.getToken(shop);
+              if (stored && stored.token) token = stored.token;
+            } catch (e) {
+              console.error("Failed to lookup stored shop token", e);
+            }
+          }
 // Optional: same endpoint under /api for consistency
-app.get("/api/debug/shopify/products", async (req, res) => {
-  req.url = req.url.replace(/^\/api/, "");
-  return app._router.handle(req, res, () => {});
-});
-
-// Simple request logging
-app.use((req, _res, next) => {
-  console.log(
-    `[Core] ${req.method} ${req.url} ${req.headers["x-aura-project-id"] || ""}`
-  );
+          if (!shop) {
+            return res.status(400).json({ ok: false, error: "Missing ?shop=" });
+          }
+          if (!token) {
+            return res.status(400).json({
+              ok: false,
+              error:
+                "Missing token. Pass ?token=shpat_... or set env SHOPIFY_ADMIN_TOKEN on Render, or install the app for this shop so the server stores its Admin token.",
+            });
+          }
   next();
 });
 
