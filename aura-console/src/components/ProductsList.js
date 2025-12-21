@@ -1,38 +1,65 @@
 import React, { useState, useEffect } from 'react';
 
-const ProductsList = () => {
+
+const ProductsList = ({ shopDomain, shopToken }) => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // This component should receive shopDomain and shopToken as props, or get them from context or parent state
-  // For now, do not fetch with a hardcoded placeholder. Only fetch if valid shopDomain and token are provided.
-  // Example usage: <ProductsList shopDomain={shopDomain} shopToken={shopToken} />
-
-  // Remove the useEffect with the hardcoded fetch. The parent should control when/how to fetch.
-  }, []);
+  useEffect(() => {
+    if (!shopDomain || !shopToken) {
+      setProducts([]);
+      setError("Missing shop domain or token.");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    // Example fetch, replace with your actual endpoint
+    fetch(`/api/shopify/products?shop=${encodeURIComponent(shopDomain)}`, {
+      headers: {
+        Authorization: `Bearer ${shopToken}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch products");
+        return res.json();
+      })
+      .then((data) => {
+        setProducts(Array.isArray(data.products) ? data.products : []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message || "Error loading products");
+        setLoading(false);
+      });
+  }, [shopDomain, shopToken]);
 
   if (loading) {
     return <div>Loading products...</div>;
   }
 
-
   if (error) {
-    return <div>{error}</div>;
+    return <div style={{ color: 'red' }}>{error}</div>;
   }
 
   return (
     <div>
       <h1>Shopify Products</h1>
-      <ul>
-        {products.map((product) => (
-          <li key={product.id}>
-            <strong>{product.title}</strong> - ${product.variants && product.variants[0] ? product.variants[0].price : 'N/A'}
-          </li>
-        ))}
-      </ul>
+      {products.length === 0 ? (
+        <div>No products found.</div>
+      ) : (
+        <ul>
+          {products.map((product) => (
+            <li key={product.id}>
+              <strong>{product.title}</strong> - $
+              {product.variants && product.variants[0] ? product.variants[0].price : 'N/A'}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
-}
+};
 
 export default ProductsList;
