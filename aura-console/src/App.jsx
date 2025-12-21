@@ -3,10 +3,12 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import ProjectSetup from "./ProjectSetup";
 import ProjectSwitcher from "./ProjectSwitcher";
+
 import SystemHealthPanel from "./components/SystemHealthPanel";
 import DraftLibrary from "./components/DraftLibrary";
 import ContentHealthAuditor from "./components/ContentHealthAuditor";
 import ContentIngestor from "./components/ContentIngestor";
+import ProductsList from "./components/ProductsList";
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
@@ -749,6 +751,7 @@ function App() {
               "Content Health",
               "Fix Queue", // ✅ NEW
               "Content Ingest",
+              "Products", // <-- New tab
               "Compare domains",
               "Growth report",
               "Compare by countries",
@@ -875,6 +878,18 @@ function App() {
             </section>
           ) : pageTab === "Content Ingest" ? (
             <ContentIngestor coreUrl={coreUrl} projectId={project.id} />
+          ) : pageTab === "Products" ? (
+            <section style={{ marginTop: 10 }}>
+              <div className="card">
+                <div className="card-header">
+                  <h2 className="card-title">Shopify Products (Demo)</h2>
+                  <p className="card-subtitle">
+                    This is a test integration. Replace the shopDomain/shopToken with real values for your store.
+                  </p>
+                </div>
+                <ProductsList shopDomain={"aurasystemsai.myshopify.com"} shopToken={"demo_token_here"} />
+              </div>
+            </section>
           ) : pageTab === "Overview" ? (
             <>
               <section className="kpi-row">

@@ -28,6 +28,17 @@ function lsKey(projectId) {
 }
 
 export default function FixQueue({ coreUrl, projectId }) {
+  // Show message if no projectId
+  if (!projectId) {
+    return (
+      <div style={{ padding: 24, color: '#fff', background: '#1a1a1a', minHeight: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>No project selected</div>
+          <div style={{ fontSize: 14, opacity: 0.8 }}>Connect or create a project to use the Fix Queue.</div>
+        </div>
+      </div>
+    );
+  }
   const normalizedCoreUrl = useMemo(() => normaliseCoreUrl(coreUrl), [coreUrl]);
 
   // ---------- Persisted UI state ----------
@@ -521,6 +532,12 @@ export default function FixQueue({ coreUrl, projectId }) {
 
   return (
     <div className="fq-wrap">
+      {status === "error" && (
+        <div style={{ padding: 24, color: '#fff', background: '#7a2323', minHeight: 120, marginBottom: 16, borderRadius: 8 }}>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Could not load Fix Queue</div>
+          <div style={{ fontSize: 13, opacity: 0.85 }}>{error || "Unknown error"}</div>
+        </div>
+      )}
       <div className="fq-toolbar">
         <div className="fq-left">
           <div className="fq-filter">
