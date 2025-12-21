@@ -117,7 +117,15 @@ app.get("/shopify/auth/callback", async (req, res) => {
       headers: { "Content-Type": "application/json" },
     });
 
-    const tokenData = await tokenRes.json();
+    const text = await tokenRes.text();
+    let tokenData = null;
+    try {
+      tokenData = JSON.parse(text);
+    } catch (jsonErr) {
+      // Log the raw response for debugging
+      console.error("[Shopify OAuth] Non-JSON response from Shopify:", text);
+      throw new Error("Shopify token endpoint did not return JSON");
+    }
     const accessToken = tokenData.access_token;
 
     // Store the token for future API calls (can be stored in a session or database)
