@@ -13,8 +13,15 @@ const ConnectShopifyBanner = ({ shopDomain }) => (
     <p style={{ margin: "12px 0 20px 0", fontSize: 16 }}>
       To use all features, connect your Shopify store to AURA.
     </p>
-    <a
-      href={`https://${window.location.host}/shopify/auth?shop=${encodeURIComponent(shopDomain || "")}`}
+    <button
+      onClick={() => {
+        const url = `https://${window.location.host}/shopify/auth?shop=${encodeURIComponent(shopDomain || "")}`;
+        if (window.top) {
+          window.top.location.href = url;
+        } else {
+          window.location.href = url;
+        }
+      }}
       style={{
         display: "inline-block",
         padding: "12px 32px",
@@ -25,10 +32,12 @@ const ConnectShopifyBanner = ({ shopDomain }) => (
         fontWeight: 600,
         fontSize: 18,
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        border: 0,
+        cursor: "pointer",
       }}
     >
       Connect to Shopify
-    </a>
+    </button>
   </div>
 );
 

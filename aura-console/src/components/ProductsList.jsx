@@ -47,8 +47,15 @@ const ProductsList = ({ shopDomain, shopToken }) => {
       <div>
         <h1>Shopify Products</h1>
         <div style={{ margin: '24px 0' }}>
-          <a
-            href={`https://${window.location.host}/shopify/auth?shop=${encodeURIComponent(shopDomain || '')}`}
+          <button
+            onClick={() => {
+              const url = `https://${window.location.host}/shopify/auth?shop=${encodeURIComponent(shopDomain || '')}`;
+              if (window.top) {
+                window.top.location.href = url;
+              } else {
+                window.location.href = url;
+              }
+            }}
             style={{
               display: 'inline-block',
               padding: '12px 24px',
@@ -58,10 +65,12 @@ const ProductsList = ({ shopDomain, shopToken }) => {
               textDecoration: 'none',
               fontWeight: 600,
               fontSize: 16,
+              border: 0,
+              cursor: 'pointer',
             }}
           >
             Connect to Shopify
-          </a>
+          </button>
         </div>
         <div style={{ color: '#aaa', fontSize: 13 }}>
           Connect your Shopify store to fetch products.
