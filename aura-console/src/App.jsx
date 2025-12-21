@@ -8,7 +8,7 @@ import SystemHealthPanel from "./components/SystemHealthPanel";
 import DraftLibrary from "./components/DraftLibrary";
 import ContentHealthAuditor from "./components/ContentHealthAuditor";
 import ContentIngestor from "./components/ContentIngestor";
-import ProductsList from "./components/ProductsList";
+import ProductsList from "./components/ProductsList.jsx";
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
