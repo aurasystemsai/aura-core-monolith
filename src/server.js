@@ -404,9 +404,18 @@ app.get("/api/shopify/products", async (req, res) => {
     const limit = req.query.limit;
     const apiVersion = req.query.apiVersion;
 
-    let token = req.query.token || process.env.SHOPIFY_ADMIN_TOKEN || "";
+    // Prefer Bearer token from Authorization header
+    let token = null;
+    const authHeader = req.headers["authorization"] || req.headers["Authorization"];
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.substring(7);
+    }
+    // Fallback to query param
+    if (!token) {
+      token = req.query.token || process.env.SHOPIFY_ADMIN_TOKEN || "";
+    }
+    // Fallback to shopTokens store
     if (!token && shop) {
-      // Try to get the token from the shopTokens store
       try {
         const shopTokensStore = require("./core/shopTokens");
         token = shopTokensStore.getToken(shop);
