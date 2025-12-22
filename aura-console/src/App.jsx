@@ -273,19 +273,23 @@ function App() {
         domain: localStorage.getItem("auraProjectDomain") || "—",
         platform: localStorage.getItem("auraPlatform") || "other",
       });
-      return;
-    }
-    // No project found, auto-create one
-    setAutoCreating(true);
-    fetch(`${coreUrl}/projects`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: "My Project",
-        domain: window.location.hostname || "localhost",
-        platform: "shopify",
-      }),
-    })
+      return (
+        <>
+          <div>
+            {/* ...existing code... */}
+          </div>
+        </>
+      );
+        }
+        fetch(`${coreUrl}/projects`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "My Project",
+            domain: shopDomain,
+            platform: "shopify",
+          }),
+        })
       .then(async (res) => {
         if (!res.ok) throw new Error("Failed to create project");
         const data = await res.json();
@@ -988,7 +992,7 @@ function App() {
                   </p>
                 </div>
                 <ProductsList 
-                  shopDomain={project && project.domain}
+                  shopDomain={localStorage.getItem("shopDomain") || (project && project.domain)}
                   shopToken={localStorage.getItem("shopToken")}
                 />
               </div>
@@ -1823,8 +1827,11 @@ function App() {
       {!localStorage.getItem("shopToken") && (
         <ConnectShopifyBanner shopDomain={project && project.domain} />
       )}
+
+
     </div>
     </>
+  );
 }
 
 export default App;
