@@ -82,6 +82,26 @@ function App() {
   // Shopify products state
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Shopify OAuth: check for token/shop in URL after redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shop = params.get("shop");
+    const token = params.get("token") || params.get("access_token") || params.get("shopToken");
+    if (shop && token) {
+      localStorage.setItem("shopDomain", shop);
+      localStorage.setItem("shopToken", token);
+      // Remove token/shop from URL for cleanliness
+      const url = new URL(window.location.href);
+      url.searchParams.delete("shop");
+      url.searchParams.delete("token");
+      url.searchParams.delete("access_token");
+      url.searchParams.delete("shopToken");
+      window.history.replaceState({}, document.title, url.pathname + url.search);
+      // Optionally, force a re-render
+      window.location.reload();
+    }
+  }, []);
   
   // Which engine is active in the UI
   const [activeEngine, setActiveEngine] = useState("product");

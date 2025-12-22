@@ -1,4 +1,5 @@
 import React from "react";
+import { getShopifyAppBridge } from "../shopifyAppBridge";
 
 const ConnectShopifyBanner = ({ shopDomain }) => (
   <div style={{
@@ -16,6 +17,17 @@ const ConnectShopifyBanner = ({ shopDomain }) => (
     <button
       onClick={() => {
         const url = `https://${window.location.host}/shopify/auth?shop=${encodeURIComponent(shopDomain || "")}`;
+        // Try App Bridge redirect if embedded
+        try {
+          const app = getShopifyAppBridge(shopDomain);
+          if (app) {
+            import('@shopify/app-bridge/actions').then(({ Redirect }) => {
+              const redirect = Redirect.create(app);
+              redirect.dispatch(Redirect.Action.REMOTE, url);
+            });
+            return;
+          }
+        } catch (e) { /* fallback below */ }
         if (window.top) {
           window.top.location.href = url;
         } else {
