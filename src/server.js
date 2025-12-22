@@ -374,10 +374,21 @@ app.get("/api/shopify/products", async (req, res) => {
     const limit = req.query.limit;
     const apiVersion = req.query.apiVersion;
 
-    const token =
-      req.query.token ||
-      process.env.SHOPIFY_ADMIN_TOKEN || // recommended for Render
-      "";
+    let token = req.query.token || process.env.SHOPIFY_ADMIN_TOKEN || "";
+    if (!token && shop) {
+      // Try to get the token from the shopTokens store
+      try {
+        const shopTokensStore = require("./core/shopTokens");
+        token = shopTokensStore.getToken(shop);
+        if (!token) {
+          console.error(`[Core] No token found for shop: ${shop}`);
+        } else {
+          console.log(`[Core] Using saved token for shop: ${shop}`);
+        }
+      } catch (err) {
+        console.error("[Core] Error loading shop token store", err);
+      }
+    }
 
     if (!shop) {
       return res.status(400).json({ ok: false, error: "Missing ?shop=" });
@@ -386,7 +397,7 @@ app.get("/api/shopify/products", async (req, res) => {
       return res.status(400).json({
         ok: false,
         error:
-          "Missing token. Pass ?token=shpat_... or set env SHOPIFY_ADMIN_TOKEN on Render.",
+          "Missing token. Pass ?token=shpat_... or set env SHOPIFY_ADMIN_TOKEN on Render. (Or connect your store via OAuth)",
       });
     }
 
