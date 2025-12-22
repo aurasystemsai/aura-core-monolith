@@ -15,9 +15,11 @@ const ProductsList = ({ shopDomain, shopToken }) => {
       setLoading(false);
       return;
     }
+    // Sanitize shop domain: remove protocol and trailing slash
+    let cleanShop = shopDomain.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
     setLoading(true);
     setError(null);
-    fetch(`/api/shopify/products?shop=${encodeURIComponent(shopDomain)}`, {
+    fetch(`/api/shopify/products?shop=${encodeURIComponent(cleanShop)}`, {
       headers: {
         Authorization: `Bearer ${shopToken}`,
       },
