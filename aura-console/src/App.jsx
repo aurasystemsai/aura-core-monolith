@@ -83,22 +83,34 @@ function App() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Shopify OAuth: check for token/shop in URL after redirect
+  // Shopify OAuth: check for token/shop in URL after redirect, including embedded return_to param
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const shop = params.get("shop");
-    const token = params.get("token") || params.get("access_token") || params.get("shopToken");
+    let shop = params.get("shop");
+    let token = params.get("token") || params.get("access_token") || params.get("shopToken");
+
+    // If not found, check for return_to param (from embedded redirect)
+    if ((!shop || !token) && params.get("return_to")) {
+      try {
+        const returnToUrl = new URL(decodeURIComponent(params.get("return_to")));
+        shop = returnToUrl.searchParams.get("shop");
+        token = returnToUrl.searchParams.get("token") || returnToUrl.searchParams.get("access_token") || returnToUrl.searchParams.get("shopToken");
+      } catch (e) {
+        // ignore
+      }
+    }
+
     if (shop && token) {
       localStorage.setItem("shopDomain", shop);
       localStorage.setItem("shopToken", token);
-      // Remove token/shop from URL for cleanliness
+      // Remove token/shop/return_to from URL for cleanliness
       const url = new URL(window.location.href);
       url.searchParams.delete("shop");
       url.searchParams.delete("token");
       url.searchParams.delete("access_token");
       url.searchParams.delete("shopToken");
+      url.searchParams.delete("return_to");
       window.history.replaceState({}, document.title, url.pathname + url.search);
-      // Optionally, force a re-render
       window.location.reload();
     }
   }, []);
