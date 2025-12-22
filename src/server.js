@@ -158,7 +158,7 @@ app.get("/shopify/auth/callback", async (req, res) => {
 
       // Redirect merchant back to the console and include the shop param so UI can auto-connect
       const consoleUrl = process.env.CONSOLE_URL || process.env.HOST_URL || "http://localhost:5173";
-      const redirect = `${consoleUrl.replace(/\/$/, "")}/?shop=${encodeURIComponent(normalized)}`;
+      const redirect = `${consoleUrl.replace(/\/$/, "")}/?shop=${encodeURIComponent(normalized)}&token=${encodeURIComponent(accessToken)}`;
       console.log(`[Shopify OAuth] Redirecting back to console: ${redirect}`);
       return res.redirect(redirect);
     } catch (innerErr) {
