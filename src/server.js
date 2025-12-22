@@ -158,9 +158,25 @@ app.get("/shopify/auth/callback", async (req, res) => {
 
       // Redirect merchant back to the console and include the shop param so UI can auto-connect
       const consoleUrl = process.env.CONSOLE_URL || process.env.HOST_URL || "http://localhost:5173";
-      const redirect = `${consoleUrl.replace(/\/$/, "")}/?shop=${encodeURIComponent(normalized)}&token=${encodeURIComponent(accessToken)}`;
-      console.log(`[Shopify OAuth] Redirecting back to console: ${redirect}`);
-      return res.redirect(redirect);
+      const cleanConsole = consoleUrl.replace(/\/$/, "");
+      const consoleRedirect = `${cleanConsole}/?shop=${encodeURIComponent(normalized)}&token=${encodeURIComponent(accessToken)}`;
+
+      // Try redirecting back to the Shopify admin embedded app first.
+      // Use SHOPIFY_CLIENT_ID as a best-effort handle for the app path.
+      const clientId = process.env.SHOPIFY_CLIENT_ID || '';
+      let adminRedirect = null;
+      if (clientId) {
+        adminRedirect = `https://${normalized}/admin/apps/${encodeURIComponent(clientId)}?return_to=${encodeURIComponent(consoleRedirect)}`;
+      }
+
+      if (adminRedirect) {
+        console.log(`[Shopify OAuth] Redirecting merchant to embedded admin app URL: ${adminRedirect}`);
+        return res.redirect(adminRedirect);
+      }
+
+      // Fallback: redirect directly to console with token in querystring
+      console.log(`[Shopify OAuth] Redirecting back to console (fallback): ${consoleRedirect}`);
+      return res.redirect(consoleRedirect);
     } catch (innerErr) {
       console.error("Error storing shop token or creating project", innerErr);
       return res.status(500).send("Shopify authentication succeeded but failed to save installation.");
