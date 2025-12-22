@@ -887,7 +887,10 @@ function App() {
                     This is a test integration. Replace the shopDomain/shopToken with real values for your store.
                   </p>
                 </div>
-                <ProductsList shopDomain={"aurasystemsai.myshopify.com"} shopToken={"demo_token_here"} />
+                <ProductsList 
+                  shopDomain={project && project.domain}
+                  shopToken={localStorage.getItem("shopToken")}
+                />
               </div>
             </section>
           ) : pageTab === "Overview" ? (
