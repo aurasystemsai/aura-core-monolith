@@ -1,9 +1,19 @@
+
 // Trigger redeploy: trivial comment
 // aura-console/src/App.jsx
-import React, { useState, useEffect } from "react";
 
-// Simple global toast system
-function Toast({ message, type = "info", onClose }) {
+import React, { useState, useEffect } from "react";
+import ProjectSwitcher from "./ProjectSwitcher";
+import ConnectShopifyBanner from "./components/ConnectShopifyBanner.jsx";
+import ContentHealthAuditor from "./components/ContentHealthAuditor.jsx";
+import FixQueue from "./components/FixQueue.jsx";
+import ContentIngestor from "./components/ContentIngestor.jsx";
+import ProductsList from "./components/ProductsList.jsx";
+import SystemHealthPanel from "./components/SystemHealthPanel.jsx";
+import DraftLibrary from "./components/DraftLibrary.jsx";
+
+// Toast component
+function Toast({ message, type, onClose }) {
   if (!message) return null;
   return (
     <div style={{
@@ -33,6 +43,8 @@ function Toast({ message, type = "info", onClose }) {
   );
 }
 
+// ...existing code...
+
 // Global spinner overlay
 function SpinnerOverlay({ show, label }) {
   if (!show) return null;
@@ -57,21 +69,15 @@ function SpinnerOverlay({ show, label }) {
   );
 }
   // Toast state
+// ...existing code...
+
+function App() {
+
   const [toast, setToast] = useState({ message: '', type: 'info' });
   const showToast = (message, type = 'info') => {
     setToast({ message, type });
     setTimeout(() => setToast({ message: '', type: 'info' }), 4000);
   };
-import "./App.css";
-import ProjectSetup from "./ProjectSetup";
-import ProjectSwitcher from "./ProjectSwitcher";
-
-import SystemHealthPanel from "./components/SystemHealthPanel";
-import DraftLibrary from "./components/DraftLibrary";
-import ContentHealthAuditor from "./components/ContentHealthAuditor";
-import ContentIngestor from "./components/ContentIngestor";
-import ProductsList from "./components/ProductsList.jsx";
-import ConnectShopifyBanner from "./components/ConnectShopifyBanner";
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
@@ -274,23 +280,17 @@ function App() {
         domain: localStorage.getItem("auraProjectDomain") || "—",
         platform: localStorage.getItem("auraPlatform") || "other",
       });
-      return (
-        <>
-          <div>
-            {/* ...existing code... */}
-          </div>
-        </>
-      );
-        }
-        fetch(`${coreUrl}/projects`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: "My Project",
-            domain: shopDomain,
-            platform: "shopify",
-          }),
-        })
+      return;
+    }
+    fetch(`${coreUrl}/projects`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "My Project",
+        domain: shopDomain,
+        platform: "shopify",
+      }),
+    })
       .then(async (res) => {
         if (!res.ok) throw new Error("Failed to create project");
         const data = await res.json();
@@ -729,6 +729,7 @@ function App() {
           </div>
         </div>
 
+
         <nav className="side-nav-menu">
           <div className="side-nav-section-label">Suites</div>
           <button className="side-nav-item side-nav-item--active">
@@ -748,7 +749,6 @@ function App() {
             Developers
           </button>
         </nav>
-
         <ProjectSwitcher
           coreUrl={coreUrl}
           currentProject={project}
@@ -1828,11 +1828,9 @@ function App() {
       {!localStorage.getItem("shopToken") && (
         <ConnectShopifyBanner shopDomain={project && project.domain} />
       )}
-
-
     </div>
-    </>
-  );
+  </>);
+}
 }
 
 export default App;
