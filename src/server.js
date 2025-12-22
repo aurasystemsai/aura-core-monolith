@@ -133,25 +133,33 @@ app.get("/shopify/auth/callback", async (req, res) => {
 
     // Store the token for future API calls (can be stored in a session or database)
     try {
-      // persist admin token for this shop
       if (accessToken) {
+        console.log(`[Shopify OAuth] Saving token for shop: ${shop}`);
         shopTokens.upsertToken(shop, accessToken);
+        console.log(`[Shopify OAuth] Token saved for shop: ${shop}`);
+      } else {
+        console.error(`[Shopify OAuth] No access token received for shop: ${shop}`);
       }
 
       // ensure a project exists for this shop (auto-create)
       const normalized = String(shop).trim();
       let project = projectsCore.getProjectByDomain(normalized);
       if (!project) {
+        console.log(`[Shopify OAuth] Creating project for shop: ${normalized}`);
         project = projectsCore.createProject({
           name: normalized,
           domain: normalized,
           platform: "shopify",
         });
+        console.log(`[Shopify OAuth] Project created:`, project);
+      } else {
+        console.log(`[Shopify OAuth] Project already exists for shop: ${normalized}`);
       }
 
       // Redirect merchant back to the console and include the shop param so UI can auto-connect
       const consoleUrl = process.env.CONSOLE_URL || process.env.HOST_URL || "http://localhost:5173";
       const redirect = `${consoleUrl.replace(/\/$/, "")}/?shop=${encodeURIComponent(normalized)}`;
+      console.log(`[Shopify OAuth] Redirecting back to console: ${redirect}`);
       return res.redirect(redirect);
     } catch (innerErr) {
       console.error("Error storing shop token or creating project", innerErr);
