@@ -1,3 +1,34 @@
+// Example Shopify blog post input for testing
+const exampleInput = {
+  postTitle: "How to Style Gold Huggie Earrings",
+  postSummary: "A guide to styling gold huggie earrings for any occasion.",
+  brand: "AURA Demo Store",
+  tone: "modern, confident, UK English",
+  topics: ["jewellery", "fashion", "earrings"],
+  handle: "how-to-style-gold-huggie-earrings",
+  tags: ["gold", "earrings", "jewellery"],
+  collections: ["earrings", "style-guides"],
+  metafields: { "material": "gold vermeil", "feature": "hypoallergenic" },
+  locale: "en-GB"
+};
+
+// CLI/test runner
+if (require.main === module) {
+  const arg = process.argv[2];
+  if (arg === '--help') {
+    console.log(`\nBlog SEO Engine CLI\nUsage: node index.js [--help|--example]\n--example   Run with example Shopify blog post data\n--help      Show this help message\n`);
+    process.exit(0);
+  }
+  const testInput = arg === '--example' ? exampleInput : {};
+  exports.run(testInput).then(res => {
+    console.log(JSON.stringify(res, null, 2));
+  }).catch(err => {
+    console.error('Error:', err);
+    process.exit(1);
+  });
+}
+
+exports.exampleInput = exampleInput;
 // src/tools/blog-seo/index.js
 // ----------------------------------------
 // Blog SEO Engine tool for AURA Core
