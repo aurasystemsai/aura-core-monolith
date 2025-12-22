@@ -1824,7 +1824,6 @@ function App() {
         <ConnectShopifyBanner shopDomain={project && project.domain} />
       )}
     </div>
-      </div>
     </>
 }
 
