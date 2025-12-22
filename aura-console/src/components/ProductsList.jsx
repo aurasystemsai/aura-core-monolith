@@ -41,8 +41,8 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   }, [fetchProducts]);
 
 
-  // Show connect button if no token
-  if (!shopToken) {
+  // Show connect button if no token and no products loaded
+  if (!shopToken && (!products || products.length === 0)) {
     return (
       <div>
         <h1>Shopify Products</h1>
@@ -95,7 +95,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
             {products.map((product) => (
               <li key={product.id}>
                 <strong>{product.title}</strong> - $
-                {product.variants && product.variants[0] ? product.variants[0].price : 'N/A'}
+                {product.price || 'N/A'}
               </li>
             ))}
           </ul>

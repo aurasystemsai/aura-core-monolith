@@ -254,23 +254,30 @@ async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
 
   const first = Number.isFinite(Number(limit)) ? Math.min(Number(limit), 50) : 10;
 
-  const query = `
-    query Products($first: Int!) {
-      products(first: $first) {
-        edges {
-          node {
-            id
-            title
-            handle
-            status
-            totalInventory
-            createdAt
-            updatedAt
+    const query = `
+      query Products($first: Int!) {
+        products(first: $first) {
+          edges {
+            node {
+              id
+              title
+              handle
+              status
+              totalInventory
+              createdAt
+              updatedAt
+              variants(first: 1) {
+                edges {
+                  node {
+                    price
+                  }
+                }
+              }
+            }
           }
         }
       }
-    }
-  `;
+    `;
 
   const resp = await fetch(url, {
     method: "POST",
@@ -303,7 +310,14 @@ async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
   }
 
   const edges = json?.data?.products?.edges || [];
-  const products = edges.map((e) => e.node);
+    const products = edges.map((e) => {
+      const node = e.node;
+      let price = null;
+      if (node.variants && node.variants.edges && node.variants.edges.length > 0) {
+        price = node.variants.edges[0].node.price;
+      }
+      return { ...node, price };
+    });
 
   return { products, rawCount: products.length };
 }
