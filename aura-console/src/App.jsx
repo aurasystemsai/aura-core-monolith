@@ -1,3 +1,4 @@
+// Trigger redeploy: trivial comment
 // aura-console/src/App.jsx
 import React, { useState, useEffect } from "react";
 
