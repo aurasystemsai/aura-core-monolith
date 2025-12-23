@@ -2,27 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
-// Simple spinner SVG
-const Spinner = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', margin: '24px 0' }}>
-    <svg width="32" height="32" viewBox="0 0 50 50">
-      <circle cx="25" cy="25" r="20" fill="none" stroke="#5c6ac4" strokeWidth="5" strokeDasharray="31.4 31.4" strokeLinecap="round">
-        <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite" />
-      </circle>
-    </svg>
-  </div>
-);
-
-// Skeleton loader for product list
-const ProductSkeleton = () => (
-  <ul>
-    {[1,2,3,4,5].map((i) => (
-      <li key={i} style={{ background: '#f3f4f6', borderRadius: 6, height: 28, margin: '8px 0', width: '60%', animation: 'pulse 1.5s infinite' }} />
-    ))}
-    <style>{`@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }`}</style>
-  </ul>
-);
-
 
 const ProductsList = ({ shopDomain, shopToken }) => {
   const [products, setProducts] = useState([]);
@@ -36,11 +15,9 @@ const ProductsList = ({ shopDomain, shopToken }) => {
       setLoading(false);
       return;
     }
-    // Sanitize shop domain: remove protocol and trailing slash
-    let cleanShop = shopDomain.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
     setLoading(true);
     setError(null);
-    fetch(`/api/shopify/products?shop=${encodeURIComponent(cleanShop)}`, {
+    fetch(`/api/shopify/products?shop=${encodeURIComponent(shopDomain)}`, {
       headers: {
         Authorization: `Bearer ${shopToken}`,
       },
@@ -64,8 +41,8 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   }, [fetchProducts]);
 
 
-  // Show connect button if no token and no products loaded
-  if (!shopToken && (!products || products.length === 0)) {
+  // Show connect button if no token
+  if (!shopToken) {
     return (
       <div>
         <h1>Shopify Products</h1>
@@ -79,8 +56,18 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                 window.location.href = url;
               }
             }}
-            className="button button--primary"
-            style={{ minWidth: 180, fontSize: 16 }}
+            style={{
+              display: 'inline-block',
+              padding: '12px 24px',
+              background: '#5c6ac4',
+              color: '#fff',
+              borderRadius: 6,
+              textDecoration: 'none',
+              fontWeight: 600,
+              fontSize: 16,
+              border: 0,
+              cursor: 'pointer',
+            }}
           >
             Connect to Shopify
           </button>
@@ -95,26 +82,11 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   return (
     <div>
       <h1>Shopify Products</h1>
-      <button
-        onClick={fetchProducts}
-        disabled={loading}
-        className="button button--primary"
-        style={{ marginBottom: 16, minWidth: 120 }}
-      >
-        {loading ? <Spinner /> : 'Refresh'}
+      <button onClick={fetchProducts} disabled={loading} style={{ marginBottom: 16 }}>
+        {loading ? 'Refreshing...' : 'Refresh'}
       </button>
-      {loading && <ProductSkeleton />}
-      {error && (
-        <div style={{
-          background: '#fee2e2',
-          color: '#991b1b',
-          border: '1px solid #fecaca',
-          borderRadius: 8,
-          padding: '10px 16px',
-          margin: '16px 0',
-          fontWeight: 500,
-        }}>{error}</div>
-      )}
+      {loading && <div>Loading products...</div>}
+      {error && <div style={{ color: 'red' }}>{error}</div>}
       {!loading && !error && (
         products.length === 0 ? (
           <div>No products found.</div>
@@ -123,7 +95,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
             {products.map((product) => (
               <li key={product.id}>
                 <strong>{product.title}</strong> - $
-                {product.price || 'N/A'}
+                {product.variants && product.variants[0] ? product.variants[0].price : 'N/A'}
               </li>
             ))}
           </ul>

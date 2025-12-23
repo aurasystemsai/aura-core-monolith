@@ -1,36 +1,3 @@
-// Example Shopify blog plan input for testing
-const exampleInput = {
-  brand: "AURA Demo Store",
-  niche: "Jewellery",
-  audience: "Fashion-forward women",
-  cadence: "weekly",
-  themes: ["gold jewellery", "earring styling", "gift guides"],
-  tone: "modern, confident, UK English",
-  market: "UK",
-  handle: "weekly-blog-content-plan",
-  tags: ["gold", "earrings", "jewellery"],
-  collections: ["earrings", "style-guides"],
-  metafields: { "material": "gold vermeil", "feature": "hypoallergenic" },
-  locale: "en-GB"
-};
-
-// CLI/test runner
-if (require.main === module) {
-  const arg = process.argv[2];
-  if (arg === '--help') {
-    console.log(`\nWeekly Blog Content Engine CLI\nUsage: node index.js [--help|--example]\n--example   Run with example Shopify blog plan data\n--help      Show this help message\n`);
-    process.exit(0);
-  }
-  const testInput = arg === '--example' ? exampleInput : {};
-  exports.run(testInput).then(res => {
-    console.log(JSON.stringify(res, null, 2));
-  }).catch(err => {
-    console.error('Error:', err);
-    process.exit(1);
-  });
-}
-
-exports.exampleInput = exampleInput;
 // src/tools/weekly-blog-content-engine/index.js
 // ------------------------------------------------------
 // Weekly Blog Content Engine for AURA Core

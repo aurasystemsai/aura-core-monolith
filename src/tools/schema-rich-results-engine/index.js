@@ -5,17 +5,6 @@
 
 const key = "schema-rich-results-engine";
 
-// Example Shopify product input for testing
-const exampleInput = {
-  productTitle: "Gold Vermeil Huggie Earrings",
-  productDescription: "Classic gold huggie hoops, perfect for everyday wear. Hypoallergenic, water-safe, and tarnish-resistant.",
-  handle: "gold-vermeil-huggie-earrings",
-  tags: ["gold", "earrings", "jewellery"],
-  collections: ["earrings", "best-sellers"],
-  metafields: { "material": "gold vermeil", "feature": "hypoallergenic" },
-  locale: "en-GB"
-};
-
 async function run(input = {}, ctx = {}) {
   const env = ctx.environment || process.env.NODE_ENV || "development";
   const now = new Date().toISOString();
@@ -30,12 +19,6 @@ async function run(input = {}, ctx = {}) {
     "@id": `${url}#${type.toLowerCase()}`,
     "url": url,
     "name": name,
-    "description": input.productDescription || "",
-    "sku": input.handle || "",
-    "tags": input.tags || [],
-    "collections": input.collections || [],
-    "metafields": input.metafields || {},
-    "locale": input.locale || "en-GB",
   };
 
   return {
@@ -55,20 +38,4 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-// CLI/test runner
-if (require.main === module) {
-  const arg = process.argv[2];
-  if (arg === '--help') {
-    console.log(`\nSchema Rich Results Engine CLI\nUsage: node index.js [--help|--example]\n--example   Run with example Shopify product data\n--help      Show this help message\n`);
-    process.exit(0);
-  }
-  const testInput = arg === '--example' ? exampleInput : {};
-  run(testInput).then(res => {
-    console.log(JSON.stringify(res, null, 2));
-  }).catch(err => {
-    console.error('Error:', err);
-    process.exit(1);
-  });
-}
-
-module.exports = { key, run, exampleInput };
+module.exports = { key, run };

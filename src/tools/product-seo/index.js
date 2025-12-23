@@ -39,17 +39,12 @@ async function generateSEOOnce(payload) {
     brand,
     tone,
     useCasesText,
-    handle,
-    tags,
-    collections,
-    metafields,
-    locale,
   } = payload;
 
   const prompt = `
-You are an ecommerce SEO specialist for a Shopify store.
+You are an ecommerce SEO specialist for a jewellery brand.
 
-Write search-optimised product SEO in clear, natural ${locale || "UK English"}.
+Write search-optimised product SEO in clear, natural UK English.
 Avoid clickbait, all-caps and emojis.
 
 Your target scoring bands (ideal):
@@ -66,11 +61,6 @@ Description: ${productDescription}
 Brand: ${brand || "N/A"}
 Tone of voice: ${tone || "modern, confident, UK English"}
 Use cases: ${useCasesText || "N/A"}
-Shopify handle: ${handle || "N/A"}
-Tags: ${Array.isArray(tags) ? tags.join(", ") : tags || "N/A"}
-Collections: ${Array.isArray(collections) ? collections.join(", ") : collections || "N/A"}
-Metafields: ${metafields ? JSON.stringify(metafields) : "N/A"}
-Locale: ${locale || "en-GB"}
 
 OUTPUT FORMAT
 -------------
@@ -80,12 +70,7 @@ Return STRICT JSON only in this exact shape, nothing else:
   "title": "SEO product title",
   "metaDescription": "Meta description text",
   "slug": "url-slug-here",
-  "keywords": ["keyword one", "keyword two"],
-  "handle": "shopify-product-handle",
-  "tags": ["tag1", "tag2"],
-  "collections": ["collection1", "collection2"],
-  "metafields": { "namespace.key": "value" },
-  "locale": "en-GB"
+  "keywords": ["keyword one", "keyword two"]
 }
   `.trim();
 
@@ -134,11 +119,6 @@ exports.run = async function run(input, ctx = {}) {
     brand = "",
     tone = "",
     useCases = [],
-    handle = "",
-    tags = [],
-    collections = [],
-    metafields = {},
-    locale = "en-GB",
   } = input || {};
 
   if (!productTitle || !productDescription) {
@@ -155,11 +135,6 @@ exports.run = async function run(input, ctx = {}) {
     brand,
     tone,
     useCasesText,
-    handle,
-    tags,
-    collections,
-    metafields,
-    locale,
   };
 
   const maxAttempts = 4;
@@ -225,11 +200,6 @@ exports.run = async function run(input, ctx = {}) {
       metaDescription: final.metaDescription || "",
       slug: final.slug || final.handle || "",
       keywords: Array.isArray(final.keywords) ? final.keywords : [],
-      handle: final.handle || handle || "",
-      tags: Array.isArray(final.tags) ? final.tags : tags,
-      collections: Array.isArray(final.collections) ? final.collections : collections,
-      metafields: typeof final.metafields === "object" ? final.metafields : metafields,
-      locale: final.locale || locale,
       // optional debug so *you* can see if it hit perfect; users never see this.
       _debug: {
         titleChars: best.titleLen,

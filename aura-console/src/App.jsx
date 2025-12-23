@@ -1,66 +1,5 @@
 // aura-console/src/App.jsx
 import React, { useState, useEffect } from "react";
-
-// Simple global toast system
-function Toast({ message, type = "info", onClose }) {
-  if (!message) return null;
-  return (
-    <div style={{
-      position: 'fixed',
-      top: 24,
-      right: 24,
-      zIndex: 9999,
-      background: type === 'error' ? '#fee2e2' : '#e0e7ff',
-      color: type === 'error' ? '#991b1b' : '#22223b',
-      border: `1px solid ${type === 'error' ? '#fecaca' : '#c7d2fe'}`,
-      borderRadius: 10,
-      padding: '14px 28px',
-      fontWeight: 600,
-      fontSize: 16,
-      boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
-      minWidth: 220,
-      display: 'flex',
-      alignItems: 'center',
-      gap: 16,
-      animation: 'fadein 0.3s',
-    }}>
-      <span style={{ fontSize: 20 }}>{type === 'error' ? '⚠️' : '✅'}</span>
-      <span>{message}</span>
-      <button onClick={onClose} style={{ marginLeft: 12, background: 'none', border: 'none', color: '#5c6ac4', fontWeight: 700, cursor: 'pointer', fontSize: 18 }}>×</button>
-      <style>{`@keyframes fadein { from { opacity: 0; top: 0px; } to { opacity: 1; top: 24px; } }`}</style>
-    </div>
-  );
-}
-
-// Global spinner overlay
-function SpinnerOverlay({ show, label }) {
-  if (!show) return null;
-  return (
-    <div style={{
-      position: 'fixed',
-      top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(20, 23, 39, 0.32)',
-      zIndex: 9998,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'column',
-    }}>
-      <svg width="56" height="56" viewBox="0 0 50 50">
-        <circle cx="25" cy="25" r="20" fill="none" stroke="#5c6ac4" strokeWidth="6" strokeDasharray="31.4 31.4" strokeLinecap="round">
-          <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite" />
-        </circle>
-      </svg>
-      {label && <div style={{ marginTop: 18, color: '#e0e7ff', fontSize: 18, fontWeight: 600 }}>{label}</div>}
-    </div>
-  );
-}
-  // Toast state
-  const [toast, setToast] = useState({ message: '', type: 'info' });
-  const showToast = (message, type = 'info') => {
-    setToast({ message, type });
-    setTimeout(() => setToast({ message: '', type: 'info' }), 4000);
-  };
 import "./App.css";
 import ProjectSetup from "./ProjectSetup";
 import ProjectSwitcher from "./ProjectSwitcher";
@@ -143,38 +82,6 @@ function App() {
   // Shopify products state
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // Shopify OAuth: check for token/shop in URL after redirect, including embedded return_to param
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    let shop = params.get("shop");
-    let token = params.get("token") || params.get("access_token") || params.get("shopToken");
-
-    // If not found, check for return_to param (from embedded redirect)
-    if ((!shop || !token) && params.get("return_to")) {
-      try {
-        const returnToUrl = new URL(decodeURIComponent(params.get("return_to")));
-        shop = returnToUrl.searchParams.get("shop");
-        token = returnToUrl.searchParams.get("token") || returnToUrl.searchParams.get("access_token") || returnToUrl.searchParams.get("shopToken");
-      } catch (e) {
-        // ignore
-      }
-    }
-
-    if (shop && token) {
-      localStorage.setItem("shopDomain", shop);
-      localStorage.setItem("shopToken", token);
-      // Remove token/shop/return_to from URL for cleanliness
-      const url = new URL(window.location.href);
-      url.searchParams.delete("shop");
-      url.searchParams.delete("token");
-      url.searchParams.delete("access_token");
-      url.searchParams.delete("shopToken");
-      url.searchParams.delete("return_to");
-      window.history.replaceState({}, document.title, url.pathname + url.search);
-      window.location.reload();
-    }
-  }, []);
   
   // Which engine is active in the UI
   const [activeEngine, setActiveEngine] = useState("product");
@@ -273,23 +180,19 @@ function App() {
         domain: localStorage.getItem("auraProjectDomain") || "—",
         platform: localStorage.getItem("auraPlatform") || "other",
       });
-      return (
-        <>
-          <div>
-            {/* ...existing code... */}
-          </div>
-        </>
-      );
-        }
-        fetch(`${coreUrl}/projects`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: "My Project",
-            domain: shopDomain,
-            platform: "shopify",
-          }),
-        })
+      return;
+    }
+    // No project found, auto-create one
+    setAutoCreating(true);
+    fetch(`${coreUrl}/projects`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "My Project",
+        domain: window.location.hostname || "localhost",
+        platform: "shopify",
+      }),
+    })
       .then(async (res) => {
         if (!res.ok) throw new Error("Failed to create project");
         const data = await res.json();
@@ -420,7 +323,6 @@ function App() {
 
     setIsRunning(true);
     setRunError(null);
-    showToast('Running engine...', 'info');
 
     const toolId = currentEngine.toolId;
 
@@ -475,7 +377,6 @@ function App() {
 
       if (!res.ok) {
         const text = await res.text();
-        showToast(`Core API error (${res.status}): ${text || res.statusText}`, 'error');
         throw new Error(
           `Core API error (${res.status}): ${text || res.statusText}`
         );
@@ -485,10 +386,7 @@ function App() {
       setRawJson(JSON.stringify(data, null, 2));
 
       const output = data?.result?.output || data?.output || {};
-      if (!output) {
-        showToast('No output returned from tool', 'error');
-        throw new Error("No output returned from tool");
-      }
+      if (!output) throw new Error("No output returned from tool");
 
       const now = new Date();
       const nowLabel = now.toLocaleString();
@@ -628,7 +526,6 @@ function App() {
     } catch (err) {
       console.error(err);
       setRunError(err.message || "Failed to run engine");
-      showToast(err.message || "Failed to run engine", 'error');
     } finally {
       setIsRunning(false);
     }
@@ -710,15 +607,14 @@ function App() {
 
   if (!project || autoCreating) {
     return (
-      <SpinnerOverlay show={true} label={autoCreating ? "Setting up your project…" : "Loading…"} />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", fontSize: 20 }}>
+        {autoCreating ? "Setting up your project…" : "Loading…"}
+      </div>
     );
   }
 
   return (
-    <>
-      <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
-      <SpinnerOverlay show={isRunning} label={isRunning ? "Running engine…" : undefined} />
-      <div className="app-shell">
+    <div className="app-shell">
       <aside className="side-nav">
         <div className="side-nav-brand">
           <div className="side-nav-avatar">A</div>
@@ -991,10 +887,7 @@ function App() {
                     This is a test integration. Replace the shopDomain/shopToken with real values for your store.
                   </p>
                 </div>
-                <ProductsList 
-                  shopDomain={localStorage.getItem("shopDomain") || (project && project.domain)}
-                  shopToken={localStorage.getItem("shopToken")}
-                />
+                <ProductsList shopDomain={"aurasystemsai.myshopify.com"} shopToken={"demo_token_here"} />
               </div>
             </section>
           ) : pageTab === "Overview" ? (
@@ -1827,9 +1720,8 @@ function App() {
       {!localStorage.getItem("shopToken") && (
         <ConnectShopifyBanner shopDomain={project && project.domain} />
       )}
-
-
     </div>
-    </>
   );
-}export default App 
+}
+
+export default App;

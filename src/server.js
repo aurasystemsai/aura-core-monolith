@@ -158,25 +158,9 @@ app.get("/shopify/auth/callback", async (req, res) => {
 
       // Redirect merchant back to the console and include the shop param so UI can auto-connect
       const consoleUrl = process.env.CONSOLE_URL || process.env.HOST_URL || "http://localhost:5173";
-      const cleanConsole = consoleUrl.replace(/\/$/, "");
-      const consoleRedirect = `${cleanConsole}/?shop=${encodeURIComponent(normalized)}&token=${encodeURIComponent(accessToken)}`;
-
-      // Try redirecting back to the Shopify admin embedded app first.
-      // Use SHOPIFY_CLIENT_ID as a best-effort handle for the app path.
-      const clientId = process.env.SHOPIFY_CLIENT_ID || '';
-      let adminRedirect = null;
-      if (clientId) {
-        adminRedirect = `https://${normalized}/admin/apps/${encodeURIComponent(clientId)}?return_to=${encodeURIComponent(consoleRedirect)}`;
-      }
-
-      if (adminRedirect) {
-        console.log(`[Shopify OAuth] Redirecting merchant to embedded admin app URL: ${adminRedirect}`);
-        return res.redirect(adminRedirect);
-      }
-
-      // Fallback: redirect directly to console with token in querystring
-      console.log(`[Shopify OAuth] Redirecting back to console (fallback): ${consoleRedirect}`);
-      return res.redirect(consoleRedirect);
+      const redirect = `${consoleUrl.replace(/\/$/, "")}/?shop=${encodeURIComponent(normalized)}`;
+      console.log(`[Shopify OAuth] Redirecting back to console: ${redirect}`);
+      return res.redirect(redirect);
     } catch (innerErr) {
       console.error("Error storing shop token or creating project", innerErr);
       return res.status(500).send("Shopify authentication succeeded but failed to save installation.");
@@ -270,30 +254,23 @@ async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
 
   const first = Number.isFinite(Number(limit)) ? Math.min(Number(limit), 50) : 10;
 
-    const query = `
-      query Products($first: Int!) {
-        products(first: $first) {
-          edges {
-            node {
-              id
-              title
-              handle
-              status
-              totalInventory
-              createdAt
-              updatedAt
-              variants(first: 1) {
-                edges {
-                  node {
-                    price
-                  }
-                }
-              }
-            }
+  const query = `
+    query Products($first: Int!) {
+      products(first: $first) {
+        edges {
+          node {
+            id
+            title
+            handle
+            status
+            totalInventory
+            createdAt
+            updatedAt
           }
         }
       }
-    `;
+    }
+  `;
 
   const resp = await fetch(url, {
     method: "POST",
@@ -326,14 +303,7 @@ async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
   }
 
   const edges = json?.data?.products?.edges || [];
-    const products = edges.map((e) => {
-      const node = e.node;
-      let price = null;
-      if (node.variants && node.variants.edges && node.variants.edges.length > 0) {
-        price = node.variants.edges[0].node.price;
-      }
-      return { ...node, price };
-    });
+  const products = edges.map((e) => e.node);
 
   return { products, rawCount: products.length };
 }
@@ -404,30 +374,10 @@ app.get("/api/shopify/products", async (req, res) => {
     const limit = req.query.limit;
     const apiVersion = req.query.apiVersion;
 
-    // Prefer Bearer token from Authorization header
-    let token = null;
-    const authHeader = req.headers["authorization"] || req.headers["Authorization"];
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      token = authHeader.substring(7);
-    }
-    // Fallback to query param
-    if (!token) {
-      token = req.query.token || process.env.SHOPIFY_ADMIN_TOKEN || "";
-    }
-    // Fallback to shopTokens store
-    if (!token && shop) {
-      try {
-        const shopTokensStore = require("./core/shopTokens");
-        token = shopTokensStore.getToken(shop);
-        if (!token) {
-          console.error(`[Core] No token found for shop: ${shop}`);
-        } else {
-          console.log(`[Core] Using saved token for shop: ${shop}`);
-        }
-      } catch (err) {
-        console.error("[Core] Error loading shop token store", err);
-      }
-    }
+    const token =
+      req.query.token ||
+      process.env.SHOPIFY_ADMIN_TOKEN || // recommended for Render
+      "";
 
     if (!shop) {
       return res.status(400).json({ ok: false, error: "Missing ?shop=" });
@@ -436,7 +386,7 @@ app.get("/api/shopify/products", async (req, res) => {
       return res.status(400).json({
         ok: false,
         error:
-          "Missing token. Pass ?token=shpat_... or set env SHOPIFY_ADMIN_TOKEN on Render. (Or connect your store via OAuth)",
+          "Missing token. Pass ?token=shpat_... or set env SHOPIFY_ADMIN_TOKEN on Render.",
       });
     }
 
