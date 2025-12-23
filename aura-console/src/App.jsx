@@ -896,7 +896,7 @@ function App() {
                   </p>
                 </div>
                 <ProductsList 
-                  shopDomain={project && project.domain}
+                  shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "") : undefined}
                   shopToken={localStorage.getItem("shopToken")}
                 />
               </div>
