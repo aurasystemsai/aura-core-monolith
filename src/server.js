@@ -417,7 +417,9 @@ app.get("/api/shopify/products", async (req, res) => {
     }
 
     try {
+      console.log("[Core] About to call fetchShopifyProducts in /api/shopify/products route");
       const out = await fetchShopifyProducts({ shop, token, apiVersion, limit });
+      console.log("[Core] fetchShopifyProducts returned in /api/shopify/products route", { count: out.rawCount });
       return res.json({
         ok: true,
         shop,
@@ -426,7 +428,7 @@ app.get("/api/shopify/products", async (req, res) => {
         products: out.products,
       });
     } catch (shopifyErr) {
-      console.error("[Core] Shopify fetch error", {
+      console.error("[Core] Shopify fetch error in /api/shopify/products route", {
         shop,
         token: token ? token.slice(0, 6) + '...' : undefined,
         apiVersion,
