@@ -235,6 +235,7 @@ app.get("/api/health", (_req, res) => {
 //
 
 async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
+  console.log(`[Core] fetchShopifyProducts called`, { shop, token: token ? token.slice(0, 6) + '...' : undefined, apiVersion, limit });
 
   const safeShop = String(shop || "").trim();
   if (!safeShop.endsWith(".myshopify.com")) {
