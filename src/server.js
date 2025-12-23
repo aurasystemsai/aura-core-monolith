@@ -236,6 +236,7 @@ app.get("/api/health", (_req, res) => {
 
 async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
   console.log(`[Core] fetchShopifyProducts called`, { shop, token: token ? token.slice(0, 6) + '...' : undefined, apiVersion, limit });
+  console.log(`[Core] About to fetch from Shopify API for shop=${shop}`);
 
   const safeShop = String(shop || "").trim();
   if (!safeShop.endsWith(".myshopify.com")) {
@@ -273,50 +274,51 @@ async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
     }
   `;
 
-  const resp = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Shopify-Access-Token": token,
-    },
-    body: JSON.stringify({
-      query,
-      variables: { first },
-    }),
-  });
-
-  const text = await resp.text();
-  let json = null;
+  let resp, text, json;
   try {
-    json = JSON.parse(text);
-  } catch {
-    // leave null; we’ll throw a readable error below
-  }
-
-  if (!resp.ok) {
-    console.error(`[Core] Shopify API HTTP error`, {
-      status: resp.status,
-      body: text,
-      headers: resp.headers,
+    resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shopify-Access-Token": token,
+      },
+      body: JSON.stringify({
+        query,
+        variables: { first },
+      }),
     });
-    throw new Error(
-      `Shopify HTTP ${resp.status}: ${text.slice(0, 500)}`
-    );
+    console.log(`[Core] Shopify API fetch completed for shop=${shop}, status=${resp.status}`);
+    text = await resp.text();
+    try {
+      json = JSON.parse(text);
+    } catch (parseErr) {
+      console.error(`[Core] Failed to parse Shopify API response as JSON for shop=${shop}:`, text);
+      throw parseErr;
+    }
+    if (!resp.ok) {
+      console.error(`[Core] Shopify API HTTP error`, {
+        status: resp.status,
+        body: text,
+        headers: resp.headers,
+      });
+      throw new Error(
+        `Shopify HTTP ${resp.status}: ${text.slice(0, 500)}`
+      );
+    }
+    if (json && json.errors && json.errors.length) {
+      console.error(`[Core] Shopify GraphQL errors`, json.errors);
+      throw new Error(`Shopify GraphQL errors: ${JSON.stringify(json.errors)}`);
+    }
+    if (!json?.data?.products?.edges) {
+      console.error(`[Core] Shopify response missing products.edges`, json);
+    }
+    console.log(`[Core] Shopify API full response for shop=${shop}:`, JSON.stringify(json, null, 2));
+  } catch (err) {
+    console.error(`[Core] Error during Shopify product fetch for shop=${shop}:`, err);
+    throw err;
   }
-
-  if (json && json.errors && json.errors.length) {
-    console.error(`[Core] Shopify GraphQL errors`, json.errors);
-    throw new Error(`Shopify GraphQL errors: ${JSON.stringify(json.errors)}`);
-  }
-
-  if (!json?.data?.products?.edges) {
-    console.error(`[Core] Shopify response missing products.edges`, json);
-  }
-
-  console.log(`[Core] Shopify API full response for shop=${shop}:`, JSON.stringify(json, null, 2));
   const edges = json?.data?.products?.edges || [];
   const products = edges.map((e) => e.node);
-
   if (products.length === 0) {
     console.warn(`[Core] Shopify returned zero products`, {
       shop,
