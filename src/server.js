@@ -312,6 +312,7 @@ async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
     console.error(`[Core] Shopify response missing products.edges`, json);
   }
 
+  console.log(`[Core] Shopify API full response for shop=${shop}:`, JSON.stringify(json, null, 2));
   const edges = json?.data?.products?.edges || [];
   const products = edges.map((e) => e.node);
 
