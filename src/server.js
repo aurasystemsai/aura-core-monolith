@@ -293,17 +293,37 @@ async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
   }
 
   if (!resp.ok) {
+    console.error(`[Core] Shopify API HTTP error`, {
+      status: resp.status,
+      body: text,
+      headers: resp.headers,
+    });
     throw new Error(
       `Shopify HTTP ${resp.status}: ${text.slice(0, 500)}`
     );
   }
 
   if (json && json.errors && json.errors.length) {
+    console.error(`[Core] Shopify GraphQL errors`, json.errors);
     throw new Error(`Shopify GraphQL errors: ${JSON.stringify(json.errors)}`);
+  }
+
+  if (!json?.data?.products?.edges) {
+    console.error(`[Core] Shopify response missing products.edges`, json);
   }
 
   const edges = json?.data?.products?.edges || [];
   const products = edges.map((e) => e.node);
+
+  if (products.length === 0) {
+    console.warn(`[Core] Shopify returned zero products`, {
+      shop,
+      token: token ? token.slice(0, 6) + '...' : undefined,
+      apiVersion,
+      limit,
+      response: json,
+    });
+  }
 
   return { products, rawCount: products.length };
 }
