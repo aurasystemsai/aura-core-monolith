@@ -374,10 +374,12 @@ app.get("/api/shopify/products", async (req, res) => {
     const limit = req.query.limit;
     const apiVersion = req.query.apiVersion;
 
-    const token =
-      req.query.token ||
-      process.env.SHOPIFY_ADMIN_TOKEN || // recommended for Render
-      "";
+      const token = req.query.token || process.env.SHOPIFY_ADMIN_TOKEN || ""; // recommended for Render
+      console.log("[Core] /api/shopify/products called", {
+        query: req.query,
+        headers: req.headers,
+        time: new Date().toISOString(),
+      });
 
     if (!shop) {
       return res.status(400).json({ ok: false, error: "Missing ?shop=" });

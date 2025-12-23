@@ -173,6 +173,14 @@ function App() {
   // -------------------------------------------------
   useEffect(() => {
     const id = localStorage.getItem("auraProjectId");
+    const shopToken = localStorage.getItem("shopToken");
+    const shopDomain = localStorage.getItem("auraProjectDomain");
+    console.log("[Console] Shopify connection status:", {
+      shopToken: shopToken ? shopToken.slice(0, 6) + '...' : null,
+      shopDomain,
+      projectId: id,
+      connected: !!(shopToken && shopDomain && id)
+    });
     if (id) {
       setProject({
         id,
