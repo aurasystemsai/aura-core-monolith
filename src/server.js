@@ -1,3 +1,68 @@
+// ---------- SHOPIFY PRODUCT UPDATE ENDPOINT ----------
+app.post('/api/shopify/update-product', async (req, res) => {
+  const shop = req.query.shop;
+  const token = req.query.token;
+  const id = req.query.id;
+  const { title, body_html, metafields, handle } = req.body || {};
+  if (!shop || !token || !id || !title) {
+    return res.status(400).json({ ok: false, error: 'Missing required fields' });
+  }
+  try {
+    // Update product title, body_html, handle
+    const apiVersion = process.env.SHOPIFY_API_VERSION || '2023-10';
+    const url = `https://${shop}/admin/api/${apiVersion}/products/${id}.json`;
+    const productPayload = {
+      product: {
+        id,
+        title,
+        body_html,
+        handle,
+      },
+    };
+    const resp = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Access-Token': token,
+      },
+      body: JSON.stringify(productPayload),
+    });
+    if (!resp.ok) {
+      const text = await resp.text();
+      return res.status(500).json({ ok: false, error: `Shopify update failed: ${text}` });
+    }
+    // Update metafields (meta description, keywords)
+    if (Array.isArray(metafields) && metafields.length > 0) {
+      for (const mf of metafields) {
+        const mfUrl = `https://${shop}/admin/api/${apiVersion}/products/${id}/metafields.json`;
+        const mfPayload = {
+          metafield: {
+            namespace: mf.namespace,
+            key: mf.key,
+            value: mf.value,
+            type: mf.value_type || 'single_line_text_field',
+          },
+        };
+        const mfResp = await fetch(mfUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Access-Token': token,
+          },
+          body: JSON.stringify(mfPayload),
+        });
+        if (!mfResp.ok) {
+          const mfText = await mfResp.text();
+          return res.status(500).json({ ok: false, error: `Shopify metafield failed: ${mfText}` });
+        }
+      }
+    }
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('Shopify update error', err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
 // ...existing code...
 // ...existing code...
 // src/server.js

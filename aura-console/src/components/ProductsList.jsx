@@ -81,6 +81,50 @@ const ProductsList = ({ shopDomain, shopToken }) => {
       <button onClick={fetchProducts} disabled={loading} style={{ marginBottom: 16 }}>
         {loading ? 'Refreshing...' : 'Refresh'}
       </button>
+      <button
+        onClick={async () => {
+          setLoading(true);
+          setError(null);
+          try {
+            for (const product of products) {
+              const res = await fetch('/api/run/product-seo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  productTitle: product.title,
+                  productDescription: product.description || '',
+                  brand: '',
+                  tone: '',
+                  useCases: [],
+                }),
+              });
+              if (!res.ok) throw new Error('Failed to run Product SEO');
+              const data = await res.json();
+              // Update Shopify product with new SEO fields
+              await fetch(`/api/shopify/update-product?shop=${encodeURIComponent(shopDomain)}&token=${encodeURIComponent(shopToken)}&id=${encodeURIComponent(product.id)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  title: data.output.title,
+                  body_html: product.body_html || '',
+                  metafields: [
+                    { namespace: 'global', key: 'description_tag', value: data.output.metaDescription, value_type: 'string' },
+                    { namespace: 'global', key: 'keywords', value: data.output.keywords.join(','), value_type: 'string' },
+                  ],
+                  handle: data.output.slug,
+                }),
+              });
+            }
+            alert('Bulk SEO automation complete!');
+            fetchProducts();
+          } catch (err) {
+            setError(err.message || 'Error running bulk Product SEO');
+          }
+          setLoading(false);
+        }}
+        disabled={loading || products.length === 0}
+        style={{ marginLeft: 12, marginBottom: 16 }}
+      >Bulk SEO All</button>
       {loading && <div>Loading products...</div>}
       {error && <div style={{ color: 'red' }}>{error}</div>}
       {!loading && !error && (
@@ -92,6 +136,53 @@ const ProductsList = ({ shopDomain, shopToken }) => {
               <li key={product.id}>
                 <strong>{product.title}</strong> - $
                 {product.variants && product.variants[0] ? product.variants[0].price : 'N/A'}
+                <button
+                  style={{ marginLeft: 12 }}
+                  onClick={async () => {
+                    setLoading(true);
+                    setError(null);
+                    try {
+                      const res = await fetch('/api/run/product-seo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          productTitle: product.title,
+                          productDescription: product.description || '',
+                          brand: '',
+                          tone: '',
+                          useCases: [],
+                        }),
+                      });
+                      if (!res.ok) throw new Error('Failed to run Product SEO');
+                      const data = await res.json();
+                      // Update Shopify product with new SEO fields
+                      await fetch(`/api/shopify/update-product?shop=${encodeURIComponent(shopDomain)}&token=${encodeURIComponent(shopToken)}&id=${encodeURIComponent(product.id)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          title: data.output.title,
+                          body_html: product.body_html || '',
+                          metafields: [
+                            { namespace: 'global', key: 'description_tag', value: data.output.metaDescription, value_type: 'string' },
+                            { namespace: 'global', key: 'keywords', value: data.output.keywords.join(','), value_type: 'string' },
+                          ],
+                          handle: data.output.slug,
+                        }),
+                      });
+                      alert(
+                        `SEO updated for ${product.title}:\n\n` +
+                        `Title: ${data.output.title}\n` +
+                        `Meta Description: ${data.output.metaDescription}\n` +
+                        `Slug: ${data.output.slug}\n` +
+                        `Keywords: ${data.output.keywords.join(', ')}`
+                      );
+                    } catch (err) {
+                      setError(err.message || 'Error running Product SEO');
+                    }
+                    setLoading(false);
+                  }}
+                  disabled={loading}
+                >Run Product SEO</button>
               </li>
             ))}
           </ul>
