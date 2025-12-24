@@ -1,3 +1,19 @@
+// ---------- PRODUCT SEO SUGGESTION ENDPOINT ----------
+app.post('/api/run/product-seo', async (req, res) => {
+  try {
+    const { productTitle, productDescription, brand, tone, useCases } = req.body || {};
+    if (!productTitle || !productDescription) {
+      return res.status(400).json({ ok: false, error: 'productTitle and productDescription are required' });
+    }
+    // Dynamically require the product-seo tool
+    const productSeo = require('./tools/product-seo/index.js');
+    const result = await productSeo.run({ productTitle, productDescription, brand, tone, useCases });
+    return res.json(result);
+  } catch (err) {
+    console.error('Product SEO error', err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
 // ...existing code...
 // ...existing code...
 // ...existing code...
