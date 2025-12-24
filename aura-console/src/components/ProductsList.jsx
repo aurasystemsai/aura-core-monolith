@@ -17,11 +17,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
     }
     setLoading(true);
     setError(null);
-    fetch(`/api/shopify/products?shop=${encodeURIComponent(shopDomain)}`, {
-      headers: {
-        Authorization: `Bearer ${shopToken}`,
-      },
-    })
+    fetch(`/api/shopify/products?shop=${encodeURIComponent(shopDomain)}&token=${encodeURIComponent(shopToken)}`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch products');
         return res.json();

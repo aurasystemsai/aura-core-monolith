@@ -394,16 +394,25 @@ app.get("/api/shopify/products", async (req, res) => {
       return res.status(401).json({ ok: false, error: "Unauthorized (bad key)" });
     }
 
+
     const shop = req.query.shop;
     const limit = req.query.limit;
     const apiVersion = req.query.apiVersion;
 
-      const token = req.query.token || process.env.SHOPIFY_ADMIN_TOKEN || ""; // recommended for Render
-      console.log("[Core] /api/shopify/products called", {
-        query: req.query,
-        headers: req.headers,
-        time: new Date().toISOString(),
-      });
+    // Accept token from query, env, or Authorization header
+    let token = req.query.token || process.env.SHOPIFY_ADMIN_TOKEN || "";
+    if (!token && req.headers.authorization) {
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith("Bearer ")) {
+        token = authHeader.substring(7);
+      }
+    }
+
+    console.log("[Core] /api/shopify/products called", {
+      query: req.query,
+      headers: req.headers,
+      time: new Date().toISOString(),
+    });
 
     if (!shop) {
       return res.status(400).json({ ok: false, error: "Missing ?shop=" });
