@@ -1,24 +1,5 @@
 // ...existing code...
-// ---------- PROJECT RUN HISTORY ROUTES ----------
-app.get('/api/projects/:projectId/runs', (req, res) => {
-  const projectId = req.params.projectId;
-  try {
-    const runs = require('./core/runs').listRuns({ projectId, limit: 50 });
-    res.json({ ok: true, runs });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-app.get('/projects/:projectId/runs', (req, res) => {
-  const projectId = req.params.projectId;
-  try {
-    const runs = require('./core/runs').listRuns({ projectId, limit: 50 });
-    res.json({ ok: true, runs });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
+// ...existing code...
 // src/server.js
 // ----------------------------------------
 // AURA Core Monolith API
@@ -53,6 +34,26 @@ const makeRoutes = require("./routes/make");
 const { startFixQueueWorker } = require("./core/fixQueueWorker");
 
 const app = express();
+// ---------- PROJECT RUN HISTORY ROUTES ----------
+app.get('/api/projects/:projectId/runs', (req, res) => {
+  const projectId = req.params.projectId;
+  try {
+    const runs = require('./core/runs').listRuns({ projectId, limit: 50 });
+    res.json({ ok: true, runs });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+app.get('/projects/:projectId/runs', (req, res) => {
+  const projectId = req.params.projectId;
+  try {
+    const runs = require('./core/runs').listRuns({ projectId, limit: 50 });
+    res.json({ ok: true, runs });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 // trust proxy so req.protocol reflects X-Forwarded-Proto when behind Render/ngrok
 app.set("trust proxy", true);
 const PORT = process.env.PORT || 10000;
