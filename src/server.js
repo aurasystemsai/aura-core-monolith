@@ -1,5 +1,5 @@
 // ...existing code...
-const app = express();
+// ...existing code...
 // ---------- SHOPIFY PRODUCT UPDATE ENDPOINT ----------
 app.post('/api/shopify/update-product', async (req, res) => {
   const shop = req.query.shop;
