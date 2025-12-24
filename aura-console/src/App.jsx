@@ -890,9 +890,9 @@ function App() {
             <section style={{ marginTop: 10 }}>
               <div className="card">
                 <div className="card-header">
-                  <h2 className="card-title">Shopify Products (Demo)</h2>
+                  <h2 className="card-title">Shopify Products</h2>
                   <p className="card-subtitle">
-                    This is a test integration. Replace the shopDomain/shopToken with real values for your store.
+                    Manage and optimize your Shopify product SEO. Connect your store to fetch products and apply AI-powered SEO suggestions in bulk.
                   </p>
                 </div>
                 <ProductsList 
