@@ -1,3 +1,23 @@
+// ---------- PROJECT RUN HISTORY ROUTES ----------
+app.get('/api/projects/:projectId/runs', (req, res) => {
+  const projectId = req.params.projectId;
+  try {
+    const runs = require('./core/runs').listRuns({ projectId, limit: 50 });
+    res.json({ ok: true, runs });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+app.get('/projects/:projectId/runs', (req, res) => {
+  const projectId = req.params.projectId;
+  try {
+    const runs = require('./core/runs').listRuns({ projectId, limit: 50 });
+    res.json({ ok: true, runs });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 // src/server.js
 // ----------------------------------------
 // AURA Core Monolith API
@@ -268,6 +288,13 @@ async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
             totalInventory
             createdAt
             updatedAt
+            variants(first: 1) {
+              edges {
+                node {
+                  price
+                }
+              }
+            }
           }
         }
       }
@@ -318,7 +345,14 @@ async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
     throw err;
   }
   const edges = json?.data?.products?.edges || [];
-  const products = edges.map((e) => e.node);
+  const products = edges.map((e) => {
+    const node = e.node;
+    let variants = [];
+    if (node.variants && node.variants.edges && node.variants.edges.length) {
+      variants = node.variants.edges.map(v => v.node);
+    }
+    return { ...node, variants };
+  });
   if (products.length === 0) {
     console.warn(`[Core] Shopify returned zero products`, {
       shop,
