@@ -152,6 +152,10 @@
 }
 
 export default ProductsList;
+    );
+}
+
+export default ProductsList;
       const newSuggestions = {};
       for (const product of products.filter(p => selectedIds.includes(p.id))) {
         const res = await fetch('/api/run/product-seo', {
