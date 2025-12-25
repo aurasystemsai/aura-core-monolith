@@ -286,17 +286,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                     issues = [...issues, { field: 'Image', msg: `Missing alt text for ${missingAlt} image${missingAlt > 1 ? 's' : ''}`, type: 'warn', tip: 'Add descriptive alt text to all product images for accessibility and SEO.' }];
                   }
                 }
-                useEffect(() => {
-                  if (!product.id) return;
-                  setSeoHistory(prev => {
-                    const hist = prev[product.id] || [];
-                    const last = hist[hist.length - 1];
-                    if (!last || last.score !== s || JSON.stringify(last.issues) !== JSON.stringify(issues)) {
-                      return { ...prev, [product.id]: [...hist, { date: new Date().toISOString(), score: s, issues }].slice(-10) };
-                    }
-                    return prev;
-                  });
-                }, [product.id, s, JSON.stringify(issues)]);
+                // ...existing code...
                 return (
                   <li key={product.id} style={{ marginBottom: 12 }}>
                     <input type="checkbox" checked={selectedIds.includes(product.id)} onChange={() => toggleSelect(product.id)} style={{ marginRight: 8 }} disabled={loading} />
@@ -351,6 +341,35 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                   </li>
                 );
               })}
+            // Move SEO history tracking outside the map loop
+            useEffect(() => {
+              if (!Array.isArray(products) || products.length === 0) return;
+              setSeoHistory(prev => {
+                const next = { ...prev };
+                products.forEach(product => {
+                  const seo = seoSuggestions[product.id] || {
+                    title: product.title,
+                    metaDescription: product.metaDescription || product.description || product.body_html || '',
+                    keywords: product.keywords || [],
+                    slug: product.slug || product.handle || '',
+                  };
+                  const s = computeSeoScore({ title: seo.title, metaDescription: seo.metaDescription, keywords: seo.keywords, slug: seo.slug });
+                  let issues = getSeoIssues(seo);
+                  if (Array.isArray(product.images)) {
+                    const missingAlt = product.images.filter(img => !img.alt || !img.alt.trim()).length;
+                    if (missingAlt > 0) {
+                      issues = [...issues, { field: 'Image', msg: `Missing alt text for ${missingAlt} image${missingAlt > 1 ? 's' : ''}`, type: 'warn', tip: 'Add descriptive alt text to all product images for accessibility and SEO.' }];
+                    }
+                  }
+                  const hist = next[product.id] || [];
+                  const last = hist[hist.length - 1];
+                  if (!last || last.score !== s || JSON.stringify(last.issues) !== JSON.stringify(issues)) {
+                    next[product.id] = [...hist, { date: new Date().toISOString(), score: s, issues }].slice(-10);
+                  }
+                });
+                return next;
+              });
+            }, [products, seoSuggestions]);
             </ul>
           )
         )}
