@@ -15,9 +15,7 @@ import DraftLibrary from "./components/DraftLibrary";
 import ContentHealthAuditor from "./components/ContentHealthAuditor";
 import ContentIngestor from "./components/ContentIngestor";
 import ProductsList from "./components/ProductsList.jsx";
-import ConnectShopifyBanner from "./components/ConnectShopifyBanner";
-import Sidebar from "./components/Sidebar";
-  const [activeSection, setActiveSection] = useState('products');
+
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
@@ -26,6 +24,11 @@ const ENGINES = {
   product: {
     key: "product",
     toolId: "product-seo",
+    // ...other fields...
+  },
+  function App() {
+    const [activeSection, setActiveSection] = useState('products');
+    // ...existing hooks and logic...
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
         <Sidebar active={activeSection} onSelect={setActiveSection} />
@@ -42,8 +45,8 @@ const ENGINES = {
           {activeSection === 'system-health' && <SystemHealthPanel />}
         </main>
       </div>
-    "Paperclip waterproof bracelet"
-  );
+    );
+  }
   const [productDescription, setProductDescription] = useState(
     "Bold paperclip chain bracelet with a sweat-proof, waterproof coating. Adjustable fit for any wrist, perfect for everyday wear."
   );
