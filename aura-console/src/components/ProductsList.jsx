@@ -142,22 +142,6 @@
 }
 
 export default ProductsList;
-const ProductsList = ({ shopDomain, shopToken }) => {
-  const [products, setProducts] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  // Store SEO suggestions per product ID
-  const [seoSuggestions, setSeoSuggestions] = useState({});
-  // SEO history: { [productId]: [{ date, score, issues }] }
-  const [seoHistory, setSeoHistory] = useState({});
-  // Custom AI prompt
-  const [aiPrompt, setAiPrompt] = useState('');
-  // Multi-language support
-  const [language, setLanguage] = useState('en');
-  const [selectedProductId, setSelectedProductId] = useState(null);
-  // Multi-select state
   const [selectedIds, setSelectedIds] = useState([]);
   // Bulk preview modal state
   const [showBulkPreview, setShowBulkPreview] = useState(false);
