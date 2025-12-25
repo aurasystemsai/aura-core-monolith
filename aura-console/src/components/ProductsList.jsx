@@ -1,29 +1,5 @@
   // Returns an array of SEO issues for a product's fields
   function getSeoIssues({ title, metaDescription, keywords, slug }) {
-            // Accessibility: check for missing alt text (if product.images exists)
-            if (typeof window !== 'undefined' && window.products && Array.isArray(window.products)) {
-              // This is a fallback for global products, but we should check the product object directly below
-            }
-        // Highlight missing primary keyword in title/meta
-        if (Array.isArray(keywords) && keywords[0]) {
-          const primary = keywords[0].toLowerCase();
-          if (!title || !title.toLowerCase().includes(primary)) {
-            issues.push({
-              field: 'Title',
-              msg: 'Primary keyword missing',
-              type: 'warn',
-              tip: 'Include your main keyword in the product title for better SEO.'
-            });
-          }
-          if (!metaDescription || !metaDescription.toLowerCase().includes(primary)) {
-            issues.push({
-              field: 'Meta Description',
-              msg: 'Primary keyword missing',
-              type: 'warn',
-              tip: 'Include your main keyword in the meta description to improve relevance.'
-            });
-          }
-        }
     const issues = [];
     // Helper for actionable tips
     const tips = {
@@ -37,6 +13,26 @@
       'Slug:Missing': 'Add a URL slug (e.g., product-name).',
       'Slug:Bad format (lowercase, hyphens only, no spaces)': 'Use only lowercase letters, numbers, and hyphens in the slug.',
     };
+    // Highlight missing primary keyword in title/meta
+    if (Array.isArray(keywords) && keywords[0]) {
+      const primary = keywords[0].toLowerCase();
+      if (!title || !title.toLowerCase().includes(primary)) {
+        issues.push({
+          field: 'Title',
+          msg: 'Primary keyword missing',
+          type: 'warn',
+          tip: 'Include your main keyword in the product title for better SEO.'
+        });
+      }
+      if (!metaDescription || !metaDescription.toLowerCase().includes(primary)) {
+        issues.push({
+          field: 'Meta Description',
+          msg: 'Primary keyword missing',
+          type: 'warn',
+          tip: 'Include your main keyword in the meta description to improve relevance.'
+        });
+      }
+    }
     // Title
     if (!title || !title.trim()) {
       issues.push({ field: 'Title', msg: 'Missing', type: 'error', tip: tips['Title:Missing'] });
@@ -50,6 +46,20 @@
     } else {
       if (metaDescription.length < 130) issues.push({ field: 'Meta Description', msg: 'Too short (<130)', type: 'warn', tip: tips['Meta Description:Too short (<130)'] });
       if (metaDescription.length > 155) issues.push({ field: 'Meta Description', msg: 'Too long (>155)', type: 'warn', tip: tips['Meta Description:Too long (>155)'] });
+    }
+    // Keywords
+    if (!Array.isArray(keywords) || keywords.length === 0 || !keywords[0]) {
+      issues.push({ field: 'Keywords', msg: 'Missing', type: 'warn', tip: tips['Keywords:Missing'] });
+    }
+    // Slug
+    if (!slug || !slug.trim()) {
+      issues.push({ field: 'Slug', msg: 'Missing', type: 'warn', tip: tips['Slug:Missing'] });
+    } else {
+      if (!/^[a-z0-9\-]+$/.test(slug) || slug.includes(' ')) {
+        issues.push({ field: 'Slug', msg: 'Bad format (lowercase, hyphens only, no spaces)', type: 'warn', tip: tips['Slug:Bad format (lowercase, hyphens only, no spaces)'] });
+      }
+    }
+    return issues;
 
                 <button
                   style={{ marginLeft: 12 }}
