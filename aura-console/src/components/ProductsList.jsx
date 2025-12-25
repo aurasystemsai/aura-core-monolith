@@ -236,10 +236,24 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   // Main UI
   try {
     return (
-      <div>
-        <h1>Shopify Products</h1>
-        <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <select value={language} onChange={e => setLanguage(e.target.value)} style={{ padding: 4, borderRadius: 4, border: '1px solid #ccc', minWidth: 120 }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: 24 }}>
+        <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 24, letterSpacing: '-1px' }}>Shopify Products SEO Manager</h1>
+        {/* Sticky header for filters/actions */}
+        <div style={{
+          position: 'sticky',
+          top: 0,
+          background: '#181c2a',
+          zIndex: 10,
+          padding: 16,
+          borderRadius: 12,
+          boxShadow: '0 2px 8px #0002',
+          marginBottom: 24,
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: 16
+        }}>
+          <select value={language} onChange={e => setLanguage(e.target.value)} style={{ padding: 8, borderRadius: 6, border: '1px solid #333', minWidth: 120, background: '#222', color: '#fff' }}>
             <option value="en">English</option>
             <option value="es">Spanish</option>
             <option value="fr">French</option>
@@ -250,20 +264,20 @@ const ProductsList = ({ shopDomain, shopToken }) => {
             <option value="zh">Chinese</option>
             <option value="ko">Korean</option>
           </select>
-          <input type="text" placeholder="Custom AI prompt (optional)" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} style={{ width: '60%', marginRight: 8, padding: 4, borderRadius: 4, border: '1px solid #ccc' }} />
-          <input type="text" placeholder="Search products..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ marginRight: 8, padding: 4, borderRadius: 4, border: '1px solid #ccc' }} />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: 4, borderRadius: 4 }}>
+          <input type="text" placeholder="Custom AI prompt (optional)" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} style={{ width: 220, padding: 8, borderRadius: 6, border: '1px solid #333', background: '#222', color: '#fff' }} />
+          <input type="text" placeholder="Search products..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ width: 200, padding: 8, borderRadius: 6, border: '1px solid #333', background: '#222', color: '#fff' }} />
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: 8, borderRadius: 6, background: '#222', color: '#fff' }}>
             <option value="all">All</option>
             <option value="success">Updated</option>
             <option value="error">Error</option>
             <option value="pending">Pending</option>
           </select>
+          <button onClick={fetchProducts} disabled={loading} style={{ padding: '8px 18px', borderRadius: 6, background: '#5c6ac4', color: '#fff', fontWeight: 700, border: 0 }}>{loading ? 'Refreshing...' : 'Refresh'}</button>
+          <button onClick={selectAll} disabled={loading || filteredProducts.length === 0} style={{ padding: '8px 18px', borderRadius: 6, background: '#222', color: '#fff', fontWeight: 700, border: 0 }}>Select All</button>
+          <button onClick={deselectAll} disabled={loading || selectedIds.length === 0} style={{ padding: '8px 18px', borderRadius: 6, background: '#222', color: '#fff', fontWeight: 700, border: 0 }}>Deselect All</button>
+          <button onClick={exportSeoToCsv} disabled={loading || products.length === 0} style={{ padding: '8px 18px', borderRadius: 6, background: '#222', color: '#fff', fontWeight: 700, border: 0 }}>Export to CSV</button>
         </div>
-        <button onClick={fetchProducts} disabled={loading} style={{ marginBottom: 16 }}>{loading ? 'Refreshing...' : 'Refresh'}</button>
-        <button onClick={selectAll} disabled={loading || filteredProducts.length === 0} style={{ marginLeft: 8, marginBottom: 16 }}>Select All</button>
-        <button onClick={deselectAll} disabled={loading || selectedIds.length === 0} style={{ marginLeft: 8, marginBottom: 16 }}>Deselect All</button>
-        <button onClick={exportSeoToCsv} disabled={loading || products.length === 0} style={{ marginLeft: 8, marginBottom: 16 }}>Export to CSV</button>
-        {loading && <div>Loading products...</div>}
+        {loading && <div style={{ color: '#fff', fontSize: 18, margin: '32px 0' }}>Loading products...</div>}
         {error && (
           <div style={{ color: 'red', margin: '16px 0', fontWeight: 500 }}>
             {error}
@@ -277,52 +291,63 @@ const ProductsList = ({ shopDomain, shopToken }) => {
               <DebugPanel />
             </div>
           ) : (
-            <ul>
-              {filteredProducts.map((product) => {
-                let seo = seoSuggestions[product.id] || {
-                  title: product.title,
-                  metaDescription: product.metaDescription || product.description || product.body_html || '',
-                  keywords: product.keywords || [],
-                  slug: product.slug || product.handle || '',
-                };
-                let keywordSuggestions = [];
-                if (!seo.keywords || !Array.isArray(seo.keywords) || !seo.keywords[0]) {
-                  const text = ((seo.title || '') + ' ' + (seo.metaDescription || '')).toLowerCase();
-                  const words = text.match(/\b[a-z0-9]{4,}\b/g) || [];
-                  const freq = {};
-                  words.forEach(w => { freq[w] = (freq[w] || 0) + 1; });
-                  keywordSuggestions = Object.entries(freq).sort((a, b) => b[1] - a[1]).map(([w]) => w).slice(0, 5);
-                }
-                const s = computeSeoScore({ title: seo.title, metaDescription: seo.metaDescription, keywords: seo.keywords, slug: seo.slug });
-                let issues = getSeoIssues(seo);
-                if (Array.isArray(product.images)) {
-                  const missingAlt = product.images.filter(img => !img.alt || !img.alt.trim()).length;
-                  if (missingAlt > 0) {
-                    issues = [...issues, { field: 'Image', msg: `Missing alt text for ${missingAlt} image${missingAlt > 1 ? 's' : ''}`, type: 'warn', tip: 'Add descriptive alt text to all product images for accessibility and SEO.' }];
-                  }
-                }
-                // ...existing code...
-                return (
-                  <li key={product.id} style={{ marginBottom: 12 }}>
-                    <input type="checkbox" checked={selectedIds.includes(product.id)} onChange={() => toggleSelect(product.id)} style={{ marginRight: 8 }} disabled={loading} />
-                    <div style={{ background: '#fff', color: '#222', borderRadius: 10, boxShadow: '0 2px 8px rgba(0,0,0,0.07)', padding: 18, marginBottom: 8, maxWidth: 700, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ fontWeight: 600, fontSize: 18 }}>{product.title}</div>
-                        <div style={{ fontSize: 15, color: '#888' }}>${product.variants && product.variants[0] ? product.variants[0].price : 'N/A'}</div>
-                        <span style={{ background: '#333', color: '#fff', borderRadius: 6, padding: '2px 10px', fontSize: 13, marginLeft: 8 }}>SEO Score: <b style={{ color: s >= 80 ? '#7fff7f' : s >= 60 ? '#ffe97f' : '#ff7f7f' }}>{s}</b>/100</span>
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr 1fr', gap: 8, fontSize: 14, marginTop: 8 }}>
-                        <div style={{ fontWeight: 500 }}>Field</div>
-                        <div style={{ fontWeight: 500 }}>Current Value</div>
-                        <div style={{ fontWeight: 500 }}>Target/Ideal</div>
-                        <div>Title</div>
-                        <div>{seo.title || <span style={{ color: '#aaa' }}>None</span>}</div>
-                        <div>50-60 characters, includes main keyword</div>
-                        <div>Meta Description</div>
-                        <div>{seo.metaDescription || <span style={{ color: '#aaa' }}>None</span>}</div>
-                        <div>120-160 characters, includes main keyword</div>
-                        <div>Keywords</div>
-                        <div>
+            <div style={{ overflowX: 'auto', borderRadius: 12, boxShadow: '0 2px 8px #0002', background: '#20243a', padding: 0 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}>
+                <thead style={{ background: '#23284a', color: '#fff', fontSize: 15 }}>
+                  <tr>
+                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}></th>
+                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}>Product</th>
+                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}>SEO Score</th>
+                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}>Title</th>
+                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}>Meta Description</th>
+                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}>Keywords</th>
+                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}>Slug</th>
+                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredProducts.map((product) => {
+                    let seo = seoSuggestions[product.id] || {
+                      title: product.title,
+                      metaDescription: product.metaDescription || product.description || product.body_html || '',
+                      keywords: product.keywords || [],
+                      slug: product.slug || product.handle || '',
+                    };
+                    let keywordSuggestions = [];
+                    if (!seo.keywords || !Array.isArray(seo.keywords) || !seo.keywords[0]) {
+                      const text = ((seo.title || '') + ' ' + (seo.metaDescription || '')).toLowerCase();
+                      const words = text.match(/\b[a-z0-9]{4,}\b/g) || [];
+                      const freq = {};
+                      words.forEach(w => { freq[w] = (freq[w] || 0) + 1; });
+                      keywordSuggestions = Object.entries(freq).sort((a, b) => b[1] - a[1]).map(([w]) => w).slice(0, 5);
+                    }
+                    const s = computeSeoScore({ title: seo.title, metaDescription: seo.metaDescription, keywords: seo.keywords, slug: seo.slug });
+                    let issues = getSeoIssues(seo);
+                    if (Array.isArray(product.images)) {
+                      const missingAlt = product.images.filter(img => !img.alt || !img.alt.trim()).length;
+                      if (missingAlt > 0) {
+                        issues = [...issues, { field: 'Image', msg: `Missing alt text for ${missingAlt} image${missingAlt > 1 ? 's' : ''}`, type: 'warn', tip: 'Add descriptive alt text to all product images for accessibility and SEO.' }];
+                      }
+                    }
+                    // Collapsible details
+                    const [expanded, setExpanded] = useState(false);
+                    return (
+                      <tr key={product.id} style={{ background: expanded ? '#23284a' : '#20243a', borderBottom: '1px solid #23284a' }}>
+                        <td style={{ padding: 10 }}>
+                          <input type="checkbox" checked={selectedIds.includes(product.id)} onChange={() => toggleSelect(product.id)} disabled={loading} />
+                        </td>
+                        <td style={{ padding: 10, fontWeight: 600, fontSize: 16 }}>
+                          <span style={{ cursor: 'pointer', color: '#5c6ac4' }} onClick={() => setExpanded(e => !e)}>
+                            {expanded ? '▼' : '▶'}
+                          </span> {product.title}
+                          <div style={{ fontSize: 13, color: '#aaa', marginTop: 2 }}>{product.variants && product.variants[0] ? `$${product.variants[0].price}` : 'N/A'}</div>
+                        </td>
+                        <td style={{ padding: 10 }}>
+                          <span style={{ background: '#333', color: '#fff', borderRadius: 6, padding: '2px 10px', fontSize: 13 }}> <b style={{ color: s >= 80 ? '#7fff7f' : s >= 60 ? '#ffe97f' : '#ff7f7f' }}>{s}</b>/100</span>
+                        </td>
+                        <td style={{ padding: 10 }}>{seo.title || <span style={{ color: '#aaa' }}>None</span>}</td>
+                        <td style={{ padding: 10 }}>{seo.metaDescription || <span style={{ color: '#aaa' }}>None</span>}</td>
+                        <td style={{ padding: 10 }}>
                           {Array.isArray(seo.keywords) && seo.keywords[0] ? seo.keywords.join(', ') : <span style={{ color: '#aaa' }}>None</span>}
                           {keywordSuggestions.length > 0 && (
                             <div style={{ marginTop: 4 }}>
@@ -332,31 +357,17 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                               ))}
                             </div>
                           )}
-                        </div>
-                        <div>Relevant, 1-5, separated by commas</div>
-                        <div>Slug</div>
-                        <div>{seo.slug || <span style={{ color: '#aaa' }}>None</span>}</div>
-                        <div>Lowercase, hyphens, no spaces</div>
-                      </div>
-                      {/* Google-style SEO preview snippet with device toggle */}
-                      {/* ...Device preview and other advanced features can be added here... */}
-                      {issues.length > 0 && (
-                        <ul style={{ margin: '10px 0 0 0', padding: 0, listStyle: 'none', fontSize: 13 }}>
-                          {issues.map((issue, idx) => (
-                            <li key={idx} style={{ color: issue.type === 'error' ? '#ff7f7f' : '#ffe97f', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-                              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                {issue.type === 'error' ? '⛔' : '⚠️'} <b>{issue.field}:</b> {issue.msg}
-                              </span>
-                              {issue.tip && (<span style={{ color: '#888', fontSize: 12, marginLeft: 24 }}>💡 {issue.tip}</span>)}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+                        </td>
+                        <td style={{ padding: 10 }}>{seo.slug || <span style={{ color: '#aaa' }}>None</span>}</td>
+                        <td style={{ padding: 10 }}>
+                          <button style={{ padding: '4px 10px', borderRadius: 4, background: '#5c6ac4', color: '#fff', border: 0, fontWeight: 600, fontSize: 13 }}>Edit</button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )
         )}
         {/* Aggressive debug panel always visible at bottom */}
