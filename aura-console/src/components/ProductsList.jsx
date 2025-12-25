@@ -341,7 +341,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                   </li>
                 );
               })}
-            // Move SEO history tracking outside the map loop
+            // Move SEO history tracking to the top level
             useEffect(() => {
               if (!Array.isArray(products) || products.length === 0) return;
               setSeoHistory(prev => {
@@ -369,7 +369,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                 });
                 return next;
               });
-            }, [products, seoSuggestions]);
+            }, [products, seoSuggestions, computeSeoScore, getSeoIssues]);
             </ul>
           )
         )}
