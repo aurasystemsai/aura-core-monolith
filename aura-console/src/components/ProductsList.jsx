@@ -50,99 +50,98 @@
     } else {
       if (metaDescription.length < 130) issues.push({ field: 'Meta Description', msg: 'Too short (<130)', type: 'warn', tip: tips['Meta Description:Too short (<130)'] });
       if (metaDescription.length > 155) issues.push({ field: 'Meta Description', msg: 'Too long (>155)', type: 'warn', tip: tips['Meta Description:Too long (>155)'] });
-    }
-    // Keywords
-    if (!Array.isArray(keywords) || keywords.length === 0 || !keywords[0]) {
-      issues.push({ field: 'Keywords', msg: 'Missing', type: 'warn', tip: tips['Keywords:Missing'] });
-    }
-    // Slug
-    if (!slug || !slug.trim()) {
-      issues.push({ field: 'Slug', msg: 'Missing', type: 'warn', tip: tips['Slug:Missing'] });
-    } else {
-      if (!/^[a-z0-9\-]+$/.test(slug) || slug.includes(' ')) {
-        issues.push({ field: 'Slug', msg: 'Bad format (lowercase, hyphens only, no spaces)', type: 'warn', tip: tips['Slug:Bad format (lowercase, hyphens only, no spaces)'] });
-      }
-    }
-    return issues;
-  }
-  // Advanced SEO scoring utility
-  function computeSeoScore({ title, metaDescription, keywords, slug }) {
-    let score = 0;
-    // Title length (ideal: 50-60 chars)
-    if (title) {
-      if (title.length >= 50 && title.length <= 60) score += 20;
-      else if (title.length >= 40 && title.length <= 70) score += 10;
-    }
-    // Meta description length (ideal: 120-160 chars)
-    if (metaDescription) {
-      if (metaDescription.length >= 120 && metaDescription.length <= 160) score += 20;
-      else if (metaDescription.length >= 100 && metaDescription.length <= 180) score += 10;
-    }
-    // Keyword density (ideal: 1-2% for primary keyword)
-    if (keywords && keywords.length > 0 && metaDescription) {
-      const primary = keywords[0];
-      const descWords = metaDescription.split(/\s+/g);
-      const count = descWords.filter(w => w.toLowerCase() === primary.toLowerCase()).length;
-      const density = count / descWords.length;
-      if (density >= 0.01 && density <= 0.02) score += 15;
-      else if (density > 0) score += 5;
-    }
-    // Uniqueness (no duplicate words in title)
-    if (title) {
-      const words = title.toLowerCase().split(/\s+/g);
-      const unique = new Set(words);
-      if (unique.size / words.length > 0.8) score += 10;
-    }
-    // Primary keyword in title
-    if (keywords && keywords.length > 0 && title && title.toLowerCase().includes(keywords[0].toLowerCase())) {
-      score += 15;
-    }
-    // Slug quality (no spaces, all lowercase, hyphenated)
-    if (slug && /^[a-z0-9\-]+$/.test(slug) && !slug.includes(' ')) score += 10;
-    // Cap at 100
-    return Math.min(score, 100);
-  }
-  // Export SEO suggestions to CSV
-  const exportSeoToCsv = () => {
-    const rows = [
-      ['Product Title', 'SEO Title', 'Meta Description', 'Slug', 'Keywords', 'SEO Score', 'Issues', 'Recommendations'],
-      ...products.filter(p => selectedIds.includes(p.id)).map(product => {
-        const seo = editableSeo[product.id] || {};
-        const score = computeSeoScore({
-          title: seo.title,
-          metaDescription: seo.metaDescription,
-          keywords: seo.keywords,
-          slug: seo.slug,
-        });
-        const issues = getSeoIssues(seo);
-        return [
-          product.title,
-          seo.title || '',
-          seo.metaDescription || '',
-          seo.slug || '',
-          Array.isArray(seo.keywords) ? seo.keywords.join(', ') : '',
-          score,
-          issues.map(i => `${i.field}: ${i.msg}`).join('; '),
-          issues.map(i => i.tip || '').filter(Boolean).join('; ')
-        ];
-      })
-    ];
-    const csv = rows.map(r => r.map(x => '"' + String(x).replace(/"/g, '""') + '"').join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'seo-audit.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
 
+                <button
+                  style={{ marginLeft: 12 }}
+                  onClick={async () => {
+                    setLoading(true);
+                    setError(null);
+                    setSelectedProductId(product.id);
+                    try {
+                      const res = await fetch('/api/run/product-seo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          productTitle: product.title,
+                          productDescription: product.description,
+                          brand: '',
+                          tone: '',
+                          useCases: [],
+                          prompt: aiPrompt,
+                          language,
+                        }),
+                      });
+                      if (!res.ok) throw new Error('Failed to run Product SEO');
+                      const data = await res.json();
+                      setSeoSuggestions((prev) => ({ ...prev, [product.id]: data.output }));
+                    } catch (err) {
+                      setError(err.message || 'Error running Product SEO');
+                    }
+                    setLoading(false);
+                  }}
+                  disabled={loading}
+                >Preview SEO</button>
+                {/* Show preview panel if this product is selected and has suggestions */}
+                {selectedProductId === product.id && seoSuggestions[product.id] && (
+                  <div style={{
+                    background: '#222',
+                    color: '#fff',
+                    padding: 16,
+                    borderRadius: 8,
+                    marginTop: 12,
+                    marginBottom: 12,
+                    maxWidth: 500,
+                  }}>
+                    <h4>SEO Suggestions</h4>
+                    <div><strong>Title:</strong> {seoSuggestions[product.id].title}</div>
+                    <div><strong>Meta Description:</strong> {seoSuggestions[product.id].metaDescription}</div>
+                    <div><strong>Slug:</strong> {seoSuggestions[product.id].slug}</div>
+                    <div><strong>Keywords:</strong> {Array.isArray(seoSuggestions[product.id].keywords) ? seoSuggestions[product.id].keywords.join(', ') : ''}</div>
+                    <button
+                      style={{ marginTop: 10 }}
+                      onClick={async () => {
+                        setLoading(true);
+                        setError(null);
+                        try {
+                          const data = seoSuggestions[product.id];
+                          await fetch(`/api/shopify/update-product?shop=${encodeURIComponent(shopDomain)}&token=${encodeURIComponent(shopToken)}&id=${encodeURIComponent(product.id)}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              title: data.title,
+                              body_html: product.body_html || '',
+                              metafields: [
+                                { namespace: 'global', key: 'description_tag', value: data.metaDescription, value_type: 'string' },
+                                { namespace: 'global', key: 'keywords', value: (data.keywords || []).join(','), value_type: 'string' },
+                              ],
+                              handle: data.slug,
+                            }),
+                          });
+                          alert('SEO updated for ' + product.title);
+                          setSelectedProductId(null);
+                        } catch (err) {
+                          setError(err.message || 'Error updating Shopify product');
+                        }
+                        setLoading(false);
+                      }}
+                      disabled={loading}
+                    >Apply to Shopify</button>
+                    <button
+                      style={{ marginLeft: 10, marginTop: 10 }}
+                      onClick={() => setSelectedProductId(null)}
+                      disabled={loading}
+                    >Close</button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+}
 
-import React, { useState, useEffect, useCallback } from 'react';
-
-
+export default ProductsList;
 const ProductsList = ({ shopDomain, shopToken }) => {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
