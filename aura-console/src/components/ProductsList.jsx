@@ -341,7 +341,11 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                   </li>
                 );
               })}
-// Move SEO history tracking to the top level, above return
+
+// ...existing code...
+
+// Place this inside ProductsList, after all useState/useEffect declarations, before return
+// SEO history tracking
 useEffect(() => {
   if (!Array.isArray(products) || products.length === 0) return;
   setSeoHistory(prev => {
