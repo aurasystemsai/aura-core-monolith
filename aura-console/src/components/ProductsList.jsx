@@ -142,22 +142,6 @@
 }
 
 export default ProductsList;
-  const [selectedIds, setSelectedIds] = useState([]);
-  // Bulk preview modal state
-  const [showBulkPreview, setShowBulkPreview] = useState(false);
-  const [bulkLoading, setBulkLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  // Editable SEO fields for bulk modal
-  const [editableSeo, setEditableSeo] = useState({});
-  // Status indicators for updates
-  const [updateStatus, setUpdateStatus] = useState({}); // { [productId]: 'pending' | 'success' | 'error' }
-  // Store previous SEO fields for undo
-  const [previousSeo, setPreviousSeo] = useState({});
-  // Fetch SEO suggestions for all selected products (for preview)
-  const fetchBulkSeoSuggestions = async () => {
-    setBulkLoading(true);
-    setError(null);
-    try {
       const newSuggestions = {};
       for (const product of products.filter(p => selectedIds.includes(p.id))) {
         const res = await fetch('/api/run/product-seo', {
