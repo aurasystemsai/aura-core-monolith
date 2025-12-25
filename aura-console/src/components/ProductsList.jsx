@@ -75,6 +75,31 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   const [updateStatus, setUpdateStatus] = useState({});
   const [seoHistory, setSeoHistory] = useState({});
   const [fatal, setFatal] = useState(null);
+  // Aggressive debug: always show debug info panel
+  function DebugPanel() {
+    return (
+      <div style={{
+        background: '#181c2a', color: '#fff', fontSize: 13, padding: 16, borderRadius: 8, margin: '32px auto', maxWidth: 600, boxShadow: '0 2px 8px #0002', wordBreak: 'break-all', zIndex: 9999
+      }}>
+        <b>DEBUG PANEL</b><br/>
+        <div>shopToken: <span style={{ color: '#7ff' }}>{String(shopToken)}</span></div>
+        <div>shopDomain: <span style={{ color: '#7ff' }}>{String(shopDomain)}</span></div>
+        <div>products: <span style={{ color: '#7ff' }}>{Array.isArray(products) ? products.length : 'n/a'}</span></div>
+        <div>loading: <span style={{ color: '#7ff' }}>{String(loading)}</span></div>
+        <div>error: <span style={{ color: '#f77' }}>{String(error)}</span></div>
+        <div>fatal: <span style={{ color: '#f77' }}>{String(fatal)}</span></div>
+        <div>init: <span style={{ color: '#7ff' }}>{String(init)}</span></div>
+        <div>selectedIds: <span style={{ color: '#7ff' }}>{JSON.stringify(selectedIds)}</span></div>
+        <div>statusFilter: <span style={{ color: '#7ff' }}>{String(statusFilter)}</span></div>
+        <div>aiPrompt: <span style={{ color: '#7ff' }}>{String(aiPrompt)}</span></div>
+        <div>language: <span style={{ color: '#7ff' }}>{String(language)}</span></div>
+        <div>seoSuggestions: <span style={{ color: '#7ff' }}>{Object.keys(seoSuggestions).length}</span></div>
+        <div>seoHistory: <span style={{ color: '#7ff' }}>{Object.keys(seoHistory).length}</span></div>
+        <div>updateStatus: <span style={{ color: '#7ff' }}>{JSON.stringify(updateStatus)}</span></div>
+        <div>Timestamp: {new Date().toISOString()}</div>
+      </div>
+    );
+  }
   // Helper: Compute SEO score
   function computeSeoScore({ title, metaDescription, keywords, slug }) {
     let score = 100;
@@ -120,6 +145,9 @@ const ProductsList = ({ shopDomain, shopToken }) => {
     } catch (e) {
       setFatal(e.message || 'Fatal render error');
       debugLog('Fatal error in useEffect', e);
+      if (typeof window !== 'undefined') {
+        window.PRODUCTS_LIST_FATAL = e;
+      }
     }
   }, [fetchProducts]);
   // Selection helpers
@@ -153,12 +181,13 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   }
   // Show connect button if no token
   if (fatal) {
+    if (typeof window !== 'undefined') {
+      window.PRODUCTS_LIST_FATAL = fatal;
+    }
     return (
       <div style={{ color: 'red', padding: 32, textAlign: 'center', fontWeight: 600 }}>
         Fatal error: {fatal}
-        <div style={{ color: '#888', fontSize: 13, marginTop: 8 }}>
-          Debug info: shopToken={String(shopToken)}, shopDomain={String(shopDomain)}, products={Array.isArray(products) ? products.length : 'n/a'}
-        </div>
+        <DebugPanel />
       </div>
     );
   }
@@ -166,7 +195,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
     return (
       <div style={{ color: '#888', padding: 32, textAlign: 'center' }}>
         <div>Initializing Products screen...</div>
-        <div style={{ color: '#aaa', fontSize: 13, marginTop: 8 }}>Debug info: shopToken={String(shopToken)}, shopDomain={String(shopDomain)}</div>
+        <DebugPanel />
       </div>
     );
   }
@@ -185,7 +214,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
             style={{ display: 'inline-block', padding: '12px 24px', background: '#5c6ac4', color: '#fff', borderRadius: 6, textDecoration: 'none', fontWeight: 600, fontSize: 16, border: 0, cursor: 'pointer' }}
           >Connect to Shopify</button>
         </div>
-        <div style={{ color: '#aaa', fontSize: 13 }}>Connect your Shopify store to fetch products.<br/>Debug: shopToken={String(shopToken)}, shopDomain={String(shopDomain)}</div>
+        <DebugPanel />
       </div>
     );
   }
@@ -223,16 +252,14 @@ const ProductsList = ({ shopDomain, shopToken }) => {
         {error && (
           <div style={{ color: 'red', margin: '16px 0', fontWeight: 500 }}>
             {error}
-            <div style={{ color: '#888', fontSize: 13, marginTop: 8 }}>
-              Debug info: shopToken={String(shopToken)}, shopDomain={String(shopDomain)}, products={Array.isArray(products) ? products.length : 'n/a'}
-            </div>
+            <DebugPanel />
           </div>
         )}
         {!loading && !error && (
           filteredProducts.length === 0 ? (
             <div style={{ color: '#888', margin: '24px 0', textAlign: 'center' }}>
               No products found.<br/>
-              <span style={{ fontSize: 13 }}>Debug info: shopToken={String(shopToken)}, shopDomain={String(shopDomain)}, products={Array.isArray(products) ? products.length : 'n/a'}</span>
+              <DebugPanel />
             </div>
           ) : (
             <ul>
@@ -327,10 +354,8 @@ const ProductsList = ({ shopDomain, shopToken }) => {
             </ul>
           )
         )}
-        {/* Catch-all fallback if nothing else renders */}
-        <div style={{ color: '#aaa', fontSize: 13, marginTop: 32, textAlign: 'center' }}>
-          [End of ProductsList render] Debug info: shopToken={String(shopToken)}, shopDomain={String(shopDomain)}, products={Array.isArray(products) ? products.length : 'n/a'}
-        </div>
+        {/* Aggressive debug panel always visible at bottom */}
+        <DebugPanel />
       </div>
     );
   } catch (e) {
