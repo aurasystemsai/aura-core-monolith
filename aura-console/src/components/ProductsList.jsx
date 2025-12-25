@@ -341,35 +341,35 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                   </li>
                 );
               })}
-            // Move SEO history tracking to the top level
-            useEffect(() => {
-              if (!Array.isArray(products) || products.length === 0) return;
-              setSeoHistory(prev => {
-                const next = { ...prev };
-                products.forEach(product => {
-                  const seo = seoSuggestions[product.id] || {
-                    title: product.title,
-                    metaDescription: product.metaDescription || product.description || product.body_html || '',
-                    keywords: product.keywords || [],
-                    slug: product.slug || product.handle || '',
-                  };
-                  const s = computeSeoScore({ title: seo.title, metaDescription: seo.metaDescription, keywords: seo.keywords, slug: seo.slug });
-                  let issues = getSeoIssues(seo);
-                  if (Array.isArray(product.images)) {
-                    const missingAlt = product.images.filter(img => !img.alt || !img.alt.trim()).length;
-                    if (missingAlt > 0) {
-                      issues = [...issues, { field: 'Image', msg: `Missing alt text for ${missingAlt} image${missingAlt > 1 ? 's' : ''}`, type: 'warn', tip: 'Add descriptive alt text to all product images for accessibility and SEO.' }];
-                    }
-                  }
-                  const hist = next[product.id] || [];
-                  const last = hist[hist.length - 1];
-                  if (!last || last.score !== s || JSON.stringify(last.issues) !== JSON.stringify(issues)) {
-                    next[product.id] = [...hist, { date: new Date().toISOString(), score: s, issues }].slice(-10);
-                  }
-                });
-                return next;
-              });
-            }, [products, seoSuggestions, computeSeoScore, getSeoIssues]);
+// Move SEO history tracking to the top level, above return
+useEffect(() => {
+  if (!Array.isArray(products) || products.length === 0) return;
+  setSeoHistory(prev => {
+    const next = { ...prev };
+    products.forEach(product => {
+      const seo = seoSuggestions[product.id] || {
+        title: product.title,
+        metaDescription: product.metaDescription || product.description || product.body_html || '',
+        keywords: product.keywords || [],
+        slug: product.slug || product.handle || '',
+      };
+      const s = computeSeoScore({ title: seo.title, metaDescription: seo.metaDescription, keywords: seo.keywords, slug: seo.slug });
+      let issues = getSeoIssues(seo);
+      if (Array.isArray(product.images)) {
+        const missingAlt = product.images.filter(img => !img.alt || !img.alt.trim()).length;
+        if (missingAlt > 0) {
+          issues = [...issues, { field: 'Image', msg: `Missing alt text for ${missingAlt} image${missingAlt > 1 ? 's' : ''}`, type: 'warn', tip: 'Add descriptive alt text to all product images for accessibility and SEO.' }];
+        }
+      }
+      const hist = next[product.id] || [];
+      const last = hist[hist.length - 1];
+      if (!last || last.score !== s || JSON.stringify(last.issues) !== JSON.stringify(issues)) {
+        next[product.id] = [...hist, { date: new Date().toISOString(), score: s, issues }].slice(-10);
+      }
+    });
+    return next;
+  });
+}, [products, seoSuggestions, computeSeoScore, getSeoIssues]);
             </ul>
           )
         )}
