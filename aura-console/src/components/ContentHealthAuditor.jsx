@@ -1,3 +1,15 @@
+// TODO: Refactor this component to match the new ProductsList.jsx standards:
+// - Show actionable tips for each issue
+// - Highlight missing primary keyword in title/meta
+// - Show current/target values for each field
+// - Add Google-style SEO preview snippet (with device toggle)
+// - Suggest keywords if missing
+// - Enable export of full SEO audit
+// - Track SEO improvements over time
+// - Add accessibility checks (alt text, etc)
+// - Use modern, professional UI layout
+//
+// Repeat for all other tool components in this directory.
 import React, { useEffect, useMemo, useState } from "react";
 import "./ContentHealthAuditor.css";
 

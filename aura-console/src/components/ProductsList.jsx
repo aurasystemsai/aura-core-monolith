@@ -1,3 +1,70 @@
+  // Returns an array of SEO issues for a product's fields
+  function getSeoIssues({ title, metaDescription, keywords, slug }) {
+            // Accessibility: check for missing alt text (if product.images exists)
+            if (typeof window !== 'undefined' && window.products && Array.isArray(window.products)) {
+              // This is a fallback for global products, but we should check the product object directly below
+            }
+        // Highlight missing primary keyword in title/meta
+        if (Array.isArray(keywords) && keywords[0]) {
+          const primary = keywords[0].toLowerCase();
+          if (!title || !title.toLowerCase().includes(primary)) {
+            issues.push({
+              field: 'Title',
+              msg: 'Primary keyword missing',
+              type: 'warn',
+              tip: 'Include your main keyword in the product title for better SEO.'
+            });
+          }
+          if (!metaDescription || !metaDescription.toLowerCase().includes(primary)) {
+            issues.push({
+              field: 'Meta Description',
+              msg: 'Primary keyword missing',
+              type: 'warn',
+              tip: 'Include your main keyword in the meta description to improve relevance.'
+            });
+          }
+        }
+    const issues = [];
+    // Helper for actionable tips
+    const tips = {
+      'Title:Missing': 'Add a descriptive product title (50-60 characters).',
+      'Title:Too short (<45)': 'Expand the title to at least 50 characters for better SEO.',
+      'Title:Too long (>60)': 'Shorten the title to 60 characters or less.',
+      'Meta Description:Missing': 'Add a meta description summarizing the product (120-160 characters).',
+      'Meta Description:Too short (<130)': 'Expand the meta description to at least 120 characters.',
+      'Meta Description:Too long (>155)': 'Shorten the meta description to 160 characters or less.',
+      'Keywords:Missing': 'Add relevant keywords that describe your product.',
+      'Slug:Missing': 'Add a URL slug (e.g., product-name).',
+      'Slug:Bad format (lowercase, hyphens only, no spaces)': 'Use only lowercase letters, numbers, and hyphens in the slug.',
+    };
+    // Title
+    if (!title || !title.trim()) {
+      issues.push({ field: 'Title', msg: 'Missing', type: 'error', tip: tips['Title:Missing'] });
+    } else {
+      if (title.length < 45) issues.push({ field: 'Title', msg: 'Too short (<45)', type: 'warn', tip: tips['Title:Too short (<45)'] });
+      if (title.length > 60) issues.push({ field: 'Title', msg: 'Too long (>60)', type: 'warn', tip: tips['Title:Too long (>60)'] });
+    }
+    // Meta description
+    if (!metaDescription || !metaDescription.trim()) {
+      issues.push({ field: 'Meta Description', msg: 'Missing', type: 'error', tip: tips['Meta Description:Missing'] });
+    } else {
+      if (metaDescription.length < 130) issues.push({ field: 'Meta Description', msg: 'Too short (<130)', type: 'warn', tip: tips['Meta Description:Too short (<130)'] });
+      if (metaDescription.length > 155) issues.push({ field: 'Meta Description', msg: 'Too long (>155)', type: 'warn', tip: tips['Meta Description:Too long (>155)'] });
+    }
+    // Keywords
+    if (!Array.isArray(keywords) || keywords.length === 0 || !keywords[0]) {
+      issues.push({ field: 'Keywords', msg: 'Missing', type: 'warn', tip: tips['Keywords:Missing'] });
+    }
+    // Slug
+    if (!slug || !slug.trim()) {
+      issues.push({ field: 'Slug', msg: 'Missing', type: 'warn', tip: tips['Slug:Missing'] });
+    } else {
+      if (!/^[a-z0-9\-]+$/.test(slug) || slug.includes(' ')) {
+        issues.push({ field: 'Slug', msg: 'Bad format (lowercase, hyphens only, no spaces)', type: 'warn', tip: tips['Slug:Bad format (lowercase, hyphens only, no spaces)'] });
+      }
+    }
+    return issues;
+  }
   // Advanced SEO scoring utility
   function computeSeoScore({ title, metaDescription, keywords, slug }) {
     let score = 0;
@@ -38,15 +105,25 @@
   // Export SEO suggestions to CSV
   const exportSeoToCsv = () => {
     const rows = [
-      ['Product Title', 'SEO Title', 'Meta Description', 'Slug', 'Keywords'],
+      ['Product Title', 'SEO Title', 'Meta Description', 'Slug', 'Keywords', 'SEO Score', 'Issues', 'Recommendations'],
       ...products.filter(p => selectedIds.includes(p.id)).map(product => {
         const seo = editableSeo[product.id] || {};
+        const score = computeSeoScore({
+          title: seo.title,
+          metaDescription: seo.metaDescription,
+          keywords: seo.keywords,
+          slug: seo.slug,
+        });
+        const issues = getSeoIssues(seo);
         return [
           product.title,
           seo.title || '',
           seo.metaDescription || '',
           seo.slug || '',
           Array.isArray(seo.keywords) ? seo.keywords.join(', ') : '',
+          score,
+          issues.map(i => `${i.field}: ${i.msg}`).join('; '),
+          issues.map(i => i.tip || '').filter(Boolean).join('; ')
         ];
       })
     ];
@@ -55,7 +132,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'seo-suggestions.csv';
+    a.download = 'seo-audit.csv';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -74,6 +151,8 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   const [error, setError] = useState(null);
   // Store SEO suggestions per product ID
   const [seoSuggestions, setSeoSuggestions] = useState({});
+  // SEO history: { [productId]: [{ date, score, issues }] }
+  const [seoHistory, setSeoHistory] = useState({});
   // Custom AI prompt
   const [aiPrompt, setAiPrompt] = useState('');
   // Multi-language support
@@ -103,7 +182,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             productTitle: product.title,
-            productDescription: product.description || '',
+            productDescription: product.description,
             brand: '',
             tone: '',
             useCases: [],
@@ -453,7 +532,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   productTitle: product.title,
-                  productDescription: product.description || '',
+                  productDescription: product.description,
                   brand: '',
                   tone: '',
                   useCases: [],
@@ -498,7 +577,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   productTitle: product.title,
-                  productDescription: product.description || '',
+                  productDescription: product.description,
                   brand: '',
                   tone: '',
                   useCases: [],
@@ -540,33 +619,226 @@ const ProductsList = ({ shopDomain, shopToken }) => {
           <div>No products found.</div>
         ) : (
           <ul>
-            {filteredProducts.map((product) => (
-              <li key={product.id}>
-                <input
-                  type="checkbox"
-                  checked={selectedIds.includes(product.id)}
-                  onChange={() => toggleSelect(product.id)}
-                  style={{ marginRight: 8 }}
-                  disabled={loading}
-                />
-                <strong>{product.title}</strong> - $
-                {product.variants && product.variants[0] ? product.variants[0].price : 'N/A'}
-                {/* SEO Score badge */}
-                {seoSuggestions[product.id] && (
-                  (() => {
-                    const s = computeSeoScore({
-                      title: seoSuggestions[product.id].title,
-                      metaDescription: seoSuggestions[product.id].metaDescription,
-                      keywords: seoSuggestions[product.id].keywords,
-                      slug: seoSuggestions[product.id].slug,
-                    });
-                    return (
+            {filteredProducts.map((product) => {
+              // Prefer AI suggestion if available, else use product fields
+              let seo = seoSuggestions[product.id] || {
+                title: product.title,
+                metaDescription: product.metaDescription || product.description || product.body_html || '',
+                keywords: product.keywords || [],
+                slug: product.slug || product.handle || '',
+              };
+              // Suggest keywords if missing
+              let keywordSuggestions = [];
+              if (!seo.keywords || !Array.isArray(seo.keywords) || !seo.keywords[0]) {
+                // Simple heuristic: extract top 3-5 unique, non-trivial words from title/description
+                const text = ((seo.title || '') + ' ' + (seo.metaDescription || '')).toLowerCase();
+                const words = text.match(/\b[a-z0-9]{4,}\b/g) || [];
+                const freq = {};
+                words.forEach(w => { freq[w] = (freq[w] || 0) + 1; });
+                keywordSuggestions = Object.entries(freq)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([w]) => w)
+                  .slice(0, 5);
+              }
+              const s = computeSeoScore({
+                title: seo.title,
+                metaDescription: seo.metaDescription,
+                keywords: seo.keywords,
+                slug: seo.slug,
+              });
+              let issues = getSeoIssues(seo);
+              // Accessibility: check for missing alt text on images
+              if (Array.isArray(product.images)) {
+                const missingAlt = product.images.filter(img => !img.alt || !img.alt.trim()).length;
+                if (missingAlt > 0) {
+                  issues = [
+                    ...issues,
+                    {
+                      field: 'Image',
+                      msg: `Missing alt text for ${missingAlt} image${missingAlt > 1 ? 's' : ''}`,
+                      type: 'warn',
+                      tip: 'Add descriptive alt text to all product images for accessibility and SEO.'
+                    }
+                  ];
+                }
+              }
+              // Track SEO history
+              React.useEffect(() => {
+                if (!product.id) return;
+                setSeoHistory(prev => {
+                  const hist = prev[product.id] || [];
+                  const last = hist[hist.length - 1];
+                  if (!last || last.score !== s || JSON.stringify(last.issues) !== JSON.stringify(issues)) {
+                    return {
+                      ...prev,
+                      [product.id]: [...hist, { date: new Date().toISOString(), score: s, issues }].slice(-10)
+                    };
+                  }
+                  return prev;
+                });
+              }, [product.id, s, JSON.stringify(issues)]);
+              return (
+                <li key={product.id} style={{ marginBottom: 12 }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(product.id)}
+                    onChange={() => toggleSelect(product.id)}
+                    style={{ marginRight: 8 }}
+                    disabled={loading}
+                  />
+                  <div style={{
+                    background: '#fff',
+                    color: '#222',
+                    borderRadius: 10,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+                    padding: 18,
+                    marginBottom: 8,
+                    maxWidth: 700,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ fontWeight: 600, fontSize: 18 }}>{product.title}</div>
+                      <div style={{ fontSize: 15, color: '#888' }}>
+                        ${product.variants && product.variants[0] ? product.variants[0].price : 'N/A'}
+                      </div>
                       <span style={{ background: '#333', color: '#fff', borderRadius: 6, padding: '2px 10px', fontSize: 13, marginLeft: 8 }}>
                         SEO Score: <b style={{ color: s >= 80 ? '#7fff7f' : s >= 60 ? '#ffe97f' : '#ff7f7f' }}>{s}</b>/100
                       </span>
-                    );
-                  })()
-                )}
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr 1fr', gap: 8, fontSize: 14, marginTop: 8 }}>
+                      <div style={{ fontWeight: 500 }}>Field</div>
+                      <div style={{ fontWeight: 500 }}>Current Value</div>
+                      <div style={{ fontWeight: 500 }}>Target/Ideal</div>
+                      <div>Title</div>
+                      <div>{seo.title || <span style={{ color: '#aaa' }}>None</span>}</div>
+                      <div>50-60 characters, includes main keyword</div>
+                      <div>Meta Description</div>
+                      <div>{seo.metaDescription || <span style={{ color: '#aaa' }}>None</span>}</div>
+                      <div>120-160 characters, includes main keyword</div>
+                      <div>Keywords</div>
+                      <div>
+                        {Array.isArray(seo.keywords) && seo.keywords[0] ? seo.keywords.join(', ') : <span style={{ color: '#aaa' }}>None</span>}
+                        {keywordSuggestions.length > 0 && (
+                          <div style={{ marginTop: 4 }}>
+                            <span style={{ color: '#5c6ac4', fontSize: 13 }}>Suggestions: </span>
+                            {keywordSuggestions.map((kw, i) => (
+                              <span key={kw} style={{
+                                background: '#e0e7ff',
+                                color: '#222',
+                                borderRadius: 4,
+                                padding: '2px 6px',
+                                marginRight: 4,
+                                fontSize: 13,
+                                cursor: 'pointer',
+                                border: '1px solid #b3bcf5'
+                              }}
+                                onClick={() => {
+                                  // Add suggestion to keywords
+                                  seo.keywords = [...(seo.keywords || []), kw];
+                                }}
+                              >{kw}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div>Relevant, 1-5, separated by commas</div>
+                      <div>Slug</div>
+                      <div>{seo.slug || <span style={{ color: '#aaa' }}>None</span>}</div>
+                      <div>Lowercase, hyphens, no spaces</div>
+                    </div>
+                    {/* Google-style SEO preview snippet with device toggle */}
+                    {(() => {
+                      const [device, setDevice] = React.useState('desktop');
+                      return (
+                        <div style={{ margin: '16px 0 0 0' }}>
+                          <div style={{ marginBottom: 6 }}>
+                            <button onClick={() => setDevice('desktop')} style={{
+                              background: device === 'desktop' ? '#5c6ac4' : '#e0e0e0',
+                              color: device === 'desktop' ? '#fff' : '#333',
+                              border: 'none',
+                              borderRadius: 4,
+                              padding: '2px 10px',
+                              marginRight: 4,
+                              cursor: 'pointer',
+                              fontSize: 13
+                            }}>Desktop</button>
+                            <button onClick={() => setDevice('mobile')} style={{
+                              background: device === 'mobile' ? '#5c6ac4' : '#e0e0e0',
+                              color: device === 'mobile' ? '#fff' : '#333',
+                              border: 'none',
+                              borderRadius: 4,
+                              padding: '2px 10px',
+                              cursor: 'pointer',
+                              fontSize: 13
+                            }}>Mobile</button>
+                          </div>
+                          <div style={{
+                            background: '#f8f9fa',
+                            border: '1px solid #e0e0e0',
+                            borderRadius: 8,
+                            padding: device === 'mobile' ? 10 : 16,
+                            maxWidth: device === 'mobile' ? 340 : 600,
+                            minHeight: device === 'mobile' ? 120 : 100,
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                            fontSize: device === 'mobile' ? 15 : 20,
+                            margin: '0 auto',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            borderTop: device === 'mobile' ? '24px solid #e0e0e0' : undefined
+                          }}>
+                            <div style={{ color: '#1a0dab', fontSize: device === 'mobile' ? 16 : 20, lineHeight: 1.2, fontWeight: 500, marginBottom: 4, wordBreak: 'break-word' }}>
+                              {seo.title || <span style={{ color: '#aaa' }}>Title preview</span>}
+                            </div>
+                            <div style={{ color: '#006621', fontSize: device === 'mobile' ? 12 : 14, marginBottom: 4 }}>
+                              https://{shopDomain}/products/{seo.slug || <span style={{ color: '#aaa' }}>slug</span>}
+                            </div>
+                            <div style={{ color: '#545454', fontSize: device === 'mobile' ? 13 : 15, lineHeight: 1.4 }}>
+                              {seo.metaDescription || <span style={{ color: '#aaa' }}>Meta description preview</span>}
+                            </div>
+                            {device === 'mobile' && (
+                              <div style={{ position: 'absolute', top: 2, left: 0, width: '100%', textAlign: 'center', color: '#888', fontSize: 11 }}>
+                                Mobile Preview
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    {issues.length > 0 && (
+                      <ul style={{ margin: '10px 0 0 0', padding: 0, listStyle: 'none', fontSize: 13 }}>
+                        {issues.map((issue, idx) => (
+                          <li key={idx} style={{ color: issue.type === 'error' ? '#ff7f7f' : '#ffe97f', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              {issue.type === 'error' ? '⛔' : '⚠️'} <b>{issue.field}:</b> {issue.msg}
+                            </span>
+                            {issue.tip && (
+                              <span style={{ color: '#888', fontSize: 12, marginLeft: 24 }}>💡 {issue.tip}</span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {/* SEO history chart */}
+                    {seoHistory[product.id] && seoHistory[product.id].length > 1 && (
+                      <div style={{ marginTop: 12 }}>
+                        <div style={{ fontWeight: 500, fontSize: 13, marginBottom: 4 }}>SEO Score History (last 10 changes):</div>
+                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 40 }}>
+                          {seoHistory[product.id].map((h, i) => (
+                            <div key={i} title={h.date + '\nScore: ' + h.score}
+                              style={{
+                                width: 16,
+                                height: (h.score / 100) * 36 + 4,
+                                background: h.score >= 80 ? '#7fff7f' : h.score >= 60 ? '#ffe97f' : '#ff7f7f',
+                                borderRadius: 3,
+                                marginRight: 1
+                              }} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 <button
                   style={{ marginLeft: 12 }}
                   onClick={async () => {
@@ -579,7 +851,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                           productTitle: product.title,
-                          productDescription: product.description || '',
+                          productDescription: product.description,
                           brand: '',
                           tone: '',
                           useCases: [],

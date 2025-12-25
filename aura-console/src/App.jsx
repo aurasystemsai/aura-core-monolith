@@ -1,3 +1,9 @@
+// TODO: Refactor the main UI shell, navigation, and dashboard to match the new world-class, modern, professional standards set in ProductsList.jsx:
+// - Consistent actionable tips, field targets, and device previews
+// - Google-style SEO previews and export everywhere
+// - Accessibility and keyword checks everywhere
+// - Modern, clean, SEMrush/Ahrefs-level layout and visual polish
+// - Propagate all advanced features and best practices to every tool and dashboard view
 // aura-console/src/App.jsx
 import React, { useState, useEffect } from "react";
 import "./App.css";
