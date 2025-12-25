@@ -26,27 +26,30 @@ const ENGINES = {
     toolId: "product-seo",
     // ...other fields...
   },
-  function App() {
-    const [activeSection, setActiveSection] = useState('products');
-    // ...existing hooks and logic...
-    return (
-      <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
-        <Sidebar active={activeSection} onSelect={setActiveSection} />
-        <main style={{ flex: 1, padding: '32px 40px', maxWidth: 1600, margin: '0 auto', width: '100%' }}>
-          <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <ProjectSwitcher coreUrl={coreUrl} currentProject={project} onSelectProject={setProject} onDisconnect={() => setProject(null)} />
-          </div>
-          {/* Main content area switches by section */}
-          {activeSection === 'products' && <ProductsList shopDomain={null} shopToken={null} />}
-          {activeSection === 'content-health' && <ContentHealthAuditor />}
-          {activeSection === 'fix-queue' && <div><h2>Fix Queue</h2><p>Coming soon: Advanced fix queue UI.</p></div>}
-          {activeSection === 'content-ingest' && <ContentIngestor />}
-          {activeSection === 'draft-library' && <DraftLibrary />}
-          {activeSection === 'system-health' && <SystemHealthPanel />}
-        </main>
-      </div>
-    );
-  }
+  // ...other engines...
+};
+
+function App() {
+  const [activeSection, setActiveSection] = useState('products');
+  // ...existing hooks and logic...
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
+      <Sidebar active={activeSection} onSelect={setActiveSection} />
+      <main style={{ flex: 1, padding: '32px 40px', maxWidth: 1600, margin: '0 auto', width: '100%' }}>
+        <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <ProjectSwitcher coreUrl={coreUrl} currentProject={project} onSelectProject={setProject} onDisconnect={() => setProject(null)} />
+        </div>
+        {/* Main content area switches by section */}
+        {activeSection === 'products' && <ProductsList shopDomain={null} shopToken={null} />}
+        {activeSection === 'content-health' && <ContentHealthAuditor />}
+        {activeSection === 'fix-queue' && <div><h2>Fix Queue</h2><p>Coming soon: Advanced fix queue UI.</p></div>}
+        {activeSection === 'content-ingest' && <ContentIngestor />}
+        {activeSection === 'draft-library' && <DraftLibrary />}
+        {activeSection === 'system-health' && <SystemHealthPanel />}
+      </main>
+    </div>
+  );
+}
   const [productDescription, setProductDescription] = useState(
     "Bold paperclip chain bracelet with a sweat-proof, waterproof coating. Adjustable fit for any wrist, perfect for everyday wear."
   );
