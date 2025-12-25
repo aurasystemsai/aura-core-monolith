@@ -59,6 +59,8 @@ const ProductsList = (props) => {
       <h1>Shopify Products</h1>
       {/* ...rest of the UI... */}
     </div>
-  );
+	);
 };
+
+export default ProductsList;
 
