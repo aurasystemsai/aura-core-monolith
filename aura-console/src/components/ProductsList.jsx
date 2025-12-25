@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
+// Debug utility for logging
+function debugLog(...args) {
+  if (typeof window !== 'undefined' && window.localStorage && window.localStorage.getItem('AURA_DEBUG')) {
+    // Only log if debug flag is set in localStorage
+    // eslint-disable-next-line no-console
+    console.log('[ProductsList]', ...args);
+  }
+}
+
 // Returns an array of SEO issues for a product's fields
 function getSeoIssues({ title, metaDescription, keywords, slug }) {
   const issues = [];
@@ -55,6 +64,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [init, setInit] = useState(false);
   const [seoSuggestions, setSeoSuggestions] = useState({});
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectedProductId, setSelectedProductId] = useState(null);
@@ -75,9 +85,12 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   }
   // Fetch products from Shopify
   const fetchProducts = useCallback(() => {
+    debugLog('fetchProducts called', { shopDomain, shopToken });
+    setInit(true);
     if (!shopDomain || !shopToken) {
+      debugLog('Missing shopDomain or shopToken', { shopDomain, shopToken });
       setProducts([]);
-      setError(null);
+      setError('Missing Shopify connection. Please connect your store.');
       setLoading(false);
       return;
     }
@@ -85,14 +98,17 @@ const ProductsList = ({ shopDomain, shopToken }) => {
     setError(null);
     fetch(`/api/shopify/products?shop=${encodeURIComponent(shopDomain)}&token=${encodeURIComponent(shopToken)}`)
       .then((res) => {
+        debugLog('Fetch response', res);
         if (!res.ok) throw new Error('Failed to fetch products');
         return res.json();
       })
       .then((data) => {
+        debugLog('Fetched products data', data);
         setProducts(Array.isArray(data.products) ? data.products : []);
         setLoading(false);
       })
       .catch((err) => {
+        debugLog('Fetch error', err);
         setError(err.message || 'Error loading products');
         setLoading(false);
       });
@@ -128,7 +144,15 @@ const ProductsList = ({ shopDomain, shopToken }) => {
     URL.revokeObjectURL(url);
   }
   // Show connect button if no token
-  if (!shopToken) {
+  if (!init) {
+    return (
+      <div style={{ color: '#888', padding: 32, textAlign: 'center' }}>
+        <div>Initializing Products screen...</div>
+      </div>
+    );
+  }
+  if (!shopToken || !shopDomain) {
+    debugLog('No shopToken or shopDomain', { shopToken, shopDomain });
     return (
       <div>
         <h1>Shopify Products</h1>
@@ -142,7 +166,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
             style={{ display: 'inline-block', padding: '12px 24px', background: '#5c6ac4', color: '#fff', borderRadius: 6, textDecoration: 'none', fontWeight: 600, fontSize: 16, border: 0, cursor: 'pointer' }}
           >Connect to Shopify</button>
         </div>
-        <div style={{ color: '#aaa', fontSize: 13 }}>Connect your Shopify store to fetch products.</div>
+        <div style={{ color: '#aaa', fontSize: 13 }}>Connect your Shopify store to fetch products.<br/>Debug: shopToken={String(shopToken)}, shopDomain={String(shopDomain)}</div>
       </div>
     );
   }
@@ -176,10 +200,20 @@ const ProductsList = ({ shopDomain, shopToken }) => {
       <button onClick={deselectAll} disabled={loading || selectedIds.length === 0} style={{ marginLeft: 8, marginBottom: 16 }}>Deselect All</button>
       <button onClick={exportSeoToCsv} disabled={loading || products.length === 0} style={{ marginLeft: 8, marginBottom: 16 }}>Export to CSV</button>
       {loading && <div>Loading products...</div>}
-      {error && <div style={{ color: 'red' }}>{error}</div>}
+      {error && (
+        <div style={{ color: 'red', margin: '16px 0', fontWeight: 500 }}>
+          {error}
+          <div style={{ color: '#888', fontSize: 13, marginTop: 8 }}>
+            Debug info: shopToken={String(shopToken)}, shopDomain={String(shopDomain)}, products={Array.isArray(products) ? products.length : 'n/a'}
+          </div>
+        </div>
+      )}
       {!loading && !error && (
         filteredProducts.length === 0 ? (
-          <div>No products found.</div>
+          <div style={{ color: '#888', margin: '24px 0', textAlign: 'center' }}>
+            No products found.<br/>
+            <span style={{ fontSize: 13 }}>Debug info: shopToken={String(shopToken)}, shopDomain={String(shopDomain)}, products={Array.isArray(products) ? products.length : 'n/a'}</span>
+          </div>
         ) : (
           <ul>
             {filteredProducts.map((product) => {
