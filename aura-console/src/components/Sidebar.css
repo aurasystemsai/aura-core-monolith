@@ -1,0 +1,50 @@
+.sidebar {
+  width: 220px;
+  background: var(--card);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 32px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  left: 0;
+  box-shadow: 2px 0 16px #0002;
+  z-index: 100;
+}
+.sidebar-brand {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: var(--accent);
+  margin-bottom: 32px;
+  text-align: center;
+}
+.sidebar-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+}
+.sidebar-nav li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 32px;
+  cursor: pointer;
+  font-size: 16px;
+  border-left: 4px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+.sidebar-nav li.active, .sidebar-nav li:focus {
+  background: var(--bg-alt);
+  border-left: 4px solid var(--accent);
+  color: var(--accent);
+  outline: none;
+}
+.sidebar-icon {
+  font-size: 20px;
+}
+.sidebar-label {
+  font-weight: 600;
+}

@@ -16,6 +16,8 @@ import ContentHealthAuditor from "./components/ContentHealthAuditor";
 import ContentIngestor from "./components/ContentIngestor";
 import ProductsList from "./components/ProductsList.jsx";
 import ConnectShopifyBanner from "./components/ConnectShopifyBanner";
+import Sidebar from "./components/Sidebar";
+  const [activeSection, setActiveSection] = useState('products');
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
 
@@ -24,77 +26,22 @@ const ENGINES = {
   product: {
     key: "product",
     toolId: "product-seo",
-    name: "Product SEO Engine",
-    suitePrefix: "Product catalogue · SEO",
-    runButtonLabel: "Run Product SEO",
-    chipLabel: "Product SEO",
-    inspectorTitle: "Product inspector",
-    inspectorSubtitle:
-      "Step 1: describe the product in plain English. Step 2: run the engine. Step 3: copy the SEO fields from the left-hand table.",
-    lengthTitleLabel: "Title length",
-    lengthTitleHelper: "Your current product title is",
-  },
-  blog: {
-    key: "blog",
-    toolId: "blog-seo",
-    name: "Blog SEO Engine",
-    suitePrefix: "Content · SEO",
-    runButtonLabel: "Run Blog SEO",
-    chipLabel: "Blog SEO",
-    inspectorTitle: "Blog article inspector",
-    inspectorSubtitle:
-      "Step 1: describe the blog post in plain English. Step 2: run the engine. Step 3: copy the SEO fields from the left-hand table into your CMS.",
-    lengthTitleLabel: "Title length",
-    lengthTitleHelper: "Your current blog post title is",
-  },
-  draft: {
-    key: "draft",
-    toolId: "blog-draft-engine",
-    name: "Blog Draft Engine",
-    suitePrefix: "Content · Planning",
-    runButtonLabel: "Run Blog draft",
-    chipLabel: "Blog draft",
-    inspectorTitle: "Blog draft brief",
-    inspectorSubtitle:
-      "Describe who the post is for and what it should cover. We’ll generate a ready-to-paste blog draft with sections and a CTA.",
-    lengthTitleLabel: "Title length",
-    lengthTitleHelper: "Your current blog draft title is",
-  },
-  weekly: {
-    key: "weekly",
-    toolId: "weekly-blog-content-engine",
-    name: "Weekly Blog Content Engine",
-    suitePrefix: "Content · Planning",
-    runButtonLabel: "Run Weekly plan",
-    chipLabel: "Weekly blog plan",
-    inspectorTitle: "Weekly blog planner",
-    inspectorSubtitle:
-      "Describe your niche, audience and cadence. We’ll generate a simple weekly content plan you can plug straight into your CMS.",
-    lengthTitleLabel: "Avg. title length",
-    lengthTitleHelper: "Average planned post title length is",
-  },
-};
-
-function App() {
-  // Core API + health
-  const [coreUrl, setCoreUrl] = useState(DEFAULT_CORE_API);
-  const [coreStatus, setCoreStatus] = useState("idle"); // idle | checking | ok | error
-  const [coreStatusLabel, setCoreStatusLabel] = useState("Not checked yet");
-
-  // Connected project / store
-  const [project, setProject] = useState(null);
-  const [autoCreating, setAutoCreating] = useState(false);
-
-  // Shopify products state
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  
-  // Which engine is active in the UI
-  const [activeEngine, setActiveEngine] = useState("product");
-  const currentEngine = ENGINES[activeEngine];
-
-  // Product / blog single-piece inputs
-  const [productTitle, setProductTitle] = useState(
+    return (
+      <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
+        <Sidebar active={activeSection} onSelect={setActiveSection} />
+        <main style={{ flex: 1, padding: '32px 40px', maxWidth: 1600, margin: '0 auto', width: '100%' }}>
+          <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <ProjectSwitcher coreUrl={coreUrl} currentProject={project} onSelectProject={setProject} onDisconnect={() => setProject(null)} />
+          </div>
+          {/* Main content area switches by section */}
+          {activeSection === 'products' && <ProductsList shopDomain={null} shopToken={null} />}
+          {activeSection === 'content-health' && <ContentHealthAuditor />}
+          {activeSection === 'fix-queue' && <div><h2>Fix Queue</h2><p>Coming soon: Advanced fix queue UI.</p></div>}
+          {activeSection === 'content-ingest' && <ContentIngestor />}
+          {activeSection === 'draft-library' && <DraftLibrary />}
+          {activeSection === 'system-health' && <SystemHealthPanel />}
+        </main>
+      </div>
     "Paperclip waterproof bracelet"
   );
   const [productDescription, setProductDescription] = useState(
