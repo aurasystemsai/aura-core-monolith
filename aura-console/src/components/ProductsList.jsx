@@ -343,6 +343,7 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
                   <thead>
                     <tr>
                       <th scope="col"></th>
+                      <th scope="col">Image</th>
                       <th scope="col">Product</th>
                       <th scope="col">SEO Score</th>
                       <th scope="col">Title</th>
@@ -380,10 +381,24 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
                       const expanded = !!expandedRows[product.id];
                       // Editable fields
                       const editable = isEditing ? (editState[product.id] || seo) : seo;
+                      // Product image thumbnail (first image)
+                      const firstImage = Array.isArray(product.images) && product.images[0] ? product.images[0] : null;
                       return (
                         <tr key={product.id} className={expanded ? 'pl-row pl-row--expanded' : 'pl-row'}>
                           <td>
                             <input type="checkbox" checked={selectedIds.includes(product.id)} onChange={() => toggleSelect(product.id)} disabled={loading} />
+                          </td>
+                          <td className="pl-image-cell">
+                            {firstImage ? (
+                              <img
+                                src={firstImage.src || firstImage.url || ''}
+                                alt={firstImage.alt || product.title || 'Product image'}
+                                className="pl-thumb"
+                                style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid #eee', background: '#fafbfc' }}
+                              />
+                            ) : (
+                              <span className="pl-thumb-placeholder" aria-label="No image">—</span>
+                            )}
                           </td>
                           <td className="pl-product-cell">
                             <span className="pl-expand-toggle" onClick={() => setExpandedRow(product.id, !expanded)}>
