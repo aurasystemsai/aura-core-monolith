@@ -116,16 +116,50 @@
   border-bottom: 2px solid #e5eaf2;
 }
 
-.pl-row {
-  transition: background 0.2s;
+.pl-btn {
+  background: #e5eaf2;
+  color: #2b3a55;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-weight: 600;
+  margin-right: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.2s, color 0.2s, box-shadow 0.18s;
 }
-
-.pl-row:hover {
-  background: #f0f6ff;
+.pl-btn:focus {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px #c7d2fe;
+  z-index: 1;
 }
-
-.pl-row--expanded {
-  background: #e8f0fe;
+.pl-btn:active {
+  background: #dbeafe;
+  color: #1d2a4d;
+  box-shadow: 0 2px 8px 0 rgba(99,102,241,0.10);
+}
+/* Ripple effect */
+.pl-btn::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(99,102,241,0.18);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: width 0.4s cubic-bezier(.4,0,.2,1), height 0.4s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+}
+.pl-btn:active::after {
+  width: 180%;
+  height: 180%;
+  opacity: 1;
+  transition: 0s;
 }
 
 .pl-row {
