@@ -10,11 +10,13 @@ import "./App.css";
 import ProjectSetup from "./ProjectSetup";
 import ProjectSwitcher from "./ProjectSwitcher";
 
+
 import SystemHealthPanel from "./components/SystemHealthPanel";
 import DraftLibrary from "./components/DraftLibrary";
 import ContentHealthAuditor from "./components/ContentHealthAuditor";
 import ContentIngestor from "./components/ContentIngestor";
 import ProductsList from "./components/ProductsList.jsx";
+import Sidebar from "./components/Sidebar";
 
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
@@ -39,7 +41,8 @@ function App() {
   const [coreStatusLabel, setCoreStatusLabel] = useState('Checking Core API …');
   const [project, setProject] = useState(null);
   const [autoCreating, setAutoCreating] = useState(false);
-  const [activeEngine, setActiveEngine] = useState('product');
+  // Sidebar section state
+  const [activeSection, setActiveSection] = useState('dashboard');
 
   // Auto-create or load project (no manual onboarding)
   useEffect(() => {
@@ -158,9 +161,11 @@ function App() {
     );
   }
 
+  // Main console shell with sidebar navigation
   return (
-    <div className="app-shell">
-      <main className="app-main">
+    <div style={{ display: "flex", minHeight: "100vh", background: "#101223" }}>
+      <Sidebar current={activeSection} onSelect={setActiveSection} />
+      <main style={{ marginLeft: 220, flex: 1, minHeight: "100vh", background: "#181c2a" }}>
         <div className="page-frame">
           <header className="top-strip">
             <div className="top-strip-left">
@@ -177,10 +182,30 @@ function App() {
             />
           </section>
           <section>
-            <ProductsList 
-              shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
-              shopToken={localStorage.getItem("shopToken")}
-            />
+            {activeSection === "products" && (
+              <ProductsList 
+                shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
+                shopToken={localStorage.getItem("shopToken")}
+              />
+            )}
+            {activeSection === "dashboard" && (
+              <div style={{ color: "#fff", fontSize: 28, padding: 48, textAlign: "center" }}>
+                <div style={{ fontWeight: 800, fontSize: 40, marginBottom: 16 }}>Welcome to AURA Console</div>
+                <div style={{ fontSize: 20, color: "#7fffd4" }}>Select a section from the sidebar to get started.</div>
+              </div>
+            )}
+            {activeSection === "content" && (
+              <div style={{ color: "#fff", fontSize: 24, padding: 48, textAlign: "center" }}>Content Health Auditor (Coming soon)</div>
+            )}
+            {activeSection === "fixqueue" && (
+              <div style={{ color: "#fff", fontSize: 24, padding: 48, textAlign: "center" }}>Fix Queue (Coming soon)</div>
+            )}
+            {activeSection === "drafts" && (
+              <div style={{ color: "#fff", fontSize: 24, padding: 48, textAlign: "center" }}>Draft Library (Coming soon)</div>
+            )}
+            {activeSection === "system" && (
+              <div style={{ color: "#fff", fontSize: 24, padding: 48, textAlign: "center" }}>System Health (Coming soon)</div>
+            )}
           </section>
         </div>
       </main>
