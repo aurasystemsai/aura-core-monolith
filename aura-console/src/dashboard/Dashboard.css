@@ -1,0 +1,70 @@
+/* Aura Console Dashboard UI Styles */
+.aura-dashboard-shell {
+  max-width: 600px;
+  margin: 64px auto;
+  background: var(--bg-alt, #23263a);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px #0003;
+  padding: 48px 40px 36px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.aura-dashboard-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--accent, #6c47ff);
+  margin-bottom: 24px;
+  text-align: center;
+}
+.aura-dashboard-stats {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.aura-dashboard-stat {
+  background: #181c2a;
+  border-radius: 10px;
+  padding: 18px 16px;
+  font-size: 1.1rem;
+  color: var(--text, #e6e6f0);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+.aura-health-good {
+  color: #4caf50;
+}
+.aura-health-bad {
+  color: #ff4d4f;
+}
+.aura-dashboard-actions {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+.aura-dashboard-btn {
+  padding: 14px 32px;
+  border-radius: 8px;
+  background: var(--accent, #6c47ff);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.aura-dashboard-btn:disabled {
+  background: #888;
+  cursor: not-allowed;
+}
+.aura-dashboard-note {
+  font-size: 1rem;
+  color: #aaa;
+  margin-top: 18px;
+  text-align: center;
+}
