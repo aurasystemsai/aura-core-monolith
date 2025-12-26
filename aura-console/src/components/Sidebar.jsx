@@ -51,3 +51,4 @@ export default function Sidebar({ current, onSelect }) {
     </nav>
   );
 }
+import React from "react";
