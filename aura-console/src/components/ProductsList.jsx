@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import './ProductsList.css';
 
 // Debug utility for logging
 function debugLog(...args) {
@@ -62,24 +63,22 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   // Aggressive debug: always show debug info panel
   function DebugPanel() {
     return (
-      <div style={{
-        background: '#181c2a', color: '#fff', fontSize: 13, padding: 16, borderRadius: 8, margin: '32px auto', maxWidth: 600, boxShadow: '0 2px 8px #0002', wordBreak: 'break-all', zIndex: 9999
-      }}>
+      <div className="pl-debug-panel">
         <b>DEBUG PANEL</b><br/>
-        <div>shopToken: <span style={{ color: '#7ff' }}>{String(shopToken)}</span></div>
-        <div>shopDomain: <span style={{ color: '#7ff' }}>{String(shopDomain)}</span></div>
-        <div>products: <span style={{ color: '#7ff' }}>{Array.isArray(products) ? products.length : 'n/a'}</span></div>
-        <div>loading: <span style={{ color: '#7ff' }}>{String(loading)}</span></div>
-        <div>error: <span style={{ color: '#f77' }}>{String(error)}</span></div>
-        <div>fatal: <span style={{ color: '#f77' }}>{String(fatal)}</span></div>
-        <div>init: <span style={{ color: '#7ff' }}>{String(init)}</span></div>
-        <div>selectedIds: <span style={{ color: '#7ff' }}>{JSON.stringify(selectedIds)}</span></div>
-        <div>statusFilter: <span style={{ color: '#7ff' }}>{String(statusFilter)}</span></div>
-        <div>aiPrompt: <span style={{ color: '#7ff' }}>{String(aiPrompt)}</span></div>
-        <div>language: <span style={{ color: '#7ff' }}>{String(language)}</span></div>
-        <div>seoSuggestions: <span style={{ color: '#7ff' }}>{Object.keys(seoSuggestions).length}</span></div>
-        <div>seoHistory: <span style={{ color: '#7ff' }}>{Object.keys(seoHistory).length}</span></div>
-        <div>updateStatus: <span style={{ color: '#7ff' }}>{JSON.stringify(updateStatus)}</span></div>
+        <div>shopToken: <span className="pl-debug-accent">{String(shopToken)}</span></div>
+        <div>shopDomain: <span className="pl-debug-accent">{String(shopDomain)}</span></div>
+        <div>products: <span className="pl-debug-accent">{Array.isArray(products) ? products.length : 'n/a'}</span></div>
+        <div>loading: <span className="pl-debug-accent">{String(loading)}</span></div>
+        <div>error: <span className="pl-debug-error">{String(error)}</span></div>
+        <div>fatal: <span className="pl-debug-error">{String(fatal)}</span></div>
+        <div>init: <span className="pl-debug-accent">{String(init)}</span></div>
+        <div>selectedIds: <span className="pl-debug-accent">{JSON.stringify(selectedIds)}</span></div>
+        <div>statusFilter: <span className="pl-debug-accent">{String(statusFilter)}</span></div>
+        <div>aiPrompt: <span className="pl-debug-accent">{String(aiPrompt)}</span></div>
+        <div>language: <span className="pl-debug-accent">{String(language)}</span></div>
+        <div>seoSuggestions: <span className="pl-debug-accent">{Object.keys(seoSuggestions).length}</span></div>
+        <div>seoHistory: <span className="pl-debug-accent">{Object.keys(seoHistory).length}</span></div>
+        <div>updateStatus: <span className="pl-debug-accent">{JSON.stringify(updateStatus)}</span></div>
         <div>Timestamp: {new Date().toISOString()}</div>
       </div>
     );
@@ -205,7 +204,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
       window.PRODUCTS_LIST_FATAL = fatal;
     }
     return (
-      <div style={{ color: 'red', padding: 32, textAlign: 'center', fontWeight: 600 }}>
+      <div className="pl-fatal">
         Fatal error: {fatal}
         <DebugPanel />
       </div>
@@ -213,7 +212,7 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   }
   if (!init) {
     return (
-      <div style={{ color: '#888', padding: 32, textAlign: 'center' }}>
+      <div className="pl-init">
         <div>Initializing Products screen...</div>
         <DebugPanel />
       </div>
@@ -222,16 +221,16 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   if (!shopToken || !shopDomain) {
     debugLog('No shopToken or shopDomain', { shopToken, shopDomain });
     return (
-      <div>
-        <h1>Shopify Products</h1>
-        <div style={{ margin: '24px 0' }}>
+      <div className="pl-connect">
+        <h1 className="pl-title">Shopify Products</h1>
+        <div className="pl-connect-btn-wrap">
           <button
             onClick={() => {
               const url = `https://${window.location.host}/shopify/auth?shop=${encodeURIComponent(shopDomain || '')}`;
               if (window.top) window.top.location.href = url;
               else window.location.href = url;
             }}
-            style={{ display: 'inline-block', padding: '12px 24px', background: '#5c6ac4', color: '#fff', borderRadius: 6, textDecoration: 'none', fontWeight: 600, fontSize: 16, border: 0, cursor: 'pointer' }}
+            className="pl-btn pl-btn--accent pl-btn--connect"
           >Connect to Shopify</button>
         </div>
         <DebugPanel />
@@ -242,24 +241,11 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   // Main UI
   try {
     return (
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: 24 }}>
-        <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 24, letterSpacing: '-1px' }}>Shopify Products SEO Manager</h1>
+      <div className="pl-root">
+        <h1 className="pl-title">Shopify Products SEO Manager</h1>
         {/* Sticky header for filters/actions */}
-        <div style={{
-          position: 'sticky',
-          top: 0,
-          background: '#181c2a',
-          zIndex: 10,
-          padding: 16,
-          borderRadius: 12,
-          boxShadow: '0 2px 8px #0002',
-          marginBottom: 24,
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          gap: 16
-        }}>
-          <select value={language} onChange={e => setLanguage(e.target.value)} style={{ padding: 8, borderRadius: 6, border: '1px solid #333', minWidth: 120, background: '#222', color: '#fff' }}>
+        <div className="pl-toolbar">
+          <select value={language} onChange={e => setLanguage(e.target.value)} className="pl-select">
             <option value="en">English</option>
             <option value="es">Spanish</option>
             <option value="fr">French</option>
@@ -270,45 +256,45 @@ const ProductsList = ({ shopDomain, shopToken }) => {
             <option value="zh">Chinese</option>
             <option value="ko">Korean</option>
           </select>
-          <input type="text" placeholder="Custom AI prompt (optional)" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} style={{ width: 220, padding: 8, borderRadius: 6, border: '1px solid #333', background: '#222', color: '#fff' }} />
-          <input type="text" placeholder="Search products..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ width: 200, padding: 8, borderRadius: 6, border: '1px solid #333', background: '#222', color: '#fff' }} />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: 8, borderRadius: 6, background: '#222', color: '#fff' }}>
+          <input type="text" placeholder="Custom AI prompt (optional)" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} className="pl-input pl-input--wide" />
+          <input type="text" placeholder="Search products..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-input" />
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="pl-select">
             <option value="all">All</option>
             <option value="success">Updated</option>
             <option value="error">Error</option>
             <option value="pending">Pending</option>
           </select>
-          <button onClick={fetchProducts} disabled={loading} style={{ padding: '8px 18px', borderRadius: 6, background: '#5c6ac4', color: '#fff', fontWeight: 700, border: 0 }}>{loading ? 'Refreshing...' : 'Refresh'}</button>
-          <button onClick={selectAll} disabled={loading || filteredProducts.length === 0} style={{ padding: '8px 18px', borderRadius: 6, background: '#222', color: '#fff', fontWeight: 700, border: 0 }}>Select All</button>
-          <button onClick={deselectAll} disabled={loading || selectedIds.length === 0} style={{ padding: '8px 18px', borderRadius: 6, background: '#222', color: '#fff', fontWeight: 700, border: 0 }}>Deselect All</button>
-          <button onClick={exportSeoToCsv} disabled={loading || products.length === 0} style={{ padding: '8px 18px', borderRadius: 6, background: '#222', color: '#fff', fontWeight: 700, border: 0 }}>Export to CSV</button>
+          <button onClick={fetchProducts} disabled={loading} className="pl-btn pl-btn--accent">{loading ? 'Refreshing...' : 'Refresh'}</button>
+          <button onClick={selectAll} disabled={loading || filteredProducts.length === 0} className="pl-btn">Select All</button>
+          <button onClick={deselectAll} disabled={loading || selectedIds.length === 0} className="pl-btn">Deselect All</button>
+          <button onClick={exportSeoToCsv} disabled={loading || products.length === 0} className="pl-btn">Export to CSV</button>
         </div>
-        {loading && <div style={{ color: '#fff', fontSize: 18, margin: '32px 0' }}>Loading products...</div>}
+        {loading && <div className="pl-loading">Loading products...</div>}
         {error && (
-          <div style={{ color: 'red', margin: '16px 0', fontWeight: 500 }}>
+          <div className="pl-error">
             {error}
             <DebugPanel />
           </div>
         )}
         {!loading && !error && (
           filteredProducts.length === 0 ? (
-            <div style={{ color: '#888', margin: '24px 0', textAlign: 'center' }}>
+            <div className="pl-empty">
               No products found.<br/>
               <DebugPanel />
             </div>
           ) : (
-            <div style={{ overflowX: 'auto', borderRadius: 12, boxShadow: '0 2px 8px #0002', background: '#20243a', padding: 0 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}>
-                <thead style={{ background: '#23284a', color: '#fff', fontSize: 15 }}>
+            <div className="pl-table-wrap">
+              <table className="pl-table">
+                <thead>
                   <tr>
-                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}></th>
-                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}>Product</th>
-                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}>SEO Score</th>
-                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}>Title</th>
-                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}>Meta Description</th>
-                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}>Keywords</th>
-                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}>Slug</th>
-                    <th style={{ padding: 14, textAlign: 'left', borderBottom: '2px solid #333' }}>Actions</th>
+                    <th></th>
+                    <th>Product</th>
+                    <th>SEO Score</th>
+                    <th>Title</th>
+                    <th>Meta Description</th>
+                    <th>Keywords</th>
+                    <th>Slug</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -342,78 +328,78 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                     // Editable fields
                     const editable = isEditing ? (editState[product.id] || seo) : seo;
                     return (
-                      <tr key={product.id} style={{ background: expanded ? '#23284a' : '#20243a', borderBottom: '1px solid #23284a' }}>
-                        <td style={{ padding: 10 }}>
+                      <tr key={product.id} className={expanded ? 'pl-row pl-row--expanded' : 'pl-row'}>
+                        <td>
                           <input type="checkbox" checked={selectedIds.includes(product.id)} onChange={() => toggleSelect(product.id)} disabled={loading} />
                         </td>
-                        <td style={{ padding: 10, fontWeight: 600, fontSize: 16 }}>
-                          <span style={{ cursor: 'pointer', color: '#5c6ac4' }} onClick={() => setExpandedRow(product.id, !expanded)}>
+                        <td className="pl-product-cell">
+                          <span className="pl-expand-toggle" onClick={() => setExpandedRow(product.id, !expanded)}>
                             {expanded ? '▼' : '▶'}
                           </span> {product.title}
-                          <div style={{ fontSize: 13, color: '#aaa', marginTop: 2 }}>{product.variants && product.variants[0] ? `$${product.variants[0].price}` : 'N/A'}</div>
+                          <div className="pl-product-price">{product.variants && product.variants[0] ? `$${product.variants[0].price}` : 'N/A'}</div>
                         </td>
-                        <td style={{ padding: 10 }}>
-                          <span style={{ background: '#333', color: '#fff', borderRadius: 6, padding: '2px 10px', fontSize: 13 }}> <b style={{ color: s >= 80 ? '#7fff7f' : s >= 60 ? '#ffe97f' : '#ff7f7f' }}>{s}</b>/100</span>
+                        <td>
+                          <span className="pl-score-badge"> <b className={s >= 80 ? 'pl-score--good' : s >= 60 ? 'pl-score--warn' : 'pl-score--bad'}>{s}</b>/100</span>
                         </td>
-                        <td style={{ padding: 10 }}>
+                        <td>
                           {isEditing ? (
-                            <input value={editable.title} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, title: e.target.value } }))} style={{ width: '100%', padding: 4, borderRadius: 4, border: '1px solid #333', background: '#23284a', color: '#fff' }} />
+                            <input value={editable.title} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, title: e.target.value } }))} className="pl-input" />
                           ) : (
-                            seo.title || <span style={{ color: '#aaa' }}>None</span>
+                            seo.title || <span className="pl-muted">None</span>
                           )}
                         </td>
-                        <td style={{ padding: 10 }}>
+                        <td>
                           {isEditing ? (
-                            <textarea value={editable.metaDescription} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, metaDescription: e.target.value } }))} style={{ width: '100%', padding: 4, borderRadius: 4, border: '1px solid #333', background: '#23284a', color: '#fff' }} />
+                            <textarea value={editable.metaDescription} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, metaDescription: e.target.value } }))} className="pl-input" />
                           ) : (
-                            seo.metaDescription || <span style={{ color: '#aaa' }}>None</span>
+                            seo.metaDescription || <span className="pl-muted">None</span>
                           )}
                         </td>
-                        <td style={{ padding: 10 }}>
+                        <td>
                           {isEditing ? (
-                            <input value={editable.keywords.join(', ')} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, keywords: e.target.value.split(',').map(x => x.trim()).filter(Boolean) } }))} style={{ width: '100%', padding: 4, borderRadius: 4, border: '1px solid #333', background: '#23284a', color: '#fff' }} />
+                            <input value={editable.keywords.join(', ')} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, keywords: e.target.value.split(',').map(x => x.trim()).filter(Boolean) } }))} className="pl-input" />
                           ) : (
-                            Array.isArray(seo.keywords) && seo.keywords[0] ? seo.keywords.join(', ') : <span style={{ color: '#aaa' }}>None</span>
+                            Array.isArray(seo.keywords) && seo.keywords[0] ? seo.keywords.join(', ') : <span className="pl-muted">None</span>
                           )}
                           {keywordSuggestions.length > 0 && (
-                            <div style={{ marginTop: 4 }}>
-                              <span style={{ color: '#5c6ac4', fontSize: 13 }}>Suggestions: </span>
+                            <div className="pl-keyword-suggestions">
+                              <span className="pl-keyword-label">Suggestions: </span>
                               {keywordSuggestions.map((kw, i) => (
-                                <span key={kw} style={{ background: '#e0e7ff', color: '#222', borderRadius: 4, padding: '2px 6px', marginRight: 4, fontSize: 13, cursor: 'pointer', border: '1px solid #b3bcf5' }} onClick={() => isEditing && setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, keywords: [...(editable.keywords || []), kw].filter((v, i, a) => a.indexOf(v) === i) } }))}>{kw}</span>
+                                <span key={kw} className="pl-keyword-pill" onClick={() => isEditing && setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, keywords: [...(editable.keywords || []), kw].filter((v, i, a) => a.indexOf(v) === i) } }))}>{kw}</span>
                               ))}
                             </div>
                           )}
                         </td>
-                        <td style={{ padding: 10 }}>
+                        <td>
                           {isEditing ? (
-                            <input value={editable.slug} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, slug: e.target.value } }))} style={{ width: '100%', padding: 4, borderRadius: 4, border: '1px solid #333', background: '#23284a', color: '#fff' }} />
+                            <input value={editable.slug} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, slug: e.target.value } }))} className="pl-input" />
                           ) : (
-                            seo.slug || <span style={{ color: '#aaa' }}>None</span>
+                            seo.slug || <span className="pl-muted">None</span>
                           )}
                         </td>
-                        <td style={{ padding: 10, minWidth: 120 }}>
+                        <td className="pl-actions-cell">
                           {isEditing ? (
                             <>
-                              <button style={{ marginRight: 6, padding: '4px 10px', borderRadius: 4, background: '#7fffd4', color: '#222', border: 0, fontWeight: 700, fontSize: 13 }} onClick={() => {
+                              <button className="pl-btn pl-btn--save" onClick={() => {
                                 // Save action: update seoSuggestions and exit edit mode
                                 setSeoSuggestions(s => ({ ...s, [product.id]: { ...editable } }));
                                 setEditState(state => ({ ...state, [product.id]: { ...editable, editing: false } }));
                               }}>Save</button>
-                              <button style={{ marginRight: 6, padding: '4px 10px', borderRadius: 4, background: '#23284a', color: '#fff', border: 0, fontWeight: 600, fontSize: 13 }} onClick={() => setEditState(state => ({ ...state, [product.id]: { ...seo, editing: false } }))}>Cancel</button>
-                              <button style={{ padding: '4px 10px', borderRadius: 4, background: '#5c6ac4', color: '#fff', border: 0, fontWeight: 600, fontSize: 13 }} onClick={() => {
+                              <button className="pl-btn pl-btn--cancel" onClick={() => setEditState(state => ({ ...state, [product.id]: { ...seo, editing: false } }))}>Cancel</button>
+                              <button className="pl-btn pl-btn--ai" onClick={() => {
                                 // AI Suggest: just a stub for now
                                 setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, title: seo.title + ' (AI)', metaDescription: seo.metaDescription + ' (AI)', keywords: [...(seo.keywords || []), 'ai'], slug: seo.slug } }));
                               }}>AI Suggest</button>
                             </>
                           ) : (
-                            <button style={{ padding: '4px 10px', borderRadius: 4, background: '#5c6ac4', color: '#fff', border: 0, fontWeight: 600, fontSize: 13 }} onClick={() => setEditState(state => ({ ...state, [product.id]: { ...seo, editing: true } }))}>Edit</button>
+                            <button className="pl-btn pl-btn--edit" onClick={() => setEditState(state => ({ ...state, [product.id]: { ...seo, editing: true } }))}>Edit</button>
                           )}
                           {expanded && issues.length > 0 && (
-                            <div style={{ marginTop: 10, fontSize: 13 }}>
+                            <div className="pl-seo-tips">
                               <b>SEO Tips:</b>
-                              <ul style={{ color: '#ffe97f', margin: '6px 0 0 0', padding: '0 0 0 18px' }}>
+                              <ul className="pl-tips-list">
                                 {issues.map((issue, i) => (
-                                  <li key={i} style={{ color: issue.type === 'error' ? '#ff7f7f' : '#ffe97f' }}>{issue.field}: {issue.msg} <span style={{ color: '#aaa' }}>{issue.tip}</span></li>
+                                  <li key={i} className={issue.type === 'error' ? 'pl-tip--error' : 'pl-tip--warn'}>{issue.field}: {issue.msg} <span className="pl-tip-detail">{issue.tip}</span></li>
                                 ))}
                               </ul>
                             </div>
@@ -435,9 +421,9 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   catch (e) {
     debugLog('Fatal render error', e);
     return (
-      <div style={{ color: 'red', padding: 32, textAlign: 'center', fontWeight: 600 }}>
+      <div className="pl-fatal">
         Fatal render error: {e.message}
-        <div style={{ color: '#888', fontSize: 13, marginTop: 8 }}>
+        <div className="pl-fatal-debug">
           Debug info: shopToken={String(shopToken)}, shopDomain={String(shopDomain)}
         </div>
       </div>

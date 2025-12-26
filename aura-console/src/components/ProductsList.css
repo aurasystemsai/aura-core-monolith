@@ -1,0 +1,222 @@
+.pl-fatal {
+  color: #ff5c7a;
+  padding: 32px;
+  text-align: center;
+  font-weight: 600;
+  background: rgba(255,92,122,0.04);
+  border-radius: var(--radius-lg);
+  margin: 32px auto;
+  max-width: 600px;
+}
+.pl-fatal-debug {
+  color: #888;
+  font-size: 13px;
+  margin-top: 8px;
+}
+.pl-init {
+  color: #888;
+  padding: 32px;
+  text-align: center;
+}
+.pl-connect {
+  text-align: center;
+  padding: 40px 0 0 0;
+}
+.pl-connect-btn-wrap {
+  margin: 24px 0;
+}
+.pl-btn--connect {
+  font-size: 16px;
+  padding: 12px 24px;
+  font-weight: 700;
+}
+.pl-loading {
+  color: #fff;
+  font-size: 18px;
+  margin: 32px 0;
+  text-align: center;
+}
+.pl-error {
+  color: #ff5c7a;
+  margin: 16px 0;
+  font-weight: 500;
+  text-align: center;
+}
+.pl-empty {
+  color: #888;
+  margin: 24px 0;
+  text-align: center;
+}
+.pl-root {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.pl-title {
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 24px;
+  letter-spacing: -1px;
+  color: var(--accent);
+}
+.pl-toolbar {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 10;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  margin-bottom: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+.pl-select, .pl-input {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #222;
+  color: var(--text);
+  font-size: 15px;
+}
+.pl-input--wide {
+  width: 220px;
+}
+.pl-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  background: var(--card);
+  padding: 0;
+}
+.pl-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+.pl-table thead {
+  background: #23284a;
+  color: #fff;
+  font-size: 15px;
+}
+.pl-table th, .pl-table td {
+  padding: 14px 10px;
+  text-align: left;
+  border-bottom: 1px solid #23284a;
+}
+.pl-row--expanded {
+  background: #23284a;
+}
+.pl-row {
+  background: #20243a;
+}
+.pl-product-cell {
+  font-weight: 600;
+  font-size: 16px;
+}
+.pl-product-price {
+  font-size: 13px;
+  color: #aaa;
+  margin-top: 2px;
+}
+.pl-expand-toggle {
+  cursor: pointer;
+  color: var(--accent);
+  margin-right: 4px;
+}
+.pl-score-badge {
+  background: #333;
+  color: #fff;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 13px;
+}
+.pl-score--good { color: #7fff7f; }
+.pl-score--warn { color: #ffe97f; }
+.pl-score--bad { color: #ff7f7f; }
+.pl-muted {
+  color: #aaa;
+}
+.pl-keyword-suggestions {
+  margin-top: 4px;
+}
+.pl-keyword-label {
+  color: var(--accent);
+  font-size: 13px;
+}
+.pl-keyword-pill {
+  background: #e0e7ff;
+  color: #222;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-right: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid #b3bcf5;
+}
+.pl-actions-cell {
+  min-width: 120px;
+}
+.pl-btn {
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: #222;
+  color: #fff;
+  border: 0;
+  font-weight: 600;
+  font-size: 13px;
+  margin-right: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.pl-btn:last-child { margin-right: 0; }
+.pl-btn--accent {
+  background: var(--accent);
+  color: #222;
+  font-weight: 700;
+}
+.pl-btn--save {
+  background: #7fffd4;
+  color: #222;
+  font-weight: 700;
+}
+.pl-btn--cancel {
+  background: #23284a;
+  color: #fff;
+}
+.pl-btn--ai {
+  background: var(--accent);
+  color: #fff;
+}
+.pl-btn--edit {
+  background: var(--accent);
+  color: #fff;
+}
+.pl-seo-tips {
+  margin-top: 10px;
+  font-size: 13px;
+}
+.pl-tips-list {
+  color: #ffe97f;
+  margin: 6px 0 0 0;
+  padding: 0 0 0 18px;
+}
+.pl-tip--error { color: #ff7f7f; }
+.pl-tip--warn { color: #ffe97f; }
+.pl-tip-detail { color: #aaa; }
+.pl-debug-panel {
+  background: #181c2a;
+  color: #fff;
+  font-size: 13px;
+  padding: 16px;
+  border-radius: 8px;
+  margin: 32px auto;
+  max-width: 600px;
+  box-shadow: 0 2px 8px #0002;
+  word-break: break-all;
+  z-index: 9999;
+}
+.pl-debug-accent { color: #7ff; }
+.pl-debug-error { color: #f77; }
