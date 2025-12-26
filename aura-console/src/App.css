@@ -99,7 +99,7 @@
 .top-strip-notify:hover {
   color: #5c6ac4;
 }
-.app-loading {
+app-loading {
   display: flex;
   align-items: center;
   justify-content: center;
