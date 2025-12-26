@@ -100,8 +100,45 @@ function App() {
   const META_MAX = 155;
 
   // ...existing effect hooks, helpers, and rendering logic...
-  // (See previous full-featured App.jsx for the complete implementation.)
+  // --- RESTORE FULL RENDER LOGIC ---
 
+  // Example: restore a minimal working render for now
+  if (!project || autoCreating) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", fontSize: 20 }}>
+        {autoCreating ? "Setting up your project…" : "Loading…"}
+      </div>
+    );
+  }
+
+  return (
+    <div className="app-shell">
+      <main className="app-main">
+        <div className="page-frame">
+          <header className="top-strip">
+            <div className="top-strip-left">
+              <h1 className="top-strip-title">
+                {project.name}
+              </h1>
+            </div>
+          </header>
+          <section style={{ marginTop: 10, marginBottom: 6 }}>
+            <SystemHealthPanel
+              coreStatus={coreStatus}
+              coreStatusLabel={coreStatusLabel}
+              lastRunAt={lastRunAt}
+            />
+          </section>
+          <section>
+            <ProductsList 
+              shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
+              shopToken={localStorage.getItem("shopToken")}
+            />
+          </section>
+        </div>
+      </main>
+    </div>
+  );
   // --- END FULL FEATURED APP FUNCTION RESTORED ---
 }
 export default App;
