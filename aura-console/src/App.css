@@ -1,3 +1,60 @@
+/* Unified shell and main layout styles for AURA Console */
+:root {
+  --card: #181c2a;
+  --bg-alt: #23263a;
+  --accent: #6c47ff;
+  --text: #e6e6f0;
+}
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: #101223;
+}
+.app-main {
+  margin-left: 220px;
+  flex: 1;
+  min-height: 100vh;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+}
+.page-frame {
+  margin: 32px auto;
+  max-width: 1200px;
+  background: var(--bg-alt);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px #0003;
+  padding: 32px 40px 40px 40px;
+}
+.top-strip {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-bottom: 18px;
+  border-bottom: 2px solid var(--accent);
+  margin-bottom: 18px;
+}
+.top-strip-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -1px;
+}
+.app-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: 1.5rem;
+  color: var(--accent);
+}
+.system-health-section {
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+.tool-section {
+  margin-top: 18px;
+}
 :root {
   --bg-page: #020617;
   --bg-shell: #020617;

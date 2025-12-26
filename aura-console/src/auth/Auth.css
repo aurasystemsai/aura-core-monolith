@@ -1,0 +1,83 @@
+/* Aura Console Auth UI Styles */
+.aura-auth-shell {
+  max-width: 400px;
+  margin: 64px auto;
+  background: var(--bg-alt, #23263a);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px #0003;
+  padding: 40px 32px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.aura-auth-title {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--accent, #6c47ff);
+  margin-bottom: 24px;
+  text-align: center;
+}
+.aura-auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.aura-auth-input {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #181c2a;
+  color: var(--text, #e6e6f0);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.aura-auth-input:focus {
+  border-color: var(--accent, #6c47ff);
+}
+.aura-auth-btn {
+  padding: 12px 0;
+  border-radius: 8px;
+  background: var(--accent, #6c47ff);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.aura-auth-btn:disabled {
+  background: #888;
+  cursor: not-allowed;
+}
+.aura-auth-error {
+  color: #ff4d4f;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.aura-auth-switch {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.aura-auth-link {
+  background: none;
+  border: none;
+  color: var(--accent, #6c47ff);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 1rem;
+  padding: 0;
+}
+.aura-auth-demo {
+  font-size: 0.95rem;
+  color: #aaa;
+  margin-top: 10px;
+  text-align: center;
+}

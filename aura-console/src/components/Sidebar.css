@@ -35,12 +35,21 @@
   font-size: 16px;
   border-left: 4px solid transparent;
   transition: background 0.15s, border-color 0.15s;
+  border-radius: 8px 0 0 8px;
+  margin-bottom: 6px;
+  box-shadow: 0 2px 8px #0001;
 }
 .sidebar-nav li.active, .sidebar-nav li:focus {
   background: var(--bg-alt);
   border-left: 4px solid var(--accent);
   color: var(--accent);
   outline: none;
+  box-shadow: 0 4px 16px #0002;
+}
+.sidebar-nav li:hover {
+  background: var(--bg-alt);
+  color: var(--accent);
+  box-shadow: 0 2px 12px #0002;
 }
 .sidebar-icon {
   font-size: 20px;

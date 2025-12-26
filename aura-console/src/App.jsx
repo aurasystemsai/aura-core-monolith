@@ -163,7 +163,7 @@ function App() {
   // Example: restore a minimal working render for now
   if (!project || autoCreating) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", fontSize: 20 }}>
+      <div className="app-loading">
         {autoCreating ? "Setting up your project…" : "Loading…"}
       </div>
     );
@@ -171,9 +171,9 @@ function App() {
 
   // Main console shell with sidebar navigation
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#101223" }}>
+    <div className="app-shell">
       <Sidebar current={activeSection} onSelect={setActiveSection} />
-      <main style={{ marginLeft: 220, flex: 1, minHeight: "100vh", background: "#181c2a" }}>
+      <main className="app-main">
         <div className="page-frame">
           <header className="top-strip">
             <div className="top-strip-left">
@@ -182,14 +182,14 @@ function App() {
               </h1>
             </div>
           </header>
-          <section style={{ marginTop: 10, marginBottom: 6 }}>
+          <section className="system-health-section">
             <SystemHealthPanel
               coreStatus={coreStatus}
               coreStatusLabel={coreStatusLabel}
               lastRunAt={lastRunAt}
             />
           </section>
-          <section>
+          <section className="tool-section">
             {activeSection === "dashboard" && <Dashboard />}
             {activeSection === "auth" && <Auth />}
             {activeSection === "onboarding" && <Onboarding />}
