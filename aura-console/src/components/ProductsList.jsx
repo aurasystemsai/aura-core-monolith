@@ -60,6 +60,8 @@ const ProductsList = ({ shopDomain, shopToken }) => {
   const [updateStatus, setUpdateStatus] = useState({});
   const [seoHistory, setSeoHistory] = useState({});
   const [fatal, setFatal] = useState(null);
+  // FIX: editState must be at top level, not inside map
+  const [editState, setEditState] = useState({});
   // Aggressive debug: always show debug info panel
   function DebugPanel() {
     return (
@@ -299,8 +301,6 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                 </thead>
                 <tbody>
                   {filteredProducts.map((product) => {
-                    // Local editable SEO state per product
-                    const [editState, setEditState] = useState({});
                     const isEditing = editState[product.id]?.editing || false;
                     let seo = seoSuggestions[product.id] || {
                       title: product.title,
