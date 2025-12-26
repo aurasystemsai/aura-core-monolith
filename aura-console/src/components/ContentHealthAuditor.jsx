@@ -159,7 +159,6 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
   };
 
   useEffect(() => {
-    // Auto-load on first open + whenever filters change
     fetchHealth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endpoint]);
@@ -180,17 +179,33 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
     )}.csv`;
   }, [projectId, type, maxScore]);
 
+  // Debug panel for aggressive troubleshooting
+  function DebugPanel() {
+    return (
+      <div className="cha-debug-panel">
+        <b>DEBUG PANEL</b><br/>
+        <div>coreUrl: <span className="cha-debug-accent">{String(coreUrl)}</span></div>
+        <div>projectId: <span className="cha-debug-accent">{String(projectId)}</span></div>
+        <div>endpoint: <span className="cha-debug-accent">{endpoint}</span></div>
+        <div>status: <span className="cha-debug-accent">{status}</span></div>
+        <div>error: <span className="cha-debug-error">{error}</span></div>
+        <div>items: <span className="cha-debug-accent">{items.length}</span></div>
+        <div>type: <span className="cha-debug-accent">{type}</span></div>
+        <div>maxScore: <span className="cha-debug-accent">{maxScore}</span></div>
+        <div>limit: <span className="cha-debug-accent">{limit}</span></div>
+        <div>Timestamp: {new Date().toISOString()}</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="cha-wrap">
+    <div className="cha-root">
+      <h1 className="cha-title">Content Health Auditor</h1>
       <div className="cha-toolbar">
         <div className="cha-filters">
           <div className="cha-filter">
             <div className="cha-label">Type</div>
-            <select
-              className="cha-select"
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-            >
+            <select className="cha-select" value={type} onChange={e => setType(e.target.value)}>
               <option value="">All</option>
               <option value="product">Product</option>
               <option value="blog">Blog</option>
@@ -200,65 +215,29 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
               <option value="other">Other</option>
             </select>
           </div>
-
           <div className="cha-filter">
             <div className="cha-label">Max score</div>
-            <input
-              className="cha-input"
-              type="number"
-              min={0}
-              max={100}
-              value={maxScore}
-              onChange={(e) => setMaxScore(e.target.value)}
-            />
+            <input className="cha-input" type="number" min={0} max={100} value={maxScore} onChange={e => setMaxScore(e.target.value)} />
             <div className="cha-help">Shows items at or below this score.</div>
           </div>
-
           <div className="cha-filter">
             <div className="cha-label">Limit</div>
-            <input
-              className="cha-input"
-              type="number"
-              min={1}
-              max={500}
-              value={limit}
-              onChange={(e) => setLimit(e.target.value)}
-            />
+            <input className="cha-input" type="number" min={1} max={500} value={limit} onChange={e => setLimit(e.target.value)} />
             <div className="cha-help">Max rows returned from Core.</div>
           </div>
         </div>
-
         <div className="cha-actions">
-          <button
-            className="button button--ghost"
-            type="button"
-            onClick={fetchHealth}
-            disabled={status === "loading"}
-          >
+          <button className="button button--ghost" type="button" onClick={fetchHealth} disabled={status === "loading"}>
             {status === "loading" ? "Refreshing…" : "Refresh"}
           </button>
-
-          <button
-            className="button button--ghost"
-            type="button"
-            onClick={() => download(csvName, toCsv(items))}
-            disabled={!items.length}
-          >
+          <button className="button button--ghost" type="button" onClick={() => download(csvName, toCsv(items))} disabled={!items.length}>
             Export CSV
           </button>
-
-          <a
-            className="button button--ghost"
-            href={endpoint}
-            target="_blank"
-            rel="noreferrer"
-            title="Open the Core API JSON for this view"
-          >
+          <a className="button button--ghost" href={endpoint} target="_blank" rel="noreferrer" title="Open the Core API JSON for this view">
             Open JSON
           </a>
         </div>
       </div>
-
       <div className="cha-summary">
         <div className="cha-summary-item">
           <div className="cha-summary-label">Rows</div>
@@ -271,192 +250,118 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
         <div className="cha-summary-item cha-summary-item--grow">
           <div className="cha-summary-label">Tip</div>
           <div className="cha-summary-value cha-summary-tip">
-            Work top-to-bottom. Fix title/meta/H1, then refresh and watch rows
-            disappear.
+            Work top-to-bottom. Fix title/meta/H1, then refresh and watch rows disappear.
           </div>
         </div>
       </div>
-
       {status === "error" && (
         <div className="cha-error">
           <div className="cha-error-title">Could not load Content Health</div>
           <div className="cha-error-body">{error}</div>
+          <DebugPanel />
         </div>
       )}
-
-      <div className="cha-table-wrap">
-        <table className="cha-table">
-          <thead>
-            <tr>
-              <th style={{ width: 90 }}>Score</th>
-              <th style={{ width: 110 }}>Type</th>
-              <th>URL</th>
-              <th>Title</th>
-              <th>Meta description</th>
-              <th style={{ width: 220 }}>Issues</th>
-              <th style={{ width: 150 }}>Updated</th>
-              <th style={{ width: 220 }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {status === "loading" && !items.length ? (
+      {status === "loading" && !items.length && (
+        <div className="cha-loading">Loading content health from Core…<DebugPanel /></div>
+      )}
+      {!status.startsWith("error") && !status.startsWith("loading") && !items.length && (
+        <div className="cha-empty">No items found for these filters. Either everything is healthy, or you have not ingested content yet.<DebugPanel /></div>
+      )}
+      {items.length > 0 && (
+        <div className="cha-table-wrap">
+          <table className="cha-table">
+            <thead>
               <tr>
-                <td colSpan={8} className="cha-empty">
-                  Loading content health from Core…
-                </td>
+                <th style={{ width: 90 }}>Score</th>
+                <th style={{ width: 110 }}>Type</th>
+                <th>URL</th>
+                <th>Title</th>
+                <th>Meta description</th>
+                <th style={{ width: 220 }}>Issues</th>
+                <th style={{ width: 150 }}>Updated</th>
+                <th style={{ width: 220 }}>Actions</th>
               </tr>
-            ) : !items.length ? (
-              <tr>
-                <td colSpan={8} className="cha-empty">
-                  No items found for these filters. Either everything is healthy,
-                  or you have not ingested content yet.
-                </td>
-              </tr>
-            ) : (
-              items.map((row) => {
+            </thead>
+            <tbody>
+              {items.map((row) => {
                 const prettyIssues = issuesPretty(row.issues);
                 const canQueue = Array.isArray(row.issues) && row.issues.length;
-
                 return (
                   <tr key={`${row.id}-${row.url}`}>
                     <td>
-                      <span className={scoreTone(row.score)}>
-                        {row.score ?? "—"}
-                      </span>
-                      <div className="cha-sub">
-                        T{row.titleLength ?? "—"} · M{row.metaLength ?? "—"}
-                      </div>
+                      <span className={scoreTone(row.score)}>{row.score ?? "—"}</span>
+                      <div className="cha-sub">T{row.titleLength ?? "—"} · M{row.metaLength ?? "—"}</div>
                     </td>
                     <td>
                       <span className="cha-type">{row.type || "other"}</span>
                       <div className="cha-sub">{row.platform || "—"}</div>
                     </td>
                     <td className="cha-url">
-                      <a href={row.url} target="_blank" rel="noreferrer">
-                        {truncate(row.url, 70)}
-                      </a>
+                      <a href={row.url} target="_blank" rel="noreferrer">{truncate(row.url, 70)}</a>
                       <div className="cha-sub">{row.externalId || "—"}</div>
                     </td>
-                    <td title={row.title || ""}>
-                      {truncate(row.title || "—", 80)}
-                    </td>
-                    <td title={row.metaDescription || ""}>
-                      {truncate(row.metaDescription || "—", 95)}
-                    </td>
+                    <td title={row.title || ""}>{truncate(row.title || "—", 80)}</td>
+                    <td title={row.metaDescription || ""}>{truncate(row.metaDescription || "—", 95)}</td>
                     <td>
                       {prettyIssues.length ? (
                         <div className="cha-issues">
                           {prettyIssues.map((i) => (
-                            <span key={i} className="cha-issue-pill">
-                              {i}
-                            </span>
+                            <span key={i} className="cha-issue-pill">{i}</span>
                           ))}
                         </div>
                       ) : (
                         <span className="cha-muted">—</span>
                       )}
-                    </td>
-                    <td>
-                      <div className="cha-date">
-                        {row.updatedAt
-                          ? new Date(row.updatedAt).toLocaleString()
-                          : "—"}
+                      {/* Actionable SEO tips placeholder */}
+                      <div className="cha-seo-tips">
+                        <b>SEO Tips:</b>
+                        <ul className="cha-tips-list">
+                          {prettyIssues.length ? prettyIssues.map((issue, i) => (
+                            <li key={i} className="cha-tip--warn">{issue} <span className="cha-tip-detail">(Actionable tip placeholder)</span></li>
+                          )) : <li className="cha-tip--good">No major issues detected.</li>}
+                        </ul>
+                        {/* Google-style preview placeholder */}
+                        <div className="cha-preview-placeholder">[Google-style SEO preview coming soon]</div>
                       </div>
                     </td>
-
-                    {/* ✅ ACTIONS — kept everything, only added Fix Queue button */}
+                    <td>
+                      <div className="cha-date">{row.updatedAt ? new Date(row.updatedAt).toLocaleString() : "—"}</div>
+                    </td>
                     <td>
                       <div className="cha-action-row">
-                        <button
-                          className="button button--ghost button--tiny"
-                          type="button"
-                          onClick={() => safeCopy(row.url)}
-                          title="Copy URL"
-                        >
-                          Copy URL
-                        </button>
-
-                        <button
-                          className="button button--ghost button--tiny"
-                          type="button"
-                          onClick={() => safeCopy(row.title)}
-                          title="Copy title"
-                          disabled={!row.title}
-                        >
-                          Copy title
-                        </button>
-
-                        <button
-                          className="button button--ghost button--tiny"
-                          type="button"
-                          onClick={() => safeCopy(row.metaDescription)}
-                          title="Copy meta description"
-                          disabled={!row.metaDescription}
-                        >
-                          Copy meta
-                        </button>
-
-                        <button
-                          className="button button--ghost button--tiny"
-                          type="button"
-                          onClick={async () => {
-                            try {
-                              const res = await fetch(
-                                `${normalizedCoreUrl}/projects/${projectId}/fix-queue`,
-                                {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({
-                                    url: row.url,
-                                    issues: row.issues || [],
-                                  }),
-                                }
-                              );
-
-                              if (!res.ok) {
-                                const t = await res.text().catch(() => "");
-                                throw new Error(
-                                  `Fix Queue error (${res.status}): ${
-                                    t || res.statusText
-                                  }`
-                                );
-                              }
-
-                              alert("Added to Fix Queue");
-                            } catch (e) {
-                              alert(e?.message || "Failed to add to Fix Queue");
+                        <button className="button button--ghost button--tiny" type="button" onClick={() => safeCopy(row.url)} title="Copy URL">Copy URL</button>
+                        <button className="button button--ghost button--tiny" type="button" onClick={() => safeCopy(row.title)} title="Copy title" disabled={!row.title}>Copy title</button>
+                        <button className="button button--ghost button--tiny" type="button" onClick={() => safeCopy(row.metaDescription)} title="Copy meta description" disabled={!row.metaDescription}>Copy meta</button>
+                        <button className="button button--ghost button--tiny" type="button" onClick={async () => {
+                          try {
+                            const res = await fetch(`${normalizedCoreUrl}/projects/${projectId}/fix-queue`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ url: row.url, issues: row.issues || [] }),
+                            });
+                            if (!res.ok) {
+                              const t = await res.text().catch(() => "");
+                              throw new Error(`Fix Queue error (${res.status}): ${t || res.statusText}`);
                             }
-                          }}
-                          disabled={!canQueue}
-                          title={
-                            canQueue
-                              ? "Add this URL + issues into your Fix Queue"
-                              : "Nothing to queue (no issues on this row)"
+                            alert("Added to Fix Queue");
+                          } catch (e) {
+                            alert(e?.message || "Failed to add to Fix Queue");
                           }
-                        >
-                          Add to Fix Queue
-                        </button>
+                        }} disabled={!canQueue} title={canQueue ? "Add this URL + issues into your Fix Queue" : "Nothing to queue (no issues on this row)"}>Add to Fix Queue</button>
                       </div>
                     </td>
                   </tr>
                 );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
       <div className="cha-footer">
-        <div className="cha-footer-left">
-          Endpoint: <span className="cha-mono">{endpoint}</span>
-        </div>
-        <div className="cha-footer-right">
-          <span className="cha-muted">
-            Scoring is currently length-based (title/meta) + H1 present. We can
-            upgrade this later to real SEO heuristics.
-          </span>
-        </div>
+        <div className="cha-footer-left">Endpoint: <span className="cha-mono">{endpoint}</span></div>
+        <div className="cha-footer-right"><span className="cha-muted">Scoring is currently length-based (title/meta) + H1 present. We can upgrade this later to real SEO heuristics.</span></div>
       </div>
+      <DebugPanel />
     </div>
   );
 }
