@@ -33,6 +33,52 @@ const ENGINES = {
 
 // --- FULL FEATURED APP FUNCTION RESTORED ---
 function App() {
+    // Auto-create or load project (no manual onboarding)
+    useEffect(() => {
+      const id = localStorage.getItem("auraProjectId");
+      const shopToken = localStorage.getItem("shopToken");
+      const shopDomain = localStorage.getItem("auraProjectDomain");
+      if (id) {
+        setProject({
+          id,
+          name: localStorage.getItem("auraProjectName") || "Untitled project",
+          domain: localStorage.getItem("auraProjectDomain") || "—",
+          platform: localStorage.getItem("auraPlatform") || "other",
+        });
+        return;
+      }
+      // No project found, auto-create one
+      setAutoCreating(true);
+      fetch(`${coreUrl}/projects`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "My Project",
+          domain: window.location.hostname || "localhost",
+          platform: "shopify",
+        }),
+      })
+        .then(async (res) => {
+          if (!res.ok) throw new Error("Failed to create project");
+          const data = await res.json();
+          if (!data.ok || !data.project) throw new Error("Invalid project response");
+          const proj = data.project;
+          localStorage.setItem("auraProjectId", proj.id);
+          localStorage.setItem("auraProjectName", proj.name || "Untitled project");
+          localStorage.setItem("auraProjectDomain", proj.domain || "—");
+          localStorage.setItem("auraPlatform", proj.platform || "shopify");
+          setProject({
+            id: proj.id,
+            name: proj.name || "Untitled project",
+            domain: proj.domain || "—",
+            platform: proj.platform || "shopify",
+          });
+        })
+        .catch((err) => {
+          setProject(null);
+        })
+        .finally(() => setAutoCreating(false));
+    }, [coreUrl]);
   // Core state
   const [coreUrl, setCoreUrl] = useState(DEFAULT_CORE_API);
   const [coreStatus, setCoreStatus] = useState('checking');
