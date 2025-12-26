@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import './ProductsList.css';
+import './ProductsList.modern.css'; // Add a new CSS module for world-class polish
 
 // Debug utility for logging
 function debugLog(...args) {
@@ -45,7 +46,10 @@ function getSeoIssues({ title, metaDescription, keywords, slug }) {
 // ...existing code for computeSeoScore, exportSeoToCsv, and other helpers if present...
 
 
-const ProductsList = ({ shopDomain, shopToken }) => {
+// Context for plugin/extension support
+export const ProductsListContext = createContext();
+
+const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -82,6 +86,44 @@ const ProductsList = ({ shopDomain, shopToken }) => {
         <div>seoHistory: <span className="pl-debug-accent">{Object.keys(seoHistory).length}</span></div>
         <div>updateStatus: <span className="pl-debug-accent">{JSON.stringify(updateStatus)}</span></div>
         <div>Timestamp: {new Date().toISOString()}</div>
+      </div>
+    );
+  }
+
+  // Advanced analytics panel for enterprise insights
+  function AnalyticsPanel() {
+    // Aggregate SEO scores and issues
+    const total = products.length;
+    const scores = products.map(p => {
+      const seo = seoSuggestions[p.id] || {
+        title: p.title,
+        metaDescription: p.metaDescription || p.description || p.body_html || '',
+        keywords: p.keywords || [],
+        slug: p.slug || p.handle || '',
+      };
+      return computeSeoScore(seo);
+    });
+    const avgScore = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 'N/A';
+    const highScore = scores.length ? Math.max(...scores) : 'N/A';
+    const lowScore = scores.length ? Math.min(...scores) : 'N/A';
+    const issuesCount = products.reduce((sum, p) => {
+      const seo = seoSuggestions[p.id] || {
+        title: p.title,
+        metaDescription: p.metaDescription || p.description || p.body_html || '',
+        keywords: p.keywords || [],
+        slug: p.slug || p.handle || '',
+      };
+      return sum + getSeoIssues(seo).length;
+    }, 0);
+    return (
+      <div className="pl-analytics-panel">
+        <b>Enterprise Analytics</b><br/>
+        <div>Total Products: <span className="pl-analytics-accent">{total}</span></div>
+        <div>Average SEO Score: <span className="pl-analytics-accent">{avgScore}</span></div>
+        <div>Highest SEO Score: <span className="pl-analytics-accent">{highScore}</span></div>
+        <div>Lowest SEO Score: <span className="pl-analytics-accent">{lowScore}</span></div>
+        <div>Total SEO Issues: <span className="pl-analytics-accent">{issuesCount}</span></div>
+        <div>Last Updated: {new Date().toLocaleString()}</div>
       </div>
     );
   }
@@ -240,215 +282,229 @@ const ProductsList = ({ shopDomain, shopToken }) => {
     );
   }
 
-  // Main UI
+  // Main UI with plugin extension points
   try {
     return (
-      <div className="pl-root">
-        <h1 className="pl-title">Shopify Products SEO Manager</h1>
-        {/* Sticky header for filters/actions */}
-        <div className="pl-toolbar">
-          <select value={language} onChange={e => setLanguage(e.target.value)} className="pl-select">
-            <option value="en">English</option>
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-            <option value="de">German</option>
-            <option value="it">Italian</option>
-            <option value="pt">Portuguese</option>
-            <option value="ja">Japanese</option>
-            <option value="zh">Chinese</option>
-            <option value="ko">Korean</option>
-          </select>
-          <input type="text" placeholder="Custom AI prompt (optional)" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} className="pl-input pl-input--wide" />
-          <input type="text" placeholder="Search products..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-input" />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="pl-select">
-            <option value="all">All</option>
-            <option value="success">Updated</option>
-            <option value="error">Error</option>
-            <option value="pending">Pending</option>
-          </select>
-          <button onClick={fetchProducts} disabled={loading} className="pl-btn pl-btn--accent">{loading ? 'Refreshing...' : 'Refresh'}</button>
-          <button onClick={selectAll} disabled={loading || filteredProducts.length === 0} className="pl-btn">Select All</button>
-          <button onClick={deselectAll} disabled={loading || selectedIds.length === 0} className="pl-btn">Deselect All</button>
-          <button onClick={exportSeoToCsv} disabled={loading || products.length === 0} className="pl-btn">Export to CSV</button>
-        </div>
-        {loading && <div className="pl-loading">Loading products...</div>}
-        {error && (
-          <div className="pl-error">
-            {error}
-            <DebugPanel />
+      <ProductsListContext.Provider value={{
+        products, setProducts, loading, setLoading, error, setError, init, setInit,
+        seoSuggestions, setSeoSuggestions, selectedIds, setSelectedIds, selectedProductId, setSelectedProductId,
+        aiPrompt, setAiPrompt, language, setLanguage, searchTerm, setSearchTerm, statusFilter, setStatusFilter,
+        updateStatus, setUpdateStatus, seoHistory, setSeoHistory, fatal, setFatal, editState, setEditState,
+        expandedRows, setExpandedRows, setExpandedRow, fetchProducts, selectAll, deselectAll, toggleSelect, filteredProducts, computeSeoScore, getSeoIssues, exportSeoToCsv
+      }}>
+        <div className="pl-root" role="main" aria-label="Shopify Products SEO Manager">
+          <h1 className="pl-title" tabIndex={0}>Shopify Products SEO Manager</h1>
+          {/* Sticky header for filters/actions */}
+          <div className="pl-toolbar" role="region" aria-label="Product Filters and Actions">
+            <label htmlFor="pl-lang-select" className="pl-sr">Language</label>
+            <select id="pl-lang-select" value={language} onChange={e => setLanguage(e.target.value)} className="pl-select" aria-label="Language">
+              <option value="en">English</option>
+              <option value="es">Spanish</option>
+              <option value="fr">French</option>
+              <option value="de">German</option>
+              <option value="it">Italian</option>
+              <option value="pt">Portuguese</option>
+              <option value="ja">Japanese</option>
+              <option value="zh">Chinese</option>
+              <option value="ko">Korean</option>
+            </select>
+            <label htmlFor="pl-ai-prompt" className="pl-sr">Custom AI prompt</label>
+            <input id="pl-ai-prompt" type="text" placeholder="Custom AI prompt (optional)" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} className="pl-input pl-input--wide" aria-label="Custom AI prompt" />
+            <label htmlFor="pl-search" className="pl-sr">Search products</label>
+            <input id="pl-search" type="text" placeholder="Search products..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-input" aria-label="Search products" />
+            <label htmlFor="pl-status-filter" className="pl-sr">Status filter</label>
+            <select id="pl-status-filter" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="pl-select" aria-label="Status filter">
+              <option value="all">All</option>
+              <option value="success">Updated</option>
+              <option value="error">Error</option>
+              <option value="pending">Pending</option>
+            </select>
+            <button onClick={fetchProducts} disabled={loading} className="pl-btn pl-btn--accent" aria-label="Refresh products">{loading ? 'Refreshing...' : 'Refresh'}</button>
+            <button onClick={selectAll} disabled={loading || filteredProducts.length === 0} className="pl-btn" aria-label="Select all products">Select All</button>
+            <button onClick={deselectAll} disabled={loading || selectedIds.length === 0} className="pl-btn" aria-label="Deselect all products">Deselect All</button>
+            <button onClick={exportSeoToCsv} disabled={loading || products.length === 0} className="pl-btn" aria-label="Export SEO to CSV">Export to CSV</button>
           </div>
-        )}
-        {!loading && !error && (
-          filteredProducts.length === 0 ? (
-            <div className="pl-empty">
-              No products found.<br/>
+          {loading && <div className="pl-loading">Loading products...</div>}
+          {error && (
+            <div className="pl-error">
+              {error}
               <DebugPanel />
             </div>
-          ) : (
-            <div className="pl-table-wrap">
-              <table className="pl-table">
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>Product</th>
-                    <th>SEO Score</th>
-                    <th>Title</th>
-                    <th>Meta Description</th>
-                    <th>Keywords</th>
-                    <th>Slug</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts.map((product) => {
-                    const isEditing = editState[product.id]?.editing || false;
-                    let seo = seoSuggestions[product.id] || {
-                      title: product.title,
-                      metaDescription: product.metaDescription || product.description || product.body_html || '',
-                      keywords: product.keywords || [],
-                      slug: product.slug || product.handle || '',
-                    };
-                    let keywordSuggestions = [];
-                    if (!seo.keywords || !Array.isArray(seo.keywords) || !seo.keywords[0]) {
-                      const text = ((seo.title || '') + ' ' + (seo.metaDescription || '')).toLowerCase();
-                      const words = text.match(/\b[a-z0-9]{4,}\b/g) || [];
-                      const freq = {};
-                      words.forEach(w => { freq[w] = (freq[w] || 0) + 1; });
-                      keywordSuggestions = Object.entries(freq).sort((a, b) => b[1] - a[1]).map(([w]) => w).slice(0, 5);
-                    }
-                    const s = computeSeoScore({ title: seo.title, metaDescription: seo.metaDescription, keywords: seo.keywords, slug: seo.slug });
-                    let issues = getSeoIssues(seo);
-                    if (Array.isArray(product.images)) {
-                      const missingAlt = product.images.filter(img => !img.alt || !img.alt.trim()).length;
-                      if (missingAlt > 0) {
-                        issues = [...issues, { field: 'Image', msg: `Missing alt text for ${missingAlt} image${missingAlt > 1 ? 's' : ''}`, type: 'warn', tip: 'Add descriptive alt text to all product images for accessibility and SEO.' }];
+          )}
+          {!loading && !error && (
+            filteredProducts.length === 0 ? (
+              <div className="pl-empty">
+                No products found.<br/>
+                <DebugPanel />
+              </div>
+            ) : (
+              <div className="pl-table-wrap" role="region" aria-label="Products Table">
+                <table className="pl-table" aria-label="Products SEO Table">
+                  <thead>
+                    <tr>
+                      <th scope="col"></th>
+                      <th scope="col">Product</th>
+                      <th scope="col">SEO Score</th>
+                      <th scope="col">Title</th>
+                      <th scope="col">Meta Description</th>
+                      <th scope="col">Keywords</th>
+                      <th scope="col">Slug</th>
+                      <th scope="col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredProducts.map((product) => {
+                      const isEditing = editState[product.id]?.editing || false;
+                      let seo = seoSuggestions[product.id] || {
+                        title: product.title,
+                        metaDescription: product.metaDescription || product.description || product.body_html || '',
+                        keywords: product.keywords || [],
+                        slug: product.slug || product.handle || '',
+                      };
+                      let keywordSuggestions = [];
+                      if (!seo.keywords || !Array.isArray(seo.keywords) || !seo.keywords[0]) {
+                        const text = ((seo.title || '') + ' ' + (seo.metaDescription || '')).toLowerCase();
+                        const words = text.match(/\b[a-z0-9]{4,}\b/g) || [];
+                        const freq = {};
+                        words.forEach(w => { freq[w] = (freq[w] || 0) + 1; });
+                        keywordSuggestions = Object.entries(freq).sort((a, b) => b[1] - a[1]).map(([w]) => w).slice(0, 5);
                       }
-                    }
-                    const expanded = !!expandedRows[product.id];
-                    // Editable fields
-                    const editable = isEditing ? (editState[product.id] || seo) : seo;
-                    return (
-                      <tr key={product.id} className={expanded ? 'pl-row pl-row--expanded' : 'pl-row'}>
-                        <td>
-                          <input type="checkbox" checked={selectedIds.includes(product.id)} onChange={() => toggleSelect(product.id)} disabled={loading} />
-                        </td>
-                        <td className="pl-product-cell">
-                          <span className="pl-expand-toggle" onClick={() => setExpandedRow(product.id, !expanded)}>
-                            {expanded ? '▼' : '▶'}
-                          </span> {product.title}
-                          <div className="pl-product-price">{product.variants && product.variants[0] ? `$${product.variants[0].price}` : 'N/A'}</div>
-                        </td>
-                        <td>
-                          <span className="pl-score-badge"> <b className={s >= 80 ? 'pl-score--good' : s >= 60 ? 'pl-score--warn' : 'pl-score--bad'}>{s}</b>/100</span>
-                        </td>
-                        <td>
-                          {isEditing ? (
-                            <input value={editable.title} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, title: e.target.value } }))} className="pl-input" />
-                          ) : (
-                            seo.title || <span className="pl-muted">None</span>
-                          )}
-                        </td>
-                        <td>
-                          {isEditing ? (
-                            <textarea value={editable.metaDescription} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, metaDescription: e.target.value } }))} className="pl-input" />
-                          ) : (
-                            seo.metaDescription || <span className="pl-muted">None</span>
-                          )}
-                        </td>
-                        <td>
-                          {isEditing ? (
-                            <input value={editable.keywords.join(', ')} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, keywords: e.target.value.split(',').map(x => x.trim()).filter(Boolean) } }))} className="pl-input" />
-                          ) : (
-                            Array.isArray(seo.keywords) && seo.keywords[0] ? seo.keywords.join(', ') : <span className="pl-muted">None</span>
-                          )}
-                          {keywordSuggestions.length > 0 && (
-                            <div className="pl-keyword-suggestions">
-                              <span className="pl-keyword-label">Suggestions: </span>
-                              {keywordSuggestions.map((kw, i) => (
-                                <span key={kw} className="pl-keyword-pill" onClick={() => isEditing && setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, keywords: [...(editable.keywords || []), kw].filter((v, i, a) => a.indexOf(v) === i) } }))}>{kw}</span>
-                              ))}
-                            </div>
-                          )}
-                        </td>
-                        <td>
-                          {isEditing ? (
-                            <input value={editable.slug} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, slug: e.target.value } }))} className="pl-input" />
-                          ) : (
-                            seo.slug || <span className="pl-muted">None</span>
-                          )}
-                        </td>
-                        <td className="pl-actions-cell">
-                          {isEditing ? (
-                            <>
-                              <button className="pl-btn pl-btn--save" onClick={() => {
-                                setSeoSuggestions(s => ({ ...s, [product.id]: { ...editable } }));
-                                setEditState(state => ({ ...state, [product.id]: { ...editable, editing: false } }));
-                              }}>Save</button>
-                              <button className="pl-btn pl-btn--cancel" onClick={() => setEditState(state => ({ ...state, [product.id]: { ...seo, editing: false } }))}>Cancel</button>
-                              <button className="pl-btn pl-btn--ai" onClick={() => {
-                                setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, title: seo.title + ' (AI)', metaDescription: seo.metaDescription + ' (AI)', keywords: [...(seo.keywords || []), 'ai'], slug: seo.slug } }));
-                              }}>AI Suggest</button>
-                            </>
-                          ) : (
-                            <>
-                              <button className="pl-btn pl-btn--edit" onClick={() => setEditState(state => ({ ...state, [product.id]: { ...seo, editing: true } }))}>Edit</button>
-                              {/* Fix All SEO Issues button */}
-                              {issues.length > 0 && (
-                                <button className="pl-btn pl-btn--fixall" onClick={() => {
-                                  // For now, just auto-fill with best guesses (AI-ready)
-                                  const fixed = { ...seo };
-                                  issues.forEach(issue => {
-                                    if (issue.field === 'Title' && (!fixed.title || fixed.title === '')) fixed.title = 'New Product Title';
-                                    if (issue.field === 'Meta Description' && (!fixed.metaDescription || fixed.metaDescription === '')) fixed.metaDescription = 'New meta description for this product.';
-                                    if (issue.field === 'Keywords' && (!fixed.keywords || !fixed.keywords.length)) fixed.keywords = ['keyword1', 'keyword2'];
-                                    if (issue.field === 'Slug' && (!fixed.slug || fixed.slug === '')) fixed.slug = 'new-product-slug';
-                                  });
-                                  setSeoSuggestions(s => ({ ...s, [product.id]: { ...fixed } }));
-                                }}>Fix All SEO Issues</button>
-                              )}
-                              {/* Individual Fix buttons for each issue */}
-                              {expanded && issues.length > 0 && (
-                                <div className="pl-fix-buttons">
-                                  {issues.map((issue, i) => (
-                                    <button key={i} className="pl-btn pl-btn--fix" onClick={() => {
-                                      // For now, just patch the field with a placeholder fix
-                                      const patch = { ...seoSuggestions[product.id] || seo };
-                                      if (issue.field === 'Title') patch.title = 'Fixed Title';
-                                      if (issue.field === 'Meta Description') patch.metaDescription = 'Fixed meta description.';
-                                      if (issue.field === 'Keywords') patch.keywords = ['fixed', 'keywords'];
-                                      if (issue.field === 'Slug') patch.slug = 'fixed-slug';
-                                      setSeoSuggestions(s => ({ ...s, [product.id]: patch }));
-                                    }}>Fix {issue.field}</button>
-                                  ))}
-                                </div>
-                              )}
-                            </>
-                          )}
-                          {expanded && issues.length > 0 && (
-                            <div className="pl-seo-tips">
-                              <b>SEO Tips:</b>
-                              <ul className="pl-tips-list">
-                                {issues.map((issue, i) => (
-                                  <li key={i} className={issue.type === 'error' ? 'pl-tip--error' : 'pl-tip--warn'}>{issue.field}: {issue.msg} <span className="pl-tip-detail">{issue.tip}</span></li>
+                      const s = computeSeoScore({ title: seo.title, metaDescription: seo.metaDescription, keywords: seo.keywords, slug: seo.slug });
+                      let issues = getSeoIssues(seo);
+                      if (Array.isArray(product.images)) {
+                        const missingAlt = product.images.filter(img => !img.alt || !img.alt.trim()).length;
+                        if (missingAlt > 0) {
+                          issues = [...issues, { field: 'Image', msg: `Missing alt text for ${missingAlt} image${missingAlt > 1 ? 's' : ''}`, type: 'warn', tip: 'Add descriptive alt text to all product images for accessibility and SEO.' }];
+                        }
+                      }
+                      const expanded = !!expandedRows[product.id];
+                      // Editable fields
+                      const editable = isEditing ? (editState[product.id] || seo) : seo;
+                      return (
+                        <tr key={product.id} className={expanded ? 'pl-row pl-row--expanded' : 'pl-row'}>
+                          <td>
+                            <input type="checkbox" checked={selectedIds.includes(product.id)} onChange={() => toggleSelect(product.id)} disabled={loading} />
+                          </td>
+                          <td className="pl-product-cell">
+                            <span className="pl-expand-toggle" onClick={() => setExpandedRow(product.id, !expanded)}>
+                              {expanded ? '▼' : '▶'}
+                            </span> {product.title}
+                            <div className="pl-product-price">{product.variants && product.variants[0] ? `$${product.variants[0].price}` : 'N/A'}</div>
+                          </td>
+                          <td>
+                            <span className="pl-score-badge"> <b className={s >= 80 ? 'pl-score--good' : s >= 60 ? 'pl-score--warn' : 'pl-score--bad'}>{s}</b>/100</span>
+                          </td>
+                          <td>
+                            {isEditing ? (
+                              <input value={editable.title} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, title: e.target.value } }))} className="pl-input" />
+                            ) : (
+                              seo.title || <span className="pl-muted">None</span>
+                            )}
+                          </td>
+                          <td>
+                            {isEditing ? (
+                              <textarea value={editable.metaDescription} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, metaDescription: e.target.value } }))} className="pl-input" />
+                            ) : (
+                              seo.metaDescription || <span className="pl-muted">None</span>
+                            )}
+                          </td>
+                          <td>
+                            {isEditing ? (
+                              <input value={editable.keywords.join(', ')} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, keywords: e.target.value.split(',').map(x => x.trim()).filter(Boolean) } }))} className="pl-input" />
+                            ) : (
+                              Array.isArray(seo.keywords) && seo.keywords[0] ? seo.keywords.join(', ') : <span className="pl-muted">None</span>
+                            )}
+                            {keywordSuggestions.length > 0 && (
+                              <div className="pl-keyword-suggestions">
+                                <span className="pl-keyword-label">Suggestions: </span>
+                                {keywordSuggestions.map((kw, i) => (
+                                  <span key={kw} className="pl-keyword-pill" onClick={() => isEditing && setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, keywords: [...(editable.keywords || []), kw].filter((v, i, a) => a.indexOf(v) === i) } }))}>{kw}</span>
                                 ))}
-                              </ul>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )
-        )}
-        {/* Aggressive debug panel always visible at bottom */}
-        <DebugPanel />
-      </div>
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            {isEditing ? (
+                              <input value={editable.slug} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, slug: e.target.value } }))} className="pl-input" />
+                            ) : (
+                              seo.slug || <span className="pl-muted">None</span>
+                            )}
+                          </td>
+                          <td className="pl-actions-cell">
+                            {isEditing ? (
+                              <>
+                                <button className="pl-btn pl-btn--save" onClick={() => {
+                                  setSeoSuggestions(s => ({ ...s, [product.id]: { ...editable } }));
+                                  setEditState(state => ({ ...state, [product.id]: { ...editable, editing: false } }));
+                                }}>Save</button>
+                                <button className="pl-btn pl-btn--cancel" onClick={() => setEditState(state => ({ ...state, [product.id]: { ...seo, editing: false } }))}>Cancel</button>
+                                <button className="pl-btn pl-btn--ai" onClick={() => {
+                                  setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, title: seo.title + ' (AI)', metaDescription: seo.metaDescription + ' (AI)', keywords: [...(seo.keywords || []), 'ai'], slug: seo.slug } }));
+                                }}>AI Suggest</button>
+                              </>
+                            ) : (
+                              <>
+                                <button className="pl-btn pl-btn--edit" onClick={() => setEditState(state => ({ ...state, [product.id]: { ...seo, editing: true } }))}>Edit</button>
+                                {/* Fix All SEO Issues button */}
+                                {issues.length > 0 && (
+                                  <button className="pl-btn pl-btn--fixall" onClick={() => {
+                                    // For now, just auto-fill with best guesses (AI-ready)
+                                    const fixed = { ...seo };
+                                    issues.forEach(issue => {
+                                      if (issue.field === 'Title' && (!fixed.title || fixed.title === '')) fixed.title = 'New Product Title';
+                                      if (issue.field === 'Meta Description' && (!fixed.metaDescription || fixed.metaDescription === '')) fixed.metaDescription = 'New meta description for this product.';
+                                      if (issue.field === 'Keywords' && (!fixed.keywords || !fixed.keywords.length)) fixed.keywords = ['keyword1', 'keyword2'];
+                                      if (issue.field === 'Slug' && (!fixed.slug || fixed.slug === '')) fixed.slug = 'new-product-slug';
+                                    });
+                                    setSeoSuggestions(s => ({ ...s, [product.id]: { ...fixed } }));
+                                  }}>Fix All SEO Issues</button>
+                                )}
+                                {/* Individual Fix buttons for each issue */}
+                                {expanded && issues.length > 0 && (
+                                  <div className="pl-fix-buttons">
+                                    {issues.map((issue, i) => (
+                                      <button key={i} className="pl-btn pl-btn--fix" onClick={() => {
+                                        // For now, just patch the field with a placeholder fix
+                                        const patch = { ...seoSuggestions[product.id] || seo };
+                                        if (issue.field === 'Title') patch.title = 'Fixed Title';
+                                        if (issue.field === 'Meta Description') patch.metaDescription = 'Fixed meta description.';
+                                        if (issue.field === 'Keywords') patch.keywords = ['fixed', 'keywords'];
+                                        if (issue.field === 'Slug') patch.slug = 'fixed-slug';
+                                        setSeoSuggestions(s => ({ ...s, [product.id]: patch }));
+                                      }}>Fix {issue.field}</button>
+                                    ))}
+                                  </div>
+                                )}
+                              </>
+                            )}
+                            {expanded && issues.length > 0 && (
+                              <div className="pl-seo-tips">
+                                <b>SEO Tips:</b>
+                                <ul className="pl-tips-list">
+                                  {issues.map((issue, i) => (
+                                    <li key={i} className={issue.type === 'error' ? 'pl-tip--error' : 'pl-tip--warn'}>{issue.field}: {issue.msg} <span className="pl-tip-detail">{issue.tip}</span></li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )
+          )}
+          {/* Enterprise analytics and debug panels always visible at bottom */}
+          <AnalyticsPanel />
+          <DebugPanel />
+          {/* Plugin extension point: render plugins if any */}
+          {plugins.map((PluginComponent, idx) => PluginComponent ? <PluginComponent key={idx} /> : null)}
+        </div>
+      </ProductsListContext.Provider>
     );
-  }
-  catch (e) {
+  } catch (e) {
     debugLog('Fatal render error', e);
     return (
       <div className="pl-fatal">
