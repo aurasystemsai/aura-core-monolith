@@ -209,6 +209,16 @@
   color: #1a2233;
   margin-right: 8px;
   min-width: 120px;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.pl-input:focus, .pl-select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px #c7d2fe;
+  outline: none;
+  background: #fff;
+}
+.pl-input:hover, .pl-select:hover {
+  border-color: #6366f1;
 }
 
 .pl-input--wide {
