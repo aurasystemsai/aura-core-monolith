@@ -313,6 +313,9 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                 </thead>
                 <tbody>
                   {filteredProducts.map((product) => {
+                    // Local editable SEO state per product
+                    const [editState, setEditState] = useState({});
+                    const isEditing = editState[product.id]?.editing || false;
                     let seo = seoSuggestions[product.id] || {
                       title: product.title,
                       metaDescription: product.metaDescription || product.description || product.body_html || '',
@@ -335,8 +338,9 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                         issues = [...issues, { field: 'Image', msg: `Missing alt text for ${missingAlt} image${missingAlt > 1 ? 's' : ''}`, type: 'warn', tip: 'Add descriptive alt text to all product images for accessibility and SEO.' }];
                       }
                     }
-                    // Collapsible details (fixed: use expandedRows state)
                     const expanded = !!expandedRows[product.id];
+                    // Editable fields
+                    const editable = isEditing ? (editState[product.id] || seo) : seo;
                     return (
                       <tr key={product.id} style={{ background: expanded ? '#23284a' : '#20243a', borderBottom: '1px solid #23284a' }}>
                         <td style={{ padding: 10 }}>
@@ -351,22 +355,69 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                         <td style={{ padding: 10 }}>
                           <span style={{ background: '#333', color: '#fff', borderRadius: 6, padding: '2px 10px', fontSize: 13 }}> <b style={{ color: s >= 80 ? '#7fff7f' : s >= 60 ? '#ffe97f' : '#ff7f7f' }}>{s}</b>/100</span>
                         </td>
-                        <td style={{ padding: 10 }}>{seo.title || <span style={{ color: '#aaa' }}>None</span>}</td>
-                        <td style={{ padding: 10 }}>{seo.metaDescription || <span style={{ color: '#aaa' }}>None</span>}</td>
                         <td style={{ padding: 10 }}>
-                          {Array.isArray(seo.keywords) && seo.keywords[0] ? seo.keywords.join(', ') : <span style={{ color: '#aaa' }}>None</span>}
+                          {isEditing ? (
+                            <input value={editable.title} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, title: e.target.value } }))} style={{ width: '100%', padding: 4, borderRadius: 4, border: '1px solid #333', background: '#23284a', color: '#fff' }} />
+                          ) : (
+                            seo.title || <span style={{ color: '#aaa' }}>None</span>
+                          )}
+                        </td>
+                        <td style={{ padding: 10 }}>
+                          {isEditing ? (
+                            <textarea value={editable.metaDescription} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, metaDescription: e.target.value } }))} style={{ width: '100%', padding: 4, borderRadius: 4, border: '1px solid #333', background: '#23284a', color: '#fff' }} />
+                          ) : (
+                            seo.metaDescription || <span style={{ color: '#aaa' }}>None</span>
+                          )}
+                        </td>
+                        <td style={{ padding: 10 }}>
+                          {isEditing ? (
+                            <input value={editable.keywords.join(', ')} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, keywords: e.target.value.split(',').map(x => x.trim()).filter(Boolean) } }))} style={{ width: '100%', padding: 4, borderRadius: 4, border: '1px solid #333', background: '#23284a', color: '#fff' }} />
+                          ) : (
+                            Array.isArray(seo.keywords) && seo.keywords[0] ? seo.keywords.join(', ') : <span style={{ color: '#aaa' }}>None</span>
+                          )}
                           {keywordSuggestions.length > 0 && (
                             <div style={{ marginTop: 4 }}>
                               <span style={{ color: '#5c6ac4', fontSize: 13 }}>Suggestions: </span>
                               {keywordSuggestions.map((kw, i) => (
-                                <span key={kw} style={{ background: '#e0e7ff', color: '#222', borderRadius: 4, padding: '2px 6px', marginRight: 4, fontSize: 13, cursor: 'pointer', border: '1px solid #b3bcf5' }} onClick={() => { seo.keywords = [...(seo.keywords || []), kw]; }}>{kw}</span>
+                                <span key={kw} style={{ background: '#e0e7ff', color: '#222', borderRadius: 4, padding: '2px 6px', marginRight: 4, fontSize: 13, cursor: 'pointer', border: '1px solid #b3bcf5' }} onClick={() => isEditing && setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, keywords: [...(editable.keywords || []), kw].filter((v, i, a) => a.indexOf(v) === i) } }))}>{kw}</span>
                               ))}
                             </div>
                           )}
                         </td>
-                        <td style={{ padding: 10 }}>{seo.slug || <span style={{ color: '#aaa' }}>None</span>}</td>
                         <td style={{ padding: 10 }}>
-                          <button style={{ padding: '4px 10px', borderRadius: 4, background: '#5c6ac4', color: '#fff', border: 0, fontWeight: 600, fontSize: 13 }}>Edit</button>
+                          {isEditing ? (
+                            <input value={editable.slug} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, slug: e.target.value } }))} style={{ width: '100%', padding: 4, borderRadius: 4, border: '1px solid #333', background: '#23284a', color: '#fff' }} />
+                          ) : (
+                            seo.slug || <span style={{ color: '#aaa' }}>None</span>
+                          )}
+                        </td>
+                        <td style={{ padding: 10, minWidth: 120 }}>
+                          {isEditing ? (
+                            <>
+                              <button style={{ marginRight: 6, padding: '4px 10px', borderRadius: 4, background: '#7fffd4', color: '#222', border: 0, fontWeight: 700, fontSize: 13 }} onClick={() => {
+                                // Save action: update seoSuggestions and exit edit mode
+                                setSeoSuggestions(s => ({ ...s, [product.id]: { ...editable } }));
+                                setEditState(state => ({ ...state, [product.id]: { ...editable, editing: false } }));
+                              }}>Save</button>
+                              <button style={{ marginRight: 6, padding: '4px 10px', borderRadius: 4, background: '#23284a', color: '#fff', border: 0, fontWeight: 600, fontSize: 13 }} onClick={() => setEditState(state => ({ ...state, [product.id]: { ...seo, editing: false } }))}>Cancel</button>
+                              <button style={{ padding: '4px 10px', borderRadius: 4, background: '#5c6ac4', color: '#fff', border: 0, fontWeight: 600, fontSize: 13 }} onClick={() => {
+                                // AI Suggest: just a stub for now
+                                setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, title: seo.title + ' (AI)', metaDescription: seo.metaDescription + ' (AI)', keywords: [...(seo.keywords || []), 'ai'], slug: seo.slug } }));
+                              }}>AI Suggest</button>
+                            </>
+                          ) : (
+                            <button style={{ padding: '4px 10px', borderRadius: 4, background: '#5c6ac4', color: '#fff', border: 0, fontWeight: 600, fontSize: 13 }} onClick={() => setEditState(state => ({ ...state, [product.id]: { ...seo, editing: true } }))}>Edit</button>
+                          )}
+                          {expanded && issues.length > 0 && (
+                            <div style={{ marginTop: 10, fontSize: 13 }}>
+                              <b>SEO Tips:</b>
+                              <ul style={{ color: '#ffe97f', margin: '6px 0 0 0', padding: '0 0 0 18px' }}>
+                                {issues.map((issue, i) => (
+                                  <li key={i} style={{ color: issue.type === 'error' ? '#ff7f7f' : '#ffe97f' }}>{issue.field}: {issue.msg} <span style={{ color: '#aaa' }}>{issue.tip}</span></li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     );
