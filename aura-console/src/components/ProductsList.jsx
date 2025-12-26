@@ -381,18 +381,48 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                           {isEditing ? (
                             <>
                               <button className="pl-btn pl-btn--save" onClick={() => {
-                                // Save action: update seoSuggestions and exit edit mode
                                 setSeoSuggestions(s => ({ ...s, [product.id]: { ...editable } }));
                                 setEditState(state => ({ ...state, [product.id]: { ...editable, editing: false } }));
                               }}>Save</button>
                               <button className="pl-btn pl-btn--cancel" onClick={() => setEditState(state => ({ ...state, [product.id]: { ...seo, editing: false } }))}>Cancel</button>
                               <button className="pl-btn pl-btn--ai" onClick={() => {
-                                // AI Suggest: just a stub for now
                                 setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, title: seo.title + ' (AI)', metaDescription: seo.metaDescription + ' (AI)', keywords: [...(seo.keywords || []), 'ai'], slug: seo.slug } }));
                               }}>AI Suggest</button>
                             </>
                           ) : (
-                            <button className="pl-btn pl-btn--edit" onClick={() => setEditState(state => ({ ...state, [product.id]: { ...seo, editing: true } }))}>Edit</button>
+                            <>
+                              <button className="pl-btn pl-btn--edit" onClick={() => setEditState(state => ({ ...state, [product.id]: { ...seo, editing: true } }))}>Edit</button>
+                              {/* Fix All SEO Issues button */}
+                              {issues.length > 0 && (
+                                <button className="pl-btn pl-btn--fixall" onClick={() => {
+                                  // For now, just auto-fill with best guesses (AI-ready)
+                                  const fixed = { ...seo };
+                                  issues.forEach(issue => {
+                                    if (issue.field === 'Title' && (!fixed.title || fixed.title === '')) fixed.title = 'New Product Title';
+                                    if (issue.field === 'Meta Description' && (!fixed.metaDescription || fixed.metaDescription === '')) fixed.metaDescription = 'New meta description for this product.';
+                                    if (issue.field === 'Keywords' && (!fixed.keywords || !fixed.keywords.length)) fixed.keywords = ['keyword1', 'keyword2'];
+                                    if (issue.field === 'Slug' && (!fixed.slug || fixed.slug === '')) fixed.slug = 'new-product-slug';
+                                  });
+                                  setSeoSuggestions(s => ({ ...s, [product.id]: { ...fixed } }));
+                                }}>Fix All SEO Issues</button>
+                              )}
+                              {/* Individual Fix buttons for each issue */}
+                              {expanded && issues.length > 0 && (
+                                <div className="pl-fix-buttons">
+                                  {issues.map((issue, i) => (
+                                    <button key={i} className="pl-btn pl-btn--fix" onClick={() => {
+                                      // For now, just patch the field with a placeholder fix
+                                      const patch = { ...seoSuggestions[product.id] || seo };
+                                      if (issue.field === 'Title') patch.title = 'Fixed Title';
+                                      if (issue.field === 'Meta Description') patch.metaDescription = 'Fixed meta description.';
+                                      if (issue.field === 'Keywords') patch.keywords = ['fixed', 'keywords'];
+                                      if (issue.field === 'Slug') patch.slug = 'fixed-slug';
+                                      setSeoSuggestions(s => ({ ...s, [product.id]: patch }));
+                                    }}>Fix {issue.field}</button>
+                                  ))}
+                                </div>
+                              )}
+                            </>
                           )}
                           {expanded && issues.length > 0 && (
                             <div className="pl-seo-tips">

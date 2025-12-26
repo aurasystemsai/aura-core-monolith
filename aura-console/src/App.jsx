@@ -20,6 +20,11 @@ import ProductsList from "./components/ProductsList.jsx";
 import Sidebar from "./components/Sidebar";
 import DashboardHome from "./components/DashboardHome";
 import FixQueue from "./components/FixQueue";
+import Auth from "./auth/Auth.jsx";
+import Onboarding from "./onboarding/Onboarding.jsx";
+import Credits from "./credits/Credits.jsx";
+import Dashboard from "./dashboard/Dashboard.jsx";
+import Orchestration from "./orchestration/Orchestration.jsx";
 
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
@@ -173,7 +178,7 @@ function App() {
           <header className="top-strip">
             <div className="top-strip-left">
               <h1 className="top-strip-title">
-                {project.name}
+                {project && project.name ? project.name : "AURA Console"}
               </h1>
             </div>
           </header>
@@ -185,25 +190,22 @@ function App() {
             />
           </section>
           <section>
+            {activeSection === "dashboard" && <Dashboard />}
+            {activeSection === "auth" && <Auth />}
+            {activeSection === "onboarding" && <Onboarding />}
+            {activeSection === "credits" && <Credits />}
+            {activeSection === "orchestration" && <Orchestration />}
             {activeSection === "products" && (
               <ProductsList 
                 shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
                 shopToken={localStorage.getItem("shopToken")}
               />
             )}
-            {activeSection === "dashboard" && (
-              <DashboardHome setActiveSection={setActiveSection} />
-            )}
-            {activeSection === "content" && (
-              <ContentHealthAuditor />
-            )}
-            {activeSection === "fixqueue" && (
-              <FixQueue />
-            )}
-            {activeSection === "drafts" && (
-              <DraftLibrary />
-            )}
-            {activeSection === "system" && (
+            {activeSection === "content-health" && <ContentHealthAuditor />}
+            {activeSection === "fix-queue" && <FixQueue />}
+            {activeSection === "content-ingest" && <ContentIngestor />}
+            {activeSection === "draft-library" && <DraftLibrary />}
+            {activeSection === "system-health" && (
               <SystemHealthPanel
                 coreStatus={coreStatus}
                 coreStatusLabel={coreStatusLabel}
