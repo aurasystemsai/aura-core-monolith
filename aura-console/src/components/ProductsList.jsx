@@ -293,6 +293,10 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
         expandedRows, setExpandedRows, setExpandedRow, fetchProducts, selectAll, deselectAll, toggleSelect, filteredProducts, computeSeoScore, getSeoIssues, exportSeoToCsv
       }}>
         <div className="pl-root" role="main" aria-label="Shopify Products SEO Manager">
+          {/* Accessibility live region for announcements */}
+          <div aria-live="polite" aria-atomic="true" className="pl-sr" id="pl-live-region">
+            {loading ? 'Loading products…' : error ? `Error: ${error}` : fatal ? `Fatal: ${fatal}` : ''}
+          </div>
           <h1 className="pl-title" tabIndex={0}>Shopify Products SEO Manager</h1>
           {/* Sticky header for filters/actions */}
           <div className="pl-toolbar" role="region" aria-label="Product Filters and Actions">
