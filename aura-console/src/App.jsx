@@ -11,12 +11,15 @@ import ProjectSetup from "./ProjectSetup";
 import ProjectSwitcher from "./ProjectSwitcher";
 
 
+
 import SystemHealthPanel from "./components/SystemHealthPanel";
 import DraftLibrary from "./components/DraftLibrary";
 import ContentHealthAuditor from "./components/ContentHealthAuditor";
 import ContentIngestor from "./components/ContentIngestor";
 import ProductsList from "./components/ProductsList.jsx";
 import Sidebar from "./components/Sidebar";
+import DashboardHome from "./components/DashboardHome";
+import FixQueue from "./components/FixQueue";
 
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
@@ -189,22 +192,23 @@ function App() {
               />
             )}
             {activeSection === "dashboard" && (
-              <div style={{ color: "#fff", fontSize: 28, padding: 48, textAlign: "center" }}>
-                <div style={{ fontWeight: 800, fontSize: 40, marginBottom: 16 }}>Welcome to AURA Console</div>
-                <div style={{ fontSize: 20, color: "#7fffd4" }}>Select a section from the sidebar to get started.</div>
-              </div>
+              <DashboardHome setActiveSection={setActiveSection} />
             )}
             {activeSection === "content" && (
-              <div style={{ color: "#fff", fontSize: 24, padding: 48, textAlign: "center" }}>Content Health Auditor (Coming soon)</div>
+              <ContentHealthAuditor />
             )}
             {activeSection === "fixqueue" && (
-              <div style={{ color: "#fff", fontSize: 24, padding: 48, textAlign: "center" }}>Fix Queue (Coming soon)</div>
+              <FixQueue />
             )}
             {activeSection === "drafts" && (
-              <div style={{ color: "#fff", fontSize: 24, padding: 48, textAlign: "center" }}>Draft Library (Coming soon)</div>
+              <DraftLibrary />
             )}
             {activeSection === "system" && (
-              <div style={{ color: "#fff", fontSize: 24, padding: 48, textAlign: "center" }}>System Health (Coming soon)</div>
+              <SystemHealthPanel
+                coreStatus={coreStatus}
+                coreStatusLabel={coreStatusLabel}
+                lastRunAt={lastRunAt}
+              />
             )}
           </section>
         </div>
