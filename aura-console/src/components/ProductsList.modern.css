@@ -173,6 +173,11 @@
 .pl-row--expanded {
   background: #e8f0fe;
   box-shadow: 0 4px 24px 0 rgba(99,102,241,0.10);
+  transition: background 0.22s cubic-bezier(.4,0,.2,1), box-shadow 0.22s cubic-bezier(.4,0,.2,1), height 0.28s cubic-bezier(.4,0,.2,1);
+}
+.pl-row {
+  transition: background 0.22s cubic-bezier(.4,0,.2,1), box-shadow 0.22s cubic-bezier(.4,0,.2,1), height 0.28s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
 }
 
 .pl-btn--accent {
