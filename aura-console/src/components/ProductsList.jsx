@@ -84,6 +84,12 @@ const ProductsList = ({ shopDomain, shopToken }) => {
       </div>
     );
   }
+
+  // Expanded rows state (fixes invalid hook usage)
+  const [expandedRows, setExpandedRows] = useState({});
+  const setExpandedRow = (id, value) => {
+    setExpandedRows(prev => ({ ...prev, [id]: value }));
+  };
   // Helper: Compute SEO score
   function computeSeoScore({ title, metaDescription, keywords, slug }) {
     let score = 100;
@@ -329,15 +335,15 @@ const ProductsList = ({ shopDomain, shopToken }) => {
                         issues = [...issues, { field: 'Image', msg: `Missing alt text for ${missingAlt} image${missingAlt > 1 ? 's' : ''}`, type: 'warn', tip: 'Add descriptive alt text to all product images for accessibility and SEO.' }];
                       }
                     }
-                    // Collapsible details
-                    const [expanded, setExpanded] = useState(false);
+                    // Collapsible details (fixed: use expandedRows state)
+                    const expanded = !!expandedRows[product.id];
                     return (
                       <tr key={product.id} style={{ background: expanded ? '#23284a' : '#20243a', borderBottom: '1px solid #23284a' }}>
                         <td style={{ padding: 10 }}>
                           <input type="checkbox" checked={selectedIds.includes(product.id)} onChange={() => toggleSelect(product.id)} disabled={loading} />
                         </td>
                         <td style={{ padding: 10, fontWeight: 600, fontSize: 16 }}>
-                          <span style={{ cursor: 'pointer', color: '#5c6ac4' }} onClick={() => setExpanded(e => !e)}>
+                          <span style={{ cursor: 'pointer', color: '#5c6ac4' }} onClick={() => setExpandedRow(product.id, !expanded)}>
                             {expanded ? '▼' : '▶'}
                           </span> {product.title}
                           <div style={{ fontSize: 13, color: '#aaa', marginTop: 2 }}>{product.variants && product.variants[0] ? `$${product.variants[0].price}` : 'N/A'}</div>
