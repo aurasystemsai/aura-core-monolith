@@ -1,0 +1,79 @@
+.shop-info-panel {
+  background: rgba(35, 38, 58, 0.92);
+  border-radius: 16px;
+  box-shadow: 0 2px 16px #0002, 0 1.5px 0 #7fffd422;
+  padding: 22px 28px 18px 28px;
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border: 1.5px solid #7fffd422;
+  max-width: 480px;
+}
+.shop-info-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+}
+.shop-info-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #fff;
+  margin-right: 18px;
+  box-shadow: 0 2px 8px #0003;
+}
+.shop-info-details {
+  flex: 1;
+}
+.shop-info-name {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #7fffd4;
+  margin-bottom: 2px;
+}
+.shop-info-domain {
+  font-size: 1rem;
+  color: #e6e6f0cc;
+}
+.shop-info-status {
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 8px;
+  background: #23284a;
+  color: #7fffd4;
+  margin-left: 18px;
+  box-shadow: 0 2px 8px #7fffd422;
+}
+.shop-info-status-paused {
+  background: #ff4d4f;
+  color: #fff;
+}
+.shop-info-status-active {
+  background: #4caf50;
+  color: #fff;
+}
+.shop-info-meta {
+  margin-top: 6px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.shop-info-plan {
+  font-size: 0.98rem;
+  color: #7fffd4;
+  font-weight: 700;
+  background: #23284a;
+  border-radius: 6px;
+  padding: 4px 12px;
+}
+.shop-info-integration {
+  font-size: 0.98rem;
+  color: #fff;
+  background: #5c6ac4;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-weight: 600;
+}

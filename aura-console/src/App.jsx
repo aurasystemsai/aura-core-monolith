@@ -177,9 +177,14 @@ function App() {
         <div className="page-frame">
           <header className="top-strip">
             <div className="top-strip-left">
+              <span className="top-strip-logo" title="AURA Systems">A</span>
               <h1 className="top-strip-title">
                 {project && project.name ? project.name : "AURA Console"}
               </h1>
+            </div>
+            <div className="top-strip-actions">
+              <button className="top-strip-notify" title="Notifications" aria-label="Notifications">🔔</button>
+              <span className="top-strip-avatar" title="Account">AU</span>
             </div>
           </header>
           <section className="system-health-section">
@@ -212,6 +217,7 @@ function App() {
                 lastRunAt={lastRunAt}
               />
             )}
+            {activeSection === "tools" && <ToolsList />}
           </section>
         </div>
       </main>

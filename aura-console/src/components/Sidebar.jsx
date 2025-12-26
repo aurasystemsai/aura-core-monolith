@@ -1,5 +1,5 @@
-import React from "react";
-import './Sidebar.css';
+
+import toolsMeta from '../toolMeta';
 
 const navItems = [
   { key: 'dashboard', label: 'Dashboard', icon: '📊' },
@@ -30,6 +30,21 @@ export default function Sidebar({ current, onSelect }) {
           >
             <span className="sidebar-icon">{item.icon}</span>
             <span className="sidebar-label">{item.label}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="sidebar-section-label">Tools</div>
+      <ul className="sidebar-nav sidebar-tools">
+        {toolsMeta.map(tool => (
+          <li
+            key={tool.id}
+            className={current === tool.id ? 'active' : ''}
+            onClick={() => onSelect(tool.id)}
+            tabIndex={0}
+            aria-label={tool.name}
+          >
+            <span className="sidebar-icon">🛠️</span>
+            <span className="sidebar-label">{tool.name}</span>
           </li>
         ))}
       </ul>

@@ -7,63 +7,147 @@
   box-shadow: 0 4px 24px #0003;
   padding: 48px 40px 36px 40px;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+    max-width: 820px;
+    margin: 64px auto;
+    background: rgba(35, 38, 58, 0.82);
+    border-radius: 24px;
+    box-shadow: 0 8px 40px #0005, 0 1.5px 0 #7fffd422;
+    padding: 56px 48px 40px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    backdrop-filter: blur(18px) saturate(1.2);
+    border: 1.5px solid #7fffd422;
 .aura-dashboard-title {
   font-size: 2rem;
-  font-weight: 800;
-  color: var(--accent, #6c47ff);
-  margin-bottom: 24px;
+    font-size: 2.3rem;
+    font-weight: 900;
+    color: var(--accent, #7fffd4);
+    margin-bottom: 32px;
+    text-align: center;
+    letter-spacing: -0.01em;
+    text-shadow: 0 2px 12px #0006;
   text-align: center;
 }
-.aura-dashboard-stats {
-  width: 100%;
-  display: grid;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 22px;
+    margin-bottom: 36px;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
-  margin-bottom: 28px;
-}
-.aura-dashboard-stat {
-  background: #181c2a;
-  border-radius: 10px;
-  padding: 18px 16px;
-  font-size: 1.1rem;
-  color: var(--text, #e6e6f0);
-  display: flex;
+    background: rgba(24, 28, 42, 0.92);
+    border-radius: 16px;
+    padding: 22px 20px 20px 20px;
+    font-size: 1.13rem;
+    color: var(--text, #e6e6f0);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    box-shadow: 0 2px 16px #0002, 0 1.5px 0 #7fffd422;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s, box-shadow 0.18s;
+    cursor: pointer;
+    border: 1.5px solid #7fffd422;
+  }
+  .aura-dashboard-stat:hover {
+    transform: translateY(-2px) scale(1.025);
+    box-shadow: 0 8px 32px #7fffd455, 0 1.5px 0 #7fffd422;
+    background: rgba(24, 28, 42, 0.98);
+  }
+  .aura-dashboard-stat span {
+    font-size: 1.05em;
+    color: #7fffd4cc;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .aura-dashboard-stat b {
+    font-size: 1.35em;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 0.01em;
+    text-shadow: 0 2px 8px #0006;
+    transition: color 0.18s;
   justify-content: space-between;
   align-items: center;
-  font-weight: 600;
+    color: #4caf50;
+    text-shadow: 0 1px 4px #4caf5044;
 }
 .aura-health-good {
-  color: #4caf50;
+    color: #ff4d4f;
+    text-shadow: 0 1px 4px #ff4d4f44;
 }
 .aura-health-bad {
-  color: #ff4d4f;
-}
-.aura-dashboard-actions {
-  width: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
   display: flex;
   justify-content: center;
-  margin-bottom: 18px;
-}
-.aura-dashboard-btn {
-  padding: 14px 32px;
-  border-radius: 8px;
-  background: var(--accent, #6c47ff);
-  color: #fff;
-  font-weight: 700;
-  font-size: 1.1rem;
+    padding: 16px 38px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #7fffd4 0%, #5c6ac4 100%);
+    color: #181c2a;
+    font-weight: 900;
+    font-size: 1.13rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 12px #7fffd422;
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+    letter-spacing: 0.01em;
+  }
+  .aura-dashboard-btn:hover:not(:disabled) {
+    background: linear-gradient(90deg, #5c6ac4 0%, #7fffd4 100%);
+    color: #fff;
+    box-shadow: 0 4px 24px #7fffd455;
   border: none;
   cursor: pointer;
-  transition: background 0.15s;
-}
+    background: #888;
+    color: #fff;
+    cursor: not-allowed;
+    opacity: 0.7;
 .aura-dashboard-btn:disabled {
   background: #888;
-  cursor: not-allowed;
-}
-.aura-dashboard-note {
-  font-size: 1rem;
+    font-size: 1.04rem;
+    color: #7fffd4cc;
+    margin-top: 22px;
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-shadow: 0 1px 4px #0004;
+  }
+
+  @media (max-width: 900px) {
+    .aura-dashboard-shell {
+      max-width: 98vw;
+      padding: 18px 2vw 18px 2vw;
+      margin: 18px auto;
+    }
+    .aura-dashboard-title {
+      font-size: 1.3rem;
+      margin-bottom: 18px;
+    }
+    .aura-dashboard-stats {
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .aura-dashboard-stat {
+      padding: 12px 8px;
+      font-size: 0.98rem;
+      border-radius: 10px;
+    }
+    .aura-dashboard-btn {
+      padding: 10px 18px;
+      font-size: 1rem;
+      border-radius: 8px;
+    }
+    .aura-dashboard-note {
+      font-size: 0.95rem;
+      margin-top: 10px;
+    }
+  }
   color: #aaa;
   margin-top: 18px;
   text-align: center;
