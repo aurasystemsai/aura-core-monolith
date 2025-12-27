@@ -31,7 +31,7 @@ export default function FixQueue({ coreUrl, projectId }) {
   // Show message if no projectId
   if (!projectId) {
     return (
-      <div className="card fixqueue-empty" style={{ minHeight: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="card fixqueue-empty" style={{ minHeight: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="region" aria-label="No Project Selected">
         <div>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>No project selected</div>
           <div style={{ fontSize: 14, opacity: 0.8 }}>Connect or create a project to use the Fix Queue.</div>
@@ -533,7 +533,7 @@ export default function FixQueue({ coreUrl, projectId }) {
   return (
     <div className="fq-wrap">
       {status === "error" && (
-        <div className="card fixqueue-error" style={{ minHeight: 120, marginBottom: 16 }}>
+        <div className="card fixqueue-error" style={{ minHeight: 120, marginBottom: 16 }} role="region" aria-label="Fix Queue Error">
           <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Could not load Fix Queue</div>
           <div style={{ fontSize: 13, opacity: 0.85 }}>{error || "Unknown error"}</div>
         </div>
@@ -664,7 +664,7 @@ export default function FixQueue({ coreUrl, projectId }) {
       {/* Job detail modal-ish */}
       {jobDetailOpen ? (
         <div className="fq-table-wrap" style={{ marginBottom: 12 }}>
-          <div className="card fixqueue-job-detail-header" style={{ borderBottom: "1px solid rgba(148, 163, 184, 0.1)" }}>
+          <div className="card fixqueue-job-detail-header" style={{ borderBottom: "1px solid rgba(148, 163, 184, 0.1)" }} role="region" aria-label="Job Detail Header">
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
               <div>
                 <strong>Job:</strong> <span className="fq-mono">{jobDetailOpen}</span>
@@ -692,7 +692,7 @@ export default function FixQueue({ coreUrl, projectId }) {
             ) : null}
           </div>
 
-          <div className="card fixqueue-job-detail-body">
+          <div className="card fixqueue-job-detail-body" role="region" aria-label="Job Detail Body">
             {!jobItems.length ? (
               <div className="fq-muted">No job items loaded yet…</div>
             ) : (
@@ -701,6 +701,8 @@ export default function FixQueue({ coreUrl, projectId }) {
                   <div
                     key={it.itemId}
                     className="card fixqueue-job-item"
+                    role="region"
+                    aria-label={`Job Item ${it.itemId}`}
                   >
                     <div>
                       <span className="fq-mono">#{it.itemId}</span>{" "}
