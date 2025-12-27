@@ -147,13 +147,46 @@ const Dashboard = ({ setActiveSection }) => {
         </div>
       </div>
       {/* Metrics row */}
-      <div className="aura-dashboard-stats" style={{display: 'flex', gap: 18, flexWrap: 'wrap', marginBottom: 32}}>
-        <div className="aura-dashboard-stat"><span>Products</span><b>{loading ? '…' : stats.products}</b></div>
-        <div className="aura-dashboard-stat"><span>SEO Issues</span><b>{loading ? '…' : stats.seoIssues}</b></div>
-        <div className="aura-dashboard-stat"><span>Automations</span><b>{loading ? '…' : stats.automations}</b></div>
-        <div className="aura-dashboard-stat"><span>Credits</span><b>{loading ? '…' : stats.credits}</b></div>
-        <div className="aura-dashboard-stat"><span>Last Run</span><b>{loading ? '…' : (stats.lastRun ? new Date(stats.lastRun).toLocaleString() : '-')}</b></div>
-        <div className="aura-dashboard-stat"><span>System Health</span><b className={stats.systemHealth === 'Good' ? 'aura-health-good' : 'aura-health-bad'}>{loading ? '…' : stats.systemHealth}</b></div>
+      <div className="aura-dashboard-stats" style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: 24,
+        marginBottom: 40,
+        width: '100%',
+      }}>
+        {[
+          { label: 'Products', value: loading ? '…' : stats.products, icon: '📦', color: '#7fffd4' },
+          { label: 'SEO Issues', value: loading ? '…' : stats.seoIssues, icon: '🔍', color: '#5c6ac4' },
+          { label: 'Automations', value: loading ? '…' : stats.automations, icon: '⚡', color: '#22d3ee' },
+          { label: 'Credits', value: loading ? '…' : stats.credits, icon: '💳', color: '#ffd700' },
+          { label: 'Last Run', value: loading ? '…' : (stats.lastRun ? new Date(stats.lastRun).toLocaleString() : '-'), icon: '⏱️', color: '#cbd5f5' },
+          { label: 'System Health', value: loading ? '…' : stats.systemHealth, icon: '🩺', color: stats.systemHealth === 'Good' ? '#4caf50' : '#ff4d4f' },
+        ].map((stat, idx) => (
+          <div
+            key={stat.label}
+            className="aura-dashboard-stat"
+            style={{
+              background: 'linear-gradient(120deg, #23263a 60%, ' + stat.color + ' 100%)',
+              borderRadius: '16px',
+              boxShadow: '0 4px 24px #0003',
+              padding: '28px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'transform 0.18s, box-shadow 0.18s',
+              cursor: 'pointer',
+              animation: `fadeInUp 0.6s ease ${0.1 * idx}s both`,
+            }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px) scale(1.025)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'none'}
+          >
+            <span style={{fontSize: 24, marginBottom: 8}}>{stat.icon}</span>
+            <span style={{fontSize: '1.08em', color: stat.color, fontWeight: 700, letterSpacing: '0.01em', marginBottom: 6}}>{stat.label}</span>
+            <b style={{fontSize: '1.5em', fontWeight: 900, color: '#fff', letterSpacing: '0.01em', textShadow: '0 2px 8px #0006'}}>{stat.value}</b>
+          </div>
+        ))}
       </div>
       {/* Charts and trends */}
       <DashboardCharts />
