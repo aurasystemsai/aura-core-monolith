@@ -8,7 +8,7 @@
   padding: 56px 48px 40px 48px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  /* align-items: center; */
 }
 .aura-dashboard-title {
   font-size: 2rem;

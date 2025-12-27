@@ -8,7 +8,7 @@
   padding: 48px 36px 36px 36px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  /* align-items: center; */
 }
 .aura-onboarding-title {
   font-size: 1.5rem;

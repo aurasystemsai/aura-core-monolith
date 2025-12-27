@@ -69,7 +69,7 @@
   .sidebar-profile {
     flex-direction: row;
     justify-content: center;
-    align-items: center;
+    /* align-items: center; */
     padding: 12px 0;
     gap: 12px;
     margin-top: 0;
@@ -354,11 +354,9 @@ body {
   width: 30px;
   height: 30px;
   border-radius: 999px;
-  background: radial-gradient(circle at 30% 0, #fbbf24, #22d3ee 55%, #0ea5e9 100%);
+  background: #fbbf24;
   display: flex;
-  align-items: center;
   justify-content: center;
-  color: #020617;
   font-weight: 700;
   font-size: 16px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.7);
@@ -676,7 +674,7 @@ body {
 
 .button--primary {
   background: radial-gradient(circle at 0 0, #fbbf24, #22d3ee);
-  color: #020617;
+  color: var(--text-primary);
   border-color: rgba(248, 250, 252, 0.9);
   box-shadow: 0 16px 40px rgba(8, 47, 73, 0.95);
 }
@@ -800,7 +798,7 @@ body {
 .pill--active {
   border-color: var(--accent);
   background: radial-gradient(circle at 0 0, var(--accent), #0ea5e9);
-  color: #020617;
+  color: var(--text-primary);
   box-shadow:
     0 0 0 1px rgba(34, 211, 238, 0.5),
     0 10px 24px rgba(8, 47, 73, 0.9);
