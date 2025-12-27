@@ -1,3 +1,125 @@
+.card {
+  background: rgba(35, 38, 58, 0.92);
+  border-radius: 16px;
+  box-shadow: 0 2px 16px #0002, 0 1.5px 0 #7fffd422;
+  padding: 28px 22px 18px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border: 1.5px solid #7fffd422;
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.card:focus-within, .card:focus-visible, .card:active {
+  outline: 2px solid #7fffd4;
+  box-shadow: 0 8px 32px #7fffd455, 0 1.5px 0 #7fffd422;
+}
+.dashboard-home {
+  padding: 48px 0;
+  background: none;
+  box-shadow: none;
+  border: none;
+  align-items: center;
+}
+.dashboard-home-cards-row {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+.dashboard-home-card {
+  min-width: 220px;
+  align-items: center;
+  text-align: center;
+  padding: 32px 24px;
+}
+.dashboard-home-card-label {
+  font-size: 18px;
+  color: #aaa;
+}
+.dashboard-home-card-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #7fffd4;
+}
+.dashboard-home-actions {
+  margin-top: 32px;
+}
+.dashboard-home-action {
+  margin: 8px;
+  padding: 12px 32px;
+  border-radius: 8px;
+  background: #5c6ac4;
+  color: #fff;
+  font-weight: 700;
+  border: 0;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.dashboard-home-action:hover, .dashboard-home-action:focus {
+  background: #7fffd4;
+  color: #23284a;
+}
+.draft-library-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 12px;
+}
+.draft-library-list, .draft-library-detail {
+  padding: 24px 18px;
+}
+.fixqueue-empty {
+  color: #fff;
+  background: #1a1a1a;
+}
+.fixqueue-error {
+  color: #fff;
+  background: #7a2323;
+}
+.fixqueue-job-detail-header {
+  padding: 12px 18px;
+  border-radius: 12px 12px 0 0;
+  background: #23284a;
+}
+.fixqueue-job-detail-body {
+  padding: 12px 18px;
+  background: rgba(2, 6, 23, 0.25);
+}
+.fixqueue-job-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 12px;
+  padding: 8px 10px;
+  background: rgba(2, 6, 23, 0.25);
+}
+.connect-shopify-banner {
+  background: #5c6ac4;
+  color: #fff;
+  margin: 24px 0;
+  text-align: center;
+  padding: 24px 0;
+}
+.connect-shopify-action {
+  display: inline-block;
+  padding: 12px 32px;
+  background: #fff;
+  color: #5c6ac4;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 0;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+.connect-shopify-action:hover, .connect-shopify-action:focus {
+  background: #7fffd4;
+  color: #23284a;
+}
 .tool-modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
