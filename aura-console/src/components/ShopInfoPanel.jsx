@@ -7,7 +7,7 @@ export default function ShopInfoPanel({ shop }) {
     <div className="shop-info-panel">
       <div className="shop-info-row">
         <img
-          src={shop.logoUrl || "/shopify-logo.svg"}
+          src="/logo-aura.png"
           alt="Shop Logo"
           className="shop-info-logo"
         />
