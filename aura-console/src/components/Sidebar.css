@@ -41,13 +41,28 @@
   cursor: pointer;
   font-size: 16px;
   border-left: 4px solid transparent;
-  transition: background 0.18s, border-color 0.18s, color 0.18s;
-  border-radius: 12px 0 0 12px;
-  margin-bottom: 6px;
+  transition: background 0.18s, border-color 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+  border-radius: 14px 0 0 14px;
+  margin-bottom: 8px;
   box-shadow: 0 2px 8px #0001;
   background: rgba(255,255,255,0.01);
   position: relative;
   overflow: hidden;
+  outline: none;
+}
+.sidebar-nav li:hover:not(.active), .sidebar-nav li:focus:not(.active) {
+  background: linear-gradient(90deg, #23284a 80%, #7fffd4 120%);
+  color: #7fffd4;
+  box-shadow: 0 4px 18px #7fffd422;
+  transform: translateY(-1px) scale(1.02);
+}
+.sidebar-icon {
+  font-size: 22px;
+  filter: drop-shadow(0 1px 2px #0006);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
 }
 .sidebar-nav li.active, .sidebar-nav li:focus {
   background: linear-gradient(90deg, #23284a 80%, #7fffd4 120%);
