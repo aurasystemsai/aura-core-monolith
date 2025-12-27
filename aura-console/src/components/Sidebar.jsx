@@ -19,7 +19,7 @@ export default function Sidebar({ current, onSelect }) {
   return (
     <nav className="sidebar">
       <div className="sidebar-brand" style={{display:'flex',alignItems:'center',gap:12,marginBottom:18}}>
-        <img src="logo-aura.png" alt="AURA Logo" style={{height:38,width:38,objectFit:'contain',borderRadius:10,boxShadow:'0 2px 12px #22d3ee55'}} onError={(e) => {e.target.onerror=null; e.target.src='logo192.png';}} />
+        <img src="logo-aura.png" alt="AURA Logo" style={{height:38,width:38,objectFit:'contain',borderRadius:10,boxShadow:'0 2px 12px #22d3ee55'}} />
       </div>
       <ul className="sidebar-nav">
         {navItems.map(item => (
