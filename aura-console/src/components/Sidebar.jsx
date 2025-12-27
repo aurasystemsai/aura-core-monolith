@@ -50,6 +50,25 @@ export default function Sidebar({ current, onSelect }) {
           </li>
         ))}
       </ul>
+      <div className="sidebar-profile" style={{
+        marginTop: 'auto',
+        padding: '32px 0 24px 0',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 10,
+        opacity: 0.96,
+      }}>
+        <img
+          src="/avatar-default.png"
+          alt="User Avatar"
+          style={{ width: 48, height: 48, borderRadius: '50%', boxShadow: '0 2px 12px #22d3ee55', marginBottom: 6 }}
+        />
+        <div style={{ fontWeight: 700, color: '#7fffd4', fontSize: 15, letterSpacing: '0.01em', textShadow: '0 1px 4px #0004' }}>
+          User Name
+        </div>
+        <div style={{ fontSize: 13, color: '#cbd5f5', opacity: 0.7 }}>user@email.com</div>
+      </div>
     </nav>
   );
 }
