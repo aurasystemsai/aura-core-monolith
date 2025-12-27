@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import './Onboarding.css';
 
@@ -8,6 +9,7 @@ const steps = [
 ];
 
 const Onboarding = () => {
+  const { t } = useTranslation();
   const [step, setStep] = useState(steps[0]);
   const [shopDomain, setShopDomain] = useState('');
   const [error, setError] = useState('');
@@ -33,27 +35,27 @@ const Onboarding = () => {
     <div className="aura-onboarding-shell">
       {step === 'welcome' && (
         <div className="aura-onboarding-step">
-          <h2 className="aura-onboarding-title">Welcome to Aura Console</h2>
-          <p className="aura-onboarding-desc">Let’s get your Shopify store connected and set up for world-class SEO automation.</p>
-          <button className="aura-onboarding-btn" onClick={() => setStep('connect-shop')}>Start Onboarding</button>
+          <h2 className="aura-onboarding-title">{t('onboarding_title')}</h2>
+          <p className="aura-onboarding-desc">{t('onboarding_desc')}</p>
+          <button className="aura-onboarding-btn" onClick={() => setStep('connect-shop')}>{t('onboarding_start')}</button>
         </div>
       )}
       {step === 'connect-shop' && (
         <div className="aura-onboarding-step">
-          <h2 className="aura-onboarding-title">Connect Your Shopify Store</h2>
+          <h2 className="aura-onboarding-title">{t('onboarding_connect_title')}</h2>
           <form className="aura-onboarding-form" onSubmit={handleConnect}>
             <input
               type="text"
               name="shopDomain"
-              placeholder="yourshop.myshopify.com"
+              placeholder={t('onboarding_shop_domain_placeholder')}
               value={shopDomain}
               onChange={e => setShopDomain(e.target.value)}
               className="aura-onboarding-input"
               disabled={loading}
             />
-            {error && <div className="aura-onboarding-error">{error}</div>}
+            {error && <div className="aura-onboarding-error">{t(error) || error}</div>}
             <button type="submit" className="aura-onboarding-btn" disabled={loading}>
-              {loading ? 'Connecting…' : 'Connect Store'}
+              {loading ? t('onboarding_connecting') : t('onboarding_connect_button')}
             </button>
           </form>
         </div>

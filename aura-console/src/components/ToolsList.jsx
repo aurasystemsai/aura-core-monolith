@@ -2,15 +2,15 @@
 import React, { useState } from "react";
 import toolsMeta from "../toolMeta";
 import "./ToolsList.css";
+import { useTranslation } from 'react-i18next';
 
-function ToolDetailModal({ tool, onClose }) {
+  const { t } = useTranslation();
   if (!tool) return null;
   return (
     <div className="tool-modal-overlay" onClick={onClose}>
       <div className="tool-modal" onClick={e => e.stopPropagation()}>
         <button className="tool-modal-close" onClick={onClose}>&times;</button>
         <div className="tool-modal-header">
-          <span className="tool-card-icon">🛠️</span>
           <span className="tool-card-name">{tool.name}</span>
         </div>
         <div className="tool-modal-desc">{tool.description}</div>
@@ -18,7 +18,7 @@ function ToolDetailModal({ tool, onClose }) {
           <span className="tool-card-tag">{tool.shortTag || tool.category}</span>
         </div>
         <div className="tool-modal-actions">
-          <button className="tool-modal-action-btn" disabled>Coming soon: Launch Tool</button>
+          <button className="tool-modal-action-btn" disabled>{t('coming_soon_launch_tool')}</button>
         </div>
       </div>
     </div>
@@ -26,10 +26,11 @@ function ToolDetailModal({ tool, onClose }) {
 }
 
 export default function ToolsList() {
+  const { t } = useTranslation();
   const [selectedTool, setSelectedTool] = useState(null);
   return (
     <div className="tools-list-shell">
-      <h2 className="tools-list-title">All Tools</h2>
+      <h2 className="tools-list-title">{t('all_tools')}</h2>
       <div className="tools-list-grid">
         {toolsMeta.map((tool) => (
           <div
@@ -38,10 +39,10 @@ export default function ToolsList() {
             tabIndex={0}
             onClick={() => setSelectedTool(tool)}
             onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setSelectedTool(tool)}
-            aria-label={`Open details for ${tool.name}`}
+            aria-label={`${t('open_details')} ${tool.name}`}
+            title={tool.description || tool.name}
           >
             <div className="tool-card-header">
-              <span className="tool-card-icon">🛠️</span>
               <span className="tool-card-name">{tool.name}</span>
             </div>
             <div className="tool-card-desc">{tool.description}</div>

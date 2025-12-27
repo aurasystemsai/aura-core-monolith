@@ -1,3 +1,38 @@
+// Onboarding modal for new users
+import './i18n-setup';
+import { useTranslation } from 'react-i18next';
+function OnboardingModal({ open, onClose }) {
+  if (!open) return null;
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999,
+      background: 'rgba(10,16,32,0.82)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      animation: 'fadeIn 0.3s',
+    }} role="dialog" aria-modal="true" aria-label={t('welcome')}>
+      <div style={{
+        background: 'linear-gradient(120deg, #23263a 60%, #7fffd4 100%)',
+        borderRadius: 18, boxShadow: '0 8px 40px #0008', padding: '44px 38px 32px', minWidth: 340, maxWidth: 420,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1.5px solid #7fffd4',
+        animation: 'popIn 0.18s',
+      }}>
+        <img src="/logo-aura.png" alt="AURA Logo" style={{height:54,width:54,objectFit:'contain',borderRadius:12,boxShadow:'0 2px 12px #22d3ee55',marginBottom:18}} />
+        <h2 style={{color:'#7fffd4',fontWeight:900,marginBottom:10,fontSize:28,letterSpacing:'-0.01em'}}>{t('welcome')}</h2>
+        <div style={{color:'#fff',fontSize:17,marginBottom:18,textAlign:'center',maxWidth:320}}>
+          {t('onboarding_intro')}
+        </div>
+        <ul style={{color:'#cbd5f5',fontSize:15,marginBottom:18,lineHeight:1.7,maxWidth:320}}>
+          <li>{t('onboarding_theme')}</li>
+          <li>{t('onboarding_tooltips')}</li>
+          <li>{t('onboarding_tools')}</li>
+          <li>{t('onboarding_fixqueue')}</li>
+        </ul>
+        <button onClick={onClose} style={{
+          borderRadius: 8, padding: '10px 32px', fontSize: 17, fontWeight: 700, background:'#7fffd4', color:'#23263a', border:'none', boxShadow:'0 2px 12px #22d3ee55', cursor:'pointer', marginTop:8
+        }}>{t('onboarding_get_started')}</button>
+      </div>
+    </div>
+  );
+}
 // Global error boundary for graceful error handling
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -36,6 +71,10 @@ class ErrorBoundary extends React.Component {
 // Simple Toast component for user feedback
 function Toast({ message, type, onClose }) {
   if (!message) return null;
+  let label = '';
+  if (type === 'error') label = t('toast_close_error');
+  else if (type === 'success') label = t('toast_close_success');
+  else label = t('toast_close_notification');
   return (
     <div
       style={{
@@ -58,10 +97,10 @@ function Toast({ message, type, onClose }) {
       }}
       onClick={onClose}
       tabIndex={0}
-      aria-label="Close notification"
+      aria-label={label}
       role="alert"
     >
-      {message}
+      {t(message) || message}
     </div>
   );
 }
@@ -110,6 +149,14 @@ const ENGINES = {
 
 // --- FULL FEATURED APP FUNCTION RESTORED ---
 function App() {
+  const { t, i18n } = useTranslation();
+    // Onboarding modal state
+    const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('auraOnboarded'));
+    // Mark onboarding as complete
+    const handleCloseOnboarding = () => {
+      setShowOnboarding(false);
+      localStorage.setItem('auraOnboarded', '1');
+    };
   // Toast state
   const [toast, setToast] = useState({ message: '', type: 'info' });
   // Helper to show toast
@@ -118,9 +165,15 @@ function App() {
     setTimeout(() => setToast({ message: '', type: 'info' }), 3200);
   };
   // Light/dark mode state
-  const [mode, setMode] = useState(() => localStorage.getItem('auraUIMode') || 'dark');
+  // Theme mode: 'light', 'dark', or 'system'
+  const [mode, setMode] = useState(() => localStorage.getItem('auraUIMode') || 'system');
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', mode);
+    let applied = mode;
+    if (mode === 'system') {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      applied = mq.matches ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', applied);
     localStorage.setItem('auraUIMode', mode);
   }, [mode]);
   // Core state
@@ -244,7 +297,7 @@ function App() {
   if (!project || autoCreating) {
     return (
       <div className="app-loading">
-        {autoCreating ? "Setting up your project…" : "Loading…"}
+        {autoCreating ? t('app_setting_up_project') : t('app_loading')}
       </div>
     );
   }
@@ -252,7 +305,20 @@ function App() {
   // Main console shell with sidebar navigation
   return (
     <ErrorBoundary>
+      <OnboardingModal open={showOnboarding} onClose={handleCloseOnboarding} />
       <div className="app-shell">
+        {/* Language Switcher */}
+        <div style={{ position: 'absolute', top: 16, right: 24, zIndex: 10000 }}>
+          <select
+            value={i18n.language}
+            onChange={e => i18n.changeLanguage(e.target.value)}
+            style={{ borderRadius: 8, padding: '4px 12px', fontSize: 15 }}
+            aria-label="Language picker"
+          >
+            <option value="en">English</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
         <Sidebar current={activeSection} onSelect={setActiveSection} mode={mode} setMode={setMode} />
         <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
         <main className="app-main">

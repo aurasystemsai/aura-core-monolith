@@ -1,7 +1,9 @@
 
 
-import DashboardCharts from './DashboardCharts';
-import ShopInfoPanel from '../components/ShopInfoPanel';
+import React, { useState, useEffect, Suspense, lazy } from "react";
+import { useTranslation } from 'react-i18next';
+const DashboardCharts = lazy(() => import('./DashboardCharts'));
+const ShopInfoPanel = lazy(() => import('../components/ShopInfoPanel'));
 
 function Spinner() {
   return (
@@ -21,6 +23,7 @@ function Spinner() {
 const API_BASE = 'https://aura-core-monolith.onrender.com';
 
 const Dashboard = ({ setActiveSection }) => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState({
     products: null,
     seoIssues: null,
@@ -98,7 +101,7 @@ const Dashboard = ({ setActiveSection }) => {
     return <Spinner />;
   }
   if (stats.products === '-' && stats.seoIssues === '-') {
-    return <div style={{ color: '#ff4d4f', textAlign: 'center', fontWeight: 700, fontSize: 18, margin: '48px 0' }}>Error loading dashboard data. Please try again.</div>;
+    return <div style={{ color: '#ff4d4f', textAlign: 'center', fontWeight: 700, fontSize: 18, margin: '48px 0' }}>{t('dashboard_error_loading') || 'Error loading dashboard data. Please try again.'}</div>;
   }
   return (
     <div className="aura-dashboard-shell">
@@ -148,24 +151,27 @@ const Dashboard = ({ setActiveSection }) => {
             <span style={{fontWeight:900,fontSize:32,color:'#7fffd4',letterSpacing:'-0.02em',textShadow:'0 2px 16px #0006'}}>AURA Systems</span>
           </div>
           <div style={{fontSize: 24, color: '#fff', marginBottom: 18, fontWeight: 700, textShadow:'0 2px 12px #23263a'}}>
-            Build Automated Systems That Run Your Business For You
+            {t('dashboard_headline')}
           </div>
           <div style={{fontSize: 16, color: '#cbd5f5', marginBottom: 24, maxWidth: 480}}>
-            AI-powered workflows that eliminate manual work and scale your revenue automatically. <br />
-            <span style={{color:'#7fffd4'}}>World-class automation for e-commerce.</span>
+            {t('dashboard_subhead')}
+            <br />
+            <span style={{color:'#7fffd4'}}>{t('dashboard_subhead_highlight')}</span>
           </div>
           <div style={{display: 'flex', gap: 16, flexWrap: 'wrap'}}>
-            <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('products')}>📦 Products</button>
-            <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('content-health')}>🩺 Content Health</button>
-            <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('fix-queue')}>🛠️ Fix Queue</button>
-            <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('tools')}>⚡ Tools</button>
-            <button className="quick-link-btn" onClick={handleRunAutomation} disabled={running}>
-              {running ? 'Running Automations…' : 'Run All Automations'}
+            <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('products')} title={t('dashboard_products_tooltip')}>{t('dashboard_products')}</button>
+            <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('content-health')} title={t('dashboard_content_health_tooltip')}>{t('dashboard_content_health')}</button>
+            <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('fix-queue')} title={t('dashboard_fix_queue_tooltip')}>{t('dashboard_fix_queue')}</button>
+            <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('tools')} title={t('dashboard_tools_tooltip')}>{t('dashboard_tools')}</button>
+            <button className="quick-link-btn" onClick={handleRunAutomation} disabled={running} title={t('dashboard_run_automations_tooltip')}>
+              {running ? t('dashboard_running_automations') : t('dashboard_run_all_automations')}
             </button>
           </div>
         </div>
         <div style={{minWidth: 260, maxWidth: 340, zIndex:1}}>
-          <ShopInfoPanel shop={shop} />
+          <Suspense fallback={<Spinner />}>
+            <ShopInfoPanel shop={shop} />
+          </Suspense>
         </div>
       </div>
       {/* Metrics row */}
@@ -177,12 +183,12 @@ const Dashboard = ({ setActiveSection }) => {
         width: '100%',
       }}>
         {[
-          { label: 'Products', value: loading ? '…' : stats.products, icon: '📦', color: '#7fffd4' },
-          { label: 'SEO Issues', value: loading ? '…' : stats.seoIssues, icon: '🔍', color: '#5c6ac4' },
-          { label: 'Automations', value: loading ? '…' : stats.automations, icon: '⚡', color: '#22d3ee' },
-          { label: 'Credits', value: loading ? '…' : stats.credits, icon: '💳', color: '#ffd700' },
-          { label: 'Last Run', value: loading ? '…' : (stats.lastRun ? new Date(stats.lastRun).toLocaleString() : '-'), icon: '⏱️', color: '#cbd5f5' },
-          { label: 'System Health', value: loading ? '…' : stats.systemHealth, icon: '🩺', color: stats.systemHealth === 'Good' ? '#4caf50' : '#ff4d4f' },
+          { label: t('dashboard_products'), value: loading ? '…' : stats.products, color: '#7fffd4' },
+          { label: t('dashboard_seo_issues'), value: loading ? '…' : stats.seoIssues, color: '#5c6ac4' },
+          { label: t('dashboard_automations'), value: loading ? '…' : stats.automations, color: '#22d3ee' },
+          { label: t('dashboard_credits'), value: loading ? '…' : stats.credits, color: '#ffd700' },
+          { label: t('dashboard_last_run'), value: loading ? '…' : (stats.lastRun ? new Date(stats.lastRun).toLocaleString() : '-'), color: '#cbd5f5' },
+          { label: t('dashboard_system_health'), value: loading ? '…' : stats.systemHealth, color: stats.systemHealth === 'Good' ? '#4caf50' : '#ff4d4f' },
         ].map((stat, idx) => (
           <div
             key={stat.label}
@@ -208,14 +214,16 @@ const Dashboard = ({ setActiveSection }) => {
             onFocus={e => e.currentTarget.style.boxShadow = '0 12px 40px #7fffd455'}
             onBlur={e => e.currentTarget.style.boxShadow = '0 6px 28px #0005'}
           >
-            <span style={{fontSize: 28, marginBottom: 10, textShadow: '0 2px 8px #0006'}}>{stat.icon}</span>
+            {/* icon removed */}
             <span style={{fontSize: '1.13em', color: stat.color, fontWeight: 800, letterSpacing: '0.01em', marginBottom: 8, textShadow: '0 1px 4px #fff4'}}>{stat.label}</span>
             <b style={{fontSize: '1.7em', fontWeight: 900, color: '#fff', letterSpacing: '0.01em', textShadow: '0 2px 12px #0008'}}>{stat.value}</b>
           </div>
         ))}
       </div>
       {/* Charts and trends */}
-      <DashboardCharts />
+      <Suspense fallback={<Spinner />}>
+        <DashboardCharts />
+      </Suspense>
       <div className="aura-dashboard-note" style={{
         marginTop: 36,
         background: 'linear-gradient(90deg, #7fffd4 0%, #22d3ee 100%)',
@@ -233,7 +241,7 @@ const Dashboard = ({ setActiveSection }) => {
         marginRight: 'auto',
         animation: 'fadeIn 1.1s cubic-bezier(.23,1.01,.32,1) both',
       }}>
-        Automations help keep your products optimized and your store healthy. System health is monitored in real time.
+        {t('dashboard_note')}
       </div>
     </div>
   );

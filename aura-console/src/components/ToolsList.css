@@ -33,13 +33,13 @@
   padding: 32px 24px;
 }
 .dashboard-home-card-label {
-  font-size: 18px;
-  color: #aaa;
+  font-size: 16px;
+  color: var(--muted);
 }
 .dashboard-home-card-value {
-  font-size: 32px;
-  font-weight: 700;
-  color: #7fffd4;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--accent);
 }
 .dashboard-home-actions {
   margin-top: 32px;
@@ -47,18 +47,18 @@
 .dashboard-home-action {
   margin: 8px;
   padding: 12px 32px;
-  border-radius: 8px;
-  background: #5c6ac4;
+  border-radius: var(--radius-md);
+  background: var(--accent);
   color: #fff;
-  font-weight: 700;
+  font-weight: 500;
   border: 0;
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
   transition: background 0.18s;
 }
 .dashboard-home-action:hover, .dashboard-home-action:focus {
-  background: #7fffd4;
-  color: #23284a;
+  background: #1746a2;
+  color: #fff;
 }
 .draft-library-grid {
   display: grid;

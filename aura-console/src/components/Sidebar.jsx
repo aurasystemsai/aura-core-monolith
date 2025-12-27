@@ -1,25 +1,42 @@
 
+
+import { useTranslation } from 'react-i18next';
 import toolsMeta from '../toolMeta';
 
 const navItems = [
-  { key: 'dashboard', label: 'Dashboard', icon: '📊' },
-  { key: 'auth', label: 'Auth', icon: '🔑' },
-  { key: 'onboarding', label: 'Onboarding', icon: '🚀' },
-  { key: 'credits', label: 'Credits', icon: '💳' },
-  { key: 'orchestration', label: 'Orchestration', icon: '🤖' },
-  { key: 'products', label: 'Products', icon: '📦' },
-  { key: 'content-health', label: 'Content Health', icon: '🩺' },
-  { key: 'fix-queue', label: 'Fix Queue', icon: '🛠️' },
-  { key: 'content-ingest', label: 'Content Ingest', icon: '📥' },
-  { key: 'draft-library', label: 'Draft Library', icon: '📝' },
-  { key: 'system-health', label: 'System Health', icon: '⚙️' },
+  { key: 'dashboard', label: t('sidebar_dashboard') },
+  { key: 'auth', label: t('sidebar_auth') },
+  { key: 'onboarding', label: t('sidebar_onboarding') },
+  { key: 'credits', label: t('sidebar_credits') },
+  { key: 'orchestration', label: t('sidebar_orchestration') },
+  { key: 'products', label: t('sidebar_products') },
+  { key: 'content-health', label: t('sidebar_content_health') },
+  { key: 'fix-queue', label: t('sidebar_fix_queue') },
+  { key: 'content-ingest', label: t('sidebar_content_ingest') },
+  { key: 'draft-library', label: t('sidebar_draft_library') },
+  { key: 'system-health', label: t('sidebar_system_health') },
 ];
 
-export default function Sidebar({ current, onSelect, mode, setMode }) {
+  const { t } = useTranslation();
+
+  const navItems = [
+    { key: 'dashboard', label: t('sidebar_dashboard'), icon: '📊' },
+    { key: 'auth', label: t('sidebar_auth'), icon: '🔑' },
+    { key: 'onboarding', label: t('sidebar_onboarding'), icon: '🚀' },
+    { key: 'credits', label: t('sidebar_credits'), icon: '💳' },
+    { key: 'orchestration', label: t('sidebar_orchestration'), icon: '🤖' },
+    { key: 'products', label: t('sidebar_products'), icon: '📦' },
+    { key: 'content-health', label: t('sidebar_content_health'), icon: '🩺' },
+    { key: 'fix-queue', label: t('sidebar_fix_queue'), icon: '🛠️' },
+    { key: 'content-ingest', label: t('sidebar_content_ingest'), icon: '📥' },
+    { key: 'draft-library', label: t('sidebar_draft_library'), icon: '📝' },
+    { key: 'system-health', label: t('sidebar_system_health'), icon: '⚙️' },
+  ];
+
   return (
     <nav className="sidebar">
       <div className="sidebar-brand" style={{display:'flex',alignItems:'center',gap:12,marginBottom:18}}>
-        <img src="/logo-aura.png" alt="AURA Logo" style={{height:38,width:38,objectFit:'contain',borderRadius:10,boxShadow:'0 2px 12px #22d3ee55'}} />
+        <img src="/logo-aura.png" alt={t('sidebar_logo_alt')} style={{height:38,width:38,objectFit:'contain',borderRadius:10,boxShadow:'0 2px 12px #22d3ee55'}} />
       </div>
       <ul className="sidebar-nav">
         {navItems.map(item => (
@@ -29,6 +46,7 @@ export default function Sidebar({ current, onSelect, mode, setMode }) {
             onClick={() => onSelect(item.key)}
             tabIndex={0}
             aria-label={item.label}
+            title={item.label}
             onKeyDown={e => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -37,12 +55,12 @@ export default function Sidebar({ current, onSelect, mode, setMode }) {
             }}
             style={{ outline: current === item.key ? '2px solid #7fffd4' : 'none' }}
           >
-            <span className="sidebar-icon">{item.icon}</span>
+            {/* icon removed */}
             <span className="sidebar-label">{item.label}</span>
           </li>
         ))}
       </ul>
-      <div className="sidebar-section-label">Tools</div>
+      <div className="sidebar-section-label">{t('sidebar_tools_section')}</div>
       <ul className="sidebar-nav sidebar-tools">
         {toolsMeta.map(tool => (
           <li
@@ -51,6 +69,7 @@ export default function Sidebar({ current, onSelect, mode, setMode }) {
             onClick={() => onSelect(tool.id)}
             tabIndex={0}
             aria-label={tool.name}
+            title={tool.description || tool.name}
             onKeyDown={e => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -59,7 +78,7 @@ export default function Sidebar({ current, onSelect, mode, setMode }) {
             }}
             style={{ outline: current === tool.id ? '2px solid #7fffd4' : 'none' }}
           >
-            <span className="sidebar-icon">🛠️</span>
+            {/* icon removed */}
             <span className="sidebar-label">{tool.name}</span>
           </li>
         ))}
@@ -74,20 +93,37 @@ export default function Sidebar({ current, onSelect, mode, setMode }) {
       }}>
         <img
           src="/avatar-default.png"
-          alt="User Avatar"
+          alt={t('sidebar_avatar_alt')}
           style={{ width: 48, height: 48, borderRadius: '50%', boxShadow: '0 2px 12px #22d3ee55', marginBottom: 6 }}
         />
         <div style={{ fontWeight: 700, color: '#7fffd4', fontSize: 16, letterSpacing: '0.01em', textShadow: '0 1px 4px #0004', lineHeight: 1.2 }}>
-          User Name
+          {t('sidebar_user_name')}
         </div>
-        <div style={{ fontSize: 13, color: '#e6e6f0', opacity: 1, lineHeight: 1.2 }}>user@email.com</div>
-        <button
-          className="mode-toggle-btn"
-          onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
-          aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        <div style={{ fontSize: 13, color: '#e6e6f0', opacity: 1, lineHeight: 1.2 }}>{t('sidebar_user_email')}</div>
+        <label htmlFor="theme-picker" style={{ fontSize: 13, color: '#cbd5f5', marginTop: 10, marginBottom: 4 }}>{t('sidebar_theme_label')}</label>
+        <select
+          id="theme-picker"
+          value={mode}
+          onChange={e => setMode(e.target.value)}
+          style={{
+            borderRadius: 8,
+            padding: '6px 16px',
+            fontSize: 15,
+            background: '#181c2a',
+            color: '#7fffd4',
+            border: '1.5px solid #7fffd4',
+            marginBottom: 8,
+            fontWeight: 600,
+            outline: 'none',
+            boxShadow: '0 2px 8px #22d3ee22',
+            cursor: 'pointer',
+          }}
+          aria-label={t('sidebar_theme_picker_aria')}
         >
-          {mode === 'dark' ? '🌙 Dark Mode' : '☀️ Light Mode'}
-        </button>
+          <option value="system">{t('sidebar_theme_system')}</option>
+          <option value="light">{t('sidebar_theme_light')}</option>
+          <option value="dark">{t('sidebar_theme_dark')}</option>
+        </select>
       </div>
     </nav>
   );

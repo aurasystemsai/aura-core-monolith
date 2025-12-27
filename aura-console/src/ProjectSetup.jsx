@@ -4,11 +4,14 @@
 // Talks directly to Core /projects API
 // -----------------------------------------
 
+
+import { useTranslation } from 'react-i18next';
 import React, { useState } from "react";
 
 
 
 function ProjectSetup({ coreUrl, onConnected }) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [domain, setDomain] = useState("");
   const [platform, setPlatform] = useState("shopify");
@@ -79,43 +82,41 @@ function ProjectSetup({ coreUrl, onConnected }) {
       <div className="project-setup-card">
         <h1>Connect your first project</h1>
         <p className="subtitle">
-          A project is usually a single store or domain (for example your
-          Shopify brand). You can add more later and switch between them in the
-          sidebar.
+          {t('project_setup_subtitle')}
         </p>
 
         <form className="project-setup-form" onSubmit={handleSubmit}>
           <label>
-            Store / brand name
+            {t('project_setup_store_name')}
             <input
               type="text"
-              placeholder="DTP Jewellery"
+              placeholder={t('project_setup_store_name_placeholder')}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </label>
 
           <label>
-            Main domain
+            {t('project_setup_main_domain')}
             <input
               type="text"
-              placeholder="dtpjewellry.com"
+              placeholder={t('project_setup_main_domain_placeholder')}
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
             />
           </label>
 
           <label>
-            Platform
+            {t('project_setup_platform')}
             <select
               value={platform}
               onChange={(e) => setPlatform(e.target.value)}
             >
-              <option value="shopify">Shopify</option>
-              <option value="woocommerce">WooCommerce</option>
-              <option value="framer">Framer</option>
-              <option value="custom">Custom stack</option>
-              <option value="other">Other</option>
+              <option value="shopify">{t('project_setup_platform_shopify')}</option>
+              <option value="woocommerce">{t('project_setup_platform_woocommerce')}</option>
+              <option value="framer">{t('project_setup_platform_framer')}</option>
+              <option value="custom">{t('project_setup_platform_custom')}</option>
+              <option value="other">{t('project_setup_platform_other')}</option>
             </select>
           </label>
 
@@ -141,7 +142,7 @@ function ProjectSetup({ coreUrl, onConnected }) {
             disabled={loading}
             style={{ marginTop: 8 }}
           >
-            {loading ? "Connecting…" : "Connect store manually"}
+            {loading ? t('project_setup_connecting') : t('project_setup_connect_store_manually')}
           </button>
 
           <div
@@ -152,9 +153,7 @@ function ProjectSetup({ coreUrl, onConnected }) {
               lineHeight: 1.4,
             }}
           >
-            We store projects in AURA’s Core database, not just your browser.
-            Once connected, the SEO Command Centre will run Product SEO against
-            this project.
+            {t('project_setup_note')}
           </div>
         </form>
       </div>

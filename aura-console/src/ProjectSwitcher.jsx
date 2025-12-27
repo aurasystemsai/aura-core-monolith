@@ -5,9 +5,12 @@
 // Lets you switch / disconnect cleanly
 // -----------------------------------------
 
+
+import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from "react";
 
 function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnect }) {
+  const { t } = useTranslation();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -69,6 +72,14 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
     setOpen(false);
   };
 
+  if (!currentProject) {
+    return null;
+  }
+
+  // Build list of "other" projects (excluding the one currently selected)
+  const otherProjects = projects.filter(
+    (p) => p.id && currentProject.id && p.id !== currentProject.id
+  );
   // If there is no current project at all, hide the footer
   if (!currentProject) {
     return null;
@@ -77,6 +88,37 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
   // Build list of "other" projects (excluding the one currently selected)
   const otherProjects = projects.filter(
     (p) => p.id && currentProject.id && p.id !== currentProject.id
+  );
+
+  return (
+    <div className="project-switcher-footer">
+      <div className="project-switcher-label">{t('project_switcher_connected_project')}</div>
+      <div className="project-switcher-current">
+        <span className="project-switcher-name">{currentProject.name}</span>
+        <span className="project-switcher-domain">{currentProject.domain}</span>
+        <button onClick={handleDisconnect} className="project-switcher-disconnect">
+          {t('project_switcher_disconnect')}
+        </button>
+      </div>
+      {otherProjects.length > 0 && (
+        <div className="project-switcher-other">
+          <div className="project-switcher-other-label">{t('project_switcher_switch_to')}</div>
+          <ul>
+            {otherProjects.map(proj => (
+              <li key={proj.id}>
+                <button onClick={() => handleSelect(proj)}>{proj.name}</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {error && !loading && (
+        <div style={{ fontSize: 11, color: "#fecaca" }}>{t(error) || error}</div>
+      )}
+      {!loading && !error && projects.length === 0 && (
+        <div style={{ fontSize: 12, color: "#cbd5f5", marginTop: 8 }}>{t('project_switcher_no_projects')}</div>
+      )}
+    </div>
   );
 
   return (
