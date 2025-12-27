@@ -1,3 +1,38 @@
+// Global error boundary for graceful error handling
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    // Log error if needed
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          color: '#ff4d4f',
+          background: '#23263a',
+          padding: 48,
+          borderRadius: 18,
+          margin: '64px auto',
+          maxWidth: 540,
+          textAlign: 'center',
+          fontWeight: 700,
+          fontSize: 20,
+          boxShadow: '0 8px 32px #0006',
+        }}>
+          <div>Something went wrong.</div>
+          <div style={{ fontSize: 15, marginTop: 18, color: '#fff8' }}>{this.state.error?.toString()}</div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 // Simple Toast component for user feedback
 function Toast({ message, type, onClose }) {
   if (!message) return null;
@@ -216,47 +251,49 @@ function App() {
 
   // Main console shell with sidebar navigation
   return (
-    <div className="app-shell">
-      <Sidebar current={activeSection} onSelect={setActiveSection} mode={mode} setMode={setMode} />
-      <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
-      <main className="app-main">
-        <div className="page-frame">
-          {/* Removed top-strip for a cleaner, more premium look */}
-          <section className="system-health-section">
-            <SystemHealthPanel
-              coreStatus={coreStatus}
-              coreStatusLabel={coreStatusLabel}
-              lastRunAt={lastRunAt}
-            />
-          </section>
-          <section className="tool-section">
-            {activeSection === "dashboard" && <Dashboard />}
-            {activeSection === "auth" && <Auth />}
-            {activeSection === "onboarding" && <Onboarding />}
-            {activeSection === "credits" && <Credits />}
-            {activeSection === "orchestration" && <Orchestration />}
-            {activeSection === "products" && (
-              <ProductsList 
-                shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
-                shopToken={localStorage.getItem("shopToken")}
-              />
-            )}
-            {activeSection === "content-health" && <ContentHealthAuditor />}
-            {activeSection === "fix-queue" && <FixQueue />}
-            {activeSection === "content-ingest" && <ContentIngestor />}
-            {activeSection === "draft-library" && <DraftLibrary />}
-            {activeSection === "system-health" && (
+    <ErrorBoundary>
+      <div className="app-shell">
+        <Sidebar current={activeSection} onSelect={setActiveSection} mode={mode} setMode={setMode} />
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
+        <main className="app-main">
+          <div className="page-frame">
+            {/* Removed top-strip for a cleaner, more premium look */}
+            <section className="system-health-section">
               <SystemHealthPanel
                 coreStatus={coreStatus}
                 coreStatusLabel={coreStatusLabel}
                 lastRunAt={lastRunAt}
               />
-            )}
-            {activeSection === "tools" && <ToolsList />}
-          </section>
-        </div>
-      </main>
-    </div>
+            </section>
+            <section className="tool-section">
+              {activeSection === "dashboard" && <Dashboard />}
+              {activeSection === "auth" && <Auth />}
+              {activeSection === "onboarding" && <Onboarding />}
+              {activeSection === "credits" && <Credits />}
+              {activeSection === "orchestration" && <Orchestration />}
+              {activeSection === "products" && (
+                <ProductsList 
+                  shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
+                  shopToken={localStorage.getItem("shopToken")}
+                />
+              )}
+              {activeSection === "content-health" && <ContentHealthAuditor />}
+              {activeSection === "fix-queue" && <FixQueue />}
+              {activeSection === "content-ingest" && <ContentIngestor />}
+              {activeSection === "draft-library" && <DraftLibrary />}
+              {activeSection === "system-health" && (
+                <SystemHealthPanel
+                  coreStatus={coreStatus}
+                  coreStatusLabel={coreStatusLabel}
+                  lastRunAt={lastRunAt}
+                />
+              )}
+              {activeSection === "tools" && <ToolsList />}
+            </section>
+          </div>
+        </main>
+      </div>
+    </ErrorBoundary>
   );
   // --- END FULL FEATURED APP FUNCTION RESTORED ---
 }

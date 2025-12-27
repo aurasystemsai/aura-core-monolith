@@ -2,6 +2,22 @@
 
 import DashboardCharts from './DashboardCharts';
 import ShopInfoPanel from '../components/ShopInfoPanel';
+
+function Spinner() {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120 }}>
+      <div style={{
+        width: 38,
+        height: 38,
+        border: '4px solid #7fffd4',
+        borderTop: '4px solid #23263a',
+        borderRadius: '50%',
+        animation: 'spin 1s linear infinite',
+      }} />
+      <style>{`@keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }`}</style>
+    </div>
+  );
+}
 const API_BASE = 'https://aura-core-monolith.onrender.com';
 
 const Dashboard = ({ setActiveSection }) => {
@@ -78,6 +94,12 @@ const Dashboard = ({ setActiveSection }) => {
     integrations: ['Shopify', 'Klaviyo', 'Zapier'],
   };
 
+  if (loading) {
+    return <Spinner />;
+  }
+  if (stats.products === '-' && stats.seoIssues === '-') {
+    return <div style={{ color: '#ff4d4f', textAlign: 'center', fontWeight: 700, fontSize: 18, margin: '48px 0' }}>Error loading dashboard data. Please try again.</div>;
+  }
   return (
     <div className="aura-dashboard-shell">
       {/* Hero/overview section - visually impactful */}
