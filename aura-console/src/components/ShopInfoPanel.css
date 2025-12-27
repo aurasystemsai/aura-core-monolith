@@ -1,7 +1,7 @@
 .shop-info-panel {
-  background: rgba(35, 38, 58, 0.82);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px #0005, 0 1.5px 0 #7fffd422;
+  background: linear-gradient(120deg, #23263a 60%, #23284a 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 18px #0004, 0 1.5px 0 #7fffd422;
   padding: 28px 32px 22px 32px;
   margin-bottom: 28px;
   display: flex;
@@ -9,9 +9,10 @@
   align-items: flex-start;
   border: 1.5px solid #7fffd422;
   max-width: 480px;
-  backdrop-filter: blur(14px) saturate(1.2);
   position: relative;
   overflow: hidden;
+  opacity: 1 !important;
+  filter: none !important;
 }
 .shop-info-row {
   display: flex;
