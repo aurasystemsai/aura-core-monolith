@@ -164,27 +164,31 @@ const Dashboard = ({ setActiveSection }) => {
         ].map((stat, idx) => (
           <div
             key={stat.label}
-            className="aura-dashboard-stat"
+            className="aura-dashboard-stat metric-card"
+            tabIndex={0}
+            aria-label={stat.label + ': ' + stat.value}
             style={{
-              background: 'linear-gradient(120deg, #23263a 60%, ' + stat.color + ' 100%)',
-              borderRadius: '16px',
-              boxShadow: '0 4px 24px #0003',
-              padding: '28px 20px',
+              background: `linear-gradient(120deg, #23263a 60%, ${stat.color} 100%)`,
+              borderRadius: '18px',
+              boxShadow: '0 6px 28px #0005',
+              padding: '32px 22px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'flex-start',
               position: 'relative',
               overflow: 'hidden',
-              transition: 'transform 0.18s, box-shadow 0.18s',
+              transition: 'transform 0.18s, box-shadow 0.18s, background 0.18s',
               cursor: 'pointer',
-              animation: `fadeInUp 0.6s ease ${0.1 * idx}s both`,
+              animation: `fadeInUp 0.7s cubic-bezier(.23,1.01,.32,1) both`,
             }}
-            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px) scale(1.025)'}
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-3px) scale(1.03)'}
             onMouseLeave={e => e.currentTarget.style.transform = 'none'}
+            onFocus={e => e.currentTarget.style.boxShadow = '0 12px 40px #7fffd455'}
+            onBlur={e => e.currentTarget.style.boxShadow = '0 6px 28px #0005'}
           >
-            <span style={{fontSize: 24, marginBottom: 8}}>{stat.icon}</span>
-            <span style={{fontSize: '1.08em', color: stat.color, fontWeight: 700, letterSpacing: '0.01em', marginBottom: 6}}>{stat.label}</span>
-            <b style={{fontSize: '1.5em', fontWeight: 900, color: '#fff', letterSpacing: '0.01em', textShadow: '0 2px 8px #0006'}}>{stat.value}</b>
+            <span style={{fontSize: 28, marginBottom: 10, textShadow: '0 2px 8px #0006'}}>{stat.icon}</span>
+            <span style={{fontSize: '1.13em', color: stat.color, fontWeight: 800, letterSpacing: '0.01em', marginBottom: 8, textShadow: '0 1px 4px #fff4'}}>{stat.label}</span>
+            <b style={{fontSize: '1.7em', fontWeight: 900, color: '#fff', letterSpacing: '0.01em', textShadow: '0 2px 12px #0008'}}>{stat.value}</b>
           </div>
         ))}
       </div>
