@@ -175,18 +175,7 @@ function App() {
       <Sidebar current={activeSection} onSelect={setActiveSection} />
       <main className="app-main">
         <div className="page-frame">
-          <header className="top-strip">
-            <div className="top-strip-left">
-              <span className="top-strip-logo" title="AURA Systems">A</span>
-              <h1 className="top-strip-title">
-                {project && project.name ? project.name : "AURA Console"}
-              </h1>
-            </div>
-            <div className="top-strip-actions">
-              <button className="top-strip-notify" title="Notifications" aria-label="Notifications">🔔</button>
-              <span className="top-strip-avatar" title="Account">AU</span>
-            </div>
-          </header>
+          {/* Removed top-strip for a cleaner, more premium look */}
           <section className="system-health-section">
             <SystemHealthPanel
               coreStatus={coreStatus}
