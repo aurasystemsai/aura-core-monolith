@@ -1,14 +1,17 @@
 .shop-info-panel {
-  background: rgba(35, 38, 58, 0.92);
-  border-radius: 16px;
-  box-shadow: 0 2px 16px #0002, 0 1.5px 0 #7fffd422;
-  padding: 22px 28px 18px 28px;
+  background: rgba(35, 38, 58, 0.82);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px #0005, 0 1.5px 0 #7fffd422;
+  padding: 28px 32px 22px 32px;
   margin-bottom: 28px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   border: 1.5px solid #7fffd422;
   max-width: 480px;
+  backdrop-filter: blur(14px) saturate(1.2);
+  position: relative;
+  overflow: hidden;
 }
 .shop-info-row {
   display: flex;
@@ -40,12 +43,28 @@
 .shop-info-status {
   font-size: 1rem;
   font-weight: 700;
-  padding: 6px 16px;
-  border-radius: 8px;
-  background: #23284a;
-  color: #7fffd4;
+  padding: 7px 18px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #23284a 60%, #7fffd4 100%);
+  color: #23263a;
   margin-left: 18px;
-  box-shadow: 0 2px 8px #7fffd422;
+  box-shadow: 0 2px 12px #7fffd422;
+  animation: shopStatusPulse 1.2s cubic-bezier(.23,1.01,.32,1) both;
+  letter-spacing: 0.01em;
+  border: none;
+}
+.shop-info-status-paused {
+  background: linear-gradient(90deg, #ff4d4f 60%, #23284a 100%);
+  color: #fff;
+}
+.shop-info-status-active {
+  background: linear-gradient(90deg, #4caf50 60%, #23284a 100%);
+  color: #fff;
+}
+@keyframes shopStatusPulse {
+  0% { box-shadow: 0 0 0 #0000; }
+  60% { box-shadow: 0 0 32px #7fffd455; }
+  100% { box-shadow: 0 2px 12px #7fffd422; }
 }
 .shop-info-status-paused {
   background: #ff4d4f;
@@ -63,17 +82,26 @@
 }
 .shop-info-plan {
   font-size: 0.98rem;
-  color: #7fffd4;
-  font-weight: 700;
-  background: #23284a;
-  border-radius: 6px;
-  padding: 4px 12px;
+  color: #23263a;
+  font-weight: 800;
+  background: linear-gradient(90deg, #7fffd4 0%, #22d3ee 100%);
+  border-radius: 8px;
+  padding: 5px 14px;
+  box-shadow: 0 2px 8px #7fffd422;
+  letter-spacing: 0.01em;
 }
 .shop-info-integration {
   font-size: 0.98rem;
   color: #fff;
-  background: #5c6ac4;
-  border-radius: 6px;
-  padding: 4px 12px;
-  font-weight: 600;
+  background: linear-gradient(90deg, #5c6ac4 0%, #23284a 100%);
+  border-radius: 8px;
+  padding: 5px 14px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px #5c6ac455;
+  letter-spacing: 0.01em;
+  transition: background 0.18s, color 0.18s;
+}
+.shop-info-integration:hover {
+  background: linear-gradient(90deg, #22d3ee 0%, #7fffd4 100%);
+  color: #23263a;
 }
