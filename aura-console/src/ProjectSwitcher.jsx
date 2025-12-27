@@ -85,11 +85,6 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
     return null;
   }
 
-  // Build list of "other" projects (excluding the one currently selected)
-  const otherProjects = projects.filter(
-    (p) => p.id && currentProject.id && p.id !== currentProject.id
-  );
-
   return (
     <div className="project-switcher-footer">
       <div className="project-switcher-label">{t('project_switcher_connected_project')}</div>

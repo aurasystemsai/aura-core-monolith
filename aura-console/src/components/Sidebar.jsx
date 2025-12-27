@@ -1,38 +1,22 @@
-
-
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import toolsMeta from '../toolMeta';
 
-const navItems = [
-  { key: 'dashboard', label: t('sidebar_dashboard') },
-  { key: 'auth', label: t('sidebar_auth') },
-  { key: 'onboarding', label: t('sidebar_onboarding') },
-  { key: 'credits', label: t('sidebar_credits') },
-  { key: 'orchestration', label: t('sidebar_orchestration') },
-  { key: 'products', label: t('sidebar_products') },
-  { key: 'content-health', label: t('sidebar_content_health') },
-  { key: 'fix-queue', label: t('sidebar_fix_queue') },
-  { key: 'content-ingest', label: t('sidebar_content_ingest') },
-  { key: 'draft-library', label: t('sidebar_draft_library') },
-  { key: 'system-health', label: t('sidebar_system_health') },
-];
-
+function Sidebar({ current, onSelect, mode, setMode }) {
   const { t } = useTranslation();
-
   const navItems = [
-    { key: 'dashboard', label: t('sidebar_dashboard'), icon: '📊' },
-    { key: 'auth', label: t('sidebar_auth'), icon: '🔑' },
-    { key: 'onboarding', label: t('sidebar_onboarding'), icon: '🚀' },
-    { key: 'credits', label: t('sidebar_credits'), icon: '💳' },
-    { key: 'orchestration', label: t('sidebar_orchestration'), icon: '🤖' },
-    { key: 'products', label: t('sidebar_products'), icon: '📦' },
-    { key: 'content-health', label: t('sidebar_content_health'), icon: '🩺' },
-    { key: 'fix-queue', label: t('sidebar_fix_queue'), icon: '🛠️' },
-    { key: 'content-ingest', label: t('sidebar_content_ingest'), icon: '📥' },
-    { key: 'draft-library', label: t('sidebar_draft_library'), icon: '📝' },
-    { key: 'system-health', label: t('sidebar_system_health'), icon: '⚙️' },
+    { key: 'dashboard', label: t('sidebar_dashboard') },
+    { key: 'auth', label: t('sidebar_auth') },
+    { key: 'onboarding', label: t('sidebar_onboarding') },
+    { key: 'credits', label: t('sidebar_credits') },
+    { key: 'orchestration', label: t('sidebar_orchestration') },
+    { key: 'products', label: t('sidebar_products') },
+    { key: 'content-health', label: t('sidebar_content_health') },
+    { key: 'fix-queue', label: t('sidebar_fix_queue') },
+    { key: 'content-ingest', label: t('sidebar_content_ingest') },
+    { key: 'draft-library', label: t('sidebar_draft_library') },
+    { key: 'system-health', label: t('sidebar_system_health') },
   ];
-
   return (
     <nav className="sidebar">
       <div className="sidebar-brand" style={{display:'flex',alignItems:'center',gap:12,marginBottom:18}}>
@@ -128,4 +112,7 @@ const navItems = [
     </nav>
   );
 }
-import React from "react";
+
+export default Sidebar;
+
+

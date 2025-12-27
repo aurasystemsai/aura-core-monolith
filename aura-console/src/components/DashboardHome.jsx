@@ -1,6 +1,7 @@
 import React from "react";
 import { t } from "../i18n";
 
+function DashboardHome({ setActiveSection }) {
   return (
     <div className="card dashboard-home" style={{ color: "#fff", textAlign: "center" }} role="region" aria-label={t("dashboard_overview")}> 
       <div style={{ fontWeight: 800, fontSize: 40, marginBottom: 16 }}>{t("dashboard_overview")}</div>
@@ -29,3 +30,5 @@ import { t } from "../i18n";
     </div>
   );
 }
+
+export default DashboardHome;
