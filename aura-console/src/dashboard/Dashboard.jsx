@@ -190,7 +190,25 @@ const Dashboard = ({ setActiveSection }) => {
       </div>
       {/* Charts and trends */}
       <DashboardCharts />
-      <div className="aura-dashboard-note" style={{marginTop: 32}}>Automations help keep your products optimized and your store healthy. System health is monitored in real time.</div>
+      <div className="aura-dashboard-note" style={{
+        marginTop: 36,
+        background: 'linear-gradient(90deg, #7fffd4 0%, #22d3ee 100%)',
+        color: '#23263a',
+        borderRadius: 12,
+        padding: '18px 32px',
+        fontWeight: 700,
+        fontSize: 16,
+        boxShadow: '0 2px 12px #7fffd422',
+        textAlign: 'center',
+        letterSpacing: '0.01em',
+        textShadow: '0 1px 4px #fff4',
+        maxWidth: 540,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        animation: 'fadeIn 1.1s cubic-bezier(.23,1.01,.32,1) both',
+      }}>
+        Automations help keep your products optimized and your store healthy. System health is monitored in real time.
+      </div>
     </div>
   );
 };
