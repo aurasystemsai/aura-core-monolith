@@ -6,8 +6,9 @@
   font-size: 1.08em;
   font-weight: 700;
   cursor: pointer;
-  background: linear-gradient(90deg, #23263a 60%, #7fffd4 100%);
-  color: #23263a;
+  background: linear-gradient(90deg, #22d3ee 0%, #7fffd4 100%);
+  color: #181c2a;
+  text-shadow: 0 2px 8px #fff8, 0 1px 2px #0004;
   box-shadow: 0 2px 16px #7fffd422, 0 1.5px 0 #7fffd422;
   margin-bottom: 6px;
   margin-right: 6px;
@@ -18,13 +19,15 @@
 }
 .quick-link-btn:hover:not(:disabled) {
   background: linear-gradient(90deg, #7fffd4 0%, #22d3ee 100%);
-  color: #181c2a;
+  color: #23263a;
+  text-shadow: 0 2px 8px #fff8, 0 1px 2px #0004;
   box-shadow: 0 8px 32px #7fffd455, 0 1.5px 0 #7fffd422;
   transform: translateY(-2px) scale(1.04);
 }
 .quick-link-btn:active:not(:disabled) {
   background: linear-gradient(90deg, #22d3ee 0%, #7fffd4 100%);
   color: #23263a;
+  text-shadow: 0 2px 8px #fff8, 0 1px 2px #0004;
   box-shadow: 0 2px 8px #7fffd422;
   transform: scale(0.98);
 }
@@ -41,6 +44,14 @@
   --bg-alt: #23263a;
   --accent: #6c47ff;
   --text: #e6e6f0;
+}
+
+[data-theme='light'] {
+  --card: #f8fafc;
+  --bg-alt: #fff;
+  --accent: #7fffd4;
+  --text: #23263a;
+  background: #f8fafc;
 }
 .app-shell {
   display: flex;

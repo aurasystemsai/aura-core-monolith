@@ -43,6 +43,12 @@ const ENGINES = {
 
 // --- FULL FEATURED APP FUNCTION RESTORED ---
 function App() {
+  // Light/dark mode state
+  const [mode, setMode] = useState(() => localStorage.getItem('auraUIMode') || 'dark');
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', mode);
+    localStorage.setItem('auraUIMode', mode);
+  }, [mode]);
   // Core state
   const [coreUrl, setCoreUrl] = useState(DEFAULT_CORE_API);
   const [coreStatus, setCoreStatus] = useState('checking');
@@ -172,7 +178,7 @@ function App() {
   // Main console shell with sidebar navigation
   return (
     <div className="app-shell">
-      <Sidebar current={activeSection} onSelect={setActiveSection} />
+      <Sidebar current={activeSection} onSelect={setActiveSection} mode={mode} setMode={setMode} />
       <main className="app-main">
         <div className="page-frame">
           {/* Removed top-strip for a cleaner, more premium look */}

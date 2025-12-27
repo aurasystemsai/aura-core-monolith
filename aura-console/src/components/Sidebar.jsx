@@ -15,7 +15,7 @@ const navItems = [
   { key: 'system-health', label: 'System Health', icon: '⚙️' },
 ];
 
-export default function Sidebar({ current, onSelect }) {
+export default function Sidebar({ current, onSelect, mode, setMode }) {
   return (
     <nav className="sidebar">
       <div className="sidebar-brand" style={{display:'flex',alignItems:'center',gap:12,marginBottom:18}}>
@@ -57,17 +57,35 @@ export default function Sidebar({ current, onSelect }) {
         flexDirection: 'column',
         alignItems: 'center',
         gap: 10,
-        opacity: 0.96,
       }}>
         <img
           src="/avatar-default.png"
           alt="User Avatar"
           style={{ width: 48, height: 48, borderRadius: '50%', boxShadow: '0 2px 12px #22d3ee55', marginBottom: 6 }}
         />
-        <div style={{ fontWeight: 700, color: '#7fffd4', fontSize: 15, letterSpacing: '0.01em', textShadow: '0 1px 4px #0004' }}>
+        <div style={{ fontWeight: 700, color: '#7fffd4', fontSize: 16, letterSpacing: '0.01em', textShadow: '0 1px 4px #0004', lineHeight: 1.2 }}>
           User Name
         </div>
-        <div style={{ fontSize: 13, color: '#cbd5f5', opacity: 0.7 }}>user@email.com</div>
+        <div style={{ fontSize: 13, color: '#e6e6f0', opacity: 1, lineHeight: 1.2 }}>user@email.com</div>
+        <button
+          className="mode-toggle-btn"
+          style={{
+            marginTop: 18,
+            borderRadius: 999,
+            border: '1.5px solid #7fffd4',
+            padding: '7px 18px',
+            fontWeight: 700,
+            fontSize: 15,
+            background: mode === 'dark' ? 'linear-gradient(90deg, #23263a 60%, #7fffd4 100%)' : 'linear-gradient(90deg, #fff 60%, #7fffd4 100%)',
+            color: mode === 'dark' ? '#23263a' : '#23263a',
+            boxShadow: '0 2px 12px #7fffd422',
+            cursor: 'pointer',
+            transition: 'background 0.18s, color 0.18s',
+          }}
+          onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+        >
+          {mode === 'dark' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+        </button>
       </div>
     </nav>
   );
