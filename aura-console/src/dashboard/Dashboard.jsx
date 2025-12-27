@@ -95,7 +95,7 @@ const Dashboard = ({ setActiveSection }) => {
       }}>
         <div style={{display:'flex',flexDirection:'column',alignItems:'flex-start',flex:1,minWidth:260}}>
           <div style={{display:'flex',alignItems:'center',gap:18,marginBottom:12}}>
-            <img src={window.location.origin + '/logo-aura.png'} alt="AURA Logo" style={{height:54,width:54,objectFit:'contain',borderRadius:12,boxShadow:'0 2px 16px #22d3ee55'}} />
+            <img src="/logo-aura.png" alt="AURA Logo" style={{height:54,width:54,objectFit:'contain',borderRadius:12,boxShadow:'0 2px 16px #22d3ee55'}} />
           </div>
           <div style={{fontSize: 18, color: '#cbd5f5', marginBottom: 18}}>
             Here’s your store’s health, performance, and quick actions—all in one place.
