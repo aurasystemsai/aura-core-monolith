@@ -50,12 +50,20 @@ function SystemHealthPanel({ coreStatus, coreStatusLabel, lastRunAt }) {
         <div className="system-health-help">
           <ul>
             <li>
-              If status is <strong>offline</strong>, check your Render service
-              and OpenAI API key.
-            </li>
-            <li>
-              If status is <strong>checking</strong> for a long time, refresh
-              the page or verify the Core URL.
+                <div className="system-health-help">
+                  <ul>
+                    <li>
+                      If status is <strong>offline</strong>, check your Render service
+                      and OpenAI API key.
+                    </li>
+                    <li>
+                      If status is <strong>checking</strong> for a long time, refresh
+                      the page or verify the Core URL.
+                    </li>
+                    <li>
+                      Once this is green, click <strong>Run Product SEO</strong> in the
+                      inspector panel.
+                    </li>
             </li>
             <li>
               Once this is green, click <strong>Run Product SEO</strong> in the
