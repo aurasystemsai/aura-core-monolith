@@ -80,25 +80,57 @@ const Dashboard = ({ setActiveSection }) => {
 
   return (
     <div className="aura-dashboard-shell">
-      {/* Hero/overview section */}
+      {/* Hero/overview section - visually impactful */}
       <div className="dashboard-hero" style={{
-        background: 'radial-gradient(circle at 60% 0, #22d3ee22 0%, #23263a 100%)',
-        borderRadius: '18px',
-        padding: '40px 40px 32px 40px',
-        marginBottom: 32,
-        boxShadow: '0 8px 32px #0003',
+        position: 'relative',
+        borderRadius: '24px',
+        padding: '56px 48px 40px 48px',
+        marginBottom: 40,
+        boxShadow: '0 12px 48px #0005',
         display: 'flex',
         alignItems: 'center',
-        gap: 36,
+        gap: 48,
         flexWrap: 'wrap',
         justifyContent: 'space-between',
+        overflow: 'hidden',
+        background: 'linear-gradient(120deg, #23263a 60%, #7fffd4 100%)',
       }}>
-        <div style={{display:'flex',flexDirection:'column',alignItems:'flex-start',flex:1,minWidth:260}}>
+        {/* Animated background circles */}
+        <div style={{
+          position: 'absolute',
+          top: '-80px',
+          left: '-80px',
+          width: '220px',
+          height: '220px',
+          background: 'radial-gradient(circle, #7fffd4 0%, #23263a 80%)',
+          opacity: 0.18,
+          borderRadius: '50%',
+          zIndex: 0,
+          animation: 'pulse 4s infinite',
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '-60px',
+          right: '-60px',
+          width: '160px',
+          height: '160px',
+          background: 'radial-gradient(circle, #22d3ee 0%, #23263a 80%)',
+          opacity: 0.14,
+          borderRadius: '50%',
+          zIndex: 0,
+          animation: 'pulse 5s infinite',
+        }} />
+        <div style={{display:'flex',flexDirection:'column',alignItems:'flex-start',flex:1,minWidth:260,zIndex:1}}>
           <div style={{display:'flex',alignItems:'center',gap:18,marginBottom:12}}>
-            <img src="/logo-aura.png" alt="AURA Logo" style={{height:54,width:54,objectFit:'contain',borderRadius:12,boxShadow:'0 2px 16px #22d3ee55'}} />
+            <img src="/logo-aura.png" alt="AURA Logo" style={{height:64,width:64,objectFit:'contain',borderRadius:16,boxShadow:'0 2px 24px #7fffd455'}} />
+            <span style={{fontWeight:900,fontSize:32,color:'#7fffd4',letterSpacing:'-0.02em',textShadow:'0 2px 16px #0006'}}>AURA Systems</span>
           </div>
-          <div style={{fontSize: 18, color: '#cbd5f5', marginBottom: 18}}>
-            Here’s your store’s health, performance, and quick actions—all in one place.
+          <div style={{fontSize: 24, color: '#fff', marginBottom: 18, fontWeight: 700, textShadow:'0 2px 12px #23263a'}}>
+            Build Automated Systems That Run Your Business For You
+          </div>
+          <div style={{fontSize: 16, color: '#cbd5f5', marginBottom: 24, maxWidth: 480}}>
+            AI-powered workflows that eliminate manual work and scale your revenue automatically. <br />
+            <span style={{color:'#7fffd4'}}>World-class automation for e-commerce.</span>
           </div>
           <div style={{display: 'flex', gap: 16, flexWrap: 'wrap'}}>
             <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('products')}>📦 Products</button>
@@ -110,7 +142,7 @@ const Dashboard = ({ setActiveSection }) => {
             </button>
           </div>
         </div>
-        <div style={{minWidth: 260, maxWidth: 340}}>
+        <div style={{minWidth: 260, maxWidth: 340, zIndex:1}}>
           <ShopInfoPanel shop={shop} />
         </div>
       </div>
