@@ -22,12 +22,13 @@
   background: linear-gradient(90deg, #7fffd4 0%, #22d3ee 100%);
   color: #181c2a;
 }
-.crisp-metric-card {
-  background: linear-gradient(120deg, #23263a 60%, #23284a 100%);
-  box-shadow: 0 4px 18px #0004, 0 1.5px 0 #7fffd422;
-  backdrop-filter: none !important;
-  opacity: 1 !important;
-  filter: none !important;
+.crisp-metric-card,
+.metric-card,
+.kpi-card,
+.seo-table-card,
+.inspector-card,
+.project-setup-card {
+  /* Unified card style: inherits from .card */
 }
 /* Page transition animation */
 .fade-in {
@@ -815,13 +816,6 @@ body {
   margin-top: 4px;
 }
 
-.kpi-card {
-  background: rgba(15, 23, 42, 0.98);
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(31, 41, 55, 0.95);
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.95);
-  padding: 10px 12px;
-}
 
 .kpi-label {
   font-size: 11px;
@@ -1272,11 +1266,6 @@ body {
 
 .project-setup-card {
   width: 380px;
-  padding: 28px;
-  border-radius: 18px;
-  border: 1px solid rgba(55, 65, 81, 0.9);
-  background: rgba(15, 23, 42, 0.95);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
   color: #e5e7eb;
 }
 
