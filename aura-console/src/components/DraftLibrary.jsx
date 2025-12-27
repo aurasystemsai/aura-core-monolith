@@ -84,8 +84,8 @@ function DraftLibrary({ coreUrl, projectId }) {
   }
 
   return (
-    <div className="draft-library-grid">
-      <div className="card draft-library-list">
+    <div className="draft-library-grid" role="region" aria-label="Draft Library">
+      <div className="card draft-library-list" role="region" aria-label="Drafts List">
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ fontWeight: 700 }}>Drafts</div>
           <button
@@ -152,7 +152,7 @@ function DraftLibrary({ coreUrl, projectId }) {
         )}
       </div>
 
-      <div className="card draft-library-detail">
+      <div className="card draft-library-detail" role="region" aria-label="Draft Details">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
           <div>
             <div style={{ fontWeight: 800, fontSize: 13 }}>
