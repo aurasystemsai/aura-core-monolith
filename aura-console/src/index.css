@@ -72,15 +72,10 @@ body {
 .core-status {
   padding: 16px 18px;
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, #020617, #020617) padding-box,
-  .core-status {
-    padding: 16px 18px;
-    border-radius: var(--radius-lg);
-    background: var(--card);
-    border: 1px solid var(--border);
-    min-width: 320px;
-    box-shadow: var(--shadow-soft);
-  }
+  background: var(--card);
+  border: 1px solid var(--border);
+  min-width: 320px;
+  box-shadow: var(--shadow-soft);
   letter-spacing: 0.12em;
   color: var(--muted);
 }
@@ -178,26 +173,11 @@ body {
 }
 
 .notice,
-.error {
-  .pill {
-    font-size: 11px;
-    padding: 2px 7px;
-    border-radius: 6px;
-    background: #f3f4f6;
-    border: 1px solid #e5e7eb;
-    color: var(--muted);
-  }
-  border: 1px solid rgba(59, 130, 246, 0.6);
-}
-
+/* Error state styling */
 .error {
   background: rgba(248, 113, 113, 0.18);
   border: 1px solid rgba(248, 113, 113, 0.9);
-  .runner-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+}
   }
 
 .category-title {
