@@ -186,7 +186,7 @@ const Dashboard = ({ setActiveSection }) => {
         ].map((stat, idx) => (
           <div
             key={stat.label}
-            className="aura-dashboard-stat metric-card"
+            className="aura-dashboard-stat metric-card crisp-metric-card"
             tabIndex={0}
             aria-label={stat.label + ': ' + stat.value}
             style={{
