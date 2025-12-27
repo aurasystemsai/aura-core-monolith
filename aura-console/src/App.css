@@ -1,3 +1,40 @@
+/* ================== QUICK LINK BUTTONS (Dashboard Hero) ================== */
+.quick-link-btn {
+  border-radius: 999px;
+  border: 1.5px solid #7fffd4;
+  padding: 10px 22px;
+  font-size: 1.08em;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(90deg, #23263a 60%, #7fffd4 100%);
+  color: #23263a;
+  box-shadow: 0 2px 16px #7fffd422, 0 1.5px 0 #7fffd422;
+  margin-bottom: 6px;
+  margin-right: 6px;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+}
+.quick-link-btn:hover:not(:disabled) {
+  background: linear-gradient(90deg, #7fffd4 0%, #22d3ee 100%);
+  color: #181c2a;
+  box-shadow: 0 8px 32px #7fffd455, 0 1.5px 0 #7fffd422;
+  transform: translateY(-2px) scale(1.04);
+}
+.quick-link-btn:active:not(:disabled) {
+  background: linear-gradient(90deg, #22d3ee 0%, #7fffd4 100%);
+  color: #23263a;
+  box-shadow: 0 2px 8px #7fffd422;
+  transform: scale(0.98);
+}
+.quick-link-btn:disabled {
+  background: #888;
+  color: #fff;
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+}
 /* Unified shell and main layout styles for AURA Console */
 :root {
   --card: #181c2a;
