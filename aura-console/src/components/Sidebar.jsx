@@ -83,20 +83,8 @@ export default function Sidebar({ current, onSelect, mode, setMode }) {
         <div style={{ fontSize: 13, color: '#e6e6f0', opacity: 1, lineHeight: 1.2 }}>user@email.com</div>
         <button
           className="mode-toggle-btn"
-          style={{
-            marginTop: 18,
-            borderRadius: 999,
-            border: '1.5px solid #7fffd4',
-            padding: '7px 18px',
-            fontWeight: 700,
-            fontSize: 15,
-            background: mode === 'dark' ? 'linear-gradient(90deg, #23263a 60%, #7fffd4 100%)' : 'linear-gradient(90deg, #fff 60%, #7fffd4 100%)',
-            color: mode === 'dark' ? '#23263a' : '#23263a',
-            boxShadow: '0 2px 12px #7fffd422',
-            cursor: 'pointer',
-            transition: 'background 0.18s, color 0.18s',
-          }}
           onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+          aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
         >
           {mode === 'dark' ? '🌙 Dark Mode' : '☀️ Light Mode'}
         </button>
