@@ -29,6 +29,13 @@ export default function Sidebar({ current, onSelect, mode, setMode }) {
             onClick={() => onSelect(item.key)}
             tabIndex={0}
             aria-label={item.label}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelect(item.key);
+              }
+            }}
+            style={{ outline: current === item.key ? '2px solid #7fffd4' : 'none' }}
           >
             <span className="sidebar-icon">{item.icon}</span>
             <span className="sidebar-label">{item.label}</span>
@@ -44,6 +51,13 @@ export default function Sidebar({ current, onSelect, mode, setMode }) {
             onClick={() => onSelect(tool.id)}
             tabIndex={0}
             aria-label={tool.name}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelect(tool.id);
+              }
+            }}
+            style={{ outline: current === tool.id ? '2px solid #7fffd4' : 'none' }}
           >
             <span className="sidebar-icon">🛠️</span>
             <span className="sidebar-label">{tool.name}</span>

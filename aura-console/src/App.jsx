@@ -1,3 +1,35 @@
+// Simple Toast component for user feedback
+function Toast({ message, type, onClose }) {
+  if (!message) return null;
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        bottom: 32,
+        right: 32,
+        zIndex: 9999,
+        background: type === 'error' ? '#ff4d4f' : type === 'success' ? '#4caf50' : '#23263a',
+        color: '#fff',
+        padding: '16px 32px',
+        borderRadius: 12,
+        boxShadow: '0 4px 24px #0006',
+        fontWeight: 700,
+        fontSize: 16,
+        letterSpacing: '0.01em',
+        minWidth: 220,
+        textAlign: 'center',
+        animation: 'fadeIn 0.5s',
+        cursor: 'pointer',
+      }}
+      onClick={onClose}
+      tabIndex={0}
+      aria-label="Close notification"
+      role="alert"
+    >
+      {message}
+    </div>
+  );
+}
 // TODO: Refactor the main UI shell, navigation, and dashboard to match the new world-class, modern, professional standards set in ProductsList.jsx:
 // - Consistent actionable tips, field targets, and device previews
 // - Google-style SEO previews and export everywhere
@@ -43,6 +75,13 @@ const ENGINES = {
 
 // --- FULL FEATURED APP FUNCTION RESTORED ---
 function App() {
+  // Toast state
+  const [toast, setToast] = useState({ message: '', type: 'info' });
+  // Helper to show toast
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast({ message: '', type: 'info' }), 3200);
+  };
   // Light/dark mode state
   const [mode, setMode] = useState(() => localStorage.getItem('auraUIMode') || 'dark');
   useEffect(() => {
@@ -179,6 +218,7 @@ function App() {
   return (
     <div className="app-shell">
       <Sidebar current={activeSection} onSelect={setActiveSection} mode={mode} setMode={setMode} />
+      <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
       <main className="app-main">
         <div className="page-frame">
           {/* Removed top-strip for a cleaner, more premium look */}
