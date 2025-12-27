@@ -18,7 +18,10 @@ const navItems = [
 export default function Sidebar({ current, onSelect }) {
   return (
     <nav className="sidebar">
-      <div className="sidebar-brand">AURA Console</div>
+      <div className="sidebar-brand" style={{display:'flex',alignItems:'center',gap:12,marginBottom:18}}>
+        <img src="/logo-aura.png" alt="AURA Logo" style={{height:38,width:38,objectFit:'contain',borderRadius:10,boxShadow:'0 2px 12px #22d3ee55'}} />
+        <span style={{fontWeight:900,fontSize:22,letterSpacing:-1,color:'#22d3ee'}}>AURA</span>
+      </div>
       <ul className="sidebar-nav">
         {navItems.map(item => (
           <li
