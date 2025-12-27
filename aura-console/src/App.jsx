@@ -256,7 +256,7 @@ function App() {
         <Sidebar current={activeSection} onSelect={setActiveSection} mode={mode} setMode={setMode} />
         <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
         <main className="app-main">
-          <div className="page-frame">
+          <div className="page-frame fade-in">
             {/* Removed top-strip for a cleaner, more premium look */}
             <section className="system-health-section">
               <SystemHealthPanel
