@@ -37,8 +37,8 @@ export default function DashboardCharts() {
       style={{
         background: 'linear-gradient(120deg, #23263a 60%, #23284a 100%)',
         borderRadius: 20,
-        padding: 32,
-        marginTop: 40,
+        padding: 36,
+        marginTop: 44,
         boxShadow: '0 8px 32px #0005',
         position: 'relative',
         overflow: 'hidden',

@@ -180,9 +180,9 @@
   margin: 32px auto;
   max-width: 1200px;
   background: var(--bg-alt);
-  border-radius: 18px;
+  border-radius: 20px;
   box-shadow: 0 8px 32px #0003;
-  padding: 32px 40px 40px 40px;
+  padding: 36px 44px 44px 44px;
 }
 .top-strip {
   display: flex;
