@@ -405,9 +405,7 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
                             )}
                           </td>
                           <td className="pl-product-cell">
-                            <span className="pl-expand-toggle" onClick={() => setExpandedRow(product.id, !expanded)}>
-                              {expanded ? '▼' : '▶'}
-                            </span> {product.title}
+                            {product.title}
                             <div className="pl-product-price">{product.variants && product.variants[0] ? `$${product.variants[0].price}` : 'N/A'}</div>
                           </td>
                           <td>
