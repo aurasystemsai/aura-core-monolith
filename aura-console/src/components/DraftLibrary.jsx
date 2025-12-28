@@ -88,11 +88,14 @@ function DraftLibrary({ coreUrl, projectId }) {
     <div className="draft-library-grid" role="region" aria-label="Draft Library">
       <div className="draft-library-list" role="region" aria-label="Drafts List">
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ fontWeight: 700 }}>Drafts</div>
+          <div style={{ fontWeight: 700 }} title="All your saved blog/article drafts appear here. Click one to view or copy.">Drafts
+            <span style={{color:'#7fffd4',marginLeft:4,cursor:'help'}} title="This list shows all drafts saved by the Blog Draft Engine. Click a draft to view details and copy content.">?</span>
+          </div>
           <button
             className="button button--ghost button--tiny"
             type="button"
             onClick={loadList}
+            title="Reload the list of drafts from Core."
           >
             Refresh
           </button>
@@ -133,6 +136,7 @@ function DraftLibrary({ coreUrl, projectId }) {
                     border: active ? "1px solid rgba(255,255,255,0.25)" : "1px solid rgba(255,255,255,0.08)",
                     background: active ? "rgba(255,255,255,0.06)" : "transparent",
                   }}
+                  title="Click to view this draft's details and copy content."
                 >
                   <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 4 }}>
                     {d.title || "Untitled draft"}
@@ -156,7 +160,7 @@ function DraftLibrary({ coreUrl, projectId }) {
       <div className="draft-library-detail" role="region" aria-label="Draft Details">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
           <div>
-            <div style={{ fontWeight: 800, fontSize: 13 }}>
+            <div style={{ fontWeight: 800, fontSize: 13 }} title="The title of your selected draft.">
               {selected?.title || "Select a draft"}
             </div>
             <div style={{ fontSize: 11, opacity: 0.75 }}>
@@ -171,6 +175,7 @@ function DraftLibrary({ coreUrl, projectId }) {
               className={"pill" + (format === "text" ? " pill--active" : "")}
               type="button"
               onClick={() => setFormat("text")}
+              title="Show the draft as plain text (best for most CMS editors)."
             >
               Plain text
             </button>
@@ -178,6 +183,7 @@ function DraftLibrary({ coreUrl, projectId }) {
               className={"pill" + (format === "html" ? " pill--active" : "")}
               type="button"
               onClick={() => setFormat("html")}
+              title="Show the draft as HTML (for advanced use or HTML editors)."
             >
               HTML
             </button>
@@ -189,6 +195,7 @@ function DraftLibrary({ coreUrl, projectId }) {
               onClick={() =>
                 copyToClipboard(format === "html" ? selected?.articleHtml : selected?.articleText)
               }
+              title={format === "html" ? "Copy the HTML version of this draft to your clipboard." : "Copy the plain text version of this draft to your clipboard."}
             >
               Copy {format === "html" ? "HTML" : "text"}
             </button>
@@ -198,8 +205,8 @@ function DraftLibrary({ coreUrl, projectId }) {
         <div style={{ marginTop: 12 }}>
           <div style={{ fontSize: 12, opacity: 0.75, marginBottom: 6 }}>
             {format === "html"
-              ? "HTML output (paste into an HTML editor)"
-              : "Plain text output (best for most CMS editors)"}
+              ? "HTML output (paste into an HTML editor). Use this if your CMS supports HTML."
+              : "Plain text output (best for most CMS editors). Use this for Shopify, WordPress, etc."}
           </div>
 
           <pre className="raw-json-pre" style={{ minHeight: 420 }}>
