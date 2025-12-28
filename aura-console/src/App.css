@@ -1,3 +1,54 @@
+/* ================== GLOBAL DARK CARD PANEL STYLE FOR ALL MAIN PANELS ================== */
+.aura-card, .dashboard-card, .auth-card, .onboarding-card, .credits-card, .orchestration-card, .products-card, .content-health-card, .fix-queue-card, .draft-library-card, .system-health-card {
+  background: linear-gradient(120deg, #232b3b 80%, #1e293b 100%);
+  color: #fff;
+  border-radius: 24px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.13);
+  padding: 36px 32px 32px 32px;
+  margin: 32px auto 0 auto;
+  max-width: 1100px;
+  width: 100%;
+}
+.aura-card h1, .aura-card h2, .dashboard-card h1, .dashboard-card h2, .auth-card h1, .auth-card h2, .onboarding-card h1, .onboarding-card h2, .credits-card h1, .credits-card h2, .orchestration-card h1, .orchestration-card h2, .products-card h1, .products-card h2, .content-health-card h1, .content-health-card h2, .fix-queue-card h1, .fix-queue-card h2, .draft-library-card h1, .draft-library-card h2, .system-health-card h1, .system-health-card h2 {
+  color: #fff;
+  font-weight: 900;
+  font-size: 2.1rem;
+  margin-bottom: 24px;
+}
+.aura-card input, .aura-card select, .dashboard-card input, .dashboard-card select, .auth-card input, .auth-card select, .onboarding-card input, .onboarding-card select, .credits-card input, .credits-card select, .orchestration-card input, .orchestration-card select, .products-card input, .products-card select, .content-health-card input, .content-health-card select, .fix-queue-card input, .fix-queue-card select, .draft-library-card input, .draft-library-card select, .system-health-card input, .system-health-card select {
+  background: #181f2a;
+  color: #fff;
+  border: 1.5px solid #334155;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 1.08em;
+  margin: 0 10px 18px 0;
+  outline: none;
+  transition: border 0.16s;
+}
+.aura-card input:focus, .aura-card select:focus, .dashboard-card input:focus, .dashboard-card select:focus, .auth-card input:focus, .auth-card select:focus, .onboarding-card input:focus, .onboarding-card select:focus, .credits-card input:focus, .credits-card select:focus, .orchestration-card input:focus, .orchestration-card select:focus, .products-card input:focus, .products-card select:focus, .content-health-card input:focus, .content-health-card select:focus, .fix-queue-card input:focus, .fix-queue-card select:focus, .draft-library-card input:focus, .draft-library-card select:focus, .system-health-card input:focus, .system-health-card select:focus {
+  border: 1.5px solid #2563eb;
+}
+.aura-card .aura-btn, .dashboard-card .dashboard-btn, .auth-card .auth-btn, .onboarding-card .onboarding-btn, .credits-card .credits-btn, .orchestration-card .orchestration-btn, .products-card .products-btn, .content-health-card .ch-btn, .fix-queue-card .fq-btn, .draft-library-card .draft-btn, .system-health-card .system-btn {
+  background: linear-gradient(90deg, #2563eb 60%, #1e40af 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 22px;
+  font-size: 1.05em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.10);
+  margin: 0 8px 8px 0;
+}
+.aura-card .aura-btn:hover, .dashboard-card .dashboard-btn:hover, .auth-card .auth-btn:hover, .onboarding-card .onboarding-btn:hover, .credits-card .credits-btn:hover, .orchestration-card .orchestration-btn:hover, .products-card .products-btn:hover, .content-health-card .ch-btn:hover, .fix-queue-card .fq-btn:hover, .draft-library-card .draft-btn:hover, .system-health-card .system-btn:hover,
+.aura-card .aura-btn:focus, .dashboard-card .dashboard-btn:focus, .auth-card .auth-btn:focus, .onboarding-card .onboarding-btn:focus, .credits-card .credits-btn:focus, .orchestration-card .orchestration-btn:focus, .products-card .products-btn:focus, .content-health-card .ch-btn:focus, .fix-queue-card .fq-btn:focus, .draft-library-card .draft-btn:focus, .system-health-card .system-btn:focus {
+  background: linear-gradient(90deg, #1d4ed8 60%, #1e3a8a 100%);
+  box-shadow: 0 4px 18px rgba(37,99,235,0.18);
+  transform: translateY(-2px) scale(1.03);
+}
 /* ================== CONTENT HEALTH AUDITOR & FIX QUEUE POLISH ================== */
 .content-health-card, .fix-queue-card {
   background: linear-gradient(120deg, #232b3b 80%, #1e293b 100%);
