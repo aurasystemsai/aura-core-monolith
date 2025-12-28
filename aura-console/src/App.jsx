@@ -365,48 +365,6 @@ function App() {
       </div>
     </ErrorBoundary>
   );
-            {/* Removed top-strip for a cleaner, more premium look */}
-            <section className="tool-section">
-              {activeSection === "dashboard" && project && <DashboardHome setActiveSection={setActiveSection} />}
-              {activeSection === "auth" && <Auth />}
-              {activeSection === "onboarding" && <Onboarding />}
-              {activeSection === "credits" && <Credits />}
-              {activeSection === "orchestration" && <Orchestration />}
-              {activeSection === "products" && (
-                <ProductsList 
-                  shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
-                  shopToken={localStorage.getItem("shopToken")}
-                />
-              )}
-              {activeSection === "content-health" && project && (
-                <ContentHealthAuditor coreUrl={coreUrl} projectId={project.id} />
-              )}
-              {activeSection === "fix-queue" && project && (
-                <FixQueue coreUrl={coreUrl} projectId={project.id} />
-              )}
-              {activeSection === "content-ingest" && project && (
-                <ContentIngestor coreUrl={coreUrl} projectId={project.id} />
-              )}
-              {activeSection === "draft-library" && project && (
-                <DraftLibrary coreUrl={coreUrl} projectId={project.id} />
-              )}
-              {activeSection === "system-health" && (
-                <SystemHealthPanel
-                  coreStatus={coreStatus}
-                  coreStatusLabel={coreStatusLabel}
-                  lastRunAt={lastRunAt}
-                />
-              )}
-              {activeSection === "tools" && project && <ToolsList />}
-              {activeSection === "product-seo" && <ProductSeoEngine />}
-              {activeSection === "ai-alt-text-engine" && <AiAltTextEngine />}
-              {activeSection === "internal-link-optimizer" && <InternalLinkOptimizer />}
-            </section>
-          </div>
-        </main>
-      </div>
-    </ErrorBoundary>
-  );
   // --- END FULL FEATURED APP FUNCTION RESTORED ---
 }
 export default App;

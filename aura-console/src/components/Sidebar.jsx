@@ -1,7 +1,7 @@
 import toolsMeta from "../toolMeta";
 
 
-function Sidebar({ current, onSelect }) {
+function Sidebar({ current, onSelect, onShowChangelog, changelogUnread }) {
   const navItems = [
         { key: 'dashboard', label: 'Dashboard', icon: '📊' },
         { key: 'auth', label: 'Auth', icon: '🔑' },
@@ -15,7 +15,6 @@ function Sidebar({ current, onSelect }) {
         { key: 'draft-library', label: 'Draft Library', icon: '📚' },
         { key: 'system-health', label: 'System Health', icon: '🖥️' }
   ];
-  function Sidebar({ current, onSelect, onShowChangelog, changelogUnread }) {
     return (
     <nav className="sidebar">
       <div className="sidebar-brand" style={{display:'flex',alignItems:'center',gap:12,marginBottom:18}}>
