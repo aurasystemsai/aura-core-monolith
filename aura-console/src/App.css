@@ -1091,14 +1091,11 @@ body {
   outline: none;
   box-shadow: 0 2px 8px rgba(37,99,235,0.10);
 }
+
 .edit-btn:hover, .edit-btn:focus {
   background: linear-gradient(90deg, #1d4ed8 60%, #1e3a8a 100%);
   box-shadow: 0 4px 18px rgba(37,99,235,0.18);
   transform: translateY(-2px) scale(1.03);
-}
-  margin-top: 6px;
-  border-radius: 12px;
-  overflow: hidden;
 }
 
 .seo-table thead {
