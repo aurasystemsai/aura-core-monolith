@@ -11,7 +11,7 @@
   width: 100%;
 }
 .aura-card h1, .aura-card h2, .dashboard-card h1, .dashboard-card h2, .auth-card h1, .auth-card h2, .onboarding-card h1, .onboarding-card h2, .credits-card h1, .credits-card h2, .orchestration-card h1, .orchestration-card h2, .products-card h1, .products-card h2, .content-health-card h1, .content-health-card h2, .fix-queue-card h1, .fix-queue-card h2, .draft-library-card h1, .draft-library-card h2, .system-health-card h1, .system-health-card h2 {
-  color: #fff !important;
+  color: #f3f4f6 !important;
   font-weight: 900;
   font-size: 2.1rem;
   margin-bottom: 24px;
