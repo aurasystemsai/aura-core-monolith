@@ -1,0 +1,91 @@
+/* SystemHealthPanel.css - unified dark theme for System Health panel */
+.system-health-card {
+  background: #232b3b;
+  color: #f3f4f6;
+  border-radius: 24px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.13);
+  padding: 36px 32px 32px 32px;
+  margin: 32px auto 0 auto;
+  max-width: 900px;
+  width: 100%;
+}
+.system-health-card h2 {
+  color: #f3f4f6 !important;
+  font-weight: 900;
+  font-size: 2.1rem;
+  margin-bottom: 18px;
+  letter-spacing: 0.01em;
+}
+.system-health-card .card-subtitle {
+  color: #9ca3c7;
+  font-size: 1.08em;
+  margin-bottom: 18px;
+}
+.system-health-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: flex-start;
+}
+.system-health-main {
+  flex: 1;
+}
+.system-health-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #181f2a;
+  color: #f3f4f6;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 1.08em;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.system-health-chip--ok {
+  border: 1.5px solid #22c55e;
+}
+.system-health-chip--loading {
+  border: 1.5px solid #f59e42;
+}
+.system-health-chip--error {
+  border: 1.5px solid #ef4444;
+}
+.system-health-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  background: #64748b;
+}
+.system-health-chip--ok .system-health-dot {
+  background: #22c55e;
+}
+.system-health-chip--loading .system-health-dot {
+  background: #f59e42;
+}
+.system-health-chip--error .system-health-dot {
+  background: #ef4444;
+}
+.system-health-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 0.98em;
+  opacity: 0.85;
+  margin-bottom: 8px;
+}
+.system-health-label {
+  color: #9ca3c7;
+}
+.system-health-value {
+  color: #f3f4f6;
+}
+.system-health-help ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.98em;
+  color: #9ca3c7;
+}
+.system-health-help strong {
+  color: #f3f4f6;
+}

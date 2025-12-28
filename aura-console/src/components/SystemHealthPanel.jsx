@@ -1,5 +1,6 @@
 // aura-console/src/SystemHealthPanel.jsx
 import React from "react";
+import "./SystemHealthPanel.css";
 
 function SystemHealthPanel({ coreStatus, coreStatusLabel, lastRunAt }) {
   // Map status to a simple label + tone
@@ -22,7 +23,7 @@ function SystemHealthPanel({ coreStatus, coreStatusLabel, lastRunAt }) {
       : "system-health-chip";
 
   return (
-    <section className="card" style={{ marginTop: 10 }}>
+    <section className="system-health-card" style={{ marginTop: 10 }}>
       <div className="card-header">
         <h2 className="card-title">System health</h2>
         <p className="card-subtitle">
