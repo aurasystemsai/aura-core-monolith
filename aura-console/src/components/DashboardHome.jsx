@@ -8,24 +8,12 @@ function DashboardHome({ setActiveSection }) {
       <div style={{ fontSize: 20, color: "#7fffd4", marginBottom: 32 }}>
         Welcome! Here are your key metrics and quick links.
       </div>
-      <div className="dashboard-home-cards-row">
-        <div className="card dashboard-home-card">
-          <div className="dashboard-home-card-label">Products</div>
-          <div className="dashboard-home-card-value">SEO</div>
-        </div>
-        <div className="card dashboard-home-card">
-          <div className="dashboard-home-card-label">Content Health</div>
-          <div className="dashboard-home-card-value">Audit</div>
-        </div>
-        <div className="card dashboard-home-card">
-          <div className="dashboard-home-card-label">Fix Queue</div>
-          <div className="dashboard-home-card-value">0 Issues</div>
-        </div>
-      </div>
-      <div className="dashboard-home-actions">
-        <button className="button dashboard-home-action" onClick={() => setActiveSection("products")}>Go to Products</button>
-        <button className="button dashboard-home-action" onClick={() => setActiveSection("content")}>Go to Content Health</button>
-        <button className="button dashboard-home-action" onClick={() => setActiveSection("fixqueue")}>Go to Fix Queue</button>
+      <div className="dashboard-home-actions" style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center', marginTop: 32 }}>
+        <button className="quick-link-btn" onClick={() => setActiveSection("products")}>Products</button>
+        <button className="quick-link-btn" onClick={() => setActiveSection("content-health")}>Content Health</button>
+        <button className="quick-link-btn" onClick={() => setActiveSection("fix-queue")}>Fix Queue</button>
+        <button className="quick-link-btn" onClick={() => setActiveSection("tools")}>Tools</button>
+        <button className="quick-link-btn" onClick={() => {/* Add automation logic here */}}>Run All Automations</button>
       </div>
     </div>
   );
