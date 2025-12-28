@@ -107,10 +107,15 @@
 }
 
 .cha-table-wrap {
-  border: 1.5px solid #334155;
+  border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 16px;
   overflow: hidden;
-  background: #232b3b;
+  background: rgba(2, 6, 23, 0.2);
+}
+  .border: 1.5px solid #334155;
+  .border-radius: 16px;
+  .overflow: hidden;
+  .background: #232b3b;
   font-size: 12px;
 }
 
@@ -191,6 +196,22 @@
   font-size: 12px;
   border: 1px solid rgba(148, 163, 184, 0.22);
   background: rgba(2, 6, 23, 0.25);
+}
+  .border: 1.5px solid #334155;
+  .background: #181f2a;
+  .color: #f3f4f6;
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.10);
+}
+  .border-color: #334155;
+  .background: #181f2a;
+  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.10);
+}
+  .border-color: #334155;
+  .background: #181f2a;
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.10);
 }
   .border-color: #334155;
   .background: #181f2a;
