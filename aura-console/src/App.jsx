@@ -14,7 +14,7 @@ import DashboardHome from "./components/DashboardHome";
 import FixQueue from "./components/FixQueue";
 import Auth from "./auth/Auth.jsx";
 import Onboarding from "./onboarding/Onboarding.jsx";
-import OnboardingChecklist from "./onboarding/OnboardingChecklist.jsx";
+// import OnboardingChecklist from "./onboarding/OnboardingChecklist.jsx";
 import Credits from "./credits/Credits.jsx";
 import Dashboard from "./dashboard/Dashboard.jsx";
 import Orchestration from "./orchestration/Orchestration.jsx";
@@ -344,17 +344,9 @@ function App() {
     <ErrorBoundary>
       <OnboardingModal open={showOnboarding} onClose={handleCloseOnboarding} />
       <div className="app-shell">
-        <OnboardingChecklist forceShow={showChecklist} onClose={() => setShowChecklist(false)} />
 
-        <Sidebar current={activeSection} onSelect={setActiveSection} extra={
-          <button
-            style={{background:'none',color:'#7fffd4',border:'none',fontSize:15,cursor:'pointer',margin:'12px 0 0 0',padding:0,textAlign:'left'}}
-            onClick={()=>setShowChecklist(true)}
-            aria-label="Show onboarding checklist"
-          >
-            📝 Onboarding Checklist
-          </button>
-        } />
+
+        <Sidebar current={activeSection} onSelect={setActiveSection} />
         <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
         <main className="app-main">
           <div className="page-frame fade-in">
