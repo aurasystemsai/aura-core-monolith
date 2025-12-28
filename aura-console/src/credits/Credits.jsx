@@ -75,40 +75,40 @@ const Credits = () => {
                 <td style={{padding:'4px 8px'}}><b>Basic (Free)</b></td>
                 <td style={{padding:'4px 8px'}}>Free</td>
                 <td style={{padding:'4px 8px'}}>100</td>
-                <td style={{padding:'4px 8px'}}>Trying things out</td>
-                <td style={{padding:'4px 8px'}}>Limited tools & features<br/><span style={{fontSize:13,opacity:0.8}}>No automation, basic support</span></td>
+                <td style={{padding:'4px 8px'}}>Evaluation & onboarding</td>
+                <td style={{padding:'4px 8px'}}>Limited tools & features<br/><span style={{fontSize:13,opacity:0.8}}>No automation, basic support. Not a public plan.</span></td>
               </tr>
               <tr style={{background:'rgba(127,255,212,0.08)'}}>
                 <td style={{padding:'4px 8px'}}><b>Starter</b></td>
-                <td style={{padding:'4px 8px'}}>£29 (~$36)</td>
+                <td style={{padding:'4px 8px'}}>£29</td>
                 <td style={{padding:'4px 8px'}}>1,000</td>
-                <td style={{padding:'4px 8px'}}>Solo stores & small teams</td>
-                <td style={{padding:'4px 8px'}}>Most tools*, email support, setup docs</td>
+                <td style={{padding:'4px 8px'}}>Solo founders & lean teams</td>
+                <td style={{padding:'4px 8px'}}>Run up to 2 core systems, shared queue, email/SEO tasks, email support</td>
               </tr>
               <tr style={{background:'rgba(127,255,212,0.18)',border:'2px solid #7fffd4'}}>
                 <td style={{padding:'4px 8px',fontWeight:900}}><b>Pro <span style={{background:'#7fffd4',color:'#23263a',borderRadius:6,padding:'2px 8px',fontSize:13,marginLeft:4}}>Popular</span></b></td>
-                <td style={{padding:'4px 8px',fontWeight:900}}>£99 (~$125)</td>
+                <td style={{padding:'4px 8px',fontWeight:900}}>£99</td>
                 <td style={{padding:'4px 8px',fontWeight:900}}>5,000</td>
                 <td style={{padding:'4px 8px'}}>Growing brands</td>
-                <td style={{padding:'4px 8px'}}>All tools*, automations, analytics, priority support</td>
+                <td style={{padding:'4px 8px'}}>SEO + email + CX systems in parallel, ~250 tasks/week, priority async support, change log</td>
               </tr>
               <tr style={{background:'rgba(127,255,212,0.08)'}}>
                 <td style={{padding:'4px 8px'}}><b>Scale</b></td>
-                <td style={{padding:'4px 8px'}}>£199 (~$250)</td>
+                <td style={{padding:'4px 8px'}}>£199</td>
                 <td style={{padding:'4px 8px'}}>15,000</td>
-                <td style={{padding:'4px 8px'}}>£50k–£200k/mo brands</td>
-                <td style={{padding:'4px 8px'}}>All systems connected, Slack support, quarterly reviews</td>
+                <td style={{padding:'4px 8px'}}>Multi-channel/region ops</td>
+                <td style={{padding:'4px 8px'}}>All core + advanced modules, Slack support, quarterly reviews, shared reporting</td>
               </tr>
               <tr style={{background:'rgba(127,255,212,0.08)'}}>
                 <td style={{padding:'4px 8px'}}><b>Agency/Enterprise</b></td>
-                <td style={{padding:'4px 8px'}}>£399+ (~$500+)</td>
+                <td style={{padding:'4px 8px'}}>£399+</td>
                 <td style={{padding:'4px 8px'}}>35,000+</td>
-                <td style={{padding:'4px 8px'}}>Multi-store, multi-region ops</td>
-                <td style={{padding:'4px 8px'}}>White-label dashboards, dedicated AI infra, premium support, SLOs</td>
+                <td style={{padding:'4px 8px'}}>Multi-store, multi-region, agency</td>
+                <td style={{padding:'4px 8px'}}>Multi-brand/region, white-label, dedicated infra/support, custom SLOs</td>
               </tr>
             </tbody>
           </table>
-          <div style={{fontSize:13,opacity:0.8,margin:'-10px 0 10px 0'}}>* Most tools/features are available on all paid plans. Free plan includes a small subset for evaluation only.</div>
+          <div style={{fontSize:13,opacity:0.8,margin:'-10px 0 10px 0'}}>* All paid plans include access to the AURA systems library, shared docs, async onboarding, secure API connections, and no per-seat fees. Free plan is for onboarding only.</div>
           <div style={{fontSize:13,opacity:0.8,margin:'0 0 10px 0'}}>Want to try everything? <b>New users get a free 3-day Pro trial</b>—no credit card required. After the trial, you’ll continue on the Basic (Free) plan unless you upgrade.</div>
           <div style={{fontSize:15,margin:'18px 0 10px',background:'#232b3b',borderRadius:10,padding:'14px 16px',color:'#fff',boxShadow:'0 2px 12px #22d3ee33'}}>
             <b style={{color:'#7fffd4'}}>What our customers say:</b><br/>
