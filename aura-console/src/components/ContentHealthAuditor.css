@@ -107,15 +107,10 @@
 }
 
 .cha-table-wrap {
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  border: 1.5px solid #334155;
   border-radius: 16px;
   overflow: hidden;
-  background: rgba(2, 6, 23, 0.2);
-}
-  .border: 1.5px solid #334155;
-  .border-radius: 16px;
-  .overflow: hidden;
-  .background: #232b3b;
+  background: #232b3b;
   font-size: 12px;
 }
 
