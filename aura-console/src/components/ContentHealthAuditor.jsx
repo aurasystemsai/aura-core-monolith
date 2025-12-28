@@ -200,12 +200,25 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
 
   return (
     <div className="cha-root">
-      <h1 className="cha-title">Content Health Auditor</h1>
+      <h1 className="cha-title" title="Check and improve your store's SEO and content quality">Content Health Auditor
+        <span style={{
+          display: 'inline-block',
+          marginLeft: 8,
+          fontSize: 18,
+          color: '#7fffd4',
+          cursor: 'help',
+        }}
+        title="This panel checks your products, blogs, and pages for SEO and content issues. Use the filters and tips to improve your store's health.">
+          ⓘ
+        </span>
+      </h1>
       <div className="cha-toolbar">
         <div className="cha-filters">
           <div className="cha-filter">
-            <div className="cha-label">Type</div>
-            <select className="cha-select" value={type} onChange={e => setType(e.target.value)}>
+            <div className="cha-label" title="Choose which type of content to audit (products, blogs, etc)">Type
+              <span style={{color:'#7fffd4',marginLeft:4,cursor:'help'}} title="Select a content type to focus your audit. 'All' checks everything.">?</span>
+            </div>
+            <select className="cha-select" value={type} onChange={e => setType(e.target.value)} title="Filter by content type (product, blog, etc)">
               <option value="">All</option>
               <option value="product">Product</option>
               <option value="blog">Blog</option>
@@ -216,40 +229,44 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
             </select>
           </div>
           <div className="cha-filter">
-            <div className="cha-label">Max score</div>
-            <input className="cha-input" type="number" min={0} max={100} value={maxScore} onChange={e => setMaxScore(e.target.value)} />
-            <div className="cha-help">Shows items at or below this score.</div>
+            <div className="cha-label" title="Show only items with a score at or below this value">Max score
+              <span style={{color:'#7fffd4',marginLeft:4,cursor:'help'}} title="Lower scores mean more issues. Set a max to focus on the worst content.">?</span>
+            </div>
+            <input className="cha-input" type="number" min={0} max={100} value={maxScore} onChange={e => setMaxScore(e.target.value)} title="Show only content with a score at or below this value (lower = more issues)" />
+            <div className="cha-help">Shows items at or below this score. Lower scores = more issues.</div>
           </div>
           <div className="cha-filter">
-            <div className="cha-label">Limit</div>
-            <input className="cha-input" type="number" min={1} max={500} value={limit} onChange={e => setLimit(e.target.value)} />
-            <div className="cha-help">Max rows returned from Core.</div>
+            <div className="cha-label" title="How many results to show at once">Limit
+              <span style={{color:'#7fffd4',marginLeft:4,cursor:'help'}} title="Set the maximum number of results to display. Useful for large stores.">?</span>
+            </div>
+            <input className="cha-input" type="number" min={1} max={500} value={limit} onChange={e => setLimit(e.target.value)} title="Maximum number of results to show" />
+            <div className="cha-help">Max rows returned from Core. Increase for bigger audits.</div>
           </div>
         </div>
         <div className="cha-actions">
-          <button className="button button--ghost" type="button" onClick={fetchHealth} disabled={status === "loading"}>
+          <button className="button button--ghost" type="button" onClick={fetchHealth} disabled={status === "loading"} title="Refresh the audit results with the latest data from your store.">
             {status === "loading" ? "Refreshing…" : "Refresh"}
           </button>
-          <button className="button button--ghost" type="button" onClick={() => download(csvName, toCsv(items))} disabled={!items.length}>
+          <button className="button button--ghost" type="button" onClick={() => download(csvName, toCsv(items))} disabled={!items.length} title="Export your audit results as a CSV file for further analysis or sharing.">
             Export CSV
           </button>
-          <a className="button button--ghost" href={endpoint} target="_blank" rel="noreferrer" title="Open the Core API JSON for this view">
+          <a className="button button--ghost" href={endpoint} target="_blank" rel="noreferrer" title="Open the Core API JSON for this view (for advanced users)">
             Open JSON
           </a>
         </div>
       </div>
       <div className="cha-summary">
         <div className="cha-summary-item">
-          <div className="cha-summary-label">Rows</div>
+          <div className="cha-summary-label" title="How many content items matched your filters">Rows</div>
           <div className="cha-summary-value">{counts.total}</div>
         </div>
         <div className="cha-summary-item">
-          <div className="cha-summary-label">Worst score</div>
+          <div className="cha-summary-label" title="The lowest (worst) score in your results. Lower = more issues.">Worst score</div>
           <div className="cha-summary-value">{counts.worst ?? "—"}</div>
         </div>
         <div className="cha-summary-item cha-summary-item--grow">
-          <div className="cha-summary-label">Tip</div>
-          <div className="cha-summary-value cha-summary-tip">
+          <div className="cha-summary-label" title="Quick advice for using this panel">Tip</div>
+          <div className="cha-summary-value cha-summary-tip" title="Start with the worst content and fix the biggest issues first. Refresh to see your progress.">
             Work top-to-bottom. Fix title/meta/H1, then refresh and watch rows disappear.
           </div>
         </div>
@@ -314,14 +331,14 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
                       )}
                       {/* Actionable SEO tips placeholder */}
                       <div className="cha-seo-tips">
-                        <b>SEO Tips:</b>
-                        <ul className="cha-tips-list">
+                        <b title="Actionable advice for fixing this content">SEO Tips:</b>
+                        <ul className="cha-tips-list" title="Each issue below has a tip to help you fix it">
                           {prettyIssues.length ? prettyIssues.map((issue, i) => (
                             <li key={i} className="cha-tip--warn">{issue} <span className="cha-tip-detail">(Actionable tip placeholder)</span></li>
                           )) : <li className="cha-tip--good">No major issues detected.</li>}
                         </ul>
                         {/* Google-style preview placeholder */}
-                        <div className="cha-preview-placeholder">[Google-style SEO preview coming soon]</div>
+                        <div className="cha-preview-placeholder" title="Preview how your content might look in Google search results">[Google-style SEO preview coming soon]</div>
                       </div>
                     </td>
                     <td>
@@ -329,9 +346,9 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
                     </td>
                     <td>
                       <div className="cha-action-row">
-                        <button className="button button--ghost button--tiny" type="button" onClick={() => safeCopy(row.url)} title="Copy URL">Copy URL</button>
-                        <button className="button button--ghost button--tiny" type="button" onClick={() => safeCopy(row.title)} title="Copy title" disabled={!row.title}>Copy title</button>
-                        <button className="button button--ghost button--tiny" type="button" onClick={() => safeCopy(row.metaDescription)} title="Copy meta description" disabled={!row.metaDescription}>Copy meta</button>
+                        <button className="button button--ghost button--tiny" type="button" onClick={() => safeCopy(row.url)} title="Copy this item's URL to your clipboard.">Copy URL</button>
+                        <button className="button button--ghost button--tiny" type="button" onClick={() => safeCopy(row.title)} title="Copy this item's title to your clipboard." disabled={!row.title}>Copy title</button>
+                        <button className="button button--ghost button--tiny" type="button" onClick={() => safeCopy(row.metaDescription)} title="Copy this item's meta description to your clipboard." disabled={!row.metaDescription}>Copy meta</button>
                         <button className="button button--ghost button--tiny" type="button" onClick={async () => {
                           try {
                             const res = await fetch(`${normalizedCoreUrl}/projects/${projectId}/fix-queue`, {
@@ -347,7 +364,7 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
                           } catch (e) {
                             alert(e?.message || "Failed to add to Fix Queue");
                           }
-                        }} disabled={!canQueue} title={canQueue ? "Add this URL + issues into your Fix Queue" : "Nothing to queue (no issues on this row)"}>Add to Fix Queue</button>
+                        }} disabled={!canQueue} title={canQueue ? "Add this item and its issues to your Fix Queue for later fixing." : "Nothing to queue (no issues on this row)"}>Add to Fix Queue</button>
                       </div>
                     </td>
                   </tr>
