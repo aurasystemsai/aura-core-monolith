@@ -56,14 +56,39 @@ const Credits = () => {
           <span style={{color:'#7fffd4'}}>You only pay for what you use. No hidden fees.</span>
         </div>
 
-        <div style={{background:'#1a2233',borderRadius:10,padding:'14px 16px',margin:'18px 0 0',fontSize:15}}>
-          <b>Need unlimited or high-volume usage?</b><br/>
-          <span style={{color:'#7fffd4'}}>Upgrade to a subscription plan</span> for unlimited or discounted usage, priority support, and advanced features.<br/>
-          <ul style={{margin:'8px 0 0 18px',padding:0,fontSize:15}}>
-            <li><b>Pro Plan</b>: $49/month — unlimited credits, priority support, advanced analytics</li>
-            <li><b>Business Plan</b>: $99/month — unlimited credits, team access, premium support, API access</li>
-          </ul>
-          <span style={{fontSize:13,opacity:0.85}}>Contact support to upgrade or learn more about subscription options.</span>
+        <div style={{background:'#1a2233',borderRadius:10,padding:'18px 18px 14px',margin:'18px 0 0',fontSize:15}}>
+          <b>Subscription Plans (Best Value, More Features):</b>
+          <table style={{width:'100%',fontSize:15,background:'none',borderCollapse:'collapse',margin:'12px 0 10px'}}>
+            <thead>
+              <tr style={{color:'#7fffd4',textAlign:'left'}}>
+                <th style={{padding:'4px 8px'}}>Plan</th>
+                <th style={{padding:'4px 8px'}}>Price/mo</th>
+                <th style={{padding:'4px 8px'}}>Credits/mo</th>
+                <th style={{padding:'4px 8px'}}>Best for</th>
+                <th style={{padding:'4px 8px'}}>Key Features</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style={{padding:'4px 8px'}}><b>Starter</b></td><td style={{padding:'4px 8px'}}>£29 (~$36)</td><td style={{padding:'4px 8px'}}>1,000</td><td style={{padding:'4px 8px'}}>Solo stores & small teams</td><td style={{padding:'4px 8px'}}>Run up to 2 core systems, email support, setup docs</td></tr>
+              <tr><td style={{padding:'4px 8px'}}><b>Pro</b></td><td style={{padding:'4px 8px'}}>£99 (~$125)</td><td style={{padding:'4px 8px'}}>5,000</td><td style={{padding:'4px 8px'}}>Growing brands</td><td style={{padding:'4px 8px'}}>SEO + email + CX systems, ~250 tasks/week, all core automations</td></tr>
+              <tr><td style={{padding:'4px 8px'}}><b>Scale</b></td><td style={{padding:'4px 8px'}}>£199 (~$250)</td><td style={{padding:'4px 8px'}}>15,000</td><td style={{padding:'4px 8px'}}>£50k–£200k/mo brands</td><td style={{padding:'4px 8px'}}>All systems connected, Slack support, quarterly reviews</td></tr>
+              <tr><td style={{padding:'4px 8px'}}><b>Agency/Enterprise</b></td><td style={{padding:'4px 8px'}}>£399+ (~$500+)</td><td style={{padding:'4px 8px'}}>35,000+</td><td style={{padding:'4px 8px'}}>Multi-store, multi-region ops</td><td style={{padding:'4px 8px'}}>White-label dashboards, dedicated AI infra, premium support, SLOs</td></tr>
+            </tbody>
+          </table>
+          <div style={{fontSize:14,margin:'10px 0 8px'}}>
+            <b>What can you automate?</b><br/>
+            <span style={{color:'#7fffd4'}}>Search & SEO:</span> Product SEO Engine, Schema, Blog Engine, Alt-text Labeller<br/>
+            <span style={{color:'#7fffd4'}}>Email & Retention:</span> Automation Builder, Abandoned Checkout AI, Review Flows<br/>
+            <span style={{color:'#7fffd4'}}>Support & CX:</span> Inbox Reply Assistant, AI Support Agent, Returns Automation<br/>
+            <span style={{color:'#7fffd4'}}>Ops & Reporting:</span> Feed Hygiene Monitor, Rank Tracker, Daily CFO Pack
+          </div>
+          <div style={{fontSize:14,margin:'10px 0 8px'}}>
+            <b>Why upgrade?</b> Unlock unlimited or high-volume usage, get priority support and advanced analytics, access all automation systems and integrations, and scale your business with zero manual work.
+          </div>
+          <div style={{fontSize:13,opacity:0.85}}>
+            <b>Need more?</b> Top up credits from £9 / 1,000 or <a href="https://aurasystemsai.com/get-started" style={{color:'#7fffd4',textDecoration:'underline'}}>contact us</a> for custom plans.<br/>
+            <span style={{color:'#7fffd4'}}>Ready to upgrade?</span> <a href="https://aurasystemsai.com/get-started" style={{color:'#7fffd4',textDecoration:'underline'}}>Get started here</a>.
+          </div>
         </div>
         <table style={{width:'100%',fontSize:14,background:'none',borderCollapse:'collapse',marginBottom:8}}>
           <thead>
