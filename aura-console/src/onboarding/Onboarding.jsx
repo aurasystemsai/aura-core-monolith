@@ -17,13 +17,20 @@ const Onboarding = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    // Normalize input: remove protocol if present
+    let domain = shopDomain.trim();
+    if (domain.startsWith('https://')) domain = domain.slice(8);
+    if (domain.startsWith('http://')) domain = domain.slice(7);
+    // Remove trailing slash
+    domain = domain.replace(/\/$/, '');
+    // Validate domain
+    if (!domain || !domain.match(/^[a-zA-Z0-9\-\.]+\.myshopify\.com$/)) {
+      setError('Please enter a valid shop domain.');
+      setLoading(false);
+      return;
+    }
     // Simulate shop connection
     setTimeout(() => {
-      if (!shopDomain || !shopDomain.match(/^[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}$/)) {
-        setError('Please enter a valid shop domain.');
-        setLoading(false);
-        return;
-      }
       setStep('setup-complete');
       setLoading(false);
     }, 1200);
@@ -45,7 +52,7 @@ const Onboarding = () => {
             <input
               type="text"
               name="shopDomain"
-              placeholder="your-store.myshopify.com"
+              placeholder="your-store.myshopify.com or https://your-store.myshopify.com"
               value={shopDomain}
               onChange={e => setShopDomain(e.target.value)}
               className="aura-onboarding-input"
