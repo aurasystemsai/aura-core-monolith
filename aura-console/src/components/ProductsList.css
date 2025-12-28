@@ -107,10 +107,17 @@
   border-bottom: 1px solid #23284a;
 }
 .pl-row--expanded {
-  background: #23284a;
+  background: #23284a !important;
 }
 .pl-row {
   background: #20243a;
+}
+.pl-table tr {
+  background: #20243a;
+  transition: background 0.15s;
+}
+.pl-table tr:hover, .pl-table tr:focus-within {
+  background: #23263a !important;
 }
 .pl-product-cell {
   font-weight: 600;
@@ -147,14 +154,20 @@
   font-size: 13px;
 }
 .pl-keyword-pill {
-  background: #e0e7ff;
-  color: #222;
+  background: #23263a;
+  color: #7fffd4;
   border-radius: 4px;
   padding: 2px 6px;
   margin-right: 4px;
   font-size: 13px;
   cursor: pointer;
-  border: 1px solid #b3bcf5;
+  border: 1px solid #22d3ee;
+  transition: background 0.15s, color 0.15s;
+}
+.pl-keyword-pill:hover, .pl-keyword-pill:focus {
+  background: #1a1d2b;
+  color: #fff;
+  border-color: #7fffd4;
 }
 .pl-actions-cell {
   min-width: 120px;
