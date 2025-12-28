@@ -362,7 +362,7 @@ function App() {
                   lastRunAt={lastRunAt}
                 />
               )}
-              {activeSection === "tools" && <ToolsList />}
+              {activeSection === "tools" && project && <ToolsList />}
             </section>
           </div>
         </main>
