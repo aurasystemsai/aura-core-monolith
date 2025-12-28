@@ -1,5 +1,6 @@
 // aura-console/src/components/ContentIngestor.jsx
 import React, { useMemo, useState } from "react";
+import "./ContentIngestor.css";
 
 /**
  * Content Ingestor
@@ -185,7 +186,7 @@ function ContentIngestor({ coreUrl, projectId }) {
 
   return (
     <div style={{ marginTop: 10 }}>
-      <div className="card">
+      <div className="content-ingest-card">
         <div className="card-header">
           <h2 className="card-title">Content ingestion</h2>
           <p className="card-subtitle">
