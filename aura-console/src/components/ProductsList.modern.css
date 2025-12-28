@@ -311,24 +311,24 @@
 }
 
 .pl-input, .pl-select {
-  border: 1px solid #d1d5db;
+  border: 1px solid #334155;
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 1rem;
-  background: #f9fafb;
-  color: #1a2233;
+  background: #181f2a;
+  color: #f3f4f6;
   margin-right: 8px;
   min-width: 120px;
   transition: border-color 0.18s, box-shadow 0.18s;
 }
 .pl-input:focus, .pl-select:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 2px #c7d2fe;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px #232b3b;
   outline: none;
-  background: #fff;
+  background: #232b3b;
 }
 .pl-input:hover, .pl-select:hover {
-  border-color: #6366f1;
+  border-color: #38bdf8;
 }
 
 .pl-input--wide {
@@ -341,7 +341,8 @@
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 8px;
-  background: #f3f6fa;
+  background: #232b3b;
+  color: #f3f4f6;
 }
 
 .pl-score--good {
@@ -356,7 +357,7 @@
 
 .pl-product-cell {
   font-weight: 600;
-  color: #2b3a55;
+  color: #f3f4f6;
 }
 
 .pl-product-price {
@@ -374,8 +375,8 @@
 }
 .pl-keyword-pill {
   display: inline-block;
-  background: #e0e7ef;
-  color: #3b4a6b;
+  background: #232b3b;
+  color: #f3f4f6;
   border-radius: 12px;
   padding: 2px 10px;
   margin: 0 4px;
@@ -384,7 +385,7 @@
   transition: background 0.2s;
 }
 .pl-keyword-pill:hover {
-  background: #c7d2fe;
+  background: #181f2a;
 }
 
 .pl-actions-cell {
@@ -397,7 +398,7 @@
 
 .pl-seo-tips {
   margin-top: 10px;
-  background: #f3f6fa;
+  background: #232b3b;
   border-radius: 8px;
   padding: 10px 16px;
 }
@@ -414,12 +415,12 @@
 
 .pl-debug-panel {
   margin-top: 32px;
-  background: #f9fafb;
+  background: #232b3b;
   border-radius: 10px;
   padding: 12px 18px;
   font-size: 0.98em;
-  color: #64748b;
-  box-shadow: 0 1px 4px 0 rgba(60,80,180,0.04);
+  color: #f3f4f6;
+  box-shadow: 0 1px 4px 0 #181f2a;
 }
 .pl-debug-accent {
   color: #6366f1;
@@ -430,13 +431,13 @@
 
 .pl-analytics-panel {
   margin: 32px auto 0 auto;
-  background: #f3f6fa;
+  background: #232b3b;
   border-radius: 12px;
   padding: 18px 32px;
   max-width: 600px;
-  box-shadow: 0 2px 12px 0 rgba(60,80,180,0.06);
+  box-shadow: 0 2px 12px 0 #181f2a;
   font-size: 1.08em;
-  color: #2b3a55;
+  color: #f3f4f6;
 }
 .pl-analytics-accent {
   color: #3b82f6;
@@ -457,22 +458,22 @@
   height: 48px;
   object-fit: cover;
   border-radius: 6px;
-  border: 1px solid #e5eaf2;
-  background: #fafbfc;
-  box-shadow: 0 1px 4px 0 rgba(60,80,180,0.04);
+  border: 1px solid #334155;
+  background: #181f2a;
+  box-shadow: 0 1px 4px 0 #181f2a;
   display: inline-block;
   transition: box-shadow 0.22s cubic-bezier(.4,0,.2,1), transform 0.22s cubic-bezier(.4,0,.2,1);
 }
 .pl-thumb:hover, .pl-thumb:focus {
-  box-shadow: 0 2px 16px 0 rgba(99,102,241,0.13);
+  box-shadow: 0 2px 16px 0 #232b3b;
   transform: scale(1.06) rotate(-1deg);
-  outline: 2px solid #6366f1;
+  outline: 2px solid #38bdf8;
   outline-offset: 2px;
 }
 .pl-image-cell:focus-within {
-  outline: 2px solid #6366f1;
+  outline: 2px solid #38bdf8;
   outline-offset: 2px;
-  background: #f3f6fa;
+  background: #232b3b;
 }
 
 .pl-thumb-placeholder {
