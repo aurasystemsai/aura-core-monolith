@@ -355,8 +355,6 @@ function App() {
             📝 Onboarding Checklist
           </button>
         } />
-          // Checklist show/hide state
-          const [showChecklist, setShowChecklist] = useState(false);
         <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
         <main className="app-main">
           <div className="page-frame fade-in">
