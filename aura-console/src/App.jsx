@@ -332,7 +332,7 @@ function App() {
               />
             </section>
             <section className="tool-section">
-              {activeSection === "dashboard" && <Dashboard />}
+              {activeSection === "dashboard" && project && <Dashboard />}
               {activeSection === "auth" && <Auth />}
               {activeSection === "onboarding" && <Onboarding />}
               {activeSection === "credits" && <Credits />}
