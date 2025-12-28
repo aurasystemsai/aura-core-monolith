@@ -6,7 +6,6 @@
 // -----------------------------------------
 
 
-import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from "react";
 
 function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnect }) {

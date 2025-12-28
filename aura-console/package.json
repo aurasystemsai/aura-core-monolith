@@ -10,11 +10,12 @@
   },
   "dependencies": {
     "chart.js": "^4.5.1",
+    "postcss": "^8.4.0",
+    "postcss-preset-env": "^9.0.0",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^18.3.1",
-    "postcss": "^8.4.0",
-    "postcss-preset-env": "^9.0.0"
+    "react-i18next": "^16.5.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.1.2",

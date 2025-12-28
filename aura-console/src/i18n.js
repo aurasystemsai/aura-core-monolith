@@ -1,50 +1,5 @@
-// i18n.js
-// Simple translation function for demonstration. Replace with i18next or react-intl for production.
-const en = {
-    // Sidebar navigation
-    sidebar_dashboard: "Dashboard",
-    sidebar_auth: "Auth",
-    sidebar_onboarding: "Onboarding",
-    sidebar_credits: "Credits",
-    sidebar_orchestration: "Orchestration",
-    sidebar_products: "Products",
-    sidebar_content_health: "Content Health",
-    sidebar_fix_queue: "Fix Queue",
-    sidebar_content_ingest: "Content Ingest",
-    sidebar_draft_library: "Draft Library",
-    sidebar_system_health: "System Health",
-    sidebar_logo_alt: "AURA Logo",
-    sidebar_tools_section: "Tools",
-    sidebar_avatar_alt: "User Avatar",
-    sidebar_user_name: "User Name",
-    sidebar_user_email: "user@email.com",
-    sidebar_theme_label: "Theme",
-    sidebar_theme_picker_aria: "Theme picker",
-    sidebar_theme_system: "System",
-    sidebar_theme_light: "Light",
-    sidebar_theme_dark: "Dark",
-  welcome: "Welcome to AURA Console",
-  onboarding_intro: "Get started with world-class automation for e-commerce. Use the sidebar to explore tools, check your dashboard, and optimize your store.",
-  onboarding_theme: "Switch between Light/Dark/System theme in the sidebar",
-  onboarding_tooltips: "Hover icons and cards for tooltips",
-  onboarding_tools: "Click “Tools” for all automation engines",
-  onboarding_fixqueue: "Check “Fix Queue” for issues to resolve",
-  onboarding_get_started: "Get Started",
-  dashboard_overview: "AURA Console Overview",
-  dashboard_welcome: "Welcome! Here are your key metrics and quick links.",
-  dashboard_products: "Products",
-  dashboard_content_health: "Content Health",
-  dashboard_fix_queue: "Fix Queue",
-  dashboard_seo: "SEO",
-  dashboard_audit: "Audit",
-  dashboard_issues: "0 Issues",
-  dashboard_goto_products: "Go to Products",
-  dashboard_goto_content: "Content Health",
-  dashboard_goto_fixqueue: "Fix Queue",
-  all_tools: "All Tools",
-  open_details: "Open details for",
-};
 
-export function t(key) {
-  return en[key] || key;
-}
+// i18n removed. All translations are now plain English strings in components.
+
+export default i18n;
+// File removed. No longer needed.

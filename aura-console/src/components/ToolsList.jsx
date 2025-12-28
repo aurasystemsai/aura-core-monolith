@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import toolsMeta from "../toolMeta";
 import "./ToolsList.css";
-import { useTranslation } from 'react-i18next';
 
   const { t } = useTranslation();
   if (!tool) return null;

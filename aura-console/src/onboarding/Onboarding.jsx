@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import './Onboarding.css';
 
@@ -9,7 +8,6 @@ const steps = [
 ];
 
 const Onboarding = () => {
-  const { t } = useTranslation();
   const [step, setStep] = useState(steps[0]);
   const [shopDomain, setShopDomain] = useState('');
   const [error, setError] = useState('');
@@ -35,9 +33,9 @@ const Onboarding = () => {
     <div className="aura-onboarding-shell">
       {step === 'welcome' && (
         <div className="aura-onboarding-step">
-          <h2 className="aura-onboarding-title">{t('onboarding_title')}</h2>
-          <p className="aura-onboarding-desc">{t('onboarding_desc')}</p>
-          <button className="aura-onboarding-btn" onClick={() => setStep('connect-shop')}>{t('onboarding_start')}</button>
+          <h2 className="aura-onboarding-title">Welcome to AURA!</h2>
+          <p className="aura-onboarding-desc">Get started with world-class automation for e-commerce. Use the sidebar to explore tools, check your dashboard, and optimize your store.</p>
+          <button className="aura-onboarding-btn" onClick={() => setStep('connect-shop')}>Start Onboarding</button>
         </div>
       )}
       {step === 'connect-shop' && (

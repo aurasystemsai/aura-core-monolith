@@ -1,6 +1,23 @@
-// Onboarding modal for new users
-import './i18n-setup';
-import { useTranslation } from 'react-i18next';
+import React, { useState, useEffect } from "react";
+import "./App.css";
+
+
+import ProjectSetup from "./ProjectSetup";
+import ProjectSwitcher from "./ProjectSwitcher";
+import SystemHealthPanel from "./components/SystemHealthPanel";
+import DraftLibrary from "./components/DraftLibrary";
+import ContentHealthAuditor from "./components/ContentHealthAuditor";
+import ContentIngestor from "./components/ContentIngestor";
+import ProductsList from "./components/ProductsList.jsx";
+import Sidebar from "./components/Sidebar";
+import DashboardHome from "./components/DashboardHome";
+import FixQueue from "./components/FixQueue";
+import Auth from "./auth/Auth.jsx";
+import Onboarding from "./onboarding/Onboarding.jsx";
+import Credits from "./credits/Credits.jsx";
+import Dashboard from "./dashboard/Dashboard.jsx";
+import Orchestration from "./orchestration/Orchestration.jsx";
+
 function OnboardingModal({ open, onClose }) {
   if (!open) return null;
   return (
@@ -8,7 +25,7 @@ function OnboardingModal({ open, onClose }) {
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999,
       background: 'rgba(10,16,32,0.82)', display: 'flex', alignItems: 'center', justifyContent: 'center',
       animation: 'fadeIn 0.3s',
-    }} role="dialog" aria-modal="true" aria-label={t('welcome')}>
+    }} role="dialog" aria-modal="true" aria-label="Welcome">
       <div style={{
         background: 'linear-gradient(120deg, #23263a 60%, #7fffd4 100%)',
         borderRadius: 18, boxShadow: '0 8px 40px #0008', padding: '44px 38px 32px', minWidth: 340, maxWidth: 420,
@@ -16,19 +33,19 @@ function OnboardingModal({ open, onClose }) {
         animation: 'popIn 0.18s',
       }}>
         <img src="/logo-aura.png" alt="AURA Logo" style={{height:54,width:54,objectFit:'contain',borderRadius:12,boxShadow:'0 2px 12px #22d3ee55',marginBottom:18}} />
-        <h2 style={{color:'#7fffd4',fontWeight:900,marginBottom:10,fontSize:28,letterSpacing:'-0.01em'}}>{t('welcome')}</h2>
+        <h2 style={{color:'#7fffd4',fontWeight:900,marginBottom:10,fontSize:28,letterSpacing:'-0.01em'}}>Welcome</h2>
         <div style={{color:'#fff',fontSize:17,marginBottom:18,textAlign:'center',maxWidth:320}}>
-          {t('onboarding_intro')}
+          Get started with world-class automation for e-commerce. Use the sidebar to explore tools, check your dashboard, and optimize your store.
         </div>
         <ul style={{color:'#cbd5f5',fontSize:15,marginBottom:18,lineHeight:1.7,maxWidth:320}}>
-          <li>{t('onboarding_theme')}</li>
-          <li>{t('onboarding_tooltips')}</li>
-          <li>{t('onboarding_tools')}</li>
-          <li>{t('onboarding_fixqueue')}</li>
+          <li>Switch between Light/Dark/System theme in the sidebar</li>
+          <li>Hover icons and cards for tooltips</li>
+          <li>Click “Tools” for all automation engines</li>
+          <li>Check “Fix Queue” for issues to resolve</li>
         </ul>
         <button onClick={onClose} style={{
           borderRadius: 8, padding: '10px 32px', fontSize: 17, fontWeight: 700, background:'#7fffd4', color:'#23263a', border:'none', boxShadow:'0 2px 12px #22d3ee55', cursor:'pointer', marginTop:8
-        }}>{t('onboarding_get_started')}</button>
+        }}>Get Started</button>
       </div>
     </div>
   );
@@ -79,9 +96,9 @@ class ErrorBoundary extends React.Component {
 function Toast({ message, type, onClose }) {
   if (!message) return null;
   let label = '';
-  if (type === 'error') label = t('toast_close_error');
-  else if (type === 'success') label = t('toast_close_success');
-  else label = t('toast_close_notification');
+  if (type === 'error') label = 'Close error notification';
+  else if (type === 'success') label = 'Close success notification';
+  else label = 'Close notification';
   return (
     <div
       style={{
@@ -107,7 +124,7 @@ function Toast({ message, type, onClose }) {
       aria-label={label}
       role="alert"
     >
-      {t(message) || message}
+      {message}
     </div>
   );
 }
@@ -118,26 +135,6 @@ function Toast({ message, type, onClose }) {
 // - Modern, clean, SEMrush/Ahrefs-level layout and visual polish
 // - Propagate all advanced features and best practices to every tool and dashboard view
 // aura-console/src/App.jsx
-import React, { useState, useEffect } from "react";
-import "./App.css";
-import ProjectSetup from "./ProjectSetup";
-import ProjectSwitcher from "./ProjectSwitcher";
-
-
-
-import SystemHealthPanel from "./components/SystemHealthPanel";
-import DraftLibrary from "./components/DraftLibrary";
-import ContentHealthAuditor from "./components/ContentHealthAuditor";
-import ContentIngestor from "./components/ContentIngestor";
-import ProductsList from "./components/ProductsList.jsx";
-import Sidebar from "./components/Sidebar";
-import DashboardHome from "./components/DashboardHome";
-import FixQueue from "./components/FixQueue";
-import Auth from "./auth/Auth.jsx";
-import Onboarding from "./onboarding/Onboarding.jsx";
-import Credits from "./credits/Credits.jsx";
-import Dashboard from "./dashboard/Dashboard.jsx";
-import Orchestration from "./orchestration/Orchestration.jsx";
 
 
 const DEFAULT_CORE_API = "https://aura-core-monolith.onrender.com";
@@ -156,7 +153,6 @@ const ENGINES = {
 
 // --- FULL FEATURED APP FUNCTION RESTORED ---
 function App() {
-  const { t, i18n } = useTranslation();
     // Onboarding modal state
     const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('auraOnboarded'));
     // Mark onboarding as complete
@@ -171,18 +167,7 @@ function App() {
     setToast({ message, type });
     setTimeout(() => setToast({ message: '', type: 'info' }), 3200);
   };
-  // Light/dark mode state
-  // Theme mode: 'light', 'dark', or 'system'
-  const [mode, setMode] = useState(() => localStorage.getItem('auraUIMode') || 'system');
-  useEffect(() => {
-    let applied = mode;
-    if (mode === 'system') {
-      const mq = window.matchMedia('(prefers-color-scheme: dark)');
-      applied = mq.matches ? 'dark' : 'light';
-    }
-    document.documentElement.setAttribute('data-theme', applied);
-    localStorage.setItem('auraUIMode', mode);
-  }, [mode]);
+  // Theme switching removed for a single clean look
   // Core state
   const [coreUrl, setCoreUrl] = useState(DEFAULT_CORE_API);
   const [coreStatus, setCoreStatus] = useState('checking');
@@ -304,7 +289,7 @@ function App() {
   if (!project || autoCreating) {
     return (
       <div className="app-loading">
-        {autoCreating ? t('app_setting_up_project') : t('app_loading')}
+        {autoCreating ? 'Setting up project...' : 'Loading...'}
       </div>
     );
   }
@@ -314,19 +299,8 @@ function App() {
     <ErrorBoundary>
       <OnboardingModal open={showOnboarding} onClose={handleCloseOnboarding} />
       <div className="app-shell">
-        {/* Language Switcher */}
-        <div style={{ position: 'absolute', top: 16, right: 24, zIndex: 10000 }}>
-          <select
-            value={i18n.language}
-            onChange={e => i18n.changeLanguage(e.target.value)}
-            style={{ borderRadius: 8, padding: '4px 12px', fontSize: 15 }}
-            aria-label="Language picker"
-          >
-            <option value="en">English</option>
-            <option value="es">Español</option>
-          </select>
-        </div>
-        <Sidebar current={activeSection} onSelect={setActiveSection} mode={mode} setMode={setMode} />
+
+        <Sidebar current={activeSection} onSelect={setActiveSection} />
         <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
         <main className="app-main">
           <div className="page-frame fade-in">
