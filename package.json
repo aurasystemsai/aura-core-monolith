@@ -12,9 +12,9 @@
     "build:console": "npm install --prefix aura-console --include=dev && npm run build --prefix aura-console",
     "lint": "eslint --ext .js,.jsx src"
   },
-  "keywords": [
-    "aura",
-    "aura-systems",
+    "engines": {
+      "node": ">=24.0.0 <25.0.0"
+    },
     "aura-core",
     "automation",
     "ai",
