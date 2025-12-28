@@ -10,6 +10,7 @@ import ContentHealthAuditor from "./components/ContentHealthAuditor";
 import ContentIngestor from "./components/ContentIngestor";
 import ProductsList from "./components/ProductsList.jsx";
 import Sidebar from "./components/Sidebar";
+import ChangelogModal from "./components/ChangelogModal.jsx";
 import DashboardHome from "./components/DashboardHome";
 import FixQueue from "./components/FixQueue";
 import Auth from "./auth/Auth.jsx";
@@ -299,57 +300,71 @@ function App() {
   // Blog draft specific output
   const [draftSections, setDraftSections] = useState([]);
   const [draftCta, setDraftCta] = useState('');
-  const [draftWordCount, setDraftWordCount] = useState(null);
-  const [draftHtml, setDraftHtml] = useState('');
-  const [draftText, setDraftText] = useState('');
-  const [draftFormat, setDraftFormat] = useState('text');
+  // Changelog modal state and unread badge
+  const [showChangelog, setShowChangelog] = useState(false);
+  const [changelogSeen, setChangelogSeen] = useState(() => localStorage.getItem("auraChangelogSeen") === "1");
+  const handleShowChangelog = () => {
+    setShowChangelog(true);
+    setChangelogSeen(true);
+    localStorage.setItem("auraChangelogSeen", "1");
+  };
 
-  // AI advice
-  const [titleAdvice, setTitleAdvice] = useState('');
-  const [metaAdvice, setMetaAdvice] = useState('');
-  const [generalAdvice, setGeneralAdvice] = useState('');
-
-  // Run status
-  const [isRunning, setIsRunning] = useState(false);
-  const [runError, setRunError] = useState(null);
-
-  // Dashboard chrome
-  const [activeMarket, setActiveMarket] = useState('Worldwide');
-  const [activeDevice, setActiveDevice] = useState('Desktop');
-  const [timeRange, setTimeRange] = useState('30d');
-  const [pageTab, setPageTab] = useState('Overview');
-  const [runHistory, setRunHistory] = useState([]);
-  const [historyView, setHistoryView] = useState('score');
-
-  // Ideal bands
-  const TITLE_MIN = 45;
-  const TITLE_MAX = 60;
-  const META_MIN = 130;
-  const META_MAX = 155;
-
-  // ...existing effect hooks, helpers, and rendering logic...
-  // --- RESTORE FULL RENDER LOGIC ---
-
-  // Example: restore a minimal working render for now
-  if (!project || autoCreating) {
-    return (
-      <div className="app-loading">
-        {autoCreating ? 'Setting up project...' : 'Loading...'}
-      </div>
-    );
-  }
-
-  // Main console shell with sidebar navigation
   return (
     <ErrorBoundary>
       <OnboardingModal open={showOnboarding} onClose={handleCloseOnboarding} />
+      <ChangelogModal open={showChangelog} onClose={() => setShowChangelog(false)} />
       <div className="app-shell">
-
-
-        <Sidebar current={activeSection} onSelect={setActiveSection} />
+        <Sidebar
+          current={activeSection}
+          onSelect={setActiveSection}
+          onShowChangelog={handleShowChangelog}
+          changelogUnread={!changelogSeen}
+        />
         <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
         <main className="app-main">
           <div className="page-frame fade-in">
+            {/* Removed top-strip for a cleaner, more premium look */}
+            <section className="tool-section">
+              {activeSection === "dashboard" && project && <DashboardHome setActiveSection={setActiveSection} />}
+              {activeSection === "auth" && <Auth />}
+              {activeSection === "onboarding" && <Onboarding />}
+              {activeSection === "credits" && <Credits />}
+              {activeSection === "orchestration" && <Orchestration />}
+              {activeSection === "products" && (
+                <ProductsList 
+                  shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
+                  shopToken={localStorage.getItem("shopToken")}
+                />
+              )}
+              {activeSection === "content-health" && project && (
+                <ContentHealthAuditor coreUrl={coreUrl} projectId={project.id} />
+              )}
+              {activeSection === "fix-queue" && project && (
+                <FixQueue coreUrl={coreUrl} projectId={project.id} />
+              )}
+              {activeSection === "content-ingest" && project && (
+                <ContentIngestor coreUrl={coreUrl} projectId={project.id} />
+              )}
+              {activeSection === "draft-library" && project && (
+                <DraftLibrary coreUrl={coreUrl} projectId={project.id} />
+              )}
+              {activeSection === "system-health" && (
+                <SystemHealthPanel
+                  coreStatus={coreStatus}
+                  coreStatusLabel={coreStatusLabel}
+                  lastRunAt={lastRunAt}
+                />
+              )}
+              {activeSection === "tools" && project && <ToolsList />}
+              {activeSection === "product-seo" && <ProductSeoEngine />}
+              {activeSection === "ai-alt-text-engine" && <AiAltTextEngine />}
+              {activeSection === "internal-link-optimizer" && <InternalLinkOptimizer />}
+            </section>
+          </div>
+        </main>
+      </div>
+    </ErrorBoundary>
+  );
             {/* Removed top-strip for a cleaner, more premium look */}
             <section className="tool-section">
               {activeSection === "dashboard" && project && <DashboardHome setActiveSection={setActiveSection} />}

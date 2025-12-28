@@ -15,7 +15,8 @@ function Sidebar({ current, onSelect }) {
         { key: 'draft-library', label: 'Draft Library', icon: '📚' },
         { key: 'system-health', label: 'System Health', icon: '🖥️' }
   ];
-  return (
+  function Sidebar({ current, onSelect, onShowChangelog, changelogUnread }) {
+    return (
     <nav className="sidebar">
       <div className="sidebar-brand" style={{display:'flex',alignItems:'center',gap:12,marginBottom:18}}>
         <img src="/logo-aura.png" alt="AURA Logo" style={{height:38,width:38,objectFit:'contain',borderRadius:10,boxShadow:'0 2px 12px #22d3ee55'}} />
@@ -42,6 +43,16 @@ function Sidebar({ current, onSelect }) {
           </li>
         ))}
       </ul>
+      <button
+        onClick={onShowChangelog}
+        style={{
+          width: '100%', background: 'none', border: 'none', color: '#7fffd4', fontWeight: 700, fontSize: 15, cursor: 'pointer', margin: '18px 0 8px 0', padding: 0, textAlign: 'left', position: 'relative', display: 'flex', alignItems: 'center', gap: 8
+        }}
+        aria-label="Show What’s New / Changelog"
+      >
+        <span style={{fontSize:18}}>✨</span> What’s New
+        {changelogUnread && <span style={{width:10,height:10,borderRadius:'50%',background:'#ff4d4f',display:'inline-block',marginLeft:4}} aria-label="New update" />}
+      </button>
       <div className="sidebar-section-label">Tools</div>
       <ul className="sidebar-nav sidebar-tools">
         {toolsMeta.map(tool => (
