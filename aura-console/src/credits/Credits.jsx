@@ -19,8 +19,8 @@ const Credits = () => {
   };
 
   return (
-    <div className="aura-credits-shell">
-      <h2 className="aura-credits-title">Credits</h2>
+    <div className="credits-card">
+      <h2 className="credits-title">Credits</h2>
       <div className="aura-credits-balance">
         <span className="aura-credits-label">Current Credits</span>
         <span className="aura-credits-value">{credits}</span>
@@ -35,7 +35,7 @@ const Credits = () => {
         </div>
         <span className="aura-credits-bar-label">Total Credits: {used + credits}</span>
       </div>
-      <button className="aura-credits-btn" onClick={handleBuyCredits} disabled={loading}>
+      <button className="credits-btn" onClick={handleBuyCredits} disabled={loading}>
         {loading ? 'Processing...' : 'Buy 100 Credits'}
       </button>
       {error && <div className="aura-credits-error">{error}</div>}
