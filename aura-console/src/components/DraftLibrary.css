@@ -1,0 +1,81 @@
+/* DraftLibrary.css - unified dark theme for Draft Library panel */
+.draft-library-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 32px;
+  max-width: 1200px;
+  margin: 32px auto 0 auto;
+}
+.draft-library-list, .draft-library-detail {
+  background: #232b3b;
+  color: #f3f4f6;
+  border-radius: 24px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.13);
+  padding: 36px 32px 32px 32px;
+}
+.draft-library-list {
+  min-width: 260px;
+  max-width: 340px;
+}
+.draft-library-detail {
+  min-width: 400px;
+}
+.draft-library-list button.button--ghost {
+  background: transparent;
+  color: #f3f4f6;
+  border: 1.5px solid #334155;
+  border-radius: 12px;
+  padding: 12px 10px;
+  font-size: 1.08em;
+  margin-bottom: 6px;
+  transition: background 0.18s, border 0.18s;
+}
+.draft-library-list button.button--ghost[style*="background: rgba(255,255,255,0.06)"] {
+  background: #181f2a !important;
+  border: 1.5px solid #38bdf8 !important;
+}
+.draft-library-list button.button--ghost:hover {
+  background: #181f2a;
+  border: 1.5px solid #38bdf8;
+}
+.draft-library-detail .pill {
+  background: #334155;
+  color: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 18px;
+  font-size: 1em;
+  font-weight: 600;
+  margin-right: 8px;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.draft-library-detail .pill--active {
+  background: #232b3b;
+  color: #38bdf8;
+}
+.draft-library-detail .button--ghost.button--tiny {
+  background: #232b3b;
+  color: #f3f4f6;
+  border: 1.5px solid #334155;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.98em;
+  margin-left: 8px;
+  cursor: pointer;
+  transition: background 0.18s, border 0.18s;
+}
+.draft-library-detail .button--ghost.button--tiny:hover {
+  background: #181f2a;
+  border: 1.5px solid #38bdf8;
+}
+.draft-library-detail pre.raw-json-pre {
+  background: #181f2a;
+  color: #f3f4f6;
+  border-radius: 10px;
+  padding: 18px;
+  font-size: 1.08em;
+  min-height: 420px;
+  margin-top: 8px;
+  overflow-x: auto;
+}
