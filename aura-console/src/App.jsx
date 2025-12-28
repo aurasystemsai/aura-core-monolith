@@ -17,6 +17,9 @@ import Onboarding from "./onboarding/Onboarding.jsx";
 import Credits from "./credits/Credits.jsx";
 import Dashboard from "./dashboard/Dashboard.jsx";
 import Orchestration from "./orchestration/Orchestration.jsx";
+import ProductSeoEngine from "./components/ProductSeoEngine";
+import AiAltTextEngine from "./components/AiAltTextEngine";
+import InternalLinkOptimizer from "./components/InternalLinkOptimizer";
 
 function OnboardingModal({ open, onClose }) {
   if (!open) return null;
@@ -374,6 +377,9 @@ function App() {
                 />
               )}
               {activeSection === "tools" && project && <ToolsList />}
+              {activeSection === "product-seo" && <ProductSeoEngine />}
+              {activeSection === "ai-alt-text-engine" && <AiAltTextEngine />}
+              {activeSection === "internal-link-optimizer" && <InternalLinkOptimizer />}
             </section>
           </div>
         </main>
