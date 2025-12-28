@@ -346,9 +346,15 @@ function App() {
               {activeSection === "content-health" && project && (
                 <ContentHealthAuditor coreUrl={coreUrl} projectId={project.id} />
               )}
-              {activeSection === "fix-queue" && <FixQueue />}
-              {activeSection === "content-ingest" && <ContentIngestor />}
-              {activeSection === "draft-library" && <DraftLibrary />}
+              {activeSection === "fix-queue" && project && (
+                <FixQueue coreUrl={coreUrl} projectId={project.id} />
+              )}
+              {activeSection === "content-ingest" && project && (
+                <ContentIngestor coreUrl={coreUrl} projectId={project.id} />
+              )}
+              {activeSection === "draft-library" && project && (
+                <DraftLibrary coreUrl={coreUrl} projectId={project.id} />
+              )}
               {activeSection === "system-health" && (
                 <SystemHealthPanel
                   coreStatus={coreStatus}
