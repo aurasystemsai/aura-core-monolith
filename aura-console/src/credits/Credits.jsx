@@ -57,12 +57,9 @@ const Credits = () => {
         </div>
 
         <div style={{background:'#1a2233',borderRadius:10,padding:'22px 22px 18px',margin:'22px 0 0',fontSize:15,boxShadow:'0 4px 32px #0004'}}>
-          <div style={{fontWeight:800,fontSize:18,marginBottom:8,color:'#7fffd4'}}>Unlock unlimited automations, priority support, and advanced analytics with a subscription!</div>
-          <a href="https://aurasystemsai.com/get-started" target="_blank" rel="noopener" style={{
-            display:'inline-block',background:'linear-gradient(90deg,#7fffd4 60%,#22d3ee 100%)',color:'#23263a',fontWeight:900,fontSize:17,padding:'12px 38px',borderRadius:10,boxShadow:'0 2px 16px #22d3ee55',margin:'0 0 18px',textDecoration:'none',letterSpacing:'0.01em',transition:'background 0.2s',
-          }}>Upgrade Now</a>
-          <div style={{fontSize:14,margin:'0 0 18px',color:'#fff'}}>Most users save 30%+ with a subscription vs. pay-as-you-go. Cancel anytime.</div>
-          <b>Subscription Plans (Best Value, More Features):</b>
+          <div style={{fontWeight:700,fontSize:16,marginBottom:8,color:'#7fffd4'}}>Need more credits or advanced features?</div>
+          <div style={{fontSize:14,margin:'0 0 18px',color:'#fff'}}>Explore all plans and features below. Subscriptions are optional and flexible—no pressure, just value when you need it.</div>
+          <b>Subscription Plans (Optional, More Value):</b>
           <table style={{width:'100%',fontSize:15,background:'none',borderCollapse:'collapse',margin:'12px 0 10px'}}>
             <thead>
               <tr style={{color:'#7fffd4',textAlign:'left'}}>
@@ -82,7 +79,7 @@ const Credits = () => {
                 <td style={{padding:'4px 8px'}}>Run up to 2 core systems, email support, setup docs</td>
               </tr>
               <tr style={{background:'rgba(127,255,212,0.18)',border:'2px solid #7fffd4'}}>
-                <td style={{padding:'4px 8px',fontWeight:900}}><b>Pro <span style={{background:'#7fffd4',color:'#23263a',borderRadius:6,padding:'2px 8px',fontSize:13,marginLeft:4}}>Most Popular</span></b></td>
+                <td style={{padding:'4px 8px',fontWeight:900}}><b>Pro <span style={{background:'#7fffd4',color:'#23263a',borderRadius:6,padding:'2px 8px',fontSize:13,marginLeft:4}}>Popular</span></b></td>
                 <td style={{padding:'4px 8px',fontWeight:900}}>£99 (~$125)</td>
                 <td style={{padding:'4px 8px',fontWeight:900}}>5,000</td>
                 <td style={{padding:'4px 8px'}}>Growing brands</td>
@@ -109,7 +106,8 @@ const Credits = () => {
                       <span style={{fontSize:13,opacity:0.85}}>— Elena Rodriguez, Product Manager</span>
                     </div>
                     <div style={{fontSize:14,margin:'10px 0 8px'}}>
-                      <a href="https://aurasystemsai.com/pricing" target="_blank" rel="noopener" style={{color:'#7fffd4',textDecoration:'underline',fontWeight:700}}>Compare all features & pricing →</a>
+                      <a href="https://aurasystemsai.com/pricing" target="_blank" rel="noopener" style={{color:'#7fffd4',textDecoration:'underline',fontWeight:700}}>See all plans & features</a>
+                      <span style={{marginLeft:8,color:'#fff',fontSize:13,opacity:0.8}}>(No commitment, just info)</span>
                     </div>
           </table>
           <div style={{fontSize:14,margin:'10px 0 8px'}}>
