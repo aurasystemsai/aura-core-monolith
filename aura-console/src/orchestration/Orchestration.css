@@ -12,8 +12,8 @@
 }
 .aura-orchestration-title {
   font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--accent);
+  font-weight: 800;
+  color: #f3f4f6 !important;
   margin-bottom: 24px;
   text-align: center;
 }
@@ -44,17 +44,17 @@
   font-size: 1.05rem;
 }
 .aura-status-active {
-  color: #22c55e;
+  color: #f3f4f6;
 }
 .aura-status-paused {
-  color: #f59e42;
+  color: #f3f4f6;
 }
 .aura-orchestration-btn {
   padding: 8px 18px;
   border-radius: var(--radius-md);
-  background: var(--accent);
-  color: #fff;
-  font-weight: 500;
+  background: #334155;
+  color: #f3f4f6;
+  font-weight: 600;
   font-size: 1rem;
   border: none;
   cursor: pointer;
