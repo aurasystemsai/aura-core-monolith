@@ -53,13 +53,13 @@ const Credits = () => {
             <li><b>500 credits</b> = <b>$40 USD</b> <span style={{color:'#7fffd4'}}>(save 20%)</span></li>
             <li><b>1000 credits</b> = <b>$75 USD</b> <span style={{color:'#7fffd4'}}>(save 25%)</span></li>
           </ul>
-          <span style={{color:'#7fffd4'}}>You only pay for what you use. No hidden fees.</span>
+          <span style={{color:'#7fffd4'}}>No pay-as-you-go. Try the free tier or upgrade for more power.</span>
         </div>
 
         <div style={{background:'#1a2233',borderRadius:10,padding:'22px 22px 18px',margin:'22px 0 0',fontSize:15,boxShadow:'0 4px 32px #0004'}}>
           <div style={{fontWeight:700,fontSize:16,marginBottom:8,color:'#7fffd4'}}>Need more credits or advanced features?</div>
-          <div style={{fontSize:14,margin:'0 0 18px',color:'#fff'}}>Explore all plans and features below. Subscriptions are optional and flexible—no pressure, just value when you need it.</div>
-          <b>Subscription Plans (Optional, More Value):</b>
+          <div style={{fontSize:14,margin:'0 0 18px',color:'#fff'}}>Explore all plans and features below. No pay-as-you-go—just a free tier to try, and simple subscriptions when you’re ready for more.</div>
+          <b>Plans & Features</b>
           <table style={{width:'100%',fontSize:15,background:'none',borderCollapse:'collapse',margin:'12px 0 10px'}}>
             <thead>
               <tr style={{color:'#7fffd4',textAlign:'left'}}>
@@ -71,19 +71,26 @@ const Credits = () => {
               </tr>
             </thead>
             <tbody>
+              <tr style={{background:'rgba(127,255,212,0.05)',opacity:0.8}}>
+                <td style={{padding:'4px 8px'}}><b>Basic (Free)</b></td>
+                <td style={{padding:'4px 8px'}}>Free</td>
+                <td style={{padding:'4px 8px'}}>100</td>
+                <td style={{padding:'4px 8px'}}>Trying things out</td>
+                <td style={{padding:'4px 8px'}}>Limited tools & features<br/><span style={{fontSize:13,opacity:0.8}}>No automation, basic support</span></td>
+              </tr>
               <tr style={{background:'rgba(127,255,212,0.08)'}}>
                 <td style={{padding:'4px 8px'}}><b>Starter</b></td>
                 <td style={{padding:'4px 8px'}}>£29 (~$36)</td>
                 <td style={{padding:'4px 8px'}}>1,000</td>
                 <td style={{padding:'4px 8px'}}>Solo stores & small teams</td>
-                <td style={{padding:'4px 8px'}}>Run up to 2 core systems, email support, setup docs</td>
+                <td style={{padding:'4px 8px'}}>Most tools*, email support, setup docs</td>
               </tr>
               <tr style={{background:'rgba(127,255,212,0.18)',border:'2px solid #7fffd4'}}>
                 <td style={{padding:'4px 8px',fontWeight:900}}><b>Pro <span style={{background:'#7fffd4',color:'#23263a',borderRadius:6,padding:'2px 8px',fontSize:13,marginLeft:4}}>Popular</span></b></td>
                 <td style={{padding:'4px 8px',fontWeight:900}}>£99 (~$125)</td>
                 <td style={{padding:'4px 8px',fontWeight:900}}>5,000</td>
                 <td style={{padding:'4px 8px'}}>Growing brands</td>
-                <td style={{padding:'4px 8px'}}>SEO + email + CX systems, ~250 tasks/week, all core automations</td>
+                <td style={{padding:'4px 8px'}}>All tools*, automations, analytics, priority support</td>
               </tr>
               <tr style={{background:'rgba(127,255,212,0.08)'}}>
                 <td style={{padding:'4px 8px'}}><b>Scale</b></td>
@@ -100,16 +107,18 @@ const Credits = () => {
                 <td style={{padding:'4px 8px'}}>White-label dashboards, dedicated AI infra, premium support, SLOs</td>
               </tr>
             </tbody>
-                    <div style={{fontSize:15,margin:'18px 0 10px',background:'#232b3b',borderRadius:10,padding:'14px 16px',color:'#fff',boxShadow:'0 2px 12px #22d3ee33'}}>
-                      <b style={{color:'#7fffd4'}}>What our customers say:</b><br/>
-                      <span style={{fontStyle:'italic',color:'#fff'}}>“We replaced three tools and boosted efficiency immediately. It felt like hiring an ops team overnight.”</span><br/>
-                      <span style={{fontSize:13,opacity:0.85}}>— Elena Rodriguez, Product Manager</span>
-                    </div>
-                    <div style={{fontSize:14,margin:'10px 0 8px'}}>
-                      <a href="https://aurasystemsai.com/pricing" target="_blank" rel="noopener" style={{color:'#7fffd4',textDecoration:'underline',fontWeight:700}}>See all plans & features</a>
-                      <span style={{marginLeft:8,color:'#fff',fontSize:13,opacity:0.8}}>(No commitment, just info)</span>
-                    </div>
           </table>
+          <div style={{fontSize:13,opacity:0.8,margin:'-10px 0 10px 0'}}>* Most tools/features are available on all paid plans. Free plan includes a small subset for evaluation only.</div>
+          <div style={{fontSize:13,opacity:0.8,margin:'0 0 10px 0'}}>Want to try everything? <b>New users get a free 7-day Pro trial</b>—no credit card required. After the trial, you’ll continue on the Basic (Free) plan unless you upgrade.</div>
+          <div style={{fontSize:15,margin:'18px 0 10px',background:'#232b3b',borderRadius:10,padding:'14px 16px',color:'#fff',boxShadow:'0 2px 12px #22d3ee33'}}>
+            <b style={{color:'#7fffd4'}}>What our customers say:</b><br/>
+            <span style={{fontStyle:'italic',color:'#fff'}}>“We replaced three tools and boosted efficiency immediately. It felt like hiring an ops team overnight.”</span><br/>
+            <span style={{fontSize:13,opacity:0.85}}>— Elena Rodriguez, Product Manager</span>
+          </div>
+          <div style={{fontSize:14,margin:'10px 0 8px'}}>
+            <a href="https://aurasystemsai.com/pricing" target="_blank" rel="noopener" style={{color:'#7fffd4',textDecoration:'underline',fontWeight:700}}>See all plans & features</a>
+            <span style={{marginLeft:8,color:'#fff',fontSize:13,opacity:0.8}}>(No commitment, just info)</span>
+          </div>
           <div style={{fontSize:14,margin:'10px 0 8px'}}>
             <b>What can you automate?</b><br/>
             <span style={{color:'#7fffd4'}}>Search & SEO:</span> Product SEO Engine, Schema, Blog Engine, Alt-text Labeller<br/>
