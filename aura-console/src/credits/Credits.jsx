@@ -53,7 +53,17 @@ const Credits = () => {
             <li><b>500 credits</b> = <b>$40 USD</b> <span style={{color:'#7fffd4'}}>(save 20%)</span></li>
             <li><b>1000 credits</b> = <b>$75 USD</b> <span style={{color:'#7fffd4'}}>(save 25%)</span></li>
           </ul>
-          <span style={{color:'#7fffd4'}}>You only pay for what you use. No subscriptions. No hidden fees.</span>
+          <span style={{color:'#7fffd4'}}>You only pay for what you use. No hidden fees.</span>
+        </div>
+
+        <div style={{background:'#1a2233',borderRadius:10,padding:'14px 16px',margin:'18px 0 0',fontSize:15}}>
+          <b>Need unlimited or high-volume usage?</b><br/>
+          <span style={{color:'#7fffd4'}}>Upgrade to a subscription plan</span> for unlimited or discounted usage, priority support, and advanced features.<br/>
+          <ul style={{margin:'8px 0 0 18px',padding:0,fontSize:15}}>
+            <li><b>Pro Plan</b>: $49/month — unlimited credits, priority support, advanced analytics</li>
+            <li><b>Business Plan</b>: $99/month — unlimited credits, team access, premium support, API access</li>
+          </ul>
+          <span style={{fontSize:13,opacity:0.85}}>Contact support to upgrade or learn more about subscription options.</span>
         </div>
         <table style={{width:'100%',fontSize:14,background:'none',borderCollapse:'collapse',marginBottom:8}}>
           <thead>
