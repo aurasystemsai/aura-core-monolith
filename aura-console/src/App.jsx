@@ -265,6 +265,10 @@ function App() {
       .finally(() => setAutoCreating(false));
   }, [coreUrl]);
 
+
+  // Checklist show/hide state
+  const [showChecklist, setShowChecklist] = useState(false);
+
   // Product/blog fields
   const [productTitle, setProductTitle] = useState('Waterproof gold huggie earrings');
   const [productDescription, setProductDescription] = useState('Bold paperclip chain bracelet with a sweat-proof, waterproof coating. Adjustable fit for any wrist, perfect for everyday wear.');
