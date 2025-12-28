@@ -18,29 +18,28 @@ const Credits = () => {
     }, 1200);
   };
 
-  const { t } = useTranslation();
   return (
     <div className="aura-credits-shell">
-      <h2 className="aura-credits-title">{t('credits_title')}</h2>
+      <h2 className="aura-credits-title">Credits</h2>
       <div className="aura-credits-balance">
-        <span className="aura-credits-label">{t('credits_current')}</span>
+        <span className="aura-credits-label">Current Credits</span>
         <span className="aura-credits-value">{credits}</span>
       </div>
       <div className="aura-credits-usage">
-        <span className="aura-credits-label">{t('credits_used_this_month')}</span>
+        <span className="aura-credits-label">Used This Month</span>
         <span className="aura-credits-value aura-credits-used">{used}</span>
       </div>
       <div className="aura-credits-progress">
         <div className="aura-credits-bar-bg">
           <div className="aura-credits-bar" style={{ width: `${Math.min(100, (used / (credits + used)) * 100)}%` }} />
         </div>
-        <span className="aura-credits-bar-label">{t('credits_total', { total: used + credits })}</span>
+        <span className="aura-credits-bar-label">Total Credits: {used + credits}</span>
       </div>
       <button className="aura-credits-btn" onClick={handleBuyCredits} disabled={loading}>
-        {loading ? t('credits_processing') : t('credits_buy_100')}
+        {loading ? 'Processing...' : 'Buy 100 Credits'}
       </button>
       {error && <div className="aura-credits-error">{error}</div>}
-      <div className="aura-credits-note">{t('credits_note')}</div>
+      <div className="aura-credits-note">You can buy more credits at any time. Credits are used for automation and AI-powered features.</div>
     </div>
   );
 };
