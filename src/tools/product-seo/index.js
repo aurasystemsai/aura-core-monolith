@@ -45,7 +45,7 @@ async function generateSEOOnce(payload) {
 You are an ecommerce SEO specialist for a jewellery brand.
 
 Write search-optimised product SEO in clear, natural UK English.
-Avoid clickbait, all-caps and emojis.
+Avoid clickbait, all-caps, emojis, and forbidden words (free, cheap, best, guarantee, 100%).
 
 Your target scoring bands (ideal):
 - Product SEO title: 45–60 characters.
@@ -65,13 +65,21 @@ Use cases: ${useCasesText || "N/A"}
 OUTPUT FORMAT
 -------------
 Return STRICT JSON only in this exact shape, nothing else:
-
 {
   "title": "SEO product title",
   "metaDescription": "Meta description text",
   "slug": "url-slug-here",
-  "keywords": ["keyword one", "keyword two"]
+  "keywords": ["keyword one", "keyword two"],
+  "h1": "Main H1 heading for the product page",
+  "bullets": ["Bullet point 1", "Bullet point 2", "Bullet point 3"],
+  "canonicalUrl": "https://yourstore.com/products/slug",
+  "tags": ["tag1", "tag2", "tag3"]
 }
+
+Rules:
+- The primary keyword (first in keywords) must appear in the title, metaDescription, and H1.
+- Do not use forbidden words: free, cheap, best, guarantee, 100%.
+- No explanation, only valid JSON.
   `.trim();
 
   const response = await client.responses.create({
@@ -103,6 +111,24 @@ Return STRICT JSON only in this exact shape, nothing else:
     throw new Error("Failed to parse JSON from OpenAI response");
   }
 
+  // Stricter validation: check for forbidden words and keyword presence
+  const forbidden = ["free", "cheap", "best", "guarantee", "100%"];
+  const primaryKeyword = Array.isArray(parsed.keywords) && parsed.keywords[0] ? parsed.keywords[0].toLowerCase() : null;
+  const fieldsToCheck = [parsed.title, parsed.metaDescription, parsed.h1];
+  for (const word of forbidden) {
+    for (const field of fieldsToCheck) {
+      if (field && field.toLowerCase().includes(word)) {
+        throw new Error(`Forbidden word '${word}' found in output`);
+      }
+    }
+  }
+  if (primaryKeyword) {
+    for (const field of fieldsToCheck) {
+      if (field && !field.toLowerCase().includes(primaryKeyword)) {
+        throw new Error(`Primary keyword '${primaryKeyword}' missing in one or more required fields`);
+      }
+    }
+  }
   return parsed;
 }
 
@@ -200,6 +226,10 @@ exports.run = async function run(input, ctx = {}) {
       metaDescription: final.metaDescription || "",
       slug: final.slug || final.handle || "",
       keywords: Array.isArray(final.keywords) ? final.keywords : [],
+      h1: final.h1 || "",
+      bullets: Array.isArray(final.bullets) ? final.bullets : [],
+      canonicalUrl: final.canonicalUrl || "",
+      tags: Array.isArray(final.tags) ? final.tags : [],
       // optional debug so *you* can see if it hit perfect; users never see this.
       _debug: {
         titleChars: best.titleLen,
