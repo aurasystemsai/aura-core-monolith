@@ -17,8 +17,8 @@
   font-size: 1.08em;
 }
 .pl-table thead th {
-  background: #f8fafc;
-  color: #232b3b;
+  background: #232b3b;
+  color: #f3f4f6;
   font-weight: 900;
   font-size: 1.13em;
   letter-spacing: 0.03em;
@@ -46,8 +46,8 @@
   text-align: right;
 }
 .pl-score-badge {
-  background: linear-gradient(90deg, #fbbf24 70%, #f59e42 100%);
-  color: #232b3b;
+  background: #181f2a;
+  color: #f3f4f6;
   font-weight: 900;
   border-radius: 12px;
   padding: 7px 18px;
@@ -131,32 +131,32 @@
   min-height: 160px;
   font-size: 1.18rem;
   color: #64748b;
-  background: #f9fafb;
+  background: #181f2a;
   border-radius: 12px;
-  box-shadow: 0 1px 8px 0 rgba(60,80,180,0.04);
+  box-shadow: 0 1px 8px 0 #181f2a;
   margin: 32px 0;
   padding: 32px 24px;
   text-align: center;
 }
 .pl-error {
   color: #ef4444;
-  background: #fef2f2;
-  border: 1.5px solid #fecaca;
+  background: #181f2a;
+  border: 1.5px solid #ef4444;
 }
 .pl-fatal {
-  color: #fff;
-  background: linear-gradient(90deg, #ef4444 0%, #6366f1 100%);
-  border: none;
-  box-shadow: 0 2px 16px 0 rgba(239,68,68,0.10);
+  color: #ef4444;
+  background: #181f2a;
+  border: 1.5px solid #ef4444;
+  box-shadow: 0 2px 16px 0 #181f2a;
 }
 /* ProductsList.modern.css - World-class UI/UX polish for multi-billion dollar SaaS */
 
 .pl-root {
-  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+  background: #181f2a;
   min-height: 100vh;
   padding: 32px 0 64px 0;
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  color: #1a2233;
+  color: #f3f4f6;
 }
 
 .pl-title {
@@ -179,17 +179,17 @@
   gap: 16px;
   align-items: center;
   justify-content: center;
-  background: #fff;
+  background: #232b3b;
   border-radius: 16px;
-  box-shadow: 0 2px 16px 0 rgba(60,80,180,0.07);
+  box-shadow: 0 2px 16px 0 #181f2a;
   padding: 20px 32px;
   margin-bottom: 32px;
 }
 
 .pl-table-wrap {
-  background: #fff;
+  background: #232b3b;
   border-radius: 18px;
-  box-shadow: 0 4px 32px 0 rgba(60,80,180,0.10);
+  box-shadow: 0 4px 32px 0 #181f2a;
   padding: 24px 0 8px 0;
   overflow-x: auto;
   transition: box-shadow 0.22s cubic-bezier(.4,0,.2,1);
@@ -211,19 +211,19 @@
 }
 
 .pl-table th {
-  background: #f3f6fa;
+  background: #232b3b;
   font-weight: 700;
-  color: #3b4a6b;
-  border-bottom: 2px solid #e5eaf2;
+  color: #f3f4f6;
+  border-bottom: 2px solid #334155;
   position: sticky;
   top: 0;
   z-index: 2;
-  box-shadow: 0 2px 8px 0 rgba(60,80,180,0.04);
+  box-shadow: 0 2px 8px 0 #181f2a;
 }
 
 .pl-btn {
-  background: #e5eaf2;
-  color: #2b3a55;
+  background: #334155;
+  color: #f3f4f6;
   border: none;
   border-radius: 8px;
   padding: 8px 18px;
@@ -235,15 +235,15 @@
   transition: background 0.2s, color 0.2s, box-shadow 0.18s;
 }
 .pl-btn:focus {
-  outline: 2px solid #6366f1;
+  outline: 2px solid #38bdf8;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px #c7d2fe;
+  box-shadow: 0 0 0 3px #232b3b;
   z-index: 1;
 }
 .pl-btn:active {
-  background: #dbeafe;
-  color: #1d2a4d;
-  box-shadow: 0 2px 8px 0 rgba(99,102,241,0.10);
+  background: #232b3b;
+  color: #f3f4f6;
+  box-shadow: 0 2px 8px 0 #181f2a;
 }
 /* Ripple effect */
 .pl-btn::after {
@@ -286,23 +286,23 @@
 }
 
 .pl-btn--accent {
-  background: linear-gradient(90deg, #3b82f6 0%, #6366f1 100%);
-  color: #fff;
+  background: #334155;
+  color: #f3f4f6;
 }
 
 .pl-btn--edit, .pl-btn--save, .pl-btn--ai, .pl-btn--fixall, .pl-btn--fix {
-  background: #f3f6fa;
-  color: #3b4a6b;
+  background: #232b3b;
+  color: #f3f4f6;
 }
 
 .pl-btn--edit:hover, .pl-btn--save:hover, .pl-btn--ai:hover, .pl-btn--fixall:hover, .pl-btn--fix:hover {
-  background: #dbeafe;
-  color: #1d2a4d;
+  background: #334155;
+  color: #f3f4f6;
 }
 
 .pl-btn--cancel {
-  background: #f8d7da;
-  color: #a94442;
+  background: #232b3b;
+  color: #ef4444;
 }
 
 .pl-btn:disabled {
@@ -481,12 +481,12 @@
   width: 48px;
   height: 48px;
   border-radius: 6px;
-  background: #f3f6fa;
-  color: #b0b7c3;
+  background: #232b3b;
+  color: #64748b;
   font-size: 2rem;
   line-height: 48px;
   text-align: center;
-  border: 1px dashed #e5eaf2;
+  border: 1px dashed #334155;
   vertical-align: middle;
 }
 
