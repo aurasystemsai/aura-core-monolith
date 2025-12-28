@@ -1,3 +1,11 @@
+/* Force Products/SEO Manager heading to match dashboard overview */
+.products-card h1, .products-card h2, .pl-title {
+  color: #f3f4f6 !important;
+  font-weight: 900;
+  font-size: 2.1rem;
+  margin-bottom: 24px;
+  letter-spacing: 0.01em;
+}
 /* ================== MODERN PRODUCT/SEO TABLE STYLES (FOR .pl-* CLASSES) ================== */
 .pl-table {
   width: 100%;
