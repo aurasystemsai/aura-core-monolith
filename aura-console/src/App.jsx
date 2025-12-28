@@ -304,13 +304,6 @@ function App() {
         <main className="app-main">
           <div className="page-frame fade-in">
             {/* Removed top-strip for a cleaner, more premium look */}
-            <section className="system-health-section">
-              <SystemHealthPanel
-                coreStatus={coreStatus}
-                coreStatusLabel={coreStatusLabel}
-                lastRunAt={lastRunAt}
-              />
-            </section>
             <section className="tool-section">
               {activeSection === "dashboard" && project && <DashboardHome setActiveSection={setActiveSection} />}
               {activeSection === "auth" && <Auth />}
