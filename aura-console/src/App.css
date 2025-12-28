@@ -390,6 +390,7 @@ body {
 .product-seo-table td:last-child {
   border-right: none;
 }
+
 .seo-score-badge {
   background: linear-gradient(90deg, #fbbf24 70%, #f59e42 100%);
   color: #232b3b;
@@ -401,6 +402,8 @@ body {
   box-shadow: 0 1px 6px rgba(251,191,36,0.10);
   letter-spacing: 0.01em;
 }
+
+.keyword-chip {
   background: rgba(37,99,235,0.13);
   color: #60a5fa;
   border-radius: 8px;
@@ -411,7 +414,6 @@ body {
   font-weight: 600;
   letter-spacing: 0.01em;
   border: 1px solid rgba(96,165,250,0.18);
-}
 }
 
 .side-nav-title {
