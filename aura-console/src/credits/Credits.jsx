@@ -109,7 +109,7 @@ const Credits = () => {
             </tbody>
           </table>
           <div style={{fontSize:13,opacity:0.8,margin:'-10px 0 10px 0'}}>* Most tools/features are available on all paid plans. Free plan includes a small subset for evaluation only.</div>
-          <div style={{fontSize:13,opacity:0.8,margin:'0 0 10px 0'}}>Want to try everything? <b>New users get a free 7-day Pro trial</b>—no credit card required. After the trial, you’ll continue on the Basic (Free) plan unless you upgrade.</div>
+          <div style={{fontSize:13,opacity:0.8,margin:'0 0 10px 0'}}>Want to try everything? <b>New users get a free 3-day Pro trial</b>—no credit card required. After the trial, you’ll continue on the Basic (Free) plan unless you upgrade.</div>
           <div style={{fontSize:15,margin:'18px 0 10px',background:'#232b3b',borderRadius:10,padding:'14px 16px',color:'#fff',boxShadow:'0 2px 12px #22d3ee33'}}>
             <b style={{color:'#7fffd4'}}>What our customers say:</b><br/>
             <span style={{fontStyle:'italic',color:'#fff'}}>“We replaced three tools and boosted efficiency immediately. It felt like hiring an ops team overnight.”</span><br/>
