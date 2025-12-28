@@ -11,7 +11,7 @@ const ONBOARDING_STEPS = [
     help: "Share your dashboard link or add users in Settings." },
 ];
 
-export default function OnboardingChecklist({ onComplete, forceShow }) {
+export default function OnboardingChecklist({ onComplete, forceShow, onClose }) {
   const [completed, setCompleted] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("auraOnboardingChecklist") || "{}") || {};
@@ -40,7 +40,7 @@ export default function OnboardingChecklist({ onComplete, forceShow }) {
     localStorage.removeItem("auraOnboardingChecklistDismissed");
   };
 
-  if ((allDone || dismissed) && !forceShow) return null;
+  if (!forceShow && (allDone || dismissed)) return null;
 
   return (
     <div style={{
@@ -59,7 +59,8 @@ export default function OnboardingChecklist({ onComplete, forceShow }) {
         ))}
       </ul>
       <button onClick={handleReset} style={{background:'none', color:'#7fffd4', border:'none', fontSize:14, cursor:'pointer', marginTop:2}}>Reset</button>
-      <button onClick={handleDismiss} style={{background:'none', color:'#7fffd4', border:'none', fontSize:14, cursor:'pointer', marginLeft:12}}>Dismiss</button>
+      <button onClick={() => { handleDismiss(); if (onClose) onClose(); }} style={{background:'none', color:'#7fffd4', border:'none', fontSize:14, cursor:'pointer', marginLeft:12}}>Dismiss</button>
+      {forceShow && <button onClick={onClose} style={{background:'none', color:'#7fffd4', border:'none', fontSize:14, cursor:'pointer', marginLeft:12}}>Close</button>}
     </div>
   );
 }

@@ -344,7 +344,7 @@ function App() {
     <ErrorBoundary>
       <OnboardingModal open={showOnboarding} onClose={handleCloseOnboarding} />
       <div className="app-shell">
-        <OnboardingChecklist forceShow={showChecklist} />
+        <OnboardingChecklist forceShow={showChecklist} onClose={() => setShowChecklist(false)} />
 
         <Sidebar current={activeSection} onSelect={setActiveSection} extra={
           <button
