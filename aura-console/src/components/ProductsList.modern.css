@@ -58,7 +58,8 @@
 }
 .pl-keyword-pill {
   background: #1e293b;
-  color: #60a5fa;
+  color: #f3f4f6;
+  background: #232b3b;
   border-radius: 10px;
   padding: 5px 14px;
   margin: 0 8px 8px 0;
@@ -66,18 +67,18 @@
   display: inline-block;
   font-weight: 700;
   letter-spacing: 0.01em;
-  border: 1.5px solid #60a5fa22;
-  box-shadow: 0 1px 4px #60a5fa11;
+  border: 1.5px solid #334155;
+  box-shadow: 0 1px 4px #181f2a;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
 .pl-keyword-pill:hover {
-  background: #2563eb;
-  color: #fff;
+  background: #1e293b;
+  color: #f3f4f6;
 }
 .pl-btn, .pl-btn--edit, .pl-btn--save, .pl-btn--cancel, .pl-btn--ai, .pl-btn--fixall, .pl-btn--fix {
-  background: linear-gradient(90deg, #2563eb 60%, #1e40af 100%);
-  color: #fff;
+  background: #334155;
+  color: #f3f4f6;
   border: none;
   border-radius: 10px;
   padding: 10px 22px;
@@ -86,12 +87,12 @@
   cursor: pointer;
   transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
   outline: none;
-  box-shadow: 0 2px 8px rgba(37,99,235,0.10);
+  box-shadow: 0 2px 8px #181f2a;
   margin: 0 6px 6px 0;
 }
 .pl-btn:hover, .pl-btn:focus, .pl-btn--edit:hover, .pl-btn--save:hover, .pl-btn--cancel:hover, .pl-btn--ai:hover, .pl-btn--fixall:hover, .pl-btn--fix:hover {
-  background: linear-gradient(90deg, #1d4ed8 60%, #1e3a8a 100%);
-  box-shadow: 0 4px 18px rgba(37,99,235,0.18);
+  background: #232b3b;
+  box-shadow: 0 4px 18px #181f2a;
   transform: translateY(-2px) scale(1.03);
 }
 .pl-loading {
@@ -162,14 +163,14 @@
   font-size: 2.5rem;
   font-weight: 800;
   letter-spacing: -1px;
-  color: #2b3a55;
+  color: #f3f4f6 !important;
   margin-bottom: 24px;
   text-align: center;
-  background: linear-gradient(90deg, #3b82f6 0%, #6366f1 60%, #a21caf 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 8px rgba(99,102,241,0.08));
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  -webkit-text-fill-color: unset;
+  filter: none;
 }
 
 .pl-toolbar {
