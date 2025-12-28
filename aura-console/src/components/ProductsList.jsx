@@ -417,21 +417,30 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
                             {isEditing ? (
                               <input value={editable.title} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, title: e.target.value } }))} className="pl-input" />
                             ) : (
-                              seo.title || <span className="pl-muted">None</span>
+                              <>
+                                {seo.title || <span className="pl-muted">None</span>}
+                                <div className="pl-guide">SEO Title (45–60 chars, include main keyword, no clickbait): This is the main headline for search engines and should be clear, descriptive, and unique for each product.</div>
+                              </>
                             )}
                           </td>
                           <td>
                             {isEditing ? (
                               <textarea value={editable.metaDescription} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, metaDescription: e.target.value } }))} className="pl-input" />
                             ) : (
-                              seo.metaDescription || <span className="pl-muted">None</span>
+                              <>
+                                {seo.metaDescription || <span className="pl-muted">None</span>}
+                                <div className="pl-guide">Meta Description (130–155 chars, include main keyword): This summary appears in search results and should entice clicks while accurately describing the product.</div>
+                              </>
                             )}
                           </td>
                           <td>
                             {isEditing ? (
                               <input value={editable.keywords.join(', ')} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, keywords: e.target.value.split(',').map(x => x.trim()).filter(Boolean) } }))} className="pl-input" />
                             ) : (
-                              Array.isArray(seo.keywords) && seo.keywords[0] ? seo.keywords.join(', ') : <span className="pl-muted">None</span>
+                              <>
+                                {Array.isArray(seo.keywords) && seo.keywords[0] ? seo.keywords.join(', ') : <span className="pl-muted">None</span>}
+                                <div className="pl-guide">Keywords: List of target search terms for this product. The first keyword should be the most important and appear in the title, meta, and H1.</div>
+                              </>
                             )}
                             {keywordSuggestions.length > 0 && (
                               <div className="pl-keyword-suggestions">
@@ -446,8 +455,27 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
                             {isEditing ? (
                               <input value={editable.slug} onChange={e => setEditState(state => ({ ...state, [product.id]: { ...editable, editing: true, slug: e.target.value } }))} className="pl-input" />
                             ) : (
-                              seo.slug || <span className="pl-muted">None</span>
+                              <>
+                                {seo.slug || <span className="pl-muted">None</span>}
+                                <div className="pl-guide">Slug: The URL-friendly version of your product name (lowercase, hyphens only, no spaces or special characters).</div>
+                              </>
                             )}
+                          </td>
+                          {/* New SEO fields with guides */}
+                          <td>
+                            {seo.h1 ? <><b>{seo.h1}</b><div className="pl-guide">H1: The main heading on your product page. Should match or closely resemble the title and include the main keyword.</div></> : <span className="pl-muted">None</span>}
+                          </td>
+                          <td>
+                            {Array.isArray(seo.bullets) && seo.bullets.length ? <ul className="pl-guide-list">{seo.bullets.map((b, i) => <li key={i}>{b}</li>)}</ul> : <span className="pl-muted">None</span>}
+                            <div className="pl-guide">Bullets: Key features or benefits. Use 3–5 concise points to help customers scan quickly.</div>
+                          </td>
+                          <td>
+                            {seo.canonicalUrl ? <a href={seo.canonicalUrl} target="_blank" rel="noopener noreferrer">{seo.canonicalUrl}</a> : <span className="pl-muted">None</span>}
+                            <div className="pl-guide">Canonical URL: The preferred URL for this product. Helps avoid duplicate content issues.</div>
+                          </td>
+                          <td>
+                            {Array.isArray(seo.tags) && seo.tags.length ? seo.tags.join(', ') : <span className="pl-muted">None</span>}
+                            <div className="pl-guide">Tags: Extra labels to help organize and filter products. Use relevant, specific tags.</div>
                           </td>
                           <td className="pl-actions-cell">
                             {isEditing ? (
