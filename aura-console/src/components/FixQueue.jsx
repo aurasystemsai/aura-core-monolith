@@ -541,11 +541,14 @@ export default function FixQueue({ coreUrl, projectId }) {
       <div className="fq-toolbar">
         <div className="fq-left">
           <div className="fq-filter">
-            <div className="fq-label">Status</div>
+            <div className="fq-label" title="Show only open, done, or all items in your Fix Queue">Status
+              <span style={{color:'#7fffd4',marginLeft:4,cursor:'help'}} title="Filter your Fix Queue by status. 'Open' means not fixed yet; 'Done' means already fixed.">?</span>
+            </div>
             <select
               className="fq-select"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
+              title="Filter by item status (open, done, all)"
             >
               <option value="open">Open</option>
               <option value="done">Done</option>
@@ -554,7 +557,9 @@ export default function FixQueue({ coreUrl, projectId }) {
           </div>
 
           <div className="fq-filter">
-            <div className="fq-label">Limit</div>
+            <div className="fq-label" title="How many items to show at once">Limit
+              <span style={{color:'#7fffd4',marginLeft:4,cursor:'help'}} title="Set the maximum number of Fix Queue items to display.">?</span>
+            </div>
             <input
               className="fq-input"
               type="number"
@@ -562,22 +567,23 @@ export default function FixQueue({ coreUrl, projectId }) {
               max={1000}
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
+              title="Maximum number of Fix Queue items to show"
             />
           </div>
 
-          <button className="button button--ghost" type="button" onClick={fetchQueue} disabled={status === "loading"}>
+          <button className="button button--ghost" type="button" onClick={fetchQueue} disabled={status === "loading"} title="Refresh the Fix Queue with the latest data from your store.">
             {status === "loading" ? "Refreshing…" : "Refresh"}
           </button>
 
-          <button className="button button--ghost" type="button" onClick={handleDedupe}>
+          <button className="button button--ghost" type="button" onClick={handleDedupe} title="Remove duplicate items from your Fix Queue.">
             Dedupe
           </button>
 
-          <button className="button button--ghost" type="button" onClick={fetchJobs} disabled={jobsStatus === "loading"}>
+          <button className="button button--ghost" type="button" onClick={fetchJobs} disabled={jobsStatus === "loading"} title="Refresh the job history below.">
             {jobsStatus === "loading" ? "Loading jobs…" : "Refresh jobs"}
           </button>
 
-          <a className="button button--ghost" href={exportCsvUrl} target="_blank" rel="noreferrer">
+          <a className="button button--ghost" href={exportCsvUrl} target="_blank" rel="noreferrer" title="Export your Fix Queue as a CSV file for further analysis or sharing.">
             Export CSV
           </a>
         </div>
@@ -588,7 +594,7 @@ export default function FixQueue({ coreUrl, projectId }) {
             type="button"
             onClick={handleBulkAutoFix}
             disabled={!selectedIds.length || (bulkJob && ["queued", "running"].includes(bulkJob.status))}
-            title="Generate suggestions for all selected items (server-side job)"
+            title="Generate suggestions for all selected items (server-side job). This will use AI to suggest fixes for each issue."
           >
             Generate selected ({selectedIds.length || 0})
           </button>
@@ -598,7 +604,7 @@ export default function FixQueue({ coreUrl, projectId }) {
             type="button"
             onClick={handleBulkDone}
             disabled={!selectedIds.length}
-            title="Mark all selected items as done"
+            title="Mark all selected items as done. Use this when you've fixed multiple issues at once."
           >
             Done selected ({selectedIds.length || 0})
           </button>
