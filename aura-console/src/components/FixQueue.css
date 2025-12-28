@@ -67,6 +67,7 @@
 }
 
 .fq-table th,
+.fq-table td {
   text-align: left;
   padding: 12px 12px;
   border-bottom: 1px solid #232b3b;
