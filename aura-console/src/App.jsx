@@ -173,8 +173,46 @@ function App() {
   const [coreStatusLabel, setCoreStatusLabel] = useState('Checking Core API …');
   const [project, setProject] = useState(null);
   const [autoCreating, setAutoCreating] = useState(false);
+
   // Sidebar section state
   const [activeSection, setActiveSection] = useState('dashboard');
+
+  // Health check for Core API
+  useEffect(() => {
+    let cancelled = false;
+    async function checkCoreHealth() {
+      setCoreStatus('checking');
+      setCoreStatusLabel('Checking Core API …');
+      try {
+        const res = await fetch(`${coreUrl.replace(/\/+$/, '')}/health`);
+        if (!res.ok) throw new Error('Core API health check failed');
+        const data = await res.json();
+        if (data && data.ok) {
+          if (!cancelled) {
+            setCoreStatus('ok');
+            setCoreStatusLabel('Core API online');
+          }
+        } else {
+          if (!cancelled) {
+            setCoreStatus('error');
+            setCoreStatusLabel('Core API offline — check server or API key');
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setCoreStatus('error');
+          setCoreStatusLabel('Core API offline — check server or API key');
+        }
+      }
+    }
+    checkCoreHealth();
+    // Optionally, poll every 60s for live status
+    const interval = setInterval(checkCoreHealth, 60000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [coreUrl]);
 
   // Auto-create or load project (no manual onboarding)
   useEffect(() => {
