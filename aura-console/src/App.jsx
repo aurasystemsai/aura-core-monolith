@@ -340,9 +340,19 @@ function App() {
     <ErrorBoundary>
       <OnboardingModal open={showOnboarding} onClose={handleCloseOnboarding} />
       <div className="app-shell">
-        <OnboardingChecklist />
+        <OnboardingChecklist forceShow={showChecklist} />
 
-        <Sidebar current={activeSection} onSelect={setActiveSection} />
+        <Sidebar current={activeSection} onSelect={setActiveSection} extra={
+          <button
+            style={{background:'none',color:'#7fffd4',border:'none',fontSize:15,cursor:'pointer',margin:'12px 0 0 0',padding:0,textAlign:'left'}}
+            onClick={()=>setShowChecklist(true)}
+            aria-label="Show onboarding checklist"
+          >
+            📝 Onboarding Checklist
+          </button>
+        } />
+          // Checklist show/hide state
+          const [showChecklist, setShowChecklist] = useState(false);
         <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
         <main className="app-main">
           <div className="page-frame fade-in">
