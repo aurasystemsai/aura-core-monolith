@@ -188,18 +188,30 @@ function ContentIngestor({ coreUrl, projectId }) {
     <div style={{ marginTop: 10 }}>
       <div className="content-ingest-card">
         <div className="card-header">
-          <h2 className="card-title">Content ingestion</h2>
+          <h2 className="card-title" title="Add new content for auditing">Content ingestion
+            <span style={{
+              display: 'inline-block',
+              marginLeft: 8,
+              fontSize: 18,
+              color: '#7fffd4',
+              cursor: 'help',
+            }}
+            title="Paste your product, blog, or page URLs here to add them to the system for SEO and content health checks.">
+              ⓘ
+            </span>
+          </h2>
           <p className="card-subtitle">
-            This pushes URLs into Core so the <strong>Content Health</strong>{" "}
-            table can audit real pages/posts/products. Paste your URLs below and
-            click ingest.
+            This pushes URLs into Core so the <strong>Content Health</strong> table can audit real pages/posts/products. Paste your URLs below and click ingest.
+            <span style={{color:'#7fffd4',marginLeft:8,cursor:'help'}} title="After ingesting, go to Content Health and hit Refresh to see your new items.">?</span>
           </p>
         </div>
 
         <div style={{ display: "grid", gap: 10 }}>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <div style={{ minWidth: 220 }}>
-              <div className="filters-label">Default type</div>
+              <div className="filters-label" title="Choose a default type for pasted URLs">Default type
+                <span style={{color:'#7fffd4',marginLeft:4,cursor:'help'}} title="If you only paste URLs, this type will be used for all of them. Change to 'product', 'blog', etc as needed.">?</span>
+              </div>
               <select
                 className="inspector-input"
                 value={typeDefault}
@@ -214,19 +226,20 @@ function ContentIngestor({ coreUrl, projectId }) {
                 <option value="docs">docs</option>
               </select>
               <div className="field-help" style={{ marginTop: 6 }}>
-                Used when you paste only URLs (or url|title|meta).
+                Used when you paste only URLs (or url|title|meta). Select the type that best matches your content.
               </div>
             </div>
 
             <div style={{ flex: 1, minWidth: 260 }}>
-              <div className="filters-label">Status</div>
+              <div className="filters-label" title="Shows the current state of your input and ingestion">Status
+                <span style={{color:'#7fffd4',marginLeft:4,cursor:'help'}} title="See if your input is valid, and how many lines will be ingested.">?</span>
+              </div>
               <div className={chipClass} style={{ marginTop: 4 }}>
                 {status.message ||
                   `Ready • ${parsed.validCount} valid • ${parsed.invalidCount} invalid`}
               </div>
               <div className="field-help" style={{ marginTop: 6 }}>
-                Tip: After ingesting, go to <strong>Content Health</strong> and
-                hit Refresh.
+                Tip: After ingesting, go to <strong>Content Health</strong> and hit Refresh to see your new items.
               </div>
             </div>
           </div>
@@ -243,6 +256,7 @@ function ContentIngestor({ coreUrl, projectId }) {
               "https://aurasystemsai.com/automation\n" +
               "https://dtpjewellry.com/collections/bracelets|Bracelets|Shop waterproof bracelets"
             }
+            title="Paste your URLs here, one per line. You can include type, title, and meta if you want."
           />
 
           <div style={{ fontSize: 12, opacity: 0.9 }}>
@@ -292,6 +306,7 @@ function ContentIngestor({ coreUrl, projectId }) {
               className="button button--primary"
               onClick={handleSubmit}
               disabled={isSubmitting}
+              title="Send your pasted URLs to Core for auditing."
             >
               {isSubmitting ? "Ingesting…" : "Ingest into Core"}
             </button>
