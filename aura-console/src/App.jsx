@@ -343,7 +343,9 @@ function App() {
                   shopToken={localStorage.getItem("shopToken")}
                 />
               )}
-              {activeSection === "content-health" && <ContentHealthAuditor />}
+              {activeSection === "content-health" && project && (
+                <ContentHealthAuditor coreUrl={coreUrl} projectId={project.id} />
+              )}
               {activeSection === "fix-queue" && <FixQueue />}
               {activeSection === "content-ingest" && <ContentIngestor />}
               {activeSection === "draft-library" && <DraftLibrary />}
