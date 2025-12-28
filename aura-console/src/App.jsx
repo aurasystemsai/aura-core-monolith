@@ -43,7 +43,11 @@ class ErrorBoundary extends React.Component {
     return { hasError: true, error };
   }
   componentDidCatch(error, errorInfo) {
-    // Log error if needed
+    // Enhanced logging for debugging
+    if (typeof window !== 'undefined' && window.console) {
+      console.error('ErrorBoundary caught:', error, errorInfo);
+    }
+    // Optionally, send error info to a server here
   }
   render() {
     if (this.state.hasError) {
@@ -62,6 +66,9 @@ class ErrorBoundary extends React.Component {
         }}>
           <div>Something went wrong.</div>
           <div style={{ fontSize: 15, marginTop: 18, color: '#fff8' }}>{this.state.error?.toString()}</div>
+          <pre style={{ color: '#fff', fontSize: 13, marginTop: 18, textAlign: 'left', background: '#1a1a1a', padding: 16, borderRadius: 8, overflowX: 'auto' }}>
+            {this.state.error?.stack || ''}
+          </pre>
         </div>
       );
     }
