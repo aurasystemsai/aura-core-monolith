@@ -14,4 +14,5 @@ export default function ProductSeoEngine() {
       </ul>
       <p style={{color:'#7fffd4'}}>Full functionality coming soon.</p>
     </div>
-  
+  );
+}
