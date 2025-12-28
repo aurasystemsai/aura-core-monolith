@@ -14,6 +14,7 @@ import DashboardHome from "./components/DashboardHome";
 import FixQueue from "./components/FixQueue";
 import Auth from "./auth/Auth.jsx";
 import Onboarding from "./onboarding/Onboarding.jsx";
+import OnboardingChecklist from "./onboarding/OnboardingChecklist.jsx";
 import Credits from "./credits/Credits.jsx";
 import Dashboard from "./dashboard/Dashboard.jsx";
 import Orchestration from "./orchestration/Orchestration.jsx";
@@ -339,6 +340,7 @@ function App() {
     <ErrorBoundary>
       <OnboardingModal open={showOnboarding} onClose={handleCloseOnboarding} />
       <div className="app-shell">
+        <OnboardingChecklist />
 
         <Sidebar current={activeSection} onSelect={setActiveSection} />
         <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
