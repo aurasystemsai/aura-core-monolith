@@ -46,8 +46,14 @@ const Credits = () => {
           <span className="credits-guide" title="How much credits cost and what you can do with them">🛈</span>
         </div>
         <div style={{fontSize:15,marginBottom:10}}>
-          <b>100 credits = $10 USD</b> (one-time, no auto-renew).<br/>
-          <span style={{color:'#7fffd4'}}>You only pay for what you use.</span>
+          <b>Credit Bundles:</b><br/>
+          <ul style={{margin:'8px 0 0 18px',padding:0,fontSize:15}}>
+            <li><b>100 credits</b> = <b>$10 USD</b></li>
+            <li><b>250 credits</b> = <b>$22 USD</b> <span style={{color:'#7fffd4'}}>(save 12%)</span></li>
+            <li><b>500 credits</b> = <b>$40 USD</b> <span style={{color:'#7fffd4'}}>(save 20%)</span></li>
+            <li><b>1000 credits</b> = <b>$75 USD</b> <span style={{color:'#7fffd4'}}>(save 25%)</span></li>
+          </ul>
+          <span style={{color:'#7fffd4'}}>You only pay for what you use. No subscriptions. No hidden fees.</span>
         </div>
         <table style={{width:'100%',fontSize:14,background:'none',borderCollapse:'collapse',marginBottom:8}}>
           <thead>
