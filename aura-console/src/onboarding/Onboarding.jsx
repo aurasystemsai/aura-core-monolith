@@ -40,20 +40,20 @@ const Onboarding = () => {
       )}
       {step === 'connect-shop' && (
         <div className="aura-onboarding-step">
-          <h2 className="aura-onboarding-title">{t('onboarding_connect_title')}</h2>
+          <h2 className="aura-onboarding-title">Connect your Shopify store</h2>
           <form className="aura-onboarding-form" onSubmit={handleConnect}>
             <input
               type="text"
               name="shopDomain"
-              placeholder={t('onboarding_shop_domain_placeholder')}
+              placeholder="your-store.myshopify.com"
               value={shopDomain}
               onChange={e => setShopDomain(e.target.value)}
               className="aura-onboarding-input"
               disabled={loading}
             />
-            {error && <div className="aura-onboarding-error">{t(error) || error}</div>}
+            {error && <div className="aura-onboarding-error">{error}</div>}
             <button type="submit" className="aura-onboarding-btn" disabled={loading}>
-              {loading ? t('onboarding_connecting') : t('onboarding_connect_button')}
+              {loading ? 'Connecting…' : 'Connect Store'}
             </button>
           </form>
         </div>
