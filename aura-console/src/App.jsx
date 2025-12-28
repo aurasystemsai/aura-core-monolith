@@ -38,7 +38,6 @@ function OnboardingModal({ open, onClose }) {
           Get started with world-class automation for e-commerce. Use the sidebar to explore tools, check your dashboard, and optimize your store.
         </div>
         <ul style={{color:'#cbd5f5',fontSize:15,marginBottom:18,lineHeight:1.7,maxWidth:320}}>
-          <li>Switch between Light/Dark/System theme in the sidebar</li>
           <li>Hover icons and cards for tooltips</li>
           <li>Click “Tools” for all automation engines</li>
           <li>Check “Fix Queue” for issues to resolve</li>
