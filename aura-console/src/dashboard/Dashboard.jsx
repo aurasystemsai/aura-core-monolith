@@ -109,52 +109,28 @@ const Dashboard = ({ setActiveSection }) => {
         borderRadius: '24px',
         padding: '56px 48px 40px 48px',
         marginBottom: 40,
-        boxShadow: '0 12px 48px #0005',
+        boxShadow: '0 12px 48px rgba(0,0,0,0.13)',
         display: 'flex',
         alignItems: 'center',
         gap: 48,
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         overflow: 'hidden',
-        background: 'linear-gradient(120deg, #23263a 60%, #7fffd4 100%)',
+        background: '#232b3b',
       }}>
-        {/* Animated background circles */}
-        <div style={{
-          position: 'absolute',
-          top: '-80px',
-          left: '-80px',
-          width: '220px',
-          height: '220px',
-          background: 'radial-gradient(circle, #7fffd4 0%, #23263a 80%)',
-          opacity: 0.18,
-          borderRadius: '50%',
-          zIndex: 0,
-          animation: 'pulse 4s infinite',
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-60px',
-          right: '-60px',
-          width: '160px',
-          height: '160px',
-          background: 'radial-gradient(circle, #22d3ee 0%, #23263a 80%)',
-          opacity: 0.14,
-          borderRadius: '50%',
-          zIndex: 0,
-          animation: 'pulse 5s infinite',
-        }} />
+        {/* Removed animated background circles for clean look */}
         <div style={{display:'flex',flexDirection:'column',alignItems:'flex-start',flex:1,minWidth:260,zIndex:1}}>
           <div style={{display:'flex',alignItems:'center',gap:18,marginBottom:12}}>
-            <img src="/logo-aura.png" alt="AURA Logo" style={{height:64,width:64,objectFit:'contain',borderRadius:16,boxShadow:'0 2px 24px #7fffd455'}} />
-            <span style={{fontWeight:900,fontSize:32,color:'#7fffd4',letterSpacing:'-0.02em',textShadow:'0 2px 16px #0006'}}>AURA Systems</span>
+            <img src="/logo-aura.png" alt="AURA Logo" style={{height:64,width:64,objectFit:'contain',borderRadius:16,boxShadow:'0 2px 24px rgba(0,0,0,0.13)'}} />
+            <span style={{fontWeight:900,fontSize:32,color:'#f3f4f6',letterSpacing:'-0.02em'}}>AURA Systems</span>
           </div>
-          <div style={{fontSize: 24, color: '#fff', marginBottom: 18, fontWeight: 700, textShadow:'0 2px 12px #23263a'}}>
+          <div style={{fontSize: 24, color: '#f3f4f6', marginBottom: 18, fontWeight: 700}}>
             Your Store at a Glance
           </div>
-          <div style={{fontSize: 16, color: '#cbd5f5', marginBottom: 24, maxWidth: 480}}>
+          <div style={{fontSize: 16, color: '#9ca3c7', marginBottom: 24, maxWidth: 480}}>
             Key Metrics
             <br />
-            <span style={{color:'#7fffd4'}}>Automate and Optimize</span>
+            <span style={{color:'#f3f4f6'}}>Automate and Optimize</span>
           </div>
           <div style={{display: 'flex', gap: 16, flexWrap: 'wrap'}}>
             <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('products')} title="View all products">Products</button>
@@ -181,12 +157,12 @@ const Dashboard = ({ setActiveSection }) => {
         width: '100%',
       }}>
         {[
-          { label: 'Products', value: loading ? '…' : stats.products, color: '#7fffd4' },
-          { label: 'SEO Issues', value: loading ? '…' : stats.seoIssues, color: '#5c6ac4' },
-          { label: 'Automations', value: loading ? '…' : stats.automations, color: '#22d3ee' },
-          { label: 'Credits', value: loading ? '…' : stats.credits, color: '#ffd700' },
-          { label: 'Last Run', value: loading ? '…' : (stats.lastRun ? new Date(stats.lastRun).toLocaleString() : '-'), color: '#cbd5f5' },
-          { label: 'System Health', value: loading ? '…' : stats.systemHealth, color: stats.systemHealth === 'Good' ? '#4caf50' : '#ff4d4f' },
+          { label: 'Products', value: loading ? '…' : stats.products },
+          { label: 'SEO Issues', value: loading ? '…' : stats.seoIssues },
+          { label: 'Automations', value: loading ? '…' : stats.automations },
+          { label: 'Credits', value: loading ? '…' : stats.credits },
+          { label: 'Last Run', value: loading ? '…' : (stats.lastRun ? new Date(stats.lastRun).toLocaleString() : '-') },
+          { label: 'System Health', value: loading ? '…' : stats.systemHealth },
         ].map((stat, idx) => (
           <div
             key={stat.label}
@@ -194,9 +170,9 @@ const Dashboard = ({ setActiveSection }) => {
             tabIndex={0}
             aria-label={stat.label + ': ' + stat.value}
             style={{
-              background: `linear-gradient(120deg, #23263a 60%, ${stat.color} 100%)`,
+              background: '#232b3b',
               borderRadius: '18px',
-              boxShadow: '0 6px 28px #0005',
+              boxShadow: '0 6px 28px rgba(0,0,0,0.10)',
               padding: '32px 22px',
               display: 'flex',
               flexDirection: 'column',
@@ -207,14 +183,9 @@ const Dashboard = ({ setActiveSection }) => {
               cursor: 'pointer',
               animation: `fadeInUp 0.7s cubic-bezier(.23,1.01,.32,1) both`,
             }}
-            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-3px) scale(1.03)'}
-            onMouseLeave={e => e.currentTarget.style.transform = 'none'}
-            onFocus={e => e.currentTarget.style.boxShadow = '0 12px 40px #7fffd455'}
-            onBlur={e => e.currentTarget.style.boxShadow = '0 6px 28px #0005'}
           >
-            {/* icon removed */}
-            <span style={{fontSize: '1.13em', color: stat.color, fontWeight: 800, letterSpacing: '0.01em', marginBottom: 8, textShadow: '0 1px 4px #fff4'}}>{stat.label}</span>
-            <b style={{fontSize: '1.7em', fontWeight: 900, color: '#fff', letterSpacing: '0.01em', textShadow: '0 2px 12px #0008'}}>{stat.value}</b>
+            <span style={{fontSize: '1.13em', color: '#f3f4f6', fontWeight: 800, letterSpacing: '0.01em', marginBottom: 8 }}>{stat.label}</span>
+            <b style={{fontSize: '1.7em', fontWeight: 900, color: '#f3f4f6', letterSpacing: '0.01em'}}>{stat.value}</b>
           </div>
         ))}
       </div>
@@ -224,16 +195,15 @@ const Dashboard = ({ setActiveSection }) => {
       </Suspense>
       <div className="aura-dashboard-note" style={{
         marginTop: 36,
-        background: 'linear-gradient(90deg, #7fffd4 0%, #22d3ee 100%)',
-        color: '#23263a',
+        background: '#181f2a',
+        color: '#f3f4f6',
         borderRadius: 12,
         padding: '18px 32px',
         fontWeight: 700,
         fontSize: 16,
-        boxShadow: '0 2px 12px #7fffd422',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
         textAlign: 'center',
         letterSpacing: '0.01em',
-        textShadow: '0 1px 4px #fff4',
         maxWidth: 540,
         marginLeft: 'auto',
         marginRight: 'auto',
