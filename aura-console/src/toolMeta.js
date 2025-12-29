@@ -40,5 +40,3 @@ const toolsMeta = [
 ];
 
 export default toolsMeta;
-
-export default toolsMeta;
