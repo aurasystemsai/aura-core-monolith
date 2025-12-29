@@ -9,6 +9,7 @@ import DraftLibrary from "./components/DraftLibrary";
 import ContentHealthAuditor from "./components/ContentHealthAuditor";
 import ContentIngestor from "./components/ContentIngestor";
 import ProductsList from "./components/ProductsList.jsx";
+import AutomationScheduler from "./components/AutomationScheduler.jsx";
 import Sidebar from "./components/Sidebar";
 import ChangelogModal from "./components/ChangelogModal.jsx";
 import DashboardHome from "./components/DashboardHome";
@@ -320,6 +321,9 @@ function App() {
           onSelect={setActiveSection}
           onShowChangelog={handleShowChangelog}
           changelogUnread={!changelogSeen}
+          extraItems={[
+            { key: 'automation-scheduler', label: 'Automation Scheduler' }
+          ]}
         />
         <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
         <main className="app-main">
@@ -327,6 +331,7 @@ function App() {
             {/* Removed top-strip for a cleaner, more premium look */}
             <section className="tool-section">
               {activeSection === "dashboard" && project && <DashboardHome setActiveSection={setActiveSection} />}
+              {activeSection === "automation-scheduler" && <AutomationScheduler />}
               {activeSection === "reports" && <Reports />}
               {activeSection === "auth" && <Auth />}
               {activeSection === "onboarding" && <Onboarding />}
