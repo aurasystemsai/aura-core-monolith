@@ -18,14 +18,14 @@ export default function ReportExportBar({ onExportCSV, onExportPDF, onScheduleEm
 }
 
 const btnStyle = {
-  background: '#23263a',
-  color: '#7fffd4',
-  border: '1.5px solid #7fffd4',
-  borderRadius: 8,
+  background: '#232b3b',
+  color: '#f3f4f6',
+  border: '1.5px solid #334155',
+  borderRadius: 10,
   padding: '10px 22px',
   fontWeight: 700,
   fontSize: 16,
   cursor: 'pointer',
-  boxShadow: '0 2px 12px #22d3ee33',
+  boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
   transition: 'background 0.18s, color 0.18s',
 };
