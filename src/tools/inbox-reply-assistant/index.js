@@ -29,4 +29,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "Inbox Reply Assistant", description: "Generates reply templates for customer support inbox." };
+module.exports = { key, run, meta };

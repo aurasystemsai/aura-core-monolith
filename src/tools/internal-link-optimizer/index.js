@@ -40,4 +40,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "Internal Link Optimizer", description: "Suggests internal links for SEO and navigation." };
+module.exports = { key, run, meta };

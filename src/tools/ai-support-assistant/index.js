@@ -39,4 +39,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "AI Support Assistant", description: "Generates support macros and FAQ topics." };
+module.exports = { key, run, meta };

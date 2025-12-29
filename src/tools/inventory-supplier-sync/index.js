@@ -31,4 +31,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "Inventory Supplier Sync", description: "Syncs inventory data with suppliers." };
+module.exports = { key, run, meta };

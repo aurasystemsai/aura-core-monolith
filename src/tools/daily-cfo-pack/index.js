@@ -30,4 +30,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "Daily CFO Pack", description: "Daily CFO summary and KPIs." };
+module.exports = { key, run, meta };

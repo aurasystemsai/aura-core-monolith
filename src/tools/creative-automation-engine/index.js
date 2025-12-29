@@ -42,4 +42,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "Creative Automation Engine", description: "Generates creative hooks and angles." };
+module.exports = { key, run, meta };

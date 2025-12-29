@@ -50,4 +50,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "AI Alt-Text Engine", description: "Generates alt text for product images." };
+module.exports = { key, run, meta };

@@ -26,4 +26,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "Klaviyo Flow Automation", description: "Blueprints for Klaviyo automation flows." };
+module.exports = { key, run, meta };

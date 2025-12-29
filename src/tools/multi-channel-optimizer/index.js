@@ -41,4 +41,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "Multi-Channel Optimizer", description: "Splits marketing budget across multiple channels." };
+module.exports = { key, run, meta };

@@ -35,4 +35,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "AI Launch Planner", description: "Creates launch plans for new products or collections." };
+module.exports = { key, run, meta };

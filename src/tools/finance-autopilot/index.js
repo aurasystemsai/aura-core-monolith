@@ -40,4 +40,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "Finance Autopilot", description: "Automated finance snapshot and margin analysis." };
+module.exports = { key, run, meta };

@@ -48,4 +48,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "Email Automation Builder", description: "Blueprints for automated email flows." };
+module.exports = { key, run, meta };

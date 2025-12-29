@@ -41,4 +41,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "Review UGC Engine", description: "Generates review prompts and UGC questions." };
+module.exports = { key, run, meta };
