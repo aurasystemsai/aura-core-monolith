@@ -2,19 +2,20 @@ import toolsMeta from "../toolMeta";
 
 
 function Sidebar({ current, onSelect, onShowChangelog, changelogUnread }) {
-  const navItems = [
-        { key: 'dashboard', label: 'Dashboard', icon: '📊' },
-        { key: 'auth', label: 'Auth', icon: '🔑' },
-        { key: 'onboarding', label: 'Onboarding', icon: '🚀' },
-        { key: 'credits', label: 'Credits', icon: '💳' },
-        { key: 'orchestration', label: 'Orchestration', icon: '🧩' },
-        { key: 'products', label: 'Products', icon: '📦' },
-        { key: 'content-health', label: 'Content Health', icon: '🩺' },
-        { key: 'fix-queue', label: 'Fix Queue', icon: '🛠️' },
-        { key: 'content-ingest', label: 'Content Ingest', icon: '📥' },
-        { key: 'draft-library', label: 'Draft Library', icon: '📚' },
-        { key: 'system-health', label: 'System Health', icon: '🖥️' }
-  ];
+    const navItems = [
+      { key: 'dashboard', label: 'Dashboard', icon: '📊' },
+      { key: 'reports', label: 'Reports', icon: '📈' },
+      { key: 'auth', label: 'Auth', icon: '🔑' },
+      { key: 'onboarding', label: 'Onboarding', icon: '🚀' },
+      { key: 'credits', label: 'Credits', icon: '💳' },
+      { key: 'orchestration', label: 'Orchestration', icon: '🧩' },
+      { key: 'products', label: 'Products', icon: '📦' },
+      { key: 'content-health', label: 'Content Health', icon: '🩺' },
+      { key: 'fix-queue', label: 'Fix Queue', icon: '🛠️' },
+      { key: 'content-ingest', label: 'Content Ingest', icon: '📥' },
+      { key: 'draft-library', label: 'Draft Library', icon: '📚' },
+      { key: 'system-health', label: 'System Health', icon: '🖥️' }
+    ];
     return (
     <nav className="sidebar">
       <div className="sidebar-brand" style={{display:'flex',alignItems:'center',gap:12,marginBottom:18}}>

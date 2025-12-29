@@ -18,6 +18,7 @@ import Onboarding from "./onboarding/Onboarding.jsx";
 // import OnboardingChecklist from "./onboarding/OnboardingChecklist.jsx";
 import Credits from "./credits/Credits.jsx";
 import Dashboard from "./dashboard/Dashboard.jsx";
+import Reports from "./components/Reports.jsx";
 import Orchestration from "./orchestration/Orchestration.jsx";
 import ProductSeoEngine from "./components/ProductSeoEngine";
 import AiAltTextEngine from "./components/AiAltTextEngine";
@@ -326,6 +327,7 @@ function App() {
             {/* Removed top-strip for a cleaner, more premium look */}
             <section className="tool-section">
               {activeSection === "dashboard" && project && <DashboardHome setActiveSection={setActiveSection} />}
+              {activeSection === "reports" && <Reports />}
               {activeSection === "auth" && <Auth />}
               {activeSection === "onboarding" && <Onboarding />}
               {activeSection === "credits" && <Credits />}
