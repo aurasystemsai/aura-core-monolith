@@ -10,6 +10,8 @@ import ContentHealthAuditor from "./components/ContentHealthAuditor";
 import ContentIngestor from "./components/ContentIngestor";
 import ProductsList from "./components/ProductsList.jsx";
 import AutomationScheduler from "./components/AutomationScheduler.jsx";
+import ToolPlaceholder from "./components/ToolPlaceholder.jsx";
+import toolsMeta from "./toolMeta";
 import Sidebar from "./components/Sidebar";
 import ChangelogModal from "./components/ChangelogModal.jsx";
 import DashboardHome from "./components/DashboardHome";
@@ -322,7 +324,8 @@ function App() {
           onShowChangelog={handleShowChangelog}
           changelogUnread={!changelogSeen}
           extraItems={[
-            { key: 'automation-scheduler', label: 'Automation Scheduler' }
+            { key: 'automation-scheduler', label: 'Automation Scheduler' },
+            ...toolsMeta.map(tool => ({ key: tool.id, label: tool.name }))
           ]}
         />
         <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
@@ -363,9 +366,10 @@ function App() {
                 />
               )}
               {activeSection === "tools" && project && <ToolsList />}
-              {activeSection === "product-seo" && <ProductSeoEngine />}
-              {activeSection === "ai-alt-text-engine" && <AiAltTextEngine />}
-              {activeSection === "internal-link-optimizer" && <InternalLinkOptimizer />}
+              {/* Render a ToolPlaceholder for each tool in toolsMeta */}
+              {toolsMeta.map(tool => (
+                activeSection === tool.id && <ToolPlaceholder key={tool.id} name={tool.name} />
+              ))}
             </section>
           </div>
         </main>

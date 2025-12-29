@@ -24,6 +24,8 @@ const draftsRoutes = require("./routes/drafts");
 
 // Fix Queue API routes
 const fixQueueRoutes = require("./routes/fix-queue");
+// Automation Scheduling API routes
+const automationRoutes = require("./routes/automation");
 
 // Make Integration routes (outbound to Make webhooks)
 const makeRoutes = require("./routes/make");
@@ -211,6 +213,10 @@ app.use("/api", fixQueueRoutes);
 // Make outbound integration API
 app.use(makeRoutes);
 app.use("/api", makeRoutes);
+
+// Automation Scheduling API
+app.use("/api/automation", automationRoutes);
+app.use("/automation", automationRoutes);
 
 // ---------- HEALTH CHECK ----------
 
