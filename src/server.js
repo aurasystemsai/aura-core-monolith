@@ -1,3 +1,4 @@
+// ...existing code...
 // --- Analytics and Error Logging Endpoint ---
 app.post('/api/analytics', (req, res) => {
   try {
