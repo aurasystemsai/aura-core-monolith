@@ -1,3 +1,9 @@
+
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const { findUserByEmail, createUser, checkPassword, hasRole } = require('../core/users');
+
+const router = express.Router();
 // List all users (admin only)
 router.get('/list', requireAuth, requireRole('admin'), (req, res) => {
   const users = require('../core/users').loadUsers();
@@ -8,11 +14,6 @@ router.get('/list', requireAuth, requireRole('admin'), (req, res) => {
 // src/routes/users.js
 // Basic user authentication and RBAC routes
 
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const { findUserByEmail, createUser, checkPassword, hasRole } = require('../core/users');
-
-const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
 // Register a new user (admin only)
