@@ -1,17 +1,8 @@
-// (moved below, after app is initialized)
-// AI Chatbot endpoint will be registered after app is initialized below.
-// ---------- WEBHOOK ENDPOINT FOR INTEGRATIONS ----------
-// Registered after app is initialized below.
-// ---------- ANALYTICS SUMMARY ENDPOINT ----------
-// Registered after app is initialized below.
-// ---------- ADVANCED HEALTH CHECK ----------
-// Registered after app is initialized below.
 // ...existing code...
 // --- Simple API Key Auth Middleware ---
 // ----------------------------------------
-// Register endpoints after app is initialized
+// Register endpoints after all middleware and app initialization
 // ----------------------------------------
-
 // ---------- AI CHATBOT ENDPOINT ----------
 app.post('/api/ai/chatbot', require('./routes/users').requireAuth, async (req, res) => {
   try {
