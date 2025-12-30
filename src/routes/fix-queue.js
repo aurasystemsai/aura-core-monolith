@@ -79,26 +79,6 @@ router.get("/projects/:projectId/fix-queue/export.csv", (req, res) => {
     });
   }
 });
-
-  const projectId = req.params.projectId;
-
-  try {
-    const { url, issues } = req.body || {};
-    const result = fixQueue.addFixQueueItem(projectId, { url, issues });
-
-    return res.json({
-      ok: true,
-      projectId,
-      ...result,
-    });
-  } catch (err) {
-    console.error("[FixQueue] add error", err);
-    return res.status(400).json({
-      ok: false,
-      error: err.message || "Failed to add to fix queue",
-    });
-  }
-});
 const { logAudit } = require('../core/auditLog');
 // ADD (UPSERT BY projectId+url)
 router.post("/projects/:projectId/fix-queue", (req, res) => {
