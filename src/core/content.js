@@ -175,7 +175,6 @@ async function upsertContentItems(projectId, items) {
     return { inserted: rows.length };
   }
 }
-}
 
 async function getContentItemByUrl(projectId, url) {
   const u = normaliseString(url);
