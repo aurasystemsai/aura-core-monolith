@@ -30,9 +30,22 @@ function sanitizeInputs(req, res, next) {
   sanitize(req.params);
   next();
 }
-// Warn if running with default secrets or insecure mode
+// --- Secret Auditing and Compliance ---
+try {
+  require('dotenvx').ops();
+} catch (e) {
+  // dotenvx is dev-only, ignore if not present
+}
+
+// Block startup in production if JWT_SECRET is missing or weak
 if ((process.env.JWT_SECRET || '').startsWith('dev-secret') || !process.env.JWT_SECRET) {
-  console.warn('[SECURITY] WARNING: Using default or missing JWT_SECRET. Set a strong secret in production!');
+  const msg = '[SECURITY] FATAL: Using default or missing JWT_SECRET. Set a strong secret in production!';
+  if (process.env.NODE_ENV === 'production') {
+    console.error(msg);
+    process.exit(1);
+  } else {
+    console.warn(msg);
+  }
 }
 if (process.env.NODE_ENV !== 'production') {
   console.warn('[SECURITY] WARNING: Not running in production mode. Security features may be reduced.');
@@ -101,14 +114,27 @@ const { startFixQueueWorker } = require("./core/fixQueueWorker");
 
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
+// Use Redis as session store in production, fallback to MemoryStore in dev
+let sessionStore;
+if (process.env.NODE_ENV === 'production') {
+  const RedisStore = require('connect-redis').default;
+  const { createClient } = require('redis');
+  const redisClient = createClient({
+    url: process.env.REDIS_URL || 'redis://localhost:6379',
+    legacyMode: true
+  });
+  redisClient.connect().catch(console.error);
+  sessionStore = new RedisStore({ client: redisClient });
+} else {
+  sessionStore = undefined; // default MemoryStore for dev only
+}
 // Parse cookies for CSRF
 app.use(cookieParser());
-
-// Session middleware required for lusca CSRF
 const sessionOptions = {
   secret: process.env.SESSION_SECRET || 'dev-session-secret',
   resave: false,
   saveUninitialized: false,
+  store: sessionStore,
   cookie: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
