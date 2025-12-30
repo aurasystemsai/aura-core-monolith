@@ -4,13 +4,20 @@
 const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const { encrypt, decrypt } = require('./encryption');
 
 const USERS_FILE = process.env.USERS_PATH || path.join(__dirname, '../../data/users.json');
 
 function loadUsers() {
   try {
     if (fs.existsSync(USERS_FILE)) {
-      return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+      const raw = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+      // Decrypt sensitive fields
+      return raw.map(u => ({
+        ...u,
+        email: u.email && u.email.iv ? decrypt(u.email) : u.email,
+        password: u.password && u.password.iv ? decrypt(u.password) : u.password,
+      }));
     }
   } catch (e) {
     console.error('[users] Failed to load users:', e);
@@ -20,7 +27,13 @@ function loadUsers() {
 
 function saveUsers(users) {
   try {
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf8');
+    // Encrypt sensitive fields
+    const enc = users.map(u => ({
+      ...u,
+      email: typeof u.email === 'string' ? encrypt(u.email) : u.email,
+      password: typeof u.password === 'string' ? encrypt(u.password) : u.password,
+    }));
+    fs.writeFileSync(USERS_FILE, JSON.stringify(enc, null, 2), 'utf8');
   } catch (e) {
     console.error('[users] Failed to save users:', e);
   }

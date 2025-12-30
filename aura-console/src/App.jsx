@@ -28,7 +28,9 @@ const Reports = lazy(() => import("./components/Reports.jsx"));
 const Orchestration = lazy(() => import("./orchestration/Orchestration.jsx"));
 const ProductSeoEngine = lazy(() => import("./components/ProductSeoEngine"));
 const AiAltTextEngine = lazy(() => import("./components/AiAltTextEngine"));
+
 const InternalLinkOptimizer = lazy(() => import("./components/InternalLinkOptimizer"));
+import AiChatbot from "./components/AiChatbot.jsx";
 
 function OnboardingModal({ open, onClose }) {
   if (!open) return null;
@@ -366,6 +368,7 @@ function App() {
           onShowChangelog={handleShowChangelog}
           changelogUnread={!changelogSeen}
           extraItems={[
+            { key: 'ai-chatbot', label: 'AI Chatbot' },
             { key: 'automation-scheduler', label: 'Automation Scheduler' },
             ...toolsMeta.map(tool => ({ key: tool.id, label: tool.name }))
           ]}
@@ -408,6 +411,9 @@ function App() {
                     coreStatusLabel={coreStatusLabel}
                     lastRunAt={lastRunAt}
                   />
+                )}
+                {activeSection === "ai-chatbot" && (
+                  <AiChatbot coreUrl={coreUrl} />
                 )}
                 {activeSection === "tools" && project && <ToolsList />}
                 {/* Render a ToolPlaceholder for each tool in toolsMeta */}

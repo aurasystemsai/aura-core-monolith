@@ -80,8 +80,6 @@ router.get("/projects/:projectId/fix-queue/export.csv", (req, res) => {
   }
 });
 
-// ADD (UPSERT BY projectId+url)
-router.post("/projects/:projectId/fix-queue", (req, res) => {
   const projectId = req.params.projectId;
 
   try {
@@ -101,9 +99,29 @@ router.post("/projects/:projectId/fix-queue", (req, res) => {
     });
   }
 });
+const { logAudit } = require('../core/auditLog');
+// ADD (UPSERT BY projectId+url)
+router.post("/projects/:projectId/fix-queue", (req, res) => {
+  const projectId = req.params.projectId;
 
-// UPDATE (OWNER / NOTES / STATUS / SUGGESTIONS)
-router.patch("/projects/:projectId/fix-queue/:id", (req, res) => {
+  try {
+    const { url, issues } = req.body || {};
+    const result = fixQueue.addFixQueueItem(projectId, { url, issues });
+    logAudit({ action: 'fixqueue_add', user: req.user?.email || 'unknown', target: projectId, details: { url } });
+    return res.json({
+      ok: true,
+      projectId,
+      ...result,
+    });
+  } catch (err) {
+    console.error("[FixQueue] add error", err);
+    return res.status(400).json({
+      ok: false,
+      error: err.message || "Failed to add to fix queue",
+    });
+  }
+});
+
   const projectId = req.params.projectId;
   const id = req.params.id;
 
@@ -118,7 +136,38 @@ router.patch("/projects/:projectId/fix-queue/:id", (req, res) => {
     });
   }
 });
+// UPDATE (OWNER / NOTES / STATUS / SUGGESTIONS)
+router.patch("/projects/:projectId/fix-queue/:id", (req, res) => {
+  const projectId = req.params.projectId;
+  const id = req.params.id;
 
+  try {
+    fixQueue.updateFixQueueItem(projectId, id, req.body || {}, { updatedBy: getUpdatedBy(req) });
+    logAudit({ action: 'fixqueue_update', user: req.user?.email || 'unknown', target: projectId, details: { id, update: req.body } });
+    return res.json({ ok: true, projectId, id: Number(id) });
+  } catch (err) {
+    console.error("[FixQueue] patch error", err);
+    return res.status(400).json({
+      ok: false,
+      error: err.message || "Failed to update fix queue item",
+    });
+  }
+});
+
+  const projectId = req.params.projectId;
+  const id = req.params.id;
+
+  try {
+    fixQueue.updateFixQueueItem(projectId, id, { status: "done" }, { updatedBy: getUpdatedBy(req) });
+    return res.json({ ok: true, projectId, id: Number(id) });
+  } catch (err) {
+    console.error("[FixQueue] done error", err);
+    return res.status(400).json({
+      ok: false,
+      error: err.message || "Failed to mark done",
+    });
+  }
+});
 // BACKWARDS-COMPAT: DONE endpoint (UI calls this)
 router.post("/projects/:projectId/fix-queue/:id/done", (req, res) => {
   const projectId = req.params.projectId;
@@ -126,6 +175,7 @@ router.post("/projects/:projectId/fix-queue/:id/done", (req, res) => {
 
   try {
     fixQueue.updateFixQueueItem(projectId, id, { status: "done" }, { updatedBy: getUpdatedBy(req) });
+    logAudit({ action: 'fixqueue_done', user: req.user?.email || 'unknown', target: projectId, details: { id } });
     return res.json({ ok: true, projectId, id: Number(id) });
   } catch (err) {
     console.error("[FixQueue] done error", err);

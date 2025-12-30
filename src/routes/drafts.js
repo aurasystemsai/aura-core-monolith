@@ -3,6 +3,7 @@
 
 const express = require("express");
 const draftsCore = require("../core/drafts");
+const { logAudit } = require("../core/auditLog");
 
 const router = express.Router();
 
@@ -91,6 +92,7 @@ router.post("/projects/:projectId/drafts", (req, res) => {
   }
   try {
     const created = draftsCore.createDraft(projectId, req.body || {});
+    logAudit({ action: 'draft_create', user: req.user?.email || 'unknown', target: projectId, details: { draftTitle: req.body?.title } });
     return res.json({
       ok: true,
       projectId,

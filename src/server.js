@@ -1,3 +1,80 @@
+// ---------- AI CHATBOT ENDPOINT ----------
+app.post('/api/ai/chatbot', require('./routes/users').requireAuth, async (req, res) => {
+  try {
+    const { messages, model, temperature, max_tokens } = req.body || {};
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ ok: false, error: 'messages array required' });
+    }
+    const reply = await require('./core/aiChatbot').chatWithAI(messages, { model, temperature, max_tokens });
+    res.json({ ok: true, reply });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// ---------- WEBHOOK ENDPOINT FOR INTEGRATIONS ----------
+app.post('/api/webhooks/:event', (req, res) => {
+  const secret = req.headers['x-webhook-secret'];
+  if (!secret || secret !== process.env.WEBHOOK_SECRET) {
+    return res.status(403).json({ ok: false, error: 'Forbidden: invalid webhook secret' });
+  }
+  const event = req.params.event;
+  const payload = req.body;
+  // Audit log all webhook events
+  try {
+    require('./core/auditLog').logAudit({
+      action: 'webhook_event',
+      user: 'external',
+      target: event,
+      details: payload
+    });
+  } catch {}
+  // Trigger automation engine for event-driven actions
+  require('./core/automation').handleEvent(event, payload).catch(() => {});
+  res.json({ ok: true });
+});
+// ---------- ANALYTICS SUMMARY ENDPOINT ----------
+app.get('/api/analytics/summary', require('./routes/users').requireAuth, require('./routes/users').requirePermission('user:manage'), async (req, res) => {
+  try {
+    const users = require('./core/users').loadUsers();
+    const projects = require('./core/projects').listProjects ? require('./core/projects').listProjects() : [];
+    const content = require('./core/content').countContent ? require('./core/content').countContent() : 0;
+    res.json({
+      ok: true,
+      users: users.length,
+      projects: projects.length,
+      content,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// ---------- ADVANCED HEALTH CHECK ----------
+app.get('/health/advanced', async (req, res) => {
+  let dbStatus = 'ok';
+  try {
+    // Try a simple DB query (SQLite or Postgres)
+    const db = require('./core/db');
+    if (db && db.prepare) {
+      db.prepare('SELECT 1').get();
+    } else if (db && db.query) {
+      await db.query('SELECT 1');
+    }
+  } catch (e) {
+    dbStatus = 'error';
+  }
+  let version = null;
+  try {
+    const child_process = require('child_process');
+    version = child_process.execSync('git rev-parse --short HEAD').toString().trim();
+  } catch {}
+  res.json({
+    ok: true,
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    db: dbStatus,
+    version,
+  });
+});
 // ...existing code...
 // --- Simple API Key Auth Middleware ---
 const API_KEY = process.env.DEBUG_KEY;
@@ -55,6 +132,10 @@ const usersRoutes = require("./routes/users");
 // User and RBAC API
 app.use('/api/users', usersRoutes);
 
+// SSO (OAuth2/SAML) API
+const ssoRoutes = require('./routes/sso');
+app.use('/sso', ssoRoutes);
+
 // Fix Queue background worker (retry + DLQ)
 const { startFixQueueWorker } = require("./core/fixQueueWorker");
 
@@ -86,14 +167,15 @@ app.use(
   })
 );
 
-// Security: Basic rate limiting (100 requests per 15 minutes per IP)
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+// Security: Enhanced rate limiting for /api routes (100 requests per 10 minutes per IP)
+const apiLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
+  message: { ok: false, error: 'Too many requests, please try again later.' }
 });
-app.use(limiter);
+app.use('/api', apiLimiter);
 
 // ---------- PROJECT RUN HISTORY ROUTES ----------
 app.get('/api/projects/:projectId/runs', (req, res) => {
@@ -119,9 +201,31 @@ app.get('/projects/:projectId/runs', (req, res) => {
 app.set("trust proxy", "127.0.0.1");
 const PORT = process.env.PORT || 10000;
 
+
+// ---------- HTTPS ENFORCEMENT (PROD) ----------
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
+      return res.redirect(301, 'https://' + req.headers.host + req.url);
+    }
+    next();
+  });
+}
 // ---------- MIDDLEWARE ----------
 
-app.use(cors());
+// Harden CORS: allow only trusted origins
+const TRUSTED_ORIGINS = (process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (TRUSTED_ORIGINS.length === 0 || TRUSTED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS: Not allowed by policy'), false);
+  },
+  credentials: true,
+}));
 app.use(
   bodyParser.json({
     limit: "1mb",
@@ -883,7 +987,20 @@ app.post('/api/shopify/update-product', async (req, res) => {
 
 // ---------- STATIC CONSOLE (built React app) ----------
 
+
 const consoleDist = path.join(__dirname, "..", "aura-console", "dist");
+// Restrict static file serving to safe extensions only
+const SAFE_STATIC_EXT = [
+  '.js', '.css', '.ico', '.png', '.jpg', '.svg', '.woff', '.woff2', '.ttf', '.eot', '.json', '.txt', '.html'
+];
+app.use((req, res, next) => {
+  if (req.method !== 'GET') return next();
+  const ext = path.extname(req.path).toLowerCase();
+  if (ext && !SAFE_STATIC_EXT.includes(ext)) {
+    return res.status(403).send('Forbidden');
+  }
+  next();
+});
 app.use(express.static(consoleDist));
 
 // Fallback for Single Page App: serve index.html for any unmatched GET request.
