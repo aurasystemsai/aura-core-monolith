@@ -22,12 +22,11 @@ const dotenv = require("dotenv");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const csurf = require("csurf");
-const xssClean = require("xss-clean");
+
 
 
 const app = express();
-// XSS protection
-app.use(xssClean());
+// XSS protection removed (xss-clean is not compatible with Express 5+)
 // CSRF protection (cookie-based)
 const csrfProtection = csurf({ cookie: true });
 
