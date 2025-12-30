@@ -98,9 +98,25 @@ const { startFixQueueWorker } = require("./core/fixQueueWorker");
 
 
 
+
 const cookieParser = require('cookie-parser');
+const session = require('express-session');
 // Parse cookies for CSRF
 app.use(cookieParser());
+
+// Session middleware required for lusca CSRF
+const sessionOptions = {
+  secret: process.env.SESSION_SECRET || 'dev-session-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 1000 * 60 * 60 * 24 // 1 day
+  }
+};
+app.use(session(sessionOptions));
 
 // Security: Set HTTP headers (allow Shopify embedding)
 const defaultCsp = helmet.contentSecurityPolicy.getDefaultDirectives();
