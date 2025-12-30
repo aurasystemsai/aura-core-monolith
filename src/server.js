@@ -24,6 +24,7 @@ const rateLimit = require("express-rate-limit");
 const csurf = require("csurf");
 const xssClean = require("xss-clean");
 
+
 const app = express();
 // XSS protection
 app.use(xssClean());
@@ -59,8 +60,8 @@ const { startFixQueueWorker } = require("./core/fixQueueWorker");
 
 
 
+
 const cookieParser = require('cookie-parser');
-const app = express();
 // Parse cookies for CSRF
 app.use(cookieParser());
 
