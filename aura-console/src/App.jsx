@@ -79,7 +79,21 @@ class ErrorBoundary extends React.Component {
     if (this.props.onError) {
       this.props.onError(error);
     }
-    // Optionally, send error info to a server here
+    // Send error info to backend analytics
+    try {
+      fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'frontend-error',
+          error: error?.toString(),
+          stack: error?.stack,
+          info: errorInfo,
+          url: window.location.href,
+          ts: Date.now()
+        })
+      });
+    } catch (e) {}
   }
   render() {
     if (this.state.hasError) {
@@ -167,6 +181,16 @@ const ENGINES = {
 // ...existing code up to ENGINES...
 
 // --- FULL FEATURED APP FUNCTION RESTORED ---
+function sendAnalyticsEvent(event) {
+  try {
+    fetch('/api/analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...event, ts: Date.now(), url: window.location.href })
+    });
+  } catch (e) {}
+}
+
 function App() {
     // Onboarding modal state
     const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('auraOnboarded'));
@@ -192,6 +216,11 @@ function App() {
 
   // Sidebar section state
   const [activeSection, setActiveSection] = useState('dashboard');
+
+  // Usage analytics: track page/tool views
+  useEffect(() => {
+    sendAnalyticsEvent({ type: 'page-view', section: activeSection });
+  }, [activeSection]);
 
   // Health check for Core API
   useEffect(() => {

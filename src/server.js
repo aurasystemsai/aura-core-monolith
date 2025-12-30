@@ -1,3 +1,14 @@
+// --- Analytics and Error Logging Endpoint ---
+app.post('/api/analytics', (req, res) => {
+  try {
+    const event = req.body;
+    // Log to console for now; extend to file/db/service as needed
+    console.log('[Analytics]', JSON.stringify(event));
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 // --- Simple API Key Auth Middleware ---
 const API_KEY = process.env.DEBUG_KEY;
 function requireApiKey(req, res, next) {
