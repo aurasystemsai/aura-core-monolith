@@ -1,5 +1,7 @@
 # Aura Core Monolith
 
+[![CI](https://github.com/aurasystemsai/aura-core-monolith/actions/workflows/ci.yml/badge.svg)](https://github.com/aurasystemsai/aura-core-monolith/actions/workflows/ci.yml)
+
 A modern, full-stack Shopify automation and AI platform.
 
 ## Features
@@ -58,6 +60,12 @@ Tools are modular and live in `src/tools/`. Each tool is auto-registered and can
 - Coverage for all major API routes and UI components
 
 ## Security & Deployment
+
+### CI/CD
+Automated tests and builds run on every push and pull request via GitHub Actions. See the CI badge above for status.
+
+### Deployment
+Deploy to Render or your preferred cloud platform. Health checks are available at `/health`.
 - Review `.env.example` for required environment variables
 - Ensure sensitive data is protected
 - Recommended: set up CI/CD for automated testing and deployment
