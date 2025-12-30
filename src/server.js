@@ -11,6 +11,39 @@ function requireApiKey(req, res, next) {
 
 
 const path = require("path");
+const xss = require('xss');
+// --- Input Sanitization Middleware ---
+function sanitizeInputs(req, res, next) {
+  // Sanitize all string fields in req.body, req.query, req.params
+  function sanitize(obj) {
+    if (!obj || typeof obj !== 'object') return;
+    for (const key in obj) {
+      if (typeof obj[key] === 'string') {
+        obj[key] = xss(obj[key]);
+      } else if (typeof obj[key] === 'object') {
+        sanitize(obj[key]);
+      }
+    }
+  }
+  sanitize(req.body);
+  sanitize(req.query);
+  sanitize(req.params);
+  next();
+}
+// Warn if running with default secrets or insecure mode
+if ((process.env.JWT_SECRET || '').startsWith('dev-secret') || !process.env.JWT_SECRET) {
+  console.warn('[SECURITY] WARNING: Using default or missing JWT_SECRET. Set a strong secret in production!');
+}
+if (process.env.NODE_ENV !== 'production') {
+  console.warn('[SECURITY] WARNING: Not running in production mode. Security features may be reduced.');
+}
+// Add Referrer-Policy header for additional privacy
+app.use((req, res, next) => {
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+// Sanitize all incoming input
+app.use(sanitizeInputs);
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -50,9 +83,9 @@ const usersRoutes = require("./routes/users");
 // User and RBAC API
 app.use('/api/users', usersRoutes);
 
-// SSO (OAuth2/SAML) API (DISABLED: missing passport dependency)
-// const ssoRoutes = require('./routes/sso');
-// app.use('/sso', ssoRoutes);
+// SSO (OAuth2/SAML) API
+const ssoRoutes = require('./routes/sso');
+app.use('/sso', ssoRoutes);
 
 // Fix Queue background worker (retry + DLQ)
 const { startFixQueueWorker } = require("./core/fixQueueWorker");
@@ -64,7 +97,6 @@ const cookieParser = require('cookie-parser');
 // Parse cookies for CSRF
 app.use(cookieParser());
 
-// Security: Set HTTP headers (allow Shopify embedding)
 // Security: Set HTTP headers (allow Shopify embedding)
 const defaultCsp = helmet.contentSecurityPolicy.getDefaultDirectives();
 const cspDirectives = {};
@@ -86,6 +118,14 @@ app.use(
 );
 
 // Security: Enhanced rate limiting for /api routes (100 requests per 10 minutes per IP)
+// --- Audit Logging for Critical Actions ---
+// Example: log all login attempts (see routes/users.js for more detailed logging)
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/users/login')) {
+    console.log(`[AUDIT] Login attempt: ip=${req.ip}, time=${new Date().toISOString()}`);
+  }
+  next();
+});
 const apiLimiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
   max: 100,
