@@ -1,5 +1,4 @@
-import UserManagement from "./components/UserManagement.jsx";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import "./App.css";
 
 
@@ -7,10 +6,8 @@ import ProjectSetup from "./ProjectSetup";
 import ProjectSwitcher from "./ProjectSwitcher";
 import SystemHealthPanel from "./components/SystemHealthPanel";
 import DraftLibrary from "./components/DraftLibrary";
-import ContentHealthAuditor from "./components/ContentHealthAuditor";
 import ContentIngestor from "./components/ContentIngestor";
 import ProductsList from "./components/ProductsList.jsx";
-import AutomationScheduler from "./components/AutomationScheduler.jsx";
 import ToolPlaceholder from "./components/ToolPlaceholder.jsx";
 import toolsMeta from "./toolMeta";
 import Sidebar from "./components/Sidebar";
@@ -22,11 +19,16 @@ import Onboarding from "./onboarding/Onboarding.jsx";
 // import OnboardingChecklist from "./onboarding/OnboardingChecklist.jsx";
 import Credits from "./credits/Credits.jsx";
 import Dashboard from "./dashboard/Dashboard.jsx";
-import Reports from "./components/Reports.jsx";
-import Orchestration from "./orchestration/Orchestration.jsx";
-import ProductSeoEngine from "./components/ProductSeoEngine";
-import AiAltTextEngine from "./components/AiAltTextEngine";
-import InternalLinkOptimizer from "./components/InternalLinkOptimizer";
+
+// Lazy-load only large or rarely-used tool components
+const ContentHealthAuditor = lazy(() => import("./components/ContentHealthAuditor"));
+const UserManagement = lazy(() => import("./components/UserManagement.jsx"));
+const AutomationScheduler = lazy(() => import("./components/AutomationScheduler.jsx"));
+const Reports = lazy(() => import("./components/Reports.jsx"));
+const Orchestration = lazy(() => import("./orchestration/Orchestration.jsx"));
+const ProductSeoEngine = lazy(() => import("./components/ProductSeoEngine"));
+const AiAltTextEngine = lazy(() => import("./components/AiAltTextEngine"));
+const InternalLinkOptimizer = lazy(() => import("./components/InternalLinkOptimizer"));
 
 function OnboardingModal({ open, onClose }) {
   if (!open) return null;
@@ -345,43 +347,45 @@ function App() {
             {/* Removed top-strip for a cleaner, more premium look */}
             <section className="tool-section">
               {activeSection === "dashboard" && project && <DashboardHome setActiveSection={setActiveSection} />}
-              {activeSection === "automation-scheduler" && <AutomationScheduler />}
-              {activeSection === "reports" && <Reports />}
-              {activeSection === "auth" && <Auth />}
-              {activeSection === "user-management" && <UserManagement coreUrl={coreUrl} />}
-              {activeSection === "onboarding" && <Onboarding />}
-              {activeSection === "credits" && <Credits />}
-              {activeSection === "orchestration" && <Orchestration />}
-              {activeSection === "products" && (
-                <ProductsList 
-                  shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
-                  shopToken={localStorage.getItem("shopToken")}
-                />
-              )}
-              {activeSection === "content-health" && project && (
-                <ContentHealthAuditor coreUrl={coreUrl} projectId={project.id} />
-              )}
-              {activeSection === "fix-queue" && project && (
-                <FixQueue coreUrl={coreUrl} projectId={project.id} />
-              )}
-              {activeSection === "content-ingest" && project && (
-                <ContentIngestor coreUrl={coreUrl} projectId={project.id} />
-              )}
-              {activeSection === "draft-library" && project && (
-                <DraftLibrary coreUrl={coreUrl} projectId={project.id} />
-              )}
-              {activeSection === "system-health" && (
-                <SystemHealthPanel
-                  coreStatus={coreStatus}
-                  coreStatusLabel={coreStatusLabel}
-                  lastRunAt={lastRunAt}
-                />
-              )}
-              {activeSection === "tools" && project && <ToolsList />}
-              {/* Render a ToolPlaceholder for each tool in toolsMeta */}
-              {toolsMeta.map(tool => (
-                activeSection === tool.id && <ToolPlaceholder key={tool.id} name={tool.name} />
-              ))}
+              <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading…</div>}>
+                {activeSection === "automation-scheduler" && <AutomationScheduler />}
+                {activeSection === "reports" && <Reports />}
+                {activeSection === "auth" && <Auth />}
+                {activeSection === "user-management" && <UserManagement coreUrl={coreUrl} />}
+                {activeSection === "onboarding" && <Onboarding />}
+                {activeSection === "credits" && <Credits />}
+                {activeSection === "orchestration" && <Orchestration />}
+                {activeSection === "products" && (
+                  <ProductsList 
+                    shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
+                    shopToken={localStorage.getItem("shopToken")}
+                  />
+                )}
+                {activeSection === "content-health" && project && (
+                  <ContentHealthAuditor coreUrl={coreUrl} projectId={project.id} />
+                )}
+                {activeSection === "fix-queue" && project && (
+                  <FixQueue coreUrl={coreUrl} projectId={project.id} />
+                )}
+                {activeSection === "content-ingest" && project && (
+                  <ContentIngestor coreUrl={coreUrl} projectId={project.id} />
+                )}
+                {activeSection === "draft-library" && project && (
+                  <DraftLibrary coreUrl={coreUrl} projectId={project.id} />
+                )}
+                {activeSection === "system-health" && (
+                  <SystemHealthPanel
+                    coreStatus={coreStatus}
+                    coreStatusLabel={coreStatusLabel}
+                    lastRunAt={lastRunAt}
+                  />
+                )}
+                {activeSection === "tools" && project && <ToolsList />}
+                {/* Render a ToolPlaceholder for each tool in toolsMeta */}
+                {toolsMeta.map(tool => (
+                  activeSection === tool.id && <ToolPlaceholder key={tool.id} name={tool.name} />
+                ))}
+              </Suspense>
             </section>
           </div>
         </main>

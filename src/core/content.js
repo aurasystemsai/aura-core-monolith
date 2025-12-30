@@ -66,6 +66,7 @@ function normaliseType(value) {
  * Called by /projects/:projectId/content/batch
  */
 function upsertContentItems(projectId, items) {
+  console.time('[DB] upsertContentItems');
   const now = new Date().toISOString();
 
   const rows = (items || [])
@@ -166,7 +167,7 @@ function upsertContentItems(projectId, items) {
   });
 
   tx(rows);
-
+  console.timeEnd('[DB] upsertContentItems');
   return { inserted: rows.length };
 }
 
@@ -262,6 +263,7 @@ function scoreRow(row) {
  * Used by GET /projects/:projectId/content/health
  */
 function getContentHealth({ projectId, type, maxScore = 70, limit = 100 }) {
+  console.time('[DB] getContentHealth');
   const params = [projectId];
   let where = "projectId = ?";
 
@@ -279,6 +281,7 @@ function getContentHealth({ projectId, type, maxScore = 70, limit = 100 }) {
   `);
 
   const rows = stmt.all(...params);
+  console.timeEnd('[DB] getContentHealth');
 
   const scored = rows.map((row) => {
     const scoring = scoreRow(row);
