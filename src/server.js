@@ -42,9 +42,10 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
+
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-const csurf = require("csurf");
+const lusca = require("lusca");
 
 
 
@@ -59,8 +60,9 @@ app.use((req, res, next) => {
 // Sanitize all incoming input
 app.use(sanitizeInputs);
 // XSS protection removed (xss-clean is not compatible with Express 5+)
-// CSRF protection (cookie-based)
-const csrfProtection = csurf({ cookie: true });
+
+// CSRF protection (lusca)
+// Lusca expects session middleware, but can use cookie-based tokens for APIs
 
 
 dotenv.config();
@@ -196,18 +198,13 @@ app.use(
 // Protect all /api routes (except health) with API key
 app.use('/api', requireApiKey);
 
-// CSRF protection for all state-changing routes (POST, PUT, PATCH, DELETE)
-app.use((req, res, next) => {
-  const method = req.method.toUpperCase();
-  if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-    return csrfProtection(req, res, next);
-  }
-  next();
-});
+// Lusca CSRF protection for all state-changing routes (POST, PUT, PATCH, DELETE)
+app.use(lusca.csrf({ cookie: true }));
 
 // Expose CSRF token for frontend (GET /api/csrf-token)
-app.get('/api/csrf-token', csrfProtection, (req, res) => {
-  res.json({ ok: true, csrfToken: req.csrfToken() });
+app.get('/api/csrf-token', (req, res) => {
+  // Lusca sets the token on req.csrfToken
+  res.json({ ok: true, csrfToken: req.csrfToken });
 });
 // ---------- SHOPIFY AUTHENTICATION ROUTES ----------
 
