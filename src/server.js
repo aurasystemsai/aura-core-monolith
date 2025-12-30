@@ -96,8 +96,8 @@ app.get('/projects/:projectId/runs', (req, res) => {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
-// trust proxy so req.protocol reflects X-Forwarded-Proto when behind Render/ngrok
-app.set("trust proxy", true);
+// trust proxy only for local proxy (prevents spoofing X-Forwarded-For)
+app.set("trust proxy", "127.0.0.1");
 const PORT = process.env.PORT || 10000;
 
 // ---------- MIDDLEWARE ----------
