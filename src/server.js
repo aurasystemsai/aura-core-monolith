@@ -101,9 +101,6 @@ const usersRoutes = require("./routes/users");
 // User and RBAC API
 app.use('/api/users', usersRoutes);
 
-// SSO (OAuth2/SAML) API
-const ssoRoutes = require('./routes/sso');
-app.use('/sso', ssoRoutes);
 
 // Fix Queue background worker (retry + DLQ)
 const { startFixQueueWorker } = require("./core/fixQueueWorker");
@@ -119,12 +116,36 @@ let sessionStore;
 if (process.env.NODE_ENV === 'production') {
   const { RedisStore } = require('connect-redis');
   const { createClient } = require('redis');
+  const redisUrl = process.env.REDIS_URL;
+  if (!redisUrl) {
+    console.error('[SECURITY] FATAL: REDIS_URL is not set in production. Session store cannot be initialized.');
+    process.exit(1);
+  }
   const redisClient = createClient({
-    url: process.env.REDIS_URL || 'redis://localhost:6379',
+    url: redisUrl,
     legacyMode: true
   });
-  redisClient.connect().catch(console.error);
-  sessionStore = new RedisStore({ client: redisClient });
+  let redisConnected = false;
+  redisClient.on('error', (err) => {
+    console.error('[SECURITY] FATAL: Redis connection error:', err);
+    if (process.env.NODE_ENV === 'production') {
+      process.exit(1);
+    }
+  });
+  redisClient.on('connect', () => {
+    redisConnected = true;
+    console.log('[Core] Connected to Redis for session store.');
+  });
+  // Connect synchronously before proceeding
+  (async () => {
+    try {
+      await redisClient.connect();
+      sessionStore = new RedisStore({ client: redisClient });
+    } catch (err) {
+      console.error('[SECURITY] FATAL: Unable to connect to Redis for session store:', err);
+      process.exit(1);
+    }
+  })();
 } else {
   sessionStore = undefined; // default MemoryStore for dev only
 }

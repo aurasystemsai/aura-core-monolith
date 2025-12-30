@@ -1,12 +1,7 @@
-
 import React, { useState } from "react";
 
-export default function InternalLinkOptimizer() {
-  const [form, setForm] = useState({
-    pageUrl: "",
-    pageType: "product",
-    context: ""
-  });
+export default function ToolScaffold({ toolId, toolName, fields }) {
+  const [form, setForm] = useState(() => Object.fromEntries(fields.map(f => [f.name, f.defaultValue || ""])));
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -21,7 +16,7 @@ export default function InternalLinkOptimizer() {
     setError("");
     setResult(null);
     try {
-      const res = await fetch("/api/run/internal-link-optimizer", {
+      const res = await fetch(`/api/run/${toolId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -39,36 +34,27 @@ export default function InternalLinkOptimizer() {
   };
 
   return (
-    <div className="tool-internal-link-optimizer">
-      <h2>Internal Link Optimiser</h2>
+    <div className="tool-generic">
+      <h2>{toolName}</h2>
       <form onSubmit={handleSubmit} style={{ maxWidth: 500 }}>
-        <div>
-          <label>Page URL*</label>
-          <input name="pageUrl" value={form.pageUrl} onChange={handleChange} required style={{ width: "100%" }} />
-        </div>
-        <div>
-          <label>Page Type</label>
-          <select name="pageType" value={form.pageType} onChange={handleChange} style={{ width: "100%" }}>
-            <option value="product">Product</option>
-            <option value="blog">Blog</option>
-            <option value="landing">Landing</option>
-            <option value="category">Category</option>
-            <option value="docs">Docs</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <div>
-          <label>Context (optional)</label>
-          <textarea name="context" value={form.context} onChange={handleChange} style={{ width: "100%" }} />
-        </div>
+        {fields.map(f => (
+          <div key={f.name}>
+            <label>{f.label || f.name}{f.required ? '*' : ''}</label>
+            {f.type === 'textarea' ? (
+              <textarea name={f.name} value={form[f.name]} onChange={handleChange} required={f.required} style={{ width: "100%" }} />
+            ) : (
+              <input name={f.name} value={form[f.name]} onChange={handleChange} required={f.required} style={{ width: "100%" }} type={f.type || 'text'} />
+            )}
+          </div>
+        ))}
         <button type="submit" disabled={loading} style={{ marginTop: 12 }}>
-          {loading ? "Generating..." : "Suggest Internal Links"}
+          {loading ? "Running..." : "Run Tool"}
         </button>
       </form>
       {error && <div style={{ color: "red", marginTop: 12 }}>{error}</div>}
       {result && (
         <div style={{ marginTop: 24 }}>
-          <h3>Suggested Internal Links</h3>
+          <h3>Result</h3>
           <pre style={{ background: "#222", color: "#7fffd4", padding: 12, borderRadius: 6, overflowX: "auto" }}>
             {JSON.stringify(result, null, 2)}
           </pre>

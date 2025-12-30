@@ -9,6 +9,7 @@ import DraftLibrary from "./components/DraftLibrary";
 import ContentIngestor from "./components/ContentIngestor";
 import ProductsList from "./components/ProductsList.jsx";
 import ToolPlaceholder from "./components/ToolPlaceholder.jsx";
+import ToolScaffold from "./components/tools/ToolScaffold.jsx";
 import toolsMeta from "./toolMeta";
 import Sidebar from "./components/Sidebar";
 import ChangelogModal from "./components/ChangelogModal.jsx";
@@ -416,10 +417,29 @@ function App() {
                   <AiChatbot coreUrl={coreUrl} />
                 )}
                 {activeSection === "tools" && project && <ToolsList />}
-                {/* Render a ToolPlaceholder for each tool in toolsMeta */}
-                {toolsMeta.map(tool => (
-                  activeSection === tool.id && <ToolPlaceholder key={tool.id} name={tool.name} />
-                ))}
+                {/* Render a ToolScaffold for each tool in toolsMeta (fallback if no custom UI) */}
+                {toolsMeta.map(tool => {
+                  // List of tool IDs with custom UIs already implemented
+                  const customUIs = [
+                    "product-seo",
+                    "ai-alt-text-engine",
+                    "internal-link-optimizer",
+                    "content-health-auditor",
+                    // Add more as you build custom UIs
+                  ];
+                  if (activeSection === tool.id) {
+                    if (customUIs.includes(tool.id)) {
+                      // Let the custom UI route above handle it
+                      return null;
+                    }
+                    // Define minimal fields for each tool (can be improved per tool)
+                    const defaultFields = [
+                      { name: "input", label: "Input", type: "textarea", required: false }
+                    ];
+                    return <ToolScaffold key={tool.id} toolId={tool.id} toolName={tool.name} fields={defaultFields} />;
+                  }
+                  return null;
+                })}
               </Suspense>
             </section>
           </div>
