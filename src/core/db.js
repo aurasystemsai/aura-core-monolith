@@ -5,30 +5,48 @@
 
 "use strict";
 
+
 const fs = require("fs");
 const path = require("path");
-const Database = require("better-sqlite3");
+let db = null;
+let pgPool = null;
 
-// Decide where the DB lives:
-// - In production (Render), set AURA_DB_PATH (e.g. /var/data/aura-core.sqlite)
-// - Locally, fall back to src/data/aura-core.sqlite
-const dbPath =
-  process.env.AURA_DB_PATH ||
-  path.join(__dirname, "..", "data", "aura-core.sqlite");
+const DB_TYPE = process.env.AURA_DB_TYPE || 'sqlite'; // 'sqlite' or 'postgres'
 
-// Ensure directory exists
-const dir = path.dirname(dbPath);
-if (!fs.existsSync(dir)) {
-  fs.mkdirSync(dir, { recursive: true });
+if (DB_TYPE === 'postgres') {
+  // --- Postgres mode ---
+  const { Pool } = require('pg');
+  const pgConfig = {
+    connectionString: process.env.AURA_PG_URL || 'postgres://postgres:postgres@localhost:5432/aura',
+    max: 10,
+    idleTimeoutMillis: 30000,
+  };
+  pgPool = new Pool(pgConfig);
+  console.log('[Core] Using Postgres at', pgConfig.connectionString);
+  module.exports = {
+    type: 'postgres',
+    pool: pgPool,
+    query: (text, params) => pgPool.query(text, params),
+    close: () => pgPool.end(),
+  };
+} else {
+  // --- SQLite mode (default) ---
+  const Database = require("better-sqlite3");
+  const dbPath =
+    process.env.AURA_DB_PATH ||
+    path.join(__dirname, "..", "data", "aura-core.sqlite");
+  const dir = path.dirname(dbPath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  db = new Database(dbPath);
+  db.pragma("journal_mode = WAL");
+  console.log(`[Core] SQLite DB path: ${dbPath}`);
+  module.exports = {
+    type: 'sqlite',
+    db,
+    prepare: (...args) => db.prepare(...args),
+    exec: (...args) => db.exec(...args),
+    close: () => db.close(),
+  };
 }
-
-// Open connection (creates file if it doesn't exist)
-const db = new Database(dbPath);
-
-// WAL mode for better concurrency
-db.pragma("journal_mode = WAL");
-
-// Small log so we can see where it’s writing
-console.log(`[Core] SQLite DB path: ${dbPath}`);
-
-module.exports = db;
