@@ -65,7 +65,24 @@ const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
 // Security: Set HTTP headers
-app.use(helmet());
+app.use(
+  helmet({
+    frameguard: false, // Allow embedding in iframe (Shopify admin)
+  })
+);
+// Allow Shopify to embed app in iframe (CSP)
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      frameAncestors: [
+        "'self'",
+        "https://admin.shopify.com",
+        "https://*.myshopify.com"
+      ],
+    },
+  })
+);
 
 // Security: Basic rate limiting (100 requests per 15 minutes per IP)
 const limiter = rateLimit({
