@@ -1,5 +1,4 @@
 // ...existing code...
-// --- Simple API Key Auth Middleware ---
 // ----------------------------------------
 // Register endpoints after all middleware and app initialization
 // ----------------------------------------
