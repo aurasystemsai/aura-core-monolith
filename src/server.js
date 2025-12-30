@@ -2,6 +2,7 @@
 // ----------------------------------------
 // Register endpoints after all middleware and app initialization
 // ----------------------------------------
+
 // ---------- AI CHATBOT ENDPOINT ----------
 app.post('/api/ai/chatbot', require('./routes/users').requireAuth, async (req, res) => {
   try {
