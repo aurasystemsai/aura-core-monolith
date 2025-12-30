@@ -1,3 +1,12 @@
+
+
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const { findUserByEmail, createUser, checkPassword, hasRole } = require('../core/users');
+const { hasPermission } = require('../core/permissions');
+
+const router = express.Router();
+
 // GDPR-compliant user data export
 router.get('/export', requireAuth, requirePermission('user:manage'), (req, res) => {
   const users = require('../core/users').loadUsers();
@@ -9,13 +18,6 @@ router.get('/export', requireAuth, requirePermission('user:manage'), (req, res) 
   }));
   res.json(exportUsers);
 });
-
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const { findUserByEmail, createUser, checkPassword, hasRole } = require('../core/users');
-const { hasPermission } = require('../core/permissions');
-
-const router = express.Router();
 // List all users (requires user:manage permission)
 router.get('/list', requireAuth, requirePermission('user:manage'), (req, res) => {
   const users = require('../core/users').loadUsers();
