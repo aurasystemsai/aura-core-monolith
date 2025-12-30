@@ -65,12 +65,16 @@ const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
 // Security: Set HTTP headers (allow Shopify embedding)
+// Security: Set HTTP headers (allow Shopify embedding)
+const defaultCsp = helmet.contentSecurityPolicy.getDefaultDirectives();
+// Remove frameAncestors if present to avoid duplicate
+delete defaultCsp.frameAncestors;
 app.use(
   helmet({
     frameguard: false, // Allow embedding in iframe (Shopify admin)
     contentSecurityPolicy: {
       directives: {
-        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        ...defaultCsp,
         frameAncestors: [
           "'self'",
           "https://admin.shopify.com",
