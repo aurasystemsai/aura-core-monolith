@@ -41,4 +41,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "AURA Operations AI", description: "Operations AI Copilot for inventory, fulfilment, and supplier insights." };
+module.exports = { key, run, meta };

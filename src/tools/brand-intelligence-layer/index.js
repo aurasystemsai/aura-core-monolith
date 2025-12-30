@@ -40,4 +40,5 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+const meta = { id: key, name: "Brand Intelligence Layer", description: "Brand voice and positioning insights." };
+module.exports = { key, run, meta };
