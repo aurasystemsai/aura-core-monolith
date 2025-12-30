@@ -69,9 +69,9 @@ app.use(cookieParser());
 const defaultCsp = helmet.contentSecurityPolicy.getDefaultDirectives();
 const cspDirectives = {};
 for (const key in defaultCsp) {
-  if (key !== 'frameAncestors') cspDirectives[key] = defaultCsp[key];
+  if (key !== 'frame-ancestors') cspDirectives[key] = defaultCsp[key];
 }
-cspDirectives.frameAncestors = [
+cspDirectives['frame-ancestors'] = [
   "'self'",
   "https://admin.shopify.com",
   "https://*.myshopify.com"
