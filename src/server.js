@@ -37,13 +37,7 @@ if ((process.env.JWT_SECRET || '').startsWith('dev-secret') || !process.env.JWT_
 if (process.env.NODE_ENV !== 'production') {
   console.warn('[SECURITY] WARNING: Not running in production mode. Security features may be reduced.');
 }
-// Add Referrer-Policy header for additional privacy
-app.use((req, res, next) => {
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  next();
-});
-// Sanitize all incoming input
-app.use(sanitizeInputs);
+// ...existing code...
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -55,6 +49,15 @@ const csurf = require("csurf");
 
 
 const app = express();
+
+// Add Referrer-Policy header for additional privacy
+app.use((req, res, next) => {
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
+// Sanitize all incoming input
+app.use(sanitizeInputs);
 // XSS protection removed (xss-clean is not compatible with Express 5+)
 // CSRF protection (cookie-based)
 const csrfProtection = csurf({ cookie: true });
