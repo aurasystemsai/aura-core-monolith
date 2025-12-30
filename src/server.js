@@ -1,4 +1,17 @@
 // (moved below, after app is initialized)
+// AI Chatbot endpoint will be registered after app is initialized below.
+// ---------- WEBHOOK ENDPOINT FOR INTEGRATIONS ----------
+// Registered after app is initialized below.
+// ---------- ANALYTICS SUMMARY ENDPOINT ----------
+// Registered after app is initialized below.
+// ---------- ADVANCED HEALTH CHECK ----------
+// Registered after app is initialized below.
+// ...existing code...
+// --- Simple API Key Auth Middleware ---
+// ----------------------------------------
+// Register endpoints after app is initialized
+// ----------------------------------------
+
 // ---------- AI CHATBOT ENDPOINT ----------
 app.post('/api/ai/chatbot', require('./routes/users').requireAuth, async (req, res) => {
   try {
@@ -12,6 +25,7 @@ app.post('/api/ai/chatbot', require('./routes/users').requireAuth, async (req, r
     res.status(500).json({ ok: false, error: err.message });
   }
 });
+
 // ---------- WEBHOOK ENDPOINT FOR INTEGRATIONS ----------
 app.post('/api/webhooks/:event', (req, res) => {
   const secret = req.headers['x-webhook-secret'];
@@ -33,6 +47,7 @@ app.post('/api/webhooks/:event', (req, res) => {
   require('./core/automation').handleEvent(event, payload).catch(() => {});
   res.json({ ok: true });
 });
+
 // ---------- ANALYTICS SUMMARY ENDPOINT ----------
 app.get('/api/analytics/summary', require('./routes/users').requireAuth, require('./routes/users').requirePermission('user:manage'), async (req, res) => {
   try {
@@ -49,6 +64,7 @@ app.get('/api/analytics/summary', require('./routes/users').requireAuth, require
     res.status(500).json({ ok: false, error: err.message });
   }
 });
+
 // ---------- ADVANCED HEALTH CHECK ----------
 app.get('/health/advanced', async (req, res) => {
   let dbStatus = 'ok';
@@ -76,8 +92,6 @@ app.get('/health/advanced', async (req, res) => {
     version,
   });
 });
-// ...existing code...
-// --- Simple API Key Auth Middleware ---
 const API_KEY = process.env.DEBUG_KEY;
 function requireApiKey(req, res, next) {
   // Allow health checks without auth
