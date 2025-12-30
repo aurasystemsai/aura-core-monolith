@@ -83,7 +83,6 @@ const { logAudit } = require('../core/auditLog');
 // ADD (UPSERT BY projectId+url)
 router.post("/projects/:projectId/fix-queue", (req, res) => {
   const projectId = req.params.projectId;
-
   try {
     const { url, issues } = req.body || {};
     const result = fixQueue.addFixQueueItem(projectId, { url, issues });
@@ -101,26 +100,10 @@ router.post("/projects/:projectId/fix-queue", (req, res) => {
     });
   }
 });
-
-  const projectId = req.params.projectId;
-  const id = req.params.id;
-
-  try {
-    fixQueue.updateFixQueueItem(projectId, id, req.body || {}, { updatedBy: getUpdatedBy(req) });
-    return res.json({ ok: true, projectId, id: Number(id) });
-  } catch (err) {
-    console.error("[FixQueue] patch error", err);
-    return res.status(400).json({
-      ok: false,
-      error: err.message || "Failed to update fix queue item",
-    });
-  }
-});
 // UPDATE (OWNER / NOTES / STATUS / SUGGESTIONS)
 router.patch("/projects/:projectId/fix-queue/:id", (req, res) => {
   const projectId = req.params.projectId;
   const id = req.params.id;
-
   try {
     fixQueue.updateFixQueueItem(projectId, id, req.body || {}, { updatedBy: getUpdatedBy(req) });
     logAudit({ action: 'fixqueue_update', user: req.user?.email || 'unknown', target: projectId, details: { id, update: req.body } });
@@ -130,21 +113,6 @@ router.patch("/projects/:projectId/fix-queue/:id", (req, res) => {
     return res.status(400).json({
       ok: false,
       error: err.message || "Failed to update fix queue item",
-    });
-  }
-});
-
-  const projectId = req.params.projectId;
-  const id = req.params.id;
-
-  try {
-    fixQueue.updateFixQueueItem(projectId, id, { status: "done" }, { updatedBy: getUpdatedBy(req) });
-    return res.json({ ok: true, projectId, id: Number(id) });
-  } catch (err) {
-    console.error("[FixQueue] done error", err);
-    return res.status(400).json({
-      ok: false,
-      error: err.message || "Failed to mark done",
     });
   }
 });
