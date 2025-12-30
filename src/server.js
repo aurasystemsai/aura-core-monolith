@@ -42,9 +42,9 @@ const usersRoutes = require("./routes/users");
 // User and RBAC API
 app.use('/api/users', usersRoutes);
 
-// SSO (OAuth2/SAML) API
-const ssoRoutes = require('./routes/sso');
-app.use('/sso', ssoRoutes);
+// SSO (OAuth2/SAML) API (DISABLED: missing passport dependency)
+// const ssoRoutes = require('./routes/sso');
+// app.use('/sso', ssoRoutes);
 
 // Fix Queue background worker (retry + DLQ)
 const { startFixQueueWorker } = require("./core/fixQueueWorker");
