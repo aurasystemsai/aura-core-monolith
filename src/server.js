@@ -117,7 +117,7 @@ const session = require('express-session');
 // Use Redis as session store in production, fallback to MemoryStore in dev
 let sessionStore;
 if (process.env.NODE_ENV === 'production') {
-  const RedisStore = require('connect-redis').default;
+  const RedisStore = require('connect-redis');
   const { createClient } = require('redis');
   const redisClient = createClient({
     url: process.env.REDIS_URL || 'redis://localhost:6379',
