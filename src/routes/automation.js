@@ -12,12 +12,26 @@ router.get('/', async (req, res) => {
   res.json({ ok: true, schedules });
 });
 
+// Input validation helper
+function validateScheduleInput(input) {
+  const errors = [];
+  if (!input || typeof input !== 'object') errors.push('Input must be an object');
+  const { name, type, date, time, recurrence } = input || {};
+  if (!name || typeof name !== 'string' || !name.trim()) errors.push('Name is required');
+  if (!type || !['one-time', 'recurring'].includes(type)) errors.push('Type must be one-time or recurring');
+  if (!time || typeof time !== 'string' || !time.trim()) errors.push('Time is required');
+  if (type === 'one-time' && (!date || typeof date !== 'string' || !date.trim())) errors.push('Date is required for one-time schedules');
+  if (type === 'recurring' && (!recurrence || typeof recurrence !== 'string' || !recurrence.trim())) errors.push('Recurrence is required for recurring schedules');
+  return errors;
+}
+
 // Add a new schedule
 router.post('/', async (req, res) => {
-  const { name, type, date, time, recurrence } = req.body;
-  if (!name || !type || !time || (type === 'one-time' && !date)) {
-    return res.status(400).json({ ok: false, error: 'Missing required fields' });
+  const errors = validateScheduleInput(req.body);
+  if (errors.length) {
+    return res.status(400).json({ ok: false, error: errors.join('; ') });
   }
+  const { name, type, date, time, recurrence } = req.body;
   const schedules = (await storage.get(SCHEDULES_KEY)) || [];
   const newSchedule = {
     id: Date.now(),
@@ -37,7 +51,11 @@ router.post('/', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   const id = Number(req.params.id);
   let schedules = (await storage.get(SCHEDULES_KEY)) || [];
+  const initialLength = schedules.length;
   schedules = schedules.filter(s => s.id !== id);
+  if (schedules.length === initialLength) {
+    return res.status(404).json({ ok: false, error: 'Schedule not found' });
+  }
   await storage.set(SCHEDULES_KEY, schedules);
   res.json({ ok: true });
 });

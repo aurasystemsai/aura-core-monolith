@@ -14,6 +14,14 @@ function requireMakeWebhookUrl() {
   return String(url).trim();
 }
 
+// Input validation helper
+function validateMakePayload(payload) {
+  const errors = [];
+  if (!payload || typeof payload !== 'object') errors.push('Payload must be an object');
+  // Add more checks as needed for your Make integration
+  return errors;
+}
+
 // POST /integrations/make/apply-fix-queue
 // Forwards JSON to Make "aura_apply_fix_queue" webhook
 router.post("/integrations/make/apply-fix-queue", async (req, res) => {
@@ -28,15 +36,11 @@ router.post("/integrations/make/apply-fix-queue", async (req, res) => {
     }
 
     const payload = req.body || {};
-
-    // Basic sanity check (keep it lenient; Make will accept anything)
-    if (!payload || typeof payload !== "object") {
-      return res.status(400).json({
-        ok: false,
-        error: "JSON body is required",
-      });
+    const errors = validateMakePayload(payload);
+    if (errors.length) {
+      return res.status(400).json({ ok: false, error: errors.join('; ') });
     }
-
+    /*...*/
     const resp = await fetch(webhookUrl, {
       method: "POST",
       headers: {

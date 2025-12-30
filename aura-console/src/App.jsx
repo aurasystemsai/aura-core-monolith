@@ -1,3 +1,4 @@
+import UserManagement from "./components/UserManagement.jsx";
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
@@ -71,6 +72,10 @@ class ErrorBoundary extends React.Component {
     // Enhanced logging for debugging
     if (typeof window !== 'undefined' && window.console) {
       console.error('ErrorBoundary caught:', error, errorInfo);
+    }
+    // Show toast if callback provided
+    if (this.props.onError) {
+      this.props.onError(error);
     }
     // Optionally, send error info to a server here
   }
@@ -313,8 +318,14 @@ function App() {
     localStorage.setItem("auraChangelogSeen", "1");
   };
 
+  // ...existing code...
+  // Handler to show error toast from error boundary
+  const handleErrorBoundary = (err) => {
+    showToast(err?.message || 'A fatal error occurred', 'error');
+  };
+
   return (
-    <ErrorBoundary>
+    <ErrorBoundary onError={handleErrorBoundary}>
       <OnboardingModal open={showOnboarding} onClose={handleCloseOnboarding} />
       <ChangelogModal open={showChangelog} onClose={() => setShowChangelog(false)} />
       <div className="app-shell">
@@ -337,6 +348,7 @@ function App() {
               {activeSection === "automation-scheduler" && <AutomationScheduler />}
               {activeSection === "reports" && <Reports />}
               {activeSection === "auth" && <Auth />}
+              {activeSection === "user-management" && <UserManagement coreUrl={coreUrl} />}
               {activeSection === "onboarding" && <Onboarding />}
               {activeSection === "credits" && <Credits />}
               {activeSection === "orchestration" && <Orchestration />}

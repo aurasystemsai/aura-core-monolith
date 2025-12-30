@@ -1,3 +1,5 @@
+
+import React from "react";
 import toolsMeta from "../toolMeta";
 
 
@@ -6,6 +8,7 @@ function Sidebar({ current, onSelect, onShowChangelog, changelogUnread }) {
       { key: 'dashboard', label: 'Dashboard', icon: '📊' },
       { key: 'reports', label: 'Reports', icon: '📈' },
       { key: 'auth', label: 'Auth', icon: '🔑' },
+      { key: 'user-management', label: 'User Management', icon: '👥' },
       { key: 'onboarding', label: 'Onboarding', icon: '🚀' },
       { key: 'credits', label: 'Credits', icon: '💳' },
       { key: 'orchestration', label: 'Orchestration', icon: '🧩' },

@@ -10,11 +10,12 @@
     "test:tools": "node src/test-all-tools.js",
     "console": "npm run dev --prefix aura-console",
     "build:console": "npm install --prefix aura-console --include=dev && npm run build --prefix aura-console",
-    "lint": "eslint --ext .js,.jsx src"
+    "lint": "eslint --ext .js,.jsx src",
+    "test": "jest"
   },
-    "engines": {
-      "node": ">=24.0.0 <25.0.0"
-    },
+  "engines": {
+    "node": ">=24.0.0 <25.0.0"
+  },
   "keywords": [
     "aura-core",
     "automation",
@@ -26,23 +27,42 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.5.0",
-    "body-parser": "^1.20.2",
+    "body-parser": "^2.2.1",
     "chart.js": "^4.5.1",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "dotenv": "^16.6.1",
+    "csurf": "^1.11.0",
+    "dotenv": "^17.2.3",
     "esbuild": "^0.27.2",
-    "express": "^4.19.0",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
     "i18next": "^25.7.3",
+    "jsonwebtoken": "^9.0.3",
     "marked": "^17.0.1",
-    "openai": "^6.10.0",
+    "openai": "^6.15.0",
+    "react": "^18.3.1",
     "react-chartjs-2": "^5.3.1",
-    "vite": "^7.3.0"
+    "react-dom": "^18.3.1",
+    "vite": "^7.3.0",
+    "xss-clean": "^0.1.4"
   },
   "devDependencies": {
-    "eslint": "^8.57.0",
-    "nodemon": "^3.1.0",
+    "@babel/preset-env": "^7.28.5",
+    "@babel/preset-react": "^7.28.5",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@testing-library/user-event": "^14.6.1",
+    "babel-jest": "^30.2.0",
+    "eslint": "^9.39.2",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "nodemon": "^3.1.11",
     "postcss": "^8.5.6",
-    "postcss-preset-env": "^10.6.0"
+    "postcss-preset-env": "^10.6.0",
+    "supertest": "^7.1.4"
   }
 }

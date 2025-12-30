@@ -74,9 +74,21 @@ router.get("/projects/:projectId/drafts/:draftId", (req, res) => {
  *   articleHtml: "..."
  * }
  */
+function validateDraftInput(input) {
+  const errors = [];
+  if (!input || typeof input !== 'object') errors.push('Input must be an object');
+  if (!input.toolId || typeof input.toolId !== 'string' || !input.toolId.trim()) errors.push('toolId is required');
+  if (!input.title || typeof input.title !== 'string' || !input.title.trim()) errors.push('title is required');
+  if (!input.articleText || typeof input.articleText !== 'string' || !input.articleText.trim()) errors.push('articleText is required');
+  return errors;
+}
+
 router.post("/projects/:projectId/drafts", (req, res) => {
   const projectId = req.params.projectId;
-
+  const errors = validateDraftInput(req.body);
+  if (errors.length) {
+    return res.status(400).json({ ok: false, error: errors.join('; ') });
+  }
   try {
     const created = draftsCore.createDraft(projectId, req.body || {});
     return res.json({

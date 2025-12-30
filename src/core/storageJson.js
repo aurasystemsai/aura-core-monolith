@@ -22,7 +22,20 @@ async function writeJson(filePath, value) {
   await fs.writeFile(filePath, raw, "utf8");
 }
 
+// Alias get/set for compatibility with route usage
+async function get(key, fallbackValue) {
+  const filePath = path.join(__dirname, '../../data', `${key}.json`);
+  return readJson(filePath, fallbackValue);
+}
+
+async function set(key, value) {
+  const filePath = path.join(__dirname, '../../data', `${key}.json`);
+  return writeJson(filePath, value);
+}
+
 module.exports = {
   readJson,
   writeJson,
+  get,
+  set,
 };

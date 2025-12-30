@@ -1,13 +1,32 @@
+// --- Simple API Key Auth Middleware ---
+const API_KEY = process.env.DEBUG_KEY;
+function requireApiKey(req, res, next) {
+  // Allow health checks without auth
+  if (req.path === '/api/health' || req.path === '/health') return next();
+  const key = req.headers['x-api-key'] || req.query.api_key;
+  if (!API_KEY || key === API_KEY) return next();
+  return res.status(401).json({ ok: false, error: 'Unauthorized: missing or invalid API key' });
+}
 // src/server.js
 // ----------------------------------------
 // AURA Core Monolith API
 // ----------------------------------------
+
 
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const csurf = require("csurf");
+const xssClean = require("xss-clean");
+// XSS protection
+app.use(xssClean());
+// CSRF protection (cookie-based)
+const csrfProtection = csurf({ cookie: true });
+
 
 dotenv.config();
 
@@ -21,19 +40,38 @@ const { fetchPageMeta } = require("./core/fetchPageMeta");
 
 // Draft Library API routes
 const draftsRoutes = require("./routes/drafts");
-
 // Fix Queue API routes
 const fixQueueRoutes = require("./routes/fix-queue");
 // Automation Scheduling API routes
 const automationRoutes = require("./routes/automation");
-
 // Make Integration routes (outbound to Make webhooks)
 const makeRoutes = require("./routes/make");
+// User and RBAC routes
+const usersRoutes = require("./routes/users");
+// User and RBAC API
+app.use('/api/users', usersRoutes);
 
 // Fix Queue background worker (retry + DLQ)
 const { startFixQueueWorker } = require("./core/fixQueueWorker");
 
+
+
+const cookieParser = require('cookie-parser');
 const app = express();
+// Parse cookies for CSRF
+app.use(cookieParser());
+
+// Security: Set HTTP headers
+app.use(helmet());
+
+// Security: Basic rate limiting (100 requests per 15 minutes per IP)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
 
 // ---------- PROJECT RUN HISTORY ROUTES ----------
 app.get('/api/projects/:projectId/runs', (req, res) => {
@@ -67,6 +105,23 @@ app.use(
     limit: "1mb",
   })
 );
+
+// Protect all /api routes (except health) with API key
+app.use('/api', requireApiKey);
+
+// CSRF protection for all state-changing routes (POST, PUT, PATCH, DELETE)
+app.use((req, res, next) => {
+  const method = req.method.toUpperCase();
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+    return csrfProtection(req, res, next);
+  }
+  next();
+});
+
+// Expose CSRF token for frontend (GET /api/csrf-token)
+app.get('/api/csrf-token', csrfProtection, (req, res) => {
+  res.json({ ok: true, csrfToken: req.csrfToken() });
+});
 // ---------- SHOPIFY AUTHENTICATION ROUTES ----------
 
 // Shopify OAuth Authentication - Step 1: Redirect to Shopify OAuth screen
@@ -500,25 +555,36 @@ app.get("/api/shopify/products", async (req, res) => {
 // Add /api equivalents as well.
 //
 
+
+function validateProjectInput(input) {
+  const errors = [];
+  if (!input || typeof input !== 'object') errors.push('Input must be an object');
+  if (!input.name || typeof input.name !== 'string' || !input.name.trim()) errors.push('name is required');
+  if (!input.domain || typeof input.domain !== 'string' || !input.domain.trim()) errors.push('domain is required');
+  return errors;
+}
+
+function validateContentBatchInput(input) {
+  const errors = [];
+  if (!input || typeof input !== 'object') errors.push('Input must be an object');
+  if (!Array.isArray(input.items) || input.items.length === 0) errors.push('items[] array is required');
+  return errors;
+}
+
 function registerProjectsAndContentRoutes(prefix = "") {
   // Create a new project from the Connect Store screen
   app.post(`${prefix}/projects`, (req, res) => {
+    const errors = validateProjectInput(req.body);
+    if (errors.length) {
+      return res.status(400).json({ ok: false, error: errors.join('; ') });
+    }
     try {
       const { name, domain, platform } = req.body || {};
-
-      if (!name || !domain) {
-        return res.status(400).json({
-          ok: false,
-          error: "name and domain are required",
-        });
-      }
-
       const project = projectsCore.createProject({
         name: String(name).trim(),
         domain: String(domain).trim(),
         platform: (platform || "other").trim(),
       });
-
       return res.json({
         ok: true,
         project,
@@ -560,17 +626,12 @@ function registerProjectsAndContentRoutes(prefix = "") {
    */
   app.post(`${prefix}/projects/:projectId/content/batch`, async (req, res) => {
     const projectId = req.params.projectId;
-
+    const errors = validateContentBatchInput(req.body);
+    if (errors.length) {
+      return res.status(400).json({ ok: false, error: errors.join('; ') });
+    }
     try {
       const { items } = req.body || {};
-
-      if (!Array.isArray(items) || items.length === 0) {
-        return res.status(400).json({
-          ok: false,
-          error: "items[] array is required",
-        });
-      }
-
       // Normalise + enrich missing title/meta (with small concurrency limit)
       const concurrency = 5;
       let autoFilledTitle = 0;
@@ -811,14 +872,19 @@ app.use((req, res, next) => {
 
 // ---------- START SERVER ----------
 
-app.listen(PORT, () => {
-  console.log(
-    `[Core] AURA Core API running on port ${PORT}\n` +
-      `==> Available at ${
-        process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`
-      }\n`
-  );
 
-  // Start background retry worker
-  startFixQueueWorker();
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(
+      `[Core] AURA Core API running on port ${PORT}\n` +
+        `==> Available at ${
+          process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`
+        }\n`
+    );
+
+    // Start background retry worker
+    startFixQueueWorker();
+  });
+}
+
+module.exports = app;
