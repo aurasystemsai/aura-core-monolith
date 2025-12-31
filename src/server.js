@@ -1,63 +1,12 @@
-    res.json({ ok: true, campaign });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
 
-// List campaigns
-app.get('/api/winback/campaigns', (req, res) => {
-  try {
-    const campaigns = winbackCampaignModel.listCampaigns();
-    res.json({ ok: true, campaigns });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
+// --- Aura Core Monolith Server ---
+const express = require('express');
+const app = express();
 
-// Get campaign by ID
-app.get('/api/winback/campaigns/:id', (req, res) => {
-  try {
-    const campaign = winbackCampaignModel.getCampaign(req.params.id);
-    if (!campaign) return res.status(404).json({ ok: false, error: 'Not found' });
-    res.json({ ok: true, campaign });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-// Update campaign
-app.put('/api/winback/campaigns/:id', (req, res) => {
-  try {
-    const campaign = winbackCampaignModel.updateCampaign(req.params.id, req.body || {});
-    if (!campaign) return res.status(404).json({ ok: false, error: 'Not found' });
-    res.json({ ok: true, campaign });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-// Delete campaign
-app.delete('/api/winback/campaigns/:id', (req, res) => {
-  try {
-    const ok = winbackCampaignModel.deleteCampaign(req.params.id);
-    if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-// --- API Key Middleware ---
-function requireApiKey(req, res, next) {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) return next(); // No API key set, allow all (dev mode)
-  const key = req.headers['x-api-key'] || req.query.api_key;
-  if (key === apiKey) return next();
-  return res.status(401).json({ ok: false, error: 'Invalid or missing API key' });
-}
-
-
-// --- ENHANCEMENTS: ADVANCED SECURITY, PERFORMANCE, DX, OBSERVABILITY ---
 const morgan = require('morgan');
+const path = require('path');
+// Redis URL for session store
+const redisUrl = process.env.REDIS_URL;
 const compression = require('compression');
 const { v4: uuidv4 } = require('uuid');
 const stoppable = require('stoppable');
@@ -71,7 +20,6 @@ app.use((req, res, next) => {
   res.setHeader('X-Request-Id', req.id);
   next();
 });
-
 // --- Advanced Logging (morgan) ---
 app.use(morgan(':date[iso] :remote-addr :method :url :status :res[content-length] - :response-time ms :req[header] :id', {
   stream: {
@@ -112,6 +60,7 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'ALLOW-FROM https://admin.shopify.com https://*.myshopify.com');
   next();
+
 });
 
 // --- X-XSS-Protection (legacy, but some browsers use it) ---
@@ -159,116 +108,7 @@ process.on('uncaughtException', (err) => {
 // --- Graceful Shutdown ---
 let server;
 if (require.main === module) {
-  server = app.listen(PORT, () => {
-    console.log(
-      `[Core] AURA Core API running on port ${PORT}\n` +
-        `==> Available at ${
-          process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`
-        }\n`
-    );
-    startFixQueueWorker();
-  });
-  stoppable(server);
-  process.on('SIGTERM', () => {
-    console.log('[Core] SIGTERM received, shutting down gracefully...');
-    server.stop(() => {
-      console.log('[Core] Server stopped.');
-        sanitize(obj[key]);
-      }
-    }
-  }
-  sanitize(req.body);
-  sanitize(req.query);
-  sanitize(req.params);
-  next();
-}
-// --- Secret Auditing and Compliance ---
-try {
-  require('dotenvx').ops();
-} catch (e) {
-  // dotenvx is dev-only, ignore if not present
-}
-
-// Block startup in production if JWT_SECRET is missing or weak
-if ((process.env.JWT_SECRET || '').startsWith('dev-secret') || !process.env.JWT_SECRET) {
-  const msg = '[SECURITY] FATAL: Using default or missing JWT_SECRET. Set a strong secret in production!';
-  if (process.env.NODE_ENV === 'production') {
-    console.error(msg);
-    process.exit(1);
-  } else {
-    console.warn(msg);
-  }
-}
-if (process.env.NODE_ENV !== 'production') {
-  console.warn('[SECURITY] WARNING: Not running in production mode. Security features may be reduced.');
-}
-// ...existing code...
-const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const dotenv = require("dotenv");
-
-const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
-const lusca = require("lusca");
-
-
-
-const app = express();
-
-// Add Referrer-Policy header for additional privacy
-app.use((req, res, next) => {
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  next();
-});
-
-// Sanitize all incoming input
-app.use(sanitizeInputs);
-// XSS protection removed (xss-clean is not compatible with Express 5+)
-
-// CSRF protection (lusca)
-// Lusca expects session middleware, but can use cookie-based tokens for APIs
-
-
-dotenv.config();
-
-const { getTool } = require("./core/tools-registry.cjs");
-const projectsCore = require("./core/projects");
-const shopTokens = require("./core/shopTokens");
-const contentCore = require("./core/content");
-
-// Auto-fetch title/meta for ingestion
-const { fetchPageMeta } = require("./core/fetchPageMeta");
-
-// Draft Library API routes
-const draftsRoutes = require("./routes/drafts");
-// Fix Queue API routes
-const fixQueueRoutes = require("./routes/fix-queue");
-// Automation Scheduling API routes
-const automationRoutes = require("./routes/automation");
-// Make Integration routes (outbound to Make webhooks)
-const makeRoutes = require("./routes/make");
-// User and RBAC routes
-const usersRoutes = require("./routes/users");
-// User and RBAC API
-app.use('/api/users', usersRoutes);
-
-
-// Fix Queue background worker (retry + DLQ)
-const { startFixQueueWorker } = require("./core/fixQueueWorker");
-
-
-
-
-
-const cookieParser = require('cookie-parser');
-const session = require('express-session');
-// Use Redis as session store in production, fallback to MemoryStore in dev
-let sessionStore;
-if (process.env.NODE_ENV === 'production') {
-  const { RedisStore } = require('connect-redis');
-  const { createClient } = require('redis');
-  const redisUrl = process.env.REDIS_URL;
+  // Initialize Redis/session store if needed
   if (!redisUrl) {
     console.error('[SECURITY] FATAL: REDIS_URL is not set in production. Session store cannot be initialized.');
     process.exit(1);
@@ -293,6 +133,9 @@ if (process.env.NODE_ENV === 'production') {
     try {
       await redisClient.connect();
       sessionStore = new RedisStore({ client: redisClient });
+      server = app.listen(PORT, () => {
+        console.log(`[Core] AURA Core API running on port ${PORT}\n`);
+      });
     } catch (err) {
       console.error('[SECURITY] FATAL: Unable to connect to Redis for session store:', err);
       process.exit(1);
@@ -301,114 +144,7 @@ if (process.env.NODE_ENV === 'production') {
 } else {
   sessionStore = undefined; // default MemoryStore for dev only
 }
-// Parse cookies for CSRF
-app.use(cookieParser());
-const sessionOptions = {
-  secret: process.env.SESSION_SECRET || 'dev-session-secret',
-  resave: false,
-  saveUninitialized: false,
-  store: sessionStore,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 1000 * 60 * 60 * 24 // 1 day
-  }
-};
-app.use(session(sessionOptions));
 
-// Security: Set HTTP headers (allow Shopify embedding)
-const defaultCsp = helmet.contentSecurityPolicy.getDefaultDirectives();
-const cspDirectives = {};
-for (const key in defaultCsp) {
-  if (key !== 'frame-ancestors') cspDirectives[key] = defaultCsp[key];
-}
-cspDirectives['frame-ancestors'] = [
-  "'self'",
-  "https://admin.shopify.com",
-  "https://*.myshopify.com"
-];
-app.use(
-  helmet({
-    frameguard: false, // Allow embedding in iframe (Shopify admin)
-    contentSecurityPolicy: {
-      directives: cspDirectives,
-    },
-  })
-);
-
-// Security: Enhanced rate limiting for /api routes (100 requests per 10 minutes per IP)
-// --- Audit Logging for Critical Actions ---
-// Example: log all login attempts (see routes/users.js for more detailed logging)
-app.use((req, res, next) => {
-  if (req.path.startsWith('/api/users/login')) {
-    console.log(`[AUDIT] Login attempt: ip=${req.ip}, time=${new Date().toISOString()}`);
-  }
-  next();
-});
-const apiLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { ok: false, error: 'Too many requests, please try again later.' }
-});
-app.use('/api', apiLimiter);
-
-// ---------- PROJECT RUN HISTORY ROUTES ----------
-app.get('/api/projects/:projectId/runs', (req, res) => {
-  const projectId = req.params.projectId;
-  try {
-    const runs = require('./core/runs').listRuns({ projectId, limit: 50 });
-    res.json({ ok: true, runs });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-app.get('/projects/:projectId/runs', (req, res) => {
-  const projectId = req.params.projectId;
-  try {
-    const runs = require('./core/runs').listRuns({ projectId, limit: 50 });
-    res.json({ ok: true, runs });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-// trust proxy only for local proxy (prevents spoofing X-Forwarded-For)
-app.set("trust proxy", "127.0.0.1");
-const PORT = process.env.PORT || 10000;
-
-
-// ---------- HTTPS ENFORCEMENT (PROD) ----------
-if (process.env.NODE_ENV === 'production') {
-  app.use((req, res, next) => {
-    if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
-      return res.redirect(301, 'https://' + req.headers.host + req.url);
-    }
-    next();
-  });
-}
-// ---------- MIDDLEWARE ----------
-
-// Harden CORS: allow only trusted origins
-const TRUSTED_ORIGINS = (process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
-app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    if (TRUSTED_ORIGINS.length === 0 || TRUSTED_ORIGINS.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('CORS: Not allowed by policy'), false);
-  },
-  credentials: true,
-}));
-app.use(
-  bodyParser.json({
-    limit: "1mb",
-  })
-);
 
 // Protect all /api routes (except health) with API key
 app.use('/api', requireApiKey);
