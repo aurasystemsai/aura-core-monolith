@@ -1,5 +1,7 @@
+// ---------- ABANDONED CHECKOUT WINBACK: ENDPOINTS MOVED AFTER APP INIT ----------
 // ---------- ABANDONED CHECKOUT WINBACK: WEBHOOK MANAGEMENT ENDPOINTS ----------
 const winbackWebhook = require('./tools/abandoned-checkout-winback/webhookModel.js');
+const winbackCompliance = require('./tools/abandoned-checkout-winback/complianceModel.js');
 
 // Register webhook
 app.post('/api/winback/webhooks', (req, res) => {
@@ -25,7 +27,7 @@ app.delete('/api/winback/webhooks/:id', (req, res) => {
   res.json({ ok: true });
 });
 // ---------- ABANDONED CHECKOUT WINBACK: GDPR/CCPA COMPLIANCE ENDPOINTS ----------
-const winbackCompliance = require('./tools/abandoned-checkout-winback/complianceModel.js');
+// (rest of winback endpoints should also be moved here, after app is initialized)
 // ---------- RETURNS/RMA AUTOMATION: GDPR/CCPA COMPLIANCE ENDPOINTS ----------
 const rmaCompliance = require('./tools/returns-rma-automation/complianceModel.js');
 // Request data export
