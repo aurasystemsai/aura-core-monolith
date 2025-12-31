@@ -1,17 +1,24 @@
-// Express router for AI Alt-Text Engine
 const express = require('express');
-const router = express.Router();
-const engine = require('./index');
+const bodyParser = require('body-parser');
+const { run, meta } = require('./index');
 
-// POST /api/ai-alt-text-engine/run
+const router = express.Router();
+router.use(bodyParser.json());
+
+// Tool metadata endpoint
+router.get('/meta', (req, res) => {
+  res.json(meta || {});
+});
+
+// Tool run endpoint
 router.post('/run', async (req, res) => {
   try {
-    const input = req.body || {};
-    const ctx = { environment: process.env.NODE_ENV };
-    const result = await engine.run(input, ctx);
-    res.json(result);
+    const input = req.body;
+    // Pass req, res for compatibility with other tools
+    const result = await run(input, req, res);
+    res.json({ success: true, result });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    res.status(500).json({ success: false, error: err?.message || err });
   }
 });
 

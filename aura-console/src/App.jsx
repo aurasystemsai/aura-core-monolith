@@ -32,6 +32,64 @@ const AiAltTextEngine = lazy(() => import("./components/AiAltTextEngine"));
 const InternalLinkOptimizer = lazy(() => import("./components/InternalLinkOptimizer"));
 import AiChatbot from "./components/AiChatbot.jsx";
 
+// Global error boundary for graceful error handling
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    if (typeof window !== 'undefined' && window.console) {
+      console.error('ErrorBoundary caught:', error, errorInfo);
+    }
+    if (this.props.onError) {
+      this.props.onError(error);
+    }
+    try {
+      fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'frontend-error',
+          error: error?.toString(),
+          stack: error?.stack,
+          info: errorInfo,
+          url: window.location.href,
+          ts: Date.now()
+        })
+      });
+    } catch (e) {}
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          color: '#ff4d4f',
+          background: '#23263a',
+          padding: 48,
+          borderRadius: 18,
+          margin: '64px auto',
+          maxWidth: 540,
+          textAlign: 'center',
+          fontWeight: 700,
+          fontSize: 20,
+          boxShadow: '0 8px 32px #0006',
+        }}>
+          <div>Something went wrong.</div>
+          <div style={{ fontSize: 15, marginTop: 18, color: '#fff8' }}>{this.state.error?.toString()}</div>
+          <pre style={{ color: '#fff', fontSize: 13, marginTop: 18, textAlign: 'left', background: '#1a1a1a', padding: 16, borderRadius: 8, overflowX: 'auto' }}>
+            {this.state.error?.stack || ''}
+          </pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
   // Floating AI Chatbot widget state
   const [showChatbot, setShowChatbot] = useState(false);
