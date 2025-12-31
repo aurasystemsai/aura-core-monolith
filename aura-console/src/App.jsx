@@ -501,7 +501,7 @@ function App() {
         </main>
       </div>
     </ErrorBoundary>
+
   );
-  // --- END FULL FEATURED APP FUNCTION RESTORED ---
 }
 export default App;
