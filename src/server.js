@@ -1,34 +1,4 @@
 // (all winback endpoints and requires must be placed after app initialization)
-// ---------- RETURNS/RMA AUTOMATION: GDPR/CCPA COMPLIANCE ENDPOINTS ----------
-const rmaCompliance = require('./tools/returns-rma-automation/complianceModel.js');
-// Request data export
-app.post('/api/rma/compliance/export', (req, res) => {
-  const { userId } = req.body || {};
-  if (!userId) return res.status(400).json({ ok: false, error: 'userId required' });
-  const reqObj = rmaCompliance.requestDataExport(userId);
-  res.json({ ok: true, request: reqObj });
-});
-// Request data deletion
-app.post('/api/rma/compliance/delete', (req, res) => {
-  const { userId } = req.body || {};
-  if (!userId) return res.status(400).json({ ok: false, error: 'userId required' });
-  const reqObj = rmaCompliance.requestDataDelete(userId);
-  res.json({ ok: true, request: reqObj });
-});
-// List compliance requests
-app.get('/api/rma/compliance/requests', (req, res) => {
-  const { userId, type } = req.query;
-  const requests = rmaCompliance.listRequests({ userId, type });
-  res.json({ ok: true, requests });
-});
-// Update request status
-app.put('/api/rma/compliance/requests/:id', (req, res) => {
-  const { status } = req.body || {};
-  if (!status) return res.status(400).json({ ok: false, error: 'status required' });
-  const reqObj = rmaCompliance.updateRequestStatus(req.params.id, status);
-  if (!reqObj) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, request: reqObj });
-});
 // Request data export
 app.post('/api/winback/compliance/export', (req, res) => {
   const { userId } = req.body || {};
