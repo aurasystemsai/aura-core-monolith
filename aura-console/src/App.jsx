@@ -10,6 +10,7 @@ import ContentIngestor from "./components/ContentIngestor";
 import ProductsList from "./components/ProductsList.jsx";
 import ToolPlaceholder from "./components/ToolPlaceholder.jsx";
 import ToolScaffold from "./components/tools/ToolScaffold.jsx";
+import AbandonedCheckoutWinback from "./components/tools/AbandonedCheckoutWinback.jsx";
 import toolsMeta from "./toolMeta";
 import Sidebar from "./components/Sidebar";
 import ChangelogModal from "./components/ChangelogModal.jsx";
@@ -425,9 +426,12 @@ function App() {
                     "ai-alt-text-engine",
                     "internal-link-optimizer",
                     "content-health-auditor",
-                    // Add more as you build custom UIs
+                    "abandoned-checkout-winback",
                   ];
                   if (activeSection === tool.id) {
+                    if (tool.id === "abandoned-checkout-winback") {
+                      return <AbandonedCheckoutWinback key={tool.id} />;
+                    }
                     if (customUIs.includes(tool.id)) {
                       // Let the custom UI route above handle it
                       return null;

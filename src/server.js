@@ -1,3 +1,281 @@
+// ---------- ABANDONED CHECKOUT WINBACK: WEBHOOK MANAGEMENT ENDPOINTS ----------
+const winbackWebhook = require('./tools/abandoned-checkout-winback/webhookModel.js');
+// Register webhook
+app.post('/api/winback/webhooks', (req, res) => {
+  try {
+    const { url, event, secret } = req.body || {};
+    if (!url || !event) return res.status(400).json({ ok: false, error: 'url and event required' });
+    const hook = winbackWebhook.registerWebhook({ url, event, secret });
+    res.json({ ok: true, webhook: hook });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// List webhooks
+app.get('/api/winback/webhooks', (req, res) => {
+  const { event } = req.query;
+  const hooks = winbackWebhook.listWebhooks({ event });
+  res.json({ ok: true, webhooks: hooks });
+});
+// Delete webhook
+app.delete('/api/winback/webhooks/:id', (req, res) => {
+  const ok = winbackWebhook.deleteWebhook(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true });
+});
+// ---------- ABANDONED CHECKOUT WINBACK: GDPR/CCPA COMPLIANCE ENDPOINTS ----------
+const winbackCompliance = require('./tools/abandoned-checkout-winback/complianceModel.js');
+// Request data export
+app.post('/api/winback/compliance/export', (req, res) => {
+  const { userId } = req.body || {};
+  if (!userId) return res.status(400).json({ ok: false, error: 'userId required' });
+  const reqObj = winbackCompliance.requestDataExport(userId);
+  res.json({ ok: true, request: reqObj });
+});
+// Request data deletion
+app.post('/api/winback/compliance/delete', (req, res) => {
+  const { userId } = req.body || {};
+  if (!userId) return res.status(400).json({ ok: false, error: 'userId required' });
+  const reqObj = winbackCompliance.requestDataDelete(userId);
+  res.json({ ok: true, request: reqObj });
+});
+// List compliance requests
+app.get('/api/winback/compliance/requests', (req, res) => {
+  const { userId, type } = req.query;
+  const requests = winbackCompliance.listRequests({ userId, type });
+  res.json({ ok: true, requests });
+});
+// Update request status
+app.put('/api/winback/compliance/requests/:id', (req, res) => {
+  const { status } = req.body || {};
+  if (!status) return res.status(400).json({ ok: false, error: 'status required' });
+  const reqObj = winbackCompliance.updateRequestStatus(req.params.id, status);
+  if (!reqObj) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, request: reqObj });
+});
+// ---------- ABANDONED CHECKOUT WINBACK: COMPLIANCE & AUDIT ENDPOINTS ----------
+const winbackAudit = require('./tools/abandoned-checkout-winback/auditModel.js');
+// Record audit event
+app.post('/api/winback/audit', (req, res) => {
+  try {
+    const entry = winbackAudit.recordAudit(req.body || {});
+    res.json({ ok: true, entry });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// List audit events
+app.get('/api/winback/audit', (req, res) => {
+  const { campaignId, userId, type } = req.query;
+  const entries = winbackAudit.listAudits({ campaignId, userId, type });
+  res.json({ ok: true, entries });
+});
+// ---------- ABANDONED CHECKOUT WINBACK: ACTIVITY LOG ENDPOINTS ----------
+const winbackActivityLog = require('./tools/abandoned-checkout-winback/activityLogModel.js');
+// Log an action
+app.post('/api/winback/activity-log', (req, res) => {
+  try {
+    const entry = winbackActivityLog.logAction(req.body || {});
+    res.json({ ok: true, entry });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// List activity log entries
+app.get('/api/winback/activity-log', (req, res) => {
+  const { campaignId, userId, action } = req.query;
+  const entries = winbackActivityLog.listLogs({ campaignId, userId, action });
+  res.json({ ok: true, entries });
+});
+
+// ---------- ABANDONED CHECKOUT WINBACK: NOTIFICATION ENDPOINTS ----------
+const winbackNotification = require('./tools/abandoned-checkout-winback/notificationModel.js');
+// Add notification
+app.post('/api/winback/notifications', (req, res) => {
+  try {
+    const notification = winbackNotification.addNotification(req.body || {});
+    res.json({ ok: true, notification });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// List notifications
+app.get('/api/winback/notifications', (req, res) => {
+  const { userId, read } = req.query;
+  const notifications = winbackNotification.listNotifications({ userId, read: read === 'true' ? true : read === 'false' ? false : undefined });
+  res.json({ ok: true, notifications });
+});
+// Mark notification as read
+app.post('/api/winback/notifications/:id/read', (req, res) => {
+  const ok = winbackNotification.markAsRead(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true });
+});
+// ---------- ABANDONED CHECKOUT WINBACK: VARIANT CRUD ENDPOINTS ----------
+const winbackVariantModel = require('./tools/abandoned-checkout-winback/variantModel.js');
+
+// Create variant
+app.post('/api/winback/variants', (req, res) => {
+  try {
+    const variant = winbackVariantModel.createVariant(req.body || {});
+    res.json({ ok: true, variant });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// List variants
+app.get('/api/winback/variants', (req, res) => {
+  try {
+    const variants = winbackVariantModel.listVariants();
+    res.json({ ok: true, variants });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Get variant by ID
+app.get('/api/winback/variants/:id', (req, res) => {
+  try {
+    const variant = winbackVariantModel.getVariant(req.params.id);
+    if (!variant) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true, variant });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Update variant
+app.put('/api/winback/variants/:id', (req, res) => {
+  try {
+    const variant = winbackVariantModel.updateVariant(req.params.id, req.body || {});
+    if (!variant) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true, variant });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Delete variant
+app.delete('/api/winback/variants/:id', (req, res) => {
+  try {
+    const ok = winbackVariantModel.deleteVariant(req.params.id);
+    if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// ---------- ABANDONED CHECKOUT WINBACK: TEMPLATE CRUD ENDPOINTS ----------
+const winbackTemplateModel = require('./tools/abandoned-checkout-winback/templateModel.js');
+
+// Create template
+app.post('/api/winback/templates', (req, res) => {
+  try {
+    const template = winbackTemplateModel.createTemplate(req.body || {});
+    res.json({ ok: true, template });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// List templates
+app.get('/api/winback/templates', (req, res) => {
+  try {
+    const templates = winbackTemplateModel.listTemplates();
+    res.json({ ok: true, templates });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Get template by ID
+app.get('/api/winback/templates/:id', (req, res) => {
+  try {
+    const template = winbackTemplateModel.getTemplate(req.params.id);
+    if (!template) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true, template });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Update template
+app.put('/api/winback/templates/:id', (req, res) => {
+  try {
+    const template = winbackTemplateModel.updateTemplate(req.params.id, req.body || {});
+    if (!template) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true, template });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Delete template
+app.delete('/api/winback/templates/:id', (req, res) => {
+  try {
+    const ok = winbackTemplateModel.deleteTemplate(req.params.id);
+    if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// ---------- ABANDONED CHECKOUT WINBACK: CAMPAIGN CRUD ENDPOINTS ----------
+const winbackCampaignModel = require('./tools/abandoned-checkout-winback/campaignModel.js');
+
+// Create campaign
+app.post('/api/winback/campaigns', (req, res) => {
+  try {
+    const campaign = winbackCampaignModel.createCampaign(req.body || {});
+    res.json({ ok: true, campaign });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// List campaigns
+app.get('/api/winback/campaigns', (req, res) => {
+  try {
+    const campaigns = winbackCampaignModel.listCampaigns();
+    res.json({ ok: true, campaigns });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Get campaign by ID
+app.get('/api/winback/campaigns/:id', (req, res) => {
+  try {
+    const campaign = winbackCampaignModel.getCampaign(req.params.id);
+    if (!campaign) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true, campaign });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Update campaign
+app.put('/api/winback/campaigns/:id', (req, res) => {
+  try {
+    const campaign = winbackCampaignModel.updateCampaign(req.params.id, req.body || {});
+    if (!campaign) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true, campaign });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Delete campaign
+app.delete('/api/winback/campaigns/:id', (req, res) => {
+  try {
+    const ok = winbackCampaignModel.deleteCampaign(req.params.id);
+    if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 // --- API Key Middleware ---
 function requireApiKey(req, res, next) {
   const apiKey = process.env.API_KEY;
@@ -6,6 +284,159 @@ function requireApiKey(req, res, next) {
   if (key === apiKey) return next();
   return res.status(401).json({ ok: false, error: 'Invalid or missing API key' });
 }
+
+
+// --- ENHANCEMENTS: ADVANCED SECURITY, PERFORMANCE, DX, OBSERVABILITY ---
+const morgan = require('morgan');
+const compression = require('compression');
+const { v4: uuidv4 } = require('uuid');
+const stoppable = require('stoppable');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const fs = require('fs');
+
+// --- Request ID and Tracing Middleware ---
+app.use((req, res, next) => {
+  req.id = uuidv4();
+  res.setHeader('X-Request-Id', req.id);
+  next();
+});
+
+// --- Advanced Logging (morgan) ---
+app.use(morgan(':date[iso] :remote-addr :method :url :status :res[content-length] - :response-time ms :req[header] :id', {
+  stream: {
+    write: (msg) => {
+      if (process.env.NODE_ENV !== 'test') console.log(msg.trim());
+    }
+  }
+}));
+
+// --- Gzip Compression ---
+app.use(compression());
+
+// --- Strict Transport Security (HSTS) ---
+app.use((req, res, next) => {
+  res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  next();
+});
+
+// --- Referrer Policy (already present, but ensure strictest) ---
+app.use((req, res, next) => {
+  res.setHeader('Referrer-Policy', 'no-referrer-when-downgrade');
+  next();
+});
+
+// --- Permissions Policy ---
+app.use((req, res, next) => {
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  next();
+});
+
+// --- X-Content-Type-Options ---
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  next();
+});
+
+// --- X-Frame-Options (allow Shopify, block others) ---
+app.use((req, res, next) => {
+  res.setHeader('X-Frame-Options', 'ALLOW-FROM https://admin.shopify.com https://*.myshopify.com');
+  next();
+});
+
+// --- X-XSS-Protection (legacy, but some browsers use it) ---
+app.use((req, res, next) => {
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
+
+// --- OpenAPI/Swagger Docs (auto-load if present) ---
+try {
+  const openapiPath = path.join(__dirname, '../openapi.yaml');
+  if (fs.existsSync(openapiPath)) {
+    const openapiSpec = YAML.load(openapiPath);
+    app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapiSpec));
+    console.log('[Core] Swagger UI available at /api/docs');
+  }
+} catch (e) {
+  console.warn('[Core] Swagger UI not loaded:', e.message);
+}
+
+// --- Health, Liveness, and Readiness Probes ---
+app.get('/livez', (_req, res) => res.status(200).send('OK'));
+app.get('/readyz', (_req, res) => {
+  // Add DB/Redis checks here if needed
+  res.status(200).send('READY');
+});
+
+// --- Developer-Friendly Error Pages (dev only) ---
+if (process.env.NODE_ENV !== 'production') {
+  app.use((err, req, res, next) => {
+    console.error('[DEV ERROR]', err);
+    res.status(500).send(`<pre>${err.stack || err.message}</pre>`);
+  });
+}
+
+// --- Async Error Boundary (catch unhandled async errors) ---
+process.on('unhandledRejection', (reason, p) => {
+  console.error('[UNHANDLED REJECTION]', reason, p);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[UNCAUGHT EXCEPTION]', err);
+  if (process.env.NODE_ENV === 'production') process.exit(1);
+});
+
+// --- Graceful Shutdown ---
+let server;
+if (require.main === module) {
+  server = app.listen(PORT, () => {
+    console.log(
+      `[Core] AURA Core API running on port ${PORT}\n` +
+        `==> Available at ${
+          process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`
+        }\n`
+    );
+    startFixQueueWorker();
+  });
+  stoppable(server);
+  process.on('SIGTERM', () => {
+    console.log('[Core] SIGTERM received, shutting down gracefully...');
+    server.stop(() => {
+      console.log('[Core] Server stopped.');
+      process.exit(0);
+    });
+  });
+  process.on('SIGINT', () => {
+    console.log('[Core] SIGINT received, shutting down gracefully...');
+    server.stop(() => {
+      console.log('[Core] Server stopped.');
+      process.exit(0);
+    });
+  });
+}
+
+// --- Enhanced Input Validation Example (for all POST/PUT) ---
+app.use((req, res, next) => {
+  if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
+    if (req.headers['content-type'] && !req.headers['content-type'].includes('application/json')) {
+      return res.status(415).json({ ok: false, error: 'Unsupported Media Type. Use application/json.' });
+    }
+  }
+  next();
+});
+
+// --- Fallback 404 Handler ---
+app.use((req, res, next) => {
+  if (res.headersSent) return next();
+  res.status(404).json({ ok: false, error: 'Not found', path: req.originalUrl });
+});
+
+// --- Global Error Handler ---
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  console.error('[ERROR]', err);
+  res.status(500).json({ ok: false, error: err.message || 'Internal server error' });
+});
 
 // ...existing code...
 
@@ -922,6 +1353,125 @@ async function toolRunHandler(req, res) {
 
 app.post("/run/:toolId", toolRunHandler);
 app.post("/api/run/:toolId", toolRunHandler);
+
+
+// ---------- ABANDONED CHECKOUT WINBACK: GENERATE MESSAGE ENDPOINT ----------
+app.post('/api/winback/generate-message', async (req, res) => {
+  try {
+    const { customerName, cartItems, discountCode, brand, tone, prompt, language } = req.body || {};
+    if (!customerName || !Array.isArray(cartItems) || cartItems.length === 0) {
+      return res.status(400).json({ ok: false, error: 'customerName and cartItems[] are required' });
+    }
+    // Use OpenAI integration for winback message generation
+    const openai = require('./tools/abandoned-checkout-winback/openai.js');
+    const result = await openai.generateWinbackMessage({ customerName, cartItems, discountCode, brand, tone, prompt, language });
+    return res.json({ ok: true, message: result });
+  } catch (err) {
+    console.error('Winback message generation error', err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ---------- ABANDONED CHECKOUT WINBACK: SCHEDULING ENDPOINTS ----------
+const winbackScheduleModel = require('./tools/abandoned-checkout-winback/scheduleModel.js');
+// Create schedule
+app.post('/api/winback/schedules', (req, res) => {
+  try {
+    const schedule = winbackScheduleModel.createSchedule(req.body || {});
+    res.json({ ok: true, schedule });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// List schedules
+app.get('/api/winback/schedules', (req, res) => {
+  res.json({ ok: true, schedules: winbackScheduleModel.listSchedules() });
+});
+// Get schedule by ID
+app.get('/api/winback/schedules/:id', (req, res) => {
+  const schedule = winbackScheduleModel.getSchedule(req.params.id);
+  if (!schedule) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, schedule });
+});
+// Update schedule
+app.put('/api/winback/schedules/:id', (req, res) => {
+  const schedule = winbackScheduleModel.updateSchedule(req.params.id, req.body || {});
+  if (!schedule) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, schedule });
+});
+// Delete schedule
+app.delete('/api/winback/schedules/:id', (req, res) => {
+  const ok = winbackScheduleModel.deleteSchedule(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true });
+});
+
+// ---------- ABANDONED CHECKOUT WINBACK: SEGMENTATION ENDPOINTS ----------
+const winbackSegmentModel = require('./tools/abandoned-checkout-winback/segmentModel.js');
+// Create segment
+app.post('/api/winback/segments', (req, res) => {
+  try {
+    const segment = winbackSegmentModel.createSegment(req.body || {});
+    res.json({ ok: true, segment });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// List segments
+app.get('/api/winback/segments', (req, res) => {
+  res.json({ ok: true, segments: winbackSegmentModel.listSegments() });
+});
+// Get segment by ID
+app.get('/api/winback/segments/:id', (req, res) => {
+  const segment = winbackSegmentModel.getSegment(req.params.id);
+  if (!segment) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, segment });
+});
+// Update segment
+app.put('/api/winback/segments/:id', (req, res) => {
+  const segment = winbackSegmentModel.updateSegment(req.params.id, req.body || {});
+  if (!segment) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, segment });
+});
+// Delete segment
+app.delete('/api/winback/segments/:id', (req, res) => {
+  const ok = winbackSegmentModel.deleteSegment(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true });
+});
+
+// ---------- ABANDONED CHECKOUT WINBACK: ANALYTICS ENDPOINTS ----------
+const winbackAnalyticsModel = require('./tools/abandoned-checkout-winback/analyticsModel.js');
+// Record analytics event
+app.post('/api/winback/analytics', (req, res) => {
+  try {
+    const event = winbackAnalyticsModel.recordEvent(req.body || {});
+    res.json({ ok: true, event });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// List analytics events (optionally filter by campaign, variant, etc.)
+app.get('/api/winback/analytics', (req, res) => {
+  const { campaignId, variantId, type } = req.query;
+  const events = winbackAnalyticsModel.listEvents({ campaignId, variantId, type });
+  res.json({ ok: true, events });
+});
+
+// ---------- ABANDONED CHECKOUT WINBACK: SHOPIFY ABANDONED CHECKOUTS ENDPOINT ----------
+const winbackShopify = require('./tools/abandoned-checkout-winback/shopify.js');
+// Fetch abandoned checkouts from Shopify for a given shop
+app.get('/api/winback/shopify/abandoned-checkouts', async (req, res) => {
+  const shop = req.query.shop;
+  let token = req.query.token || process.env.SHOPIFY_ADMIN_TOKEN || '';
+  try {
+    const apiVersion = req.query.apiVersion || process.env.SHOPIFY_API_VERSION || '2023-10';
+    const checkouts = await winbackShopify.fetchAbandonedCheckouts({ shop, token, apiVersion });
+    res.json({ ok: true, abandonedCheckouts: checkouts });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 
 // ---------- PRODUCT SEO SUGGESTION ENDPOINT ----------
 app.post('/api/run/product-seo', async (req, res) => {
