@@ -18,10 +18,16 @@ const fs = require('fs');
 
 // --- Session Middleware (required for lusca) ---
 const session = require('express-session');
+const SQLiteStore = require('connect-sqlite3')(session);
 app.use(session({
+  store: new SQLiteStore({
+    db: 'aura-core-session.sqlite',
+    dir: path.join(__dirname, '../data'),
+    concurrentDB: true
+  }),
   secret: process.env.SESSION_SECRET || 'aura-core-monolith-secret',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: { secure: false, httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 }, // 7 days
 }));
 
