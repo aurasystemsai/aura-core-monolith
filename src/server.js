@@ -319,6 +319,10 @@ app.use("/api", makeRoutes);
 app.use("/api/automation", automationRoutes);
 app.use("/automation", automationRoutes);
 
+// AI Alt-Text Engine API
+const aiAltTextEngine = require('./tools/ai-alt-text-engine');
+app.use('/api/ai-alt-text-engine', aiAltTextEngine);
+
 // ---------- HEALTH CHECK ----------
 
 app.get("/health", (_req, res) => {
