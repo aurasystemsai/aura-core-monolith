@@ -1,48 +1,4 @@
 
-// Update variant
-app.put('/api/winback/variants/:id', (req, res) => {
-  try {
-    const variant = winbackVariantModel.updateVariant(req.params.id, req.body || {});
-    if (!variant) return res.status(404).json({ ok: false, error: 'Not found' });
-    res.json({ ok: true, variant });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-// Delete variant
-app.delete('/api/winback/variants/:id', (req, res) => {
-  try {
-    const ok = winbackVariantModel.deleteVariant(req.params.id);
-    if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-// ---------- ABANDONED CHECKOUT WINBACK: TEMPLATE CRUD ENDPOINTS ----------
-const winbackTemplateModel = require('./tools/abandoned-checkout-winback/templateModel.js');
-
-// Create template
-app.post('/api/winback/templates', (req, res) => {
-  try {
-    const template = winbackTemplateModel.createTemplate(req.body || {});
-    res.json({ ok: true, template });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-// List templates
-app.get('/api/winback/templates', (req, res) => {
-  try {
-    const templates = winbackTemplateModel.listTemplates();
-    res.json({ ok: true, templates });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
 // Get template by ID
 app.get('/api/winback/templates/:id', (req, res) => {
   try {
