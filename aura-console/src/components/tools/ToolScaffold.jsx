@@ -1,11 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function ToolScaffold({ toolId, toolName, fields }) {
+  const [csrfToken, setCsrfToken] = useState("");
   const safeFields = Array.isArray(fields) ? fields : [];
   const [form, setForm] = useState(() => Object.fromEntries(safeFields.map(f => [f.name, f.defaultValue || ""])));
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    // Fetch CSRF token on mount
+    fetch("/api/csrf-token")
+      .then(res => res.json())
+      .then(data => setCsrfToken(data.csrfToken || ""))
+      .catch(() => setCsrfToken(""));
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -20,7 +29,8 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
       const res = await fetch(`/api/run/${toolId}`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken
         },
         body: JSON.stringify(form)
       });
