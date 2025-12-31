@@ -10,6 +10,13 @@ export default function InternalLinkOptimizer() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [csrfToken, setCsrfToken] = useState("");
+
+  React.useEffect(() => {
+    fetch('/api/csrf-token')
+      .then(res => res.json())
+      .then(data => setCsrfToken(data.csrfToken || ""));
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -24,7 +31,8 @@ export default function InternalLinkOptimizer() {
       const res = await fetch("/api/run/internal-link-optimizer", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "csrf-token": csrfToken
         },
         body: JSON.stringify(form)
       });

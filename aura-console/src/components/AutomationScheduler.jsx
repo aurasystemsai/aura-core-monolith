@@ -14,6 +14,14 @@ export default function AutomationScheduler() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [csrfToken, setCsrfToken] = useState('');
+
+  // Load CSRF token
+  useEffect(() => {
+    fetch('/api/csrf-token')
+      .then(res => res.json())
+      .then(data => setCsrfToken(data.csrfToken || ''));
+  }, []);
 
   // Load schedules from backend
   useEffect(() => {
@@ -38,7 +46,10 @@ export default function AutomationScheduler() {
     setError('');
     fetch('/api/automation', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'csrf-token': csrfToken
+      },
       body: JSON.stringify(form),
     })
       .then(res => res.json())
@@ -58,7 +69,7 @@ export default function AutomationScheduler() {
   function handleDelete(id) {
     setLoading(true);
     setError('');
-    fetch(`/api/automation/${id}`, { method: 'DELETE' })
+    fetch(`/api/automation/${id}`, { method: 'DELETE', headers: { 'csrf-token': csrfToken } })
       .then(res => res.json())
       .then(data => {
         if (data.ok) setSchedules(s => s.filter(sch => sch.id !== id));

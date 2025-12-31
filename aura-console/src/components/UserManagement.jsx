@@ -7,7 +7,14 @@ export default function UserManagement({ coreUrl }) {
   const [role, setRole] = useState('user');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [csrfToken, setCsrfToken] = useState('');
 
+  // Fetch CSRF token
+  useEffect(() => {
+    fetch('/api/csrf-token')
+      .then(res => res.json())
+      .then(data => setCsrfToken(data.csrfToken || ''));
+  }, []);
 
   // Fetch users (admin only)
   useEffect(() => {
@@ -30,7 +37,10 @@ export default function UserManagement({ coreUrl }) {
     try {
       const res = await fetch(`${coreUrl}/api/users/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'csrf-token': csrfToken
+        },
         body: JSON.stringify({ email, password, role })
       });
       const data = await res.json();

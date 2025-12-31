@@ -7,6 +7,14 @@ export default function AiChatbot({ coreUrl }) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [csrfToken, setCsrfToken] = useState('');
+
+  // Fetch CSRF token
+  React.useEffect(() => {
+    fetch('/api/csrf-token')
+      .then(res => res.json())
+      .then(data => setCsrfToken(data.csrfToken || ''));
+  }, []);
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -21,7 +29,8 @@ export default function AiChatbot({ coreUrl }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
+          'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
+          'csrf-token': csrfToken
         },
         body: JSON.stringify({ messages: newMessages })
       });

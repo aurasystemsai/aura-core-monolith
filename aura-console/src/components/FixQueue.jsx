@@ -216,7 +216,7 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/done`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "csrf-token": csrfToken },
       });
       showToast("Marked done");
     } catch (e) {
@@ -241,7 +241,7 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/bulk-done`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "csrf-token": csrfToken },
         body: JSON.stringify({ ids: selectedIds }),
       });
     } catch (e) {
@@ -254,7 +254,7 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       const data = await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/dedupe`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "csrf-token": csrfToken },
       });
       showToast(`Deduped (deleted ${data?.deleted || 0})`);
       fetchQueue();
@@ -273,7 +273,7 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "csrf-token": csrfToken },
         body: JSON.stringify({ owner }),
       });
       showToast("Owner updated");
@@ -297,7 +297,7 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "csrf-token": csrfToken },
         body: JSON.stringify({ notes: next }),
       });
       showToast("Notes saved");
@@ -316,7 +316,7 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       const data = await callJson(
         `${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/auto-fix`,
-        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }
+        { method: "POST", headers: { "Content-Type": "application/json", "csrf-token": csrfToken }, body: JSON.stringify({}) }
       );
 
       const suggestedTitle = data?.suggestedTitle || data?.result?.suggestedTitle;
@@ -362,7 +362,14 @@ export default function FixQueue({ coreUrl, projectId }) {
     try {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/apply`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "csrf-token": csrfToken },
+          // CSRF token state and effect
+          const [csrfToken, setCsrfToken] = React.useState("");
+          React.useEffect(() => {
+            fetch('/api/csrf-token')
+              .then(res => res.json())
+              .then(data => setCsrfToken(data.csrfToken || ""));
+          }, []);
         body: JSON.stringify({ field }),
       });
       showToast(`Applied ${field}`);
