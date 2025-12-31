@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 
 export default function ToolScaffold({ toolId, toolName, fields }) {
-  const [form, setForm] = useState(() => Object.fromEntries(fields.map(f => [f.name, f.defaultValue || ""])));
+  const safeFields = Array.isArray(fields) ? fields : [];
+  const [form, setForm] = useState(() => Object.fromEntries(safeFields.map(f => [f.name, f.defaultValue || ""])));
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -37,7 +38,7 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
     <div className="tool-generic">
       <h2>{toolName}</h2>
       <form onSubmit={handleSubmit} style={{ maxWidth: 500 }}>
-        {fields.map(f => (
+        {(safeFields).map(f => (
           <div key={f.name}>
             <label>{f.label || f.name}{f.required ? '*' : ''}</label>
             {f.type === 'textarea' ? (
