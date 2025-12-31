@@ -1,13 +1,6 @@
 // ---------- ABANDONED CHECKOUT WINBACK: WEBHOOK MANAGEMENT ENDPOINTS ----------
 const winbackWebhook = require('./tools/abandoned-checkout-winback/webhookModel.js');
-// ---------- RETURNS/RMA AUTOMATION: MODULE REQUIRES (for endpoints below) ----------
-const rmaWebhook = require('./tools/returns-rma-automation/webhookModel.js');
-const rmaCompliance = require('./tools/returns-rma-automation/complianceModel.js');
-const rmaAudit = require('./tools/returns-rma-automation/auditModel.js');
-const rmaActivityLog = require('./tools/returns-rma-automation/activityLogModel.js');
-const rmaNotification = require('./tools/returns-rma-automation/notificationModel.js');
-const rmaModel = require('./tools/returns-rma-automation/rmaModel.js');
-const rmaAnalyticsModel = require('./tools/returns-rma-automation/analyticsModel.js');
+
 // Place Returns/RMA Automation endpoints after app is initialized
 // (insert after: const app = express();)
 // ---------- RETURNS/RMA AUTOMATION: WEBHOOK MANAGEMENT ENDPOINTS ----------
