@@ -85,11 +85,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// --- X-Frame-Options (allow Shopify, block others) ---
-app.use((req, res, next) => {
-  res.setHeader('X-Frame-Options', 'ALLOW-FROM https://admin.shopify.com https://*.myshopify.com');
-  next();
 
+// --- Content-Security-Policy for Shopify embedding ---
+app.use((req, res, next) => {
+  // Remove X-Frame-Options if set by any upstream middleware
+  res.removeHeader && res.removeHeader('X-Frame-Options');
+  res.setHeader(
+    'Content-Security-Policy',
+    "frame-ancestors 'self' https://admin.shopify.com https://*.myshopify.com"
+  );
+  next();
 });
 
 // --- X-XSS-Protection (legacy, but some browsers use it) ---
