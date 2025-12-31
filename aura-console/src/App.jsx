@@ -32,7 +32,10 @@ const ProductSeoEngine = lazy(() => import("./components/ProductSeoEngine"));
 const AiAltTextEngine = lazy(() => import("./components/AiAltTextEngine"));
 
 const InternalLinkOptimizer = lazy(() => import("./components/InternalLinkOptimizer"));
+
 import AiChatbot from "./components/AiChatbot.jsx";
+
+function App() {
   // Floating AI Chatbot widget state
   const [showChatbot, setShowChatbot] = useState(false);
 
