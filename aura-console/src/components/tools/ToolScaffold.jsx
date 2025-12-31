@@ -30,7 +30,7 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-csrf-token": csrfToken
+          "csrf-token": csrfToken
         },
         body: JSON.stringify(form)
       });
