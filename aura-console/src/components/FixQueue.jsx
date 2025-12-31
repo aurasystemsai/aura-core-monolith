@@ -363,13 +363,6 @@ export default function FixQueue({ coreUrl, projectId }) {
       await callJson(`${normalizedCoreUrl}/projects/${projectId}/fix-queue/${id}/apply`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "csrf-token": csrfToken },
-          // CSRF token state and effect
-          const [csrfToken, setCsrfToken] = React.useState("");
-          React.useEffect(() => {
-            fetch('/api/csrf-token')
-              .then(res => res.json())
-              .then(data => setCsrfToken(data.csrfToken || ""));
-          }, []);
         body: JSON.stringify({ field }),
       });
       showToast(`Applied ${field}`);
