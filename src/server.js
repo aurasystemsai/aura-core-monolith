@@ -1,7 +1,16 @@
 // ---------- ABANDONED CHECKOUT WINBACK: WEBHOOK MANAGEMENT ENDPOINTS ----------
 const winbackWebhook = require('./tools/abandoned-checkout-winback/webhookModel.js');
-// ---------- RETURNS/RMA AUTOMATION: WEBHOOK MANAGEMENT ENDPOINTS ----------
+// ---------- RETURNS/RMA AUTOMATION: MODULE REQUIRES (for endpoints below) ----------
 const rmaWebhook = require('./tools/returns-rma-automation/webhookModel.js');
+const rmaCompliance = require('./tools/returns-rma-automation/complianceModel.js');
+const rmaAudit = require('./tools/returns-rma-automation/auditModel.js');
+const rmaActivityLog = require('./tools/returns-rma-automation/activityLogModel.js');
+const rmaNotification = require('./tools/returns-rma-automation/notificationModel.js');
+const rmaModel = require('./tools/returns-rma-automation/rmaModel.js');
+const rmaAnalyticsModel = require('./tools/returns-rma-automation/analyticsModel.js');
+// Place Returns/RMA Automation endpoints after app is initialized
+// (insert after: const app = express();)
+// ---------- RETURNS/RMA AUTOMATION: WEBHOOK MANAGEMENT ENDPOINTS ----------
 // Register webhook
 app.post('/api/rma/webhooks', (req, res) => {
   try {
@@ -24,6 +33,170 @@ app.delete('/api/rma/webhooks/:id', (req, res) => {
   const ok = rmaWebhook.deleteWebhook(req.params.id);
   if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
   res.json({ ok: true });
+});
+// ---------- RETURNS/RMA AUTOMATION: GDPR/CCPA COMPLIANCE ENDPOINTS ----------
+// Request data export
+app.post('/api/rma/compliance/export', (req, res) => {
+  const { userId } = req.body || {};
+  if (!userId) return res.status(400).json({ ok: false, error: 'userId required' });
+  const reqObj = rmaCompliance.requestDataExport(userId);
+  res.json({ ok: true, request: reqObj });
+});
+// Request data deletion
+app.post('/api/rma/compliance/delete', (req, res) => {
+  const { userId } = req.body || {};
+  if (!userId) return res.status(400).json({ ok: false, error: 'userId required' });
+  const reqObj = rmaCompliance.requestDataDelete(userId);
+  res.json({ ok: true, request: reqObj });
+});
+// List compliance requests
+app.get('/api/rma/compliance/requests', (req, res) => {
+  const { userId, type } = req.query;
+  const requests = rmaCompliance.listRequests({ userId, type });
+  res.json({ ok: true, requests });
+});
+// Update request status
+app.put('/api/rma/compliance/requests/:id', (req, res) => {
+  const { status } = req.body || {};
+  if (!status) return res.status(400).json({ ok: false, error: 'status required' });
+  const reqObj = rmaCompliance.updateRequestStatus(req.params.id, status);
+  if (!reqObj) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, request: reqObj });
+});
+// ---------- RETURNS/RMA AUTOMATION: COMPLIANCE & AUDIT ENDPOINTS ----------
+// Record audit event
+app.post('/api/rma/audit', (req, res) => {
+  try {
+    const entry = rmaAudit.recordAudit(req.body || {});
+    res.json({ ok: true, entry });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// List audit events
+app.get('/api/rma/audit', (req, res) => {
+  const { rmaId, userId, type } = req.query;
+  const entries = rmaAudit.listAudits({ rmaId, userId, type });
+  res.json({ ok: true, entries });
+});
+// ---------- RETURNS/RMA AUTOMATION: ACTIVITY LOG ENDPOINTS ----------
+// Log an action
+app.post('/api/rma/activity-log', (req, res) => {
+  try {
+    const entry = rmaActivityLog.logAction(req.body || {});
+    res.json({ ok: true, entry });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// List activity log entries
+app.get('/api/rma/activity-log', (req, res) => {
+  const { rmaId, userId, action } = req.query;
+  const entries = rmaActivityLog.listLogs({ rmaId, userId, action });
+  res.json({ ok: true, entries });
+});
+// ---------- RETURNS/RMA AUTOMATION: NOTIFICATION ENDPOINTS ----------
+// Add notification
+app.post('/api/rma/notifications', (req, res) => {
+  try {
+    const notification = rmaNotification.addNotification(req.body || {});
+    res.json({ ok: true, notification });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// List notifications
+app.get('/api/rma/notifications', (req, res) => {
+  const { userId, read } = req.query;
+  const notifications = rmaNotification.listNotifications({ userId, read: read === 'true' ? true : read === 'false' ? false : undefined });
+  res.json({ ok: true, notifications });
+});
+// Mark notification as read
+app.post('/api/rma/notifications/:id/read', (req, res) => {
+  const ok = rmaNotification.markAsRead(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true });
+});
+// ---------- RETURNS/RMA AUTOMATION: RMA CRUD ENDPOINTS ----------
+// Create RMA
+app.post('/api/rma/rmas', (req, res) => {
+  try {
+    const rma = rmaModel.createRma(req.body || {});
+    res.json({ ok: true, rma });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// List RMAs
+app.get('/api/rma/rmas', (req, res) => {
+  try {
+    const rmas = rmaModel.listRmas();
+    res.json({ ok: true, rmas });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// Get RMA by ID
+app.get('/api/rma/rmas/:id', (req, res) => {
+  try {
+    const rma = rmaModel.getRma(req.params.id);
+    if (!rma) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true, rma });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// Update RMA
+app.put('/api/rma/rmas/:id', (req, res) => {
+  try {
+    const rma = rmaModel.updateRma(req.params.id, req.body || {});
+    if (!rma) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true, rma });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// Delete RMA
+app.delete('/api/rma/rmas/:id', (req, res) => {
+  try {
+    const ok = rmaModel.deleteRma(req.params.id);
+    if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// ---------- RETURNS/RMA AUTOMATION: GENERATE MESSAGE ENDPOINT ----------
+app.post('/api/rma/generate-message', async (req, res) => {
+  try {
+    const { customerName, orderItems, reason, brand, tone, prompt, language } = req.body || {};
+    if (!customerName || !Array.isArray(orderItems) || orderItems.length === 0 || !reason) {
+      return res.status(400).json({ ok: false, error: 'customerName, orderItems[], and reason are required' });
+    }
+    // Use OpenAI integration for RMA message generation
+    const openai = require('./tools/returns-rma-automation/openai.js');
+    const result = await openai.generateRmaMessage({ customerName, orderItems, reason, brand, tone, prompt, language });
+    return res.json({ ok: true, message: result });
+  } catch (err) {
+    console.error('RMA message generation error', err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// ---------- RETURNS/RMA AUTOMATION: ANALYTICS ENDPOINTS ----------
+// Record analytics event
+app.post('/api/rma/analytics', (req, res) => {
+  try {
+    const event = rmaAnalyticsModel.recordEvent(req.body || {});
+    res.json({ ok: true, event });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// List analytics events (optionally filter by rmaId, type)
+app.get('/api/rma/analytics', (req, res) => {
+  const { rmaId, type } = req.query;
+  const events = rmaAnalyticsModel.listEvents({ rmaId, type });
+  res.json({ ok: true, events });
 });
 // Register webhook
 app.post('/api/winback/webhooks', (req, res) => {
