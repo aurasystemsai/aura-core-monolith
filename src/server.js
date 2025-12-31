@@ -1,20 +1,4 @@
-// --- Aura Core Monolith Server ---
-const express = require('express');
-const app = express();
 
-const morgan = require('morgan');
-// Register custom morgan token for request id
-morgan.token('id', function getId(req) {
-  return req.id || '-';
-});
-const automationRoutes = require('./routes/automation');
-const makeRoutes = require('./routes/make');
-const fixQueueRoutes = require('./routes/fix-queue');
-const draftsRoutes = require('./routes/drafts');
-const { startFixQueueWorker } = require('./core/fixQueueWorker');
-const lusca = require('lusca');
-const PORT = process.env.PORT || 10000;
-const session = require('express-session');
 
 // --- Aura Core Monolith Server ---
 const express = require('express');
