@@ -1,4 +1,6 @@
 
+const PORT = process.env.PORT || 10000;
+
 
 // --- Aura Core Monolith Server ---
 const express = require('express');
