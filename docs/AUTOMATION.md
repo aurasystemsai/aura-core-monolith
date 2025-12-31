@@ -19,7 +19,6 @@
 - On user_signup webhook, send a welcome email to the new user
 - Log all automation actions for audit/compliance
 
-## Best Practices
 - All automation should be idempotent and retry-safe
 - Log all actions and errors
 - Use environment variables for all secrets and API keys
