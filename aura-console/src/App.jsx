@@ -500,8 +500,8 @@ function App() {
           </div>
         </main>
       </div>
-    </ErrorBoundary>
 
+    </ErrorBoundary>
   );
 }
 export default App;
