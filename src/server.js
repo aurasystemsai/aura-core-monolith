@@ -1,30 +1,3 @@
-// Mark notification as read
-app.post('/api/rma/notifications/:id/read', (req, res) => {
-  const ok = rmaNotification.markAsRead(req.params.id);
-  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true });
-});
-// Add notification
-app.post('/api/winback/notifications', (req, res) => {
-  try {
-    const notification = winbackNotification.addNotification(req.body || {});
-    res.json({ ok: true, notification });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-// List notifications
-app.get('/api/winback/notifications', (req, res) => {
-  const { userId, read } = req.query;
-  const notifications = winbackNotification.listNotifications({ userId, read: read === 'true' ? true : read === 'false' ? false : undefined });
-  res.json({ ok: true, notifications });
-});
-// Mark notification as read
-app.post('/api/winback/notifications/:id/read', (req, res) => {
-  const ok = winbackNotification.markAsRead(req.params.id);
-  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true });
-});
 // ---------- ABANDONED CHECKOUT WINBACK: VARIANT CRUD ENDPOINTS ----------
 const winbackVariantModel = require('./tools/abandoned-checkout-winback/variantModel.js');
 // ---------- RETURNS/RMA AUTOMATION: RMA CRUD ENDPOINTS ----------
