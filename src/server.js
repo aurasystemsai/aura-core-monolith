@@ -1,3 +1,8 @@
+// --- Aura Core Monolith Server ---
+const express = require('express');
+const app = express();
+
+const morgan = require('morgan');
 // Register custom morgan token for request id
 morgan.token('id', function getId(req) {
   return req.id || '-';
