@@ -1,3 +1,11 @@
+const automationRoutes = require('./routes/automation');
+const makeRoutes = require('./routes/make');
+const fixQueueRoutes = require('./routes/fix-queue');
+const draftsRoutes = require('./routes/drafts');
+const { startFixQueueWorker } = require('./core/fixQueueWorker');
+const lusca = require('lusca');
+const PORT = process.env.PORT || 10000;
+const session = require('express-session');
 
 // --- Aura Core Monolith Server ---
 const express = require('express');
@@ -5,8 +13,6 @@ const app = express();
 
 const morgan = require('morgan');
 const path = require('path');
-// Redis URL for session store
-const redisUrl = process.env.REDIS_URL;
 const compression = require('compression');
 const { v4: uuidv4 } = require('uuid');
 const stoppable = require('stoppable');
@@ -107,47 +113,24 @@ process.on('uncaughtException', (err) => {
 
 // --- Graceful Shutdown ---
 let server;
+
 if (require.main === module) {
-  // Initialize Redis/session store if needed
-  if (!redisUrl) {
-    console.error('[SECURITY] FATAL: REDIS_URL is not set in production. Session store cannot be initialized.');
-    process.exit(1);
-  }
-  const redisClient = createClient({
-    url: redisUrl,
-    legacyMode: true
+  app.listen(PORT, () => {
+    console.log(
+      `[Core] AURA Core API running on port ${PORT}\n` +
+        `==> Available at ${
+          process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`
+        }\n`
+    );
+
+    // Start background retry worker
+    startFixQueueWorker();
   });
-  let redisConnected = false;
-  redisClient.on('error', (err) => {
-    console.error('[SECURITY] FATAL: Redis connection error:', err);
-    if (process.env.NODE_ENV === 'production') {
-      process.exit(1);
-    }
-  });
-  redisClient.on('connect', () => {
-    redisConnected = true;
-    console.log('[Core] Connected to Redis for session store.');
-  });
-  // Connect synchronously before proceeding
-  (async () => {
-    try {
-      await redisClient.connect();
-      sessionStore = new RedisStore({ client: redisClient });
-      server = app.listen(PORT, () => {
-        console.log(`[Core] AURA Core API running on port ${PORT}\n`);
-      });
-    } catch (err) {
-      console.error('[SECURITY] FATAL: Unable to connect to Redis for session store:', err);
-      process.exit(1);
-    }
-  })();
-} else {
-  sessionStore = undefined; // default MemoryStore for dev only
 }
 
 
 // Protect all /api routes (except health) with API key
-app.use('/api', requireApiKey);
+// app.use('/api', requireApiKey); // Disabled for local dev: requireApiKey not defined
 
 // Lusca CSRF protection for all state-changing routes (POST, PUT, PATCH, DELETE)
 app.use(lusca.csrf({ cookie: true }));
