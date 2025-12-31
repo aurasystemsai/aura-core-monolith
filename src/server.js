@@ -16,6 +16,15 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const fs = require('fs');
 
+// --- Session Middleware (required for lusca) ---
+const session = require('express-session');
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'aura-core-monolith-secret',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false, httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 }, // 7 days
+}));
+
 // --- Register custom morgan token for request ID ---
 morgan.token('id', function getId(req) {
   return req.id || '-';
