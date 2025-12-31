@@ -1,34 +1,3 @@
-// (all winback endpoints and requires must be placed after app initialization)
-// Request data export
-app.post('/api/winback/compliance/export', (req, res) => {
-  const { userId } = req.body || {};
-  if (!userId) return res.status(400).json({ ok: false, error: 'userId required' });
-  const reqObj = winbackCompliance.requestDataExport(userId);
-  res.json({ ok: true, request: reqObj });
-});
-// Request data deletion
-app.post('/api/winback/compliance/delete', (req, res) => {
-  const { userId } = req.body || {};
-  if (!userId) return res.status(400).json({ ok: false, error: 'userId required' });
-  const reqObj = winbackCompliance.requestDataDelete(userId);
-  res.json({ ok: true, request: reqObj });
-});
-// List compliance requests
-app.get('/api/winback/compliance/requests', (req, res) => {
-  const { userId, type } = req.query;
-  const requests = winbackCompliance.listRequests({ userId, type });
-  res.json({ ok: true, requests });
-});
-// Update request status
-app.put('/api/winback/compliance/requests/:id', (req, res) => {
-  const { status } = req.body || {};
-  if (!status) return res.status(400).json({ ok: false, error: 'status required' });
-  const reqObj = winbackCompliance.updateRequestStatus(req.params.id, status);
-  if (!reqObj) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, request: reqObj });
-});
-// ---------- ABANDONED CHECKOUT WINBACK: COMPLIANCE & AUDIT ENDPOINTS ----------
-const winbackAudit = require('./tools/abandoned-checkout-winback/auditModel.js');
 // ---------- RETURNS/RMA AUTOMATION: COMPLIANCE & AUDIT ENDPOINTS ----------
 const rmaAudit = require('./tools/returns-rma-automation/auditModel.js');
 // Record audit event
