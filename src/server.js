@@ -16,6 +16,13 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const fs = require('fs');
 
+// --- Route and Worker Requires ---
+const draftsRoutes = require('./routes/drafts');
+const fixQueueRoutes = require('./routes/fix-queue');
+const makeRoutes = require('./routes/make');
+const automationRoutes = require('./routes/automation');
+const { startFixQueueWorker } = require('./core/fixQueueWorker');
+
 // --- Request ID and Tracing Middleware ---
 app.use((req, res, next) => {
   req.id = uuidv4();
