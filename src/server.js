@@ -1,3 +1,7 @@
+// Register custom morgan token for request id
+morgan.token('id', function getId(req) {
+  return req.id || '-';
+});
 const automationRoutes = require('./routes/automation');
 const makeRoutes = require('./routes/make');
 const fixQueueRoutes = require('./routes/fix-queue');
