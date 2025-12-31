@@ -17,6 +17,7 @@ import DashboardHome from "./components/DashboardHome";
 import FixQueue from "./components/FixQueue";
 import Auth from "./auth/Auth.jsx";
 import Onboarding from "./onboarding/Onboarding.jsx";
+import OnboardingModal from "./components/OnboardingModal.jsx";
 // import OnboardingChecklist from "./onboarding/OnboardingChecklist.jsx";
 import Credits from "./credits/Credits.jsx";
 import Dashboard from "./dashboard/Dashboard.jsx";
