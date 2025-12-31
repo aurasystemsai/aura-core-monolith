@@ -16,6 +16,11 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const fs = require('fs');
 
+// --- Register custom morgan token for request ID ---
+morgan.token('id', function getId(req) {
+  return req.id || '-';
+});
+
 // --- Route and Worker Requires ---
 const draftsRoutes = require('./routes/drafts');
 const fixQueueRoutes = require('./routes/fix-queue');
