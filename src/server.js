@@ -173,55 +173,6 @@ if (require.main === module) {
     console.log('[Core] SIGTERM received, shutting down gracefully...');
     server.stop(() => {
       console.log('[Core] Server stopped.');
-      process.exit(0);
-    });
-  });
-  process.on('SIGINT', () => {
-    console.log('[Core] SIGINT received, shutting down gracefully...');
-    server.stop(() => {
-      console.log('[Core] Server stopped.');
-      process.exit(0);
-    });
-  });
-}
-
-// --- Enhanced Input Validation Example (for all POST/PUT) ---
-app.use((req, res, next) => {
-  if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
-    if (req.headers['content-type'] && !req.headers['content-type'].includes('application/json')) {
-      return res.status(415).json({ ok: false, error: 'Unsupported Media Type. Use application/json.' });
-    }
-  }
-  next();
-});
-
-// --- Fallback 404 Handler ---
-app.use((req, res, next) => {
-  if (res.headersSent) return next();
-  res.status(404).json({ ok: false, error: 'Not found', path: req.originalUrl });
-});
-
-// --- Global Error Handler ---
-app.use((err, req, res, next) => {
-  if (res.headersSent) return next(err);
-  console.error('[ERROR]', err);
-  res.status(500).json({ ok: false, error: err.message || 'Internal server error' });
-});
-
-// ...existing code...
-
-
-const path = require("path");
-const xss = require('xss');
-// --- Input Sanitization Middleware ---
-function sanitizeInputs(req, res, next) {
-  // Sanitize all string fields in req.body, req.query, req.params
-  function sanitize(obj) {
-    if (!obj || typeof obj !== 'object') return;
-    for (const key in obj) {
-      if (typeof obj[key] === 'string') {
-        obj[key] = xss(obj[key]);
-      } else if (typeof obj[key] === 'object') {
         sanitize(obj[key]);
       }
     }
