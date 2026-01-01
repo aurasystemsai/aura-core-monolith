@@ -351,8 +351,16 @@ function App() {
                 )}
                 {activeSection === "tools" && project && <ToolsList />}
                 {/* Render a ToolScaffold for each tool in toolsMeta (fallback if no custom UI) */}
+                {/* Render ProductSeoEngine with its own Suspense and ErrorBoundary */}
+                {activeSection === "product-seo" && (
+                  <ErrorBoundary>
+                    <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading Product SEO Engine…</div>}>
+                      <ProductSeoEngine />
+                    </Suspense>
+                  </ErrorBoundary>
+                )}
+                {/* Other custom UIs and fallback ToolScaffold */}
                 {toolsMeta.map(tool => {
-                  // List of tool IDs with custom UIs already implemented
                   const customUIs = [
                     "product-seo",
                     "ai-alt-text-engine",
@@ -360,13 +368,9 @@ function App() {
                     "content-health-auditor",
                     "abandoned-checkout-winback",
                   ];
-                  if (activeSection === tool.id) {
+                  if (activeSection === tool.id && !customUIs.includes(tool.id)) {
                     if (tool.id === "abandoned-checkout-winback") {
                       return <AbandonedCheckoutWinback key={tool.id} />;
-                    }
-                    if (customUIs.includes(tool.id)) {
-                      // Let the custom UI route above handle it
-                      return null;
                     }
                     // Define minimal fields for each tool (can be improved per tool)
                     const defaultFields = [
