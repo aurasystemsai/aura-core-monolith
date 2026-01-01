@@ -67,14 +67,6 @@ app.post('/api/ai/chatbot', async (req, res) => {
   }
 });
 
-const morgan = require('morgan');
-const path = require('path');
-const compression = require('compression');
-const { v4: uuidv4 } = require('uuid');
-const stoppable = require('stoppable');
-const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
-const fs = require('fs');
 
 // --- Register custom morgan token for request ID ---
 morgan.token('id', function getId(req) {
@@ -112,11 +104,6 @@ const stoppable = require('stoppable');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const fs = require('fs');
-const express = require('express');
-const session = require('express-session');
-const SQLiteStore = require('connect-sqlite3')(session);
-const OpenAI = require('openai');
-const lusca = require('lusca');
 
 // --- Product SEO Engine router ---
 const productSeoRouter = require('./tools/product-seo/router');
