@@ -2,10 +2,9 @@
 
 // ...existing code...
 
-// ...existing code...
+
 // --- Product SEO Engine router ---
 const productSeoRouter = require('./tools/product-seo/router');
-app.use('/api/product-seo', productSeoRouter);
 
 
 // Load environment variables from .env in development
@@ -21,9 +20,12 @@ const PORT = process.env.PORT || 10000;
 
 
 
+
 // --- Aura Core Monolith Server ---
 const express = require('express');
 const app = express();
+// --- Register Product SEO Engine API (after app is initialized and middleware applied) ---
+app.use('/api/product-seo', productSeoRouter);
 
 // --- Body parser middleware (for JSON and forms) ---
 app.use(express.json());
