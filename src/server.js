@@ -1,3 +1,8 @@
+// --- Product SEO Engine router ---
+const productSeoRouter = require('./tools/product-seo/router');
+
+// Register Product SEO Engine API
+app.use('/api/product-seo', productSeoRouter);
 
 
 // Load environment variables from .env in development
