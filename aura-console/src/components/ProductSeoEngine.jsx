@@ -1,12 +1,14 @@
 
 
 
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 
 export default function ProductSeoEngine() {
   const [products, setProducts] = useState([]);
+  const [shopifyProducts, setShopifyProducts] = useState([]);
   const [form, setForm] = useState({ product_id: '', title: '', meta_description: '', slug: '', keywords: '' });
   const [aiInput, setAiInput] = useState({ productName: '', productDescription: '' });
   const [aiResult, setAiResult] = useState('');
@@ -30,15 +32,62 @@ export default function ProductSeoEngine() {
   const [csrfToken, setCsrfToken] = useState('');
 
 
+
   useEffect(() => {
     fetch('/api/csrf-token')
       .then(res => res.json())
       .then(data => setCsrfToken(data.csrfToken || ''));
     fetchProducts();
+    fetchShopifyProducts();
     fetchAnalytics();
     fetchDocs();
     fetchI18n();
   }, []);
+
+  async function fetchShopifyProducts() {
+    try {
+      const res = await axios.get('/api/product-seo/shopify-products');
+      setShopifyProducts(res.data.products || []);
+    } catch (err) {
+      // Don't block UI, but log error
+      console.error('Failed to load Shopify products', err);
+    }
+  }
+      <section>
+        <h3>Shopify Products</h3>
+        {shopifyProducts.length === 0 ? <div>No Shopify products found.</div> : (
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Handle</th>
+                <th>Status</th>
+                <th>Vendor</th>
+                <th>Tags</th>
+                <th>Image</th>
+                <th>Created</th>
+                <th>Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shopifyProducts.map(p => (
+                <tr key={p.id}>
+                  <td>{p.id}</td>
+                  <td>{p.title}</td>
+                  <td>{p.handle}</td>
+                  <td>{p.status}</td>
+                  <td>{p.vendor}</td>
+                  <td>{p.tags}</td>
+                  <td>{p.image ? <img src={p.image} alt={p.title} style={{ width: 40, height: 40, objectFit: 'cover' }} /> : ''}</td>
+                  <td>{p.created_at}</td>
+                  <td>{p.updated_at}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
 
 
   async function fetchProducts() {

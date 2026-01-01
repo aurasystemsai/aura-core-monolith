@@ -7,7 +7,7 @@
 // ===============================================
 
 const axios = require("axios");
-const toolsRegistry = require("./core/tools-registry");
+const toolsRegistry = require("./core/tools-registry.cjs");
 
 // Base URL for Core API (same one the console uses)
 const CORE_BASE_URL = (

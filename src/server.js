@@ -45,8 +45,58 @@ app.use(session({
   cookie: { secure: false, httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 }, // 7 days
 }));
 
+
 // --- Register Product SEO Engine API (after all middleware is applied) ---
 app.use('/api/product-seo', productSeoRouter);
+
+// --- Product SEO Engine: Shopify Products Fetch Endpoint ---
+// GET /api/product-seo/shopify-products?limit=50
+app.get('/api/product-seo/shopify-products', async (req, res) => {
+  try {
+    // Try to get shop domain and token from DB, env, or session
+    // Priority: session > env > fail
+    let shop = req.session && req.session.shop;
+    let token = req.session && req.session.shopifyToken;
+    if (!shop) shop = process.env.SHOPIFY_SHOP_DOMAIN;
+    if (!token) token = process.env.SHOPIFY_ADMIN_TOKEN;
+    if (!shop || !token) {
+      return res.status(400).json({ ok: false, error: 'Missing shop domain or admin token' });
+    }
+    const apiVersion = '2023-10';
+    const limit = Math.max(1, Math.min(250, parseInt(req.query.limit) || 50));
+    const url = `https://${shop}/admin/api/${apiVersion}/products.json?limit=${limit}`;
+    const fetch = global.fetch || require('node-fetch');
+    const shopRes = await fetch(url, {
+      headers: {
+        'X-Shopify-Access-Token': token,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    });
+    if (!shopRes.ok) {
+      const text = await shopRes.text();
+      return res.status(shopRes.status).json({ ok: false, error: `Shopify API error: ${text}` });
+    }
+    const data = await shopRes.json();
+    // Return only essential product fields for UI
+    const products = (data.products || []).map(p => ({
+      id: p.id,
+      title: p.title,
+      handle: p.handle,
+      status: p.status,
+      vendor: p.vendor,
+      image: p.image && p.image.src,
+      created_at: p.created_at,
+      updated_at: p.updated_at,
+      tags: p.tags,
+      variants: (p.variants || []).map(v => ({ id: v.id, title: v.title, sku: v.sku, price: v.price })),
+    }));
+    res.json({ ok: true, products });
+  } catch (err) {
+    console.error('[Product SEO] Shopify products fetch error:', err);
+    res.status(500).json({ ok: false, error: err.message || 'Failed to fetch products' });
+  }
+});
 
 // --- AI Chatbot API (OpenAI-powered, v4 SDK) ---
 app.post('/api/ai/chatbot', async (req, res) => {
