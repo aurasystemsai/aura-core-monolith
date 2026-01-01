@@ -1,11 +1,20 @@
 // Shopify integration for fetching abandoned checkouts
-const fetch = require('node-fetch');
+let fetchFn;
+if (typeof fetch !== 'undefined') {
+  fetchFn = fetch;
+} else {
+  try {
+    fetchFn = require('undici').fetch;
+  } catch (e) {
+    throw new Error('No fetch implementation found. Please use Node 18+ or install undici.');
+  }
+}
 
 async function fetchAbandonedCheckouts({ shop, token, apiVersion }) {
   if (!shop || !token) throw new Error('Missing shop or token');
   apiVersion = apiVersion || process.env.SHOPIFY_API_VERSION || '2023-10';
   const url = `https://${shop}/admin/api/${apiVersion}/checkouts.json?status=abandoned`;
-  const resp = await fetch(url, {
+  const resp = await fetchFn(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

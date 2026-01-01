@@ -53,4 +53,41 @@ async function remove(id) {
   return true;
 }
 
-module.exports = { init, create, getAll, getById, update, remove };
+
+async function bulkCreate(items) {
+  await init();
+  const results = [];
+  for (const item of items) {
+    results.push(await create(item));
+  }
+  return results;
+}
+
+async function importFromCSV(csv) {
+  const lines = csv.split('\n').filter(Boolean);
+  const headers = lines[0].split(',');
+  const imported = [];
+  for (let i = 1; i < lines.length; i++) {
+    const row = lines[i].split(',');
+    const obj = {};
+    headers.forEach((h, idx) => { obj[h.trim()] = row[idx]?.trim(); });
+    imported.push(await create(obj));
+  }
+  return imported;
+}
+
+async function exportToCSV() {
+  const all = await getAll();
+  if (!all.length) return '';
+  const headers = Object.keys(all[0]);
+  const csv = [headers.join(',')].concat(all.map(row => headers.map(h => row[h]).join(','))).join('\n');
+  return csv;
+}
+
+// Analytics hook (example)
+async function recordAnalytics(event) {
+  // Could push to analytics module or DB
+  return true;
+}
+
+module.exports = { init, create, getAll, getById, update, remove, bulkCreate, importFromCSV, exportToCSV, recordAnalytics };

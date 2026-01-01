@@ -3,7 +3,14 @@
 const path = require('path');
 const morgan = require('morgan');
 const compression = require('compression');
-const { v4: uuidv4 } = require('uuid');
+let uuidv4;
+try {
+  // Prefer CJS require for Jest compatibility
+  uuidv4 = require('uuid').v4;
+} catch (e) {
+  // Fallback for ESM environments
+  uuidv4 = (...args) => '';
+}
 const stoppable = require('stoppable');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
@@ -17,7 +24,9 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const lusca = require('lusca');
 const PORT = process.env.PORT || 10000;
 const express = require('express');
+
 const app = express();
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // --- Session Middleware (required for lusca) ---
@@ -192,6 +201,7 @@ if (require.main === module) {
 
 // Protect all /api routes (except health) with API key
 // app.use('/api', requireApiKey); // Disabled for local dev: requireApiKey not defined
+
 
 // Lusca CSRF protection for all state-changing routes (POST, PUT, PATCH, DELETE)
 app.use(lusca.csrf({ cookie: true }));
