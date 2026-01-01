@@ -1,7 +1,9 @@
 
+
+// ...existing code...
 // --- Product SEO Engine router ---
 const productSeoRouter = require('./tools/product-seo/router');
-// Register Product SEO Engine API (after app is defined)
+// Register Product SEO Engine API (after all middleware)
 app.use('/api/product-seo', productSeoRouter);
 
 
