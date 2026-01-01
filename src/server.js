@@ -103,6 +103,51 @@ app.use(morgan(':date[iso] :remote-addr :method :url :status :res[content-length
   }
 }));
 
+// --- All requires at the top ---
+const path = require('path');
+const morgan = require('morgan');
+const compression = require('compression');
+const { v4: uuidv4 } = require('uuid');
+const stoppable = require('stoppable');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const fs = require('fs');
+const express = require('express');
+const session = require('express-session');
+const SQLiteStore = require('connect-sqlite3')(session);
+const OpenAI = require('openai');
+const lusca = require('lusca');
+
+// --- Product SEO Engine router ---
+const productSeoRouter = require('./tools/product-seo/router');
+
+// Load environment variables from .env in development
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+const PORT = process.env.PORT || 10000;
+
+// --- Aura Core Monolith Server ---
+const app = express();
+
+// --- Body parser middleware (for JSON and forms) ---
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// --- Session Middleware (required for lusca) ---
+app.use(session({
+  store: new SQLiteStore({
+    db: 'aura-core-session.sqlite',
+    dir: path.join(__dirname, '../data'),
+    concurrentDB: true
+  }),
+  secret: process.env.SESSION_SECRET || 'aura-core-monolith-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false, httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 }, // 7 days
+}));
 // --- Gzip Compression ---
 app.use(compression());
 
