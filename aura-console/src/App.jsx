@@ -13,6 +13,7 @@ import AbandonedCheckoutWinback from "./components/tools/AbandonedCheckoutWinbac
 import toolsMeta from "./toolMeta";
 import Sidebar from "./components/Sidebar";
 import ChangelogModal from "./components/ChangelogModal.jsx";
+import Toast from "./components/Toast.jsx";
 import DashboardHome from "./components/DashboardHome";
 import FixQueue from "./components/FixQueue";
 import Auth from "./auth/Auth.jsx";
