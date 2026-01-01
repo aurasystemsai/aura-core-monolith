@@ -1,6 +1,4 @@
-// --- Body parser middleware (for JSON and forms) ---
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
 
 // Load environment variables from .env in development
 if (process.env.NODE_ENV !== 'production') {
@@ -14,9 +12,14 @@ const PORT = process.env.PORT || 10000;
 
 
 
+
 // --- Aura Core Monolith Server ---
 const express = require('express');
 const app = express();
+
+// --- Body parser middleware (for JSON and forms) ---
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // --- AI Chatbot API (OpenAI-powered, v4 SDK) ---
 app.post('/api/ai/chatbot', async (req, res) => {
