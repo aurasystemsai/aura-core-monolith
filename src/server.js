@@ -322,7 +322,6 @@ app.get("/shopify/auth", (req, res) => {
 // Shopify OAuth Callback - Step 2: Receive the code and exchange it for an access token
 app.get("/shopify/auth/callback", async (req, res) => {
   const { code, shop } = req.query;
-  
   if (!code || !shop) {
     return res.status(400).json({ error: "Missing code or shop parameter" });
   }
@@ -358,6 +357,14 @@ app.get("/shopify/auth/callback", async (req, res) => {
         console.log(`[Shopify OAuth] Saving token for shop: ${shop}`);
         shopTokens.upsertToken(shop, accessToken);
         console.log(`[Shopify OAuth] Token saved for shop: ${shop}`);
+        // --- Store shop and token in session for automatic product fetch ---
+        if (req.session) {
+          req.session.shop = shop;
+          req.session.shopifyToken = accessToken;
+          req.session.save(() => {
+            console.log(`[Shopify OAuth] Session updated with shop and token`);
+          });
+        }
       } else {
         console.error(`[Shopify OAuth] No access token received for shop: ${shop}`);
       }

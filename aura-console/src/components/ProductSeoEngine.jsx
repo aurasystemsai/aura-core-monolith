@@ -107,6 +107,26 @@ export default function ProductSeoEngine() {
     }
   }
 
+    async function handleManualFetch(e) {
+      e.preventDefault();
+      setManualLoading(true);
+      setError('');
+      try {
+        const params = new URLSearchParams({
+          shop: manualShop,
+          token: manualToken,
+          limit: 50
+        });
+        const res = await fetch(`/api/shopify/products?${params.toString()}`);
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed to load products');
+        setProducts(data.products || []);
+      } catch (err) {
+        setError(err.message || 'Failed to load products');
+      } finally {
+        setManualLoading(false);
+      }
+    }
   async function fetchAnalytics() {
     try {
       const res = await axios.get('/api/product-seo/analytics');
@@ -154,6 +174,25 @@ export default function ProductSeoEngine() {
       const res = await axios.post('/api/product-seo/bulk-generate', { products }, { headers: { 'csrf-token': csrfToken } });
       setBulkAIResults(res.data.results || []);
     } catch (err) {
+            <form onSubmit={handleManualFetch} style={{ marginBottom: 8 }}>
+              <input
+                type="text"
+                placeholder="yourshop.myshopify.com"
+                value={manualShop}
+                onChange={e => setManualShop(e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Admin API Token"
+                value={manualToken}
+                onChange={e => setManualToken(e.target.value)}
+                required
+              />
+              <button type="submit" disabled={manualLoading}>
+                {manualLoading ? 'Loading...' : 'Fetch Products'}
+              </button>
+            </form>
       setError('Bulk AI generation failed');
     }
     setLoading(false);
