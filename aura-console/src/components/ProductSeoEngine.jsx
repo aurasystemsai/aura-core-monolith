@@ -1,100 +1,165 @@
 
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export default function ProductSeoEngine() {
-  const [form, setForm] = useState({
-    productTitle: "",
-    productDescription: "",
-    brand: "",
-    tone: "",
-    useCases: "",
-    prompt: "",
-    language: ""
-  });
+  const [products, setProducts] = useState([]);
+  const [form, setForm] = useState({ product_id: '', title: '', meta_description: '', slug: '', keywords: '' });
+  const [aiInput, setAiInput] = useState({ productName: '', productDescription: '' });
+  const [aiResult, setAiResult] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
-  const [csrfToken, setCsrfToken] = useState("");
+  const [error, setError] = useState('');
+  const [csrfToken, setCsrfToken] = useState('');
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetch('/api/csrf-token')
       .then(res => res.json())
-      .then(data => setCsrfToken(data.csrfToken || ""));
+      .then(data => setCsrfToken(data.csrfToken || ''));
+    fetchProducts();
   }, []);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  async function fetchProducts() {
+    try {
+      const res = await axios.get('/api/product-seo');
+      setProducts(res.data.data || []);
+    } catch (err) {
+      setError('Failed to load products');
+    }
+  }
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setResult(null);
+    setError('');
     try {
-      const res = await fetch("/api/run/product-seo", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "csrf-token": csrfToken
-        },
-        body: JSON.stringify(form)
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Unknown error");
-      setResult(data.result || data);
+      await axios.post('/api/product-seo', form, { headers: { 'csrf-token': csrfToken } });
+      setForm({ product_id: '', title: '', meta_description: '', slug: '', keywords: '' });
+      fetchProducts();
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      setError('Failed to save');
     }
-  };
+    setLoading(false);
+  }
+
+  async function handleAIGenerate(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setAiResult('');
+    try {
+      const res = await axios.post('/api/product-seo/generate', aiInput, { headers: { 'csrf-token': csrfToken } });
+      setAiResult(res.data.result || 'No result');
+    } catch (err) {
+      setError('AI generation failed');
+    }
+    setLoading(false);
+  }
 
   return (
-    <div className="tool-product-seo">
+    <div className="product-seo-engine">
       <h2>Product SEO Engine</h2>
-      <form onSubmit={handleSubmit} style={{ maxWidth: 500 }}>
-        <div>
-          <label>Product Title*</label>
-          <input name="productTitle" value={form.productTitle} onChange={handleChange} required style={{ width: "100%" }} />
-        </div>
-        <div>
-          <label>Product Description*</label>
-          <textarea name="productDescription" value={form.productDescription} onChange={handleChange} required style={{ width: "100%" }} />
-        </div>
-        <div>
-          <label>Brand</label>
-          <input name="brand" value={form.brand} onChange={handleChange} style={{ width: "100%" }} />
-        </div>
-        <div>
-          <label>Tone</label>
-          <input name="tone" value={form.tone} onChange={handleChange} style={{ width: "100%" }} />
-        </div>
-        <div>
-          <label>Use Cases</label>
-          <input name="useCases" value={form.useCases} onChange={handleChange} style={{ width: "100%" }} />
-        </div>
-        <div>
-          <label>Prompt (optional)</label>
-          <input name="prompt" value={form.prompt} onChange={handleChange} style={{ width: "100%" }} />
-        </div>
-        <div>
-          <label>Language (optional)</label>
-          <input name="language" value={form.language} onChange={handleChange} style={{ width: "100%" }} />
-        </div>
-        <button type="submit" disabled={loading} style={{ marginTop: 12 }}>
-          {loading ? "Generating..." : "Generate SEO Content"}
-        </button>
-      </form>
-      {error && <div style={{ color: "red", marginTop: 12 }}>{error}</div>}
-      {result && (
-        <div style={{ marginTop: 24 }}>
-          <h3>SEO Suggestions</h3>
-          <pre style={{ background: "#222", color: "#7fffd4", padding: 12, borderRadius: 6, overflowX: "auto" }}>
-            {JSON.stringify(result, null, 2)}
-          </pre>
-        </div>
-      )}
+      <section style={{ marginBottom: 32 }}>
+        <h3>What is this?</h3>
+        <p>
+          The Product SEO Engine uses AI to generate SEO-optimized titles, meta descriptions, slugs, and keyword sets for your products. You can generate suggestions with AI, then save and manage SEO records for your catalog.
+        </p>
+      </section>
+      <section>
+        <h3>Generate SEO with AI</h3>
+        <form onSubmit={handleAIGenerate} style={{ marginBottom: 16 }}>
+          <input
+            type="text"
+            placeholder="Product Name"
+            value={aiInput.productName}
+            onChange={e => setAiInput({ ...aiInput, productName: e.target.value })}
+            required
+          />
+          <textarea
+            placeholder="Product Description"
+            value={aiInput.productDescription}
+            onChange={e => setAiInput({ ...aiInput, productDescription: e.target.value })}
+            required
+          />
+          <button type="submit" disabled={loading}>Generate</button>
+        </form>
+        {aiResult && <pre className="ai-result">{aiResult}</pre>}
+      </section>
+      <section>
+        <h3>Add Product SEO Record</h3>
+        <form onSubmit={handleSubmit} style={{ marginBottom: 16 }}>
+          <input
+            type="text"
+            placeholder="Product ID"
+            value={form.product_id}
+            onChange={e => setForm({ ...form, product_id: e.target.value })}
+            required
+          />
+          <input
+            type="text"
+            placeholder="Title"
+            value={form.title}
+            onChange={e => setForm({ ...form, title: e.target.value })}
+            required
+          />
+          <input
+            type="text"
+            placeholder="Meta Description"
+            value={form.meta_description}
+            onChange={e => setForm({ ...form, meta_description: e.target.value })}
+            required
+          />
+          <input
+            type="text"
+            placeholder="Slug"
+            value={form.slug}
+            onChange={e => setForm({ ...form, slug: e.target.value })}
+            required
+          />
+          <input
+            type="text"
+            placeholder="Keywords"
+            value={form.keywords}
+            onChange={e => setForm({ ...form, keywords: e.target.value })}
+            required
+          />
+          <button type="submit" disabled={loading}>Save</button>
+        </form>
+      </section>
+      <section>
+        <h3>SEO Records</h3>
+        {products.length === 0 ? <div>No records yet.</div> : (
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Product ID</th>
+                <th>Title</th>
+                <th>Meta Description</th>
+                <th>Slug</th>
+                <th>Keywords</th>
+                <th>Created</th>
+                <th>Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map(p => (
+                <tr key={p.id}>
+                  <td>{p.id}</td>
+                  <td>{p.product_id}</td>
+                  <td>{p.title}</td>
+                  <td>{p.meta_description}</td>
+                  <td>{p.slug}</td>
+                  <td>{p.keywords}</td>
+                  <td>{p.created_at}</td>
+                  <td>{p.updated_at}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+      {error && <div className="error">{error}</div>}
     </div>
   );
 }
