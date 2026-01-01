@@ -1,7 +1,6 @@
-// --- AI Chatbot API (OpenAI-powered) ---
-const { Configuration, OpenAIApi } = require('openai');
-const openaiConfig = new Configuration({ apiKey: process.env.OPENAI_API_KEY });
-const openai = new OpenAIApi(openaiConfig);
+// --- AI Chatbot API (OpenAI-powered, v4 SDK) ---
+const OpenAI = require('openai');
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 app.post('/api/ai/chatbot', async (req, res) => {
   try {
@@ -11,13 +10,13 @@ app.post('/api/ai/chatbot', async (req, res) => {
     }
     // Only allow user/assistant/system roles
     const filtered = messages.filter(m => ['user','assistant','system'].includes(m.role));
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: filtered,
       max_tokens: 512,
       temperature: 0.7
     });
-    const reply = completion.data.choices[0]?.message?.content?.trim() || '';
+    const reply = completion.choices[0]?.message?.content?.trim() || '';
     res.json({ ok: true, reply });
   } catch (err) {
     console.error('[AI Chatbot] Error:', err);
