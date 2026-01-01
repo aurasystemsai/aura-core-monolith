@@ -1,7 +1,21 @@
-// --- AI Chatbot API (OpenAI-powered, v4 SDK) ---
+
+// Load environment variables from .env in development
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 const OpenAI = require('openai');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const lusca = require('lusca');
 
+const PORT = process.env.PORT || 10000;
+
+
+
+// --- Aura Core Monolith Server ---
+const express = require('express');
+const app = express();
+
+// --- AI Chatbot API (OpenAI-powered, v4 SDK) ---
 app.post('/api/ai/chatbot', async (req, res) => {
   try {
     const { messages } = req.body;
@@ -23,14 +37,6 @@ app.post('/api/ai/chatbot', async (req, res) => {
     res.status(500).json({ ok: false, error: err.message || 'AI error' });
   }
 });
-const lusca = require('lusca');
-
-const PORT = process.env.PORT || 10000;
-
-
-// --- Aura Core Monolith Server ---
-const express = require('express');
-const app = express();
 
 const morgan = require('morgan');
 const path = require('path');
