@@ -26,14 +26,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // --- Session Middleware (required for lusca) ---
-const morgan = require('morgan');
-const path = require('path');
-const compression = require('compression');
-const { v4: uuidv4 } = require('uuid');
-const stoppable = require('stoppable');
-const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
-const fs = require('fs');
+
 const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
 app.use(session({
