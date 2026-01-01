@@ -1,3 +1,6 @@
+// --- Body parser middleware (for JSON and forms) ---
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Load environment variables from .env in development
 if (process.env.NODE_ENV !== 'production') {
