@@ -46,15 +46,23 @@ export default function ProductSeoEngine() {
 
   async function fetchShopifyProducts() {
     try {
-      const res = await axios.get('/api/product-seo/shopify-products');
+      const res = await axios.get('/api/product-seo/shopify-products', { withCredentials: true });
       setShopifyProducts(res.data.products || []);
     } catch (err) {
-      setError(
-        err.response?.data?.error ||
-        err.message ||
-        'Failed to load Shopify products. Please check your shop domain and admin token.'
-      );
+      const msg = err.response?.data?.error || err.message || 'Failed to load Shopify products.';
+      setError(msg);
       setShopifyProducts([]);
+      // If error is missing shop domain or admin token, auto-redirect to Shopify OAuth
+      if (msg && msg.toLowerCase().includes('missing shop domain')) {
+        // Try to get shop from URL param or prompt user
+        const url = new URL(window.location.href);
+        const shop = url.searchParams.get('shop');
+        if (shop) {
+          window.location.href = `/shopify/auth?shop=${encodeURIComponent(shop)}`;
+        } else {
+          window.location.href = '/connect-shopify';
+        }
+      }
     }
   }
       <section>
@@ -64,36 +72,15 @@ export default function ProductSeoEngine() {
         ) : null}
         {shopifyProducts.length === 0 && !error ? <div>No Shopify products found.</div> : null}
         {shopifyProducts.length > 0 && (
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Handle</th>
-                <th>Status</th>
-                <th>Vendor</th>
-                <th>Tags</th>
-                <th>Image</th>
-                <th>Created</th>
-                <th>Updated</th>
-              </tr>
-            </thead>
-            <tbody>
-              {shopifyProducts.map(p => (
-                <tr key={p.id}>
-                  <td>{p.id}</td>
-                  <td>{p.title}</td>
-                  <td>{p.handle}</td>
-                  <td>{p.status}</td>
-                  <td>{p.vendor}</td>
-                  <td>{p.tags}</td>
-                  <td>{p.image ? <img src={p.image} alt={p.title} style={{ width: 40, height: 40, objectFit: 'cover' }} /> : ''}</td>
-                  <td>{p.created_at}</td>
-                  <td>{p.updated_at}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ul>
+            {shopifyProducts.map(p => (
+              <li key={p.id}>
+                <b>{p.title}</b> <span style={{ color: '#888' }}>({p.handle})</span>
+                {p.image && <img src={p.image} alt={p.title} style={{ height: 32, marginLeft: 8, verticalAlign: 'middle' }} />}
+                <div style={{ fontSize: 12, color: '#888' }}>ID: {p.id} | Vendor: {p.vendor} | Status: {p.status}</div>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 
