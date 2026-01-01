@@ -48,5 +48,18 @@ if (DB_TYPE === 'postgres') {
     prepare: (...args) => db.prepare(...args),
     exec: (...args) => db.exec(...args),
     close: () => db.close(),
+    // Added for compatibility with model.js
+    query: (sql, params=[]) => {
+      const stmt = db.prepare(sql);
+      return stmt.run(...params);
+    },
+    queryAll: (sql, params=[]) => {
+      const stmt = db.prepare(sql);
+      return stmt.all(...params);
+    },
+    queryOne: (sql, params=[]) => {
+      const stmt = db.prepare(sql);
+      return stmt.get(...params);
+    },
   };
 }

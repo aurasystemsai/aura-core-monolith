@@ -3,9 +3,9 @@
 // ...existing code...
 
 
+
 // --- Product SEO Engine router ---
 const productSeoRouter = require('./tools/product-seo/router');
-
 
 // Load environment variables from .env in development
 if (process.env.NODE_ENV !== 'production') {
@@ -17,19 +17,39 @@ const lusca = require('lusca');
 
 const PORT = process.env.PORT || 10000;
 
-
-
-
-
 // --- Aura Core Monolith Server ---
 const express = require('express');
 const app = express();
-// --- Register Product SEO Engine API (after app is initialized and middleware applied) ---
-app.use('/api/product-seo', productSeoRouter);
 
 // --- Body parser middleware (for JSON and forms) ---
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// --- Session Middleware (required for lusca) ---
+const morgan = require('morgan');
+const path = require('path');
+const compression = require('compression');
+const { v4: uuidv4 } = require('uuid');
+const stoppable = require('stoppable');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const fs = require('fs');
+const session = require('express-session');
+const SQLiteStore = require('connect-sqlite3')(session);
+app.use(session({
+  store: new SQLiteStore({
+    db: 'aura-core-session.sqlite',
+    dir: path.join(__dirname, '../data'),
+    concurrentDB: true
+  }),
+  secret: process.env.SESSION_SECRET || 'aura-core-monolith-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false, httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 }, // 7 days
+}));
+
+// --- Register Product SEO Engine API (after all middleware is applied) ---
+app.use('/api/product-seo', productSeoRouter);
 
 // --- AI Chatbot API (OpenAI-powered, v4 SDK) ---
 app.post('/api/ai/chatbot', async (req, res) => {
@@ -62,21 +82,6 @@ const stoppable = require('stoppable');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const fs = require('fs');
-
-// --- Session Middleware (required for lusca) ---
-const session = require('express-session');
-const SQLiteStore = require('connect-sqlite3')(session);
-app.use(session({
-  store: new SQLiteStore({
-    db: 'aura-core-session.sqlite',
-    dir: path.join(__dirname, '../data'),
-    concurrentDB: true
-  }),
-  secret: process.env.SESSION_SECRET || 'aura-core-monolith-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: false, httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 }, // 7 days
-}));
 
 // --- Register custom morgan token for request ID ---
 morgan.token('id', function getId(req) {
