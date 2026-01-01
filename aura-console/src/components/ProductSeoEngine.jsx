@@ -49,13 +49,21 @@ export default function ProductSeoEngine() {
       const res = await axios.get('/api/product-seo/shopify-products');
       setShopifyProducts(res.data.products || []);
     } catch (err) {
-      // Don't block UI, but log error
-      console.error('Failed to load Shopify products', err);
+      setError(
+        err.response?.data?.error ||
+        err.message ||
+        'Failed to load Shopify products. Please check your shop domain and admin token.'
+      );
+      setShopifyProducts([]);
     }
   }
       <section>
         <h3>Shopify Products</h3>
-        {shopifyProducts.length === 0 ? <div>No Shopify products found.</div> : (
+        {error && shopifyProducts.length === 0 ? (
+          <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>
+        ) : null}
+        {shopifyProducts.length === 0 && !error ? <div>No Shopify products found.</div> : null}
+        {shopifyProducts.length > 0 && (
           <table>
             <thead>
               <tr>

@@ -59,8 +59,10 @@ app.get('/api/product-seo/shopify-products', async (req, res) => {
     let token = req.session && req.session.shopifyToken;
     if (!shop) shop = process.env.SHOPIFY_SHOP_DOMAIN;
     if (!token) token = process.env.SHOPIFY_ADMIN_TOKEN;
+    console.log('[Product SEO] /api/product-seo/shopify-products called', { shop, token: token ? token.slice(0, 6) + '...' : undefined });
     if (!shop || !token) {
-      return res.status(400).json({ ok: false, error: 'Missing shop domain or admin token' });
+      console.warn('[Product SEO] Missing shop domain or admin token', { shop, token });
+      return res.status(400).json({ ok: false, error: 'Missing shop domain or admin token. Please connect your Shopify store and provide an Admin API token.' });
     }
     const apiVersion = '2023-10';
     const limit = Math.max(1, Math.min(250, parseInt(req.query.limit) || 50));
@@ -75,6 +77,7 @@ app.get('/api/product-seo/shopify-products', async (req, res) => {
     });
     if (!shopRes.ok) {
       const text = await shopRes.text();
+      console.warn('[Product SEO] Shopify API error', { status: shopRes.status, text });
       return res.status(shopRes.status).json({ ok: false, error: `Shopify API error: ${text}` });
     }
     const data = await shopRes.json();
@@ -91,6 +94,7 @@ app.get('/api/product-seo/shopify-products', async (req, res) => {
       tags: p.tags,
       variants: (p.variants || []).map(v => ({ id: v.id, title: v.title, sku: v.sku, price: v.price })),
     }));
+    console.log(`[Product SEO] Shopify products returned: ${products.length}`);
     res.json({ ok: true, products });
   } catch (err) {
     console.error('[Product SEO] Shopify products fetch error:', err);
