@@ -72,11 +72,13 @@ const toolRouters = [
   { path: '/api/dynamic-pricing-engine', router: require('./tools/dynamic-pricing-engine/router') },
   { path: '/api/customer-support-ai', router: require('./tools/customer-support-ai/router') },
   { path: '/api/finance-autopilot', router: require('./tools/finance-autopilot/router') },
+  { path: '/api/customer-support-ai', router: require('./tools/customer-support-ai/router') },
   { path: '/api/auto-insights', router: require('./tools/auto-insights/router') },
   { path: '/api/ai-support-assistant', router: require('./tools/ai-support-assistant/router') },
   { path: '/api/ai-launch-planner', router: require('./tools/ai-launch-planner/router') },
   { path: '/api/aura-api-sdk', router: require('./tools/aura-api-sdk/router') },
   { path: '/api/aura-operations-ai', router: require('./tools/aura-operations-ai/router') },
+  { path: '/api/brand-intelligence-layer', router: require('./tools/brand-intelligence-layer/router') },
 ];
 toolRouters.forEach(({ path, router }) => {
   app.use(path, router);
