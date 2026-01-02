@@ -79,6 +79,7 @@ const toolRouters = [
   { path: '/api/aura-api-sdk', router: require('./tools/aura-api-sdk/router') },
   { path: '/api/aura-operations-ai', router: require('./tools/aura-operations-ai/router') },
   { path: '/api/brand-intelligence-layer', router: require('./tools/brand-intelligence-layer/router') },
+  { path: '/api/blog-draft-engine', router: require('./tools/blog-draft-engine/router') },
 ];
 toolRouters.forEach(({ path, router }) => {
   app.use(path, router);
