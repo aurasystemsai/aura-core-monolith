@@ -1,4 +1,3 @@
-
 // --- All requires and initializations at the top ---
 const path = require('path');
 const morgan = require('morgan');
@@ -46,8 +45,38 @@ app.use(session({
 }));
 
 
-// --- Register Product SEO Engine API (after all middleware is applied) ---
-app.use('/api/product-seo', productSeoRouter);
+
+// --- Register all tool routers (auto-generated, advanced features) ---
+const toolRouters = [
+  { path: '/api/product-seo', router: require('./tools/product-seo/router') },
+  { path: '/api/ai-alt-text-engine', router: require('./tools/ai-alt-text-engine/router') },
+  { path: '/api/creative-automation-engine', router: require('./tools/creative-automation-engine/router') },
+  { path: '/api/weekly-blog-content-engine', router: require('./tools/weekly-blog-content-engine/router') },
+  { path: '/api/workflow-orchestrator', router: require('./tools/workflow-orchestrator/router') },
+  { path: '/api/technical-seo-auditor', router: require('./tools/technical-seo-auditor/router') },
+  { path: '/api/schema-rich-results-engine', router: require('./tools/schema-rich-results-engine/router') },
+  { path: '/api/social-scheduler-content-engine', router: require('./tools/social-scheduler-content-engine/router') },
+  { path: '/api/review-ugc-engine', router: require('./tools/review-ugc-engine/router') },
+  { path: '/api/rank-visibility-tracker', router: require('./tools/rank-visibility-tracker/router') },
+  { path: '/api/on-page-seo-engine', router: require('./tools/on-page-seo-engine/router') },
+  { path: '/api/ltv-churn-predictor', router: require('./tools/ltv-churn-predictor/router') },
+  { path: '/api/klaviyo-flow-automation', router: require('./tools/klaviyo-flow-automation/router') },
+  { path: '/api/internal-link-optimizer', router: require('./tools/internal-link-optimizer/router') },
+  { path: '/api/multi-channel-optimizer', router: require('./tools/multi-channel-optimizer/router') },
+  { path: '/api/inbox-assistant', router: require('./tools/inbox-assistant/router') },
+  { path: '/api/inbox-reply-assistant', router: require('./tools/inbox-reply-assistant/router') },
+  { path: '/api/inventory-supplier-sync', router: require('./tools/inventory-supplier-sync/router') },
+  { path: '/api/image-alt-media-seo', router: require('./tools/image-alt-media-seo/router') },
+  { path: '/api/email-automation-builder', router: require('./tools/email-automation-builder/router') },
+  { path: '/api/daily-cfo-pack', router: require('./tools/daily-cfo-pack/router') },
+  { path: '/api/dynamic-pricing-engine', router: require('./tools/dynamic-pricing-engine/router') },
+  { path: '/api/customer-support-ai', router: require('./tools/customer-support-ai/router') },
+  { path: '/api/finance-autopilot', router: require('./tools/finance-autopilot/router') },
+  { path: '/api/auto-insights', router: require('./tools/auto-insights/router') },
+];
+toolRouters.forEach(({ path, router }) => {
+  app.use(path, router);
+});
 
 // --- Product SEO Engine: Shopify Products Fetch Endpoint ---
 // GET /api/product-seo/shopify-products?limit=50
@@ -57,6 +86,12 @@ app.get('/api/product-seo/shopify-products', async (req, res) => {
     // Priority: session > env > fail
     let shop = req.session && req.session.shop;
     let token = req.session && req.session.shopifyToken;
+    console.log('[Product SEO] Session values:', {
+      sessionId: req.sessionID,
+      shop,
+      token: token ? token.slice(0, 6) + '...' : undefined,
+      cookies: req.headers.cookie
+    });
     if (!shop) shop = process.env.SHOPIFY_SHOP_DOMAIN;
     if (!token) token = process.env.SHOPIFY_ADMIN_TOKEN;
     console.log('[Product SEO] /api/product-seo/shopify-products called', { shop, token: token ? token.slice(0, 6) + '...' : undefined });
