@@ -81,6 +81,7 @@ const toolRouters = [
   { path: '/api/brand-intelligence-layer', router: require('./tools/brand-intelligence-layer/router') },
   { path: '/api/blog-draft-engine', router: require('./tools/blog-draft-engine/router') },
   { path: '/api/blog-seo', router: require('./tools/blog-seo/router') },
+  { path: '/api/content-health-auditor', router: require('./tools/content-health-auditor/router') },
 ];
 toolRouters.forEach(({ path, router }) => {
   app.use(path, router);
