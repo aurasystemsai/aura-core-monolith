@@ -73,6 +73,7 @@ const toolRouters = [
   { path: '/api/customer-support-ai', router: require('./tools/customer-support-ai/router') },
   { path: '/api/finance-autopilot', router: require('./tools/finance-autopilot/router') },
   { path: '/api/auto-insights', router: require('./tools/auto-insights/router') },
+  { path: '/api/ai-support-assistant', router: require('./tools/ai-support-assistant/router') },
 ];
 toolRouters.forEach(({ path, router }) => {
   app.use(path, router);
