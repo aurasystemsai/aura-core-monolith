@@ -1,32 +1,41 @@
 const express = require('express');
 const OpenAI = require('openai');
+const db = require('./db');
+const analyticsModel = require('./analyticsModel');
+const notificationModel = require('./notificationModel');
+const rbac = require('./rbac');
+const i18n = require('./i18n');
+const webhookModel = require('./webhookModel');
+const complianceModel = require('./complianceModel');
+const pluginSystem = require('./pluginSystem');
 const router = express.Router();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-let audits = [];
-let analytics = [];
-
-// CRUD
-router.get('/audits', (req, res) => res.json({ ok: true, audits }));
+// CRUD endpoints
+router.get('/audits', (req, res) => {
+	res.json({ ok: true, audits: db.list() });
+});
+router.get('/audits/:id', (req, res) => {
+	const audit = db.get(req.params.id);
+	if (!audit) return res.status(404).json({ ok: false, error: 'Not found' });
+	res.json({ ok: true, audit });
+});
 router.post('/audits', (req, res) => {
-	const audit = { ...req.body, id: Date.now().toString() };
-	audits.push(audit);
+	const audit = db.create(req.body || {});
 	res.json({ ok: true, audit });
 });
 router.put('/audits/:id', (req, res) => {
-	const idx = audits.findIndex(a => a.id === req.params.id);
-	if (idx === -1) return res.status(404).json({ ok: false, error: 'Not found' });
-	audits[idx] = { ...audits[idx], ...req.body };
-	res.json({ ok: true, audit: audits[idx] });
+	const audit = db.update(req.params.id, req.body || {});
+	if (!audit) return res.status(404).json({ ok: false, error: 'Not found' });
+	res.json({ ok: true, audit });
 });
 router.delete('/audits/:id', (req, res) => {
-	const idx = audits.findIndex(a => a.id === req.params.id);
-	if (idx === -1) return res.status(404).json({ ok: false, error: 'Not found' });
-	audits.splice(idx, 1);
+	const ok = db.delete(req.params.id);
+	if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
 	res.json({ ok: true });
 });
 
-// AI (OpenAI-powered SEO audit)
+// AI endpoint: audit
 router.post('/ai/audit', async (req, res) => {
 	try {
 		const { url } = req.body;
@@ -46,44 +55,77 @@ router.post('/ai/audit', async (req, res) => {
 	}
 });
 
-// Analytics
+// Analytics endpoints
 router.post('/analytics', (req, res) => {
-	analytics.push({ ...req.body, ts: Date.now() });
+	const event = analyticsModel.recordEvent(req.body || {});
+	res.json({ ok: true, event });
+});
+router.get('/analytics', (req, res) => {
+	res.json({ ok: true, events: analyticsModel.listEvents(req.query || {}) });
+});
+
+// Import/export endpoints
+router.post('/import', (req, res) => {
+	const { items } = req.body || {};
+	if (!Array.isArray(items)) return res.status(400).json({ ok: false, error: 'items[] required' });
+	db.import(items);
+	res.json({ ok: true, count: db.list().length });
+});
+router.get('/export', (req, res) => {
+	res.json({ ok: true, items: db.list() });
+});
+
+// Shopify sync endpoints
+router.post('/shopify/sync', (req, res) => {
+	// Integrate with Shopify API in production
+	res.json({ ok: true, message: 'Shopify sync not implemented in demo.' });
+});
+
+// Notifications endpoints
+router.post('/notify', (req, res) => {
+	const { to, message } = req.body || {};
+	if (!to || !message) return res.status(400).json({ ok: false, error: 'to and message required' });
+	notificationModel.send(to, message);
 	res.json({ ok: true });
 });
-router.get('/analytics', (req, res) => res.json({ ok: true, analytics }));
 
-// Import/Export
-router.post('/import', (req, res) => {
-	if (!Array.isArray(req.body.audits)) return res.status(400).json({ ok: false, error: 'audits[] required' });
-	audits = req.body.audits;
-	res.json({ ok: true, count: audits.length });
-});
-router.get('/export', (req, res) => res.json({ ok: true, audits }));
-
-// Shopify sync (placeholder)
-router.post('/shopify/sync', (req, res) => {
-	res.json({ ok: true, message: 'Shopify sync not yet implemented' });
-});
-
-// Notifications (placeholder)
-router.post('/notify', (req, res) => {
-	res.json({ ok: true, message: 'Notification sent (demo)' });
-});
-
-// RBAC (demo)
+// RBAC endpoint
 router.post('/rbac/check', (req, res) => {
-	res.json({ ok: true, allowed: true });
+	const { user, action } = req.body || {};
+	const allowed = rbac.check(user, action);
+	res.json({ ok: true, allowed });
 });
 
-// i18n (demo)
+// i18n endpoint
 router.get('/i18n', (req, res) => {
-	res.json({ ok: true, translations: { en: 'SEO Audit', es: 'Auditoría SEO' } });
+	res.json({ ok: true, i18n });
 });
 
-// Docs
+// Docs endpoint
 router.get('/docs', (req, res) => {
 	res.json({ ok: true, docs: 'Technical SEO Auditor API: CRUD, AI, analytics, import/export, Shopify sync, notifications, RBAC, i18n.' });
+});
+
+// Webhook endpoint
+router.post('/webhook', (req, res) => {
+	webhookModel.handle(req.body || {});
+	res.json({ ok: true });
+});
+
+// Compliance endpoint
+router.get('/compliance', (req, res) => {
+	res.json({ ok: true, compliance: complianceModel.get() });
+});
+
+// Plugin system endpoint
+router.post('/plugin', (req, res) => {
+	pluginSystem.run(req.body || {});
+	res.json({ ok: true });
+});
+
+// Health check endpoint
+router.get('/health', (req, res) => {
+	res.json({ ok: true, status: 'healthy', timestamp: Date.now() });
 });
 
 module.exports = router;

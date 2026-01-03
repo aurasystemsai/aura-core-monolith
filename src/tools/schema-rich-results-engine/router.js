@@ -1,32 +1,41 @@
 const express = require('express');
 const OpenAI = require('openai');
+const db = require('./db');
+const analyticsModel = require('./analyticsModel');
+const notificationModel = require('./notificationModel');
+const rbac = require('./rbac');
+const i18n = require('./i18n');
+const webhookModel = require('./webhookModel');
+const complianceModel = require('./complianceModel');
+const pluginSystem = require('./pluginSystem');
 const router = express.Router();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-let schemas = [];
-let analytics = [];
-
-// CRUD
-router.get('/schemas', (req, res) => res.json({ ok: true, schemas }));
+// CRUD endpoints
+router.get('/schemas', (req, res) => {
+	res.json({ ok: true, schemas: db.list() });
+});
+router.get('/schemas/:id', (req, res) => {
+	const schema = db.get(req.params.id);
+	if (!schema) return res.status(404).json({ ok: false, error: 'Not found' });
+	res.json({ ok: true, schema });
+});
 router.post('/schemas', (req, res) => {
-	const schema = { ...req.body, id: Date.now().toString() };
-	schemas.push(schema);
+	const schema = db.create(req.body || {});
 	res.json({ ok: true, schema });
 });
 router.put('/schemas/:id', (req, res) => {
-	const idx = schemas.findIndex(s => s.id === req.params.id);
-	if (idx === -1) return res.status(404).json({ ok: false, error: 'Not found' });
-	schemas[idx] = { ...schemas[idx], ...req.body };
-	res.json({ ok: true, schema: schemas[idx] });
+	const schema = db.update(req.params.id, req.body || {});
+	if (!schema) return res.status(404).json({ ok: false, error: 'Not found' });
+	res.json({ ok: true, schema });
 });
 router.delete('/schemas/:id', (req, res) => {
-	const idx = schemas.findIndex(s => s.id === req.params.id);
-	if (idx === -1) return res.status(404).json({ ok: false, error: 'Not found' });
-	schemas.splice(idx, 1);
+	const ok = db.delete(req.params.id);
+	if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
 	res.json({ ok: true });
 });
 
-// AI (OpenAI-powered schema generator)
+// AI endpoint: generate schema
 router.post('/ai/generate', async (req, res) => {
 	try {
 		const { type, data } = req.body;
@@ -47,44 +56,77 @@ router.post('/ai/generate', async (req, res) => {
 	}
 });
 
-// Analytics
+// Analytics endpoints
 router.post('/analytics', (req, res) => {
-	analytics.push({ ...req.body, ts: Date.now() });
+	const event = analyticsModel.recordEvent(req.body || {});
+	res.json({ ok: true, event });
+});
+router.get('/analytics', (req, res) => {
+	res.json({ ok: true, events: analyticsModel.listEvents(req.query || {}) });
+});
+
+// Import/export endpoints
+router.post('/import', (req, res) => {
+	const { items } = req.body || {};
+	if (!Array.isArray(items)) return res.status(400).json({ ok: false, error: 'items[] required' });
+	db.import(items);
+	res.json({ ok: true, count: db.list().length });
+});
+router.get('/export', (req, res) => {
+	res.json({ ok: true, items: db.list() });
+});
+
+// Shopify sync endpoints
+router.post('/shopify/sync', (req, res) => {
+	// Integrate with Shopify API in production
+	res.json({ ok: true, message: 'Shopify sync not implemented in demo.' });
+});
+
+// Notifications endpoints
+router.post('/notify', (req, res) => {
+	const { to, message } = req.body || {};
+	if (!to || !message) return res.status(400).json({ ok: false, error: 'to and message required' });
+	notificationModel.send(to, message);
 	res.json({ ok: true });
 });
-router.get('/analytics', (req, res) => res.json({ ok: true, analytics }));
 
-// Import/Export
-router.post('/import', (req, res) => {
-	if (!Array.isArray(req.body.schemas)) return res.status(400).json({ ok: false, error: 'schemas[] required' });
-	schemas = req.body.schemas;
-	res.json({ ok: true, count: schemas.length });
-});
-router.get('/export', (req, res) => res.json({ ok: true, schemas }));
-
-// Shopify sync (placeholder)
-router.post('/shopify/sync', (req, res) => {
-	res.json({ ok: true, message: 'Shopify sync not yet implemented' });
-});
-
-// Notifications (placeholder)
-router.post('/notify', (req, res) => {
-	res.json({ ok: true, message: 'Notification sent (demo)' });
-});
-
-// RBAC (demo)
+// RBAC endpoint
 router.post('/rbac/check', (req, res) => {
-	res.json({ ok: true, allowed: true });
+	const { user, action } = req.body || {};
+	const allowed = rbac.check(user, action);
+	res.json({ ok: true, allowed });
 });
 
-// i18n (demo)
+// i18n endpoint
 router.get('/i18n', (req, res) => {
-	res.json({ ok: true, translations: { en: 'Schema', es: 'Esquema' } });
+	res.json({ ok: true, i18n });
 });
 
-// Docs
+// Docs endpoint
 router.get('/docs', (req, res) => {
 	res.json({ ok: true, docs: 'Schema Rich Results Engine API: CRUD, AI, analytics, import/export, Shopify sync, notifications, RBAC, i18n.' });
+});
+
+// Webhook endpoint
+router.post('/webhook', (req, res) => {
+	webhookModel.handle(req.body || {});
+	res.json({ ok: true });
+});
+
+// Compliance endpoint
+router.get('/compliance', (req, res) => {
+	res.json({ ok: true, compliance: complianceModel.get() });
+});
+
+// Plugin system endpoint
+router.post('/plugin', (req, res) => {
+	pluginSystem.run(req.body || {});
+	res.json({ ok: true });
+});
+
+// Health check endpoint
+router.get('/health', (req, res) => {
+	res.json({ ok: true, status: 'healthy', timestamp: Date.now() });
 });
 
 module.exports = router;

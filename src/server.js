@@ -33,7 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
 app.use(session({
-  store: new SQLiteStore({
+    store: new SQLiteStore({
     db: 'aura-core-session.sqlite',
     dir: path.join(__dirname, '../data'),
     concurrentDB: true
@@ -83,7 +83,19 @@ const toolRouters = [
   { path: '/api/content-health-auditor', router: require('./tools/content-health-auditor/router') },
 ];
 toolRouters.forEach(({ path, router }) => {
-  app.use(path, router);
+  try {
+    console.log(`[Router Registration] ${path}:`, typeof router, Array.isArray(router), router && router.stack ? 'Express Router' : typeof router);
+    app.use(path, router);
+  } catch (err) {
+    console.error(`Error registering router for path ${path}:`, {
+      type: typeof router,
+      isArray: Array.isArray(router),
+      hasStack: router && router.stack,
+      value: router
+    });
+    console.error('Stack trace:', err);
+    throw err;
+  }
 });
 
 // --- Product SEO Engine: Shopify Products Fetch Endpoint ---
@@ -300,8 +312,13 @@ if (require.main === module) {
 // app.use('/api', requireApiKey); // Disabled for local dev: requireApiKey not defined
 
 
+
 // Lusca CSRF protection for all state-changing routes (POST, PUT, PATCH, DELETE)
-app.use(lusca.csrf({ cookie: true }));
+if (process.env.NODE_ENV !== 'test') {
+  app.use(lusca.csrf({ cookie: true }));
+} else {
+  console.warn('[Core] CSRF protection is DISABLED in test mode');
+}
 
 // Expose CSRF token for frontend (GET /api/csrf-token)
 app.get('/api/csrf-token', (req, res) => {

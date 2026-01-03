@@ -1,4 +1,5 @@
 const express = require('express');
+// ...existing code...
 const OpenAI = require('openai');
 const db = require('./db');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -77,7 +78,6 @@ router.get('/export', (req, res) => {
   res.json({ ok: true, items: db.list() });
 });
 
-// Shopify sync endpoints
 router.post('/shopify/sync', async (req, res) => {
   // Placeholder: implement Shopify sync logic
   res.json({ ok: true, synced: true });
@@ -99,22 +99,79 @@ router.post('/rbac/check', (req, res) => {
 });
 
 // i18n endpoint
+// i18n endpoint
 router.get('/i18n', (req, res) => {
   res.json({ ok: true, i18n });
 });
 
-// Docs endpoint
+// Docs endpoint (returns static docs for now)
 router.get('/docs', (req, res) => {
-  res.json({ ok: true, docs: 'Abandoned Checkout Winback API: CRUD, AI, analytics, import/export, Shopify sync, notifications, RBAC, i18n.' });
+  res.json({ ok: true, docs: 'Abandoned Checkout Winback API documentation.' });
 });
 
-// Webhook endpoint
-router.post('/webhook', (req, res) => {
-  webhookModel.handle(req.body || {});
-  res.json({ ok: true });
+// Winback email AI generation endpoint
+router.post('/ai/winback-email', async (req, res) => {
+  try {
+    const { customer, cart } = req.body;
+    if (!customer || !cart) return res.status(400).json({ ok: false, error: 'Missing customer or cart' });
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        { role: 'system', content: 'You are an ecommerce winback expert.' },
+        { role: 'user', content: `Generate a winback email for customer ${customer} with cart: ${JSON.stringify(cart)}` }
+      ],
+      max_tokens: 256,
+      temperature: 0.7
+    });
+    const reply = completion.choices[0]?.message?.content?.trim() || '';
+    webhookModel.handle(req.body || {});
+    res.json({ ok: true, result: reply });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 // Compliance endpoint
+// Analytics endpoint (placeholder)
+router.get('/analytics', (req, res) => {
+  res.json({ ok: true, analytics: { totalItems: db.list().length } });
+});
+
+// Import/export endpoints (placeholder logic)
+router.post('/import', (req, res) => {
+  const { data } = req.body;
+  if (!Array.isArray(data)) return res.status(400).json({ ok: false, error: 'Invalid data' });
+  data.forEach(item => db.create(item));
+  res.json({ ok: true, count: db.list().length });
+});
+router.get('/export', (req, res) => {
+  res.json({ ok: true, data: db.list() });
+});
+
+// Shopify sync endpoint (placeholder)
+router.post('/shopify/sync', (req, res) => {
+  res.json({ ok: true, message: 'Shopify sync not implemented in demo.' });
+});
+
+// Notifications endpoint (placeholder)
+router.post('/notify', (req, res) => {
+  res.json({ ok: true, message: 'Notification sent (demo).' });
+});
+
+// RBAC check endpoint (placeholder)
+router.post('/rbac/check', (req, res) => {
+  res.json({ ok: true, allowed: true });
+});
+
+// i18n endpoint (placeholder)
+router.get('/i18n', (req, res) => {
+  res.json({ ok: true, translations: { en: 'Abandoned Checkout Winback', fr: 'Relance panier abandonné' } });
+});
+
+// Docs endpoint (placeholder)
+router.get('/docs', (req, res) => {
+  res.json({ ok: true, docs: 'Abandoned Checkout Winback API. Endpoints: /items, /ai/generate, /analytics, /import, /export, /shopify/sync, /notify, /rbac/check, /i18n, /docs' });
+});
 router.get('/compliance', (req, res) => {
   res.json({ ok: true, compliance: complianceModel.get() });
 });

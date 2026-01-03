@@ -1,9 +1,14 @@
+
 // src/tools/product-seo/product-seo.test.js
 // Product SEO Engine tool tests
+
+// Ensure .env is loaded for tests (for OPENAI_API_KEY)
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../../.env') });
 
 const { run } = require('./index');
 
 describe('Product SEO Engine', () => {
+  jest.setTimeout(30000); // Allow up to 30 seconds for OpenAI API calls
   it('should generate SEO output for valid input', async () => {
     const input = {
       productTitle: 'Gold Diamond Necklace',
