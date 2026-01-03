@@ -1,0 +1,72 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - heading "Welcome to Aura!" [level=2] [ref=e5]
+    - paragraph [ref=e6]: Get started by setting up your first project and exploring the tools in the sidebar.
+    - button "Continue" [ref=e7] [cursor=pointer]
+  - button "Open AI Chatbot" [ref=e9] [cursor=pointer]: 💬 Chat
+  - generic [ref=e10]:
+    - navigation [ref=e11]:
+      - img "AURA Logo" [ref=e13]
+      - list [ref=e14]:
+        - listitem "Dashboard" [ref=e15]
+        - listitem "Reports" [ref=e16]
+        - listitem "Auth" [ref=e17]
+        - listitem "User Management" [ref=e18]
+        - listitem "Onboarding" [ref=e19]
+        - listitem "Credits" [ref=e20]
+        - listitem "Orchestration" [ref=e21]
+        - listitem "Products" [ref=e22]
+        - listitem "Content Health" [ref=e23]
+        - listitem "Fix Queue" [ref=e24]
+        - listitem "Content Ingest" [ref=e25]
+        - listitem "Draft Library" [ref=e26]
+        - listitem "System Health" [ref=e27]
+      - button "Show What’s New / Changelog" [ref=e28] [cursor=pointer]:
+        - generic [ref=e29]: ✨
+        - text: What’s New
+        - generic "New update" [ref=e30]
+      - generic [ref=e31]: Tools
+      - list [ref=e32]:
+        - listitem "Abandoned Checkout Winback" [ref=e33]
+        - listitem "AI Alt-Text Engine" [ref=e34]
+        - listitem "AI Launch Planner" [ref=e35]
+        - listitem "AI Support Assistant" [ref=e36]
+        - listitem "Aura API SDK" [ref=e37]
+        - listitem "Aura Operations AI" [ref=e38]
+        - listitem "Auto Insights" [ref=e39]
+        - listitem "Blog Draft Engine" [ref=e40]
+        - listitem "Blog SEO Engine" [ref=e41]
+        - listitem "Brand Intelligence Layer" [ref=e42]
+        - listitem "Creative Automation Engine" [ref=e43]
+        - listitem "Customer Support AI" [ref=e44]
+        - listitem "Daily CFO Pack" [ref=e45]
+        - listitem "Dynamic Pricing Engine" [ref=e46]
+        - listitem "Email Automation Builder" [ref=e47]
+        - listitem "Finance Autopilot" [ref=e48]
+        - listitem "Image Alt / Media SEO" [ref=e49]
+        - listitem "Inbox Assistant" [ref=e50]
+        - listitem "Inbox Reply Assistant" [ref=e51]
+        - listitem "Internal Link Optimizer" [ref=e52]
+        - listitem "Inventory Supplier Sync" [ref=e53]
+        - listitem "Klaviyo Flow Automation" [ref=e54]
+        - listitem "LTV / Churn Predictor" [ref=e55]
+        - listitem "Multi-Channel Optimizer" [ref=e56]
+        - listitem "On-Page SEO Engine" [ref=e57]
+        - listitem "Product SEO Engine" [ref=e58]
+        - listitem "Rank & Visibility Tracker" [ref=e59]
+        - listitem "Returns/RMA Automation" [ref=e60]
+        - listitem "Review UGC Engine" [ref=e61]
+        - listitem "Schema Rich Results Engine" [ref=e62]
+        - listitem "Social Scheduler Content Engine" [ref=e63]
+        - listitem "Technical SEO Auditor" [ref=e64]
+        - listitem "Weekly Blog Content Engine" [ref=e65]
+        - listitem "Workflow Orchestrator" [ref=e66]
+      - generic [ref=e67]:
+        - img "User Avatar" [ref=e68]
+        - generic [ref=e69]: User Name
+        - generic [ref=e70]: user@email.com
+    - main [ref=e71]
+```

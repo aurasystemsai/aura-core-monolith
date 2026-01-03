@@ -10,6 +10,27 @@ import ProductsList from "./components/ProductsList.jsx";
 import ToolPlaceholder from "./components/ToolPlaceholder.jsx";
 import ToolScaffold from "./components/tools/ToolScaffold.jsx";
 import AbandonedCheckoutWinback from "./components/tools/AbandonedCheckoutWinback.jsx";
+import CustomerDataPlatform from "./components/tools/CustomerDataPlatform.jsx";
+import VisualWorkflowBuilder from "./components/tools/VisualWorkflowBuilder.jsx";
+import SelfServicePortal from "./components/tools/SelfServicePortal.jsx";
+import AdvancedPersonalizationEngine from "./components/tools/AdvancedPersonalizationEngine.jsx";
+import ABTestingSuite from "./components/tools/ABTestingSuite.jsx";
+import DataWarehouseConnector from "./components/tools/DataWarehouseConnector.jsx";
+import ConsentPrivacyManagement from "./components/tools/ConsentPrivacyManagement.jsx";
+import EntityTopicExplorer from "./components/tools/EntityTopicExplorer.jsx";
+import InternalLinkingSuggestions from "./components/tools/InternalLinkingSuggestions.jsx";
+import AIContentBriefGenerator from "./components/tools/AIContentBriefGenerator.jsx";
+import BrandMentionTracker from "./components/tools/BrandMentionTracker.jsx";
+import LocalSEOToolkit from "./components/tools/LocalSEOToolkit.jsx";
+import AutomationTemplates from "./components/tools/AutomationTemplates.jsx";
+import ConditionalLogicAutomation from "./components/tools/ConditionalLogicAutomation.jsx";
+import WebhookApiTriggers from "./components/tools/WebhookApiTriggers.jsx";
+import ReportingIntegrations from "./components/tools/ReportingIntegrations.jsx";
+import CustomDashboardBuilder from "./components/tools/CustomDashboardBuilder.jsx";
+import ScheduledExport from "./components/tools/ScheduledExport.jsx";
+import ChurnPredictionPlaybooks from "./components/tools/ChurnPredictionPlaybooks.jsx";
+import UpsellCrossSellEngine from "./components/tools/UpsellCrossSellEngine.jsx";
+import InventoryForecasting from "./components/tools/InventoryForecasting.jsx";
 import toolsMeta from "./toolMeta";
 import Sidebar from "./components/Sidebar";
 import ChangelogModal from "./components/ChangelogModal.jsx";
@@ -361,22 +382,59 @@ function App() {
                 )}
                 {/* Other custom UIs and fallback ToolScaffold */}
                 {toolsMeta.map(tool => {
-                  const customUIs = [
-                    "product-seo",
-                    "ai-alt-text-engine",
-                    "internal-link-optimizer",
-                    "content-health-auditor",
-                    "abandoned-checkout-winback",
-                  ];
-                  if (activeSection === tool.id && !customUIs.includes(tool.id)) {
-                    if (tool.id === "abandoned-checkout-winback") {
-                      return <AbandonedCheckoutWinback key={tool.id} />;
+                  if (activeSection === tool.id) {
+                    switch (tool.id) {
+                      case "abandoned-checkout-winback":
+                        return <AbandonedCheckoutWinback key={tool.id} />;
+                      case "customer-data-platform":
+                        return <CustomerDataPlatform key={tool.id} />;
+                      case "visual-workflow-builder":
+                        return <VisualWorkflowBuilder key={tool.id} />;
+                      case "self-service-portal":
+                        return <SelfServicePortal key={tool.id} />;
+                      case "advanced-personalization-engine":
+                        return <AdvancedPersonalizationEngine key={tool.id} />;
+                      case "ab-testing-suite":
+                        return <ABTestingSuite key={tool.id} />;
+                      case "data-warehouse-connector":
+                        return <DataWarehouseConnector key={tool.id} />;
+                      case "consent-privacy-management":
+                        return <ConsentPrivacyManagement key={tool.id} />;
+                      case "entity-topic-explorer":
+                        return <EntityTopicExplorer key={tool.id} />;
+                      case "internal-linking-suggestions":
+                        return <InternalLinkingSuggestions key={tool.id} />;
+                      case "ai-content-brief-generator":
+                        return <AIContentBriefGenerator key={tool.id} />;
+                      case "brand-mention-tracker":
+                        return <BrandMentionTracker key={tool.id} />;
+                      case "local-seo-toolkit":
+                        return <LocalSEOToolkit key={tool.id} />;
+                      case "automation-templates":
+                        return <AutomationTemplates key={tool.id} />;
+                      case "conditional-logic-automation":
+                        return <ConditionalLogicAutomation key={tool.id} />;
+                      case "webhook-api-triggers":
+                        return <WebhookApiTriggers key={tool.id} />;
+                      case "reporting-integrations":
+                        return <ReportingIntegrations key={tool.id} />;
+                      case "custom-dashboard-builder":
+                        return <CustomDashboardBuilder key={tool.id} />;
+                      case "scheduled-export":
+                        return <ScheduledExport key={tool.id} />;
+                      case "churn-prediction-playbooks":
+                        return <ChurnPredictionPlaybooks key={tool.id} />;
+                      case "upsell-cross-sell-engine":
+                        return <UpsellCrossSellEngine key={tool.id} />;
+                      case "inventory-forecasting":
+                        return <InventoryForecasting key={tool.id} />;
+                      default:
+                        // Fallback to generic scaffold for any tool not custom-mapped
+                        const defaultFields = [
+                          { name: "input", label: "Input", type: "textarea", required: false }
+                        ];
+                        return <ToolScaffold key={tool.id} toolId={tool.id} toolName={tool.name} fields={defaultFields} />;
                     }
-                    // Define minimal fields for each tool (can be improved per tool)
-                    const defaultFields = [
-                      { name: "input", label: "Input", type: "textarea", required: false }
-                    ];
-                    return <ToolScaffold key={tool.id} toolId={tool.id} toolName={tool.name} fields={defaultFields} />;
                   }
                   return null;
                 })}
