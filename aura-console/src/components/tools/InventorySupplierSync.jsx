@@ -2,10 +2,25 @@
 import React, { useState, useRef } from "react";
 
 // Placeholder for visual inventory mapping (replace with real table/visual component)
-function VisualInventoryTable({ data, setData }) {
+function VisualInventoryTable({ data, setData, rows = [], setRows }) {
+  // Simple flagship table UI (placeholder for real table lib)
   return (
     <div style={{ border: "1px solid #d1d5db", borderRadius: 10, padding: 18, background: "#f9fafb", marginBottom: 18 }}>
       <div style={{ fontWeight: 600, marginBottom: 8 }}>Visual Inventory Table (CSV/Excel Import)</div>
+      <div style={{ minHeight: 80, border: '1px dashed #bbb', borderRadius: 8, padding: 12, background: '#fff', marginBottom: 12 }}>
+        {rows.length ? (
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {rows.map((r, i) => (
+              <li key={i} style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontWeight: 600, color: '#0ea5e9' }}>{r}</span>
+                <button onClick={() => setRows(rows.filter((_, idx) => idx !== i))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Remove</button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <span style={{ color: '#64748b' }}>Paste or import supplier inventory data here.</span>
+        )}
+      </div>
       <textarea
         value={data}
         onChange={e => setData(e.target.value)}
@@ -13,12 +28,14 @@ function VisualInventoryTable({ data, setData }) {
         style={{ width: "100%", fontSize: 15, borderRadius: 6, border: "1px solid #ccc", padding: 8 }}
         placeholder="Paste or import supplier inventory data (CSV, Excel, JSON)"
       />
+      <button onClick={() => setRows([...rows, data])} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginTop: 8 }}>Add Row</button>
     </div>
   );
 }
 
 export default function InventorySupplierSync() {
   const [data, setData] = useState("");
+  const [rows, setRows] = useState([]);
   const [aiSuggestion, setAiSuggestion] = useState("");
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -146,7 +163,7 @@ export default function InventorySupplierSync() {
       <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
         <div style={{ flex: 2, minWidth: 320 }}>
           {showOnboarding && onboardingContent}
-          <VisualInventoryTable data={data} setData={setData} />
+          <VisualInventoryTable data={data} setData={setData} rows={rows} setRows={setRows} />
           <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
             <button onClick={handleAISuggest} disabled={loading || !data} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Thinking..." : "AI Suggest"}</button>
             <button onClick={handleRun} disabled={loading || !data} style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Syncing..." : "Run Sync"}</button>

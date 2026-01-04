@@ -1,8 +1,62 @@
-const express = require("express");
-const router = express.Router();
-const { handleLocalSEOQuery } = require("./localSEOToolkitService");
 
-// POST /api/local-seo-toolkit/query
+const express = require("express");
+const OpenAI = require("openai");
+const db = require("./db");
+const analyticsModel = require("./analyticsModel");
+const notificationModel = require("./notificationModel");
+const rbac = require("./rbac");
+const i18n = require("./i18n");
+const webhookModel = require("./webhookModel");
+const complianceModel = require("./complianceModel");
+const pluginSystem = require("./pluginSystem");
+const { handleLocalSEOQuery } = require("./localSEOToolkitService");
+const router = express.Router();
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// CRUD endpoints
+router.get('/locations', (req, res) => {
+  res.json({ ok: true, locations: db.list() });
+});
+router.get('/locations/:id', (req, res) => {
+  const loc = db.get(req.params.id);
+  if (!loc) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, location: loc });
+});
+router.post('/locations', (req, res) => {
+  const loc = db.create(req.body || {});
+  res.json({ ok: true, location: loc });
+});
+router.put('/locations/:id', (req, res) => {
+  const loc = db.update(req.params.id, req.body || {});
+  if (!loc) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, location: loc });
+});
+router.delete('/locations/:id', (req, res) => {
+  const ok = db.delete(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true });
+});
+
+// AI endpoint: suggest local SEO
+router.post('/ai/suggest', async (req, res) => {
+  try {
+    const { description } = req.body;
+    if (!description) return res.status(400).json({ ok: false, error: 'Description required' });
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        { role: 'system', content: 'You are a local SEO expert.' },
+        { role: 'user', content: description }
+      ],
+      max_tokens: 256
+    });
+    res.json({ ok: true, suggestion: completion.choices[0].message.content });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Legacy query endpoint
 router.post("/query", async (req, res) => {
   try {
     const { query } = req.body;
@@ -16,9 +70,75 @@ router.post("/query", async (req, res) => {
   }
 });
 
+// Analytics endpoints
+router.post('/analytics', (req, res) => {
+  const event = analyticsModel.recordEvent(req.body || {});
+  res.json({ ok: true, event });
+});
+router.get('/analytics', (req, res) => {
+  res.json({ ok: true, analytics: analyticsModel.list() });
+});
+
+// Import/export
+router.post('/import', (req, res) => {
+  // Placeholder: implement import logic
+  res.json({ ok: true, message: 'Import not implemented' });
+});
+router.get('/export', (req, res) => {
+  // Placeholder: implement export logic
+  res.json({ ok: true, data: db.list() });
+});
+
+// Notifications
+router.post('/notify', (req, res) => {
+  notificationModel.send(req.body || {});
+  res.json({ ok: true });
+});
+
+// RBAC example
+router.post('/rbac/check', (req, res) => {
+  const allowed = rbac.check(req.body.user, req.body.action);
+  res.json({ ok: true, allowed });
+});
+
+// i18n example
+router.get('/i18n/:lang', (req, res) => {
+  res.json({ ok: true, strings: i18n.getStrings(req.params.lang) });
+});
+
+// Compliance
+router.get('/compliance', (req, res) => {
+  res.json({ ok: true, compliance: complianceModel.get() });
+});
+
+// Plugins
+router.post('/plugin', (req, res) => {
+  pluginSystem.run(req.body || {});
+  res.json({ ok: true });
+});
+
+// Webhooks
+router.post('/webhook', (req, res) => {
+  webhookModel.trigger(req.body || {});
+  res.json({ ok: true });
+});
+
 // Health check
 router.get("/health", (req, res) => {
   res.json({ ok: true, status: "Local SEO Toolkit API running" });
+});
+
+// Onboarding/help
+router.get('/onboarding', (req, res) => {
+  res.json({ ok: true, steps: [
+    'Connect your local business data',
+    'Configure local SEO settings',
+    'Run your first optimization',
+    'Analyze results',
+    'Export or share reports',
+    'Set up notifications and compliance',
+    'Integrate plugins and webhooks'
+  ] });
 });
 
 module.exports = router;

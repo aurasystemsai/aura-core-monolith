@@ -2,16 +2,36 @@
 import React, { useState, useRef } from "react";
 
 // Placeholder for visual flow builder (replace with real library/component)
-function VisualFlowBuilder({ flow, setFlow }) {
+function VisualFlowBuilder({ flow, setFlow, nodes = [], setNodes }) {
+  // Simple flagship drag-and-drop canvas (placeholder for real library)
   return (
     <div style={{ border: "1px solid #d1d5db", borderRadius: 10, padding: 18, background: "#f9fafb", marginBottom: 18 }}>
       <div style={{ fontWeight: 600, marginBottom: 8 }}>Visual Flow Builder (Drag & Drop)</div>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Step', type: 'step' }])} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Add Step</button>
+        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Trigger', type: 'trigger' }])} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Add Trigger</button>
+        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Action', type: 'action' }])} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Add Action</button>
+      </div>
+      <div style={{ minHeight: 120, border: '1px dashed #bbb', borderRadius: 8, padding: 12, background: '#fff', marginBottom: 12 }}>
+        {nodes.length ? (
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {nodes.map((n, i) => (
+              <li key={n.id} style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontWeight: 600, color: n.type === 'step' ? '#0ea5e9' : n.type === 'trigger' ? '#22c55e' : '#6366f1' }}>{n.label}</span>
+                <button onClick={() => setNodes(nodes.filter((_, idx) => idx !== i))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Remove</button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <span style={{ color: '#64748b' }}>Drag and drop steps, triggers, and actions here.</span>
+        )}
+      </div>
       <textarea
         value={flow}
         onChange={e => setFlow(e.target.value)}
         rows={4}
         style={{ width: "100%", fontSize: 15, borderRadius: 6, border: "1px solid #ccc", padding: 8 }}
-        placeholder="Describe or edit your flow here... (visual builder coming soon)"
+        placeholder="Describe or edit your flow here..."
       />
     </div>
   );
@@ -19,6 +39,7 @@ function VisualFlowBuilder({ flow, setFlow }) {
 
 export default function KlaviyoFlowAutomation() {
   const [flow, setFlow] = useState("");
+  const [nodes, setNodes] = useState([]);
   const [aiSuggestion, setAiSuggestion] = useState("");
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -146,7 +167,7 @@ export default function KlaviyoFlowAutomation() {
       <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
         <div style={{ flex: 2, minWidth: 320 }}>
           {showOnboarding && onboardingContent}
-          <VisualFlowBuilder flow={flow} setFlow={setFlow} />
+          <VisualFlowBuilder flow={flow} setFlow={setFlow} nodes={nodes} setNodes={setNodes} />
           <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
             <button onClick={handleAISuggest} disabled={loading || !flow} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Thinking..." : "AI Suggest"}</button>
             <button onClick={handleRun} disabled={loading || !flow} style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Running..." : "Run Automation"}</button>

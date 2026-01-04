@@ -22,41 +22,78 @@ export default function BrandIntelligenceLayer() {
     setResponse("");
     setAnalytics(null);
     setNotification("");
-    try {
-      let body, headers;
-      if (bulkUpload) {
+      const [dashboard, setDashboard] = useState([]);
+      const [insights, setInsights] = useState([]);
+      const [error, setError] = useState("");
+      const [imported, setImported] = useState(null);
+      const [exported, setExported] = useState(null);
+      const [feedback, setFeedback] = useState("");
+      const fileInputRef = useRef();
         body = new FormData();
-        body.append("file", bulkUpload);
-        if (input) body.append("prompt", input);
-        headers = {};
-      } else {
-        body = JSON.stringify({ prompt: input });
-        headers = { "Content-Type": "application/json" };
+      // Fetch dashboard
+      const fetchDashboard = async () => {
+        try {
+          const res = await apiFetch("/api/brand-intelligence-layer/dashboard", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ input })
+          });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || "Unknown error");
+          setDashboard(data.dashboard || []);
+        } catch (err) {
+          setError(err.message);
+        }
+      };
+      // Fetch insights
+      const fetchInsights = async () => {
+        try {
+          const res = await apiFetch("/api/brand-intelligence-layer/insights", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ input })
+          });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || "Unknown error");
+          setInsights(data.insights || []);
+        } catch (err) {
+          setError(err.message);
+        }
+      };
       }
-      const res = await fetch("/api/brand-intelligence-layer/ai/analyze", {
-        method: "POST",
-        headers,
-        body
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Unknown error");
-      setResponse(data.reply || "No response");
-      setAnalytics(data.analytics || null);
+      // Import/Export
+      const handleImport = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = evt => {
+          setInput(evt.target.result);
+          setImported(file.name);
+        };
+        reader.readAsText(file);
+      };
+      const handleExport = () => {
+        const blob = new Blob([JSON.stringify({ dashboard, insights }, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        setExported(url);
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+      };
       setNotification("Analysis complete.");
-      setHistory(prev => [{
-        prompt: input,
-        bulkUpload: bulkUpload ? bulkUpload.name : null,
-        reply: data.reply || "No response",
-        analytics: data.analytics || null
-      }, ...prev].slice(0, 10));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleExport = () => {
+      // Feedback
+      const handleFeedback = async () => {
+        if (!feedback) return;
+        setError("");
+        try {
+          await apiFetch("/api/brand-intelligence-layer/feedback", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ feedback })
+          });
+          setFeedback("");
+        } catch (err) {
+          setError(err.message);
+        }
+      };
     if (!response) return;
     const blob = new Blob([response], { type: "text/plain" });
     const url = URL.createObjectURL(blob);

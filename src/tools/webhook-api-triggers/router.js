@@ -1,8 +1,62 @@
-const express = require("express");
-const router = express.Router();
-const { handleWebhookApiQuery } = require("./webhookApiTriggersService");
 
-// POST /api/webhook-api-triggers/query
+const express = require("express");
+const OpenAI = require("openai");
+const db = require("./db");
+const analyticsModel = require("./analyticsModel");
+const notificationModel = require("./notificationModel");
+const rbac = require("./rbac");
+const i18n = require("./i18n");
+const webhookModel = require("./webhookModel");
+const complianceModel = require("./complianceModel");
+const pluginSystem = require("./pluginSystem");
+const { handleWebhookApiQuery } = require("./webhookApiTriggersService");
+const router = express.Router();
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// CRUD endpoints
+router.get('/triggers', (req, res) => {
+  res.json({ ok: true, triggers: db.list() });
+});
+router.get('/triggers/:id', (req, res) => {
+  const trigger = db.get(req.params.id);
+  if (!trigger) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, trigger });
+});
+router.post('/triggers', (req, res) => {
+  const trigger = db.create(req.body || {});
+  res.json({ ok: true, trigger });
+});
+router.put('/triggers/:id', (req, res) => {
+  const trigger = db.update(req.params.id, req.body || {});
+  if (!trigger) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, trigger });
+});
+router.delete('/triggers/:id', (req, res) => {
+  const ok = db.delete(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true });
+});
+
+// AI endpoint: suggest trigger
+router.post('/ai/suggest', async (req, res) => {
+  try {
+    const { description } = req.body;
+    if (!description) return res.status(400).json({ ok: false, error: 'Description required' });
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        { role: 'system', content: 'You are a webhook/API trigger expert.' },
+        { role: 'user', content: description }
+      ],
+      max_tokens: 256
+    });
+    res.json({ ok: true, suggestion: completion.choices[0].message.content });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Legacy query endpoint
 router.post("/query", async (req, res) => {
   try {
     const { query } = req.body;
@@ -16,9 +70,74 @@ router.post("/query", async (req, res) => {
   }
 });
 
+// Analytics endpoints
+router.post('/analytics', (req, res) => {
+  const event = analyticsModel.recordEvent(req.body || {});
+  res.json({ ok: true, event });
+});
+router.get('/analytics', (req, res) => {
+  res.json({ ok: true, analytics: analyticsModel.list() });
+});
+
+// Import/export
+router.post('/import', (req, res) => {
+  // Placeholder: implement import logic
+  res.json({ ok: true, message: 'Import not implemented' });
+});
+router.get('/export', (req, res) => {
+  // Placeholder: implement export logic
+  res.json({ ok: true, data: db.list() });
+});
+
+// Notifications
+router.post('/notify', (req, res) => {
+  notificationModel.send(req.body || {});
+  res.json({ ok: true });
+});
+
+// RBAC example
+router.post('/rbac/check', (req, res) => {
+  const allowed = rbac.check(req.body.user, req.body.action);
+  res.json({ ok: true, allowed });
+});
+
+// i18n example
+router.get('/i18n/:lang', (req, res) => {
+  res.json({ ok: true, strings: i18n.getStrings(req.params.lang) });
+});
+
+// Compliance
+router.get('/compliance', (req, res) => {
+  res.json({ ok: true, compliance: complianceModel.get() });
+});
+
+// Plugins
+router.post('/plugin', (req, res) => {
+  pluginSystem.run(req.body || {});
+  res.json({ ok: true });
+});
+
+// Webhooks
+router.post('/webhook', (req, res) => {
+  webhookModel.trigger(req.body || {});
+  res.json({ ok: true });
+});
+
 // Health check
 router.get("/health", (req, res) => {
   res.json({ ok: true, status: "Webhook & API Triggers API running" });
+});
+
+// Onboarding/help
+router.get('/onboarding', (req, res) => {
+  res.json({ ok: true, steps: [
+    'Connect your integrations',
+    'Describe your trigger',
+    'Test and deploy',
+    'Export or share triggers',
+    'Set up notifications and compliance',
+    'Integrate plugins and webhooks'
+  ] });
 });
 
 module.exports = router;

@@ -185,7 +185,6 @@ export default function EmailAutomationBuilder() {
         <ul style={{ paddingLeft: 18 }}>
           {workflows.map(w => (
             <li key={w.id} style={{ marginBottom: 10 }}>
-              <div><b>ID:</b> {w.id}</div>
               <div><b>Content:</b> {w.content || JSON.stringify(w)}</div>
             </li>
           ))}
@@ -194,16 +193,14 @@ export default function EmailAutomationBuilder() {
       <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
         <div style={{ fontSize: 15, color: darkMode ? "#a3e635" : "#23263a" }}>
-          {analytics.length ? (
+          {analytics && analytics.length > 0 ? (
             <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "none", padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
           ) : (
             <span>No analytics yet. Generate or import workflows to see results.</span>
           )}
         </div>
       </div>
-      <div style={{ marginTop: 32, fontSize: 13, color: darkMode ? "#a3e635" : "#64748b", textAlign: "center" }}>
-        <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", textDecoration: "underline" }}>Contact Support</a></span>
-      </div>
+      <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", textDecoration: "underline" }}>Contact Support</a></span>
     </div>
   );
 }
