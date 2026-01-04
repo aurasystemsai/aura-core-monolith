@@ -172,12 +172,6 @@ export default function AiAltTextEngine() {
     </div>
   );
 }
-          <label>Keywords (comma separated)</label>
-          <input name="keywords" value={form.keywords} onChange={handleChange} style={{ width: "100%" }} />
-        </div>
-        <button type="submit" disabled={loading} style={{ marginTop: 12 }}>
-          {loading ? "Generating..." : "Generate Alt Text"}
-        </button>
       </form>
       {error && <div style={{ color: "red", marginTop: 12 }}>{error}</div>}
       {result && (
