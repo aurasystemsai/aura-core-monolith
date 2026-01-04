@@ -145,28 +145,7 @@ export default function ConsentPrivacyManagement() {
         </div>
       </div>
     );
-        </div>
       </div>
-      <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
-        <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import consents" />
-        <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
-        {exported && <a href={exported} download="consents.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
-      </div>
-      {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
-      {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#f8fafc", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
-        <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
-        <textarea
-          value={feedback}
-          onChange={e => setFeedback(e.target.value)}
-          rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #ccc", marginBottom: 12, background: "#fff", color: "#23263a" }}
-          placeholder="Share your feedback or suggestions..."
-          aria-label="Feedback input"
-        />
-        <button type="submit" style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send Feedback</button>
-      </form>
     </div>
   );
 }
