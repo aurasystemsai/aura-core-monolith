@@ -16,92 +16,75 @@ export default function BrandIntelligenceLayer() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const fileInputRef = useRef();
 
+  // Additional state for dashboard, insights, imported/exported files
+  const [dashboard, setDashboard] = useState([]);
+  const [insights, setInsights] = useState([]);
+  const [imported, setImported] = useState(null);
+  const [exported, setExported] = useState(null);
+
+  // Fetch dashboard
+  const fetchDashboard = async () => {
+    try {
+      const res = await apiFetch("/api/brand-intelligence-layer/dashboard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Unknown error");
+      setDashboard(data.dashboard || []);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  // Fetch insights
+  const fetchInsights = async () => {
+    try {
+      const res = await apiFetch("/api/brand-intelligence-layer/insights", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Unknown error");
+      setInsights(data.insights || []);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  // Import
+  const handleImport = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = evt => {
+      setInput(evt.target.result);
+      setImported(file.name);
+    };
+    reader.readAsText(file);
+  };
+
+  // Export
+  const handleExport = () => {
+    const blob = new Blob([JSON.stringify({ dashboard, insights }, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    setExported(url);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  };
+
   const handleRun = async () => {
     setLoading(true);
     setError("");
     setResponse("");
     setAnalytics(null);
     setNotification("");
-      const [dashboard, setDashboard] = useState([]);
-      const [insights, setInsights] = useState([]);
-      const [error, setError] = useState("");
-      const [imported, setImported] = useState(null);
-      const [exported, setExported] = useState(null);
-      const [feedback, setFeedback] = useState("");
-      const fileInputRef = useRef();
-        body = new FormData();
-      // Fetch dashboard
-      const fetchDashboard = async () => {
-        try {
-          const res = await apiFetch("/api/brand-intelligence-layer/dashboard", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ input })
-          });
-          const data = await res.json();
-          if (!data.ok) throw new Error(data.error || "Unknown error");
-          setDashboard(data.dashboard || []);
-        } catch (err) {
-          setError(err.message);
-        }
-      };
-      // Fetch insights
-      const fetchInsights = async () => {
-        try {
-          const res = await apiFetch("/api/brand-intelligence-layer/insights", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ input })
-          });
-          const data = await res.json();
-          if (!data.ok) throw new Error(data.error || "Unknown error");
-          setInsights(data.insights || []);
-        } catch (err) {
-          setError(err.message);
-        }
-      };
-      }
-      // Import/Export
-      const handleImport = e => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = evt => {
-          setInput(evt.target.result);
-          setImported(file.name);
-        };
-        reader.readAsText(file);
-      };
-      const handleExport = () => {
-        const blob = new Blob([JSON.stringify({ dashboard, insights }, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        setExported(url);
-        setTimeout(() => URL.revokeObjectURL(url), 10000);
-      };
-      setNotification("Analysis complete.");
-      // Feedback
-      const handleFeedback = async () => {
-        if (!feedback) return;
-        setError("");
-        try {
-          await apiFetch("/api/brand-intelligence-layer/feedback", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ feedback })
-          });
-          setFeedback("");
-        } catch (err) {
-          setError(err.message);
-        }
-      };
-    if (!response) return;
-    const blob = new Blob([response], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "brand-intelligence.txt";
-    a.click();
-    URL.revokeObjectURL(url);
+    // Example: fetch dashboard and insights, then set notification
+    await fetchDashboard();
+    await fetchInsights();
+    setNotification("Analysis complete.");
+    setLoading(false);
   };
 
   const handleFeedback = async () => {

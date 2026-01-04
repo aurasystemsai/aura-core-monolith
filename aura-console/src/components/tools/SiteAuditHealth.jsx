@@ -51,8 +51,17 @@ export default function SiteAuditHealth() {
           body: JSON.stringify({ site: input, report: data.auditReport })
         });
         fetchHistory();
-      } catch (err) {
-        setError(err.message);
-      } finally {
-      };
-
+        } catch (err) {
+          setError(err.message);
+              } finally {
+                setLoading(false);
+              }
+            }
+      
+        // Add your component's JSX here
+        return (
+          <div>
+            {/* Component UI goes here */}
+          </div>
+        );
+      }

@@ -174,30 +174,3 @@ export default function SERPTracker() {
     </div>
   );
 }
-      <button onClick={handleTrack} disabled={loading || !query} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Tracking..." : "Track"}</button>
-      {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      {result && (
-        <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635" : "#23263a" }}>
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>Tracking Result:</div>
-          <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{JSON.stringify(result, null, 2)}</pre>
-        </div>
-      )}
-      {history.length > 0 && (
-        <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
-          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Tracking History</div>
-          <ul style={{ paddingLeft: 18 }}>
-            {history.map((h, i) => (
-              <li key={i} style={{ marginBottom: 10 }}>
-                <div><b>Query:</b> {h.query}</div>
-                <div><b>Result:</b> {JSON.stringify(h.result).slice(0, 120)}{JSON.stringify(h.result).length > 120 ? "..." : ""}</div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <div style={{ marginTop: 32, fontSize: 13, color: darkMode ? "#a3e635" : "#64748b", textAlign: "center" }}>
-        <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", textDecoration: "underline" }}>Contact Support</a></span>
-      </div>
-    </div>
-  );
-}

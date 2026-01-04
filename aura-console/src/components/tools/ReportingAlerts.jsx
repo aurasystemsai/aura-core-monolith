@@ -182,7 +182,9 @@ export default function ReportingAlerts() {
     </div>
   );
 }
-
+// The following code is commented out because only one component and export default is allowed per file.
+// If you need this functionality, move it to a separate file or merge with the above component.
+/*
   const handleReport = async () => {
     setLoading(true);
     setError("");
@@ -272,3 +274,4 @@ export default function ReportingAlerts() {
     </div>
   );
 }
+*/

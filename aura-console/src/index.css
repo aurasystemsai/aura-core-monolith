@@ -170,8 +170,7 @@ body {
   margin-bottom: 6px;
 }
 
-.tool-grid {
-}
+/* .tool-grid ruleset removed because it was empty */
 .tool-grid .run-button {
   border-radius: var(--radius-md);
   border: 1px solid var(--accent);
