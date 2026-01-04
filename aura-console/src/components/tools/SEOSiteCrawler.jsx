@@ -174,20 +174,6 @@ export default function SEOSiteCrawler() {
     </div>
   );
 }
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onboardingContent = (
-    <div style={{ padding: 24, background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
-      <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to SEO Site Crawler</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#334155", fontSize: 16 }}>
-        <li>Full site crawl for technical SEO audits</li>
-        <li>Find broken links, crawl errors, indexability issues</li>
-        <li>Export results and review crawl history</li>
-        <li>Accessible, secure, and fully compliant</li>
       </ul>
       <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
     </div>
