@@ -176,7 +176,7 @@ export default function TechnicalSEOAuditor() {
       });
       setNotification("Feedback sent. Thank you!");
       setFeedback("");
-    } catch {
+    } catch (err) {
       setNotification("Failed to send feedback");
     }
   };
