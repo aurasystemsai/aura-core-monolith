@@ -55,7 +55,4 @@ export default function SiteAuditHealth() {
         setError(err.message);
       } finally {
       };
-      // ...existing code for import/export, UI, and handlers...
-      // (The rest of the component remains unchanged and should be outside any nested function or misplaced block)
-  );
-}
+
