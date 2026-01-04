@@ -145,7 +145,5 @@ export default function ConsentPrivacyManagement() {
         </div>
       </div>
     );
-      </div>
-    </div>
-  );
+  }
 }
