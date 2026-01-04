@@ -15,21 +15,7 @@ export default function WeeklyBlogContentEngine() {
 
   // Fetch history
   const fetchHistory = async () => {
-    try {
-      const res = await apiFetch("/api/weekly-blog-content-engine/history");
-      const data = await res.json();
-      if (data.ok) setHistory(data.history || []);
-    } catch {}
-  };
-  // Fetch analytics
-  const fetchAnalytics = async () => {
-    try {
-      const res = await apiFetch("/api/weekly-blog-content-engine/analytics");
-      const data = await res.json();
-      if (data.ok) setAnalytics(data.analytics || []);
-    } catch {}
-  };
-
+    }
   // AI Generate
   const handleRun = async () => {
     setLoading(true);
