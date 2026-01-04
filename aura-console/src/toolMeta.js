@@ -36,7 +36,7 @@ const toolsMeta = [
   { id: "social-scheduler-content-engine", name: "Social Scheduler Content Engine", description: "Automates social content scheduling.", category: "Social / Content" },
   { id: "technical-seo-auditor", name: "Technical SEO Auditor", description: "Performs technical SEO health checks.", category: "SEO" },
   { id: "weekly-blog-content-engine", name: "Weekly Blog Content Engine", description: "Generate a simple weekly content plan with SEO-ready blog titles, meta descriptions, slugs and primary keywords.", category: "SEO / Content" },
-  { id: "workflow-orchestrator", name: "Workflow Orchestrator", description: "Orchestrates multi-step automation workflows.", category: "Automation" }
+  { id: "workflow-orchestrator", name: "Workflow Orchestrator", description: "Orchestrates multi-step automation workflows.", category: "Automation" },
   // --- New flagship tools and enhancements ---
   { id: "customer-data-platform", name: "Customer Data Platform (CDP)", description: "Unified customer profiles, segmentation, and omnichannel activation.", category: "Data / CRM" },
   { id: "visual-workflow-builder", name: "Visual Workflow Automation Builder", description: "Drag-and-drop workflow builder for cross-tool automations.", category: "Automation" },
