@@ -32,6 +32,39 @@ import ChurnPredictionPlaybooks from "./components/tools/ChurnPredictionPlaybook
 import UpsellCrossSellEngine from "./components/tools/UpsellCrossSellEngine.jsx";
 import InventoryForecasting from "./components/tools/InventoryForecasting.jsx";
 import toolsMeta from "./toolMeta";
+import BlogDraftEngine from "./components/tools/BlogDraftEngine.jsx";
+import BlogSEO from "./components/tools/BlogSEO.jsx";
+import WeeklyBlogContentEngine from "./components/tools/WeeklyBlogContentEngine.jsx";
+import OnPageSEOEngine from "./components/tools/OnPageSEOEngine.jsx";
+import TechnicalSEOAuditor from "./components/tools/TechnicalSEOAuditor.jsx";
+import SERPTracker from "./components/tools/SERPTracker.jsx";
+import SEOSiteCrawler from "./components/tools/SEOSiteCrawler.jsx";
+import SocialSchedulerContentEngine from "./components/tools/SocialSchedulerContentEngine.jsx";
+import SocialMediaAnalyticsListening from "./components/tools/SocialMediaAnalyticsListening.jsx";
+import SiteAuditHealth from "./components/tools/SiteAuditHealth.jsx";
+import SchemaRichResultsEngine from "./components/tools/SchemaRichResultsEngine.jsx";
+import ReviewUGCEngine from "./components/tools/ReviewUGCEngine.jsx";
+import ReturnsRMAAutomation from "./components/tools/ReturnsRMAAutomation.jsx";
+import RankVisibilityTracker from "./components/tools/RankVisibilityTracker.jsx";
+import MultiChannelOptimizer from "./components/tools/MultiChannelOptimizer.jsx";
+import LTVChurnPredictor from "./components/tools/LTVChurnPredictor.jsx";
+import KlaviyoFlowAutomation from "./components/tools/KlaviyoFlowAutomation.jsx";
+import InventorySupplierSync from "./components/tools/InventorySupplierSync.jsx";
+import InboxReplyAssistant from "./components/tools/InboxReplyAssistant.jsx";
+import InboxAssistant from "./components/tools/InboxAssistant.jsx";
+import ImageAltMediaSEO from "./components/tools/ImageAltMediaSEO.jsx";
+import FinanceAutopilot from "./components/tools/FinanceAutopilot.jsx";
+import EmailAutomationBuilder from "./components/tools/EmailAutomationBuilder.jsx";
+import DynamicPricingEngine from "./components/tools/DynamicPricingEngine.jsx";
+import CustomerSupportAI from "./components/tools/CustomerSupportAI.jsx";
+import CreativeAutomationEngine from "./components/tools/CreativeAutomationEngine.jsx";
+import BrandIntelligenceLayer from "./components/tools/BrandIntelligenceLayer.jsx";
+import AutoInsights from "./components/tools/AutoInsights.jsx";
+import AuraOperationsAI from "./components/tools/AuraOperationsAI.jsx";
+import AuraAPISDK from "./components/tools/AuraAPISDK.jsx";
+import AiSupportAssistant from "./components/tools/AiSupportAssistant.jsx";
+import AiLaunchPlanner from "./components/tools/AiLaunchPlanner.jsx";
+import AiAltTextEngine from "./components/tools/AiAltTextEngine.jsx";
 import Sidebar from "./components/Sidebar";
 import ChangelogModal from "./components/ChangelogModal.jsx";
 import Toast from "./components/Toast.jsx";
@@ -384,50 +417,62 @@ function App() {
                 {toolsMeta.map(tool => {
                   if (activeSection === tool.id) {
                     switch (tool.id) {
-                      case "abandoned-checkout-winback":
-                        return <AbandonedCheckoutWinback key={tool.id} />;
-                      case "customer-data-platform":
-                        return <CustomerDataPlatform key={tool.id} />;
-                      case "visual-workflow-builder":
-                        return <VisualWorkflowBuilder key={tool.id} />;
-                      case "self-service-portal":
-                        return <SelfServicePortal key={tool.id} />;
-                      case "advanced-personalization-engine":
-                        return <AdvancedPersonalizationEngine key={tool.id} />;
-                      case "ab-testing-suite":
-                        return <ABTestingSuite key={tool.id} />;
-                      case "data-warehouse-connector":
-                        return <DataWarehouseConnector key={tool.id} />;
-                      case "consent-privacy-management":
-                        return <ConsentPrivacyManagement key={tool.id} />;
-                      case "entity-topic-explorer":
-                        return <EntityTopicExplorer key={tool.id} />;
-                      case "internal-linking-suggestions":
-                        return <InternalLinkingSuggestions key={tool.id} />;
-                      case "ai-content-brief-generator":
-                        return <AIContentBriefGenerator key={tool.id} />;
-                      case "brand-mention-tracker":
-                        return <BrandMentionTracker key={tool.id} />;
-                      case "local-seo-toolkit":
-                        return <LocalSEOToolkit key={tool.id} />;
-                      case "automation-templates":
-                        return <AutomationTemplates key={tool.id} />;
-                      case "conditional-logic-automation":
-                        return <ConditionalLogicAutomation key={tool.id} />;
-                      case "webhook-api-triggers":
-                        return <WebhookApiTriggers key={tool.id} />;
-                      case "reporting-integrations":
-                        return <ReportingIntegrations key={tool.id} />;
-                      case "custom-dashboard-builder":
-                        return <CustomDashboardBuilder key={tool.id} />;
-                      case "scheduled-export":
-                        return <ScheduledExport key={tool.id} />;
-                      case "churn-prediction-playbooks":
-                        return <ChurnPredictionPlaybooks key={tool.id} />;
-                      case "upsell-cross-sell-engine":
-                        return <UpsellCrossSellEngine key={tool.id} />;
-                      case "inventory-forecasting":
-                        return <InventoryForecasting key={tool.id} />;
+                      case "abandoned-checkout-winback": return <AbandonedCheckoutWinback key={tool.id} />;
+                      case "customer-data-platform": return <CustomerDataPlatform key={tool.id} />;
+                      case "visual-workflow-builder": return <VisualWorkflowBuilder key={tool.id} />;
+                      case "self-service-portal": return <SelfServicePortal key={tool.id} />;
+                      case "advanced-personalization-engine": return <AdvancedPersonalizationEngine key={tool.id} />;
+                      case "ab-testing-suite": return <ABTestingSuite key={tool.id} />;
+                      case "data-warehouse-connector": return <DataWarehouseConnector key={tool.id} />;
+                      case "consent-privacy-management": return <ConsentPrivacyManagement key={tool.id} />;
+                      case "entity-topic-explorer": return <EntityTopicExplorer key={tool.id} />;
+                      case "internal-linking-suggestions": return <InternalLinkingSuggestions key={tool.id} />;
+                      case "ai-content-brief-generator": return <AIContentBriefGenerator key={tool.id} />;
+                      case "brand-mention-tracker": return <BrandMentionTracker key={tool.id} />;
+                      case "local-seo-toolkit": return <LocalSEOToolkit key={tool.id} />;
+                      case "automation-templates": return <AutomationTemplates key={tool.id} />;
+                      case "conditional-logic-automation": return <ConditionalLogicAutomation key={tool.id} />;
+                      case "webhook-api-triggers": return <WebhookApiTriggers key={tool.id} />;
+                      case "reporting-integrations": return <ReportingIntegrations key={tool.id} />;
+                      case "custom-dashboard-builder": return <CustomDashboardBuilder key={tool.id} />;
+                      case "scheduled-export": return <ScheduledExport key={tool.id} />;
+                      case "churn-prediction-playbooks": return <ChurnPredictionPlaybooks key={tool.id} />;
+                      case "upsell-cross-sell-engine": return <UpsellCrossSellEngine key={tool.id} />;
+                      case "inventory-forecasting": return <InventoryForecasting key={tool.id} />;
+                      case "blog-draft-engine": return <BlogDraftEngine key={tool.id} />;
+                      case "blog-seo": return <BlogSEO key={tool.id} />;
+                      case "weekly-blog-content-engine": return <WeeklyBlogContentEngine key={tool.id} />;
+                      case "on-page-seo-engine": return <OnPageSEOEngine key={tool.id} />;
+                      case "technical-seo-auditor": return <TechnicalSEOAuditor key={tool.id} />;
+                      case "serp-tracker": return <SERPTracker key={tool.id} />;
+                      case "seo-site-crawler": return <SEOSiteCrawler key={tool.id} />;
+                      case "social-scheduler-content-engine": return <SocialSchedulerContentEngine key={tool.id} />;
+                      case "social-media-analytics-listening": return <SocialMediaAnalyticsListening key={tool.id} />;
+                      case "site-audit-health": return <SiteAuditHealth key={tool.id} />;
+                      case "schema-rich-results-engine": return <SchemaRichResultsEngine key={tool.id} />;
+                      case "review-ugc-engine": return <ReviewUGCEngine key={tool.id} />;
+                      case "returns-rma-automation": return <ReturnsRMAAutomation key={tool.id} />;
+                      case "rank-visibility-tracker": return <RankVisibilityTracker key={tool.id} />;
+                      case "product-seo": return <ProductSeoEngine key={tool.id} />;
+                      case "multi-channel-optimizer": return <MultiChannelOptimizer key={tool.id} />;
+                      case "ltv-churn-predictor": return <LTVChurnPredictor key={tool.id} />;
+                      case "klaviyo-flow-automation": return <KlaviyoFlowAutomation key={tool.id} />;
+                      case "inventory-supplier-sync": return <InventorySupplierSync key={tool.id} />;
+                      case "inbox-reply-assistant": return <InboxReplyAssistant key={tool.id} />;
+                      case "inbox-assistant": return <InboxAssistant key={tool.id} />;
+                      case "image-alt-media-seo": return <ImageAltMediaSEO key={tool.id} />;
+                      case "finance-autopilot": return <FinanceAutopilot key={tool.id} />;
+                      case "email-automation-builder": return <EmailAutomationBuilder key={tool.id} />;
+                      case "dynamic-pricing-engine": return <DynamicPricingEngine key={tool.id} />;
+                      case "customer-support-ai": return <CustomerSupportAI key={tool.id} />;
+                      case "creative-automation-engine": return <CreativeAutomationEngine key={tool.id} />;
+                      case "brand-intelligence-layer": return <BrandIntelligenceLayer key={tool.id} />;
+                      case "auto-insights": return <AutoInsights key={tool.id} />;
+                      case "aura-operations-ai": return <AuraOperationsAI key={tool.id} />;
+                      case "aura-api-sdk": return <AuraAPISDK key={tool.id} />;
+                      case "ai-support-assistant": return <AiSupportAssistant key={tool.id} />;
+                      case "ai-launch-planner": return <AiLaunchPlanner key={tool.id} />;
+                      case "ai-alt-text-engine": return <AiAltTextEngine key={tool.id} />;
                       default:
                         // Fallback to generic scaffold for any tool not custom-mapped
                         const defaultFields = [
