@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { apiFetch } from "../../api";
 // Import additional libraries for bulk, analytics, accessibility, integrations, etc. as needed
 export default function ProductSEOEngine() {
   const [input, setInput] = useState("");
@@ -35,7 +36,7 @@ export default function ProductSEOEngine() {
     setAccessibility(null);
     setNotification("");
     try {
-      const res = await fetch("/api/product-seo-engine/ai/analyze", {
+      const res = await apiFetch("/api/product-seo-engine/ai/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -110,7 +111,7 @@ export default function ProductSEOEngine() {
     if (!feedback) return;
     setNotification("Sending feedback...");
     try {
-      await fetch("/api/product-seo-engine/feedback", {
+      await apiFetch("/api/product-seo-engine/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ feedback })

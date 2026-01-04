@@ -1,5 +1,7 @@
 
+
 import React, { useState } from "react";
+import { apiFetch } from "../api";
 
 export default function AiAltTextEngine() {
   const [form, setForm] = useState({
@@ -22,7 +24,7 @@ export default function AiAltTextEngine() {
     setError("");
     setResult(null);
     try {
-      const res = await fetch("/api/run/ai-alt-text-engine", {
+      const res = await apiFetch("/api/run/ai-alt-text-engine", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

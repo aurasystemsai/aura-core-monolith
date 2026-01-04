@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from "../api";
 
 export default function UserManagement({ coreUrl }) {
   const [users, setUsers] = useState([]);
@@ -7,14 +8,7 @@ export default function UserManagement({ coreUrl }) {
   const [role, setRole] = useState('user');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [csrfToken, setCsrfToken] = useState('');
-
-  // Fetch CSRF token
-  useEffect(() => {
-    fetch('/api/csrf-token')
-      .then(res => res.json())
-      .then(data => setCsrfToken(data.csrfToken || ''));
-  }, []);
+  // Removed local CSRF token state and effect (now handled globally)
 
   // Fetch users (admin only)
   useEffect(() => {
@@ -35,11 +29,10 @@ export default function UserManagement({ coreUrl }) {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch(`${coreUrl}/api/users/register`, {
+      const res = await apiFetch(`${coreUrl}/api/users/register`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'csrf-token': csrfToken
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ email, password, role })
       });

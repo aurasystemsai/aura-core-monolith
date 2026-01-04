@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { apiFetch } from "../../api";
 
 export default function CreativeAutomationEngine() {
   const [brief, setBrief] = useState("");
@@ -18,7 +19,7 @@ export default function CreativeAutomationEngine() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/creative-automation-engine/creatives");
+      const res = await apiFetch("/api/creative-automation-engine/creatives");
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setCreatives(data.creatives || []);
@@ -34,7 +35,7 @@ export default function CreativeAutomationEngine() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/creative-automation-engine/analytics");
+      const res = await apiFetch("/api/creative-automation-engine/analytics");
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setAnalytics(data.analytics || []);
@@ -51,7 +52,7 @@ export default function CreativeAutomationEngine() {
     setError("");
     setResult("");
     try {
-      const res = await fetch("/api/creative-automation-engine/ai/generate", {
+      const res = await apiFetch("/api/creative-automation-engine/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ brief })
@@ -72,7 +73,7 @@ export default function CreativeAutomationEngine() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/creative-automation-engine/creatives", {
+      const res = await apiFetch("/api/creative-automation-engine/creatives", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: result })
@@ -94,7 +95,7 @@ export default function CreativeAutomationEngine() {
     const reader = new FileReader();
     reader.onload = async evt => {
       try {
-        const res = await fetch("/api/creative-automation-engine/import", {
+        const res = await apiFetch("/api/creative-automation-engine/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ data: JSON.parse(evt.target.result) })
