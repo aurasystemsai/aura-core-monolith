@@ -174,10 +174,6 @@ export default function WeeklyBlogContentEngine() {
     </div>
   );
 }
-      setSeoScore(data.seoScore || null);
-      setCitations(data.citations || []);
-      setNotification("Content generated and saved.");
-      setHistory(prev => [{
         topic: input,
         content: data.blogContent || "No content generated",
         channels,
