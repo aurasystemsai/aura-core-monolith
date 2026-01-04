@@ -62,7 +62,7 @@ import BrandIntelligenceLayer from "./components/tools/BrandIntelligenceLayer.js
 import AutoInsights from "./components/tools/AutoInsights.jsx";
 import AuraOperationsAI from "./components/tools/AuraOperationsAI.jsx";
 import AuraAPISDK from "./components/tools/AuraAPISDK.jsx";
-import AiSupportAssistant from "./components/tools/AiSupportAssistant.jsx";
+import AiSupportAssistant from "./components/tools/AISupportAssistant.jsx";
 import AiLaunchPlanner from "./components/tools/AiLaunchPlanner.jsx";
 import AiAltTextEngine from "./components/tools/AiAltTextEngine.jsx";
 import Sidebar from "./components/Sidebar";
