@@ -172,16 +172,3 @@ export default function AiAltTextEngine() {
     </div>
   );
 }
-      </form>
-      {error && <div style={{ color: "red", marginTop: 12 }}>{error}</div>}
-      {result && (
-        <div style={{ marginTop: 24 }}>
-          <h3>Generated Alt Text</h3>
-          <pre style={{ background: "#222", color: "#7fffd4", padding: 12, borderRadius: 6, overflowX: "auto" }}>
-            {JSON.stringify(result, null, 2)}
-          </pre>
-        </div>
-      )}
-    </div>
-  );
-}
