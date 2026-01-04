@@ -1,24 +1,26 @@
 
-import React from "react";
+
+import React, { useState, useMemo } from "react";
 import toolsMeta from "../toolMeta";
 
+function groupByCategory(tools) {
+  return tools.reduce((acc, tool) => {
+    const cat = tool.category || "Other";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(tool);
+    return acc;
+  }, {});
+}
 
-function Sidebar({ current, onSelect, onShowChangelog, changelogUnread }) {
-    const navItems = [
-      { key: 'dashboard', label: 'Dashboard', icon: '📊' },
-      { key: 'reports', label: 'Reports', icon: '📈' },
-      { key: 'auth', label: 'Auth', icon: '🔑' },
-      { key: 'user-management', label: 'User Management', icon: '👥' },
-      { key: 'onboarding', label: 'Onboarding', icon: '🚀' },
-      { key: 'credits', label: 'Credits', icon: '💳' },
-      { key: 'orchestration', label: 'Orchestration', icon: '🧩' },
-      { key: 'products', label: 'Products', icon: '📦' },
-      { key: 'content-health', label: 'Content Health', icon: '🩺' },
-      { key: 'fix-queue', label: 'Fix Queue', icon: '🛠️' },
-      { key: 'content-ingest', label: 'Content Ingest', icon: '📥' },
-      { key: 'draft-library', label: 'Draft Library', icon: '📚' },
-      { key: 'system-health', label: 'System Health', icon: '🖥️' }
-    ];
+export default function Sidebar({ current, onSelect, onShowChangelog, changelogUnread }) {
+  const [search, setSearch] = useState("");
+  const grouped = useMemo(() => groupByCategory(
+    toolsMeta.filter(tool =>
+      tool.name.toLowerCase().includes(search.toLowerCase()) ||
+      tool.description?.toLowerCase().includes(search.toLowerCase())
+    )
+  ), [search]);
+
   return (
     <nav className="sidebar-nav-shell">
       <div style={{padding: '18px 18px 0 18px'}}>
@@ -65,7 +67,5 @@ function Sidebar({ current, onSelect, onShowChangelog, changelogUnread }) {
     </nav>
   );
 }
-}
-  export default Sidebar;
 
 
