@@ -178,7 +178,7 @@ export default function CustomerDataPlatform() {
       </div>
       <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
         <button onClick={() => setShowOnboarding(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
-        <button onClick={fetchAnalytics} style={{ background: "#eab308", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }><FiBarChart2 /> Analytics</button>
+        <button onClick={fetchAnalytics} style={{ background: "#eab308", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}><FiBarChart2 /> Analytics</button>
         <label style={{ background: "#a3e635", color: "#23263a", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>
           <FiUpload /> Import
           <input type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} disabled={importing} />
