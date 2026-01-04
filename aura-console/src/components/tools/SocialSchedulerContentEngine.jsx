@@ -1,6 +1,5 @@
-import React, { useState } from "react";
-// Import additional libraries for multi-channel, analytics, accessibility, integrations, etc. as needed
 import React, { useState, useRef, useEffect } from "react";
+// Import additional libraries for multi-channel, analytics, accessibility, integrations, etc. as needed
 import { apiFetch } from "../../api";
 
 export default function SocialSchedulerContentEngine() {
