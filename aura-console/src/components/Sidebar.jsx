@@ -19,86 +19,52 @@ function Sidebar({ current, onSelect, onShowChangelog, changelogUnread }) {
       { key: 'draft-library', label: 'Draft Library', icon: '📚' },
       { key: 'system-health', label: 'System Health', icon: '🖥️' }
     ];
-    return (
-    <nav className="sidebar">
-      <div className="sidebar-brand" style={{display:'flex',alignItems:'center',gap:12,marginBottom:18}}>
-        <img src="/logo-aura.png" alt="AURA Logo" style={{height:38,width:38,objectFit:'contain',borderRadius:10,boxShadow:'0 2px 12px #22d3ee55'}} />
-      </div>
-      <ul className="sidebar-nav">
-        {navItems.map(item => (
-          <li
-            key={item.key}
-            className={current === item.key ? 'active' : ''}
-            onClick={() => onSelect(item.key)}
-            tabIndex={0}
-            aria-label={item.label}
-            title={item.label}
-            onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onSelect(item.key);
-              }
-            }}
-            style={{ outline: current === item.key ? '2px solid #7fffd4' : 'none' }}
-          >
-            {/* icon removed */}
-            <span className="sidebar-label">{item.label}</span>
-          </li>
-        ))}
-      </ul>
-      <button
-        onClick={onShowChangelog}
-        style={{
-          width: '100%', background: 'none', border: 'none', color: '#7fffd4', fontWeight: 700, fontSize: 15, cursor: 'pointer', margin: '18px 0 8px 0', padding: 0, textAlign: 'left', position: 'relative', display: 'flex', alignItems: 'center', gap: 8
-        }}
-        aria-label="Show What’s New / Changelog"
-      >
-        <span style={{fontSize:18}}>✨</span> What’s New
-        {changelogUnread && <span style={{width:10,height:10,borderRadius:'50%',background:'#ff4d4f',display:'inline-block',marginLeft:4}} aria-label="New update" />}
-      </button>
-      <div className="sidebar-section-label">Tools</div>
-      <ul className="sidebar-nav sidebar-tools">
-        {toolsMeta.map(tool => (
-          <li
-            key={tool.id}
-            className={current === tool.id ? 'active' : ''}
-            onClick={() => onSelect(tool.id)}
-            tabIndex={0}
-            aria-label={tool.name}
-            title={tool.description || tool.name}
-            onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onSelect(tool.id);
-              }
-            }}
-            style={{ outline: current === tool.id ? '2px solid #7fffd4' : 'none' }}
-          >
-            {/* icon removed */}
-            <span className="sidebar-label">{tool.name}</span>
-          </li>
-        ))}
-      </ul>
-      <div className="sidebar-profile" style={{
-        marginTop: 'auto',
-        padding: '32px 0 24px 0',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 10,
-      }}>
-        <img
-          src="/avatar-default.png"
-          alt="User Avatar"
-          style={{ width: 48, height: 48, borderRadius: '50%', boxShadow: '0 2px 12px #22d3ee55', marginBottom: 6 }}
+  return (
+    <nav className="sidebar-nav-shell">
+      <div style={{padding: '18px 18px 0 18px'}}>
+        <input
+          type="text"
+          placeholder="Search tools..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #23263a', marginBottom: 16, fontSize: 15 }}
+          aria-label="Search tools"
         />
-        <div style={{ fontWeight: 700, color: '#7fffd4', fontSize: 16, letterSpacing: '0.01em', textShadow: '0 1px 4px #0004', lineHeight: 1.2 }}>
-          User Name
-        </div>
-        <div style={{ fontSize: 13, color: '#e6e6f0', opacity: 1, lineHeight: 1.2 }}>user@email.com</div>
+        <button
+          style={{ width: '100%', background: 'none', border: 'none', color: '#7fffd4', fontWeight: 700, fontSize: 15, cursor: 'pointer', margin: '18px 0 8px 0', padding: 0, textAlign: 'left', position: 'relative', display: 'flex', alignItems: 'center', gap: 8 }}
+          aria-label="Show What’s New / Changelog"
+          onClick={onShowChangelog}
+        >
+          <span style={{fontSize:18}}>✨</span> What’s New
+          {changelogUnread && <span style={{width:10,height:10,borderRadius:'50%',background:'#ff4d4f',display:'inline-block',marginLeft:4}} aria-label="New update" />}
+        </button>
+      </div>
+      <div className="sidebar-section-label">Tools</div>
+      <div style={{overflowY:'auto', maxHeight:'calc(100vh - 180px)'}}>
+        {Object.entries(grouped).map(([cat, tools]) => (
+          <div key={cat} style={{marginBottom: 18}}>
+            <div style={{fontWeight:900, color:'#7fffd4', fontSize:15, margin:'10px 0 4px 18px', letterSpacing:0.2}}>{cat}</div>
+            <ul className="sidebar-nav sidebar-tools">
+              {tools.map(tool => (
+                <li
+                  key={tool.id}
+                  className={current === tool.id ? "sidebar-active" : ""}
+                  style={{padding:'7px 18px', cursor:'pointer', fontWeight:600, color:current===tool.id?'#23263a':'#fff', background:current===tool.id?'#7fffd4':'none', borderRadius:8, marginBottom:2, fontSize:15, transition:'background 0.2s'}}
+                  onClick={() => onSelect(tool.id)}
+                  tabIndex={0}
+                  aria-label={tool.name}
+                  title={tool.description}
+                >
+                  {tool.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     </nav>
   );
+}
 }
   export default Sidebar;
 
