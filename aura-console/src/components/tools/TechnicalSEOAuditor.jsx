@@ -174,10 +174,6 @@ export default function TechnicalSEOAuditor() {
     </div>
   );
 }
-      setReportUrl(window.location.origin + window.location.pathname + "?audit=" + encodeURIComponent(data.auditReport || ""));
-    } catch (err) {
-      setError(err.message);
-      setNotification("");
     }
   };
 
