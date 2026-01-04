@@ -172,32 +172,6 @@ export default function TechnicalSEOAuditor() {
         <button type="submit" style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send Feedback</button>
       </form>
 
-
-  const handleExport = () => {
-    if (!response) return;
-    const blob = new Blob([response], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "technical-seo-audit.txt";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleShare = () => {
-    if (!reportUrl) return;
-    navigator.clipboard.writeText(reportUrl);
-    setNotification("Share link copied!");
-    setTimeout(() => setNotification("Audit report generated and saved."), 2000);
-  };
-
-  const handleFeedback = async () => {
-    if (!feedback) return;
-    setNotification("Sending feedback...");
-    try {
-      await fetch("/api/technical-seo-auditor/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ feedback })
       });
       setNotification("Feedback sent. Thank you!");
