@@ -174,20 +174,6 @@ export default function SERPTracker() {
     </div>
   );
 }
-      </div>
-      <div style={{ marginBottom: 10, color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>
-        <span role="img" aria-label="serp">📈</span> Track keyword rankings and SERP features.
-      </div>
-      <button onClick={() => setShowOnboarding(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
-      {showOnboarding && onboardingContent}
-      <input
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-        type="text"
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
-        placeholder="Enter keyword, domain, or location to track..."
-        aria-label="SERP tracking input"
-      />
       <button onClick={handleTrack} disabled={loading || !query} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Tracking..." : "Track"}</button>
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {result && (
