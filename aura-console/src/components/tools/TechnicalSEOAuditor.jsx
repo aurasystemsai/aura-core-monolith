@@ -172,14 +172,21 @@ export default function TechnicalSEOAuditor() {
         <button type="submit" style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send Feedback</button>
       </form>
 
-        body: JSON.stringify({ feedback })
-      });
-      setNotification("Feedback sent. Thank you!");
-      setFeedback("");
-    } catch (err) {
-      setNotification("Failed to send feedback");
-    }
-  };
+        const response = await fetch("/api/technical-seo-auditor/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ feedback })
+        });
+        if (response.ok) {
+          setNotification("Feedback sent. Thank you!");
+          setFeedback("");
+        } else {
+          setNotification("Failed to send feedback");
+        }
+      } catch (err) {
+        setNotification("Failed to send feedback");
+      }
+    };
 
   return (
     <div
