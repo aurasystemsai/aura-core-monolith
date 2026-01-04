@@ -171,11 +171,7 @@ export default function TechnicalSEOAuditor() {
         />
         <button type="submit" style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send Feedback</button>
       </form>
-    </div>
-  );
-}
-    }
-  };
+
 
   const handleExport = () => {
     if (!response) return;
