@@ -84,7 +84,7 @@ const AutomationScheduler = lazy(() => import("./components/AutomationScheduler.
 const Reports = lazy(() => import("./components/Reports.jsx"));
 const Orchestration = lazy(() => import("./orchestration/Orchestration.jsx"));
 const ProductSeoEngine = lazy(() => import("./components/ProductSeoEngine"));
-const AiAltTextEngine = lazy(() => import("./components/AiAltTextEngine"));
+// const AiAltTextEngine = lazy(() => import("./components/AiAltTextEngine"));
 const InternalLinkOptimizer = lazy(() => import("./components/InternalLinkOptimizer"));
 import AiChatbot from "./components/AiChatbot.jsx";
 
