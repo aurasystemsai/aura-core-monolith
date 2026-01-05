@@ -40,6 +40,12 @@ const toolsMeta = Array.from(new Map([
   ["brand-mention-tracker", { id: "brand-mention-tracker", name: "Brand Mention Tracker", description: "Track brand mentions across the web and social media.", category: "Analytics / Brand" }],
   ["local-seo-toolkit", { id: "local-seo-toolkit", name: "Local SEO Toolkit", description: "Tools for GMB, citations, reviews, and local rankings.", category: "SEO / Local" }],
   // ...add all other unique tool entries here, following the same pattern...
-]).values());
+]).values()).sort((a, b) => {
+  if (a.category < b.category) return -1;
+  if (a.category > b.category) return 1;
+  if (a.name < b.name) return -1;
+  if (a.name > b.name) return 1;
+  return 0;
+});
 
 export default toolsMeta;
