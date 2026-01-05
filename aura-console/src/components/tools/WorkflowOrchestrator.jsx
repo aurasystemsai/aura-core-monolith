@@ -7,7 +7,7 @@ export default function WorkflowOrchestrator() {
   const [response, setResponse] = useState("");
   const [analytics, setAnalytics] = useState(null);
   const [history, setHistory] = useState([]);
-  const [darkMode, setDarkMode] = useState(false);
+  // Dark mode enforced, no toggle
   const [collaborators, setCollaborators] = useState("");
   const [accessLevel, setAccessLevel] = useState("writer");
   const [privacy, setPrivacy] = useState("private");

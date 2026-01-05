@@ -99,7 +99,7 @@ export default function AiAltTextEngine() {
   };
 
   return (
-    <div className="tool-ai-alt-text" style={{ maxWidth: 900, margin: "40px auto", background: "#fff", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
+    <div className="tool-ai-alt-text" style={{ maxWidth: 900, margin: "40px auto", background: "#23263a", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 8 }}>AI Alt-Text Engine</h2>
       <div style={{ marginBottom: 10, color: "#0ea5e9", fontWeight: 600 }}>
         <span role="img" aria-label="sparkles">✨</span> Generate alt text for images with AI, batch upload, and analytics.
@@ -151,7 +151,7 @@ export default function AiAltTextEngine() {
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
         <div style={{ fontSize: 15, color: "#23263a" }}>
           {analytics.length ? (
-            <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "none", padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
+            <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "none", color: "#f3f4f6", padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
           ) : (
             <span>No analytics yet. Generate or upload images to see results.</span>
           )}
@@ -163,7 +163,7 @@ export default function AiAltTextEngine() {
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #ccc", marginBottom: 12, background: "#fff", color: "#23263a" }}
+          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#23263a", color: "#f3f4f6" }}
           placeholder="Share your feedback or suggestions..."
           aria-label="Feedback input"
         />

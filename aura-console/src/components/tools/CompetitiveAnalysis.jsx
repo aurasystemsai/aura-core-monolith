@@ -6,7 +6,7 @@ export default function CompetitiveAnalysis() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [history, setHistory] = useState([]);
-  const [darkMode, setDarkMode] = useState(false);
+  // Dark mode enforced, no toggle
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   const handleAnalyze = async () => {

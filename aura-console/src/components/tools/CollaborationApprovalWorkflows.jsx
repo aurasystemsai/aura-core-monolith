@@ -6,7 +6,7 @@ export default function CollaborationApprovalWorkflows() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [history, setHistory] = useState([]);
-  const [darkMode, setDarkMode] = useState(false);
+  // Dark mode enforced, no toggle
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   const handleBuild = async () => {
@@ -31,15 +31,15 @@ export default function CollaborationApprovalWorkflows() {
   };
 
   const onboardingContent = (
-    <div style={{ padding: 24, background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: "#23263a", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Collaboration & Approval Workflows</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#334155", fontSize: 16 }}>
+      <ul style={{ margin: "16px 0 0 18px", color: "#a3e635", fontSize: 16 }}>
         <li>Design approval and collaboration workflows</li>
         <li>Integrate with Slack, email, and project tools</li>
         <li>Export, share, and review workflow history</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#23263a", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
     </div>
   );
 
@@ -112,17 +112,16 @@ export default function CollaborationApprovalWorkflows() {
     <div style={{
       maxWidth: 900,
       margin: "40px auto",
-      background: darkMode ? "#18181b" : "#fff",
+      background: "#18181b",
       borderRadius: 18,
       boxShadow: "0 2px 24px #0002",
       padding: 36,
-      color: darkMode ? "#a3e635" : "#23263a",
+      color: "#a3e635",
       fontFamily: 'Inter, sans-serif',
       transition: "background 0.3s, color 0.3s"
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Collaboration & Approval Workflows</h2>
-        <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
       </div>
       {showOnboarding && onboardingContent}
       <div style={{ marginBottom: 18 }}>
@@ -133,11 +132,11 @@ export default function CollaborationApprovalWorkflows() {
           placeholder="Describe your workflow or approval chain..."
           aria-label="Workflow input"
         />
-        <button onClick={handleBuild} disabled={loading} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Build Workflow</button>
+        <button onClick={handleBuild} disabled={loading} style={{ background: "#6366f1", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Build Workflow</button>
       </div>
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={fetchWorkflows} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Load Workflows</button>
-        <button onClick={fetchApprovals} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginLeft: 12 }}>Load Approvals</button>
+        <button onClick={fetchWorkflows} style={{ background: "#6366f1", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Load Workflows</button>
+        <button onClick={fetchApprovals} style={{ background: "#0ea5e9", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginLeft: 12 }}>Load Approvals</button>
       </div>
       <div style={{ display: "flex", gap: 18, marginBottom: 18 }}>
         <div style={{ flex: 1 }}>
@@ -160,7 +159,7 @@ export default function CollaborationApprovalWorkflows() {
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
         <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import workflows" />
-        <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
+        <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
         {exported && <a href={exported} download="collaboration-workflows.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
@@ -171,7 +170,7 @@ export default function CollaborationApprovalWorkflows() {
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #ccc", marginBottom: 12, background: "#fff", color: "#23263a" }}
+          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#23263a", color: "#f3f4f6" }}
           placeholder="Share your feedback or suggestions..."
           aria-label="Feedback input"
         />
@@ -179,9 +178,9 @@ export default function CollaborationApprovalWorkflows() {
       </form>
       {/* ...existing code... */}
       {result && (
-        <div style={{ marginTop: 24, background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 12, padding: 20 }}>
+        <div style={{ marginTop: 24, background: "#23263a", borderRadius: 12, padding: 20 }}>
           <h3 style={{ fontWeight: 700, fontSize: 20 }}>Workflow Result</h3>
-          <pre style={{ fontSize: 15, color: darkMode ? "#a3e635" : "#23263a" }}>{JSON.stringify(result, null, 2)}</pre>
+          <pre style={{ fontSize: 15, color: "#a3e635" }}>{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
       {history.length > 0 && (
@@ -189,7 +188,7 @@ export default function CollaborationApprovalWorkflows() {
           <h3 style={{ fontWeight: 700, fontSize: 18 }}>History</h3>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, idx) => (
-              <li key={idx} style={{ marginBottom: 8, background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 8, padding: 8 }}>
+              <li key={idx} style={{ marginBottom: 8, background: "#23263a", borderRadius: 8, padding: 8 }}>
                 <b>Workflow:</b> {h.workflow} <br />
                 <b>Result:</b> {JSON.stringify(h.result)}
               </li>

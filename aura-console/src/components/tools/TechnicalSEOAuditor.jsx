@@ -108,19 +108,14 @@ export default function TechnicalSEOAuditor() {
     fetchAnalytics();
   }, []);
 
-  // Remove the duplicate return and root <div> block above.
-  // Keep only one return statement and one root <div> for the component.
-  // If you want the newer/dark mode UI, keep the second return block below.
-  // If you want the original UI, keep the first block and remove the second.
-  // Here, we'll keep the second (dark mode) block for clarity:
-
+  // Only flagship dark mode, no toggle
   return (
     <div
       style={{
         maxWidth: 700,
         margin: "40px auto",
-        background: darkMode ? "#23263a" : "#fff",
-        color: darkMode ? "#f3f4f6" : "#23263a",
+        background: "#23263a",
+        color: "#f3f4f6",
         borderRadius: 16,
         boxShadow: "0 2px 16px #0001",
         padding: 32,
@@ -130,22 +125,15 @@ export default function TechnicalSEOAuditor() {
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h2 style={{ fontWeight: 700, fontSize: 28, marginBottom: 12 }}>Technical SEO Auditor</h2>
-        <button
-          aria-label="Toggle dark mode"
-          onClick={() => setDarkMode(d => !d)}
-          style={{ background: darkMode ? "#f3f4f6" : "#23263a", color: darkMode ? "#23263a" : "#f3f4f6", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
-        >
-          {darkMode ? "Light" : "Dark"}
-        </button>
       </div>
-      <p style={{ color: darkMode ? "#e0e7ff" : "#444", marginBottom: 18 }}>
+      <p style={{ color: "#e0e7ff", marginBottom: 18 }}>
         Paste a site URL or technical details below. The AI will audit and provide technical SEO recommendations for all selected channels. <span style={{ fontWeight: 600 }}>All features are fully accessible.</span>
       </p>
       <textarea
         value={input}
         onChange={e => setInput(e.target.value)}
         rows={3}
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#f3f4f6" : "#23263a" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#23263a", color: "#f3f4f6" }}
         placeholder="Paste your site URL or technical details here..."
         aria-label="Site input"
       />

@@ -109,7 +109,7 @@ export default function SchemaRichResultsEngine() {
   }, []);
 
   return (
-    <div style={{ maxWidth: 900, margin: "40px auto", background: "#fff", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ maxWidth: 900, margin: "40px auto", background: "#23263a", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 8 }}>Schema Rich Results Engine</h2>
       <div style={{ marginBottom: 10, color: "#0ea5e9", fontWeight: 600 }}>
         <span role="img" aria-label="sparkles">✨</span> Generate, manage, and analyze schema rich results with AI and analytics.
@@ -165,7 +165,7 @@ export default function SchemaRichResultsEngine() {
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #ccc", marginBottom: 12, background: "#fff", color: "#23263a" }}
+          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#23263a", color: "#f3f4f6" }}
           placeholder="Share your feedback or suggestions..."
           aria-label="Feedback input"
         />
