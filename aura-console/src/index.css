@@ -171,14 +171,15 @@ body {
 }
 
 /* .tool-grid ruleset removed because it was empty */
+
 .tool-grid .run-button {
   border-radius: var(--radius-md);
   border: 1px solid var(--accent);
   padding: 7px 16px;
   font-size: 14px;
-  background: #fff;
-  color: var(--accent);
-  font-weight: 500;
+  background: var(--accent);
+  color: #23263a;
+  font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
