@@ -8,7 +8,6 @@ export default function AdvancedAnalyticsAttribution() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [history, setHistory] = useState([]);
-  const [darkMode, setDarkMode] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [imported, setImported] = useState(null);
