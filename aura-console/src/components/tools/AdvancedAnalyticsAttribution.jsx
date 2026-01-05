@@ -1,28 +1,21 @@
-
-
-import React, { useState, useRef } from "react";
-
-export default function AdvancedAnalyticsAttribution() {
-  const [query, setQuery] = useState("");
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [history, setHistory] = useState([]);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [feedback, setFeedback] = useState("");
-  const [imported, setImported] = useState(null);
-  const [exported, setExported] = useState(null);
-  const fileInputRef = useRef();
-
-  // Analyze handler
-  const handleAnalyze = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/advanced-analytics-attribution", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query })
+  return (
+    <div style={{ maxWidth: 700, margin: "40px auto", background: "#23263a", color: "#f3f4f6", borderRadius: 16, boxShadow: "0 2px 16px #0001", padding: 32, fontFamily: "Inter, Arial, sans-serif" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h2 style={{ fontWeight: 700, fontSize: 28, marginBottom: 12 }}>Advanced Analytics Attribution</h2>
+      </div>
+      <button style={{ background: "#6366f1", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>Show Help</button>
+      <div style={{ marginBottom: 18 }}>
+        <label style={{ fontWeight: 600, marginRight: 12 }}>Input</label>
+        <input type="text" style={{ width: 300, fontSize: 16, padding: 8, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#f3f4f6" }} />
+      </div>
+      <button style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>Run Tool</button>
+      <div style={{ background: "#181f2a", borderRadius: 12, padding: 18, marginBottom: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: "#7fffd4" }}>Feedback</div>
+        <input type="text" style={{ width: "80%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #555", marginRight: 8, background: "#23263a", color: "#f3f4f6" }} placeholder="Share feedback or suggestions..." />
+        <button style={{ background: "#0ea5e9", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send</button>
+      </div>
+    </div>
+  );
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Unknown error");
