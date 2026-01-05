@@ -36,7 +36,7 @@ const toolsMeta = [
   { id: "entity-topic-explorer", name: "Entity/Topic Explorer", description: "Semantic SEO: discover entities and topics for your content.", category: "SEO / AI" },
   { id: "internal-linking-suggestions", name: "Automated Internal Linking Suggestions", description: "AI-powered suggestions for internal links to boost SEO.", category: "SEO / AI" },
   { id: "brand-mention-tracker", name: "Brand Mention Tracker", description: "Track brand mentions across the web and social media.", category: "Analytics / Brand" },
-  { id: "local-seo-toolkit", name: "Local SEO Toolkit", description: "Tools for GMB, citations, reviews, and local rankings.", category: "SEO / Local" },
-  // --- End Deduplicated ---
+	{ id: "local-seo-toolkit", name: "Local SEO Toolkit", description: "Tools for GMB, citations, reviews, and local rankings.", category: "SEO / Local" }
+];
 
 export default toolsMeta;
