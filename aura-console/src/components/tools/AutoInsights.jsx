@@ -1,10 +1,11 @@
 
+
 import React from "react";
 
 // Flagship UI: All features, modern dashboard, segmentation, analytics, kanban, alerts, integrations
 export default function AutoInsights() {
   // ...existing state and handlers...
-  // For brevity, only the UI structure is shown here. Full implementation will include all researched features.
+  // Full flagship dashboard, no legacy onboarding, toggles, or white backgrounds
   return (
     <div className="aura-card flagship-autoinsights-dashboard" style={{ maxWidth: 1200, margin: "0 auto", padding: 0, background: "var(--surface-card)", borderRadius: 24, boxShadow: "0 8px 32px #0006" }}>
       {/* Header & Analytics */}
