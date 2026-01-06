@@ -48,7 +48,7 @@
   );
 
   return (
-    <div className="aura-card" style={{ maxWidth: 700, margin: "40px auto", padding: 32 }}>
+    <div className="aura-card" style={{ maxWidth: 700, margin: "0 auto", padding: 32 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0, color: "var(--text-primary)" }}>Advanced Analytics Attribution</h2>
       </div>

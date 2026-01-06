@@ -106,7 +106,7 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
         boxShadow: "0 2px 16px #0001",
         padding: 32,
         maxWidth: 600,
-        margin: "40px auto",
+        margin: "0 auto",
         fontFamily: 'Inter, sans-serif',
         transition: "background 0.3s, color 0.3s"
       }}
