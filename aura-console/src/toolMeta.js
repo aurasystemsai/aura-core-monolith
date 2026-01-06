@@ -39,6 +39,7 @@ const toolsMeta = Array.from(new Map([
   ["internal-linking-suggestions", { id: "internal-linking-suggestions", name: "Automated Internal Linking Suggestions", description: "AI-powered suggestions for internal links to boost SEO.", category: "SEO / AI" }],
   ["brand-mention-tracker", { id: "brand-mention-tracker", name: "Brand Mention Tracker", description: "Track brand mentions across the web and social media.", category: "Analytics / Brand" }],
   ["local-seo-toolkit", { id: "local-seo-toolkit", name: "Local SEO Toolkit", description: "Tools for GMB, citations, reviews, and local rankings.", category: "SEO / Local" }],
+  ["seo-site-crawler", { id: "seo-site-crawler", name: "SEO Site Crawler", description: "Crawl and analyze any website for SEO insights, issues, and opportunities.", category: "SEO" }],
   // ...add all other unique tool entries here, following the same pattern...
 ]).values()).sort((a, b) => {
   if (a.category < b.category) return -1;
