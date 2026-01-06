@@ -140,8 +140,8 @@ function Reports() {
 
   return (
     <div style={{ padding: 32 }}>
-      <h2 style={{ color: '#f3f4f6', fontWeight: 900, fontSize: 32, marginBottom: 18 }}>Reports & Insights</h2>
-      <div style={{ color: '#f3f4f6', fontSize: 18, marginBottom: 12 }}>
+      <h2 style={{ color: 'var(--text-primary)', fontWeight: 900, fontSize: 32, marginBottom: 18 }}>Reports & Insights</h2>
+      <div style={{ color: 'var(--text-primary)', fontSize: 18, marginBottom: 12 }}>
         Actionable insights and downloadable reports for your store's performance.
       </div>
       <ReportExportBar onExportCSV={handleExportCSV} onExportPDF={handleExportPDF} onScheduleEmail={handleScheduleEmail} />
@@ -159,7 +159,7 @@ function Reports() {
           { label: 'Last Run', value: loading ? '…' : (stats.lastRun ? new Date(stats.lastRun).toLocaleString() : '-') },
         ].map((stat, idx) => (
           <div key={stat.label} style={{
-            background: '#232b3b',
+            background: 'var(--background-secondary)',
             borderRadius: '18px',
             boxShadow: '0 6px 28px rgba(0,0,0,0.10)',
             padding: '32px 22px',
@@ -172,26 +172,26 @@ function Reports() {
             cursor: 'pointer',
             animation: `fadeInUp 0.7s cubic-bezier(.23,1.01,.32,1) both`,
           }}>
-            <span style={{fontSize: '1.13em', color: '#f3f4f6', fontWeight: 800, letterSpacing: '0.01em', marginBottom: 8 }}>{stat.label}</span>
-            <b style={{fontSize: '1.7em', fontWeight: 900, color: '#f3f4f6', letterSpacing: '0.01em'}}>{stat.value}</b>
+            <span style={{fontSize: '1.13em', color: 'var(--text-primary)', fontWeight: 800, letterSpacing: '0.01em', marginBottom: 8 }}>{stat.label}</span>
+            <b style={{fontSize: '1.7em', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '0.01em'}}>{stat.value}</b>
           </div>
         ))}
       </div>
 
       {/* Finance snapshot */}
       <div style={{
-        background: '#232b3b',
+        background: 'var(--background-secondary)',
         borderRadius: 16,
         padding: 24,
         marginBottom: 32,
-        color: '#f3f4f6',
+        color: 'var(--text-primary)',
         boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
         maxWidth: 540,
         marginLeft: 'auto',
         marginRight: 'auto',
         fontSize: 17,
       }}>
-        <b style={{ color: '#f3f4f6', fontSize: 20 }}>Finance Snapshot</b><br />
+        <b style={{ color: 'var(--text-primary)', fontSize: 20 }}>Finance Snapshot</b><br />
         {loadingFinance ? 'Loading…' : finance ? (
           <>
             Revenue: £{finance.revenue?.toLocaleString() || '-'}<br />
@@ -204,18 +204,18 @@ function Reports() {
 
       {/* Insights summary */}
       <div style={{
-        background: '#232b3b',
+        background: 'var(--background-secondary)',
         borderRadius: 16,
         padding: 24,
         marginBottom: 32,
-        color: '#f3f4f6',
+        color: 'var(--text-primary)',
         boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
         maxWidth: 540,
         marginLeft: 'auto',
         marginRight: 'auto',
         fontSize: 17,
       }}>
-        <b style={{ color: '#f3f4f6', fontSize: 20 }}>Insights</b><br />
+        <b style={{ color: 'var(--text-primary)', fontSize: 20 }}>Insights</b><br />
         {loadingInsight ? 'Loading…' : insight ? (
           <>
             <b>{insight.metric?.toUpperCase() || ''}:</b> {insight.insight || '-'}
@@ -228,8 +228,8 @@ function Reports() {
       </Suspense>
       <div style={{
         marginTop: 36,
-        background: '#181f2a',
-        color: '#f3f4f6',
+        background: 'var(--background-tertiary)',
+        color: 'var(--text-primary)',
         borderRadius: 12,
         padding: '18px 32px',
         fontWeight: 700,

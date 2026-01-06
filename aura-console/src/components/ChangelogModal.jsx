@@ -32,9 +32,9 @@ export default function ChangelogModal({ open, onClose }) {
       animation: 'fadeIn 0.3s',
     }} role="dialog" aria-modal="true" aria-label="What’s New">
       <div style={{
-        background: '#23263a', borderRadius: 18, boxShadow: '0 8px 40px #0008', padding: '38px 32px 28px', minWidth: 340, maxWidth: 420,
+        background: 'var(--background-secondary)', borderRadius: 18, boxShadow: '0 8px 40px #0008', padding: '38px 32px 28px', minWidth: 340, maxWidth: 420,
         display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1.5px solid #7fffd4',
-        animation: 'popIn 0.18s', color: '#fff',
+        animation: 'popIn 0.18s', color: 'var(--text-primary)',
       }}>
         <h2 style={{color:'#7fffd4',fontWeight:900,marginBottom:10,fontSize:26,letterSpacing:'-0.01em'}}>What’s New</h2>
         <div style={{width:'100%',maxHeight:320,overflowY:'auto'}}>
@@ -48,7 +48,7 @@ export default function ChangelogModal({ open, onClose }) {
             </div>
           ))}
         </div>
-        <button onClick={onClose} style={{marginTop:18,background:'#7fffd4',color:'#23263a',fontWeight:700,fontSize:16,padding:'10px 32px',borderRadius:8,border:'none',boxShadow:'0 2px 12px #22d3ee55',cursor:'pointer'}}>Close</button>
+        <button onClick={onClose} style={{marginTop:18,background:'var(--button-primary-bg)',color:'var(--button-primary-text)',fontWeight:700,fontSize:16,padding:'10px 32px',borderRadius:8,border:'none',boxShadow:'0 2px 12px #22d3ee55',cursor:'pointer'}}>Close</button>
       </div>
     </div>
   );

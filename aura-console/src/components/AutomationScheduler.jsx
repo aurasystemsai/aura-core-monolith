@@ -80,9 +80,9 @@ export default function AutomationScheduler() {
   }
 
   return (
-    <div className="automation-scheduler" style={{ background: '#232b3b', color: '#f3f4f6', borderRadius: 16, padding: 32, maxWidth: 600, margin: '40px auto' }}>
+    <div className="automation-scheduler" style={{ background: 'var(--background-secondary)', color: 'var(--text-primary)', borderRadius: 16, padding: 32, maxWidth: 600, margin: '40px auto' }}>
       <h2 style={{ marginBottom: 24 }}>Automation Scheduling</h2>
-      <button onClick={() => setShowForm(true)} style={{ marginBottom: 24, background: '#181f2a', color: '#f3f4f6', border: 'none', borderRadius: 8, padding: '10px 18px', fontWeight: 700, cursor: 'pointer' }} disabled={loading}>+ New Schedule</button>
+      <button onClick={() => setShowForm(true)} style={{ marginBottom: 24, background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '10px 18px', fontWeight: 700, cursor: 'pointer' }} disabled={loading}>+ New Schedule</button>
       {error && <div style={{ color: '#ff4d4f', marginBottom: 16 }}>{error}</div>}
       {showForm && (
         <form onSubmit={handleSubmit} style={{ marginBottom: 32, background: '#181f2a', padding: 24, borderRadius: 12 }}>
@@ -122,8 +122,8 @@ export default function AutomationScheduler() {
               </div>
             </>
           )}
-          <button type="submit" style={{ background: '#2d3748', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 700, cursor: 'pointer' }} disabled={loading}>Save</button>
-          <button type="button" onClick={() => setShowForm(false)} style={{ marginLeft: 12, background: '#444c5e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 700, cursor: 'pointer' }} disabled={loading}>Cancel</button>
+          <button type="submit" style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 700, cursor: 'pointer' }} disabled={loading}>Save</button>
+          <button type="button" onClick={() => setShowForm(false)} style={{ marginLeft: 12, background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 700, cursor: 'pointer' }} disabled={loading}>Cancel</button>
         </form>
       )}
       <div>
@@ -137,7 +137,7 @@ export default function AutomationScheduler() {
             {schedules.map(s => (
               <li key={s.id} style={{ background: '#181f2a', marginBottom: 12, borderRadius: 8, padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span><b>{s.name}</b> — {s.type === 'one-time' ? `One-time on ${s.date} at ${s.time}` : `Recurring: ${s.recurrence} at ${s.time}`}</span>
-                <button onClick={() => handleDelete(s.id)} style={{ background: '#ff4d4f', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 700, cursor: 'pointer', marginLeft: 16 }} disabled={loading}>Delete</button>
+                <button onClick={() => handleDelete(s.id)} style={{ background: 'var(--button-danger-bg)', color: 'var(--button-danger-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 700, cursor: 'pointer', marginLeft: 16 }} disabled={loading}>Delete</button>
               </li>
             ))}
           </ul>

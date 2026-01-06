@@ -47,9 +47,9 @@ export default function AiChatbot({ coreUrl }) {
   return (
     <div style={{ maxWidth: 500, margin: '40px auto', background: '#232b3b', borderRadius: 12, padding: 24 }}>
       <h2 style={{ color: '#7fffd4' }}>AI Chatbot</h2>
-      <div style={{ minHeight: 200, background: '#181f2a', borderRadius: 8, padding: 12, marginBottom: 16, color: '#fff', fontSize: 15 }}>
+      <div style={{ minHeight: 200, background: 'var(--background-tertiary)', borderRadius: 8, padding: 12, marginBottom: 16, color: 'var(--text-primary)', fontSize: 15 }}>
         {messages.slice(1).map((m, i) => (
-          <div key={i} style={{ margin: '8px 0', color: m.role === 'user' ? '#7fffd4' : '#fff' }}>
+          <div key={i} style={{ margin: '8px 0', color: m.role === 'user' ? 'var(--text-accent)' : 'var(--text-primary)' }}>
             <b>{m.role === 'user' ? 'You' : 'AI'}:</b> {m.content}
           </div>
         ))}

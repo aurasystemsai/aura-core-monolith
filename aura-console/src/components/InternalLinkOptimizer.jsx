@@ -77,7 +77,7 @@ export default function InternalLinkOptimizer() {
       {result && (
         <div style={{ marginTop: 24 }}>
           <h3>Suggested Internal Links</h3>
-          <pre style={{ background: "#222", color: "#7fffd4", padding: 12, borderRadius: 6, overflowX: "auto" }}>
+          <pre style={{ background: "var(--background-tertiary)", color: "var(--text-accent)", padding: 12, borderRadius: 6, overflowX: "auto" }}>
             {JSON.stringify(result, null, 2)}
           </pre>
         </div>

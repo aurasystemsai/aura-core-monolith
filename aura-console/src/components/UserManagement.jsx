@@ -75,9 +75,9 @@ export default function UserManagement({ coreUrl }) {
       {success && <div style={{ color: '#7fffd4', marginBottom: 12 }}>{success}</div>}
       <div style={{ marginTop: 32 }}>
         <h3 style={{ color: '#7fffd4', fontSize: 18 }}>All Users</h3>
-        {users.length === 0 && <div style={{ color: '#fff', opacity: 0.7 }}>No users or not authorized.</div>}
+        {users.length === 0 && <div style={{ color: 'var(--text-primary)', opacity: 0.7 }}>No users or not authorized.</div>}
         {users.length > 0 && (
-          <table style={{ width: '100%', color: '#fff', background: '#1a1a1a', borderRadius: 8, marginTop: 8 }}>
+          <table style={{ width: '100%', color: 'var(--text-primary)', background: 'var(--background-secondary)', borderRadius: 8, marginTop: 8 }}>
             <thead>
               <tr style={{ color: '#7fffd4' }}>
                 <th style={{ textAlign: 'left', padding: 6 }}>Email</th>

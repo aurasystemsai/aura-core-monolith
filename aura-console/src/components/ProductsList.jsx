@@ -398,7 +398,7 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
                                 src={firstImage.src || firstImage.url || ''}
                                 alt={firstImage.alt || product.title || 'Product image'}
                                 className="pl-thumb"
-                                style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid #23263a', background: '#181c2a' }}
+                                style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border-color)', background: 'var(--background-tertiary)' }}
                               />
                             ) : (
                               <span className="pl-thumb-placeholder" aria-label="No image">—</span>

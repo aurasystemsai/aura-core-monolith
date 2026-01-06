@@ -2,9 +2,9 @@ import React from "react";
 
 export default function Toast({ message, type = 'info', onClose }) {
   if (!message) return null;
-  let bg = '#23263a', color = '#fff';
-  if (type === 'error') { bg = '#ff4d4f'; color = '#fff'; }
-  if (type === 'success') { bg = '#7fffd4'; color = '#23263a'; }
+  let bg = 'var(--toast-bg)', color = 'var(--toast-text)';
+  if (type === 'error') { bg = 'var(--toast-error-bg)'; color = 'var(--toast-error-text)'; }
+  if (type === 'success') { bg = 'var(--toast-success-bg)'; color = 'var(--toast-success-text)'; }
   return (
     <div style={{
       position: 'fixed', bottom: 32, left: 32, zIndex: 9999,

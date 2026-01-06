@@ -1,5 +1,5 @@
   return (
-    <div style={{ maxWidth: 700, margin: "40px auto", background: "#23263a", color: "#f3f4f6", borderRadius: 16, boxShadow: "0 2px 16px #0001", padding: 32, fontFamily: "Inter, Arial, sans-serif" }}>
+    <div style={{ maxWidth: 700, margin: "40px auto", background: "var(--background-secondary)", color: "var(--text-primary)", borderRadius: 16, boxShadow: "0 2px 16px #0001", padding: 32, fontFamily: "Inter, Arial, sans-serif" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h2 style={{ fontWeight: 700, fontSize: 28, marginBottom: 12 }}>Advanced Analytics Attribution</h2>
       </div>

@@ -29,7 +29,7 @@ export default function Sidebar({ current, onSelect, onShowChangelog, changelogU
           placeholder="Search tools..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #23263a', marginBottom: 16, fontSize: 15 }}
+          style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', marginBottom: 16, fontSize: 15 }}
           aria-label="Search tools"
         />
         <button
@@ -51,7 +51,7 @@ export default function Sidebar({ current, onSelect, onShowChangelog, changelogU
                 <li
                   key={tool.id}
                   className={current === tool.id ? "sidebar-active" : ""}
-                  style={{padding:'7px 18px', cursor:'pointer', fontWeight:600, color:current===tool.id?'#23263a':'#fff', background:current===tool.id?'#7fffd4':'none', borderRadius:8, marginBottom:2, fontSize:15, transition:'background 0.2s'}}
+                  style={{padding:'7px 18px', cursor:'pointer', fontWeight:600, color:current===tool.id?'var(--button-primary-text)':'var(--text-primary)', background:current===tool.id?'var(--button-primary-bg)':'none', borderRadius:8, marginBottom:2, fontSize:15, transition:'background 0.2s'}}
                   onClick={() => onSelect(tool.id)}
                   tabIndex={0}
                   aria-label={tool.name}

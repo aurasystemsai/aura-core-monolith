@@ -26,7 +26,7 @@ export default function AbandonedCheckoutWinback() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#f1f5f9', borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: 'var(--background-secondary)', borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Abandoned Checkout Winback</h3>
       <ul style={{ margin: '16px 0 0 18px', color: '#334155', fontSize: 16 }}>
         <li>Build, import, and manage winback campaigns with AI</li>
@@ -34,7 +34,7 @@ export default function AbandonedCheckoutWinback() {
         <li>Segment, schedule, and automate recovery flows</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#23263a', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
@@ -77,25 +77,25 @@ export default function AbandonedCheckoutWinback() {
     <ToolScaffold toolId="abandoned-checkout-winback">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 24 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Abandoned Checkout Winback</h2>
-        <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
+        <button onClick={() => setShowOnboarding(v => !v)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
         {showOnboarding && onboardingContent}
         {/* Campaign Builder Stepper */}
         <div style={{ marginBottom: 32 }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Campaign Builder</div>
           {/* ...stepper UI for campaign creation... */}
           <div style={{ display: 'flex', gap: 18, marginBottom: 18 }}>
-            <input value={campaign.name} onChange={e => setCampaign({ ...campaign, name: e.target.value })} placeholder="Campaign name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #ccc', width: 220 }} aria-label="Campaign name" />
-            <select value={campaign.channel} onChange={e => setCampaign({ ...campaign, channel: e.target.value })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #ccc', width: 140 }} aria-label="Channel">
+            <input value={campaign.name} onChange={e => setCampaign({ ...campaign, name: e.target.value })} placeholder="Campaign name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: 220 }} aria-label="Campaign name" />
+            <select value={campaign.channel} onChange={e => setCampaign({ ...campaign, channel: e.target.value })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: 140 }} aria-label="Channel">
               <option value="email">Email</option>
               <option value="sms">SMS</option>
               <option value="push">Push</option>
             </select>
-            <input value={campaign.segment} onChange={e => setCampaign({ ...campaign, segment: e.target.value })} placeholder="Segment" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #ccc', width: 180 }} aria-label="Segment" />
-            <input value={campaign.schedule} onChange={e => setCampaign({ ...campaign, schedule: e.target.value })} placeholder="Schedule" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #ccc', width: 180 }} aria-label="Schedule" />
+            <input value={campaign.segment} onChange={e => setCampaign({ ...campaign, segment: e.target.value })} placeholder="Segment" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: 180 }} aria-label="Segment" />
+            <input value={campaign.schedule} onChange={e => setCampaign({ ...campaign, schedule: e.target.value })} placeholder="Schedule" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: 180 }} aria-label="Schedule" />
           </div>
-          <textarea value={campaign.template} onChange={e => setCampaign({ ...campaign, template: e.target.value })} rows={3} style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid #ccc', marginBottom: 18 }} placeholder="Email/SMS template" aria-label="Template" />
-          <input value={campaign.variant} onChange={e => setCampaign({ ...campaign, variant: e.target.value })} placeholder="Variant (A/B)" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #ccc', width: 180, marginBottom: 18 }} aria-label="Variant" />
-          <select value={campaign.status} onChange={e => setCampaign({ ...campaign, status: e.target.value })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #ccc', width: 140, marginBottom: 18 }} aria-label="Status">
+          <textarea value={campaign.template} onChange={e => setCampaign({ ...campaign, template: e.target.value })} rows={3} style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid var(--border-color)', marginBottom: 18 }} placeholder="Email/SMS template" aria-label="Template" />
+          <input value={campaign.variant} onChange={e => setCampaign({ ...campaign, variant: e.target.value })} placeholder="Variant (A/B)" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: 180, marginBottom: 18 }} aria-label="Variant" />
+          <select value={campaign.status} onChange={e => setCampaign({ ...campaign, status: e.target.value })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: 140, marginBottom: 18 }} aria-label="Status">
             <option value="draft">Draft</option>
             <option value="active">Active</option>
             <option value="paused">Paused</option>
@@ -104,15 +104,15 @@ export default function AbandonedCheckoutWinback() {
         {/* Import/Export */}
         <div style={{ marginBottom: 24 }}>
           <input type="file" accept="application/json" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImport} />
-          <button onClick={() => fileInputRef.current.click()} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginRight: 12 }}>Import Campaign</button>
-          <button onClick={handleExport} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Export Campaign</button>
+          <button onClick={() => fileInputRef.current.click()} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginRight: 12 }}>Import Campaign</button>
+          <button onClick={handleExport} style={{ background: 'var(--button-success-bg)', color: 'var(--button-success-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Export Campaign</button>
           {imported && <span style={{ marginLeft: 12, color: '#6366f1' }}>Imported: {imported}</span>}
           {exported && <a href={exported} download="campaign.json" style={{ marginLeft: 12, color: '#22c55e', textDecoration: 'underline' }}>Download Export</a>}
         </div>
         {/* Analytics Dashboard */}
         <div style={{ marginBottom: 32 }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
-          <div style={{ fontSize: 15, color: '#23263a' }}>
+          <div style={{ fontSize: 15, color: 'var(--text-primary)' }}>
             {analytics.length ? (
               <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
             ) : (
@@ -123,7 +123,7 @@ export default function AbandonedCheckoutWinback() {
         {/* Activity Log */}
         <div style={{ marginBottom: 32 }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Activity Log</div>
-          <div style={{ fontSize: 15, color: '#23263a' }}>
+          <div style={{ fontSize: 15, color: 'var(--text-primary)' }}>
             {activityLog.length ? (
               <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(activityLog, null, 2)}</pre>
             ) : (
@@ -134,7 +134,7 @@ export default function AbandonedCheckoutWinback() {
         {/* Notification Center */}
         <div style={{ marginBottom: 32 }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Notification Center</div>
-          <div style={{ fontSize: 15, color: '#23263a' }}>
+          <div style={{ fontSize: 15, color: 'var(--text-primary)' }}>
             {notifications.length ? (
               <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(notifications, null, 2)}</pre>
             ) : (
@@ -143,17 +143,17 @@ export default function AbandonedCheckoutWinback() {
           </div>
         </div>
         {/* Feedback */}
-        <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#f8fafc', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+        <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: 'var(--background-secondary)', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
           <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
           <textarea
             value={feedback}
             onChange={e => setFeedback(e.target.value)}
             rows={3}
-            style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid #ccc', marginBottom: 12 }}
+            style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid var(--border-color)', marginBottom: 12 }}
             placeholder="Share your feedback or suggestions..."
             aria-label="Feedback"
           />
-          <button type="submit" style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Send Feedback</button>
+          <button type="submit" style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Send Feedback</button>
           {error && <div style={{ color: '#ef4444', marginTop: 8 }}>{error}</div>}
         </form>
         {/* Accessibility & Compliance */}
