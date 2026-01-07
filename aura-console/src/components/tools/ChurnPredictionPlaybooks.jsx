@@ -115,4 +115,5 @@ export default function ChurnPredictionPlaybooks() {
       </div>
     </div>
   );
+}
 
