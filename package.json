@@ -31,7 +31,7 @@
     "@testing-library/dom": "^10.4.1",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.5.0",
-    "body-parser": "^2.2.1",
+    "body-parser": "^2.2.2",
     "chart.js": "^4.5.1",
     "compression": "^1.8.1",
     "connect-redis": "^9.0.0",
