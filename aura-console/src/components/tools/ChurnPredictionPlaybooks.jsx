@@ -1,8 +1,6 @@
 
 import React, { useState, useRef } from "react";
 
-import React from "react";
-
 // Unique flagship UI for Churn Prediction Playbooks
 export default function ChurnPredictionPlaybooks() {
   // ...churn-specific state and handlers...
@@ -117,5 +115,4 @@ export default function ChurnPredictionPlaybooks() {
       </div>
     </div>
   );
-}
-}
+
