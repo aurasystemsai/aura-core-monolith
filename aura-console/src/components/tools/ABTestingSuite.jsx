@@ -74,7 +74,53 @@ export default function ABTestingSuite() {
           {/* Advanced targeting & segmentation */}
           <div style={{ marginBottom: 18 }}>
             <h4 style={{ fontWeight: 600, fontSize: 16 }}>Targeting & Segmentation</h4>
-            <div style={{ color: '#64748b', fontSize: 15 }}>Audience, device, geo, and behavioral targeting controls (coming soon).</div>
+            <div style={{ color: '#64748b', fontSize: 15, marginBottom: 8 }}>Define who will see this test. Combine multiple rules for precise targeting.</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {/* Audience Targeting */}
+              <div>
+                <label style={{ fontWeight: 500 }}>Audience:</label>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #334155' }}>
+                  <option>All Visitors</option>
+                  <option>Returning Customers</option>
+                  <option>First-time Visitors</option>
+                  <option>Logged-in Users</option>
+                  <option>Custom Segment...</option>
+                </select>
+              </div>
+              {/* Device Targeting */}
+              <div>
+                <label style={{ fontWeight: 500 }}>Device:</label>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #334155' }}>
+                  <option>All Devices</option>
+                  <option>Desktop</option>
+                  <option>Mobile</option>
+                  <option>Tablet</option>
+                </select>
+              </div>
+              {/* Geo Targeting */}
+              <div>
+                <label style={{ fontWeight: 500 }}>Location:</label>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #334155' }}>
+                  <option>All Countries</option>
+                  <option>United States</option>
+                  <option>Canada</option>
+                  <option>United Kingdom</option>
+                  <option>Australia</option>
+                  <option>Custom...</option>
+                </select>
+              </div>
+              {/* Behavioral Targeting */}
+              <div>
+                <label style={{ fontWeight: 500 }}>Behavior:</label>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #334155' }}>
+                  <option>All Users</option>
+                  <option>Cart Abandoners</option>
+                  <option>High Spenders</option>
+                  <option>Browsed 3+ Pages</option>
+                  <option>Custom...</option>
+                </select>
+              </div>
+            </div>
           </div>
           {/* Scheduling & automation */}
           <div style={{ marginBottom: 18 }}>
