@@ -27,7 +27,12 @@ export default function ABTestingSuite() {
             <li>Real-time analytics, AI insights, and reporting</li>
             <li>Collaboration, scheduling, versioning, and more</li>
             <li>Feature flag management, integrations, and security</li>
-    	  </div>
+          </ul>
+        </div>
+      )}
+
+      {/* --- Visual Test Builder & Controls --- */}
+      <section className="abtest-builder" style={{ display: 'flex', gap: 32, marginBottom: 40 }}>
         {/* Visual Editor */}
         <div style={{ flex: 2, background: '#181f2a', borderRadius: 16, padding: 28, minHeight: 420 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 18 }}>Visual Test Builder</h3>
