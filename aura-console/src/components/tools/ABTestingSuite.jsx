@@ -140,7 +140,4 @@ export default function ABTestingSuite() {
     </div>
   );
 }
-          placeholder="Share your feedback or suggestions..."
-
-          aria-label="Feedback"
 
