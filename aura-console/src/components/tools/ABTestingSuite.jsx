@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { apiFetch } from "../../api";
 
 // --- Flagship A/B Testing Suite ---
 export default function ABTestingSuite() {
@@ -32,6 +33,28 @@ export default function ABTestingSuite() {
   }, []);
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
+  const [aiSuggestions, setAiSuggestions] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+    // AI-powered variant suggestions
+    async function getAiSuggestions() {
+      setAiLoading(true);
+      setError("");
+      setAiSuggestions(null);
+      try {
+        const query = `Suggest optimal variants for an A/B test named '${testName}' with current variants: ${variants.map(v => v.name + ': ' + v.content).join('; ')}`;
+        const res = await apiFetch("/api/ab-testing-suite/query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query })
+        });
+        const data = await res.json();
+        if (data.ok) setAiSuggestions(data.result);
+        else setError(data.error || "AI suggestion failed");
+      } catch (e) {
+        setError(e.message || "AI suggestion failed");
+      }
+      setAiLoading(false);
+    }
   const fileInputRef = useRef();
 
   // --- Main UI Layout ---
@@ -59,6 +82,18 @@ export default function ABTestingSuite() {
 
       {/* --- Visual Test Builder & Controls --- */}
       <section className="abtest-builder" style={{ display: 'flex', gap: 32, marginBottom: 40 }}>
+        <div style={{ marginBottom: 18 }}>
+          <button className="btn btn-secondary" onClick={getAiSuggestions} disabled={aiLoading} title="Get AI-powered variant suggestions and optimization tips">
+            {aiLoading ? 'Getting Suggestions…' : 'AI: Suggest Variants & Optimize'}
+          </button>
+          {aiSuggestions && (
+            <div style={{ background: '#232b3a', color: '#38bdf8', borderRadius: 8, padding: 14, marginTop: 10, whiteSpace: 'pre-line', fontSize: 15 }}>
+              <strong>AI Suggestions:</strong>
+              <div>{aiSuggestions}</div>
+            </div>
+          )}
+          {error && <div style={{ color: '#ef4444', marginTop: 8 }}>{error}</div>}
+        </div>
         {/* Visual Editor with live preview and drag-and-drop shell */}
         <div style={{ flex: 2, background: '#181f2a', borderRadius: 16, padding: 28, minHeight: 420 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 18 }}>Visual Test Builder</h3>
