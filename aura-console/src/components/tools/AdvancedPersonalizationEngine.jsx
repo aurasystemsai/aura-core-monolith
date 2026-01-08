@@ -1,7 +1,16 @@
+import AdvancedPersonalizationAnomalyBanner from './AdvancedPersonalizationAnomalyBanner';
 import React from "react";
+import AdvancedPersonalizationAnalyticsChart from './AdvancedPersonalizationAnalyticsChart';
+import useAdvancedPersonalizationSocket from './AdvancedPersonalizationSocket';
 
 export default function AdvancedPersonalizationEngine() {
   // Flagship UI state
+  useAdvancedPersonalizationSocket(data => {
+    if (!data || !data.type) return;
+    if (data.type === 'analytics') setAnalytics(a => [data.payload, ...a]);
+    if (data.type === 'rules') setRules(r => [data.payload, ...r]);
+    if (data.type === 'notification') setRecommendations(n => [data.payload, ...n]);
+  });
   const [showOnboarding, setShowOnboarding] = React.useState(true);
   const [rules, setRules] = React.useState([]);
   const [recommendations, setRecommendations] = React.useState([]);
@@ -102,13 +111,8 @@ export default function AdvancedPersonalizationEngine() {
       {/* Analytics Dashboard */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
-        <div style={{ fontSize: 15, color: '#23263a' }}>
-          {analytics.length ? (
-            <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
-          ) : (
-            <span>No analytics yet. Add rules to see results.</span>
-          )}
-        </div>
+        <AdvancedPersonalizationAnomalyBanner analytics={analytics} />
+        <AdvancedPersonalizationAnalyticsChart data={analytics} />
       </div>
       {/* Feedback */}
       <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#f8fafc', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
@@ -126,7 +130,16 @@ export default function AdvancedPersonalizationEngine() {
       </form>
       {/* Accessibility & Compliance */}
       <div style={{ marginTop: 32, fontSize: 13, color: '#64748b', textAlign: 'center' }}>
-        <span>Best-in-class SaaS features. Accessibility: WCAG 2.1, keyboard navigation, color contrast. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
+        <span>Best-in-class SaaS features. Accessibility: WCAG 2.1, keyboard navigation, color contrast.<br />
+          <button onClick={async () => {
+            await fetch('/api/advanced-personalization-engine/compliance/export', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: 'demo-user' }) });
+            alert('Data export request submitted.');
+          }} style={{ margin: '0 8px', background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '4px 12px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Request Data Export</button>
+          <button onClick={async () => {
+            await fetch('/api/advanced-personalization-engine/compliance/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: 'demo-user' }) });
+            alert('Data deletion request submitted.');
+          }} style={{ margin: '0 8px', background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '4px 12px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Request Data Deletion</button>
+          Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
       </div>
     </div>
   );
