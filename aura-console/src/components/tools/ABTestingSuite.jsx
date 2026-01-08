@@ -8,6 +8,20 @@ export default function ABTestingSuite() {
   const [testName, setTestName] = useState("");
   const [variants, setVariants] = useState([{ name: "A", content: "" }, { name: "B", content: "" }]);
   const [analytics, setAnalytics] = useState([]);
+  const [variantSummary, setVariantSummary] = useState({});
+    // Fetch analytics summary (conversions, revenue per variant)
+    useEffect(() => {
+      async function fetchSummary() {
+        try {
+          const res = await apiFetch("/api/ab-testing-suite/analytics/summary");
+          const data = await res.json();
+          if (data.ok) setVariantSummary(data.summary || {});
+        } catch (e) {}
+      }
+      fetchSummary();
+      const interval = setInterval(fetchSummary, 10000); // refresh every 10s
+      return () => clearInterval(interval);
+    }, []);
   const [liveUpdate, setLiveUpdate] = useState(null);
 
   // WebSocket for real-time experiment updates
@@ -221,6 +235,27 @@ export default function ABTestingSuite() {
             <span role="img" aria-label="Live">🔴</span> Live Update: {typeof liveUpdate === 'string' ? liveUpdate : JSON.stringify(liveUpdate)}
           </div>
         )}
+        <div style={{ marginBottom: 18 }}>
+          <strong>Variant Performance (Live):</strong>
+          <table style={{ width: '100%', marginTop: 8, background: '#232b3a', borderRadius: 8, color: '#e0e6ed', fontSize: 15 }}>
+            <thead>
+              <tr style={{ color: '#38bdf8' }}>
+                <th style={{ padding: 6 }}>Variant</th>
+                <th style={{ padding: 6 }}>Conversions</th>
+                <th style={{ padding: 6 }}>Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              {variants.map((v, i) => (
+                <tr key={v.name}>
+                  <td style={{ padding: 6 }}>{v.name}</td>
+                  <td style={{ padding: 6 }}>{variantSummary[v.name]?.conversions || 0}</td>
+                  <td style={{ padding: 6 }}>${variantSummary[v.name]?.revenue?.toFixed(2) || '0.00'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 18 }}>Analytics & Insights</h3>
         <div style={{ display: 'flex', gap: 32 }}>
           {/* Conversion Rate Chart */}

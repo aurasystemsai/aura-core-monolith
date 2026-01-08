@@ -1,3 +1,43 @@
+// Shopify order fetch and revenue attribution
+router.post("/shopify/orders", async (req, res) => {
+  // Expects { shop, token, startDate, endDate, variantIds }
+  try {
+    const { shop, token, startDate, endDate, variantIds } = req.body;
+    if (!shop || !token) return res.status(400).json({ ok: false, error: "Missing shop or token" });
+    // TODO: Implement Shopify API call to fetch orders and attribute revenue to variants
+    // For now, return mock data
+    res.json({ ok: true, orders: [], revenueByVariant: variantIds ? variantIds.map(id => ({ id, revenue: Math.random() * 1000 })) : [] });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Analytics event tracking for conversions and revenue per variant
+let analyticsEvents = [];
+router.post("/analytics/event", (req, res) => {
+  try {
+    const { variantId, eventType, value, ts } = req.body;
+    if (!variantId || !eventType) return res.status(400).json({ ok: false, error: "Missing variantId or eventType" });
+    analyticsEvents.push({ variantId, eventType, value, ts: ts || Date.now() });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+router.get("/analytics/summary", (req, res) => {
+  try {
+    // Summarize conversions and revenue by variant
+    const summary = {};
+    analyticsEvents.forEach(ev => {
+      if (!summary[ev.variantId]) summary[ev.variantId] = { conversions: 0, revenue: 0 };
+      if (ev.eventType === 'conversion') summary[ev.variantId].conversions += 1;
+      if (ev.eventType === 'revenue') summary[ev.variantId].revenue += Number(ev.value) || 0;
+    });
+    res.json({ ok: true, summary });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 const express = require("express");
 const router = express.Router();
 const { handleABTestQuery } = require("./abTestingSuiteService");
