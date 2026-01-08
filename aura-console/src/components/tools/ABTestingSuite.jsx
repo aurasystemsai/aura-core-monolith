@@ -120,5 +120,6 @@ export default function ABTestingSuite() {
       </div>
     </div>
   );
+}
 
 
