@@ -1,4 +1,5 @@
 import { exportCampaignPDF } from './WinbackExportPDF';
+import { apiFetch } from '../../api';
 import WinbackAnomalyBanner from './WinbackAnomalyBanner';
 import React, { useState, useEffect } from 'react';
 import useWinbackSocket from './AbandonedCheckoutWinbackSocket';
@@ -48,7 +49,7 @@ export default function AbandonedCheckoutWinback() {
   const handleAIGenerate = async () => {
     setAiLoading(true); setAiError("");
     try {
-      const resp = await fetch("/api/abandoned-checkout-winback/ai/content", {
+      const resp = await apiFetch("/api/abandoned-checkout-winback/ai/content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -89,7 +90,7 @@ export default function AbandonedCheckoutWinback() {
     if (!feedback) return;
     setError("");
     try {
-      await fetch("/api/abandoned-checkout-winback/feedback", {
+      await apiFetch("/api/abandoned-checkout-winback/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ feedback })
@@ -188,11 +189,11 @@ export default function AbandonedCheckoutWinback() {
         <div style={{ marginTop: 32, fontSize: 13, color: '#64748b', textAlign: 'center' }}>
           <span>Best-in-class SaaS features. Accessibility: WCAG 2.1, keyboard navigation, color contrast.<br />
             <button onClick={async () => {
-              await fetch('/api/abandoned-checkout-winback/compliance/export', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: 'demo-user' }) });
+              await apiFetch('/api/abandoned-checkout-winback/compliance/export', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: 'demo-user' }) });
               alert('Data export request submitted.');
             }} style={{ margin: '0 8px', background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '4px 12px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Request Data Export</button>
             <button onClick={async () => {
-              await fetch('/api/abandoned-checkout-winback/compliance/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: 'demo-user' }) });
+              await apiFetch('/api/abandoned-checkout-winback/compliance/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: 'demo-user' }) });
               alert('Data deletion request submitted.');
             }} style={{ margin: '0 8px', background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '4px 12px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Request Data Deletion</button>
             Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
