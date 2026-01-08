@@ -138,9 +138,40 @@ export default function ABTestingSuite() {
       {/* --- Analytics & Insights --- */}
       <section className="abtest-analytics" style={{ background: '#181f2a', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 18 }}>Analytics & Insights</h3>
-        {/* Real-time charts, stats, AI insights */}
-        <div style={{ color: '#64748b', fontSize: 17, minHeight: 80 }}>
-          <span>Real-time analytics, charts, and AI-powered insights coming soon.</span>
+        <div style={{ display: 'flex', gap: 32 }}>
+          {/* Conversion Rate Chart */}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>Conversion Rate</div>
+            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
+              {/* Placeholder for chart */}
+              <svg width="100%" height="60" style={{ background: 'none' }}>
+                <rect x="10" y="30" width="40" height="20" fill="#0ea5e9" />
+                <rect x="60" y="20" width="40" height="30" fill="#38bdf8" />
+              </svg>
+              <div style={{ fontSize: 15, marginTop: 8 }}>A: 12.4% &nbsp; B: 15.8%</div>
+            </div>
+          </div>
+          {/* Engagement Chart */}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>Engagement</div>
+            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
+              {/* Placeholder for chart */}
+              <svg width="100%" height="60" style={{ background: 'none' }}>
+                <circle cx="30" cy="30" r="18" fill="#0ea5e9" />
+                <circle cx="80" cy="30" r="14" fill="#38bdf8" />
+              </svg>
+              <div style={{ fontSize: 15, marginTop: 8 }}>A: 1.2k &nbsp; B: 1.6k</div>
+            </div>
+          </div>
+          {/* AI Insights */}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>AI Insights</div>
+            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
+              <div><strong>Winner:</strong> Variant B (statistically significant)</div>
+              <div style={{ marginTop: 6 }}>B outperformed A by 3.4% conversion and 400 more engagements.</div>
+              <div style={{ marginTop: 6, color: '#38bdf8' }}>Recommendation: Roll out Variant B to 100% of users.</div>
+            </div>
+          </div>
         </div>
       </section>
 
