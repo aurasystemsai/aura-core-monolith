@@ -178,9 +178,37 @@ export default function ABTestingSuite() {
       {/* --- Collaboration, Comments, Versioning --- */}
       <section className="abtest-collab" style={{ background: '#1e2633', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 14 }}>Collaboration & Version History</h3>
-        {/* Comments, approvals, activity log, rollback */}
-        <div style={{ color: '#64748b', fontSize: 16, minHeight: 60 }}>
-          <span>Collaboration tools, approvals, and version history coming soon.</span>
+        <div style={{ display: 'flex', gap: 32 }}>
+          {/* Comments & Approvals */}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>Comments & Approvals</div>
+            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
+              <div style={{ marginBottom: 8 }}><strong>Jane:</strong> "Ready for launch?" <span style={{ color: '#38bdf8', fontSize: 13 }}>2m ago</span></div>
+              <div style={{ marginBottom: 8 }}><strong>Alex:</strong> "Approved. Roll out to 50%." <span style={{ color: '#0ea5e9', fontSize: 13 }}>1m ago</span></div>
+              <form style={{ marginTop: 12 }}>
+                <input type="text" placeholder="Add a comment..." style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', fontSize: 15 }} />
+                <button type="submit" className="btn btn-secondary" style={{ marginTop: 6, width: '100%' }}>Comment</button>
+              </form>
+            </div>
+          </div>
+          {/* Activity Log */}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>Activity Log</div>
+            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
+              <div>✔️ Test created by Jane <span style={{ color: '#38bdf8', fontSize: 13 }}>5m ago</span></div>
+              <div>✔️ Variant B edited by Alex <span style={{ color: '#38bdf8', fontSize: 13 }}>3m ago</span></div>
+              <div>✔️ Approved by Alex <span style={{ color: '#0ea5e9', fontSize: 13 }}>1m ago</span></div>
+            </div>
+          </div>
+          {/* Rollback & Versioning */}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>Rollback & Versioning</div>
+            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
+              <div><strong>Current Version:</strong> v1.2</div>
+              <div style={{ marginTop: 8 }}>Previous: <button className="btn btn-tertiary" style={{ fontSize: 14, marginRight: 8 }}>v1.1</button> <button className="btn btn-tertiary" style={{ fontSize: 14 }}>v1.0</button></div>
+              <div style={{ marginTop: 10, color: '#38bdf8' }}>Restore a previous version instantly.</div>
+            </div>
+          </div>
         </div>
       </section>
 
