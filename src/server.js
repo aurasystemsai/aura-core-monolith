@@ -293,19 +293,8 @@ process.on('uncaughtException', (err) => {
 // --- Graceful Shutdown ---
 let server;
 
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(
-      `[Core] AURA Core API running on port ${PORT}\n` +
-        `==> Available at ${
-          process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`
-        }\n`
-    );
 
-    // Start background retry worker
-    startFixQueueWorker();
-  });
-}
+// (Server start logic moved to the bottom, using http.createServer only)
 
 
 // Protect all /api routes (except health) with API key
