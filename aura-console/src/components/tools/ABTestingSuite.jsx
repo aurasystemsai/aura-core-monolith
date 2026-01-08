@@ -15,12 +15,15 @@ export default function ABTestingSuite() {
   return (
     <div className="abtest-flagship" style={{ maxWidth: 1400, margin: '0 auto', padding: 32 }}>
       <div className="abtest-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h2 style={{ fontWeight: 800, fontSize: 36 }}>A/B Testing Suite</h2>
+        <h2 style={{ fontWeight: 800, fontSize: 36 }}>
+          A/B Testing Suite
+          <span title="Flagship enterprise-grade A/B testing tool. Every feature is best-in-class." style={{ marginLeft: 10, fontSize: 22, color: '#38bdf8', cursor: 'help' }}>ⓘ</span>
+        </h2>
         <button onClick={() => setShowOnboarding(v => !v)} className="btn btn-secondary">{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       </div>
       {showOnboarding && (
         <div className="abtest-onboarding">
-          <h3>Welcome to the Flagship A/B Testing Suite</h3>
+          <h3>Welcome to the Flagship A/B Testing Suite <span title="Get started by building your first test. Use the visual builder and advanced controls below." style={{ color: '#38bdf8', fontSize: 18, marginLeft: 6, cursor: 'help' }}>ⓘ</span></h3>
           <ul>
             <li>Visual test builder (drag-and-drop, WYSIWYG)</li>
             <li>Advanced targeting, segmentation, and personalization</li>
@@ -39,7 +42,10 @@ export default function ABTestingSuite() {
           <div style={{ display: 'flex', gap: 18 }}>
             {/* Variant List */}
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 600, marginBottom: 8 }}>Variants</div>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>
+                Variants
+                <span title="Create multiple variants to test. Each variant can have different content, design, or logic." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
+              </div>
               {variants.map((v, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                   <input value={v.name} onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, name: e.target.value } : vv))} placeholder={`Variant ${String.fromCharCode(65 + i)}`} style={{ fontSize: 15, padding: 8, borderRadius: 8, border: '1px solid #334155', width: 90 }} aria-label={`Variant ${String.fromCharCode(65 + i)}`} />
@@ -50,7 +56,10 @@ export default function ABTestingSuite() {
             </div>
             {/* Drag-and-drop/Preview Area */}
             <div style={{ flex: 2, minHeight: 220, border: '2px dashed #334155', borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#20293a' }}>
-              <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Live Preview</div>
+              <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>
+                Live Preview
+                <span title="See how each variant will look and behave. Edit content live." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
+              </div>
               <div style={{ display: 'flex', gap: 12, width: '100%' }}>
                 {variants.map((v, i) => (
                   <div key={i} style={{ flex: 1, background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, marginBottom: 8, boxShadow: '0 2px 8px #0002' }}>
@@ -69,11 +78,17 @@ export default function ABTestingSuite() {
         </div>
         {/* Test Details, Targeting, Scheduling, Feature Flags */}
         <div style={{ flex: 1, background: '#1e2633', borderRadius: 16, padding: 28 }}>
-          <h4 style={{ fontWeight: 700, fontSize: 18, marginBottom: 12 }}>Test Details</h4>
+          <h4 style={{ fontWeight: 700, fontSize: 18, marginBottom: 12 }}>
+            Test Details
+            <span title="Name your test for easy tracking and reporting." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
+          </h4>
           <input value={testName} onChange={e => setTestName(e.target.value)} placeholder="Test name" style={{ fontSize: 16, padding: 10, borderRadius: 8, border: '1px solid #334155', width: '100%', marginBottom: 16 }} aria-label="Test name" />
           {/* Advanced targeting & segmentation */}
           <div style={{ marginBottom: 18 }}>
-            <h4 style={{ fontWeight: 600, fontSize: 16 }}>Targeting & Segmentation</h4>
+            <h4 style={{ fontWeight: 600, fontSize: 16 }}>
+              Targeting & Segmentation
+              <span title="Choose who will see this test. Combine audience, device, geo, and behavioral rules for precision." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
+            </h4>
             <div style={{ color: '#64748b', fontSize: 15, marginBottom: 8 }}>Define who will see this test. Combine multiple rules for precise targeting.</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {/* Audience Targeting */}
@@ -124,12 +139,18 @@ export default function ABTestingSuite() {
           </div>
           {/* Scheduling & automation */}
           <div style={{ marginBottom: 18 }}>
-            <h4 style={{ fontWeight: 600, fontSize: 16 }}>Scheduling & Automation</h4>
+            <h4 style={{ fontWeight: 600, fontSize: 16 }}>
+              Scheduling & Automation
+              <span title="Set start/end dates and automate experiment workflows." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
+            </h4>
             <div style={{ color: '#64748b', fontSize: 15 }}>Set start/end dates, automate experiment workflows (coming soon).</div>
           </div>
           {/* Feature flag management & rollouts */}
           <div style={{ marginBottom: 18 }}>
-            <h4 style={{ fontWeight: 600, fontSize: 16 }}>Feature Flags & Rollouts</h4>
+            <h4 style={{ fontWeight: 600, fontSize: 16 }}>
+              Feature Flags & Rollouts
+              <span title="Manage progressive rollouts and feature toggles for safe deployments." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
+            </h4>
             <div style={{ color: '#64748b', fontSize: 15 }}>Progressive rollouts, feature toggles, and flag controls (coming soon).</div>
           </div>
         </div>
