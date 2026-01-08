@@ -11,40 +11,47 @@ export default function ABTestingSuite() {
   const [error, setError] = useState("");
   const fileInputRef = useRef();
 
-  // Placeholder: Onboarding
-  const onboardingContent = (
-    <div className="abtest-onboarding">
-      <h3>Welcome to the Flagship A/B Testing Suite</h3>
-      <ul>
-        <li>Visual test builder (drag-and-drop, WYSIWYG)</li>
-        <li>Advanced targeting, segmentation, and personalization</li>
-        <li>Real-time analytics, AI insights, and reporting</li>
-        <li>Collaboration, scheduling, versioning, and more</li>
-      </ul>
-      <button onClick={() => setShowOnboarding(false)} className="btn btn-primary">Get Started</button>
-    </div>
-  );
-
   // --- Main UI Layout ---
   return (
-    <div className="abtest-flagship" style={{ maxWidth: 1300, margin: '0 auto', padding: 32 }}>
+    <div className="abtest-flagship" style={{ maxWidth: 1400, margin: '0 auto', padding: 32 }}>
       <div className="abtest-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <h2 style={{ fontWeight: 800, fontSize: 36 }}>A/B Testing Suite</h2>
         <button onClick={() => setShowOnboarding(v => !v)} className="btn btn-secondary">{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       </div>
-      {showOnboarding && onboardingContent}
+      {showOnboarding && (
+        <div className="abtest-onboarding">
+          <h3>Welcome to the Flagship A/B Testing Suite</h3>
+          <ul>
+            <li>Visual test builder (drag-and-drop, WYSIWYG)</li>
+            <li>Advanced targeting, segmentation, and personalization</li>
+            <li>Real-time analytics, AI insights, and reporting</li>
+            <li>Collaboration, scheduling, versioning, and more</li>
+            <li>Feature flag management, integrations, and security</li>
+          </ul>
+          <button onClick={() => setShowOnboarding(false)} className="btn btn-primary">Get Started</button>
+        </div>
+      )}
 
-      {/* --- Visual Test Builder Shell --- */}
+      {/* --- Visual Test Builder & Controls --- */}
       <section className="abtest-builder" style={{ display: 'flex', gap: 32, marginBottom: 40 }}>
-        {/* Left: Visual Editor (placeholder) */}
+        {/* Visual Editor */}
         <div style={{ flex: 2, background: '#181f2a', borderRadius: 16, padding: 28, minHeight: 420 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 18 }}>Visual Test Builder</h3>
-          <div style={{ border: '2px dashed #334155', borderRadius: 12, minHeight: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 18 }}>
-            {/* TODO: Drag-and-drop WYSIWYG editor goes here */}
+          <div style={{ border: '2px dashed #334155', borderRadius: 12, minHeight: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 18, marginBottom: 18 }}>
             <span>Drag and drop elements, edit variants, and preview changes here (coming soon)</span>
           </div>
+          {/* Multi-metric & multi-goal support */}
+          <div style={{ marginBottom: 18 }}>
+            <h4 style={{ fontWeight: 600, fontSize: 16 }}>Goals & Metrics</h4>
+            <div style={{ color: '#64748b', fontSize: 15 }}>Define multiple goals and metrics for this experiment (coming soon).</div>
+          </div>
+          {/* Version history & rollback */}
+          <div style={{ marginBottom: 18 }}>
+            <h4 style={{ fontWeight: 600, fontSize: 16 }}>Version History</h4>
+            <div style={{ color: '#64748b', fontSize: 15 }}>View, compare, and rollback experiment versions (coming soon).</div>
+          </div>
         </div>
-        {/* Right: Test Details & Controls */}
+        {/* Test Details, Targeting, Scheduling, Feature Flags */}
         <div style={{ flex: 1, background: '#1e2633', borderRadius: 16, padding: 28 }}>
           <h4 style={{ fontWeight: 700, fontSize: 18, marginBottom: 12 }}>Test Details</h4>
           <input value={testName} onChange={e => setTestName(e.target.value)} placeholder="Test name" style={{ fontSize: 16, padding: 10, borderRadius: 8, border: '1px solid #334155', width: '100%', marginBottom: 16 }} aria-label="Test name" />
@@ -58,9 +65,20 @@ export default function ABTestingSuite() {
             ))}
             <button onClick={() => setVariants([...variants, { name: `Variant ${String.fromCharCode(65 + variants.length)}`, content: "" }])} className="btn btn-tertiary" style={{ marginTop: 6 }}>Add Variant</button>
           </div>
-          {/* TODO: Advanced targeting, scheduling, segmentation controls */}
-          <div style={{ marginTop: 18, color: '#64748b', fontSize: 14 }}>
-            <span>Advanced targeting, scheduling, and segmentation coming soon.</span>
+          {/* Advanced targeting & segmentation */}
+          <div style={{ marginBottom: 18 }}>
+            <h4 style={{ fontWeight: 600, fontSize: 16 }}>Targeting & Segmentation</h4>
+            <div style={{ color: '#64748b', fontSize: 15 }}>Audience, device, geo, and behavioral targeting controls (coming soon).</div>
+          </div>
+          {/* Scheduling & automation */}
+          <div style={{ marginBottom: 18 }}>
+            <h4 style={{ fontWeight: 600, fontSize: 16 }}>Scheduling & Automation</h4>
+            <div style={{ color: '#64748b', fontSize: 15 }}>Set start/end dates, automate experiment workflows (coming soon).</div>
+          </div>
+          {/* Feature flag management & rollouts */}
+          <div style={{ marginBottom: 18 }}>
+            <h4 style={{ fontWeight: 600, fontSize: 16 }}>Feature Flags & Rollouts</h4>
+            <div style={{ color: '#64748b', fontSize: 15 }}>Progressive rollouts, feature toggles, and flag controls (coming soon).</div>
           </div>
         </div>
       </section>
@@ -68,7 +86,7 @@ export default function ABTestingSuite() {
       {/* --- Analytics & Insights --- */}
       <section className="abtest-analytics" style={{ background: '#181f2a', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 18 }}>Analytics & Insights</h3>
-        {/* TODO: Real-time charts, stats, AI insights */}
+        {/* Real-time charts, stats, AI insights */}
         <div style={{ color: '#64748b', fontSize: 17, minHeight: 80 }}>
           <span>Real-time analytics, charts, and AI-powered insights coming soon.</span>
         </div>
@@ -77,9 +95,25 @@ export default function ABTestingSuite() {
       {/* --- Collaboration, Comments, Versioning --- */}
       <section className="abtest-collab" style={{ background: '#1e2633', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 14 }}>Collaboration & Version History</h3>
-        {/* TODO: Comments, approvals, activity log, rollback */}
+        {/* Comments, approvals, activity log, rollback */}
         <div style={{ color: '#64748b', fontSize: 16, minHeight: 60 }}>
           <span>Collaboration tools, approvals, and version history coming soon.</span>
+        </div>
+      </section>
+
+      {/* --- Integrations & API --- */}
+      <section className="abtest-integrations" style={{ background: '#181f2a', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 14 }}>Integrations & API</h3>
+        <div style={{ color: '#64748b', fontSize: 16, minHeight: 60 }}>
+          <span>Integrations with analytics, CDPs, webhooks, and API access coming soon.</span>
+        </div>
+      </section>
+
+      {/* --- Security, Compliance, Accessibility --- */}
+      <section className="abtest-security" style={{ background: '#1e2633', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 14 }}>Security, Compliance & Accessibility</h3>
+        <div style={{ color: '#64748b', fontSize: 16, minHeight: 60 }}>
+          <span>SSO, RBAC, audit logs, GDPR/CCPA/HIPAA, and accessibility dashboards coming soon.</span>
         </div>
       </section>
 
