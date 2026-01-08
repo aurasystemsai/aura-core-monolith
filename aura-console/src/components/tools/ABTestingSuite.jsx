@@ -33,37 +33,44 @@ export default function ABTestingSuite() {
 
       {/* --- Visual Test Builder & Controls --- */}
       <section className="abtest-builder" style={{ display: 'flex', gap: 32, marginBottom: 40 }}>
-        {/* Visual Editor */}
+        {/* Visual Editor with live preview and drag-and-drop shell */}
         <div style={{ flex: 2, background: '#181f2a', borderRadius: 16, padding: 28, minHeight: 420 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 18 }}>Visual Test Builder</h3>
-          <div style={{ border: '2px dashed #334155', borderRadius: 12, minHeight: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 18, marginBottom: 18 }}>
-            <span>Drag and drop elements, edit variants, and preview changes here (coming soon)</span>
-          </div>
-          {/* Multi-metric & multi-goal support */}
-          <div style={{ marginBottom: 18 }}>
-            <h4 style={{ fontWeight: 600, fontSize: 16 }}>Goals & Metrics</h4>
-            <div style={{ color: '#64748b', fontSize: 15 }}>Define multiple goals and metrics for this experiment (coming soon).</div>
-          </div>
-          {/* Version history & rollback */}
-          <div style={{ marginBottom: 18 }}>
-            <h4 style={{ fontWeight: 600, fontSize: 16 }}>Version History</h4>
-            <div style={{ color: '#64748b', fontSize: 15 }}>View, compare, and rollback experiment versions (coming soon).</div>
+          <div style={{ display: 'flex', gap: 18 }}>
+            {/* Variant List */}
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>Variants</div>
+              {variants.map((v, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                  <input value={v.name} onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, name: e.target.value } : vv))} placeholder={`Variant ${String.fromCharCode(65 + i)}`} style={{ fontSize: 15, padding: 8, borderRadius: 8, border: '1px solid #334155', width: 90 }} aria-label={`Variant ${String.fromCharCode(65 + i)}`} />
+                  <button onClick={() => setVariants(variants.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', color: '#ef4444', fontWeight: 700, fontSize: 18, cursor: 'pointer' }} title="Remove">×</button>
+                </div>
+              ))}
+              <button onClick={() => setVariants([...variants, { name: `Variant ${String.fromCharCode(65 + variants.length)}`, content: "" }])} className="btn btn-tertiary" style={{ marginTop: 6, width: '100%' }}>Add Variant</button>
+            </div>
+            {/* Drag-and-drop/Preview Area */}
+            <div style={{ flex: 2, minHeight: 220, border: '2px dashed #334155', borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#20293a' }}>
+              <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Live Preview</div>
+              <div style={{ display: 'flex', gap: 12, width: '100%' }}>
+                {variants.map((v, i) => (
+                  <div key={i} style={{ flex: 1, background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, marginBottom: 8, boxShadow: '0 2px 8px #0002' }}>
+                    <div style={{ fontWeight: 700, marginBottom: 6 }}>{v.name}</div>
+                    <textarea
+                      value={v.content}
+                      onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, content: e.target.value } : vv))}
+                      placeholder="Variant content (HTML, text, etc.)"
+                      style={{ width: '100%', minHeight: 60, borderRadius: 6, border: '1px solid #334155', padding: 8, fontSize: 15, background: '#1a2230', color: '#e0e6ed' }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
         {/* Test Details, Targeting, Scheduling, Feature Flags */}
         <div style={{ flex: 1, background: '#1e2633', borderRadius: 16, padding: 28 }}>
           <h4 style={{ fontWeight: 700, fontSize: 18, marginBottom: 12 }}>Test Details</h4>
           <input value={testName} onChange={e => setTestName(e.target.value)} placeholder="Test name" style={{ fontSize: 16, padding: 10, borderRadius: 8, border: '1px solid #334155', width: '100%', marginBottom: 16 }} aria-label="Test name" />
-          <div style={{ marginBottom: 18 }}>
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>Variants</div>
-            {variants.map((v, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                <input value={v.name} onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, name: e.target.value } : vv))} placeholder={`Variant ${String.fromCharCode(65 + i)}`} style={{ fontSize: 15, padding: 8, borderRadius: 8, border: '1px solid #334155', width: 90 }} aria-label={`Variant ${String.fromCharCode(65 + i)}`} />
-                <input value={v.content} onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, content: e.target.value } : vv))} placeholder="Content/URL" style={{ fontSize: 15, padding: 8, borderRadius: 8, border: '1px solid #334155', flex: 1 }} aria-label="Variant content" />
-              </div>
-            ))}
-            <button onClick={() => setVariants([...variants, { name: `Variant ${String.fromCharCode(65 + variants.length)}`, content: "" }])} className="btn btn-tertiary" style={{ marginTop: 6 }}>Add Variant</button>
-          </div>
           {/* Advanced targeting & segmentation */}
           <div style={{ marginBottom: 18 }}>
             <h4 style={{ fontWeight: 600, fontSize: 16 }}>Targeting & Segmentation</h4>
