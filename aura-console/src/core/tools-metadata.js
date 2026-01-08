@@ -1,42 +1,9 @@
-// aura-console/src/core/tools-metadata.js
-// ------------------------------------------
-// Static metadata for AURA tools used by the
-// Automation Console UI.
-// ------------------------------------------
+// DEPRECATED: This file is no longer used. All tool metadata is now managed in aura-console/src/toolMeta.js
 
-export const TOOLS_METADATA = [
-  // --- SEO / CRO ---
+const TOOLS_METADATA = [
   {
-    id: "product-seo",
-    name: "Product SEO Engine",
-    category: "SEO",
-    tag: "SEO",
-    description:
-      "Generate SEO titles, descriptions, slugs and keywords for products.",
-    examplePayload: {
-      productTitle: "Waterproof gold huggie earrings",
-      productDescription:
-        "Demi-fine waterproof huggie hoops in 18k gold, everyday wear.",
-      brand: "DTP Jewellry",
-      tone: "elevated, modern, UK English",
-    },
-  },
-  {
-    id: "review-ugc-engine",
-    name: "Review & UGC Engine",
-    category: "CRO / Social Proof",
-    tag: "CRO / SOCIAL PROOF",
-    description:
-      "Generate on-brand customer reviews, UGC snippets and social proof.",
-    examplePayload: {
-      productTitle: "Waterproof layered necklace",
-      brand: "DTP Jewellry",
-      useCases: ["gym", "shower", "holiday"],
-    },
-  },
-  {
-    id: "ai-alt-text-engine",
-    name: "AI Alt-Text Engine",
+    id: "image-alt-text-engine",
+    name: "Image Alt Text Engine",
     category: "SEO",
     tag: "SEO",
     description:
@@ -75,7 +42,6 @@ export const TOOLS_METADATA = [
       sourceUrl: "https://dtpjewellry.com/products/waterproof-hoops",
     },
   },
-
   // --- Finance / Ops ---
   {
     id: "finance-autopilot",
@@ -114,7 +80,6 @@ export const TOOLS_METADATA = [
       reorderQty: 150,
     },
   },
-
   // --- Email / Flows ---
   {
     id: "abandoned-checkout-winback",
@@ -154,7 +119,6 @@ export const TOOLS_METADATA = [
       platform: "klaviyo",
     },
   },
-
   // --- Support / Ops AI ---
   {
     id: "ai-support-assistant",
@@ -203,7 +167,6 @@ export const TOOLS_METADATA = [
       brand: "DTP Jewellry",
     },
   },
-
   // --- Brand / Strategy / Insights ---
   {
     id: "auto-insights",
@@ -275,7 +238,6 @@ export const TOOLS_METADATA = [
       channels: ["meta", "google", "email"],
     },
   },
-
   // --- Developers / Core ---
   {
     id: "aura-api-sdk",
