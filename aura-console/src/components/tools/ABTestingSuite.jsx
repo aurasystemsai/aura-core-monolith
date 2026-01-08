@@ -76,6 +76,19 @@ export default function ABTestingSuite() {
   // --- Main UI Layout ---
   return (
     <div className="abtest-flagship" style={{ maxWidth: 1400, margin: '0 auto', padding: 32 }}>
+      <style>{`
+        @media (max-width: 900px) {
+          .abtest-flagship { padding: 10px !important; }
+          .abtest-header { flex-direction: column !important; gap: 10px !important; }
+          .abtest-builder { flex-direction: column !important; gap: 18px !important; }
+          .abtest-analytics, .abtest-collab, .abtest-integrations, .abtest-security, .abtest-feedback { padding: 14px !important; }
+        }
+        @media (max-width: 600px) {
+          .abtest-flagship { padding: 2px !important; }
+          .abtest-header h2 { font-size: 22px !important; }
+          .abtest-builder, .abtest-analytics, .abtest-collab, .abtest-integrations, .abtest-security, .abtest-feedback { border-radius: 6px !important; }
+        }
+      `}</style>
       <div className="abtest-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <h2 style={{ fontWeight: 800, fontSize: 36 }}>
           A/B Testing Suite

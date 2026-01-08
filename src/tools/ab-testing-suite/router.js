@@ -1,3 +1,130 @@
+// --- Automated Anomaly Detection (stub) ---
+router.get('/anomaly-detection', (req, res) => {
+  // TODO: Analyze test data for anomalies
+  res.json({ ok: true, anomalies: [{ variant: 'A', metric: 'conversion', change: '+300%', ts: Date.now() }] });
+});
+
+// --- Multi-arm Bandit Support (stub) ---
+router.post('/bandit/allocate', (req, res) => {
+  // TODO: Auto-allocate traffic to best-performing variants
+  res.json({ ok: true, allocation: { A: 0.2, B: 0.8 } });
+});
+
+// --- Advanced Scheduling (stub) ---
+router.post('/schedule', (req, res) => {
+  // TODO: Pause, resume, auto-end tests
+  res.json({ ok: true, status: 'scheduled' });
+});
+
+// --- Custom Metrics (stub) ---
+router.post('/metrics', (req, res) => {
+  // TODO: Save custom metrics for a test
+  res.json({ ok: true });
+});
+
+// --- Full Audit Log (stub) ---
+let auditLog = [];
+router.post('/audit', (req, res) => {
+  auditLog.push({ ...req.body, ts: Date.now() });
+  res.json({ ok: true });
+});
+router.get('/audit', (req, res) => {
+  res.json({ ok: true, auditLog });
+});
+
+// --- Granular RBAC (stub) ---
+router.post('/rbac/grant', (req, res) => {
+  // TODO: Grant/revoke permissions per test/action
+  res.json({ ok: true });
+});
+
+// --- Data Residency & Export Controls (stub) ---
+router.post('/data-residency', (req, res) => {
+  // TODO: Set/get data residency region
+  res.json({ ok: true, region: req.body.region || 'us-east-1' });
+});
+
+// --- White-labeling (stub) ---
+router.post('/branding', (req, res) => {
+  // TODO: Save custom branding settings
+  res.json({ ok: true });
+});
+
+// --- API Key Management (stub) ---
+let apiKeys = [];
+router.post('/apikeys/generate', (req, res) => {
+  const key = 'api_' + Math.random().toString(36).slice(2, 18);
+  apiKeys.push(key);
+  res.json({ ok: true, key });
+});
+router.post('/apikeys/revoke', (req, res) => {
+  apiKeys = apiKeys.filter(k => k !== req.body.key);
+  res.json({ ok: true });
+});
+router.get('/apikeys', (req, res) => {
+  res.json({ ok: true, apiKeys });
+});
+// --- Slack/Teams Notification Webhook Endpoint ---
+const fetch = require('node-fetch');
+// POST /api/ab-testing-suite/notify-webhook
+router.post('/notify-webhook', async (req, res) => {
+  // Expects { url, message }
+  try {
+    const { url, message } = req.body;
+    if (!url || !message) return res.status(400).json({ ok: false, error: 'Missing url or message' });
+    // Send notification to Slack/Teams webhook
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: message })
+    });
+    if (!resp.ok) throw new Error('Failed to send notification');
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// --- API Endpoints for External Automation ---
+// POST /api/ab-testing-suite/trigger-test
+router.post('/trigger-test', async (req, res) => {
+  // Expects { testName, variants }
+  try {
+    const { testName, variants } = req.body;
+    if (!testName || !Array.isArray(variants)) return res.status(400).json({ ok: false, error: 'Missing testName or variants' });
+    // TODO: Implement actual test trigger logic
+    res.json({ ok: true, message: `Triggered test '${testName}' with ${variants.length} variants.` });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// GET /api/ab-testing-suite/test-status?testName=...
+router.get('/test-status', async (req, res) => {
+  try {
+    const { testName } = req.query;
+    if (!testName) return res.status(400).json({ ok: false, error: 'Missing testName' });
+    // TODO: Implement actual status lookup
+    res.json({ ok: true, status: 'running', testName });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// --- Accessibility Audit Endpoint (stub) ---
+router.post('/accessibility/audit', async (req, res) => {
+  // Expects { html } in body
+  try {
+    const { html } = req.body;
+    if (!html) return res.status(400).json({ ok: false, error: 'Missing HTML' });
+    // TODO: Integrate axe-core or pa11y for real audits
+    // For now, return a mock result
+    res.json({ ok: true, issues: [
+      { id: 'color-contrast', impact: 'serious', description: 'Text elements should have sufficient color contrast.' },
+      { id: 'label', impact: 'moderate', description: 'Form elements must have associated labels.' }
+    ] });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 // --- Custom User Roles & Permissions (RBAC) ---
 const userRoles = {
   'admin@example.com': 'admin',
