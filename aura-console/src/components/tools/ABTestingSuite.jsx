@@ -215,8 +215,31 @@ export default function ABTestingSuite() {
       {/* --- Integrations & API --- */}
       <section className="abtest-integrations" style={{ background: '#181f2a', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 14 }}>Integrations & API</h3>
-        <div style={{ color: '#64748b', fontSize: 16, minHeight: 60 }}>
-          <span>Integrations with analytics, CDPs, webhooks, and API access coming soon.</span>
+        <div style={{ display: 'flex', gap: 32 }}>
+          {/* Shopify Integration */}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>Shopify</div>
+            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
+              <div>Connected store: <strong>demo-shop.myshopify.com</strong></div>
+              <button className="btn btn-secondary" style={{ marginTop: 10 }}>Manage Connection</button>
+            </div>
+          </div>
+          {/* Analytics & CDP Integration */}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>Analytics & CDP</div>
+            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
+              <div>Google Analytics, Segment, Amplitude</div>
+              <button className="btn btn-secondary" style={{ marginTop: 10 }}>Configure Integrations</button>
+            </div>
+          </div>
+          {/* Webhooks & API Access */}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>Webhooks & API</div>
+            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
+              <div>Push results to external systems</div>
+              <button className="btn btn-secondary" style={{ marginTop: 10 }}>Manage Webhooks</button>
+            </div>
+          </div>
         </div>
       </section>
 
