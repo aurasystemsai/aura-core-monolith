@@ -6,7 +6,7 @@
 // Unified and deduplicated tool meta registry
 const toolsMeta = [
   { id: "abandoned-checkout-winback", name: "Abandoned Checkout Winback", description: "Generates abandoned checkout winback flows.", category: "Email / Automation" },
-  { id: "abtestingsuite", name: "A/B Testing Suite", description: "A/B test creation, management, and analytics.", category: "Analytics" },
+  { id: "ab-testing-suite", name: "A/B Testing Suite", description: "A/B test creation, management, and analytics.", category: "Analytics" },
   { id: "advanced-analytics-attribution", name: "Advanced Analytics Attribution", description: "Advanced attribution analytics.", category: "Analytics" },
   { id: "advanced-finance-inventory-planning", name: "Advanced Finance & Inventory Planning", description: "Advanced financial and inventory planning analytics.", category: "Finance / Analytics" },
   { id: "advanced-personalization-engine", name: "Advanced Personalization Engine", description: "AI-powered real-time content/product personalization.", category: "Personalization / AI" },
