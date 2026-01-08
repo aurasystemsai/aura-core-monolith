@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from "react";
+import { apiFetch } from "./api";
 import "./App.css";
 
 import ProjectSetup from "./ProjectSetup";
@@ -105,7 +106,7 @@ class ErrorBoundary extends React.Component {
       this.props.onError(error);
     }
     try {
-      fetch('/api/analytics', {
+      apiFetch('/api/analytics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -215,7 +216,7 @@ function App() {
   // Usage analytics: track page/tool views
   useEffect(() => {
     try {
-      fetch('/api/analytics', {
+      apiFetch('/api/analytics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'page-view', section: activeSection, ts: Date.now(), url: window.location.href })
@@ -270,7 +271,7 @@ function App() {
       return;
     }
     setAutoCreating(true);
-    fetch(`${coreUrl}/projects`, {
+    apiFetch(`${coreUrl}/projects`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
