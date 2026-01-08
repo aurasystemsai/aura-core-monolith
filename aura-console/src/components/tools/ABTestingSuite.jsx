@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 // --- Flagship A/B Testing Suite ---
 export default function ABTestingSuite() {
@@ -7,6 +7,29 @@ export default function ABTestingSuite() {
   const [testName, setTestName] = useState("");
   const [variants, setVariants] = useState([{ name: "A", content: "" }, { name: "B", content: "" }]);
   const [analytics, setAnalytics] = useState([]);
+  const [liveUpdate, setLiveUpdate] = useState(null);
+
+  // WebSocket for real-time experiment updates
+  useEffect(() => {
+    let ws;
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const host = window.location.host;
+    ws = new window.WebSocket(`${protocol}://${host}/ws/ab-testing-suite`);
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'experiment-update') {
+          setLiveUpdate(msg.data);
+        }
+      } catch (e) {}
+    };
+    ws.onopen = () => {
+      // Optionally send a subscribe message
+    };
+    ws.onerror = () => {};
+    ws.onclose = () => {};
+    return () => { ws && ws.close(); };
+  }, []);
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
   const fileInputRef = useRef();
@@ -158,6 +181,11 @@ export default function ABTestingSuite() {
 
       {/* --- Analytics & Insights --- */}
       <section className="abtest-analytics" style={{ background: '#181f2a', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+        {liveUpdate && (
+          <div style={{ background: '#38bdf8', color: '#181f2a', borderRadius: 8, padding: 12, marginBottom: 18, fontWeight: 600 }}>
+            <span role="img" aria-label="Live">🔴</span> Live Update: {typeof liveUpdate === 'string' ? liveUpdate : JSON.stringify(liveUpdate)}
+          </div>
+        )}
         <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 18 }}>Analytics & Insights</h3>
         <div style={{ display: 'flex', gap: 32 }}>
           {/* Conversion Rate Chart */}

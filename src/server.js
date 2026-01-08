@@ -1251,9 +1251,13 @@ app.use((req, res, next) => {
 
 // ---------- START SERVER ----------
 
+const { initABTestingSuiteSocket } = require('./tools/ab-testing-suite/abTestingSuiteSocket');
+const http = require('http');
 
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const server = http.createServer(app);
+  initABTestingSuiteSocket(server);
+  server.listen(PORT, () => {
     console.log(
       `[Core] AURA Core API running on port ${PORT}\n` +
         `==> Available at ${
