@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { apiFetch } from "../../api";
+import OnboardingChecklist from "../../onboarding/OnboardingChecklist";
 
 // --- Flagship A/B Testing Suite ---
 export default function ABTestingSuite() {
   // State for all advanced features (placeholders for now)
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showChecklist, setShowChecklist] = useState(() => !localStorage.getItem("abTestOnboarded"));
   const [testName, setTestName] = useState("");
   const [variants, setVariants] = useState([{ name: "A", content: "" }, { name: "B", content: "" }]);
   const [analytics, setAnalytics] = useState([]);
@@ -79,8 +81,13 @@ export default function ABTestingSuite() {
           A/B Testing Suite
           <span title="Flagship enterprise-grade A/B testing tool. Every feature is best-in-class." style={{ marginLeft: 10, fontSize: 22, color: '#38bdf8', cursor: 'help' }}>ⓘ</span>
         </h2>
-        <button onClick={() => setShowOnboarding(v => !v)} className="btn btn-secondary">{showOnboarding ? "Hide" : "Show"} Onboarding</button>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button onClick={() => setShowOnboarding(v => !v)} className="btn btn-secondary">{showOnboarding ? "Hide" : "Show"} Onboarding</button>
+          <button onClick={() => setShowChecklist(v => !v)} className="btn btn-tertiary">{showChecklist ? "Hide" : "Show"} Checklist</button>
+        </div>
       </div>
+        {/* In-app onboarding checklist */}
+        {showChecklist && <OnboardingChecklist forceShow onClose={() => setShowChecklist(false)} />}
       {showOnboarding && (
         <div className="abtest-onboarding">
           <h3>Welcome to the Flagship A/B Testing Suite <span title="Get started by building your first test. Use the visual builder and advanced controls below." style={{ color: '#38bdf8', fontSize: 18, marginLeft: 6, cursor: 'help' }}>ⓘ</span></h3>

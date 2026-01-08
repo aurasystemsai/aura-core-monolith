@@ -1,3 +1,27 @@
+// --- Custom User Roles & Permissions (RBAC) ---
+const userRoles = {
+  'admin@example.com': 'admin',
+  'editor@example.com': 'editor',
+  'viewer@example.com': 'viewer',
+};
+const rolePermissions = {
+  admin: ['view', 'edit', 'delete', 'export', 'manage-users'],
+  editor: ['view', 'edit', 'export'],
+  viewer: ['view'],
+};
+// GET /api/ab-testing-suite/rbac/role?user=email
+router.get('/rbac/role', (req, res) => {
+  const { user } = req.query;
+  const role = userRoles[user] || 'viewer';
+  res.json({ ok: true, role });
+});
+// GET /api/ab-testing-suite/rbac/permissions?user=email
+router.get('/rbac/permissions', (req, res) => {
+  const { user } = req.query;
+  const role = userRoles[user] || 'viewer';
+  const permissions = rolePermissions[role] || [];
+  res.json({ ok: true, permissions });
+});
 // Shopify order fetch and revenue attribution
 router.post("/shopify/orders", async (req, res) => {
   // Expects { shop, token, startDate, endDate, variantIds }
