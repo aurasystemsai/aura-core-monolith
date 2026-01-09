@@ -3,7 +3,6 @@
 
 const { shopifyApi, LATEST_API_VERSION } = require('@shopify/shopify-api');
 const { shopifyApiAdapterNode } = require('@shopify/shopify-api/adapters/node');
-shopifyApi.setRuntimeStringAdapter(shopifyApiAdapterNode);
 
 // NOTE: These use your current Render.com env variable names.
 // For best practice, consider renaming to Shopify's latest convention in the future.
@@ -13,6 +12,7 @@ const shopify = shopifyApi({
   hostName: process.env.SHOPIFY_APP_URL ? process.env.SHOPIFY_APP_URL.replace(/^https?:\/\//, '').replace(/\/$/, '') : undefined, // Render.com: SHOPIFY_APP_URL
   apiVersion: process.env.SHOPIFY_API_VERSION || LATEST_API_VERSION, // Add SHOPIFY_API_VERSION to Render.com for explicit versioning
   isEmbeddedApp: true,
+  adapter: shopifyApiAdapterNode,
 });
 
 module.exports = async function verifyShopifySession(req, res, next) {
