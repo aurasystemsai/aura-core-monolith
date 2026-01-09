@@ -4,9 +4,12 @@
 import createApp from '@shopify/app-bridge';
 import { authenticatedFetch } from '@shopify/app-bridge-utils';
 
+const apiKey = process.env.SHOPIFY_API_KEY || window.shopifyApiKey;
+const host = new URLSearchParams(window.location.search).get('host');
 const app = createApp({
-  apiKey: window.shopifyApiKey || process.env.SHOPIFY_API_KEY,
-  host: new URLSearchParams(window.location.search).get('host'),
+  apiKey,
+  host,
+  forceRedirect: true
 });
 
 const fetchFunction = authenticatedFetch(app);
