@@ -42,9 +42,9 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: true, // Always secure for cloud/production
+    secure: true, // Required for Shopify embedded apps (HTTPS)
     httpOnly: true,
-    sameSite: 'none', // Allow cross-origin cookies for frontend-backend separation
+    sameSite: 'lax', // Shopify recommends 'lax' for embedded apps
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   }
 }));
