@@ -27,6 +27,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@shopify/shopify-api": "^7.0.0",
     "@node-saml/passport-saml": "^5.1.0",
     "@testing-library/dom": "^10.4.1",
     "bcryptjs": "^3.0.3",
