@@ -1,0 +1,84 @@
+.pricing-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: 'Inter', Arial, sans-serif;
+}
+.pricing-page h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+.pricing-page .subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 2rem;
+}
+.plans {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.plan {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px 0 #0001;
+  padding: 2rem 1.5rem;
+  min-width: 280px;
+  max-width: 340px;
+  flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.plan h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.plan .price {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #0d9488;
+}
+.plan .desc {
+  color: #444;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.plan ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  width: 100%;
+}
+.plan ul li {
+  padding: 0.3rem 0;
+  border-bottom: 1px solid #f1f1f1;
+  text-align: left;
+}
+.plan ul li:last-child {
+  border-bottom: none;
+}
+.plan .cta {
+  background: #0d9488;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.plan .cta:hover {
+  background: #0f766e;
+}
+.trial-note {
+  margin-top: 2rem;
+  text-align: center;
+  color: #888;
+  font-size: 1rem;
+}

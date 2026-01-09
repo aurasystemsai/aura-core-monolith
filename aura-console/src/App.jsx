@@ -3,6 +3,7 @@ import { apiFetch } from "./api";
 import "./App.css";
 
 import ProjectSetup from "./ProjectSetup";
+import PricingPage from "./components/PricingPage";
 import ProjectSwitcher from "./ProjectSwitcher";
 import SystemHealthPanel from "./components/SystemHealthPanel";
 import DraftLibrary from "./components/DraftLibrary";
@@ -359,6 +360,7 @@ function App() {
           onShowChangelog={handleShowChangelog}
           changelogUnread={!changelogSeen}
           extraItems={[
+            { key: 'pricing', label: 'Pricing' },
             { key: 'ai-chatbot', label: 'AI Chatbot' },
             { key: 'automation-scheduler', label: 'Automation Scheduler' },
             ...toolsMeta.map(tool => ({ key: tool.id, label: tool.name }))
@@ -369,6 +371,7 @@ function App() {
             <section className="tool-section">
               {activeSection === "dashboard" && project && <DashboardHome setActiveSection={setActiveSection} />}
               <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading…</div>}>
+                {activeSection === "pricing" && <PricingPage />}
                 {activeSection === "automation-scheduler" && <AutomationScheduler />}
                 {activeSection === "reports" && <Reports />}
                 {activeSection === "auth" && <Auth />}
