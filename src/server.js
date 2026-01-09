@@ -15,12 +15,13 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const fs = require('fs');
 const productSeoRouter = require('./tools/product-seo/router');
+const verifyShopifySession = require('./middleware/verifyShopifySession');
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 const OpenAI = require('openai');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const lusca = require('lusca');
+// const lusca = require('lusca');
 const PORT = process.env.PORT || 10000;
 const express = require('express');
 
@@ -28,7 +29,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- Session Middleware (required for lusca) ---
+// --- Session Middleware (legacy, not used for embedded Shopify app) ---
 
 const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
@@ -50,6 +51,9 @@ app.use(session({
 }));
 
 
+
+// --- Shopify session token verification for all /api routes ---
+app.use('/api', verifyShopifySession);
 
 // --- Register all tool routers (auto-generated, advanced features) ---
 const toolRouters = [
@@ -307,18 +311,9 @@ let server;
 
 
 
-// Lusca CSRF protection for all state-changing routes (POST, PUT, PATCH, DELETE)
-if (process.env.NODE_ENV !== 'test') {
-  app.use(lusca.csrf({ cookie: true }));
-} else {
-  console.warn('[Core] CSRF protection is DISABLED in test mode');
-}
+// REMOVE: Lusca CSRF protection for embedded Shopify app
 
-// Expose CSRF token for frontend (GET /api/csrf-token)
-app.get('/api/csrf-token', (req, res) => {
-  // Lusca sets the token on req.csrfToken
-  res.json({ ok: true, csrfToken: req.csrfToken });
-});
+// REMOVE: CSRF token endpoint for embedded Shopify app
 // ---------- SHOPIFY AUTHENTICATION ROUTES ----------
 
 // Shopify OAuth Authentication - Step 1: Redirect to Shopify OAuth screen
