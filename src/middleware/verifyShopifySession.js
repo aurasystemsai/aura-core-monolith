@@ -1,8 +1,9 @@
 // Shopify JWT session token verification middleware for embedded app
 // Place this in src/middleware/verifyShopifySession.js
 
-const { shopifyApi, LATEST_API_VERSION, shopifyApiAdapters } = require('@shopify/shopify-api');
-shopifyApi.setRuntimeStringAdapter(shopifyApiAdapters.node);
+const { shopifyApi, LATEST_API_VERSION } = require('@shopify/shopify-api');
+const { shopifyApiAdapterNode } = require('@shopify/shopify-api/adapters/node');
+shopifyApi.setRuntimeStringAdapter(shopifyApiAdapterNode);
 
 // NOTE: These use your current Render.com env variable names.
 // For best practice, consider renaming to Shopify's latest convention in the future.
