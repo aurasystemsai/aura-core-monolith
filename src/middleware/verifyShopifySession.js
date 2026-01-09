@@ -3,10 +3,13 @@
 
 const { shopifyApi, LATEST_API_VERSION } = require('@shopify/shopify-api');
 
+// NOTE: These use your current Render.com env variable names.
+// For best practice, consider renaming to Shopify's latest convention in the future.
 const shopify = shopifyApi({
-  apiKey: process.env.SHOPIFY_API_KEY,
-  apiSecretKey: process.env.SHOPIFY_API_SECRET,
-  apiVersion: LATEST_API_VERSION,
+  apiKey: process.env.SHOPIFY_CLIENT_ID, // Render.com: SHOPIFY_CLIENT_ID
+  apiSecretKey: process.env.SHOPIFY_CLIENT_SECRET, // Render.com: SHOPIFY_CLIENT_SECRET
+  hostName: process.env.SHOPIFY_APP_URL ? process.env.SHOPIFY_APP_URL.replace(/^https?:\/\//, '').replace(/\/$/, '') : undefined, // Render.com: SHOPIFY_APP_URL
+  apiVersion: process.env.SHOPIFY_API_VERSION || LATEST_API_VERSION, // Add SHOPIFY_API_VERSION to Render.com for explicit versioning
   isEmbeddedApp: true,
 });
 
