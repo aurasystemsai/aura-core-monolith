@@ -4,7 +4,7 @@
 import createApp from '@shopify/app-bridge';
 import { authenticatedFetch } from '@shopify/app-bridge-utils';
 
-const apiKey = process.env.SHOPIFY_API_KEY || window.shopifyApiKey;
+const apiKey = import.meta.env.VITE_SHOPIFY_API_KEY;
 const host = new URLSearchParams(window.location.search).get('host');
 const app = createApp({
   apiKey,
