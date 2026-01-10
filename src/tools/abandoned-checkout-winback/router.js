@@ -253,7 +253,7 @@ router.post('/shopify/sync', async (req, res) => {
 });
 
 // Notifications endpoint (real implementation)
-const notificationModel = require('./notificationModel');
+// ...existing code...
 router.post('/notify', (req, res) => {
   try {
     const notification = notificationModel.addNotification(req.body || {});
@@ -293,7 +293,7 @@ router.post('/rbac/check', (req, res) => {
 });
 
 // i18n endpoint (real implementation)
-const i18n = require('./i18n');
+// ...existing code...
 router.get('/i18n', (req, res) => {
   try {
     const { lang, key } = req.query || {};
@@ -310,7 +310,7 @@ router.get('/docs', (req, res) => {
 });
 
 // Compliance endpoint (real implementation)
-const complianceModel = require('./complianceModel');
+// ...existing code...
 router.get('/compliance', (req, res) => {
   try {
     const compliance = complianceModel.get();
