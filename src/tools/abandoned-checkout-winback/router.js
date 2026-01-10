@@ -97,7 +97,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const rbac = require('./rbac');
 const i18n = require('./i18n');
 const analytics = require('./analyticsModel');
-const notificationModel = require('./notificationModel');
+// Removed duplicate notificationModel declaration
 const webhookModel = require('./webhookModel');
 const pluginSystem = require('./pluginSystem');
 // Removed duplicate complianceModel declaration
