@@ -1,4 +1,5 @@
 const express = require('express');
+const router = express.Router();
 // ...existing code...
 // Residency/compliance endpoints
 router.post('/compliance/export', (req, res) => {
