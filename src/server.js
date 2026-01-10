@@ -1,3 +1,28 @@
+// --- Stub endpoint for /api/analytics (prevents 404 in frontend) ---
+app.post('/api/analytics', (req, res) => {
+  res.json({ ok: true, message: 'Analytics event received (stub).' });
+});
+
+// --- Stub endpoint for /api/csrf-token (prevents 401 in frontend) ---
+app.get('/api/csrf-token', (req, res) => {
+  res.json({ ok: true, token: 'stub-csrf-token' });
+});
+
+// --- Stub WebSocket endpoint for /ws/abandoned-checkout-winback (prevents frontend connection error) ---
+const http = require('http');
+const server = http.createServer(app);
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ server, path: '/ws/abandoned-checkout-winback' });
+wss.on('connection', ws => {
+  ws.send(JSON.stringify({ type: 'info', message: 'Stub WebSocket connection established.' }));
+  ws.on('message', msg => {
+    // Echo for debug
+    ws.send(JSON.stringify({ type: 'echo', message: msg }));
+  });
+});
+
+// Replace app.listen with server.listen at the end of the file:
+// server.listen(PORT, ...)
 // --- All requires and initializations at the top ---
 const path = require('path');
 const morgan = require('morgan');
@@ -1244,8 +1269,9 @@ app.use((req, res, next) => {
 const { initABTestingSuiteSocket } = require('./tools/ab-testing-suite/abTestingSuiteSocket');
 const http = require('http');
 
+
 if (require.main === module) {
-  const server = http.createServer(app);
+  // Use the shared server instance for both HTTP and WebSocket endpoints
   initABTestingSuiteSocket(server);
   server.listen(PORT, () => {
     console.log(
