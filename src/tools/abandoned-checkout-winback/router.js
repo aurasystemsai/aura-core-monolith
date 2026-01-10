@@ -101,7 +101,7 @@ const analytics = require('./analyticsModel');
 const webhookModel = require('./webhookModel');
 const pluginSystem = require('./pluginSystem');
 // Removed duplicate complianceModel declaration
-const router = express.Router();
+// ...existing code...
 
 // CRUD endpoints
 router.get('/items', (req, res) => {
