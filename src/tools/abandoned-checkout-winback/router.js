@@ -94,7 +94,7 @@ router.post('/ai/content', async (req, res) => {
 const OpenAI = require('openai');
 const db = require('./db');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const rbac = require('./rbac');
+// ...existing code...
 const i18n = require('./i18n');
 const analytics = require('./analyticsModel');
 // Removed duplicate notificationModel declaration
