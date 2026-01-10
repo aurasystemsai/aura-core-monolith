@@ -59,6 +59,7 @@ app.use('/api', verifyShopifySession);
 const toolRouters = [
   { path: '/api/product-seo', router: require('./tools/product-seo/router') },
   { path: '/api/ai-alt-text-engine', router: require('./tools/ai-alt-text-engine/router') },
+  { path: '/api/advanced-analytics-attribution', router: require('./tools/advanced-analytics-attribution/router') },
   { path: '/api/creative-automation-engine', router: require('./tools/creative-automation-engine/router') },
   { path: '/api/weekly-blog-content-engine', router: require('./tools/weekly-blog-content-engine/router') },
   { path: '/api/workflow-orchestrator', router: require('./tools/workflow-orchestrator/router') },
