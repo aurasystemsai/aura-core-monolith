@@ -423,6 +423,7 @@ function App() {
                 {/* Other custom UIs and fallback ToolScaffold */}
                 {toolsMeta.map(tool => {
                   if (activeSection === tool.id) {
+                    console.log("Active tool id:", tool.id);
                     switch (tool.id) {
                       case "abandoned-checkout-winback": return <AbandonedCheckoutWinback key={tool.id} />;
                       case "customer-data-platform": return <CustomerDataPlatform key={tool.id} />;
