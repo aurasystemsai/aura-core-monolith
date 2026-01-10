@@ -152,11 +152,20 @@ router.post('/ai/generate', async (req, res) => {
 
 // Analytics endpoints
 router.post('/analytics', (req, res) => {
-  const event = analytics.recordEvent(req.body || {});
-  res.json({ ok: true, event });
+  try {
+    const event = analytics.recordEvent(req.body || {});
+    res.json({ ok: true, event });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 router.get('/analytics', (req, res) => {
-  res.json({ ok: true, events: analytics.listEvents(req.query || {}) });
+  try {
+    const events = analytics.listEvents(req.query || {});
+    res.json({ ok: true, events });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 // Import/export endpoints
@@ -225,9 +234,7 @@ router.post('/ai/winback-email', async (req, res) => {
 
 // Compliance endpoint
 // Analytics endpoint (placeholder)
-router.get('/analytics', (req, res) => {
-  res.json({ ok: true, analytics: { totalItems: db.list().length } });
-});
+// (Removed duplicate placeholder)
 
 // Import/export endpoints (placeholder logic)
 router.post('/import', (req, res) => {

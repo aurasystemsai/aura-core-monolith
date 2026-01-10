@@ -319,7 +319,11 @@ process.on('uncaughtException', (err) => {
 
 // REMOVE: Lusca CSRF protection for embedded Shopify app
 
-// REMOVE: CSRF token endpoint for embedded Shopify app
+// CSRF token endpoint for embedded Shopify app (dummy, always returns a token)
+app.get('/api/csrf-token', (req, res) => {
+  // For embedded apps, CSRF is handled by Shopify. Return a dummy token for compatibility.
+  res.json({ csrfToken: 'shopify-embedded-dummy-token' });
+});
 // ---------- SHOPIFY AUTHENTICATION ROUTES ----------
 
 // Shopify OAuth Authentication - Step 1: Redirect to Shopify OAuth screen
