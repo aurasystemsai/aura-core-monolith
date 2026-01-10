@@ -1,4 +1,7 @@
 
+
+// ...existing code...
+
 // --- Stub endpoint for /api/analytics (prevents 404 in frontend) ---
 app.post('/api/analytics', (req, res) => {
   res.json({ ok: true, message: 'Analytics event received (stub).' });
