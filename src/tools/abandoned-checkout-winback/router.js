@@ -91,7 +91,6 @@ router.post('/ai/content', async (req, res) => {
   }
 });
 // ...existing code...
-const express = require('express');
 const OpenAI = require('openai');
 const db = require('./db');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
