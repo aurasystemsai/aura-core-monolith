@@ -239,32 +239,85 @@ router.get('/export', (req, res) => {
   res.json({ ok: true, data: db.list() });
 });
 
-// Shopify sync endpoint (placeholder)
-router.post('/shopify/sync', (req, res) => {
-  res.json({ ok: true, message: 'Shopify sync not implemented in demo.' });
+
+// Shopify sync endpoint (real implementation)
+const shopify = require('./shopify');
+router.post('/shopify/sync', async (req, res) => {
+  try {
+    const { shop, token, apiVersion } = req.body || {};
+    const checkouts = await shopify.fetchAbandonedCheckouts({ shop, token, apiVersion });
+    res.json({ ok: true, checkouts });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
-// Notifications endpoint (placeholder)
+// Notifications endpoint (real implementation)
+const notificationModel = require('./notificationModel');
 router.post('/notify', (req, res) => {
-  res.json({ ok: true, message: 'Notification sent (demo).' });
+  try {
+    const notification = notificationModel.addNotification(req.body || {});
+    res.json({ ok: true, notification });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+router.get('/notifications', (req, res) => {
+  try {
+    const notifications = notificationModel.listNotifications(req.query || {});
+    res.json({ ok: true, notifications });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+router.post('/notifications/read', (req, res) => {
+  try {
+    const { id } = req.body || {};
+    const ok = notificationModel.markAsRead(id);
+    res.json({ ok });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
-// RBAC check endpoint (placeholder)
+// RBAC check endpoint (real implementation)
+const rbac = require('./rbac');
 router.post('/rbac/check', (req, res) => {
-  res.json({ ok: true, allowed: true });
+  try {
+    const { role, action } = req.body || {};
+    const allowed = rbac.can(role, action);
+    res.json({ ok: true, allowed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
-// i18n endpoint (placeholder)
+// i18n endpoint (real implementation)
+const i18n = require('./i18n');
 router.get('/i18n', (req, res) => {
-  res.json({ ok: true, translations: { en: 'Abandoned Checkout Winback', fr: 'Relance panier abandonné' } });
+  try {
+    const { lang, key } = req.query || {};
+    const value = i18n.t(lang || 'en', key || 'subject');
+    res.json({ ok: true, value });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
-// Docs endpoint (placeholder)
+// Docs endpoint (returns static docs for now)
 router.get('/docs', (req, res) => {
-  res.json({ ok: true, docs: 'Abandoned Checkout Winback API. Endpoints: /items, /ai/generate, /analytics, /import, /export, /shopify/sync, /notify, /rbac/check, /i18n, /docs' });
+  res.json({ ok: true, docs: 'Abandoned Checkout Winback API documentation.' });
 });
+
+// Compliance endpoint (real implementation)
+const complianceModel = require('./complianceModel');
 router.get('/compliance', (req, res) => {
-  res.json({ ok: true, compliance: complianceModel.get() });
+  try {
+    const compliance = complianceModel.get();
+    res.json({ ok: true, compliance });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 // Plugin system endpoint
