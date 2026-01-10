@@ -1,25 +1,3 @@
-
-
-// ...existing code...
-
-// ...existing code...
-
-// ...existing code...
-
-// ...existing code...
-// ...existing code...
-
-// --- Stub endpoint for /api/analytics (prevents 404 in frontend) ---
-app.post('/api/analytics', (req, res) => {
-  res.json({ ok: true, message: 'Analytics event received (stub).' });
-});
-
-// --- Stub endpoint for /api/csrf-token (prevents 401 in frontend) ---
-app.get('/api/csrf-token', (req, res) => {
-  res.json({ ok: true, token: 'stub-csrf-token' });
-});
-
-
 // --- WebSocket stub will be attached to the main server instance at startup ---
 let wss;
 
