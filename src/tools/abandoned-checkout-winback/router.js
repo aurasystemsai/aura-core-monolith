@@ -1,5 +1,7 @@
 // ...existing code...
 const express = require('express');
+const express = require('express');
+// ...existing code...
 // Residency/compliance endpoints
 router.post('/compliance/export', (req, res) => {
   const { userId } = req.body || {};
