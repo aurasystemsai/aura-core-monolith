@@ -317,7 +317,6 @@ process.on('uncaughtException', (err) => {
 });
 
 // --- Graceful Shutdown ---
-let server;
 
 
 // (Server start logic moved to the bottom, using http.createServer only)
