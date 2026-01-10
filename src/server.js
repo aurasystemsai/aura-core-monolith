@@ -8,18 +8,9 @@ app.get('/api/csrf-token', (req, res) => {
   res.json({ ok: true, token: 'stub-csrf-token' });
 });
 
-// --- Stub WebSocket endpoint for /ws/abandoned-checkout-winback (prevents frontend connection error) ---
-const http = require('http');
-const server = http.createServer(app);
-const WebSocket = require('ws');
-const wss = new WebSocket.Server({ server, path: '/ws/abandoned-checkout-winback' });
-wss.on('connection', ws => {
-  ws.send(JSON.stringify({ type: 'info', message: 'Stub WebSocket connection established.' }));
-  ws.on('message', msg => {
-    // Echo for debug
-    ws.send(JSON.stringify({ type: 'echo', message: msg }));
-  });
-});
+
+// --- WebSocket stub will be attached to the main server instance at startup ---
+let wss;
 
 // Replace app.listen with server.listen at the end of the file:
 // server.listen(PORT, ...)
@@ -1271,7 +1262,21 @@ const http = require('http');
 
 
 if (require.main === module) {
-  // Use the shared server instance for both HTTP and WebSocket endpoints
+  const http = require('http');
+  server = http.createServer(app);
+
+  // Attach WebSocket stub for /ws/abandoned-checkout-winback
+  const WebSocket = require('ws');
+  wss = new WebSocket.Server({ server, path: '/ws/abandoned-checkout-winback' });
+  wss.on('connection', ws => {
+    ws.send(JSON.stringify({ type: 'info', message: 'Stub WebSocket connection established.' }));
+    ws.on('message', msg => {
+      // Echo for debug
+      ws.send(JSON.stringify({ type: 'echo', message: msg }));
+    });
+  });
+
+  // Attach other sockets
   initABTestingSuiteSocket(server);
   server.listen(PORT, () => {
     console.log(
