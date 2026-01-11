@@ -1,21 +1,18 @@
-// In-memory store for winback analytics events
-const analytics = [];
+// In-memory analytics model for winback events
+const events = [];
 
 function recordEvent(data) {
-  const event = { id: Date.now().toString(), timestamp: new Date().toISOString(), ...data };
-  analytics.push(event);
+  const event = { ...data, timestamp: Date.now() };
+  events.push(event);
   return event;
 }
-
-function listEvents({ campaignId, variantId, type } = {}) {
-  let events = analytics;
-  if (campaignId) events = events.filter(e => e.campaignId === campaignId);
-  if (variantId) events = events.filter(e => e.variantId === variantId);
-  if (type) events = events.filter(e => e.type === type);
-  return events;
+function listEvents(filter = {}) {
+  return events.filter(e => {
+    for (const key of Object.keys(filter)) {
+      if (filter[key] && e[key] !== filter[key]) return false;
+    }
+    return true;
+  });
 }
 
-module.exports = {
-  recordEvent,
-  listEvents,
-};
+module.exports = { recordEvent, listEvents };

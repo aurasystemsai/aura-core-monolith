@@ -1,19 +1,21 @@
-// OpenAI integration for Abandoned Checkout Winback message generation
-const { OpenAI } = require('openai');
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// OpenAI integration for winback message generation
+const { Configuration, OpenAIApi } = require('openai');
 
-async function generateWinbackMessage({ customerName, cartItems, discount, brand, tone, channel, language, customPrompt }) {
-  let prompt = customPrompt || `Write a persuasive, friendly ${channel} message in ${language || 'English'} to win back a customer who abandoned their cart. Personalize with their name (${customerName}), cart items (${cartItems.map(i => i.title).join(', ')}), and offer a discount (${discount || 'none'}). Brand: ${brand || 'our store'}. Tone: ${tone || 'friendly, helpful'}.`;
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4',
-    messages: [
-      { role: 'system', content: 'You are an expert ecommerce copywriter.' },
-      { role: 'user', content: prompt }
-    ],
-    max_tokens: 300,
-    temperature: 0.8
+const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAIApi(configuration);
+
+async function generateWinbackMessage({ customerName, cartItems, discountCode, brand, tone, prompt, language }) {
+  // Compose a prompt for OpenAI
+  const items = cartItems.map(item => `${item.quantity}x ${item.name}`).join(', ');
+  const basePrompt = prompt || `Write a persuasive email to win back ${customerName} who abandoned a cart with: ${items}. Brand: ${brand || 'N/A'}. Tone: ${tone || 'friendly'}. Language: ${language || 'en'}.`;
+  const fullPrompt = discountCode ? `${basePrompt} Offer discount code: ${discountCode}.` : basePrompt;
+  const response = await openai.createCompletion({
+    model: 'text-davinci-003',
+    prompt: fullPrompt,
+    max_tokens: 200,
+    temperature: 0.7
   });
-  return response.choices[0].message.content;
+  return response.data.choices[0].text.trim();
 }
 
 module.exports = { generateWinbackMessage };

@@ -14,7 +14,6 @@ import ContentIngestor from "./components/ContentIngestor";
 import ProductsList from "./components/ProductsList.jsx";
 import ToolPlaceholder from "./components/ToolPlaceholder.jsx";
 import ToolScaffold from "./components/tools/ToolScaffold.jsx";
-import AbandonedCheckoutWinback from "./components/tools/AbandonedCheckoutWinback.jsx";
 import CustomerDataPlatform from "./components/tools/CustomerDataPlatform.jsx";
 import VisualWorkflowBuilder from "./components/tools/VisualWorkflowBuilder.jsx";
 import SelfServicePortal from "./components/tools/SelfServicePortal.jsx";
@@ -81,6 +80,7 @@ import OnboardingModal from "./components/OnboardingModal.jsx";
 // import OnboardingChecklist from "./onboarding/OnboardingChecklist.jsx";
 import Credits from "./credits/Credits.jsx";
 import Dashboard from "./dashboard/Dashboard.jsx";
+import AbandonedCheckoutWinback from "./components/tools/AbandonedCheckoutWinback.jsx";
 
 // Lazy-load only large or rarely-used tool components
 const ContentHealthAuditor = lazy(() => import("./components/ContentHealthAuditor"));
@@ -425,7 +425,6 @@ function App() {
                   if (activeSection === tool.id) {
                     console.log("Active tool id:", tool.id);
                     switch (tool.id) {
-                      case "abandoned-checkout-winback": return <AbandonedCheckoutWinback key={tool.id} />;
                       case "customer-data-platform": return <CustomerDataPlatform key={tool.id} />;
                       case "visual-workflow-builder": return <VisualWorkflowBuilder key={tool.id} />;
                       case "self-service-portal": return <SelfServicePortal key={tool.id} />;
@@ -437,8 +436,7 @@ function App() {
                       case "internal-linking-suggestions": return <InternalLinkingSuggestions key={tool.id} />;
                       case "ai-content-brief-generator": return <AIContentBriefGenerator key={tool.id} />;
                       case "brand-mention-tracker": return <BrandMentionTracker key={tool.id} />;
-                      case "local-seo-toolkit": return <LocalSEOToolkit key={tool.id} />;
-                      case "automation-templates": return <AutomationTemplates key={tool.id} />;
+                      case "local-seo-toolkit": return <AutomationTemplates key={tool.id} />;
                       case "conditional-logic-automation": return <ConditionalLogicAutomation key={tool.id} />;
                       case "webhook-api-triggers": return <WebhookApiTriggers key={tool.id} />;
                       case "reporting-integrations": return <ReportingIntegrations key={tool.id} />;
@@ -481,6 +479,7 @@ function App() {
                       case "ai-support-assistant": return <AiSupportAssistant key={tool.id} />;
                       case "ai-launch-planner": return <AiLaunchPlanner key={tool.id} />;
                       case "ai-alt-text-engine": return <ImageAltMediaSEO key={tool.id} />;
+                      case "abandoned-checkout-winback": return <AbandonedCheckoutWinback key={tool.id} />;
                       default:
                         // Fallback to generic scaffold for any tool not custom-mapped
                         const defaultFields = [

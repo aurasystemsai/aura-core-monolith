@@ -990,22 +990,6 @@ app.post("/run/:toolId", toolRunHandler);
 app.post("/api/run/:toolId", toolRunHandler);
 
 
-// ---------- ABANDONED CHECKOUT WINBACK: GENERATE MESSAGE ENDPOINT ----------
-app.post('/api/winback/generate-message', async (req, res) => {
-  try {
-    const { customerName, cartItems, discountCode, brand, tone, prompt, language } = req.body || {};
-    if (!customerName || !Array.isArray(cartItems) || cartItems.length === 0) {
-      return res.status(400).json({ ok: false, error: 'customerName and cartItems[] are required' });
-    }
-    // Use OpenAI integration for winback message generation
-    const openai = require('./tools/abandoned-checkout-winback/openai.js');
-    const result = await openai.generateWinbackMessage({ customerName, cartItems, discountCode, brand, tone, prompt, language });
-    return res.json({ ok: true, message: result });
-  } catch (err) {
-    console.error('Winback message generation error', err);
-    return res.status(500).json({ ok: false, error: err.message });
-  }
-});
 // ---------- RETURNS/RMA AUTOMATION: GENERATE MESSAGE ENDPOINT ----------
 app.post('/api/rma/generate-message', async (req, res) => {
   try {
@@ -1023,73 +1007,7 @@ app.post('/api/rma/generate-message', async (req, res) => {
   }
 });
 
-// ---------- ABANDONED CHECKOUT WINBACK: SCHEDULING ENDPOINTS ----------
-const winbackScheduleModel = require('./tools/abandoned-checkout-winback/scheduleModel.js');
-// Create schedule
-app.post('/api/winback/schedules', (req, res) => {
-  try {
-    const schedule = winbackScheduleModel.createSchedule(req.body || {});
-    res.json({ ok: true, schedule });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-// List schedules
-app.get('/api/winback/schedules', (req, res) => {
-  res.json({ ok: true, schedules: winbackScheduleModel.listSchedules() });
-});
-// Get schedule by ID
-app.get('/api/winback/schedules/:id', (req, res) => {
-  const schedule = winbackScheduleModel.getSchedule(req.params.id);
-  if (!schedule) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, schedule });
-});
-// Update schedule
-app.put('/api/winback/schedules/:id', (req, res) => {
-  const schedule = winbackScheduleModel.updateSchedule(req.params.id, req.body || {});
-  if (!schedule) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, schedule });
-});
-// Delete schedule
-app.delete('/api/winback/schedules/:id', (req, res) => {
-  const ok = winbackScheduleModel.deleteSchedule(req.params.id);
-  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true });
-});
 
-// ---------- ABANDONED CHECKOUT WINBACK: SEGMENTATION ENDPOINTS ----------
-const winbackSegmentModel = require('./tools/abandoned-checkout-winback/segmentModel.js');
-// Create segment
-app.post('/api/winback/segments', (req, res) => {
-  try {
-    const segment = winbackSegmentModel.createSegment(req.body || {});
-    res.json({ ok: true, segment });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-// List segments
-app.get('/api/winback/segments', (req, res) => {
-  res.json({ ok: true, segments: winbackSegmentModel.listSegments() });
-});
-// Get segment by ID
-app.get('/api/winback/segments/:id', (req, res) => {
-  const segment = winbackSegmentModel.getSegment(req.params.id);
-  if (!segment) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, segment });
-});
-// Update segment
-app.put('/api/winback/segments/:id', (req, res) => {
-  const segment = winbackSegmentModel.updateSegment(req.params.id, req.body || {});
-  if (!segment) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, segment });
-});
-// Delete segment
-app.delete('/api/winback/segments/:id', (req, res) => {
-  const ok = winbackSegmentModel.deleteSegment(req.params.id);
-  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true });
-});
 
 // ---------- ABANDONED CHECKOUT WINBACK: ANALYTICS ENDPOINTS ----------
 const winbackAnalyticsModel = require('./tools/abandoned-checkout-winback/analyticsModel.js');
@@ -1126,20 +1044,6 @@ app.get('/api/winback/analytics', (req, res) => {
   res.json({ ok: true, events });
 });
 
-// ---------- ABANDONED CHECKOUT WINBACK: SHOPIFY ABANDONED CHECKOUTS ENDPOINT ----------
-const winbackShopify = require('./tools/abandoned-checkout-winback/shopify.js');
-// Fetch abandoned checkouts from Shopify for a given shop
-app.get('/api/winback/shopify/abandoned-checkouts', async (req, res) => {
-  const shop = req.query.shop;
-  let token = req.query.token || process.env.SHOPIFY_ADMIN_TOKEN || '';
-  try {
-    const apiVersion = req.query.apiVersion || process.env.SHOPIFY_API_VERSION || '2023-10';
-    const checkouts = await winbackShopify.fetchAbandonedCheckouts({ shop, token, apiVersion });
-    res.json({ ok: true, abandonedCheckouts: checkouts });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
 
 // ---------- PRODUCT SEO SUGGESTION ENDPOINT ----------
 app.post('/api/run/product-seo', async (req, res) => {
@@ -1258,16 +1162,6 @@ if (require.main === module) {
   const http = require('http');
   server = http.createServer(app);
 
-  // Attach WebSocket stub for /ws/abandoned-checkout-winback
-  const WebSocket = require('ws');
-  wss = new WebSocket.Server({ server, path: '/ws/abandoned-checkout-winback' });
-  wss.on('connection', ws => {
-    ws.send(JSON.stringify({ type: 'info', message: 'Stub WebSocket connection established.' }));
-    ws.on('message', msg => {
-      // Echo for debug
-      ws.send(JSON.stringify({ type: 'echo', message: msg }));
-    });
-  });
 
   // Attach other sockets
   initABTestingSuiteSocket(server);

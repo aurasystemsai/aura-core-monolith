@@ -1,38 +1,28 @@
-// In-memory store for winback schedules
-const schedules = [];
+// In-memory schedule model for winback flows
+const schedules = {};
+let nextId = 1;
 
 function createSchedule(data) {
-  const schedule = { id: Date.now().toString(), ...data };
-  schedules.push(schedule);
+  const id = String(nextId++);
+  const schedule = { id, ...data };
+  schedules[id] = schedule;
   return schedule;
 }
-
 function listSchedules() {
-  return schedules;
+  return Object.values(schedules);
 }
-
 function getSchedule(id) {
-  return schedules.find(s => s.id === id);
+  return schedules[id] || null;
 }
-
 function updateSchedule(id, data) {
-  const idx = schedules.findIndex(s => s.id === id);
-  if (idx === -1) return null;
-  schedules[idx] = { ...schedules[idx], ...data };
-  return schedules[idx];
+  if (!schedules[id]) return null;
+  schedules[id] = { ...schedules[id], ...data };
+  return schedules[id];
 }
-
 function deleteSchedule(id) {
-  const idx = schedules.findIndex(s => s.id === id);
-  if (idx === -1) return false;
-  schedules.splice(idx, 1);
+  if (!schedules[id]) return false;
+  delete schedules[id];
   return true;
 }
 
-module.exports = {
-  createSchedule,
-  listSchedules,
-  getSchedule,
-  updateSchedule,
-  deleteSchedule,
-};
+module.exports = { createSchedule, listSchedules, getSchedule, updateSchedule, deleteSchedule };

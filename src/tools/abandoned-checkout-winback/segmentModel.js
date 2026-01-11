@@ -1,38 +1,28 @@
-// In-memory store for winback segments
-const segments = [];
+// In-memory segment model for winback flows
+const segments = {};
+let nextId = 1;
 
 function createSegment(data) {
-  const segment = { id: Date.now().toString(), ...data };
-  segments.push(segment);
+  const id = String(nextId++);
+  const segment = { id, ...data };
+  segments[id] = segment;
   return segment;
 }
-
 function listSegments() {
-  return segments;
+  return Object.values(segments);
 }
-
 function getSegment(id) {
-  return segments.find(s => s.id === id);
+  return segments[id] || null;
 }
-
 function updateSegment(id, data) {
-  const idx = segments.findIndex(s => s.id === id);
-  if (idx === -1) return null;
-  segments[idx] = { ...segments[idx], ...data };
-  return segments[idx];
+  if (!segments[id]) return null;
+  segments[id] = { ...segments[id], ...data };
+  return segments[id];
 }
-
 function deleteSegment(id) {
-  const idx = segments.findIndex(s => s.id === id);
-  if (idx === -1) return false;
-  segments.splice(idx, 1);
+  if (!segments[id]) return false;
+  delete segments[id];
   return true;
 }
 
-module.exports = {
-  createSegment,
-  listSegments,
-  getSegment,
-  updateSegment,
-  deleteSegment,
-};
+module.exports = { createSegment, listSegments, getSegment, updateSegment, deleteSegment };
