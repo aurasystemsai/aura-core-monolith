@@ -1,4 +1,21 @@
-// const complianceModel = require('./complianceModel');
+
+const express = require('express');
+const OpenAI = require('openai');
+const db = require('./db');
+const rbac = require('./rbac');
+const i18n = require('./i18n');
+const analytics = require('./analyticsModel');
+const notificationModel = require('./notificationModel');
+const webhookModel = require('./webhookModel');
+const pluginSystem = require('./pluginSystem');
+const complianceModel = require('./complianceModel');
+const bandit = require('./bandit');
+const apiKeys = require('./apiKeys');
+const { sendSlackNotification } = require('./slackNotify');
+const auditModel = require('./auditModel');
+const openaiUtil = require('./openai');
+const router = express.Router();
+
 // Residency/compliance endpoints
 router.post('/compliance/export', (req, res) => {
   const { userId } = req.body || {};
@@ -19,7 +36,7 @@ router.post('/compliance/update', (req, res) => {
   const updated = complianceModel.updateRequestStatus(id, status);
   res.json({ ok: true, updated });
 });
-const bandit = require('./bandit');
+
 // Bandit optimization endpoints
 router.post('/bandit/select', (req, res) => {
   const { variantIds } = req.body || {};
@@ -33,7 +50,7 @@ router.post('/bandit/reward', (req, res) => {
   bandit.recordResult(variantId, reward);
   res.json({ ok: true });
 });
-const apiKeys = require('./apiKeys');
+
 // API key management endpoints
 router.post('/apikeys/create', (req, res) => {
   const { userId } = req.body || {};
@@ -50,7 +67,7 @@ router.get('/apikeys', (req, res) => {
   const keys = apiKeys.listKeys(userId);
   res.json({ ok: true, keys });
 });
-const { sendSlackNotification } = require('./slackNotify');
+
 // Slack notification endpoint
 router.post('/notify/slack', async (req, res) => {
   try {
@@ -61,7 +78,7 @@ router.post('/notify/slack', async (req, res) => {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
-const auditModel = require('./auditModel');
+
 // RBAC check endpoint (flagship)
 router.post('/rbac/check', (req, res) => {
   const { role, action } = req.body || {};
@@ -78,7 +95,7 @@ router.get('/audit', (req, res) => {
   const entries = auditModel.listAudits(req.query || {});
   res.json({ ok: true, entries });
 });
-const openaiUtil = require('./openai');
+
 // AI-powered content/segmentation endpoint
 router.post('/ai/content', async (req, res) => {
   try {
@@ -89,19 +106,6 @@ router.post('/ai/content', async (req, res) => {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
-const express = require('express');
-// ...existing code...
-const OpenAI = require('openai');
-const db = require('./db');
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const rbac = require('./rbac');
-const i18n = require('./i18n');
-const analytics = require('./analyticsModel');
-const notificationModel = require('./notificationModel');
-const webhookModel = require('./webhookModel');
-const pluginSystem = require('./pluginSystem');
-// const complianceModel = require('./complianceModel');
-const router = express.Router();
 
 // CRUD endpoints
 router.get('/items', (req, res) => {
