@@ -1,5 +1,6 @@
 
 import React, { useState, Suspense, lazy } from "react";
+import ErrorBoundary from "./ErrorBoundary";
 import toolsMeta from "../toolMeta";
 import ToolPlaceholder from "./ToolPlaceholder";
 import ToolScaffold from "./tools/ToolScaffold";
@@ -40,15 +41,17 @@ function ToolDetailModal({ tool, onClose }) {
           <span className="tool-card-tag">{tool.shortTag || tool.category}</span>
         </div>
         <div className="tool-modal-actions" style={{ marginTop: 24 }}>
-          <Suspense fallback={<div>Loading tool…</div>}>
-            {ToolComponent ? (
-              <ToolComponent />
-            ) : tool.id && tool.id.endsWith("engine") ? (
-              <ToolScaffold toolId={tool.id} toolName={tool.name} fields={genericFields} />
-            ) : (
-              <ToolPlaceholder name={tool.name} />
-            )}
-          </Suspense>
+          <ErrorBoundary>
+            <Suspense fallback={<div>Loading tool…</div>}>
+              {ToolComponent ? (
+                <ToolComponent />
+              ) : tool.id && tool.id.endsWith("engine") ? (
+                <ToolScaffold toolId={tool.id} toolName={tool.name} fields={genericFields} />
+              ) : (
+                <ToolPlaceholder name={tool.name} />
+              )}
+            </Suspense>
+          </ErrorBoundary>
         </div>
       </div>
     </div>
