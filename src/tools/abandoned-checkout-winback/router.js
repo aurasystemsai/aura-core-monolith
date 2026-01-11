@@ -1,4 +1,4 @@
-const complianceModel = require('./complianceModel');
+// const complianceModel = require('./complianceModel');
 // Residency/compliance endpoints
 router.post('/compliance/export', (req, res) => {
   const { userId } = req.body || {};
@@ -100,7 +100,7 @@ const analytics = require('./analyticsModel');
 const notificationModel = require('./notificationModel');
 const webhookModel = require('./webhookModel');
 const pluginSystem = require('./pluginSystem');
-const complianceModel = require('./complianceModel');
+// const complianceModel = require('./complianceModel');
 const router = express.Router();
 
 // CRUD endpoints
