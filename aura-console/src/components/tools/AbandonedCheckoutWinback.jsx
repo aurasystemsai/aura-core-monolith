@@ -123,6 +123,7 @@ export default function AbandonedCheckoutWinback() {
   return (
     <ToolScaffold toolId="abandoned-checkout-winback">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 24 }}>
+        <div style={{ background: '#ff0', color: '#000', fontWeight: 900, fontSize: 24, padding: 12, marginBottom: 18, borderRadius: 8 }}>TEST RENDER</div>
         {topLevelError && (
           <div style={{ color: '#fff', background: '#ef4444', padding: 16, borderRadius: 8, marginBottom: 18, fontWeight: 600, fontSize: 16 }}>
             {topLevelError}
