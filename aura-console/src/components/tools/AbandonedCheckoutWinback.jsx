@@ -103,6 +103,9 @@ export default function AbandonedCheckoutWinback() {
 
   // Main UI
   return (
+    <div style={{ background: '#ff0', color: '#000', padding: 8, fontWeight: 700, fontSize: 18, marginBottom: 12, borderRadius: 8 }}>
+      [DEBUG] Rendering flagship AbandonedCheckoutWinback.jsx
+    </div>
     <ToolScaffold toolId="abandoned-checkout-winback">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 24 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Abandoned Checkout Winback</h2>
