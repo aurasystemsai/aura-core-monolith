@@ -1,6 +1,7 @@
 
 import React, { useState, Suspense, lazy } from "react";
 import ErrorBoundary from "./ErrorBoundary";
+import { useGlobalApiError } from "../globalApiError";
 import toolsMeta from "../toolMeta";
 import ToolPlaceholder from "./ToolPlaceholder";
 import ToolScaffold from "./tools/ToolScaffold";
@@ -23,6 +24,7 @@ const toolComponents = {
 };
 
 function ToolDetailModal({ tool, onClose }) {
+  const [globalApiError] = useGlobalApiError();
   if (!tool) return null;
   const ToolComponent = toolComponents[tool.id];
   // Example fields for generic tools (customize as needed)
@@ -40,6 +42,11 @@ function ToolDetailModal({ tool, onClose }) {
         <div className="tool-modal-meta">
           <span className="tool-card-tag">{tool.shortTag || tool.category}</span>
         </div>
+        {globalApiError && (
+          <div style={{ color: '#fff', background: '#ef4444', padding: 16, borderRadius: 8, margin: '18px 0', fontWeight: 600, fontSize: 16 }}>
+            {globalApiError}
+          </div>
+        )}
         <div className="tool-modal-actions" style={{ marginTop: 24 }}>
           <ErrorBoundary>
             <Suspense fallback={<div>Loading tool…</div>}>
