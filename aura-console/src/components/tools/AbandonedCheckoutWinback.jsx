@@ -107,8 +107,7 @@ export default function AbandonedCheckoutWinback() {
       <div style={{ background: '#ff0', color: '#000', padding: 8, fontWeight: 700, fontSize: 18, marginBottom: 12, borderRadius: 8 }}>
         [DEBUG] Rendering flagship AbandonedCheckoutWinback.jsx
       </div>
-      <ToolScaffold toolId="abandoned-checkout-winback">
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: 24 }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 24 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Abandoned Checkout Winback</h2>
         <button
           onClick={() => setShowOnboarding(v => !v)}
@@ -213,7 +212,6 @@ export default function AbandonedCheckoutWinback() {
             Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
         </div>
       </div>
-    </ToolScaffold>
     </>
   );
 }
