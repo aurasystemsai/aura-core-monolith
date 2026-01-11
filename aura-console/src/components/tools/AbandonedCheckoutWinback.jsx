@@ -11,7 +11,6 @@ import WinbackAnalyticsChart from './WinbackAnalyticsChart';
 
 // Placeholder for the full-featured Abandoned Checkout Winback UI
 export default function AbandonedCheckoutWinback() {
-  // ...existing code...
   // Flagship UI state
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
@@ -27,7 +26,8 @@ export default function AbandonedCheckoutWinback() {
   const [imported, setImported] = useState(null);
   const [exported, setExported] = useState(null);
   const [feedback, setFeedback] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(""); // For feedback and general errors
+  const [topLevelError, setTopLevelError] = useState(""); // For API/network errors
   const [loading, setLoading] = useState(false);
   const fileInputRef = React.useRef();
 
@@ -38,6 +38,24 @@ export default function AbandonedCheckoutWinback() {
     if (data.type === 'activity') setActivityLog(l => [data.payload, ...l]);
     if (data.type === 'notification') setNotifications(n => [data.payload, ...n]);
   });
+
+  // Example: fetch analytics on mount and show error if fails
+  useEffect(() => {
+    (async () => {
+      try {
+        const resp = await apiFetch('/api/analytics');
+        if (!resp.ok) {
+          const msg = `API error: ${resp.status} ${resp.statusText}`;
+          setTopLevelError(msg);
+          return;
+        }
+        const data = await resp.json();
+        setAnalytics(data.analytics || []);
+      } catch (err) {
+        setTopLevelError(err.message || 'Network error');
+      }
+    })();
+  }, []);
   // Enhanced onboarding wizard
   const onboardingContent = (
     <WinbackOnboardingWizard onComplete={() => { setOnboardingComplete(true); setShowOnboarding(false); }} />
@@ -105,6 +123,11 @@ export default function AbandonedCheckoutWinback() {
   return (
     <ToolScaffold toolId="abandoned-checkout-winback">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 24 }}>
+        {topLevelError && (
+          <div style={{ color: '#fff', background: '#ef4444', padding: 16, borderRadius: 8, marginBottom: 18, fontWeight: 600, fontSize: 16 }}>
+            {topLevelError}
+          </div>
+        )}
         <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Abandoned Checkout Winback</h2>
         <button
           onClick={() => setShowOnboarding(v => !v)}
