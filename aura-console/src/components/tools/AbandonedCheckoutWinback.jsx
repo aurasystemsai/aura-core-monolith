@@ -339,7 +339,64 @@ export default function AbandonedCheckoutWinback() {
           {activeSection === 'segments' && (
             <section aria-label="Segments">
               <WinbackFeatureCard title="Advanced Segmentation" description="Create, manage, and apply dynamic customer segments. Saved segments, rule builder, and filters." icon="👥" />
-              {/* ...existing code for segments... */}
+              <div>
+                {/* Segments Table & Bulk Actions */}
+                <div style={{ marginTop: 24, marginBottom: 32 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <div style={{ fontWeight: 700, fontSize: 20 }}>Your Segments</div>
+                    <button onClick={() => openSegmentModal()} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ New Segment</button>
+                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--background-secondary)', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
+                    <thead>
+                      <tr style={{ background: '#f3f4f6' }}>
+                        <th><input type="checkbox" checked={segmentsList.every(s => s.selected)} onChange={e => selectAllSegments(e.target.checked)} aria-label="Select all segments" /></th>
+                        <th>Name</th>
+                        <th>Rule</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {segmentsList.length === 0 ? (
+                        <tr><td colSpan={5} style={{ textAlign: 'center', color: '#64748b', padding: 24 }}>No segments yet.</td></tr>
+                      ) : segmentsList.map(s => (
+                        <tr key={s.id} style={{ background: s.selected ? '#e0e7ff' : undefined }}>
+                          <td><input type="checkbox" checked={!!s.selected} onChange={() => toggleSelectSegment(s.id)} aria-label={`Select segment ${s.name}`} /></td>
+                          <td>{s.name}</td>
+                          <td>{s.rule}</td>
+                          <td>{s.created}</td>
+                          <td>
+                            <button onClick={() => openSegmentModal(s)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
+                            <button onClick={() => setSegmentsList(list => list.filter(x => x.id !== s.id))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {/* Bulk Actions */}
+                  <div style={{ marginTop: 12, display: 'flex', gap: 12 }}>
+                    <button onClick={deleteSelectedSegments} disabled={!segmentsList.some(s => s.selected)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Delete Selected</button>
+                  </div>
+                </div>
+                {/* Segment Modal (Add/Edit) */}
+                {showSegmentModal && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
+                    <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                      <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingSegment ? 'Edit Segment' : 'New Segment'}</h3>
+                      <form onSubmit={e => { e.preventDefault(); saveSegment(editingSegment ? editingSegment : { name: '', rule: '', created: new Date().toISOString().slice(0, 10) }); }}>
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-segment-name">Name</label>
+                        <input id="modal-segment-name" value={editingSegment ? editingSegment.name : ''} onChange={e => setEditingSegment(editingSegment ? { ...editingSegment, name: e.target.value } : { name: e.target.value, rule: '', created: new Date().toISOString().slice(0, 10) })} placeholder="Segment name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required />
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-segment-rule">Rule</label>
+                        <input id="modal-segment-rule" value={editingSegment ? editingSegment.rule : ''} onChange={e => setEditingSegment(editingSegment ? { ...editingSegment, rule: e.target.value } : { name: '', rule: e.target.value, created: new Date().toISOString().slice(0, 10) })} placeholder="Rule (e.g. Spent > $500)" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required />
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                          <button type="button" onClick={closeSegmentModal} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
+                          <button type="submit" style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>{editingSegment ? 'Save Changes' : 'Create Segment'}</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+              </div>
             </section>
           )}
           {activeSection === 'templates' && (
