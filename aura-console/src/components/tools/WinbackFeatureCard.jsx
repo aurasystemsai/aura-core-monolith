@@ -32,10 +32,10 @@ export default function WinbackFeatureCard({ title, description, icon, children,
         flexWrap: 'wrap',
       }}
     >
-      {icon && <div style={{ fontSize: 32, marginRight: 12, color: darkMode ? '#a3e635' : '#0ea5e9' }}>{icon}</div>}
+      {/* Icon removed for clean look */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 700, fontSize: 20, color: '#a3e635', marginBottom: 4 }}>{title}</div>
-        <div style={{ color: '#e0e7ff', fontSize: 15, marginBottom: 6 }}>{description}</div>
+        <div style={{ fontWeight: 700, fontSize: 20, color: '#fafafa', marginBottom: 4 }}>{title}</div>
+        <div style={{ color: '#d1d5db', fontSize: 15, marginBottom: 6 }}>{description}</div>
         {children}
         {actions.length > 0 && (
           <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
