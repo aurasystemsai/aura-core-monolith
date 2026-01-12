@@ -143,10 +143,22 @@ function App() {
   const [showChatbot, setShowChatbot] = useState(false);
   // Onboarding modal state
   const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('auraOnboarded'));
+  // Changelog modal state
+  const [showChangelog, setShowChangelog] = useState(false);
+  // Changelog unread state (simple: mark as seen after open)
+  const [changelogSeen, setChangelogSeen] = useState(() => !!localStorage.getItem('auraChangelogSeen'));
+  // Toast state
+  const [toast, setToast] = useState({ message: '', type: 'info' });
   // Mark onboarding as complete
   const handleCloseOnboarding = () => {
     setShowOnboarding(false);
     localStorage.setItem('auraOnboarded', '1');
+  };
+  // Mark changelog as seen
+  const handleShowChangelog = () => {
+    setShowChangelog(true);
+    setChangelogSeen(true);
+    localStorage.setItem('auraChangelogSeen', '1');
   };
   return (
     <ErrorBoundary>
