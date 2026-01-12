@@ -402,7 +402,72 @@ export default function AbandonedCheckoutWinback() {
           {activeSection === 'templates' && (
             <section aria-label="Templates">
               <WinbackFeatureCard title="Templates" description="Manage and create message templates for campaigns." icon="📝" />
-              {/* ...template code... */}
+              <div>
+                {/* Templates Table & Bulk Actions */}
+                <div style={{ marginTop: 24, marginBottom: 32 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <div style={{ fontWeight: 700, fontSize: 20 }}>Your Templates</div>
+                    <button onClick={() => openTemplateModal()} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ New Template</button>
+                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--background-secondary)', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
+                    <thead>
+                      <tr style={{ background: '#f3f4f6' }}>
+                        <th><input type="checkbox" checked={templatesList.every(t => t.selected)} onChange={e => selectAllTemplates(e.target.checked)} aria-label="Select all templates" /></th>
+                        <th>Name</th>
+                        <th>Channel</th>
+                        <th>Content</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {templatesList.length === 0 ? (
+                        <tr><td colSpan={6} style={{ textAlign: 'center', color: '#64748b', padding: 24 }}>No templates yet.</td></tr>
+                      ) : templatesList.map(t => (
+                        <tr key={t.id} style={{ background: t.selected ? '#e0e7ff' : undefined }}>
+                          <td><input type="checkbox" checked={!!t.selected} onChange={() => toggleSelectTemplate(t.id)} aria-label={`Select template ${t.name}`} /></td>
+                          <td>{t.name}</td>
+                          <td>{t.channel}</td>
+                          <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.content}</td>
+                          <td>{t.created}</td>
+                          <td>
+                            <button onClick={() => openTemplateModal(t)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
+                            <button onClick={() => setTemplatesList(list => list.filter(x => x.id !== t.id))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {/* Bulk Actions */}
+                  <div style={{ marginTop: 12, display: 'flex', gap: 12 }}>
+                    <button onClick={deleteSelectedTemplates} disabled={!templatesList.some(t => t.selected)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Delete Selected</button>
+                  </div>
+                </div>
+                {/* Template Modal (Add/Edit) */}
+                {showTemplateModal && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
+                    <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                      <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingTemplate ? 'Edit Template' : 'New Template'}</h3>
+                      <form onSubmit={e => { e.preventDefault(); saveTemplate(editingTemplate ? editingTemplate : { name: '', channel: 'email', content: '', created: new Date().toISOString().slice(0, 10) }); }}>
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-template-name">Name</label>
+                        <input id="modal-template-name" value={editingTemplate ? editingTemplate.name : ''} onChange={e => setEditingTemplate(editingTemplate ? { ...editingTemplate, name: e.target.value } : { name: e.target.value, channel: 'email', content: '', created: new Date().toISOString().slice(0, 10) })} placeholder="Template name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required />
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-template-channel">Channel</label>
+                        <select id="modal-template-channel" value={editingTemplate ? editingTemplate.channel : 'email'} onChange={e => setEditingTemplate(editingTemplate ? { ...editingTemplate, channel: e.target.value } : { name: '', channel: e.target.value, content: '', created: new Date().toISOString().slice(0, 10) })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required>
+                          <option value="email">Email</option>
+                          <option value="sms">SMS</option>
+                          <option value="push">Push</option>
+                        </select>
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-template-content">Content</label>
+                        <textarea id="modal-template-content" value={editingTemplate ? editingTemplate.content : ''} onChange={e => setEditingTemplate(editingTemplate ? { ...editingTemplate, content: e.target.value } : { name: '', channel: 'email', content: e.target.value, created: new Date().toISOString().slice(0, 10) })} placeholder="Template content" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12, minHeight: 80 }} required />
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                          <button type="button" onClick={closeTemplateModal} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
+                          <button type="submit" style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>{editingTemplate ? 'Save Changes' : 'Create Template'}</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+              </div>
             </section>
           )}
           {activeSection === 'abTesting' && (
