@@ -1259,18 +1259,7 @@ const http = require('http');
 if (require.main === module) {
   const http = require('http');
   server = http.createServer(app);
-
-  // Attach WebSocket stub for /ws/abandoned-checkout-winback
-  const WebSocket = require('ws');
-  wss = new WebSocket.Server({ server, path: '/ws/abandoned-checkout-winback' });
-  wss.on('connection', ws => {
-    ws.send(JSON.stringify({ type: 'info', message: 'Stub WebSocket connection established.' }));
-    ws.on('message', msg => {
-      // Echo for debug
-      ws.send(JSON.stringify({ type: 'echo', message: msg }));
-    });
-  });
-
+  // WebSocket for /ws/abandoned-checkout-winback removed (not supported in this environment)
   // Attach other sockets
   initABTestingSuiteSocket(server);
   server.listen(PORT, () => {
