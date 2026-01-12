@@ -150,200 +150,9 @@ function App() {
   };
   return (
     <ErrorBoundary>
-      <div style={{ display: 'flex', minHeight: '100vh', background: '#10111a', margin: 0, padding: 0 }}>
-        <Sidebar />
-        <main style={{ flex: 1, margin: 0, padding: 0, background: 'none' }}>
-          <div>
-            <section>
-              <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading…</div>}>
-                {activeSection === "tools" && project && <ToolsList />}
-                {/* Render a ToolScaffold for each tool in toolsMeta (fallback if no custom UI) */}
-                {/* Render ProductSeoEngine with its own Suspense and ErrorBoundary */}
-                {activeSection === "product-seo" && (
-                  <ErrorBoundary>
-                    <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading Product SEO Engine…</div>}>
-                      <ProductSeoEngine />
-                    </Suspense>
-                  </ErrorBoundary>
-                )}
-                return (
-                  <ErrorBoundary onError={handleErrorBoundary}>
-                    <OnboardingModal open={showOnboarding} onClose={handleCloseOnboarding} />
-                    <ChangelogModal open={showChangelog} onClose={() => setShowChangelog(false)} />
-                    <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
-                    {/* Floating AI Chatbot widget - always visible at root */}
-                    <div style={{ display: 'flex', minHeight: '100vh', background: '#10111a', margin: 0, padding: 0 }}>
-                      <Sidebar
-                        current={activeSection}
-                        onSelect={setActiveSection}
-                        onShowChangelog={handleShowChangelog}
-                        changelogUnread={!changelogSeen}
-                        extraItems={[
-                          { key: 'pricing', label: 'Pricing' },
-                          { key: 'ai-chatbot', label: 'AI Chatbot' },
-                          { key: 'automation-scheduler', label: 'Automation Scheduler' },
-                          ...toolsMeta.map(tool => ({ key: tool.id, label: tool.name }))
-                        ]}
-                      />
-                      <main style={{ flex: 1, margin: 0, padding: 0, background: 'none' }}>
-                        <div>
-                          <section>
-                            <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading…</div>}>
-                              {activeSection === "dashboard" && project && <DashboardHome setActiveSection={setActiveSection} />}
-                              {activeSection === "pricing" && <PricingPage />}
-                              {activeSection === "automation-scheduler" && <AutomationScheduler />}
-                              {activeSection === "reports" && <Reports />}
-                              {activeSection === "auth" && <Auth />}
-                              {activeSection === "user-management" && <UserManagement coreUrl={coreUrl} />}
-                              {activeSection === "onboarding" && <Onboarding />}
-                              {activeSection === "credits" && <Credits />}
-                              {activeSection === "orchestration" && <Orchestration />}
-                              {activeSection === "products" && (
-                                <ProductsList 
-                                  shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
-                                  shopToken={localStorage.getItem("shopToken")}
-                                />
-                              )}
-                              {activeSection === "content-health" && project && (
-                                <ContentHealthAuditor coreUrl={coreUrl} projectId={project.id} />
-                              )}
-                              {activeSection === "fix-queue" && project && (
-                                <FixQueue coreUrl={coreUrl} projectId={project.id} />
-                              )}
-                              {activeSection === "content-ingest" && project && (
-                                <ContentIngestor coreUrl={coreUrl} projectId={project.id} />
-                              )}
-                              {activeSection === "draft-library" && project && (
-                                <DraftLibrary coreUrl={coreUrl} projectId={project.id} />
-                              )}
-                              {activeSection === "system-health" && (
-                                <SystemHealthPanel
-                                  coreStatus={coreStatus}
-                                  coreStatusLabel={coreStatusLabel}
-                                  lastRunAt={lastRunAt}
-                                />
-                              )}
-                              {activeSection === "ai-chatbot" && (
-                                <AiChatbot coreUrl={coreUrl} />
-                              )}
-                              {activeSection === "tools" && project && <ToolsList />}
-                              {/* Render a ToolScaffold for each tool in toolsMeta (fallback if no custom UI) */}
-                              {/* Render ProductSeoEngine with its own Suspense and ErrorBoundary */}
-                              {activeSection === "product-seo" && (
-                                <ErrorBoundary>
-                                  <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading Product SEO Engine…</div>}>
-                                    <ProductSeoEngine />
-                                  </Suspense>
-                                </ErrorBoundary>
-                              )}
-                              {/* Other custom UIs and fallback ToolScaffold */}
-                              {toolsMeta.map(tool => {
-                                if (activeSection === tool.id) {
-                                  switch (tool.id) {
-                                    case "abandoned-checkout-winback": return <AbandonedCheckoutWinback key={tool.id} />;
-                                    // ...existing code...
-                                    default:
-                                      // Fallback to generic scaffold for any tool not custom-mapped
-                                      const defaultFields = [
-                                        { name: "input", label: "Input", type: "textarea", required: false }
-                                      ];
-                                      return <ToolScaffold key={tool.id} toolId={tool.id} toolName={tool.name} fields={defaultFields} />;
-                                  }
-                                }
-                                return null;
-                              })}
-                            </Suspense>
-                          </section>
-                        </div>
-                      </main>
-                    </div>
-                    {/* Floating AI Chatbot widget - always visible at root */}
-                    <div style={{ position: "fixed", bottom: 32, right: 32, zIndex: 9999 }}>
-                      {!showChatbot && (
-                        <button
-                          onClick={() => setShowChatbot(true)}
-                          style={{
-                            background: "#232b3b",
-                            color: "#7fffd4",
-                            border: "none",
-                            borderRadius: 50,
-                            boxShadow: "0 2px 12px #22d3ee55",
-                            padding: "16px 22px",
-                            fontWeight: 700,
-                            fontSize: 18,
-                            cursor: "pointer"
-                          }}
-                          aria-label="Open AI Chatbot"
-                        >
-                          💬 Chat
-                        </button>
-                      )}
-                      {showChatbot && (
-                        <div style={{ position: "relative", width: 400, maxWidth: "90vw" }}>
-                          <div style={{ position: "absolute", top: -38, right: 0 }}>
-                            <button
-                              onClick={() => setShowChatbot(false)}
-                              style={{
-                                background: "#ff4d4f",
-                                color: "#fff",
-                                border: "none",
-                                borderRadius: 20,
-                                padding: "4px 12px",
-                                fontWeight: 700,
-                                fontSize: 14,
-                                cursor: "pointer"
-                              }}
-                              aria-label="Close AI Chatbot"
-                            >
-                              ✕ Close
-                            </button>
-                          </div>
-                          <AiChatbot coreUrl={coreUrl} />
-                        </div>
-                      )}
-                    </div>
-                  </ErrorBoundary>
-                );
-            style={{
-              background: "#232b3b",
-              color: "#7fffd4",
-              border: "none",
-              borderRadius: 50,
-              boxShadow: "0 2px 12px #22d3ee55",
-              padding: "16px 22px",
-              fontWeight: 700,
-              fontSize: 18,
-              cursor: "pointer"
-            }}
-            aria-label="Open AI Chatbot"
-          >
-            💬 Chat
-          </button>
-        )}
-        {showChatbot && (
-          <div style={{ position: "relative", width: 400, maxWidth: "90vw" }}>
-            <div style={{ position: "absolute", top: -38, right: 0 }}>
-              <button
-                onClick={() => setShowChatbot(false)}
-                style={{
-                  background: "#ff4d4f",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 20,
-                  padding: "4px 12px",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  cursor: "pointer"
-                }}
-                aria-label="Close AI Chatbot"
-              >
-                ✕ Close
-              </button>
-            </div>
-            <AiChatbot coreUrl={coreUrl} />
-          </div>
-        )}
-      </div>
+      <OnboardingModal open={showOnboarding} onClose={handleCloseOnboarding} />
+      <ChangelogModal open={showChangelog} onClose={() => setShowChangelog(false)} />
+      <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
       <div className="app-shell">
         <Sidebar
           current={activeSection}
@@ -482,6 +291,51 @@ function App() {
             </section>
           </div>
         </main>
+        {/* Floating AI Chatbot widget - always visible at root */}
+        <div style={{ position: "fixed", bottom: 32, right: 32, zIndex: 9999 }}>
+          {!showChatbot && (
+            <button
+              onClick={() => setShowChatbot(true)}
+              style={{
+                background: "#232b3b",
+                color: "#7fffd4",
+                border: "none",
+                borderRadius: 50,
+                boxShadow: "0 2px 12px #22d3ee55",
+                padding: "16px 22px",
+                fontWeight: 700,
+                fontSize: 18,
+                cursor: "pointer"
+              }}
+              aria-label="Open AI Chatbot"
+            >
+              💬 Chat
+            </button>
+          )}
+          {showChatbot && (
+            <div style={{ position: "relative", width: 400, maxWidth: "90vw" }}>
+              <div style={{ position: "absolute", top: -38, right: 0 }}>
+                <button
+                  onClick={() => setShowChatbot(false)}
+                  style={{
+                    background: "#ff4d4f",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 20,
+                    padding: "4px 12px",
+                    fontWeight: 700,
+                    fontSize: 14,
+                    cursor: "pointer"
+                  }}
+                  aria-label="Close AI Chatbot"
+                >
+                  ✕ Close
+                </button>
+              </div>
+              <AiChatbot coreUrl={coreUrl} />
+            </div>
+          )}
+        </div>
       </div>
     </ErrorBoundary>
   );
