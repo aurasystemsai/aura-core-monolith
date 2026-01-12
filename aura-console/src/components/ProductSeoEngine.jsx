@@ -29,7 +29,7 @@ export default function ProductSeoEngine() {
   const [lang, setLang] = useState('en');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [csrfToken, setCsrfToken] = useState('');
+  // Removed CSRF token logic (not needed)
 
 
 
@@ -138,7 +138,7 @@ export default function ProductSeoEngine() {
     setLoading(true);
     setError('');
     try {
-      await axios.post('/api/product-seo', form, { headers: { 'csrf-token': csrfToken } });
+      await axios.post('/api/product-seo', form);
       setForm({ product_id: '', title: '', meta_description: '', slug: '', keywords: '' });
       fetchProducts();
     } catch (err) {
@@ -155,7 +155,7 @@ export default function ProductSeoEngine() {
     try {
       // Expecting bulkAIInput as JSON array of { productName, productDescription }
       const products = JSON.parse(bulkAIInput);
-      const res = await axios.post('/api/product-seo/bulk-generate', { products }, { headers: { 'csrf-token': csrfToken } });
+      const res = await axios.post('/api/product-seo/bulk-generate', { products });
       setBulkAIResults(res.data.results || []);
     } catch (err) {
             <form onSubmit={handleManualFetch} style={{ marginBottom: 8 }}>
@@ -187,7 +187,7 @@ export default function ProductSeoEngine() {
     setLoading(true);
     setError('');
     try {
-      await axios.post('/api/product-seo/import', { data: importData, format: importFormat }, { headers: { 'csrf-token': csrfToken } });
+      await axios.post('/api/product-seo/import', { data: importData, format: importFormat });
       setImportData('');
       fetchProducts();
     } catch (err) {
@@ -240,7 +240,7 @@ export default function ProductSeoEngine() {
     setLoading(true);
     setError('');
     try {
-      await axios.post('/api/product-seo/shopify/export', { shop: shopifyShop, token: shopifyToken, products }, { headers: { 'csrf-token': csrfToken } });
+      await axios.post('/api/product-seo/shopify/export', { shop: shopifyShop, token: shopifyToken, products });
     } catch (err) {
       setError('Shopify export failed');
     }
@@ -251,7 +251,7 @@ export default function ProductSeoEngine() {
     setLoading(true);
     setError('');
     try {
-      await axios.post('/api/product-seo/notify', { message: 'SEO update', time: new Date().toISOString() }, { headers: { 'csrf-token': csrfToken } });
+      await axios.post('/api/product-seo/notify', { message: 'SEO update', time: new Date().toISOString() });
       setNotifications([...notifications, { message: 'SEO update', time: new Date().toISOString() }]);
     } catch (err) {
       setError('Notification failed');
@@ -277,7 +277,7 @@ export default function ProductSeoEngine() {
     setError('');
     setAiResult('');
     try {
-      const res = await axios.post('/api/product-seo/generate', aiInput, { headers: { 'csrf-token': csrfToken } });
+      const res = await axios.post('/api/product-seo/generate', aiInput);
       setAiResult(res.data.result || 'No result');
     } catch (err) {
       setError('AI generation failed');

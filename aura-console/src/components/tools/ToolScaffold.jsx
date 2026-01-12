@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 
 export default function ToolScaffold({ toolId, toolName, fields }) {
-  const [csrfToken, setCsrfToken] = useState("");
+  // Removed CSRF token logic (not needed)
   const safeFields = Array.isArray(fields) ? fields : [];
   const [form, setForm] = useState(() => Object.fromEntries(safeFields.map(f => [f.name, f.defaultValue || ""])));
   const [loading, setLoading] = useState(false);
@@ -14,12 +14,7 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
   const [validation, setValidation] = useState({});
   const formRef = useRef();
 
-  useEffect(() => {
-    fetch("/api/csrf-token")
-      .then(res => res.json())
-      .then(data => setCsrfToken(data.csrfToken || ""))
-      .catch(() => setCsrfToken(""));
-  }, []);
+  // ...existing code...
 
   // Accessibility: focus first input on mount
   useEffect(() => {
@@ -58,10 +53,10 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
       if (safeFields.some(f => f.type === "file")) {
         body = new FormData();
         safeFields.forEach(f => body.append(f.name, form[f.name]));
-        headers = { "csrf-token": csrfToken };
+        headers = {};
       } else {
         body = JSON.stringify(form);
-        headers = { "Content-Type": "application/json", "csrf-token": csrfToken };
+        headers = { "Content-Type": "application/json" };
       }
       const res = await fetch(`/api/run/${toolId}`, {
         method: "POST",
@@ -84,7 +79,7 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
     try {
       await fetch(`/api/run/${toolId}/feedback`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "csrf-token": csrfToken },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ feedback })
       });
       setFeedback("");
