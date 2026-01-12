@@ -11,6 +11,45 @@ import WinbackAnalyticsChart from './WinbackAnalyticsChart';
 
 // Placeholder for the full-featured Abandoned Checkout Winback UI
 export default function AbandonedCheckoutWinback() {
+            // Experiments state for A/B Testing section
+            const [experimentsList, setExperimentsList] = useState([
+              { id: 1, name: 'Subject Line Test', variantA: 'Welcome to Aura!', variantB: 'Get Started with Aura', status: 'active', created: '2026-01-01', selected: false },
+              { id: 2, name: 'SMS Timing', variantA: 'Send 1h after abandon', variantB: 'Send 24h after abandon', status: 'draft', created: '2026-01-05', selected: false },
+            ]);
+            const [showExperimentModal, setShowExperimentModal] = useState(false);
+            const [editingExperiment, setEditingExperiment] = useState(null);
+
+            // Open modal for new or edit
+            const openExperimentModal = (experiment = null) => {
+              setEditingExperiment(experiment);
+              setShowExperimentModal(true);
+            };
+            const closeExperimentModal = () => {
+              setEditingExperiment(null);
+              setShowExperimentModal(false);
+            };
+
+            // Save experiment (add or update)
+            const saveExperiment = (e) => {
+              if (e.id) {
+                setExperimentsList(list => list.map(x => x.id === e.id ? { ...e, selected: false } : x));
+              } else {
+                setExperimentsList(list => [...list, { ...e, id: Date.now(), selected: false }]);
+              }
+              closeExperimentModal();
+            };
+
+            // Bulk select
+            const toggleSelectExperiment = (id) => {
+              setExperimentsList(list => list.map(x => x.id === id ? { ...x, selected: !x.selected } : x));
+            };
+            const selectAllExperiments = (checked) => {
+              setExperimentsList(list => list.map(x => ({ ...x, selected: checked })));
+            };
+            // Bulk delete
+            const deleteSelectedExperiments = () => {
+              setExperimentsList(list => list.filter(x => !x.selected));
+            };
           // Templates state for flagship management
           const [templatesList, setTemplatesList] = useState([
             { id: 1, name: 'Welcome Email', channel: 'email', content: 'Welcome to Aura!', created: '2026-01-01', selected: false },
@@ -512,7 +551,76 @@ export default function AbandonedCheckoutWinback() {
           {activeSection === 'abTesting' && (
             <section aria-label="A/B Testing">
               <WinbackFeatureCard title="A/B Testing" description="Run experiments to optimize winback strategies." icon="🧪" />
-              {/* ...ab testing code... */}
+              <div>
+                {/* Experiments Table & Bulk Actions */}
+                <div style={{ marginTop: 24, marginBottom: 32 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <div style={{ fontWeight: 700, fontSize: 20 }}>Your Experiments</div>
+                    <button onClick={() => openExperimentModal()} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ New Experiment</button>
+                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--background-secondary)', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
+                    <thead>
+                      <tr style={{ background: '#f3f4f6' }}>
+                        <th><input type="checkbox" checked={experimentsList.every(e => e.selected)} onChange={e => selectAllExperiments(e.target.checked)} aria-label="Select all experiments" /></th>
+                        <th>Name</th>
+                        <th>Variant A</th>
+                        <th>Variant B</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {experimentsList.length === 0 ? (
+                        <tr><td colSpan={7} style={{ textAlign: 'center', color: '#64748b', padding: 24 }}>No experiments yet.</td></tr>
+                      ) : experimentsList.map(e => (
+                        <tr key={e.id} style={{ background: e.selected ? '#e0e7ff' : undefined }}>
+                          <td><input type="checkbox" checked={!!e.selected} onChange={() => toggleSelectExperiment(e.id)} aria-label={`Select experiment ${e.name}`} /></td>
+                          <td>{e.name}</td>
+                          <td>{e.variantA}</td>
+                          <td>{e.variantB}</td>
+                          <td>{e.status}</td>
+                          <td>{e.created}</td>
+                          <td>
+                            <button onClick={() => openExperimentModal(e)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
+                            <button onClick={() => setExperimentsList(list => list.filter(x => x.id !== e.id))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {/* Bulk Actions */}
+                  <div style={{ marginTop: 12, display: 'flex', gap: 12 }}>
+                    <button onClick={deleteSelectedExperiments} disabled={!experimentsList.some(e => e.selected)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Delete Selected</button>
+                  </div>
+                </div>
+                {/* Experiment Modal (Add/Edit) */}
+                {showExperimentModal && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
+                    <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                      <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingExperiment ? 'Edit Experiment' : 'New Experiment'}</h3>
+                      <form onSubmit={e => { e.preventDefault(); saveExperiment(editingExperiment ? editingExperiment : { name: '', variantA: '', variantB: '', status: 'draft', created: new Date().toISOString().slice(0, 10) }); }}>
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-experiment-name">Name</label>
+                        <input id="modal-experiment-name" value={editingExperiment ? editingExperiment.name : ''} onChange={e => setEditingExperiment(editingExperiment ? { ...editingExperiment, name: e.target.value } : { name: e.target.value, variantA: '', variantB: '', status: 'draft', created: new Date().toISOString().slice(0, 10) })} placeholder="Experiment name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required />
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-experiment-variantA">Variant A</label>
+                        <input id="modal-experiment-variantA" value={editingExperiment ? editingExperiment.variantA : ''} onChange={e => setEditingExperiment(editingExperiment ? { ...editingExperiment, variantA: e.target.value } : { name: '', variantA: e.target.value, variantB: '', status: 'draft', created: new Date().toISOString().slice(0, 10) })} placeholder="Variant A" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required />
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-experiment-variantB">Variant B</label>
+                        <input id="modal-experiment-variantB" value={editingExperiment ? editingExperiment.variantB : ''} onChange={e => setEditingExperiment(editingExperiment ? { ...editingExperiment, variantB: e.target.value } : { name: '', variantA: '', variantB: e.target.value, status: 'draft', created: new Date().toISOString().slice(0, 10) })} placeholder="Variant B" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required />
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-experiment-status">Status</label>
+                        <select id="modal-experiment-status" value={editingExperiment ? editingExperiment.status : 'draft'} onChange={e => setEditingExperiment(editingExperiment ? { ...editingExperiment, status: e.target.value } : { name: '', variantA: '', variantB: '', status: e.target.value, created: new Date().toISOString().slice(0, 10) })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 18 }} required>
+                          <option value="draft">Draft</option>
+                          <option value="active">Active</option>
+                          <option value="paused">Paused</option>
+                        </select>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                          <button type="button" onClick={closeExperimentModal} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
+                          <button type="submit" style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>{editingExperiment ? 'Save Changes' : 'Create Experiment'}</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+              </div>
             </section>
           )}
           {activeSection === 'analytics' && (
