@@ -4,6 +4,7 @@ let wss;
 // Replace app.listen with server.listen at the end of the file:
 // server.listen(PORT, ...)
 // --- All requires and initializations at the top ---
+const projectsCore = require('./core/projects');
 const path = require('path');
 const morgan = require('morgan');
 const compression = require('compression');
