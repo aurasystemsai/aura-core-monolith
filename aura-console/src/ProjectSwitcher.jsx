@@ -21,7 +21,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${coreUrl}/projects`);
+        const res = await fetch(`${coreUrl}/api/projects`);
         if (!res.ok) {
           const text = await res.text();
           throw new Error(text || `Core API returned ${res.status} for /projects`);

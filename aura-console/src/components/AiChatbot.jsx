@@ -9,12 +9,7 @@ export default function AiChatbot({ coreUrl }) {
   const [error, setError] = useState('');
   const [csrfToken, setCsrfToken] = useState('');
 
-  // Fetch CSRF token
-  React.useEffect(() => {
-    fetch('/api/csrf-token')
-      .then(res => res.json())
-      .then(data => setCsrfToken(data.csrfToken || ''));
-  }, []);
+  // Removed broken CSRF token fetch
 
   const sendMessage = async (e) => {
     e.preventDefault();

@@ -34,9 +34,6 @@ export default function ProductSeoEngine() {
 
 
   useEffect(() => {
-    fetch('/api/csrf-token')
-      .then(res => res.json())
-      .then(data => setCsrfToken(data.csrfToken || ''));
     fetchProducts();
     fetchShopifyProducts();
     fetchAnalytics();
