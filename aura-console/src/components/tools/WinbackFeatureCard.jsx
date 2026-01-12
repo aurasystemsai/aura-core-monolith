@@ -3,7 +3,8 @@ import React, { useState } from "react";
 
 export default function WinbackFeatureCard({ title, description, icon, children, actions = [], darkMode: propDarkMode }) {
   const [hover, setHover] = useState(false);
-  const darkMode = propDarkMode ?? false;
+  // Force dark mode for all cards
+  const darkMode = true;
   return (
     <div
       tabIndex={0}
@@ -14,7 +15,7 @@ export default function WinbackFeatureCard({ title, description, icon, children,
       onFocus={() => setHover(true)}
       onBlur={() => setHover(false)}
       style={{
-        background: darkMode ? '#18181b' : '#fff',
+        background: '#23232a',
         borderRadius: 16,
         boxShadow: hover ? '0 4px 24px #22d3ee33' : '0 2px 16px #0001',
         padding: 24,
@@ -27,14 +28,14 @@ export default function WinbackFeatureCard({ title, description, icon, children,
         outline: hover ? '2px solid #7fffd4' : 'none',
         transition: 'box-shadow 0.2s, outline 0.2s, background 0.2s',
         cursor: hover ? 'pointer' : 'default',
-        color: darkMode ? '#a3e635' : '#23263a',
+        color: '#fafafa',
         flexWrap: 'wrap',
       }}
     >
       {icon && <div style={{ fontSize: 32, marginRight: 12, color: darkMode ? '#a3e635' : '#0ea5e9' }}>{icon}</div>}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 700, fontSize: 20, color: darkMode ? '#a3e635' : '#23263a', marginBottom: 4 }}>{title}</div>
-        <div style={{ color: darkMode ? '#e0e7ff' : '#444', fontSize: 15, marginBottom: 6 }}>{description}</div>
+        <div style={{ fontWeight: 700, fontSize: 20, color: '#a3e635', marginBottom: 4 }}>{title}</div>
+        <div style={{ color: '#e0e7ff', fontSize: 15, marginBottom: 6 }}>{description}</div>
         {children}
         {actions.length > 0 && (
           <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
