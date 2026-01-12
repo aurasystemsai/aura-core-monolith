@@ -148,47 +148,47 @@ function App() {
     setShowOnboarding(false);
     localStorage.setItem('auraOnboarded', '1');
   };
-  // Toast state
-  const [toast, setToast] = useState({ message: '', type: 'info' });
-  // Helper to show toast
-  const showToast = (message, type = 'info') => {
-    setToast({ message, type });
-    setTimeout(() => setToast({ message: '', type: 'info' }), 3200);
-  };
-  // Theme switching removed for a single clean look
-  // Core state
-  const [coreUrl, setCoreUrl] = useState("https://aura-core-monolith.onrender.com");
-  const [coreStatus, setCoreStatus] = useState('checking');
-  const [coreStatusLabel, setCoreStatusLabel] = useState('Checking Core API …');
-  const [project, setProject] = useState(null);
-  const [autoCreating, setAutoCreating] = useState(false);
-  // Sidebar section state
-  const [activeSection, setActiveSection] = useState('dashboard');
-  // Checklist show/hide state
-  const [showChecklist, setShowChecklist] = useState(false);
-  // Product/blog fields
-  const [productTitle, setProductTitle] = useState('Waterproof gold huggie earrings');
-  const [productDescription, setProductDescription] = useState('Bold paperclip chain bracelet with a sweat-proof, waterproof coating. Adjustable fit for any wrist, perfect for everyday wear.');
-  const [brand, setBrand] = useState('DTP Jewellery');
-  const [tone, setTone] = useState('Elevated, modern, UK English');
-  const [useCases, setUseCases] = useState('gym, everyday wear, gifting');
-  // Weekly planner inputs
-  const [weeklyBrand, setWeeklyBrand] = useState('DTP Jewellery');
-  const [weeklyNiche, setWeeklyNiche] = useState('Waterproof everyday jewellery and gifting');
-  const [weeklyAudience, setWeeklyAudience] = useState('UK women 18–34 who want affordable waterproof jewellery');
-  const [weeklyCadence, setWeeklyCadence] = useState('2 posts per week');
-  const [weeklyThemes, setWeeklyThemes] = useState('product education, styling tips, gifting ideas, lifestyle stories');
-  const [weeklyTone, setWeeklyTone] = useState('Elevated, warm, UK English');
-  // Output fields
-  const [seoTitle, setSeoTitle] = useState('');
-  const [seoDescription, setSeoDescription] = useState('');
-  const [seoSlug, setSeoSlug] = useState('');
-  const [seoKeywords, setSeoKeywords] = useState([]);
-  const [rawJson, setRawJson] = useState('');
-  const [lastRunAt, setLastRunAt] = useState(null);
-  // Weekly plan output
-  const [weeklySummary, setWeeklySummary] = useState('');
-  const [weeklyPosts, setWeeklyPosts] = useState([]);
+  return (
+    <ErrorBoundary>
+      <div style={{ display: 'flex', minHeight: '100vh', background: '#10111a', margin: 0, padding: 0 }}>
+        <Sidebar />
+        <main style={{ flex: 1, margin: 0, padding: 0, background: 'none' }}>
+          <div>
+            <section>
+              <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading…</div>}>
+                {activeSection === "tools" && project && <ToolsList />}
+                {/* Render a ToolScaffold for each tool in toolsMeta (fallback if no custom UI) */}
+                {/* Render ProductSeoEngine with its own Suspense and ErrorBoundary */}
+                {activeSection === "product-seo" && (
+                  <ErrorBoundary>
+                    <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading Product SEO Engine…</div>}>
+                      <ProductSeoEngine />
+                    </Suspense>
+                  </ErrorBoundary>
+                )}
+                {/* Other custom UIs and fallback ToolScaffold */}
+                {toolsMeta.map(tool => {
+                  if (activeSection === tool.id) {
+                    switch (tool.id) {
+                      case "abandoned-checkout-winback": return <AbandonedCheckoutWinback key={tool.id} />;
+                      // ...existing code...
+                      default:
+                        // Fallback to generic scaffold for any tool not custom-mapped
+                        const defaultFields = [
+                          { name: "input", label: "Input", type: "textarea", required: false }
+                        ];
+                        return <ToolScaffold key={tool.id} toolId={tool.id} toolName={tool.name} fields={defaultFields} />;
+                    }
+                  }
+                  return null;
+                })}
+              </Suspense>
+            </section>
+          </div>
+        </main>
+      </div>
+    </ErrorBoundary>
+  );
   // Blog draft specific output
   const [draftSections, setDraftSections] = useState([]);
   const [draftCta, setDraftCta] = useState('');
