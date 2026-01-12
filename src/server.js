@@ -21,6 +21,11 @@ const YAML = require('yamljs');
 const fs = require('fs');
 const productSeoRouter = require('./tools/product-seo/router');
 const verifyShopifySession = require('./middleware/verifyShopifySession');
+// Log which Shopify env vars are loaded (no secrets)
+console.log('[Shopify ENV] SHOPIFY_CLIENT_ID:', !!process.env.SHOPIFY_CLIENT_ID);
+console.log('[Shopify ENV] SHOPIFY_CLIENT_SECRET:', !!process.env.SHOPIFY_CLIENT_SECRET);
+console.log('[Shopify ENV] SHOPIFY_APP_URL:', process.env.SHOPIFY_APP_URL ? process.env.SHOPIFY_APP_URL.replace(/^https?:\/\//, '').replace(/\/$/, '') : undefined);
+console.log('[Shopify ENV] SHOPIFY_API_VERSION:', process.env.SHOPIFY_API_VERSION);
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
