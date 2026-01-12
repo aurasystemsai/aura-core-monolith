@@ -330,7 +330,8 @@ export default function AbandonedCheckoutWinback() {
           {activeSection === 'campaigns' && (
             <section aria-label="Campaigns">
               <WinbackFeatureCard title="Campaign Management" description="Create, edit, schedule, and manage winback campaigns. Bulk actions, calendar, and automation included." icon="📦" />
-              <div>
+              <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
+                <WinbackFeatureCard title="Campaign Management" description="Create, edit, schedule, and manage winback campaigns. Bulk actions, calendar, and automation included." icon="📦" />
                 {/* Campaigns Table & Bulk Actions */}
                 <div style={{ marginTop: 24, marginBottom: 32 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -417,7 +418,8 @@ export default function AbandonedCheckoutWinback() {
           {activeSection === 'segments' && (
             <section aria-label="Segments">
               <WinbackFeatureCard title="Advanced Segmentation" description="Create, manage, and apply dynamic customer segments. Saved segments, rule builder, and filters." icon="👥" />
-              <div>
+              <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
+                <WinbackFeatureCard title="Advanced Segmentation" description="Create, manage, and apply dynamic customer segments. Saved segments, rule builder, and filters." icon="👥" />
                 {/* Segments Table & Bulk Actions */}
                 <div style={{ marginTop: 24, marginBottom: 32 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -480,7 +482,8 @@ export default function AbandonedCheckoutWinback() {
           {activeSection === 'templates' && (
             <section aria-label="Templates">
               <WinbackFeatureCard title="Templates" description="Manage and create message templates for campaigns." icon="📝" />
-              <div>
+              <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
+                <WinbackFeatureCard title="Templates" description="Manage and create message templates for campaigns." icon="📝" />
                 {/* Templates Table & Bulk Actions */}
                 <div style={{ marginTop: 24, marginBottom: 32 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -551,7 +554,8 @@ export default function AbandonedCheckoutWinback() {
           {activeSection === 'abTesting' && (
             <section aria-label="A/B Testing">
               <WinbackFeatureCard title="A/B Testing" description="Run experiments to optimize winback strategies." icon="🧪" />
-              <div>
+              <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
+                <WinbackFeatureCard title="A/B Testing" description="Run experiments to optimize winback strategies." icon="🧪" />
                 {/* Experiments Table & Bulk Actions */}
                 <div style={{ marginTop: 24, marginBottom: 32 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
