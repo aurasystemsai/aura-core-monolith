@@ -11,8 +11,6 @@ import WinbackAnalyticsChart from './WinbackAnalyticsChart';
 
 // Placeholder for the full-featured Abandoned Checkout Winback UI
 export default function AbandonedCheckoutWinback() {
-    // DEBUG: Marker to confirm component render
-    console.log('[DEBUG] AbandonedCheckoutWinback component rendered');
   // Flagship UI state
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
@@ -41,18 +39,15 @@ export default function AbandonedCheckoutWinback() {
     (async () => {
       try {
         const resp = await apiFetch('/api/abandoned-checkout-winback/analytics');
-        console.log('[DEBUG] Analytics API response:', resp);
         if (!resp.ok) {
           const msg = `API error: ${resp.status} ${resp.statusText}`;
           setTopLevelError(msg);
           return;
         }
         const data = await resp.json();
-        console.log('[DEBUG] Analytics API JSON:', data);
         setAnalytics(data.events || []);
       } catch (err) {
         setTopLevelError(err.message || 'Network error');
-        console.error('[DEBUG] Analytics API error:', err);
       }
     })();
   }, []);
@@ -122,52 +117,79 @@ export default function AbandonedCheckoutWinback() {
   // Main UI
   return (
     <>
-      {/* DEBUG: Marker visible in UI for troubleshooting */}
-      <div style={{ background: '#f00', color: '#fff', fontWeight: 900, fontSize: 20, padding: 8, marginBottom: 12, borderRadius: 6 }}>[DEBUG] AbandonedCheckoutWinback UI loaded</div>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 24 }}>
-        <div style={{ background: '#ff0', color: '#000', fontWeight: 900, fontSize: 24, padding: 12, marginBottom: 18, borderRadius: 8 }}>TEST RENDER</div>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 24, background: 'var(--background-primary)', borderRadius: 16, boxShadow: '0 2px 16px 0 #0001' }}>
         {topLevelError && (
-          <div style={{ color: '#fff', background: '#ef4444', padding: 16, borderRadius: 8, marginBottom: 18, fontWeight: 600, fontSize: 16 }}>
+          <div style={{ color: '#fff', background: '#ef4444', padding: 16, borderRadius: 8, marginBottom: 18, fontWeight: 600, fontSize: 16 }} role="alert">
             {topLevelError}
           </div>
         )}
-        <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Abandoned Checkout Winback</h2>
-        <button
-          onClick={() => setShowOnboarding(v => !v)}
-          style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}
-          aria-pressed={showOnboarding}
-          aria-label={showOnboarding ? 'Hide onboarding wizard' : 'Show onboarding wizard'}
-          title={showOnboarding ? 'Hide onboarding wizard' : 'Show onboarding wizard'}
-        >
-          {showOnboarding ? "Hide" : "Show"} Onboarding
-        </button>
-        {showOnboarding && !onboardingComplete && onboardingContent}
+        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+          <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0, letterSpacing: '-1px' }}>Abandoned Checkout Winback</h2>
+          <button
+            onClick={() => setShowOnboarding(v => !v)}
+            style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginLeft: 16 }}
+            aria-pressed={showOnboarding}
+            aria-label={showOnboarding ? 'Hide onboarding wizard' : 'Show onboarding wizard'}
+            title={showOnboarding ? 'Hide onboarding wizard' : 'Show onboarding wizard'}
+          >
+            {showOnboarding ? "Hide" : "Show"} Onboarding
+          </button>
+        </header>
+        {showOnboarding && !onboardingComplete && (
+          <section style={{ marginBottom: 32 }} aria-label="Onboarding Wizard">
+            {onboardingContent}
+          </section>
+        )}
         {/* Campaign Builder Stepper */}
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Campaign Builder</div>
-          {/* ...stepper UI for campaign creation... */}
-          <div style={{ display: 'flex', gap: 18, marginBottom: 18 }}>
-            <input value={campaign.name} onChange={e => setCampaign({ ...campaign, name: e.target.value })} placeholder="Campaign name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: 220 }} aria-label="Campaign name" title="Enter a name for your campaign" />
-            <select value={campaign.channel} onChange={e => setCampaign({ ...campaign, channel: e.target.value })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: 140 }} aria-label="Channel" title="Select the channel for this campaign">
-              <option value="email">Email</option>
-              <option value="sms">SMS</option>
-              <option value="push">Push</option>
-            </select>
-            <input value={campaign.segment} onChange={e => setCampaign({ ...campaign, segment: e.target.value })} placeholder="Segment" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: 180 }} aria-label="Segment" title="Target customer segment (e.g. VIP, new, high-value)" />
-            <input value={campaign.schedule} onChange={e => setCampaign({ ...campaign, schedule: e.target.value })} placeholder="Schedule" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: 180 }} aria-label="Schedule" title="Schedule for sending (e.g. 1h, 24h after abandon)" />
+        <section style={{ marginBottom: 32 }} aria-label="Campaign Builder">
+          <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 12, letterSpacing: '-0.5px' }}>Campaign Builder</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 18, marginBottom: 18 }}>
+            <div style={{ flex: '1 1 220px', minWidth: 180 }}>
+              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="campaign-name">Campaign Name</label>
+              <input id="campaign-name" value={campaign.name} onChange={e => setCampaign({ ...campaign, name: e.target.value })} placeholder="Campaign name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%' }} aria-label="Campaign name" title="Enter a name for your campaign" />
+            </div>
+            <div style={{ flex: '1 1 140px', minWidth: 120 }}>
+              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="campaign-channel">Channel</label>
+              <select id="campaign-channel" value={campaign.channel} onChange={e => setCampaign({ ...campaign, channel: e.target.value })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%' }} aria-label="Channel" title="Select the channel for this campaign">
+                <option value="email">Email</option>
+                <option value="sms">SMS</option>
+                <option value="push">Push</option>
+              </select>
+            </div>
+            <div style={{ flex: '1 1 180px', minWidth: 140 }}>
+              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="campaign-segment">Segment</label>
+              <input id="campaign-segment" value={campaign.segment} onChange={e => setCampaign({ ...campaign, segment: e.target.value })} placeholder="Segment" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%' }} aria-label="Segment" title="Target customer segment (e.g. VIP, new, high-value)" />
+            </div>
+            <div style={{ flex: '1 1 180px', minWidth: 140 }}>
+              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="campaign-schedule">Schedule</label>
+              <input id="campaign-schedule" value={campaign.schedule} onChange={e => setCampaign({ ...campaign, schedule: e.target.value })} placeholder="Schedule" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%' }} aria-label="Schedule" title="Schedule for sending (e.g. 1h, 24h after abandon)" />
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
-            <textarea value={campaign.template} onChange={e => setCampaign({ ...campaign, template: e.target.value })} rows={3} style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid var(--border-color)' }} placeholder="Email/SMS template" aria-label="Template" title="Edit the message template for this campaign" />
-            <button type="button" onClick={handleAIGenerate} disabled={aiLoading} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 14px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }} aria-busy={aiLoading} aria-label="Generate template with AI" title="Generate a personalized message using AI">{aiLoading ? 'Generating...' : 'AI Generate'}</button>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 18 }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="campaign-template">Message Template</label>
+              <textarea id="campaign-template" value={campaign.template} onChange={e => setCampaign({ ...campaign, template: e.target.value })} rows={3} style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid var(--border-color)' }} placeholder="Email/SMS template" aria-label="Template" title="Edit the message template for this campaign" />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <button type="button" onClick={handleAIGenerate} disabled={aiLoading} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 14px', fontWeight: 600, fontSize: 15, cursor: 'pointer', minWidth: 120 }} aria-busy={aiLoading} aria-label="Generate template with AI" title="Generate a personalized message using AI">{aiLoading ? 'Generating...' : 'AI Generate'}</button>
+            </div>
           </div>
           {aiError && <div style={{ color: '#ef4444', marginBottom: 8 }}>{aiError}</div>}
-          <input value={campaign.variant} onChange={e => setCampaign({ ...campaign, variant: e.target.value })} placeholder="Variant (A/B)" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: 180, marginBottom: 18 }} aria-label="Variant" title="A/B test variant label (e.g. A, B)" />
-          <select value={campaign.status} onChange={e => setCampaign({ ...campaign, status: e.target.value })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: 140, marginBottom: 18 }} aria-label="Status" title="Set campaign status">
-            <option value="draft">Draft</option>
-            <option value="active">Active</option>
-            <option value="paused">Paused</option>
-          </select>
-        </div>
+          <div style={{ display: 'flex', gap: 18, marginBottom: 18 }}>
+            <div style={{ flex: '1 1 180px', minWidth: 140 }}>
+              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="campaign-variant">Variant (A/B)</label>
+              <input id="campaign-variant" value={campaign.variant} onChange={e => setCampaign({ ...campaign, variant: e.target.value })} placeholder="Variant (A/B)" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%' }} aria-label="Variant" title="A/B test variant label (e.g. A, B)" />
+            </div>
+            <div style={{ flex: '1 1 140px', minWidth: 120 }}>
+              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="campaign-status">Status</label>
+              <select id="campaign-status" value={campaign.status} onChange={e => setCampaign({ ...campaign, status: e.target.value })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%' }} aria-label="Status" title="Set campaign status">
+                <option value="draft">Draft</option>
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+              </select>
+            </div>
+          </div>
+        </section>
         {/* Import/Export */}
         <div style={{ marginBottom: 24 }}>
           <input type="file" accept="application/json" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImport} />
