@@ -11,6 +11,8 @@ import WinbackAnalyticsChart from './WinbackAnalyticsChart';
 
 // Placeholder for the full-featured Abandoned Checkout Winback UI
 export default function AbandonedCheckoutWinback() {
+    // DEBUG: Marker to confirm component render
+    console.log('[DEBUG] AbandonedCheckoutWinback component rendered');
   // Flagship UI state
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
@@ -39,15 +41,18 @@ export default function AbandonedCheckoutWinback() {
     (async () => {
       try {
         const resp = await apiFetch('/api/abandoned-checkout-winback/analytics');
+        console.log('[DEBUG] Analytics API response:', resp);
         if (!resp.ok) {
           const msg = `API error: ${resp.status} ${resp.statusText}`;
           setTopLevelError(msg);
           return;
         }
         const data = await resp.json();
+        console.log('[DEBUG] Analytics API JSON:', data);
         setAnalytics(data.events || []);
       } catch (err) {
         setTopLevelError(err.message || 'Network error');
+        console.error('[DEBUG] Analytics API error:', err);
       }
     })();
   }, []);
@@ -117,6 +122,8 @@ export default function AbandonedCheckoutWinback() {
   // Main UI
   return (
     <ToolScaffold toolId="abandoned-checkout-winback">
+      {/* DEBUG: Marker visible in UI for troubleshooting */}
+      <div style={{ background: '#f00', color: '#fff', fontWeight: 900, fontSize: 20, padding: 8, marginBottom: 12, borderRadius: 6 }}>[DEBUG] AbandonedCheckoutWinback UI loaded</div>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 24 }}>
         <div style={{ background: '#ff0', color: '#000', fontWeight: 900, fontSize: 24, padding: 12, marginBottom: 18, borderRadius: 8 }}>TEST RENDER</div>
         {topLevelError && (
