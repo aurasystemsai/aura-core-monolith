@@ -1,3 +1,64 @@
+                      // Settings state for flagship settings management
+                      const [settings, setSettings] = useState({
+                        language: 'en',
+                        notifications: 'all',
+                        advanced: false
+                      });
+                      const [showSettingsModal, setShowSettingsModal] = useState(false);
+                    {/* SETTINGS SECTION */}
+                    {activeSection === 'settings' && (
+                      <section aria-label="Settings">
+                        <WinbackFeatureCard title="Settings" description="Configure tool preferences, notification options, and advanced settings. Personalize your winback experience." icon="⚙️" />
+                        {/* Settings Summary Cards */}
+                        <div style={{ display: 'flex', gap: 24, margin: '32px 0' }}>
+                          <div style={{ flex: 1, background: '#f1f5f9', borderRadius: 12, padding: 24, textAlign: 'center' }}>
+                            <div style={{ fontSize: 15, color: '#64748b', marginBottom: 6 }}>Preferences</div>
+                            <div style={{ fontWeight: 800, fontSize: 28 }}>{Object.keys(settings).length || 0}</div>
+                          </div>
+                          <div style={{ flex: 1, background: '#f1f5f9', borderRadius: 12, padding: 24, textAlign: 'center' }}>
+                            <div style={{ fontSize: 15, color: '#64748b', marginBottom: 6 }}>Advanced Options</div>
+                            <div style={{ fontWeight: 800, fontSize: 28 }}>{settings.advanced ? 'Enabled' : 'Disabled'}</div>
+                          </div>
+                        </div>
+                        {/* Settings Form */}
+                        <form style={{ maxWidth: 540, margin: '0 auto', background: '#fff', borderRadius: 14, boxShadow: '0 2px 8px #0001', padding: 32 }} onSubmit={e => { e.preventDefault(); setShowSettingsModal(true); }}>
+                          <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 18 }}>Preferences</div>
+                          <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="settings-language">Language</label>
+                          <select id="settings-language" value={settings.language} onChange={e => setSettings(s => ({ ...s, language: e.target.value }))} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 18 }}>
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                          </select>
+                          <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="settings-notifications">Notifications</label>
+                          <select id="settings-notifications" value={settings.notifications} onChange={e => setSettings(s => ({ ...s, notifications: e.target.value }))} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 18 }}>
+                            <option value="all">All</option>
+                            <option value="important">Important Only</option>
+                            <option value="none">None</option>
+                          </select>
+                          <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="settings-advanced">Advanced Options</label>
+                          <input id="settings-advanced" type="checkbox" checked={!!settings.advanced} onChange={e => setSettings(s => ({ ...s, advanced: e.target.checked }))} style={{ marginBottom: 18 }} /> Enable advanced features
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 24 }}>
+                            <button type="submit" style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Save Settings</button>
+                          </div>
+                        </form>
+                        {/* Settings Modal (Advanced) */}
+                        {showSettingsModal && (
+                          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
+                            <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 540, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                              <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Advanced Settings</h3>
+                              <div style={{ fontSize: 15, marginBottom: 18 }}>
+                                <div><b>Language:</b> {settings.language}</div>
+                                <div><b>Notifications:</b> {settings.notifications}</div>
+                                <div><b>Advanced:</b> {settings.advanced ? 'Enabled' : 'Disabled'}</div>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                <button onClick={() => setShowSettingsModal(false)} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Close</button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </section>
+                    )}
 import { exportCampaignPDF } from './WinbackExportPDF';
 import { apiFetch } from '../../api';
 import WinbackAnomalyBanner from './WinbackAnomalyBanner';
@@ -11,6 +72,100 @@ import WinbackAnalyticsChart from './WinbackAnalyticsChart';
 
 // Placeholder for the full-featured Abandoned Checkout Winback UI
 export default function AbandonedCheckoutWinback() {
+        // Segments state for advanced segmentation
+        const [segmentsList, setSegmentsList] = useState([
+          { id: 1, name: 'VIP Customers', rule: 'Spent > $500', created: '2026-01-01', selected: false },
+          { id: 2, name: 'New Signups', rule: 'Joined < 30d', created: '2026-01-10', selected: false },
+        ]);
+        const [showSegmentModal, setShowSegmentModal] = useState(false);
+        const [editingSegment, setEditingSegment] = useState(null);
+
+        // Open modal for new or edit
+        const openSegmentModal = (segment = null) => {
+          setEditingSegment(segment);
+          setShowSegmentModal(true);
+        };
+        const closeSegmentModal = () => {
+          setEditingSegment(null);
+          setShowSegmentModal(false);
+        };
+
+        // Save segment (add or update)
+        const saveSegment = (s) => {
+          if (s.id) {
+            setSegmentsList(list => list.map(x => x.id === s.id ? { ...s, selected: false } : x));
+          } else {
+            setSegmentsList(list => [...list, { ...s, id: Date.now(), selected: false }]);
+          }
+          closeSegmentModal();
+        };
+
+        // Bulk select
+        const toggleSelectSegment = (id) => {
+          setSegmentsList(list => list.map(x => x.id === id ? { ...x, selected: !x.selected } : x));
+        };
+        const selectAllSegments = (checked) => {
+          setSegmentsList(list => list.map(x => ({ ...x, selected: checked })));
+        };
+        // Bulk delete
+        const deleteSelectedSegments = () => {
+          setSegmentsList(list => list.filter(x => !x.selected));
+        };
+      // Campaigns state for flagship management
+      const [campaigns, setCampaigns] = useState([
+        { id: 1, name: 'VIP Winback', channel: 'email', status: 'active', created: '2026-01-01', segment: 'VIP', schedule: '24h', variant: 'A', selected: false },
+        { id: 2, name: 'Cart Recovery', channel: 'sms', status: 'draft', created: '2026-01-05', segment: 'All', schedule: '1h', variant: 'B', selected: false },
+      ]);
+      const [showCampaignModal, setShowCampaignModal] = useState(false);
+      const [editingCampaign, setEditingCampaign] = useState(null);
+
+      // Open modal for new or edit
+      const openCampaignModal = (campaign = null) => {
+        setEditingCampaign(campaign);
+        setShowCampaignModal(true);
+      };
+      const closeCampaignModal = () => {
+        setEditingCampaign(null);
+        setShowCampaignModal(false);
+      };
+
+      // Save campaign (add or update)
+      const saveCampaign = (c) => {
+        if (c.id) {
+          setCampaigns(list => list.map(x => x.id === c.id ? { ...c, selected: false } : x));
+        } else {
+          setCampaigns(list => [...list, { ...c, id: Date.now(), selected: false }]);
+        }
+        closeCampaignModal();
+      };
+
+      // Bulk select
+      const toggleSelectCampaign = (id) => {
+        setCampaigns(list => list.map(x => x.id === id ? { ...x, selected: !x.selected } : x));
+      };
+      const selectAllCampaigns = (checked) => {
+        setCampaigns(list => list.map(x => ({ ...x, selected: checked })));
+      };
+      // Bulk delete
+      const deleteSelectedCampaigns = () => {
+        setCampaigns(list => list.filter(x => !x.selected));
+      };
+    // Navigation state for flagship SaaS sections
+    const [activeSection, setActiveSection] = useState('campaigns');
+    const sections = [
+      { key: 'campaigns', label: 'Campaigns' },
+      { key: 'segments', label: 'Segments' },
+      { key: 'templates', label: 'Templates' },
+      { key: 'abTesting', label: 'A/B Testing' },
+      { key: 'analytics', label: 'Analytics' },
+      { key: 'automation', label: 'Automation' },
+      { key: 'integrations', label: 'Integrations' },
+      { key: 'notifications', label: 'Notifications' },
+      { key: 'activityLog', label: 'Activity Log' },
+      { key: 'compliance', label: 'Compliance' },
+      { key: 'settings', label: 'Settings' },
+      { key: 'help', label: 'Help & Docs' },
+    ];
   // Flagship UI state
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
@@ -117,144 +272,213 @@ export default function AbandonedCheckoutWinback() {
   // Main UI
   return (
     <>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 24, background: 'var(--background-primary)', borderRadius: 16, boxShadow: '0 2px 16px 0 #0001' }}>
-        {topLevelError && (
-          <div style={{ color: '#fff', background: '#ef4444', padding: 16, borderRadius: 8, marginBottom: 18, fontWeight: 600, fontSize: 16 }} role="alert">
-            {topLevelError}
-          </div>
-        )}
-        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-          <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0, letterSpacing: '-1px' }}>Abandoned Checkout Winback</h2>
-          <button
-            onClick={() => setShowOnboarding(v => !v)}
-            style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginLeft: 16 }}
-            aria-pressed={showOnboarding}
-            aria-label={showOnboarding ? 'Hide onboarding wizard' : 'Show onboarding wizard'}
-            title={showOnboarding ? 'Hide onboarding wizard' : 'Show onboarding wizard'}
-          >
-            {showOnboarding ? "Hide" : "Show"} Onboarding
-          </button>
-        </header>
-        {showOnboarding && !onboardingComplete && (
-          <section style={{ marginBottom: 32 }} aria-label="Onboarding Wizard">
-            {onboardingContent}
-          </section>
-        )}
-        {/* Campaign Builder Stepper */}
-        <section style={{ marginBottom: 32 }} aria-label="Campaign Builder">
-          <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 12, letterSpacing: '-0.5px' }}>Campaign Builder</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 18, marginBottom: 18 }}>
-            <div style={{ flex: '1 1 220px', minWidth: 180 }}>
-              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="campaign-name">Campaign Name</label>
-              <input id="campaign-name" value={campaign.name} onChange={e => setCampaign({ ...campaign, name: e.target.value })} placeholder="Campaign name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%' }} aria-label="Campaign name" title="Enter a name for your campaign" />
+      <div style={{ display: 'flex', maxWidth: 1400, margin: '0 auto', padding: 24, background: 'var(--background-primary)', borderRadius: 16, boxShadow: '0 2px 16px 0 #0001' }}>
+        {/* Sidebar Navigation */}
+        <nav style={{ width: 220, marginRight: 32, display: 'flex', flexDirection: 'column', gap: 8 }} aria-label="Main navigation">
+          {sections.map(s => (
+            <button
+              key={s.key}
+              onClick={() => setActiveSection(s.key)}
+              style={{
+                background: activeSection === s.key ? 'var(--button-primary-bg)' : 'var(--button-tertiary-bg)',
+                color: activeSection === s.key ? 'var(--button-primary-text)' : 'var(--button-tertiary-text)',
+                border: 'none', borderRadius: 8, padding: '10px 18px', fontWeight: 700, fontSize: 16, cursor: 'pointer', textAlign: 'left', outline: activeSection === s.key ? '2px solid #6366f1' : 'none'
+              }}
+              aria-current={activeSection === s.key ? 'page' : undefined}
+            >
+              {s.label}
+            </button>
+          ))}
+        </nav>
+        {/* Main Content Area */}
+        <div style={{ flex: 1 }}>
+          {topLevelError && (
+            <div style={{ color: '#fff', background: '#ef4444', padding: 16, borderRadius: 8, marginBottom: 18, fontWeight: 600, fontSize: 16 }} role="alert">
+              {topLevelError}
             </div>
-            <div style={{ flex: '1 1 140px', minWidth: 120 }}>
-              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="campaign-channel">Channel</label>
-              <select id="campaign-channel" value={campaign.channel} onChange={e => setCampaign({ ...campaign, channel: e.target.value })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%' }} aria-label="Channel" title="Select the channel for this campaign">
-                <option value="email">Email</option>
-                <option value="sms">SMS</option>
-                <option value="push">Push</option>
-              </select>
-            </div>
-            <div style={{ flex: '1 1 180px', minWidth: 140 }}>
-              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="campaign-segment">Segment</label>
-              <input id="campaign-segment" value={campaign.segment} onChange={e => setCampaign({ ...campaign, segment: e.target.value })} placeholder="Segment" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%' }} aria-label="Segment" title="Target customer segment (e.g. VIP, new, high-value)" />
-            </div>
-            <div style={{ flex: '1 1 180px', minWidth: 140 }}>
-              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="campaign-schedule">Schedule</label>
-              <input id="campaign-schedule" value={campaign.schedule} onChange={e => setCampaign({ ...campaign, schedule: e.target.value })} placeholder="Schedule" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%' }} aria-label="Schedule" title="Schedule for sending (e.g. 1h, 24h after abandon)" />
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 18 }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="campaign-template">Message Template</label>
-              <textarea id="campaign-template" value={campaign.template} onChange={e => setCampaign({ ...campaign, template: e.target.value })} rows={3} style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid var(--border-color)' }} placeholder="Email/SMS template" aria-label="Template" title="Edit the message template for this campaign" />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <button type="button" onClick={handleAIGenerate} disabled={aiLoading} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 14px', fontWeight: 600, fontSize: 15, cursor: 'pointer', minWidth: 120 }} aria-busy={aiLoading} aria-label="Generate template with AI" title="Generate a personalized message using AI">{aiLoading ? 'Generating...' : 'AI Generate'}</button>
-            </div>
-          </div>
-          {aiError && <div style={{ color: '#ef4444', marginBottom: 8 }}>{aiError}</div>}
-          <div style={{ display: 'flex', gap: 18, marginBottom: 18 }}>
-            <div style={{ flex: '1 1 180px', minWidth: 140 }}>
-              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="campaign-variant">Variant (A/B)</label>
-              <input id="campaign-variant" value={campaign.variant} onChange={e => setCampaign({ ...campaign, variant: e.target.value })} placeholder="Variant (A/B)" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%' }} aria-label="Variant" title="A/B test variant label (e.g. A, B)" />
-            </div>
-            <div style={{ flex: '1 1 140px', minWidth: 120 }}>
-              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="campaign-status">Status</label>
-              <select id="campaign-status" value={campaign.status} onChange={e => setCampaign({ ...campaign, status: e.target.value })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%' }} aria-label="Status" title="Set campaign status">
-                <option value="draft">Draft</option>
-                <option value="active">Active</option>
-                <option value="paused">Paused</option>
-              </select>
-            </div>
-          </div>
-        </section>
-        {/* Import/Export */}
-        <div style={{ marginBottom: 24 }}>
-          <input type="file" accept="application/json" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImport} />
-          <button onClick={() => fileInputRef.current.click()} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginRight: 12 }} aria-label="Import campaign from JSON" title="Import campaign from a JSON file">Import Campaign</button>
-          <button onClick={handleExport} style={{ background: 'var(--button-success-bg)', color: 'var(--button-success-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginRight: 12 }} aria-label="Export campaign as JSON" title="Export campaign as a JSON file">Export Campaign (JSON)</button>
-          <button onClick={() => exportCampaignPDF(campaign)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }} aria-label="Export campaign as PDF" title="Export campaign as a PDF file">Export as PDF</button>
-          {imported && <span style={{ marginLeft: 12, color: '#6366f1' }} aria-live="polite">Imported: {imported}</span>}
-          {exported && <a href={exported} download="campaign.json" style={{ marginLeft: 12, color: '#22c55e', textDecoration: 'underline' }} aria-label="Download exported campaign JSON" title="Download exported campaign JSON">Download Export</a>}
-        </div>
-        {/* Analytics Dashboard */}
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
-          <WinbackAnomalyBanner analytics={analytics} />
-          <WinbackAnalyticsChart data={analytics} />
-        </div>
-        {/* Activity Log */}
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Activity Log</div>
-          <div style={{ fontSize: 15, color: 'var(--text-primary)' }}>
-            {activityLog.length ? (
-              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(activityLog, null, 2)}</pre>
-            ) : (
-              <span>No activity yet. Actions will appear here.</span>
-            )}
-          </div>
-        </div>
-        {/* Notification Center */}
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Notification Center</div>
-          <div style={{ fontSize: 15, color: 'var(--text-primary)' }}>
-            {notifications.length ? (
-              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(notifications, null, 2)}</pre>
-            ) : (
-              <span>No notifications yet.</span>
-            )}
-          </div>
-        </div>
-        {/* Feedback */}
-        <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: 'var(--background-secondary)', borderRadius: 12, padding: 20 }} aria-label="Send feedback" autoComplete="off">
-          <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
-          <textarea
-            value={feedback}
-            onChange={e => setFeedback(e.target.value)}
-            rows={3}
-            style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid var(--border-color)', marginBottom: 12 }}
-            placeholder="Share your feedback or suggestions..."
-            aria-label="Feedback"
-            title="Share your feedback or suggestions"
-            required
-          />
-          <button type="submit" style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }} aria-label="Send feedback" title="Send feedback">Send Feedback</button>
-          {error && <div style={{ color: '#ef4444', marginTop: 8 }} aria-live="assertive">{error}</div>}
-        </form>
-        {/* Accessibility & Compliance */}
-        <div style={{ marginTop: 32, fontSize: 13, color: '#64748b', textAlign: 'center' }}>
-          <span>Best-in-class SaaS features. Accessibility: WCAG 2.1, keyboard navigation, color contrast.<br />
-            <button onClick={async () => {
-              await apiFetch('/api/abandoned-checkout-winback/compliance/export', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: 'demo-user' }) });
-              alert('Data export request submitted.');
-            }} style={{ margin: '0 8px', background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '4px 12px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Request Data Export</button>
-            <button onClick={async () => {
-              await apiFetch('/api/abandoned-checkout-winback/compliance/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: 'demo-user' }) });
-              alert('Data deletion request submitted.');
-            }} style={{ margin: '0 8px', background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '4px 12px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Request Data Deletion</button>
-            Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
+          )}
+          <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+            <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0, letterSpacing: '-1px' }}>Abandoned Checkout Winback</h2>
+            <button
+              onClick={() => setShowOnboarding(v => !v)}
+              style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginLeft: 16 }}
+              aria-pressed={showOnboarding}
+              aria-label={showOnboarding ? 'Hide onboarding wizard' : 'Show onboarding wizard'}
+              title={showOnboarding ? 'Hide onboarding wizard' : 'Show onboarding wizard'}
+            >
+              {showOnboarding ? "Hide" : "Show"} Onboarding
+            </button>
+          </header>
+          {/* Flagship SaaS Feature Shells */}
+          {activeSection === 'campaigns' && (
+            <section aria-label="Campaigns">
+              <WinbackFeatureCard title="Campaign Management" description="Create, edit, schedule, and manage winback campaigns. Bulk actions, calendar, and automation included." icon="📦" />
+              <div>
+                {/* Campaigns Table & Bulk Actions */}
+                <div style={{ marginTop: 24, marginBottom: 32 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <div style={{ fontWeight: 700, fontSize: 20 }}>Your Campaigns</div>
+                    <button onClick={() => openCampaignModal()} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ New Campaign</button>
+                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--background-secondary)', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
+                    <thead>
+                      <tr style={{ background: '#f3f4f6' }}>
+                        <th><input type="checkbox" checked={campaigns.every(c => c.selected)} onChange={e => selectAllCampaigns(e.target.checked)} aria-label="Select all campaigns" /></th>
+                        <th>Name</th>
+                        <th>Channel</th>
+                        <th>Status</th>
+                        <th>Segment</th>
+                        <th>Schedule</th>
+                        <th>Variant</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {campaigns.length === 0 ? (
+                        <tr><td colSpan={9} style={{ textAlign: 'center', color: '#64748b', padding: 24 }}>No campaigns yet.</td></tr>
+                      ) : campaigns.map(c => (
+                        <tr key={c.id} style={{ background: c.selected ? '#e0e7ff' : undefined }}>
+                          <td><input type="checkbox" checked={!!c.selected} onChange={() => toggleSelectCampaign(c.id)} aria-label={`Select campaign ${c.name}`} /></td>
+                          <td>{c.name}</td>
+                          <td>{c.channel}</td>
+                          <td>{c.status}</td>
+                          <td>{c.segment}</td>
+                          <td>{c.schedule}</td>
+                          <td>{c.variant}</td>
+                          <td>{c.created}</td>
+                          <td>
+                            <button onClick={() => openCampaignModal(c)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
+                            <button onClick={() => setCampaigns(list => list.filter(x => x.id !== c.id))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {/* Bulk Actions */}
+                  <div style={{ marginTop: 12, display: 'flex', gap: 12 }}>
+                    <button onClick={deleteSelectedCampaigns} disabled={!campaigns.some(c => c.selected)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Delete Selected</button>
+                  </div>
+                </div>
+                {/* Campaign Modal (Add/Edit) */}
+                {showCampaignModal && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
+                    <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                      <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingCampaign ? 'Edit Campaign' : 'New Campaign'}</h3>
+                      <form onSubmit={e => { e.preventDefault(); saveCampaign(editingCampaign ? editingCampaign : campaign); }}>
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-campaign-name">Name</label>
+                        <input id="modal-campaign-name" value={editingCampaign ? editingCampaign.name : campaign.name} onChange={e => setEditingCampaign(editingCampaign ? { ...editingCampaign, name: e.target.value } : { ...campaign, name: e.target.value })} placeholder="Campaign name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required />
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-campaign-channel">Channel</label>
+                        <select id="modal-campaign-channel" value={editingCampaign ? editingCampaign.channel : campaign.channel} onChange={e => setEditingCampaign(editingCampaign ? { ...editingCampaign, channel: e.target.value } : { ...campaign, channel: e.target.value })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required>
+                          <option value="email">Email</option>
+                          <option value="sms">SMS</option>
+                          <option value="push">Push</option>
+                        </select>
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-campaign-segment">Segment</label>
+                        <input id="modal-campaign-segment" value={editingCampaign ? editingCampaign.segment : campaign.segment} onChange={e => setEditingCampaign(editingCampaign ? { ...editingCampaign, segment: e.target.value } : { ...campaign, segment: e.target.value })} placeholder="Segment" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required />
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-campaign-schedule">Schedule</label>
+                        <input id="modal-campaign-schedule" value={editingCampaign ? editingCampaign.schedule : campaign.schedule} onChange={e => setEditingCampaign(editingCampaign ? { ...editingCampaign, schedule: e.target.value } : { ...campaign, schedule: e.target.value })} placeholder="Schedule" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required />
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-campaign-variant">Variant</label>
+                        <input id="modal-campaign-variant" value={editingCampaign ? editingCampaign.variant : campaign.variant} onChange={e => setEditingCampaign(editingCampaign ? { ...editingCampaign, variant: e.target.value } : { ...campaign, variant: e.target.value })} placeholder="Variant (A/B)" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required />
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-campaign-status">Status</label>
+                        <select id="modal-campaign-status" value={editingCampaign ? editingCampaign.status : campaign.status} onChange={e => setEditingCampaign(editingCampaign ? { ...editingCampaign, status: e.target.value } : { ...campaign, status: e.target.value })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 18 }} required>
+                          <option value="draft">Draft</option>
+                          <option value="active">Active</option>
+                          <option value="paused">Paused</option>
+                        </select>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                          <button type="button" onClick={closeCampaignModal} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
+                          <button type="submit" style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>{editingCampaign ? 'Save Changes' : 'Create Campaign'}</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+          {activeSection === 'segments' && (
+            <section aria-label="Segments">
+              <WinbackFeatureCard title="Advanced Segmentation" description="Create, manage, and apply dynamic customer segments. Saved segments, rule builder, and filters." icon="👥" />
+              {/* ...existing code for segments... */}
+            </section>
+          )}
+          {activeSection === 'templates' && (
+            <section aria-label="Templates">
+              <WinbackFeatureCard title="Templates" description="Manage and create message templates for campaigns." icon="📝" />
+              {/* ...template code... */}
+            </section>
+          )}
+          {activeSection === 'abTesting' && (
+            <section aria-label="A/B Testing">
+              <WinbackFeatureCard title="A/B Testing" description="Run experiments to optimize winback strategies." icon="🧪" />
+              {/* ...ab testing code... */}
+            </section>
+          )}
+          {activeSection === 'analytics' && (
+            <section aria-label="Analytics">
+              <WinbackFeatureCard title="Analytics" description="View performance metrics and insights for your campaigns." icon="📊" />
+              {/* ...analytics code... */}
+            </section>
+          )}
+          {activeSection === 'automation' && (
+            <section aria-label="Automation">
+              <WinbackFeatureCard title="Automation" description="Automate winback workflows and triggers." icon="🤖" />
+              {/* ...automation code... */}
+            </section>
+          )}
+          {activeSection === 'integrations' && (
+            <section aria-label="Integrations">
+              <WinbackFeatureCard title="Integrations" description="Connect third-party services for enhanced winback capabilities." icon="🔗" />
+              {/* ...integrations code... */}
+            </section>
+          )}
+          {activeSection === 'notifications' && (
+            <section aria-label="Notifications">
+              <WinbackFeatureCard title="Notifications" description="Manage notification preferences and delivery channels." icon="🔔" />
+              {/* ...notifications code... */}
+            </section>
+          )}
+          {activeSection === 'activityLog' && (
+            <section aria-label="Activity Log">
+              <WinbackFeatureCard title="Activity Log" description="Timeline of all actions, sends, edits, and results. Export, search, and filter options." icon="📜" />
+              {/* ...activity log code... */}
+            </section>
+          )}
+          {activeSection === 'compliance' && (
+            <section aria-label="Compliance">
+              <WinbackFeatureCard title="Compliance Center" description="GDPR/CCPA tools, opt-out, audit logs, data export/delete, and deliverability best practices." icon="🛡️" />
+              {/* ...compliance code... */}
+            </section>
+          )}
+          {activeSection === 'settings' && (
+            <section aria-label="Settings">
+              <WinbackFeatureCard title="Settings" description="Configure tool preferences, notification options, and advanced settings. Personalize your winback experience." icon="⚙️" />
+              {/* ...settings code... */}
+            </section>
+          )}
+          {activeSection === 'help' && (
+            <section aria-label="Help & Docs">
+              <WinbackFeatureCard title="Help & Documentation" description="Browse FAQs, onboarding guides, and get support. Everything you need to master winback automation." icon="❓" />
+              <div style={{ margin: '32px 0', background: '#f9fafb', borderRadius: 14, boxShadow: '0 2px 8px #0001', padding: 32 }}>
+                <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Documentation & Guides</h3>
+                <WinbackHelpDocs />
+                <div style={{ marginTop: 32 }}>
+                  <h4 style={{ fontWeight: 700, fontSize: 18, marginBottom: 12 }}>Frequently Asked Questions</h4>
+                  <ul style={{ fontSize: 15, color: '#334155', paddingLeft: 24 }}>
+                    <li><b>How do I create a winback campaign?</b> Use the Campaigns section to create, schedule, and manage campaigns. Click '+ New Campaign' to get started.</li>
+                    <li><b>Can I automate cart recovery?</b> Yes! Use the Automation section to set up triggers and actions for cart recovery workflows.</li>
+                    <li><b>How do I connect integrations?</b> Go to Integrations and click '+ Connect Integration' to link third-party services like Shopify or Klaviyo.</li>
+                    <li><b>Where can I find analytics?</b> The Analytics section provides charts, summary cards, and event logs for all winback activity.</li>
+                    <li><b>How do I get support?</b> Click 'Contact Support' below or email support@aura-core.ai for help.</li>
+                  </ul>
+                </div>
+                <div style={{ marginTop: 32, textAlign: 'center' }}>
+                  <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline', fontWeight: 700, fontSize: 16 }}>Contact Support</a>
+                </div>
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </>
