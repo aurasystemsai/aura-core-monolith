@@ -11,6 +11,45 @@ import WinbackAnalyticsChart from './WinbackAnalyticsChart';
 
 // Placeholder for the full-featured Abandoned Checkout Winback UI
 export default function AbandonedCheckoutWinback() {
+          // Templates state for flagship management
+          const [templatesList, setTemplatesList] = useState([
+            { id: 1, name: 'Welcome Email', channel: 'email', content: 'Welcome to Aura!', created: '2026-01-01', selected: false },
+            { id: 2, name: 'Cart Reminder SMS', channel: 'sms', content: 'You left something in your cart!', created: '2026-01-05', selected: false },
+          ]);
+          const [showTemplateModal, setShowTemplateModal] = useState(false);
+          const [editingTemplate, setEditingTemplate] = useState(null);
+
+          // Open modal for new or edit
+          const openTemplateModal = (template = null) => {
+            setEditingTemplate(template);
+            setShowTemplateModal(true);
+          };
+          const closeTemplateModal = () => {
+            setEditingTemplate(null);
+            setShowTemplateModal(false);
+          };
+
+          // Save template (add or update)
+          const saveTemplate = (t) => {
+            if (t.id) {
+              setTemplatesList(list => list.map(x => x.id === t.id ? { ...t, selected: false } : x));
+            } else {
+              setTemplatesList(list => [...list, { ...t, id: Date.now(), selected: false }]);
+            }
+            closeTemplateModal();
+          };
+
+          // Bulk select
+          const toggleSelectTemplate = (id) => {
+            setTemplatesList(list => list.map(x => x.id === id ? { ...x, selected: !x.selected } : x));
+          };
+          const selectAllTemplates = (checked) => {
+            setTemplatesList(list => list.map(x => ({ ...x, selected: checked })));
+          };
+          // Bulk delete
+          const deleteSelectedTemplates = () => {
+            setTemplatesList(list => list.filter(x => !x.selected));
+          };
         // Segments state for advanced segmentation
         const [segmentsList, setSegmentsList] = useState([
           { id: 1, name: 'VIP Customers', rule: 'Spent > $500', created: '2026-01-01', selected: false },
