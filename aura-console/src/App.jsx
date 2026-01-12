@@ -109,20 +109,7 @@ class ErrorBoundary extends React.Component {
     if (this.props.onError) {
       this.props.onError(error);
     }
-    try {
-      apiFetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'frontend-error',
-          error: error?.toString(),
-          stack: error?.stack,
-          info: errorInfo,
-          url: window.location.href,
-          ts: Date.now()
-        })
-      });
-    } catch (e) {}
+    // Removed broken /api/analytics call. Add error logging here if needed.
   }
   render() {
     if (this.state.hasError) {
@@ -220,7 +207,7 @@ function App() {
   // Usage analytics: track page/tool views
   useEffect(() => {
     try {
-      apiFetch('/api/analytics', {
+      apiFetch('/api/abandoned-checkout-winback/analytics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'page-view', section: activeSection, ts: Date.now(), url: window.location.href })

@@ -43,14 +43,14 @@ export default function AbandonedCheckoutWinback() {
   useEffect(() => {
     (async () => {
       try {
-        const resp = await apiFetch('/api/analytics');
+        const resp = await apiFetch('/api/abandoned-checkout-winback/analytics');
         if (!resp.ok) {
           const msg = `API error: ${resp.status} ${resp.statusText}`;
           setTopLevelError(msg);
           return;
         }
         const data = await resp.json();
-        setAnalytics(data.analytics || []);
+        setAnalytics(data.events || []);
       } catch (err) {
         setTopLevelError(err.message || 'Network error');
       }
