@@ -32,12 +32,7 @@ export default function AbandonedCheckoutWinback() {
   const fileInputRef = React.useRef();
 
   // Real-time WebSocket updates
-  useWinbackSocket(data => {
-    if (!data || !data.type) return;
-    if (data.type === 'analytics') setAnalytics(a => [data.payload, ...a]);
-    if (data.type === 'activity') setActivityLog(l => [data.payload, ...l]);
-    if (data.type === 'notification') setNotifications(n => [data.payload, ...n]);
-  });
+  // WebSocket support removed: no real-time updates
 
   // Example: fetch analytics on mount and show error if fails
   useEffect(() => {
