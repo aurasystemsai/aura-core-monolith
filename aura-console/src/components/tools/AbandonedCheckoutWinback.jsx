@@ -289,7 +289,7 @@ export default function AbandonedCheckoutWinback() {
   // Main UI
   return (
     <>
-      <div style={{ display: 'flex', maxWidth: 1400, margin: '0 auto', padding: 24, background: 'var(--background-primary)', borderRadius: 16, boxShadow: '0 2px 16px 0 #0001' }}>
+      <div style={{ display: 'flex', maxWidth: 1100, margin: '0', padding: 8, background: '#18181b', borderRadius: 14, boxShadow: '0 2px 12px 0 #0004' }}>
         {/* Sidebar Navigation */}
         <nav style={{ width: 220, marginRight: 32, display: 'flex', flexDirection: 'column', gap: 8 }} aria-label="Main navigation">
           {sections.map(s => (
@@ -380,7 +380,7 @@ export default function AbandonedCheckoutWinback() {
                 {/* Campaign Modal (Add/Edit) */}
                 {showCampaignModal && (
                   <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                    <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                    <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
                       <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingCampaign ? 'Edit Campaign' : 'New Campaign'}</h3>
                       <form onSubmit={e => { e.preventDefault(); saveCampaign(editingCampaign ? editingCampaign : campaign); }}>
                         <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-campaign-name">Name</label>
@@ -424,7 +424,7 @@ export default function AbandonedCheckoutWinback() {
                     <div style={{ fontWeight: 700, fontSize: 20 }}>Your Segments</div>
                     <button onClick={() => openSegmentModal()} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ New Segment</button>
                   </div>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--background-secondary)', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', background: '#23232a', color: '#fafafa', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
                     <thead>
                       <tr style={{ background: '#f3f4f6' }}>
                         <th><input type="checkbox" checked={segmentsList.every(s => s.selected)} onChange={e => selectAllSegments(e.target.checked)} aria-label="Select all segments" /></th>
