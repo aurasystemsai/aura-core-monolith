@@ -289,7 +289,7 @@ export default function AbandonedCheckoutWinback() {
   // Main UI
   return (
     <>
-      <div style={{ display: 'flex', maxWidth: 1100, margin: '32px auto', padding: 8, background: '#18181b', borderRadius: 14, boxShadow: '0 2px 12px 0 #0004', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', maxWidth: 1100, margin: '32px 0 0 0', padding: 0, background: '#18181b', borderRadius: 14, boxShadow: '0 2px 12px 0 #0004' }}>
         {/* Sidebar Navigation */}
         <nav style={{ width: 220, marginRight: 32, display: 'flex', flexDirection: 'column', gap: 8 }} aria-label="Main navigation">
           {sections.map(s => (
