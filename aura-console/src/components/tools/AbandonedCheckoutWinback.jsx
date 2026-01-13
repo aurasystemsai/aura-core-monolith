@@ -9,6 +9,8 @@ import useWinbackSocket from './AbandonedCheckoutWinbackSocket';
 import ToolScaffold from './ToolScaffold';
 
 export default function AbandonedCheckoutWinback() {
+      // --- Analytics state for Analytics section ---
+      const [analytics, setAnalytics] = useState([]);
     // --- Flagship Navigation Sidebar ---
     const flagshipSections = [
       { key: 'segments', label: 'Segments' },
