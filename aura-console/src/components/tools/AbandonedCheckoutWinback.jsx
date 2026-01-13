@@ -630,7 +630,53 @@ export default function AbandonedCheckoutWinback() {
           {activeSection === 'analytics' && (
             <section aria-label="Analytics">
               <WinbackFeatureCard title="Analytics" description="View performance metrics and insights for your campaigns." icon="📊" />
-              {/* ...analytics code... */}
+              {/* Analytics Summary Cards */}
+              <div style={{ display: 'flex', gap: 24, margin: '24px 0' }}>
+                <div style={{ background: '#232336', borderRadius: 10, padding: 18, minWidth: 180 }}>
+                  <div style={{ fontSize: 13, color: '#aaa' }}>Recovered Revenue</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#22c55e' }}>
+                    ${analytics.reduce((sum, e) => sum + (e.recoveredRevenue || 0), 0).toLocaleString()}
+                  </div>
+                </div>
+                <div style={{ background: '#232336', borderRadius: 10, padding: 18, minWidth: 180 }}>
+                  <div style={{ fontSize: 13, color: '#aaa' }}>Emails Sent</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#6366f1' }}>
+                    {analytics.reduce((sum, e) => sum + (e.emailsSent || 0), 0).toLocaleString()}
+                  </div>
+                </div>
+                <div style={{ background: '#232336', borderRadius: 10, padding: 18, minWidth: 180 }}>
+                  <div style={{ fontSize: 13, color: '#aaa' }}>Conversions</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: '#f59e42' }}>
+                    {analytics.reduce((sum, e) => sum + (e.conversions || 0), 0).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+              {/* Analytics Chart */}
+              <WinbackAnalyticsChart data={analytics} />
+              {/* Analytics Table */}
+              <div style={{ background: '#18181b', borderRadius: 10, padding: 18, marginTop: 18 }}>
+                <table style={{ width: '100%', color: '#fff', fontSize: 15 }}>
+                  <thead>
+                    <tr style={{ color: '#aaa', textAlign: 'left' }}>
+                      <th>Date</th>
+                      <th>Recovered Revenue</th>
+                      <th>Emails Sent</th>
+                      <th>Conversions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analytics.map((e, i) => (
+                      <tr key={i} style={{ borderTop: '1px solid #232336' }}>
+                        <td>{e.timestamp || e.date || ''}</td>
+                        <td>${(e.recoveredRevenue || 0).toLocaleString()}</td>
+                        <td>{e.emailsSent || 0}</td>
+                        <td>{e.conversions || 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {analytics.length === 0 && <div style={{ color: '#aaa', padding: 12 }}>No analytics data yet.</div>}
+              </div>
             </section>
           )}
           {activeSection === 'automation' && (
