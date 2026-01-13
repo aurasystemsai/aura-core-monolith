@@ -629,105 +629,49 @@ export default function AbandonedCheckoutWinback() {
           )}
           {activeSection === 'analytics' && (
             <section aria-label="Analytics">
-              <WinbackFeatureCard title="Analytics" description="View performance metrics and insights for your campaigns.">
-                {/* Flagship summary cards */}
-                <div style={{ display: 'flex', gap: 24, margin: '24px 0 32px 0', flexWrap: 'wrap' }}>
-                  <div style={{ background: '#18181b', borderRadius: 12, padding: '22px 32px', minWidth: 180, flex: 1, boxShadow: '0 2px 12px #0002', textAlign: 'left' }}>
-                    <div style={{ color: '#a3e635', fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Recovered Revenue</div>
-                    <div style={{ fontWeight: 800, fontSize: 28, color: '#fafafa' }}>
-                      ${analytics.reduce((sum, e) => sum + (e.recoveredRevenue || 0), 0).toLocaleString()}
-                    </div>
-                  </div>
-                  <div style={{ background: '#18181b', borderRadius: 12, padding: '22px 32px', minWidth: 180, flex: 1, boxShadow: '0 2px 12px #0002', textAlign: 'left' }}>
-                    <div style={{ color: '#38bdf8', fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Emails Sent</div>
-                    <div style={{ fontWeight: 800, fontSize: 28, color: '#fafafa' }}>
-                      {analytics.reduce((sum, e) => sum + (e.emailsSent || 0), 0).toLocaleString()}
-                    </div>
-                  </div>
-                  <div style={{ background: '#18181b', borderRadius: 12, padding: '22px 32px', minWidth: 180, flex: 1, boxShadow: '0 2px 12px #0002', textAlign: 'left' }}>
-                    <div style={{ color: '#fbbf24', fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Conversions</div>
-                    <div style={{ fontWeight: 800, fontSize: 28, color: '#fafafa' }}>
-                      {analytics.reduce((sum, e) => sum + (e.conversions || 0), 0).toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-                {/* Modern analytics chart */}
-                <div style={{ marginBottom: 32 }}>
-                  <WinbackAnalyticsChart data={analytics} />
-                </div>
-                {/* Event log table */}
-                <div style={{ background: '#18181b', borderRadius: 12, boxShadow: '0 2px 12px #0002', padding: 0, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '1px solid #27272a', fontWeight: 700, fontSize: 17, color: '#fafafa' }}>Event Log</div>
-                  <div style={{ maxHeight: 320, overflowY: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15, color: '#e5e7eb' }}>
-                      <thead>
-                        <tr style={{ background: '#23232a' }}>
-                          <th style={{ padding: '10px 16px', textAlign: 'left', fontWeight: 700 }}>Date</th>
-                          <th style={{ padding: '10px 16px', textAlign: 'left', fontWeight: 700 }}>Recovered Revenue</th>
-                          <th style={{ padding: '10px 16px', textAlign: 'left', fontWeight: 700 }}>Emails Sent</th>
-                          <th style={{ padding: '10px 16px', textAlign: 'left', fontWeight: 700 }}>Conversions</th>
-                          <th style={{ padding: '10px 16px', textAlign: 'left', fontWeight: 700 }}>Details</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {analytics.length === 0 && (
-                          <tr><td colSpan={5} style={{ padding: 24, textAlign: 'center', color: '#64748b' }}>No analytics data yet.</td></tr>
-                        )}
-                        {analytics.map((e, i) => (
-                          <tr key={i} style={{ borderBottom: '1px solid #23232a' }}>
-                            <td style={{ padding: '10px 16px', fontWeight: 600 }}>{e.timestamp ? new Date(e.timestamp).toLocaleDateString() : ''}</td>
-                            <td style={{ padding: '10px 16px', color: '#a3e635', fontWeight: 700 }}>${e.recoveredRevenue?.toLocaleString() || 0}</td>
-                            <td style={{ padding: '10px 16px', color: '#38bdf8', fontWeight: 700 }}>{e.emailsSent?.toLocaleString() || 0}</td>
-                            <td style={{ padding: '10px 16px', color: '#fbbf24', fontWeight: 700 }}>{e.conversions?.toLocaleString() || 0}</td>
-                            <td style={{ padding: '10px 16px', color: '#e0e7ef' }}>{e.details || '-'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </WinbackFeatureCard>
+              <WinbackFeatureCard title="Analytics" description="View performance metrics and insights for your campaigns." icon="📊" />
+              {/* ...analytics code... */}
             </section>
           )}
           {activeSection === 'automation' && (
             <section aria-label="Automation">
-              <WinbackFeatureCard title="Automation" description="Automate winback workflows and triggers." />
+              <WinbackFeatureCard title="Automation" description="Automate winback workflows and triggers." icon="🤖" />
               {/* ...automation code... */}
             </section>
           )}
           {activeSection === 'integrations' && (
             <section aria-label="Integrations">
-              <WinbackFeatureCard title="Integrations" description="Connect third-party services for enhanced winback capabilities." />
+              <WinbackFeatureCard title="Integrations" description="Connect third-party services for enhanced winback capabilities." icon="🔗" />
               {/* ...integrations code... */}
             </section>
           )}
           {activeSection === 'notifications' && (
             <section aria-label="Notifications">
-              <WinbackFeatureCard title="Notifications" description="Manage notification preferences and delivery channels." />
+              <WinbackFeatureCard title="Notifications" description="Manage notification preferences and delivery channels." icon="🔔" />
               {/* ...notifications code... */}
             </section>
           )}
           {activeSection === 'activityLog' && (
             <section aria-label="Activity Log">
-              <WinbackFeatureCard title="Activity Log" description="Timeline of all actions, sends, edits, and results. Export, search, and filter options." />
+              <WinbackFeatureCard title="Activity Log" description="Timeline of all actions, sends, edits, and results. Export, search, and filter options." icon="📜" />
               {/* ...activity log code... */}
             </section>
           )}
           {activeSection === 'compliance' && (
             <section aria-label="Compliance">
-              <WinbackFeatureCard title="Compliance Center" description="GDPR/CCPA tools, opt-out, audit logs, data export/delete, and deliverability best practices." />
+              <WinbackFeatureCard title="Compliance Center" description="GDPR/CCPA tools, opt-out, audit logs, data export/delete, and deliverability best practices." icon="🛡️" />
               {/* ...compliance code... */}
             </section>
           )}
           {activeSection === 'settings' && (
             <section aria-label="Settings">
-              <WinbackFeatureCard title="Settings" description="Configure tool preferences, notification options, and advanced settings. Personalize your winback experience." />
+              <WinbackFeatureCard title="Settings" description="Configure tool preferences, notification options, and advanced settings. Personalize your winback experience." icon="⚙️" />
               {/* ...settings code... */}
             </section>
           )}
           {activeSection === 'help' && (
             <section aria-label="Help & Docs">
-              <WinbackFeatureCard title="Help & Documentation" description="Browse FAQs, onboarding guides, and get support. Everything you need to master winback automation." />
+              <WinbackFeatureCard title="Help & Documentation" description="Browse FAQs, onboarding guides, and get support. Everything you need to master winback automation." icon="❓" />
               <div style={{ margin: '32px 0', background: '#f9fafb', borderRadius: 14, boxShadow: '0 2px 8px #0001', padding: 32 }}>
                 <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Documentation & Guides</h3>
                 <WinbackHelpDocs />
