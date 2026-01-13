@@ -1,5 +1,4 @@
 const express = require('express');
-const OpenAI = require('openai');
 const db = require('./db');
 const rbac = require('./rbac');
 const i18n = require('./i18n');
@@ -72,22 +71,6 @@ router.delete('/automation/:id', async (req, res) => {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
-const express = require('express');
-const OpenAI = require('openai');
-const db = require('./db');
-const rbac = require('./rbac');
-const i18n = require('./i18n');
-const analytics = require('./analyticsModel');
-const notificationModel = require('./notificationModel');
-const webhookModel = require('./webhookModel');
-const pluginSystem = require('./pluginSystem');
-const complianceModel = require('./complianceModel');
-const bandit = require('./bandit');
-const apiKeys = require('./apiKeys');
-const { sendSlackNotification } = require('./slackNotify');
-const auditModel = require('./auditModel');
-const openaiUtil = require('./openai');
-const router = express.Router();
 
 // Residency/compliance endpoints
 router.post('/compliance/export', (req, res) => {
