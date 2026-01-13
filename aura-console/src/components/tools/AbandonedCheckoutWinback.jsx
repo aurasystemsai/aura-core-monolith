@@ -112,201 +112,204 @@ export default function AbandonedCheckoutWinback() {
           if (s.id) {
             setSegmentsList(list => list.map(x => x.id === s.id ? { ...s, selected: false } : x));
           } else {
-            setSegmentsList(list => [...list, { ...s, id: Date.now(), selected: false }]);
-          }
-          closeSegmentModal();
-        };
+            // Place these at the very end of the file, after the main export
 
-        // Bulk select
-        const toggleSelectSegment = (id) => {
-          setSegmentsList(list => list.map(x => x.id === id ? { ...x, selected: !x.selected } : x));
-        };
-        const selectAllSegments = (checked) => {
-          setSegmentsList(list => list.map(x => ({ ...x, selected: checked })));
-        };
-        // Bulk delete
-        const deleteSelectedSegments = () => {
-          setSegmentsList(list => list.filter(x => !x.selected));
-        };
-      // Campaigns state for flagship management
-      const [campaigns, setCampaigns] = useState([
-        { id: 1, name: 'VIP Winback', channel: 'email', status: 'active', created: '2026-01-01', segment: 'VIP', schedule: '24h', variant: 'A', selected: false },
-        { id: 2, name: 'Cart Recovery', channel: 'sms', status: 'draft', created: '2026-01-05', segment: 'All', schedule: '1h', variant: 'B', selected: false },
-      ]);
-      const [showCampaignModal, setShowCampaignModal] = useState(false);
-      const [editingCampaign, setEditingCampaign] = useState(null);
+            // --- AutomationSection: flagship automation management ---
+            function AutomationSection() {
+              const [rules, setRules] = React.useState([]);
+              const [loading, setLoading] = React.useState(false);
+              const [error, setError] = React.useState("");
+              const [showModal, setShowModal] = React.useState(false);
+              const [newRule, setNewRule] = React.useState({ trigger: '', action: '', enabled: true });
 
-      // Open modal for new or edit
-      const openCampaignModal = (campaign = null) => {
-        setEditingCampaign(campaign);
-        setShowCampaignModal(true);
-      };
-      const closeCampaignModal = () => {
-        setEditingCampaign(null);
-        setShowCampaignModal(false);
-      };
+              React.useEffect(() => {
+                setLoading(true);
+                apiFetch('/api/abandoned-checkout-winback/automation')
+                  .then(async resp => {
+                    if (!resp.ok) throw new Error('Failed to fetch automation rules');
+                    const data = await resp.json();
+                    setRules(data.rules || []);
+                  })
+                  .catch(e => setError(e.message))
+                  .finally(() => setLoading(false));
+              }, []);
 
-      // Save campaign (add or update)
-      const saveCampaign = (c) => {
-        if (c.id) {
-          setCampaigns(list => list.map(x => x.id === c.id ? { ...c, selected: false } : x));
-        } else {
-          setCampaigns(list => [...list, { ...c, id: Date.now(), selected: false }]);
-        }
-        closeCampaignModal();
-      };
+              const handleCreate = async () => {
+                setLoading(true);
+                setError("");
+                try {
+                  const resp = await apiFetch('/api/abandoned-checkout-winback/automation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newRule)
+                  });
+                  const data = await resp.json();
+                  if (!data.ok) throw new Error(data.error || 'Failed to create rule');
+                  setRules(rules => [...rules, data.rule]);
+                  setShowModal(false);
+                  setNewRule({ trigger: '', action: '', enabled: true });
+                } catch (e) {
+                  setError(e.message);
+                }
+                setLoading(false);
+              };
 
-      // Bulk select
-      const toggleSelectCampaign = (id) => {
-        setCampaigns(list => list.map(x => x.id === id ? { ...x, selected: !x.selected } : x));
-      };
-      const selectAllCampaigns = (checked) => {
-        setCampaigns(list => list.map(x => ({ ...x, selected: checked })));
-      };
-      // Bulk delete
-      const deleteSelectedCampaigns = () => {
-        setCampaigns(list => list.filter(x => !x.selected));
-      };
-    // Navigation state for flagship SaaS sections
-    const [activeSection, setActiveSection] = useState('campaigns');
-    const sections = [
-      { key: 'campaigns', label: 'Campaigns' },
-      { key: 'segments', label: 'Segments' },
-      { key: 'templates', label: 'Templates' },
-      { key: 'abTesting', label: 'A/B Testing' },
-      { key: 'analytics', label: 'Analytics' },
-      { key: 'automation', label: 'Automation' },
-      { key: 'integrations', label: 'Integrations' },
-      { key: 'notifications', label: 'Notifications' },
-      { key: 'activityLog', label: 'Activity Log' },
-      { key: 'compliance', label: 'Compliance' },
-      { key: 'settings', label: 'Settings' },
-      { key: 'help', label: 'Help & Docs' },
-    ];
-  // Flagship UI state
-  const [showOnboarding, setShowOnboarding] = useState(true);
-  const [onboardingComplete, setOnboardingComplete] = useState(false);
-  const [step, setStep] = useState(0);
-  const [campaign, setCampaign] = useState({ name: '', channel: 'email', segment: '', schedule: '', template: '', variant: '', status: 'draft' });
-  const [templates, setTemplates] = useState([]);
-  const [variants, setVariants] = useState([]);
-  const [segments, setSegments] = useState([]);
-  const [schedules, setSchedules] = useState([]);
-  const [analytics, setAnalytics] = useState([]);
-  const [activityLog, setActivityLog] = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const [imported, setImported] = useState(null);
-  const [exported, setExported] = useState(null);
-  const [feedback, setFeedback] = useState("");
-  const [error, setError] = useState(""); // For feedback and general errors
-  const [topLevelError, setTopLevelError] = useState(""); // For API/network errors
-  const [loading, setLoading] = useState(false);
-  const fileInputRef = React.useRef();
+              const handleDelete = async (id) => {
+                setLoading(true);
+                setError("");
+                try {
+                  const resp = await apiFetch(`/api/abandoned-checkout-winback/automation/${id}`, { method: 'DELETE' });
+                  const data = await resp.json();
+                  if (!data.ok) throw new Error(data.error || 'Failed to delete rule');
+                  setRules(rules => rules.filter(r => r.id !== id));
+                } catch (e) {
+                  setError(e.message);
+                }
+                setLoading(false);
+              };
 
-  // Real-time WebSocket updates
-  // WebSocket support removed: no real-time updates
+              return (
+                <div style={{ marginTop: 24 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <h3 style={{ margin: 0, fontSize: 20 }}>Automation Rules</h3>
+                    <button onClick={() => setShowModal(true)} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>+ New Rule</button>
+                  </div>
+                  {error && <div style={{ color: '#f87171', marginBottom: 12 }}>{error}</div>}
+                  {loading ? <div>Loading...</div> : (
+                    <table style={{ width: '100%', color: '#fff', fontSize: 15, background: '#18181b', borderRadius: 10 }}>
+                      <thead>
+                        <tr style={{ color: '#aaa', textAlign: 'left' }}>
+                          <th>Trigger</th>
+                          <th>Action</th>
+                          <th>Status</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rules.map(rule => (
+                          <tr key={rule.id} style={{ borderTop: '1px solid #232336' }}>
+                            <td>{rule.trigger}</td>
+                            <td>{rule.action}</td>
+                            <td>{rule.enabled ? 'Enabled' : 'Disabled'}</td>
+                            <td><button onClick={() => handleDelete(rule.id)} style={{ background: 'none', color: '#f87171', border: 'none', cursor: 'pointer' }}>Delete</button></td>
+                          </tr>
+                        ))}
+                        {rules.length === 0 && <tr><td colSpan={4} style={{ color: '#aaa', padding: 12 }}>No automation rules yet.</td></tr>}
+                      </tbody>
+                    </table>
+                  )}
+                  {/* Modal for new rule */}
+                  {showModal && (
+                    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#000a', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ background: '#232336', borderRadius: 12, padding: 32, minWidth: 340 }}>
+                        <h3 style={{ marginTop: 0 }}>Create Automation Rule</h3>
+                        <div style={{ marginBottom: 12 }}>
+                          <label>Trigger<br />
+                            <input value={newRule.trigger} onChange={e => setNewRule(r => ({ ...r, trigger: e.target.value }))} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333', marginTop: 4 }} placeholder="e.g. Cart Abandoned" />
+                          </label>
+                        </div>
+                        <div style={{ marginBottom: 12 }}>
+                          <label>Action<br />
+                            <input value={newRule.action} onChange={e => setNewRule(r => ({ ...r, action: e.target.value }))} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333', marginTop: 4 }} placeholder="e.g. Send Email" />
+                          </label>
+                        </div>
+                        <div style={{ marginBottom: 18 }}>
+                          <label>
+                            <input type="checkbox" checked={newRule.enabled} onChange={e => setNewRule(r => ({ ...r, enabled: e.target.checked }))} /> Enabled
+                          </label>
+                        </div>
+                        <div style={{ display: 'flex', gap: 12 }}>
+                          <button onClick={() => setShowModal(false)} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
+                          <button onClick={handleCreate} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Create</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            }
 
-  // Example: fetch analytics on mount and show error if fails
-  useEffect(() => {
-    (async () => {
-      try {
-        const resp = await apiFetch('/api/abandoned-checkout-winback/analytics');
-        if (!resp.ok) {
-          const msg = `API error: ${resp.status} ${resp.statusText}`;
-          setTopLevelError(msg);
-          return;
-        }
-        const data = await resp.json();
-        setAnalytics(data.events || []);
-      } catch (err) {
-        setTopLevelError(err.message || 'Network error');
-      }
-    })();
-  }, []);
-  // Enhanced onboarding wizard
-  const onboardingContent = (
-    <WinbackOnboardingWizard onComplete={() => { setOnboardingComplete(true); setShowOnboarding(false); }} />
-  );
+            // --- IntegrationsSection: flagship integrations management ---
+            function IntegrationsSection() {
+              const [integrations, setIntegrations] = React.useState([]);
+              const [loading, setLoading] = React.useState(false);
+              const [error, setError] = React.useState("");
+              const [connecting, setConnecting] = React.useState(null);
 
-  // AI-powered content/segmentation
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState("");
-  const handleAIGenerate = async () => {
-    setAiLoading(true); setAiError("");
-    try {
-      const resp = await apiFetch("/api/abandoned-checkout-winback/ai/content", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customerName: "Jane Doe",
-          cartItems: [{ title: "T-shirt" }, { title: "Sneakers" }],
-          brand: "AuraCore",
-          tone: "friendly",
-          channel: campaign.channel,
-          language: "English"
-        })
-      });
-      const data = await resp.json();
-      if (data.ok) setCampaign(c => ({ ...c, template: data.content }));
-      else setAiError(data.error || "AI error");
-    } catch (err) { setAiError("AI error"); }
-    setAiLoading(false);
-  };
-  // Import/export
-  const handleImport = e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = evt => {
-      setCampaign(JSON.parse(evt.target.result));
-      setImported(file.name);
-    };
-    reader.readAsText(file);
-  };
-  const handleExport = () => {
-    const blob = new Blob([JSON.stringify(campaign, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    setExported(url);
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
-  };
+              React.useEffect(() => {
+                setLoading(true);
+                apiFetch('/api/abandoned-checkout-winback/integrations')
+                  .then(async resp => {
+                    if (!resp.ok) throw new Error('Failed to fetch integrations');
+                    const data = await resp.json();
+                    setIntegrations(data.integrations || []);
+                  })
+                  .catch(e => setError(e.message))
+                  .finally(() => setLoading(false));
+              }, []);
 
-  // Feedback
-  const handleFeedback = async () => {
-    if (!feedback) return;
-    setError("");
-    try {
-      await apiFetch("/api/abandoned-checkout-winback/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ feedback })
-      });
-      setFeedback("");
-    } catch (err) {
-      setError("Failed to send feedback");
-    }
-  };
+              const handleConnect = async (integration) => {
+                setConnecting(integration.id);
+                setError("");
+                try {
+                  const resp = await apiFetch(`/api/abandoned-checkout-winback/integrations/${integration.id}/connect`, { method: 'POST' });
+                  const data = await resp.json();
+                  if (!data.ok) throw new Error(data.error || 'Failed to connect');
+                  setIntegrations(list => list.map(i => i.id === integration.id ? { ...i, connected: true } : i));
+                } catch (e) {
+                  setError(e.message);
+                }
+                setConnecting(null);
+              };
 
-  // Main UI
-  return (
-    <>
-      <div style={{ display: 'flex', maxWidth: 1100, margin: '32px 0 0 0', padding: 0, background: '#18181b', borderRadius: 14, boxShadow: '0 2px 12px 0 #0004' }}>
-        {/* Sidebar Navigation */}
-        <nav style={{ width: 220, marginRight: 32, display: 'flex', flexDirection: 'column', gap: 8 }} aria-label="Main navigation">
-          {sections.map(s => (
-            <button
-              key={s.key}
-              onClick={() => setActiveSection(s.key)}
-              style={{
-                background: activeSection === s.key ? 'var(--button-primary-bg)' : 'var(--button-tertiary-bg)',
-                color: activeSection === s.key ? 'var(--button-primary-text)' : 'var(--button-tertiary-text)',
-                border: 'none', borderRadius: 8, padding: '10px 18px', fontWeight: 700, fontSize: 16, cursor: 'pointer', textAlign: 'left', outline: activeSection === s.key ? '2px solid #6366f1' : 'none'
-              }}
-              aria-current={activeSection === s.key ? 'page' : undefined}
-            >
-              {s.label}
-            </button>
-          ))}
-        </nav>
+              const handleDisconnect = async (integration) => {
+                setConnecting(integration.id);
+                setError("");
+                try {
+                  const resp = await apiFetch(`/api/abandoned-checkout-winback/integrations/${integration.id}/disconnect`, { method: 'POST' });
+                  const data = await resp.json();
+                  if (!data.ok) throw new Error(data.error || 'Failed to disconnect');
+                  setIntegrations(list => list.map(i => i.id === integration.id ? { ...i, connected: false } : i));
+                } catch (e) {
+                  setError(e.message);
+                }
+                setConnecting(null);
+              };
+
+              return (
+                <div style={{ marginTop: 24 }}>
+                  <h3 style={{ fontSize: 20, marginBottom: 16 }}>Integrations</h3>
+                  {error && <div style={{ color: '#f87171', marginBottom: 12 }}>{error}</div>}
+                  {loading ? <div>Loading...</div> : (
+                    <table style={{ width: '100%', color: '#fff', fontSize: 15, background: '#18181b', borderRadius: 10 }}>
+                      <thead>
+                        <tr style={{ color: '#aaa', textAlign: 'left' }}>
+                          <th>Service</th>
+                          <th>Status</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {integrations.map(integration => (
+                          <tr key={integration.id} style={{ borderTop: '1px solid #232336' }}>
+                            <td>{integration.name}</td>
+                            <td>{integration.connected ? 'Connected' : 'Not Connected'}</td>
+                            <td>
+                              {integration.connected ? (
+                                <button onClick={() => handleDisconnect(integration)} disabled={connecting === integration.id} style={{ background: 'var(--button-tertiary-bg)', color: '#f87171', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Disconnect</button>
+                              ) : (
+                                <button onClick={() => handleConnect(integration)} disabled={connecting === integration.id} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Connect</button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                        {integrations.length === 0 && <tr><td colSpan={3} style={{ color: '#aaa', padding: 12 }}>No integrations available.</td></tr>}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              );
+            }
         {/* Main Content Area */}
         <div style={{ flex: 1 }}>
           {topLevelError && (
