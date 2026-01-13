@@ -8,6 +8,8 @@ import ToolScaffold from './ToolScaffold';
 
 export default function AbandonedCheckoutWinback() {
     // --- Flagship state and logic ---
+    // Fix: Add activeSection state for navigation
+    const [activeSection, setActiveSection] = useState('segments'); // Default section, change as needed
     // Experiments state for A/B Testing section
     const [experimentsList, setExperimentsList] = useState([
       { id: 1, name: 'Subject Line Test', variantA: 'Welcome to Aura!', variantB: 'Get Started with Aura', status: 'active', created: '2026-01-01', selected: false },
