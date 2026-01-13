@@ -9,6 +9,19 @@ import useWinbackSocket from './AbandonedCheckoutWinbackSocket';
 import ToolScaffold from './ToolScaffold';
 
 export default function AbandonedCheckoutWinback() {
+        // --- Flagship Navigation Tabs ---
+        const flagshipSections = [
+          { key: 'segments', label: 'Segments', icon: '👥' },
+          { key: 'templates', label: 'Templates', icon: '📝' },
+          { key: 'abTesting', label: 'A/B Testing', icon: '🧪' },
+          { key: 'analytics', label: 'Analytics', icon: '📊' },
+          { key: 'integrations', label: 'Integrations', icon: '🔗' },
+          { key: 'notifications', label: 'Notifications', icon: '🔔' },
+          { key: 'activityLog', label: 'Activity Log', icon: '📜' },
+          { key: 'compliance', label: 'Compliance', icon: '🛡️' },
+          { key: 'settings', label: 'Settings', icon: '⚙️' },
+          { key: 'help', label: 'Help & Docs', icon: '❓' },
+        ];
     // --- Flagship state and logic ---
     // Fix: Add activeSection state for navigation
     const [activeSection, setActiveSection] = useState('segments'); // Default section, change as needed
@@ -311,6 +324,45 @@ export default function AbandonedCheckoutWinback() {
     // Main component return
     return (
       <div>
+        {/* Flagship Navigation Tabs */}
+        <nav aria-label="Winback flagship navigation" style={{
+          display: 'flex',
+          gap: 8,
+          marginBottom: 24,
+          background: '#18181b',
+          borderRadius: 12,
+          padding: '8px 12px',
+          boxShadow: '0 2px 8px #0002',
+          overflowX: 'auto',
+        }}>
+          {flagshipSections.map(section => (
+            <button
+              key={section.key}
+              onClick={() => setActiveSection(section.key)}
+              style={{
+                background: activeSection === section.key ? 'var(--button-primary-bg)' : 'none',
+                color: activeSection === section.key ? 'var(--button-primary-text)' : '#fafafa',
+                border: 'none',
+                borderRadius: 8,
+                padding: '8px 18px',
+                fontWeight: activeSection === section.key ? 800 : 600,
+                fontSize: 16,
+                cursor: 'pointer',
+                boxShadow: activeSection === section.key ? '0 2px 8px #0003' : 'none',
+                outline: activeSection === section.key ? '2px solid #0ea5e9' : 'none',
+                transition: 'background 0.2s, color 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                minWidth: 120,
+              }}
+              aria-current={activeSection === section.key ? 'page' : undefined}
+            >
+              <span style={{ fontSize: 20 }}>{section.icon}</span>
+              {section.label}
+            </button>
+          ))}
+        </nav>
         {activeSection === 'segments' && (
           <section aria-label="Segments">
             <WinbackFeatureCard title="Advanced Segmentation" description="Create, manage, and apply dynamic customer segments. Saved segments, rule builder, and filters." icon="👥" />
