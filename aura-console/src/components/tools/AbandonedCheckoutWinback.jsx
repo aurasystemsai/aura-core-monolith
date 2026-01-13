@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { exportCampaignPDF } from './WinbackExportPDF';
 import { apiFetch } from '../../api';
+
+import WinbackFeatureCard from './WinbackFeatureCard';
 import WinbackAnomalyBanner from './WinbackAnomalyBanner';
 
 import useWinbackSocket from './AbandonedCheckoutWinbackSocket';
