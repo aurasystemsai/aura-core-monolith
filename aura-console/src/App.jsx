@@ -139,6 +139,12 @@ class ErrorBoundary extends React.Component {
 }
 
 function App() {
+  // Main navigation state
+  const [activeSection, setActiveSection] = useState('dashboard');
+  // Project state (simulate or fetch as needed)
+  const [project, setProject] = useState(null);
+  // Core API URL (simulate or fetch as needed)
+  const [coreUrl] = useState(window.CORE_API || 'https://aura-core-monolith.onrender.com');
   // Floating AI Chatbot widget state
   const [showChatbot, setShowChatbot] = useState(false);
   // Onboarding modal state
