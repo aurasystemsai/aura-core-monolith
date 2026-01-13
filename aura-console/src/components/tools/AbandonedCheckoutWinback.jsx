@@ -803,9 +803,90 @@ export default function AbandonedCheckoutWinback() {
           {activeSection === 'integrations' && (
             <section aria-label="Integrations">
               <WinbackFeatureCard title="Integrations" description="Connect third-party services for enhanced winback capabilities." icon="🔗" />
-              {/* ...integrations code... */}
+              <IntegrationsSection />
             </section>
           )}
+          // --- IntegrationsSection: flagship integrations management ---
+          function IntegrationsSection() {
+            const [integrations, setIntegrations] = React.useState([]);
+            const [loading, setLoading] = React.useState(false);
+            const [error, setError] = React.useState("");
+            const [connecting, setConnecting] = React.useState(null);
+
+            React.useEffect(() => {
+              setLoading(true);
+              apiFetch('/api/abandoned-checkout-winback/integrations')
+                .then(async resp => {
+                  if (!resp.ok) throw new Error('Failed to fetch integrations');
+                  const data = await resp.json();
+                  setIntegrations(data.integrations || []);
+                })
+                .catch(e => setError(e.message))
+                .finally(() => setLoading(false));
+            }, []);
+
+            const handleConnect = async (integration) => {
+              setConnecting(integration.id);
+              setError("");
+              try {
+                const resp = await apiFetch(`/api/abandoned-checkout-winback/integrations/${integration.id}/connect`, { method: 'POST' });
+                const data = await resp.json();
+                if (!data.ok) throw new Error(data.error || 'Failed to connect');
+                setIntegrations(list => list.map(i => i.id === integration.id ? { ...i, connected: true } : i));
+              } catch (e) {
+                setError(e.message);
+              }
+              setConnecting(null);
+            };
+
+            const handleDisconnect = async (integration) => {
+              setConnecting(integration.id);
+              setError("");
+              try {
+                const resp = await apiFetch(`/api/abandoned-checkout-winback/integrations/${integration.id}/disconnect`, { method: 'POST' });
+                const data = await resp.json();
+                if (!data.ok) throw new Error(data.error || 'Failed to disconnect');
+                setIntegrations(list => list.map(i => i.id === integration.id ? { ...i, connected: false } : i));
+              } catch (e) {
+                setError(e.message);
+              }
+              setConnecting(null);
+            };
+
+            return (
+              <div style={{ marginTop: 24 }}>
+                <h3 style={{ fontSize: 20, marginBottom: 16 }}>Integrations</h3>
+                {error && <div style={{ color: '#f87171', marginBottom: 12 }}>{error}</div>}
+                {loading ? <div>Loading...</div> : (
+                  <table style={{ width: '100%', color: '#fff', fontSize: 15, background: '#18181b', borderRadius: 10 }}>
+                    <thead>
+                      <tr style={{ color: '#aaa', textAlign: 'left' }}>
+                        <th>Service</th>
+                        <th>Status</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {integrations.map(integration => (
+                        <tr key={integration.id} style={{ borderTop: '1px solid #232336' }}>
+                          <td>{integration.name}</td>
+                          <td>{integration.connected ? 'Connected' : 'Not Connected'}</td>
+                          <td>
+                            {integration.connected ? (
+                              <button onClick={() => handleDisconnect(integration)} disabled={connecting === integration.id} style={{ background: 'var(--button-tertiary-bg)', color: '#f87171', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Disconnect</button>
+                            ) : (
+                              <button onClick={() => handleConnect(integration)} disabled={connecting === integration.id} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Connect</button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                      {integrations.length === 0 && <tr><td colSpan={3} style={{ color: '#aaa', padding: 12 }}>No integrations available.</td></tr>}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            );
+          }
           {activeSection === 'notifications' && (
             <section aria-label="Notifications">
               <WinbackFeatureCard title="Notifications" description="Manage notification preferences and delivery channels." icon="🔔" />

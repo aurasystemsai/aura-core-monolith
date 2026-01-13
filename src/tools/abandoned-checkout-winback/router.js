@@ -1,3 +1,31 @@
+// --- Integrations flagship endpoints ---
+// List all integrations
+router.get('/integrations', async (req, res) => {
+  try {
+    const integrations = await db.listIntegrations?.(req.query) || [];
+    res.json({ ok: true, integrations });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// Connect an integration
+router.post('/integrations/:id/connect', async (req, res) => {
+  try {
+    const integration = await db.connectIntegration?.(req.params.id);
+    res.json({ ok: true, integration });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+// Disconnect an integration
+router.post('/integrations/:id/disconnect', async (req, res) => {
+  try {
+    const integration = await db.disconnectIntegration?.(req.params.id);
+    res.json({ ok: true, integration });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
 // --- Automation flagship endpoints ---
 // List all automation rules
 router.get('/automation', async (req, res) => {
