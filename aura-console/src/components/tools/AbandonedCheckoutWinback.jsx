@@ -682,211 +682,210 @@ export default function AbandonedCheckoutWinback() {
           {activeSection === 'automation' && (
             <section aria-label="Automation">
               <WinbackFeatureCard title="Automation" description="Automate winback workflows and triggers." icon="🤖" />
-              {/* Automation Rules List */}
               <AutomationSection />
             </section>
           )}
-          // --- AutomationSection: flagship automation management ---
-          function AutomationSection() {
-            const [rules, setRules] = React.useState([]);
-            const [loading, setLoading] = React.useState(false);
-            const [error, setError] = React.useState("");
-            const [showModal, setShowModal] = React.useState(false);
-            const [newRule, setNewRule] = React.useState({ trigger: '', action: '', enabled: true });
+// --- AutomationSection: flagship automation management ---
+function AutomationSection() {
+  const [rules, setRules] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState("");
+  const [showModal, setShowModal] = React.useState(false);
+  const [newRule, setNewRule] = React.useState({ trigger: '', action: '', enabled: true });
 
-            React.useEffect(() => {
-              setLoading(true);
-              apiFetch('/api/abandoned-checkout-winback/automation')
-                .then(async resp => {
-                  if (!resp.ok) throw new Error('Failed to fetch automation rules');
-                  const data = await resp.json();
-                  setRules(data.rules || []);
-                })
-                .catch(e => setError(e.message))
-                .finally(() => setLoading(false));
-            }, []);
+  React.useEffect(() => {
+    setLoading(true);
+    apiFetch('/api/abandoned-checkout-winback/automation')
+      .then(async resp => {
+        if (!resp.ok) throw new Error('Failed to fetch automation rules');
+        const data = await resp.json();
+        setRules(data.rules || []);
+      })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
 
-            const handleCreate = async () => {
-              setLoading(true);
-              setError("");
-              try {
-                const resp = await apiFetch('/api/abandoned-checkout-winback/automation', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(newRule)
-                });
-                const data = await resp.json();
-                if (!data.ok) throw new Error(data.error || 'Failed to create rule');
-                setRules(rules => [...rules, data.rule]);
-                setShowModal(false);
-                setNewRule({ trigger: '', action: '', enabled: true });
-              } catch (e) {
-                setError(e.message);
-              }
-              setLoading(false);
-            };
+  const handleCreate = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const resp = await apiFetch('/api/abandoned-checkout-winback/automation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newRule)
+      });
+      const data = await resp.json();
+      if (!data.ok) throw new Error(data.error || 'Failed to create rule');
+      setRules(rules => [...rules, data.rule]);
+      setShowModal(false);
+      setNewRule({ trigger: '', action: '', enabled: true });
+    } catch (e) {
+      setError(e.message);
+    }
+    setLoading(false);
+  };
 
-            const handleDelete = async (id) => {
-              setLoading(true);
-              setError("");
-              try {
-                const resp = await apiFetch(`/api/abandoned-checkout-winback/automation/${id}`, { method: 'DELETE' });
-                const data = await resp.json();
-                if (!data.ok) throw new Error(data.error || 'Failed to delete rule');
-                setRules(rules => rules.filter(r => r.id !== id));
-              } catch (e) {
-                setError(e.message);
-              }
-              setLoading(false);
-            };
+  const handleDelete = async (id) => {
+    setLoading(true);
+    setError("");
+    try {
+      const resp = await apiFetch(`/api/abandoned-checkout-winback/automation/${id}`, { method: 'DELETE' });
+      const data = await resp.json();
+      if (!data.ok) throw new Error(data.error || 'Failed to delete rule');
+      setRules(rules => rules.filter(r => r.id !== id));
+    } catch (e) {
+      setError(e.message);
+    }
+    setLoading(false);
+  };
 
-            return (
-              <div style={{ marginTop: 24 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <h3 style={{ margin: 0, fontSize: 20 }}>Automation Rules</h3>
-                  <button onClick={() => setShowModal(true)} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>+ New Rule</button>
-                </div>
-                {error && <div style={{ color: '#f87171', marginBottom: 12 }}>{error}</div>}
-                {loading ? <div>Loading...</div> : (
-                  <table style={{ width: '100%', color: '#fff', fontSize: 15, background: '#18181b', borderRadius: 10 }}>
-                    <thead>
-                      <tr style={{ color: '#aaa', textAlign: 'left' }}>
-                        <th>Trigger</th>
-                        <th>Action</th>
-                        <th>Status</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rules.map(rule => (
-                        <tr key={rule.id} style={{ borderTop: '1px solid #232336' }}>
-                          <td>{rule.trigger}</td>
-                          <td>{rule.action}</td>
-                          <td>{rule.enabled ? 'Enabled' : 'Disabled'}</td>
-                          <td><button onClick={() => handleDelete(rule.id)} style={{ background: 'none', color: '#f87171', border: 'none', cursor: 'pointer' }}>Delete</button></td>
-                        </tr>
-                      ))}
-                      {rules.length === 0 && <tr><td colSpan={4} style={{ color: '#aaa', padding: 12 }}>No automation rules yet.</td></tr>}
-                    </tbody>
-                  </table>
-                )}
-                {/* Modal for new rule */}
-                {showModal && (
-                  <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#000a', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ background: '#232336', borderRadius: 12, padding: 32, minWidth: 340 }}>
-                      <h3 style={{ marginTop: 0 }}>Create Automation Rule</h3>
-                      <div style={{ marginBottom: 12 }}>
-                        <label>Trigger<br />
-                          <input value={newRule.trigger} onChange={e => setNewRule(r => ({ ...r, trigger: e.target.value }))} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333', marginTop: 4 }} placeholder="e.g. Cart Abandoned" />
-                        </label>
-                      </div>
-                      <div style={{ marginBottom: 12 }}>
-                        <label>Action<br />
-                          <input value={newRule.action} onChange={e => setNewRule(r => ({ ...r, action: e.target.value }))} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333', marginTop: 4 }} placeholder="e.g. Send Email" />
-                        </label>
-                      </div>
-                      <div style={{ marginBottom: 18 }}>
-                        <label>
-                          <input type="checkbox" checked={newRule.enabled} onChange={e => setNewRule(r => ({ ...r, enabled: e.target.checked }))} /> Enabled
-                        </label>
-                      </div>
-                      <div style={{ display: 'flex', gap: 12 }}>
-                        <button onClick={() => setShowModal(false)} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
-                        <button onClick={handleCreate} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Create</button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          }
+  return (
+    <div style={{ marginTop: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h3 style={{ margin: 0, fontSize: 20 }}>Automation Rules</h3>
+        <button onClick={() => setShowModal(true)} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>+ New Rule</button>
+      </div>
+      {error && <div style={{ color: '#f87171', marginBottom: 12 }}>{error}</div>}
+      {loading ? <div>Loading...</div> : (
+        <table style={{ width: '100%', color: '#fff', fontSize: 15, background: '#18181b', borderRadius: 10 }}>
+          <thead>
+            <tr style={{ color: '#aaa', textAlign: 'left' }}>
+              <th>Trigger</th>
+              <th>Action</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {rules.map(rule => (
+              <tr key={rule.id} style={{ borderTop: '1px solid #232336' }}>
+                <td>{rule.trigger}</td>
+                <td>{rule.action}</td>
+                <td>{rule.enabled ? 'Enabled' : 'Disabled'}</td>
+                <td><button onClick={() => handleDelete(rule.id)} style={{ background: 'none', color: '#f87171', border: 'none', cursor: 'pointer' }}>Delete</button></td>
+              </tr>
+            ))}
+            {rules.length === 0 && <tr><td colSpan={4} style={{ color: '#aaa', padding: 12 }}>No automation rules yet.</td></tr>}
+          </tbody>
+        </table>
+      )}
+      {/* Modal for new rule */}
+      {showModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#000a', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#232336', borderRadius: 12, padding: 32, minWidth: 340 }}>
+            <h3 style={{ marginTop: 0 }}>Create Automation Rule</h3>
+            <div style={{ marginBottom: 12 }}>
+              <label>Trigger<br />
+                <input value={newRule.trigger} onChange={e => setNewRule(r => ({ ...r, trigger: e.target.value }))} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333', marginTop: 4 }} placeholder="e.g. Cart Abandoned" />
+              </label>
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <label>Action<br />
+                <input value={newRule.action} onChange={e => setNewRule(r => ({ ...r, action: e.target.value }))} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333', marginTop: 4 }} placeholder="e.g. Send Email" />
+              </label>
+            </div>
+            <div style={{ marginBottom: 18 }}>
+              <label>
+                <input type="checkbox" checked={newRule.enabled} onChange={e => setNewRule(r => ({ ...r, enabled: e.target.checked }))} /> Enabled
+              </label>
+            </div>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button onClick={() => setShowModal(false)} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleCreate} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Create</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
           {activeSection === 'integrations' && (
             <section aria-label="Integrations">
               <WinbackFeatureCard title="Integrations" description="Connect third-party services for enhanced winback capabilities." icon="🔗" />
               <IntegrationsSection />
             </section>
           )}
-          // --- IntegrationsSection: flagship integrations management ---
-          function IntegrationsSection() {
-            const [integrations, setIntegrations] = React.useState([]);
-            const [loading, setLoading] = React.useState(false);
-            const [error, setError] = React.useState("");
-            const [connecting, setConnecting] = React.useState(null);
+// --- IntegrationsSection: flagship integrations management ---
+function IntegrationsSection() {
+  const [integrations, setIntegrations] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState("");
+  const [connecting, setConnecting] = React.useState(null);
 
-            React.useEffect(() => {
-              setLoading(true);
-              apiFetch('/api/abandoned-checkout-winback/integrations')
-                .then(async resp => {
-                  if (!resp.ok) throw new Error('Failed to fetch integrations');
-                  const data = await resp.json();
-                  setIntegrations(data.integrations || []);
-                })
-                .catch(e => setError(e.message))
-                .finally(() => setLoading(false));
-            }, []);
+  React.useEffect(() => {
+    setLoading(true);
+    apiFetch('/api/abandoned-checkout-winback/integrations')
+      .then(async resp => {
+        if (!resp.ok) throw new Error('Failed to fetch integrations');
+        const data = await resp.json();
+        setIntegrations(data.integrations || []);
+      })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
 
-            const handleConnect = async (integration) => {
-              setConnecting(integration.id);
-              setError("");
-              try {
-                const resp = await apiFetch(`/api/abandoned-checkout-winback/integrations/${integration.id}/connect`, { method: 'POST' });
-                const data = await resp.json();
-                if (!data.ok) throw new Error(data.error || 'Failed to connect');
-                setIntegrations(list => list.map(i => i.id === integration.id ? { ...i, connected: true } : i));
-              } catch (e) {
-                setError(e.message);
-              }
-              setConnecting(null);
-            };
+  const handleConnect = async (integration) => {
+    setConnecting(integration.id);
+    setError("");
+    try {
+      const resp = await apiFetch(`/api/abandoned-checkout-winback/integrations/${integration.id}/connect`, { method: 'POST' });
+      const data = await resp.json();
+      if (!data.ok) throw new Error(data.error || 'Failed to connect');
+      setIntegrations(list => list.map(i => i.id === integration.id ? { ...i, connected: true } : i));
+    } catch (e) {
+      setError(e.message);
+    }
+    setConnecting(null);
+  };
 
-            const handleDisconnect = async (integration) => {
-              setConnecting(integration.id);
-              setError("");
-              try {
-                const resp = await apiFetch(`/api/abandoned-checkout-winback/integrations/${integration.id}/disconnect`, { method: 'POST' });
-                const data = await resp.json();
-                if (!data.ok) throw new Error(data.error || 'Failed to disconnect');
-                setIntegrations(list => list.map(i => i.id === integration.id ? { ...i, connected: false } : i));
-              } catch (e) {
-                setError(e.message);
-              }
-              setConnecting(null);
-            };
+  const handleDisconnect = async (integration) => {
+    setConnecting(integration.id);
+    setError("");
+    try {
+      const resp = await apiFetch(`/api/abandoned-checkout-winback/integrations/${integration.id}/disconnect`, { method: 'POST' });
+      const data = await resp.json();
+      if (!data.ok) throw new Error(data.error || 'Failed to disconnect');
+      setIntegrations(list => list.map(i => i.id === integration.id ? { ...i, connected: false } : i));
+    } catch (e) {
+      setError(e.message);
+    }
+    setConnecting(null);
+  };
 
-            return (
-              <div style={{ marginTop: 24 }}>
-                <h3 style={{ fontSize: 20, marginBottom: 16 }}>Integrations</h3>
-                {error && <div style={{ color: '#f87171', marginBottom: 12 }}>{error}</div>}
-                {loading ? <div>Loading...</div> : (
-                  <table style={{ width: '100%', color: '#fff', fontSize: 15, background: '#18181b', borderRadius: 10 }}>
-                    <thead>
-                      <tr style={{ color: '#aaa', textAlign: 'left' }}>
-                        <th>Service</th>
-                        <th>Status</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {integrations.map(integration => (
-                        <tr key={integration.id} style={{ borderTop: '1px solid #232336' }}>
-                          <td>{integration.name}</td>
-                          <td>{integration.connected ? 'Connected' : 'Not Connected'}</td>
-                          <td>
-                            {integration.connected ? (
-                              <button onClick={() => handleDisconnect(integration)} disabled={connecting === integration.id} style={{ background: 'var(--button-tertiary-bg)', color: '#f87171', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Disconnect</button>
-                            ) : (
-                              <button onClick={() => handleConnect(integration)} disabled={connecting === integration.id} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Connect</button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                      {integrations.length === 0 && <tr><td colSpan={3} style={{ color: '#aaa', padding: 12 }}>No integrations available.</td></tr>}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            );
-          }
+  return (
+    <div style={{ marginTop: 24 }}>
+      <h3 style={{ fontSize: 20, marginBottom: 16 }}>Integrations</h3>
+      {error && <div style={{ color: '#f87171', marginBottom: 12 }}>{error}</div>}
+      {loading ? <div>Loading...</div> : (
+        <table style={{ width: '100%', color: '#fff', fontSize: 15, background: '#18181b', borderRadius: 10 }}>
+          <thead>
+            <tr style={{ color: '#aaa', textAlign: 'left' }}>
+              <th>Service</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {integrations.map(integration => (
+              <tr key={integration.id} style={{ borderTop: '1px solid #232336' }}>
+                <td>{integration.name}</td>
+                <td>{integration.connected ? 'Connected' : 'Not Connected'}</td>
+                <td>
+                  {integration.connected ? (
+                    <button onClick={() => handleDisconnect(integration)} disabled={connecting === integration.id} style={{ background: 'var(--button-tertiary-bg)', color: '#f87171', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Disconnect</button>
+                  ) : (
+                    <button onClick={() => handleConnect(integration)} disabled={connecting === integration.id} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Connect</button>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {integrations.length === 0 && <tr><td colSpan={3} style={{ color: '#aaa', padding: 12 }}>No integrations available.</td></tr>}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
           {activeSection === 'notifications' && (
             <section aria-label="Notifications">
               <WinbackFeatureCard title="Notifications" description="Manage notification preferences and delivery channels." icon="🔔" />
