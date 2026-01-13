@@ -1,3 +1,32 @@
+// --- Automation flagship endpoints ---
+// List all automation rules
+router.get('/automation', async (req, res) => {
+  try {
+    const rules = await db.listAutomationRules?.(req.query) || [];
+    res.json({ ok: true, rules });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+// Create a new automation rule
+router.post('/automation', async (req, res) => {
+  try {
+    const rule = await db.createAutomationRule?.(req.body);
+    res.status(201).json({ ok: true, rule });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+// Delete an automation rule by ID
+router.delete('/automation/:id', async (req, res) => {
+  try {
+    const ok = await db.deleteAutomationRule?.(req.params.id);
+    if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 const express = require('express');
 const OpenAI = require('openai');
 const db = require('./db');
