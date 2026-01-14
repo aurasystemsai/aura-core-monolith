@@ -1,4 +1,8 @@
-
+// src/tools/klaviyo-flow-automation/router.js
+// Express router for Klaviyo Flow Automation API endpoints
+const express = require('express');
+const router = express.Router();
+module.exports = require('../../routes/klaviyo-flow-automation');
 const express = require('express');
 const OpenAI = require('openai');
 const db = require('./db');

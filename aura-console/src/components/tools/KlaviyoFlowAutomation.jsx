@@ -2,35 +2,35 @@
 import React, { useState, useRef } from "react";
 
 // Placeholder for visual flow builder (replace with real library/component)
-function VisualFlowBuilder({ flow, setFlow, nodes = [], setNodes }) {
-  // Simple flagship drag-and-drop canvas (placeholder for real library)
+function VisualFlowBuilder({ flow, setFlow, nodes = [], setNodes, darkMode }) {
+  // Flagship drag-and-drop canvas (dark theme, modern look)
   return (
-    <div style={{ border: "1px solid #d1d5db", borderRadius: 10, padding: 18, background: "#f9fafb", marginBottom: 18 }}>
-      <div style={{ fontWeight: 600, marginBottom: 8 }}>Visual Flow Builder (Drag & Drop)</div>
-      <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
-        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Step', type: 'step' }])} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Add Step</button>
-        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Trigger', type: 'trigger' }])} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Add Trigger</button>
-        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Action', type: 'action' }])} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Add Action</button>
+    <div style={{ border: "1px solid #232336", borderRadius: 14, padding: 24, background: darkMode ? "#23232a" : "#18181b", marginBottom: 24, boxShadow: "0 2px 8px #0004" }}>
+      <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 12, color: darkMode ? "#fafafa" : "#e0e7ff" }}>Visual Flow Builder <span style={{ color: '#64748b', fontWeight: 400, fontSize: 13 }} title="Drag and drop steps, triggers, and actions">(?)</span></div>
+      <div style={{ display: 'flex', gap: 16, marginBottom: 18 }}>
+        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Step', type: 'step' }])} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Add Step</button>
+        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Trigger', type: 'trigger' }])} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Add Trigger</button>
+        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Action', type: 'action' }])} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Add Action</button>
       </div>
-      <div style={{ minHeight: 120, border: '1px dashed #bbb', borderRadius: 8, padding: 12, background: '#fff', marginBottom: 12 }}>
+      <div style={{ minHeight: 120, border: '1px dashed #6366f1', borderRadius: 10, padding: 16, background: darkMode ? '#18181b' : '#23232a', marginBottom: 16 }}>
         {nodes.length ? (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {nodes.map((n, i) => (
-              <li key={n.id} style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontWeight: 600, color: n.type === 'step' ? '#0ea5e9' : n.type === 'trigger' ? '#22c55e' : '#6366f1' }}>{n.label}</span>
-                <button onClick={() => setNodes(nodes.filter((_, idx) => idx !== i))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Remove</button>
+              <li key={n.id} style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontWeight: 700, fontSize: 16, color: n.type === 'step' ? '#0ea5e9' : n.type === 'trigger' ? '#22c55e' : '#6366f1', background: darkMode ? '#232336' : '#18181b', borderRadius: 6, padding: '4px 12px' }}>{n.label}</span>
+                <button onClick={() => setNodes(nodes.filter((_, idx) => idx !== i))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '4px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Remove</button>
               </li>
             ))}
           </ul>
         ) : (
-          <span style={{ color: '#64748b' }}>Drag and drop steps, triggers, and actions here.</span>
+          <span style={{ color: '#64748b', fontSize: 15 }}>Drag and drop steps, triggers, and actions here.</span>
         )}
       </div>
       <textarea
         value={flow}
         onChange={e => setFlow(e.target.value)}
         rows={4}
-        style={{ width: "100%", fontSize: 15, borderRadius: 6, border: "1px solid #ccc", padding: 8 }}
+        style={{ width: "100%", fontSize: 16, borderRadius: 10, border: "1px solid #333", padding: 12, background: darkMode ? '#18181b' : '#23232a', color: '#fafafa', marginBottom: 8 }}
         placeholder="Describe or edit your flow here..."
       />
     </div>
@@ -167,7 +167,7 @@ export default function KlaviyoFlowAutomation() {
       <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
         <div style={{ flex: 2, minWidth: 320 }}>
           {showOnboarding && onboardingContent}
-          <VisualFlowBuilder flow={flow} setFlow={setFlow} nodes={nodes} setNodes={setNodes} />
+          <VisualFlowBuilder flow={flow} setFlow={setFlow} nodes={nodes} setNodes={setNodes} darkMode={darkMode} />
           <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
             <button onClick={handleAISuggest} disabled={loading || !flow} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Thinking..." : "AI Suggest"}</button>
             <button onClick={handleRun} disabled={loading || !flow} style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Running..." : "Run Automation"}</button>
@@ -185,17 +185,17 @@ export default function KlaviyoFlowAutomation() {
           )}
           {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
         </div>
-        <div style={{ flex: 1, minWidth: 260, background: darkMode ? "#23263a" : "#f8fafc", borderRadius: 12, padding: 18, boxShadow: "0 1px 6px #0001" }}>
-          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics & Collaboration</div>
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ fontWeight: 600, marginBottom: 2 }}>Collaborators:</div>
-            <ul style={{ margin: 0, paddingLeft: 18 }}>
+        <div style={{ flex: 1, minWidth: 260, background: darkMode ? "#23232a" : "#18181b", borderRadius: 14, padding: 24, boxShadow: "0 2px 8px #0004" }}>
+          <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 12, color: darkMode ? "#fafafa" : "#e0e7ff" }}>Analytics & Collaboration</div>
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Collaborators:</div>
+            <ul style={{ margin: 0, paddingLeft: 18, color: darkMode ? '#a3e635' : '#6366f1', fontWeight: 600 }}>
               {collaborators.map(c => <li key={c}>{c}</li>)}
             </ul>
-            <button onClick={handleAddCollaborator} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "6px 16px", fontWeight: 600, fontSize: 14, marginTop: 6, cursor: "pointer" }}>Add Collaborator</button>
+            <button onClick={handleAddCollaborator} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 700, fontSize: 15, marginTop: 8, cursor: "pointer" }}>Add Collaborator</button>
           </div>
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>Flow Analytics:</div>
-          <div style={{ fontSize: 15, color: darkMode ? "#a3e635" : "#23263a" }}>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>Flow Analytics:</div>
+          <div style={{ fontSize: 15, color: darkMode ? "#a3e635" : "#6366f1" }}>
             {analytics ? (
               <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "none", padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
             ) : (
@@ -203,12 +203,12 @@ export default function KlaviyoFlowAutomation() {
             )}
           </div>
           <div style={{ marginTop: 18 }}>
-            <button onClick={() => setShowOnboarding(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Show Onboarding</button>
+            <button onClick={() => setShowOnboarding(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>Show Onboarding</button>
           </div>
           <div style={{ marginTop: 18, fontSize: 13, color: darkMode ? "#a3e635" : "#64748b" }}>
-            <div>Integrations: <span style={{ fontWeight: 600 }}>Klaviyo</span>, <span style={{ fontWeight: 600 }}>Shopify</span></div>
-            <div>Accessibility: <span style={{ fontWeight: 600 }}>WCAG 2.1</span> | <span style={{ fontWeight: 600 }}>Keyboard Shortcuts</span></div>
-            <div>Compliance: <span style={{ fontWeight: 600 }}>GDPR</span>, <span style={{ fontWeight: 600 }}>SOC2</span></div>
+            <div>Integrations: <span style={{ fontWeight: 700 }}>Klaviyo</span>, <span style={{ fontWeight: 700 }}>Shopify</span></div>
+            <div>Accessibility: <span style={{ fontWeight: 700 }}>WCAG 2.1</span> | <span style={{ fontWeight: 700 }}>Keyboard Shortcuts</span></div>
+            <div>Compliance: <span style={{ fontWeight: 700 }}>GDPR</span>, <span style={{ fontWeight: 700 }}>SOC2</span></div>
           </div>
         </div>
       </div>
