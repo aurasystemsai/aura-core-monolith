@@ -921,13 +921,68 @@ function AbandonedCheckoutWinback() {
 
         {activeSection === 'activityLog' && (
           <section aria-label="Activity Log">
-            <WinbackFeatureCard title="Activity Log" description="Timeline of all actions, sends, edits, and results. Export, search, and filter options." icon="📜" />
             <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 32, marginBottom: 24, marginTop: 18, maxWidth: 900 }}>
-              <div style={{ fontWeight: 700, fontSize: 22, marginBottom: 12 }}>Activity Log</div>
-              <div style={{ fontSize: 16, color: '#b3b3c6', marginBottom: 18 }}>
-                Timeline of all actions, sends, edits, and results. Export, search, and filter options.
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+                <div style={{ fontWeight: 700, fontSize: 22 }}>Activity Log</div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={exportActivityLog} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Export CSV</button>
+                  <div style={{ position: 'relative' }}>
+                    <button style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 14px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Columns ▾</button>
+                    <div style={{ position: 'absolute', top: 36, right: 0, background: '#18181c', color: '#fafafa', borderRadius: 8, boxShadow: '0 2px 8px #0008', padding: 12, zIndex: 10 }}>
+                      {activityLogColumns.map(col => (
+                        <label key={col.key} style={{ display: 'block', fontSize: 15, fontWeight: 500, marginBottom: 4 }}>
+                          <input type="checkbox" checked={col.visible} onChange={() => toggleColumn(col.key)} style={{ marginRight: 6 }} /> {col.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-              {/* ...activity log code... */}
+              <input type="text" placeholder="Search actions, users, details..." value={activityLogSearch} onChange={e => setActivityLogSearch(e.target.value)} style={{ width: '100%', marginBottom: 18, padding: 10, borderRadius: 8, border: '1px solid #333', background: '#18181c', color: '#fafafa', fontSize: 15 }} />
+              <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
+                <input type="text" placeholder="Filter by user" value={activityLogFilters.user} onChange={e => setActivityLogFilters(f => ({ ...f, user: e.target.value }))} style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #333', background: '#18181c', color: '#fafafa', fontSize: 14 }} />
+                <input type="text" placeholder="Filter by action" value={activityLogFilters.action} onChange={e => setActivityLogFilters(f => ({ ...f, action: e.target.value }))} style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #333', background: '#18181c', color: '#fafafa', fontSize: 14 }} />
+                <input type="text" placeholder="Filter by type" value={activityLogFilters.type} onChange={e => setActivityLogFilters(f => ({ ...f, type: e.target.value }))} style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #333', background: '#18181c', color: '#fafafa', fontSize: 14 }} />
+                <input type="text" placeholder="Filter by campaign" value={activityLogFilters.campaignId} onChange={e => setActivityLogFilters(f => ({ ...f, campaignId: e.target.value }))} style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #333', background: '#18181c', color: '#fafafa', fontSize: 14 }} />
+              </div>
+              {/* Table and details modal logic assumed present in your state/logic */}
+              {/* Example Table UI: */}
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--background-secondary)', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
+                  <thead>
+                    <tr style={{ background: '#232336', color: '#aaa' }}>
+                      {activityLogColumns.filter(c => c.visible).map(col => (
+                        <th key={col.key} style={{ padding: 8, textAlign: 'left' }}>{col.label}</th>
+                      ))}
+                      <th style={{ padding: 8, textAlign: 'left' }}>Raw</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredActivityLog.map(log => (
+                      <tr key={log.id} style={{ borderBottom: '1px solid #232336' }}>
+                        {activityLogColumns.filter(c => c.visible).map(col => (
+                          <td key={col.key} style={{ padding: 8 }}>{log[col.key] || '-'}</td>
+                        ))}
+                        <td style={{ padding: 8 }}>
+                          <button onClick={() => openLogDetails(log)} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>View</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {/* Log Details Modal */}
+              {showLogDetails && logDetails && (
+                <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
+                  <div style={{ background: 'var(--background-secondary, #23232a)', color: 'var(--text-primary, #fafafa)', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                    <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Log Entry Details</h3>
+                    <pre style={{ background: '#18181c', color: '#fafafa', borderRadius: 8, padding: 16, fontSize: 15, maxHeight: 400, overflow: 'auto' }}>{JSON.stringify(logDetails, null, 2)}</pre>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+                      <button onClick={closeLogDetails} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Close</button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         )}
