@@ -1,3 +1,133 @@
+// --- Compliance flagship section ---
+function ComplianceSection() {
+  const [exporting, setExporting] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
+  const [optedOut, setOptedOut] = React.useState(false);
+  const [complianceError, setComplianceError] = React.useState("");
+  const [complianceSuccess, setComplianceSuccess] = React.useState("");
+  const [auditLog, setAuditLog] = React.useState([]);
+  const [showAudit, setShowAudit] = React.useState(false);
+
+  React.useEffect(() => {
+    apiFetch('/api/abandoned-checkout-winback/compliance-status')
+      .then(async resp => {
+        if (!resp.ok) throw new Error('Failed to fetch compliance status');
+        const data = await resp.json();
+        setOptedOut(!!data.optedOut);
+      })
+      .catch(() => setOptedOut(false));
+  }, []);
+
+  const handleExport = async () => {
+    setExporting(true);
+    setComplianceError("");
+    setComplianceSuccess("");
+    try {
+      const resp = await apiFetch('/api/abandoned-checkout-winback/export-data');
+      if (!resp.ok) throw new Error('Failed to export data');
+      const data = await resp.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `aura-compliance-export-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setComplianceSuccess('Data export complete.');
+    } catch (e) {
+      setComplianceError(e.message);
+    }
+    setExporting(false);
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure? This will permanently delete all your data and cannot be undone.')) return;
+    setDeleting(true);
+    setComplianceError("");
+    setComplianceSuccess("");
+    try {
+      const resp = await apiFetch('/api/abandoned-checkout-winback/delete-data', { method: 'POST' });
+      if (!resp.ok) throw new Error('Failed to delete data');
+      setComplianceSuccess('Your data has been deleted.');
+    } catch (e) {
+      setComplianceError(e.message);
+    }
+    setDeleting(false);
+  };
+
+  const handleOptOut = async () => {
+    setComplianceError("");
+    setComplianceSuccess("");
+    try {
+      const resp = await apiFetch('/api/abandoned-checkout-winback/opt-out', { method: 'POST' });
+      if (!resp.ok) throw new Error('Failed to opt out');
+      setOptedOut(true);
+      setComplianceSuccess('You have been opted out.');
+    } catch (e) {
+      setComplianceError(e.message);
+    }
+  };
+
+  const handleShowAudit = async () => {
+    setComplianceError("");
+    setShowAudit(true);
+    try {
+      const resp = await apiFetch('/api/abandoned-checkout-winback/audit');
+      if (!resp.ok) throw new Error('Failed to fetch audit log');
+      const data = await resp.json();
+      setAuditLog(Array.isArray(data.logs) ? data.logs : []);
+    } catch (e) {
+      setComplianceError(e.message);
+    }
+  };
+
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <button onClick={handleExport} disabled={exporting} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer', marginRight: 16 }}>Export My Data</button>
+        <button onClick={handleDelete} disabled={deleting} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer', marginRight: 16 }}>Delete My Data</button>
+        <button onClick={handleOptOut} disabled={optedOut} style={{ background: optedOut ? '#64748b' : '#f59e42', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 16, cursor: optedOut ? 'not-allowed' : 'pointer', marginRight: 16 }}>{optedOut ? 'Opted Out' : 'Opt Out'}</button>
+        <button onClick={handleShowAudit} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>View Audit Log</button>
+      </div>
+      {complianceError && <div style={{ color: '#ef4444', fontWeight: 600, marginBottom: 12 }}>{complianceError}</div>}
+      {complianceSuccess && <div style={{ color: '#22c55e', fontWeight: 600, marginBottom: 12 }}>{complianceSuccess}</div>}
+      {showAudit && (
+        <div style={{ background: '#18181b', borderRadius: 10, padding: 18, marginTop: 18, maxHeight: 320, overflowY: 'auto' }}>
+          <h4 style={{ fontWeight: 700, fontSize: 18, marginBottom: 10 }}>Audit Log</h4>
+          <table style={{ width: '100%', color: '#fff', fontSize: 15 }}>
+            <thead>
+              <tr style={{ color: '#aaa', textAlign: 'left' }}>
+                <th>Timestamp</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Type</th>
+                <th>Campaign</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {auditLog.length === 0 ? (
+                <tr><td colSpan={6} style={{ color: '#64748b', padding: 18 }}>No audit log entries.</td></tr>
+              ) : auditLog.map((log, i) => (
+                <tr key={i} style={{ borderTop: '1px solid #232336' }}>
+                  <td>{log.timestamp || '-'}</td>
+                  <td>{log.user || '-'}</td>
+                  <td>{log.action || '-'}</td>
+                  <td>{log.type || '-'}</td>
+                  <td>{log.campaignId || '-'}</td>
+                  <td>{log.details || '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div style={{ marginTop: 32, color: '#64748b', fontSize: 14 }}>
+        <b>Note:</b> These tools help you comply with GDPR/CCPA. Data export/download is instant. Data deletion is permanent. Opt-out disables all processing for your account/shop. For more, contact support@aura-core.ai.
+      </div>
+    </div>
+  );
+}
 import React, { useState, useEffect } from 'react';
 import { exportCampaignPDF } from './WinbackExportPDF';
 import { apiFetch } from '../../api';
