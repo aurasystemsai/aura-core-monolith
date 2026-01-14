@@ -58,3 +58,77 @@ router.post('/integrations/:id/disconnect', async (req, res) => {
 });
 
 module.exports = router;
+
+// --- Notifications API (per-shop, persistent, production-ready) ---
+const NOTIFICATIONS_KEY = 'winback-notifications';
+
+// GET: List notifications for shop
+router.get('/notifications', async (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop' });
+  const all = (await storage.get(NOTIFICATIONS_KEY)) || {};
+  const notifications = all[shop] || [];
+  res.json({ ok: true, notifications });
+});
+
+// POST: Create notification for shop
+router.post('/notifications', async (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop' });
+  const { name, channel, message, status } = req.body;
+  if (!name || !channel || !message) return res.status(400).json({ ok: false, error: 'Missing required fields' });
+  let all = (await storage.get(NOTIFICATIONS_KEY)) || {};
+  let notifications = all[shop] || [];
+  const id = Date.now();
+  const created = new Date().toISOString().slice(0, 10);
+  const notification = { id, name, channel, message, status: status || 'enabled', created };
+  notifications.push(notification);
+  all[shop] = notifications;
+  await storage.set(NOTIFICATIONS_KEY, all);
+  res.json({ ok: true, notification });
+});
+
+// PUT: Update notification for shop
+router.put('/notifications/:id', async (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop' });
+  const id = parseInt(req.params.id);
+  let all = (await storage.get(NOTIFICATIONS_KEY)) || {};
+  let notifications = all[shop] || [];
+  let idx = notifications.findIndex(n => n.id === id);
+  if (idx === -1) return res.status(404).json({ ok: false, error: 'Notification not found' });
+  const { name, channel, message, status } = req.body;
+  notifications[idx] = { ...notifications[idx], name, channel, message, status };
+  all[shop] = notifications;
+  await storage.set(NOTIFICATIONS_KEY, all);
+  res.json({ ok: true, notification: notifications[idx] });
+});
+
+// DELETE: Delete notification for shop
+router.delete('/notifications/:id', async (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop' });
+  const id = parseInt(req.params.id);
+  let all = (await storage.get(NOTIFICATIONS_KEY)) || {};
+  let notifications = all[shop] || [];
+  const before = notifications.length;
+  notifications = notifications.filter(n => n.id !== id);
+  all[shop] = notifications;
+  await storage.set(NOTIFICATIONS_KEY, all);
+  res.json({ ok: true, deleted: before - notifications.length });
+});
+
+// DELETE: Bulk delete notifications for shop
+router.post('/notifications/bulk-delete', async (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop' });
+  const { ids } = req.body;
+  if (!Array.isArray(ids)) return res.status(400).json({ ok: false, error: 'Missing ids array' });
+  let all = (await storage.get(NOTIFICATIONS_KEY)) || {};
+  let notifications = all[shop] || [];
+  const before = notifications.length;
+  notifications = notifications.filter(n => !ids.includes(n.id));
+  all[shop] = notifications;
+  await storage.set(NOTIFICATIONS_KEY, all);
+  res.json({ ok: true, deleted: before - notifications.length });
+});
