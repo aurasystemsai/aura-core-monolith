@@ -17,6 +17,11 @@ const fetchFunction = authenticatedFetch(app);
 
 export async function apiFetch(url, options = {}) {
   options.headers = options.headers || {};
+  // Always send shop domain for backend multi-tenant support
+  const shopDomain = new URLSearchParams(window.location.search).get('shop');
+  if (shopDomain) {
+    options.headers['x-shopify-shop-domain'] = shopDomain;
+  }
   // authenticatedFetch automatically attaches the session token
   try {
     const resp = await fetchFunction(url, options);
