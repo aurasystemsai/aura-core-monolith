@@ -157,7 +157,7 @@ function NotificationsSection() {
         {/* Notification Modal (Add/Edit) */}
         {showNotificationModal && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-            <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+            <div style={{ background: 'var(--background-secondary, #23232a)', color: 'var(--text-primary, #fafafa)', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
               <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingNotification ? 'Edit Notification' : 'New Notification'}</h3>
               <form onSubmit={e => { e.preventDefault(); saveNotification(editingNotification ? editingNotification : { name: '', channel: 'email', message: '', status: 'enabled', created: new Date().toISOString().slice(0, 10) }); }}>
                 <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-notification-name">Name</label>
@@ -184,9 +184,9 @@ function NotificationsSection() {
                   <option value="disabled">Disabled</option>
                 </select>
                 {/* Delivery Preview & Test Send */}
-                <div style={{ background: '#f3f4f6', borderRadius: 8, padding: 12, marginBottom: 16, color: '#232336' }}>
+                <div style={{ background: 'var(--background-tertiary, #232336)', borderRadius: 8, padding: 12, marginBottom: 16, color: 'var(--text-primary, #fafafa)' }}>
                   <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Preview <span style={{ color: '#64748b', fontWeight: 400, fontSize: 13 }} title="See how your message will appear.">(?)</span></div>
-                  <div style={{ fontFamily: 'monospace', fontSize: 15, whiteSpace: 'pre-wrap', background: '#fff', borderRadius: 6, padding: 10, minHeight: 40, color: '#232336', border: '1px solid #e5e7eb' }}>{editingNotification ? editingNotification.message : ''}</div>
+                  <div style={{ fontFamily: 'monospace', fontSize: 15, whiteSpace: 'pre-wrap', background: 'var(--background-secondary, #23232a)', borderRadius: 6, padding: 10, minHeight: 40, color: 'var(--text-primary, #fafafa)', border: '1px solid #333' }}>{editingNotification ? editingNotification.message : ''}</div>
                   <button type="button" onClick={() => alert('Test send feature coming soon!')} style={{ marginTop: 10, background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }} title="Send a test notification to yourself">Send Test</button>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
