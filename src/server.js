@@ -66,6 +66,8 @@ app.use(session({
 // --- Shopify session token verification for all /api routes ---
 app.use('/api', verifyShopifySession);
 
+// --- Register winback integrations API route (real backend) ---
+app.use('/api/abandoned-checkout-winback', require('./routes/abandoned-checkout-winback'));
 // --- Register all tool routers (auto-generated, advanced features) ---
 const toolRouters = [
   { path: '/api/product-seo', router: require('./tools/product-seo/router') },
