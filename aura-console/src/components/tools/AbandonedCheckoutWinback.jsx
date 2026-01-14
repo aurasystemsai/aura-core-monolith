@@ -205,6 +205,54 @@ function NotificationsSection() {
 }
 
 function AbandonedCheckoutWinback() {
+          // --- Activity Log State & Logic ---
+          const [activityLog, setActivityLog] = useState([]);
+          const [activityLogLoading, setActivityLogLoading] = useState(false);
+          const [activityLogError, setActivityLogError] = useState("");
+          const [activityLogSearch, setActivityLogSearch] = useState("");
+          const [activityLogFilters, setActivityLogFilters] = useState({ user: "", action: "", type: "", campaignId: "" });
+          const [showLogDetails, setShowLogDetails] = useState(false);
+          const [logDetails, setLogDetails] = useState(null);
+
+          // Fetch activity log from backend
+          useEffect(() => {
+            if (activeSection !== 'activityLog') return;
+            setActivityLogLoading(true);
+            setActivityLogError("");
+            fetch('/api/abandoned-checkout-winback/audit')
+              .then(res => res.json())
+              .then(data => {
+                if (!data.ok) throw new Error(data.error || 'Failed to load activity log');
+                setActivityLog(Array.isArray(data.auditLog) ? data.auditLog : []);
+              })
+              .catch(e => setActivityLogError(e.message))
+              .finally(() => setActivityLogLoading(false));
+          }, [activeSection]);
+
+          // Filter and search logic
+          const filteredActivityLog = useMemo(() => {
+            let logs = activityLog;
+            if (activityLogSearch) {
+              const q = activityLogSearch.toLowerCase();
+              logs = logs.filter(l =>
+                Object.values(l).some(v => v && String(v).toLowerCase().includes(q))
+              );
+            }
+            Object.entries(activityLogFilters).forEach(([k, v]) => {
+              if (v) logs = logs.filter(l => (l[k] || '').toLowerCase().includes(v.toLowerCase()));
+            });
+            return logs;
+          }, [activityLog, activityLogSearch, activityLogFilters]);
+
+          // Log details modal logic
+          function openLogDetails(log) {
+            setLogDetails(log);
+            setShowLogDetails(true);
+          }
+          function closeLogDetails() {
+            setShowLogDetails(false);
+            setLogDetails(null);
+          }
       // --- Analytics state for Analytics section ---
       const [analytics, setAnalytics] = useState([]);
     // --- Flagship Navigation Sidebar ---
