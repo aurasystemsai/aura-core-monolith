@@ -773,12 +773,20 @@ export default function AbandonedCheckoutWinback() {
                     <form onSubmit={e => { e.preventDefault(); saveNotification(editingNotification ? editingNotification : { name: '', channel: 'email', message: '', status: 'enabled', created: new Date().toISOString().slice(0, 10) }); }}>
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-notification-name">Name</label>
                       <input id="modal-notification-name" value={editingNotification ? editingNotification.name : ''} onChange={e => setEditingNotification(editingNotification ? { ...editingNotification, name: e.target.value } : { name: e.target.value, channel: 'email', message: '', status: 'enabled', created: new Date().toISOString().slice(0, 10) })} placeholder="Notification name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required />
-                      <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-notification-channel">Channel</label>
-                      <select id="modal-notification-channel" value={editingNotification ? editingNotification.channel : 'email'} onChange={e => setEditingNotification(editingNotification ? { ...editingNotification, channel: e.target.value } : { name: '', channel: e.target.value, message: '', status: 'enabled', created: new Date().toISOString().slice(0, 10) })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required>
-                        <option value="email">Email</option>
-                        <option value="sms">SMS</option>
-                        <option value="push">Push</option>
-                      </select>
+                      <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }}>Channels</label>
+                      <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <input type="checkbox" checked={editingNotification?.channel === 'email'} onChange={e => setEditingNotification(editingNotification ? { ...editingNotification, channel: e.target.checked ? 'email' : '' } : { name: '', channel: e.target.checked ? 'email' : '', message: '', status: 'enabled', created: new Date().toISOString().slice(0, 10) })} /> Email
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <input type="checkbox" checked={editingNotification?.channel === 'sms'} onChange={e => setEditingNotification(editingNotification ? { ...editingNotification, channel: e.target.checked ? 'sms' : '' } : { name: '', channel: e.target.checked ? 'sms' : '', message: '', status: 'enabled', created: new Date().toISOString().slice(0, 10) })} /> SMS
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <input type="checkbox" checked={editingNotification?.channel === 'push'} onChange={e => setEditingNotification(editingNotification ? { ...editingNotification, channel: e.target.checked ? 'push' : '' } : { name: '', channel: e.target.checked ? 'push' : '', message: '', status: 'enabled', created: new Date().toISOString().slice(0, 10) })} /> Push
+                        </label>
+                      </div>
+                      <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }}>Schedule</label>
+                      <input type="datetime-local" value={editingNotification?.scheduledAt || ''} onChange={e => setEditingNotification(editingNotification ? { ...editingNotification, scheduledAt: e.target.value } : { name: '', channel: '', message: '', status: 'enabled', created: new Date().toISOString().slice(0, 10), scheduledAt: e.target.value })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} />
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-notification-message">Message</label>
                       <textarea id="modal-notification-message" value={editingNotification ? editingNotification.message : ''} onChange={e => setEditingNotification(editingNotification ? { ...editingNotification, message: e.target.value } : { name: '', channel: 'email', message: e.target.value, status: 'enabled', created: new Date().toISOString().slice(0, 10) })} placeholder="Notification message" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12, minHeight: 80 }} required />
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-notification-status">Status</label>
