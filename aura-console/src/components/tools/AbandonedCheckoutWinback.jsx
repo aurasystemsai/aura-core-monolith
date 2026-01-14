@@ -204,14 +204,56 @@ function NotificationsSection() {
 }
 
 function AbandonedCheckoutWinback() {
-          // --- Activity Log State & Logic ---
-          const [activityLog, setActivityLog] = useState([]);
-          const [activityLogLoading, setActivityLogLoading] = useState(false);
-          const [activityLogError, setActivityLogError] = useState("");
-          const [activityLogSearch, setActivityLogSearch] = useState("");
-          const [activityLogFilters, setActivityLogFilters] = useState({ user: "", action: "", type: "", campaignId: "" });
-          const [showLogDetails, setShowLogDetails] = useState(false);
-          const [logDetails, setLogDetails] = useState(null);
+    // --- Activity Log State & Logic ---
+    const [activityLog, setActivityLog] = useState([]);
+    const [activityLogLoading, setActivityLogLoading] = useState(false);
+    const [activityLogError, setActivityLogError] = useState("");
+    const [activityLogSearch, setActivityLogSearch] = useState("");
+    const [activityLogFilters, setActivityLogFilters] = useState({ user: "", action: "", type: "", campaignId: "" });
+    const [showLogDetails, setShowLogDetails] = useState(false);
+    const [logDetails, setLogDetails] = useState(null);
+
+    // Activity Log Columns State
+    const [activityLogColumns, setActivityLogColumns] = useState([
+      { key: 'timestamp', label: 'Timestamp', visible: true },
+      { key: 'user', label: 'User', visible: true },
+      { key: 'action', label: 'Action', visible: true },
+      { key: 'type', label: 'Type', visible: true },
+      { key: 'campaignId', label: 'Campaign', visible: true },
+      { key: 'details', label: 'Details', visible: true },
+    ]);
+
+    // Toggle column visibility
+    function toggleColumn(key) {
+      setActivityLogColumns(cols => cols.map(col => col.key === key ? { ...col, visible: !col.visible } : col));
+    }
+
+    // Export Activity Log as CSV
+    function exportActivityLog() {
+      const cols = activityLogColumns.filter(c => c.visible);
+      const header = cols.map(c => c.label).join(',');
+      const rows = activityLog.map(row =>
+        cols.map(c => {
+          let val = row[c.key];
+          if (typeof val === 'string') {
+            val = '"' + val.replace(/"/g, '""') + '"';
+          }
+          return val ?? '';
+        }).join(',')
+      );
+      const csv = [header, ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'activity-log.csv';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 0);
+    }
 
           // Fetch activity log from backend
           useEffect(() => {
