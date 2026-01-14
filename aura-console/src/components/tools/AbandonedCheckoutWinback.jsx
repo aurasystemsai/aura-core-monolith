@@ -922,9 +922,96 @@ function AbandonedCheckoutWinback() {
         {activeSection === 'activityLog' && (
           <section aria-label="Activity Log">
             <WinbackFeatureCard title="Activity Log" description="Timeline of all actions, sends, edits, and results. Export, search, and filter options." icon="📜" />
-            {/* ...activity log code... */}
+            <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 32, marginBottom: 24, marginTop: 18, maxWidth: 900 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+                <div style={{ fontWeight: 700, fontSize: 22 }}>Activity Log</div>
+                <button onClick={exportActivityLog} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Export CSV</button>
+              </div>
+              <input type="text" placeholder="Search actions, users, details..." value={activityLogSearch} onChange={e => setActivityLogSearch(e.target.value)} style={{ width: '100%', marginBottom: 18, padding: 10, borderRadius: 8, border: '1px solid #333', background: '#18181c', color: '#fafafa', fontSize: 15 }} />
+              {activityLogLoading ? (
+                <div style={{ color: '#6366f1', padding: 12, fontWeight: 600, fontSize: 16 }} aria-live="polite">Loading activity log...</div>
+              ) : activityLogError ? (
+                <div style={{ color: '#ef4444', padding: 12, fontWeight: 600, fontSize: 15 }} role="alert">{activityLogError}</div>
+              ) : filteredActivityLog.length === 0 ? (
+                <div style={{ color: '#64748b', padding: 24, textAlign: 'center' }}>
+                  <span role="img" aria-label="No activity" style={{ fontSize: 32, opacity: 0.7 }}>📜</span>
+                  <div>No activity yet. Actions, edits, and results will appear here.</div>
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--background-secondary)', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
+                    <thead>
+                      <tr style={{ background: '#232336', color: '#aaa' }}>
+                        <th style={{ padding: 8, textAlign: 'left' }}>Timestamp</th>
+                        <th style={{ padding: 8, textAlign: 'left' }}>Action</th>
+                        <th style={{ padding: 8, textAlign: 'left' }}>User</th>
+                        <th style={{ padding: 8, textAlign: 'left' }}>Details</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredActivityLog.map(log => (
+                        <tr key={log.id} style={{ borderBottom: '1px solid #232336' }}>
+                          <td style={{ padding: 8 }}>{log.timestamp}</td>
+                          <td style={{ padding: 8 }}>{log.action}</td>
+                          <td style={{ padding: 8 }}>{log.user || '-'}</td>
+                          <td style={{ padding: 8 }}>{log.details || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </section>
         )}
+        // --- Activity Log state and logic ---
+        import { useState, useEffect } from 'react';
+        // ...existing code...
+        function AbandonedCheckoutWinback() {
+          // ...existing code...
+          const [activityLog, setActivityLog] = useState([]);
+          const [activityLogLoading, setActivityLogLoading] = useState(false);
+          const [activityLogError, setActivityLogError] = useState("");
+          const [activityLogSearch, setActivityLogSearch] = useState("");
+
+          useEffect(() => {
+            if (activeSection !== 'activityLog') return;
+            setActivityLogLoading(true);
+            setActivityLogError("");
+            fetch('/api/abandoned-checkout-winback/audit')
+              .then(async resp => {
+                if (!resp.ok) throw new Error('Failed to fetch activity log');
+                const data = await resp.json();
+                setActivityLog(Array.isArray(data.entries) ? data.entries : []);
+              })
+              .catch(e => setActivityLogError(e.message))
+              .finally(() => setActivityLogLoading(false));
+          }, [activeSection]);
+
+          const filteredActivityLog = activityLog.filter(log => {
+            const q = activityLogSearch.toLowerCase();
+            return (
+              log.action?.toLowerCase().includes(q) ||
+              log.user?.toLowerCase().includes(q) ||
+              log.details?.toLowerCase().includes(q)
+            );
+          });
+
+          function exportActivityLog() {
+            if (!activityLog.length) return;
+            const csv = [
+              'Timestamp,Action,User,Details',
+              ...activityLog.map(l => `"${l.timestamp}","${l.action}","${l.user || ''}","${l.details || ''}"`)
+            ].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'activity-log.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+          }
+          // ...existing code...
         {activeSection === 'compliance' && (
           <section aria-label="Compliance">
             <WinbackFeatureCard title="Compliance Center" description="GDPR/CCPA tools, opt-out, audit logs, data export/delete, and deliverability best practices." icon="🛡️" />
