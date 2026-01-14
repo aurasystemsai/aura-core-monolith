@@ -1060,7 +1060,10 @@ function AbandonedCheckoutWinback() {
         {activeSection === 'compliance' && (
           <section aria-label="Compliance">
             <WinbackFeatureCard title="Compliance Center" description="GDPR/CCPA tools, opt-out, audit logs, data export/delete, and deliverability best practices." icon="🛡️" />
-            {/* ...compliance code... */}
+            <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 32, marginBottom: 24, marginTop: 18, maxWidth: 700 }}>
+              <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Compliance Tools</h3>
+              <ComplianceSection />
+            </div>
           </section>
         )}
         {activeSection === 'settings' && (

@@ -1,3 +1,56 @@
+// --- Compliance API (GDPR/CCPA: export, delete, opt-out, audit) ---
+const COMPLIANCE_KEY = 'winback-compliance';
+const ACTIVITY_LOG_KEY = 'winback-activity-log';
+
+// GET: Compliance status (opt-out)
+router.get('/compliance-status', async (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop' });
+  const all = (await storage.get(COMPLIANCE_KEY)) || {};
+  res.json({ ok: true, optedOut: !!all[shop]?.optedOut });
+});
+
+// POST: Opt-out (disable all processing)
+router.post('/opt-out', async (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop' });
+  let all = (await storage.get(COMPLIANCE_KEY)) || {};
+  all[shop] = { ...(all[shop] || {}), optedOut: true, optedOutAt: new Date().toISOString() };
+  await storage.set(COMPLIANCE_KEY, all);
+  res.json({ ok: true, optedOut: true });
+});
+
+// GET: Export all shop data (integrations, notifications, compliance, audit log)
+router.get('/export-data', async (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop' });
+  const integrations = ((await storage.get(INTEGRATIONS_KEY)) || {})[shop] || [];
+  const notifications = ((await storage.get(NOTIFICATIONS_KEY)) || {})[shop] || [];
+  const compliance = ((await storage.get(COMPLIANCE_KEY)) || {})[shop] || {};
+  const audit = ((await storage.get(ACTIVITY_LOG_KEY)) || {})[shop] || [];
+  res.json({ integrations, notifications, compliance, audit });
+});
+
+// POST: Delete all shop data (irreversible)
+router.post('/delete-data', async (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop' });
+  let keys = [INTEGRATIONS_KEY, NOTIFICATIONS_KEY, COMPLIANCE_KEY, ACTIVITY_LOG_KEY];
+  for (const key of keys) {
+    let all = (await storage.get(key)) || {};
+    delete all[shop];
+    await storage.set(key, all);
+  }
+  res.json({ ok: true, deleted: true });
+});
+
+// GET: Audit log (for compliance)
+router.get('/audit', async (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop' });
+  const all = (await storage.get(ACTIVITY_LOG_KEY)) || {};
+  res.json({ ok: true, logs: all[shop] || [] });
+});
 // src/routes/abandoned-checkout-winback.js
 // Real API endpoints for winback integrations (Shopify multi-tenant)
 const express = require('express');
