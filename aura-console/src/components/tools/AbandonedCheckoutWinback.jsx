@@ -205,8 +205,79 @@ function NotificationsSection() {
 }
 
 function AbandonedCheckoutWinback() {
-      // --- Analytics state for Analytics section ---
-      const [analytics, setAnalytics] = useState([]);
+    // --- Analytics state for Analytics section ---
+    const [analytics, setAnalytics] = useState([]);
+
+    // --- Activity Log flagship state and logic ---
+    const [activityLog, setActivityLog] = useState([]);
+    const [activityLogColumns, setActivityLogColumns] = useState([
+      { key: 'timestamp', label: 'Timestamp', visible: true },
+      { key: 'user', label: 'User', visible: true },
+      { key: 'action', label: 'Action', visible: true },
+      { key: 'type', label: 'Type', visible: true },
+      { key: 'campaignId', label: 'Campaign', visible: true },
+      { key: 'details', label: 'Details', visible: true },
+    ]);
+    const [activityLogSearch, setActivityLogSearch] = useState("");
+    const [activityLogFilters, setActivityLogFilters] = useState({ user: "", action: "", type: "", campaignId: "" });
+    const [showLogDetails, setShowLogDetails] = useState(false);
+    const [logDetails, setLogDetails] = useState(null);
+
+    // Fetch activity log from backend
+    useEffect(() => {
+      fetch('/api/abandoned-checkout-winback/audit')
+        .then(resp => resp.json())
+        .then(data => setActivityLog(Array.isArray(data.logs) ? data.logs : []))
+        .catch(() => setActivityLog([]));
+    }, []);
+
+    // Filtered activity log (search + filters)
+    const filteredActivityLog = React.useMemo(() => {
+      return activityLog.filter(log => {
+        const matchesSearch =
+          !activityLogSearch ||
+          Object.values(log).some(val =>
+            String(val || '').toLowerCase().includes(activityLogSearch.toLowerCase())
+          );
+        const matchesUser = !activityLogFilters.user || (log.user || '').toLowerCase().includes(activityLogFilters.user.toLowerCase());
+        const matchesAction = !activityLogFilters.action || (log.action || '').toLowerCase().includes(activityLogFilters.action.toLowerCase());
+        const matchesType = !activityLogFilters.type || (log.type || '').toLowerCase().includes(activityLogFilters.type.toLowerCase());
+        const matchesCampaign = !activityLogFilters.campaignId || (log.campaignId || '').toLowerCase().includes(activityLogFilters.campaignId.toLowerCase());
+        return matchesSearch && matchesUser && matchesAction && matchesType && matchesCampaign;
+      });
+    }, [activityLog, activityLogSearch, activityLogFilters]);
+
+    // Export CSV
+    const exportActivityLog = () => {
+      const cols = activityLogColumns.filter(c => c.visible);
+      const header = cols.map(c => c.label).join(',');
+      const rows = filteredActivityLog.map(log =>
+        cols.map(c => '"' + String(log[c.key] || '').replace(/"/g, '""') + '"').join(',')
+      );
+      const csv = [header, ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `activity-log-${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    // Column toggles
+    const toggleColumn = (key) => {
+      setActivityLogColumns(cols => cols.map(c => c.key === key ? { ...c, visible: !c.visible } : c));
+    };
+
+    // Log details modal
+    const openLogDetails = (log) => {
+      setLogDetails(log);
+      setShowLogDetails(true);
+    };
+    const closeLogDetails = () => {
+      setShowLogDetails(false);
+      setLogDetails(null);
+    };
     // --- Flagship Navigation Sidebar ---
     const flagshipSections = [
       { key: 'segments', label: 'Segments' },
