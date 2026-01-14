@@ -1,7 +1,19 @@
-// --- Compliance API (GDPR/CCPA: export, delete, opt-out, audit) ---
+
+// src/routes/abandoned-checkout-winback.js
+// Real API endpoints for winback integrations (Shopify multi-tenant)
+const express = require('express');
+const router = express.Router();
+const storage = require('../core/storageJson');
+
+const INTEGRATIONS_KEY = 'winback-integrations';
 const COMPLIANCE_KEY = 'winback-compliance';
 const ACTIVITY_LOG_KEY = 'winback-activity-log';
 
+// Helper: get shop from request (header, query, or session)
+function getShop(req) {
+  return req.headers['x-shopify-shop-domain'] || req.query.shop || req.session?.shop || null;
+}
+// --- Compliance API (GDPR/CCPA: export, delete, opt-out, audit) ---
 // GET: Compliance status (opt-out)
 router.get('/compliance-status', async (req, res) => {
   const shop = getShop(req);
@@ -51,18 +63,6 @@ router.get('/audit', async (req, res) => {
   const all = (await storage.get(ACTIVITY_LOG_KEY)) || {};
   res.json({ ok: true, logs: all[shop] || [] });
 });
-// src/routes/abandoned-checkout-winback.js
-// Real API endpoints for winback integrations (Shopify multi-tenant)
-const express = require('express');
-const router = express.Router();
-const storage = require('../core/storageJson');
-
-const INTEGRATIONS_KEY = 'winback-integrations';
-
-// Helper: get shop from request (header, query, or session)
-function getShop(req) {
-  return req.headers['x-shopify-shop-domain'] || req.query.shop || req.session?.shop || null;
-}
 
 // GET: List integrations for shop
 router.get('/integrations', async (req, res) => {
