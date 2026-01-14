@@ -2,17 +2,17 @@
 import React, { useState, useRef } from "react";
 
 // Placeholder for visual flow builder (replace with real library/component)
-function VisualFlowBuilder({ flow, setFlow, nodes = [], setNodes, darkMode }) {
-  // Flagship drag-and-drop canvas (dark theme, modern look)
+function VisualFlowBuilder({ flow, setFlow, nodes = [], setNodes }) {
+  // Always flagship dark theme
   return (
-    <div style={{ border: "1px solid #232336", borderRadius: 14, padding: 24, background: darkMode ? "#23232a" : "#18181b", marginBottom: 24, boxShadow: "0 2px 8px #0004" }}>
-      <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 12, color: darkMode ? "#fafafa" : "#e0e7ff" }}>Visual Flow Builder <span style={{ color: '#64748b', fontWeight: 400, fontSize: 13 }} title="Drag and drop steps, triggers, and actions">(?)</span></div>
+    <div style={{ border: "1px solid #232336", borderRadius: 14, padding: 24, background: "#23232a", marginBottom: 24, boxShadow: "0 2px 8px #0004" }}>
+      <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 12, color: "#fafafa" }}>Visual Flow Builder <span style={{ color: '#64748b', fontWeight: 400, fontSize: 13 }} title="Drag and drop steps, triggers, and actions">(?)</span></div>
       <div style={{ display: 'flex', gap: 16, marginBottom: 18 }}>
         <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Step', type: 'step' }])} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Add Step</button>
         <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Trigger', type: 'trigger' }])} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Add Trigger</button>
         <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Action', type: 'action' }])} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Add Action</button>
       </div>
-      <div style={{ minHeight: 120, border: '1px dashed #6366f1', borderRadius: 10, padding: 16, background: darkMode ? '#18181b' : '#23232a', marginBottom: 16 }}>
+      <div style={{ minHeight: 120, border: '1px dashed #6366f1', borderRadius: 10, padding: 16, background: '#18181b', marginBottom: 16 }}>
         {nodes.length ? (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {nodes.map((n, i) => (
@@ -30,7 +30,7 @@ function VisualFlowBuilder({ flow, setFlow, nodes = [], setNodes, darkMode }) {
         value={flow}
         onChange={e => setFlow(e.target.value)}
         rows={4}
-        style={{ width: "100%", fontSize: 16, borderRadius: 10, border: "1px solid #333", padding: 12, background: darkMode ? '#18181b' : '#23232a', color: '#fafafa', marginBottom: 8 }}
+        style={{ width: "100%", fontSize: 16, borderRadius: 10, border: "1px solid #333", padding: 12, background: '#18181b', color: '#fafafa', marginBottom: 8 }}
         placeholder="Describe or edit your flow here..."
       />
     </div>
@@ -48,7 +48,6 @@ export default function KlaviyoFlowAutomation() {
   const [exported, setExported] = useState(null);
   const [collaborators, setCollaborators] = useState(["You"]);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const fileInputRef = useRef();
 
   // AI Suggestion
@@ -144,34 +143,29 @@ export default function KlaviyoFlowAutomation() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  // Main UI - Flagship dark theme, glassmorphism, gradients, depth, modern layout
+  // Main UI - Always flagship dark theme, glassmorphism, gradients, depth, modern layout
   return (
     <div style={{
       maxWidth: 1100,
       margin: "48px auto",
-      background: darkMode
-        ? "linear-gradient(135deg, #18181b 60%, #232336 100%)"
-        : "linear-gradient(135deg, #f1f5f9 60%, #e0e7ff 100%)",
+      background: "linear-gradient(135deg, #18181b 60%, #232336 100%)",
       borderRadius: 28,
-      boxShadow: darkMode
-        ? "0 8px 40px #000b, 0 1.5px 0 #232336"
-        : "0 8px 40px #64748b33, 0 1.5px 0 #e0e7ff",
+      boxShadow: "0 8px 40px #000b, 0 1.5px 0 #232336",
       padding: 48,
-      color: darkMode ? "#f1f5f9" : "#23263a",
+      color: "#f1f5f9",
       fontFamily: 'Inter, Segoe UI, sans-serif',
       transition: "background 0.3s, color 0.3s",
-      backdropFilter: darkMode ? "blur(2.5px)" : undefined,
-      border: darkMode ? "1.5px solid #232336" : "1.5px solid #e0e7ff"
+      backdropFilter: "blur(2.5px)",
+      border: "1.5px solid #232336"
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ fontWeight: 900, fontSize: 38, margin: 0, letterSpacing: -1, background: darkMode ? "linear-gradient(90deg,#a3e635,#0ea5e9 80%)" : "linear-gradient(90deg,#23263a,#0ea5e9 80%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Klaviyo Flow Automation</h2>
-        <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: darkMode ? "#232336" : "#23263a", color: "#fff", border: "none", borderRadius: 10, padding: "10px 26px", fontWeight: 700, fontSize: 17, cursor: "pointer", boxShadow: darkMode ? "0 2px 8px #0006" : "0 2px 8px #64748b22" }}>{darkMode ? "Light" : "Dark"} Mode</button>
+        <h2 style={{ fontWeight: 900, fontSize: 38, margin: 0, letterSpacing: -1, background: "linear-gradient(90deg,#a3e635,#0ea5e9 80%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Klaviyo Flow Automation</h2>
       </div>
-      <div style={{ marginBottom: 18, color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 700, fontSize: 18, letterSpacing: 0.1 }}>⚡ Build, automate, and analyze Klaviyo flows with AI, analytics, and team collaboration.</div>
+      <div style={{ marginBottom: 18, color: "#a3e635", fontWeight: 700, fontSize: 18, letterSpacing: 0.1 }}>⚡ Build, automate, and analyze Klaviyo flows with AI, analytics, and team collaboration.</div>
       <div style={{ display: "flex", gap: 36, flexWrap: "wrap" }}>
         <div style={{ flex: 2, minWidth: 340 }}>
           {showOnboarding && onboardingContent}
-          <VisualFlowBuilder flow={flow} setFlow={setFlow} nodes={nodes} setNodes={setNodes} darkMode={darkMode} />
+          <VisualFlowBuilder flow={flow} setFlow={setFlow} nodes={nodes} setNodes={setNodes} />
           <div style={{ display: "flex", gap: 16, marginBottom: 22, flexWrap: 'wrap' }}>
             <button onClick={handleAISuggest} disabled={loading || !flow} style={{ background: "linear-gradient(90deg,#a3e635,#0ea5e9 80%)", color: "#23263a", border: 'none', borderRadius: 10, padding: "12px 28px", fontWeight: 800, fontSize: 18, cursor: "pointer", boxShadow: "0 2px 8px #0003", opacity: loading || !flow ? 0.7 : 1 }}>{loading ? "Thinking..." : "AI Suggest"}</button>
             <button onClick={handleRun} disabled={loading || !flow} style={{ background: "linear-gradient(90deg,#7fffd4,#6366f1 80%)", color: "#23263a", border: 'none', borderRadius: 10, padding: "12px 28px", fontWeight: 800, fontSize: 18, cursor: "pointer", boxShadow: "0 2px 8px #0003", opacity: loading || !flow ? 0.7 : 1 }}>{loading ? "Running..." : "Run Automation"}</button>
@@ -182,24 +176,24 @@ export default function KlaviyoFlowAutomation() {
           </div>
           {imported && <div style={{ color: "#22c55e", marginBottom: 10, fontWeight: 700, fontSize: 16 }}>Imported: {imported}</div>}
           {aiSuggestion && (
-            <div style={{ background: darkMode ? "linear-gradient(90deg,#23263a,#232336 80%)" : "#f1f5f9", borderRadius: 12, padding: 18, marginBottom: 14, color: darkMode ? "#a3e635" : "#23263a", boxShadow: darkMode ? "0 1px 6px #0005" : "0 1px 6px #64748b22" }}>
+            <div style={{ background: "linear-gradient(90deg,#23263a,#232336 80%)", borderRadius: 12, padding: 18, marginBottom: 14, color: "#a3e635", boxShadow: "0 1px 6px #0005" }}>
               <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 17 }}>AI Suggestion:</div>
               <div>{aiSuggestion}</div>
             </div>
           )}
           {error && <div style={{ color: "#ef4444", marginBottom: 12, fontWeight: 700, fontSize: 16 }}>{error}</div>}
         </div>
-        <div style={{ flex: 1, minWidth: 300, background: darkMode ? "linear-gradient(135deg,#232336 60%,#18181b 100%)" : "#e0e7ff", borderRadius: 18, padding: 32, boxShadow: darkMode ? "0 2px 16px #0007" : "0 2px 16px #64748b22", display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ fontWeight: 900, fontSize: 22, marginBottom: 16, color: darkMode ? "#fafafa" : "#23263a", letterSpacing: -0.5 }}>Analytics & Collaboration</div>
+        <div style={{ flex: 1, minWidth: 300, background: "linear-gradient(135deg,#232336 60%,#18181b 100%)", borderRadius: 18, padding: 32, boxShadow: "0 2px 16px #0007", display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ fontWeight: 900, fontSize: 22, marginBottom: 16, color: "#fafafa", letterSpacing: -0.5 }}>Analytics & Collaboration</div>
           <div style={{ marginBottom: 22 }}>
             <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 16 }}>Collaborators:</div>
-            <ul style={{ margin: 0, paddingLeft: 20, color: darkMode ? '#a3e635' : '#6366f1', fontWeight: 700, fontSize: 15 }}>
+            <ul style={{ margin: 0, paddingLeft: 20, color: '#a3e635', fontWeight: 700, fontSize: 15 }}>
               {collaborators.map(c => <li key={c}>{c}</li>)}
             </ul>
             <button onClick={handleAddCollaborator} style={{ background: "linear-gradient(90deg,#0ea5e9,#6366f1 80%)", color: "#fff", border: "none", borderRadius: 10, padding: "10px 22px", fontWeight: 800, fontSize: 16, marginTop: 10, cursor: "pointer", boxShadow: "0 2px 8px #0003" }}>Add Collaborator</button>
           </div>
           <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 16 }}>Flow Analytics:</div>
-          <div style={{ fontSize: 15, color: darkMode ? "#a3e635" : "#6366f1", minHeight: 40 }}>
+          <div style={{ fontSize: 15, color: "#a3e635", minHeight: 40 }}>
             {analytics ? (
               <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "none", padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
             ) : (
@@ -209,15 +203,15 @@ export default function KlaviyoFlowAutomation() {
           <div style={{ marginTop: 22 }}>
             <button onClick={() => setShowOnboarding(true)} style={{ background: "linear-gradient(90deg,#6366f1,#0ea5e9 80%)", color: "#fff", border: "none", borderRadius: 10, padding: "10px 22px", fontWeight: 800, fontSize: 16, cursor: "pointer", boxShadow: "0 2px 8px #0003" }}>Show Onboarding</button>
           </div>
-          <div style={{ marginTop: 22, fontSize: 14, color: darkMode ? "#a3e635" : "#64748b" }}>
+          <div style={{ marginTop: 22, fontSize: 14, color: "#a3e635" }}>
             <div>Integrations: <span style={{ fontWeight: 800 }}>Klaviyo</span>, <span style={{ fontWeight: 800 }}>Shopify</span></div>
             <div>Accessibility: <span style={{ fontWeight: 800 }}>WCAG 2.1</span> | <span style={{ fontWeight: 800 }}>Keyboard Shortcuts</span></div>
             <div>Compliance: <span style={{ fontWeight: 800 }}>GDPR</span>, <span style={{ fontWeight: 800 }}>SOC2</span></div>
           </div>
         </div>
       </div>
-      <div style={{ marginTop: 40, fontSize: 15, color: darkMode ? "#a3e635" : "#64748b", textAlign: "center", fontWeight: 700, letterSpacing: 0.1 }}>
-        <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", textDecoration: "underline" }}>Contact Support</a></span>
+      <div style={{ marginTop: 40, fontSize: 15, color: "#a3e635", textAlign: "center", fontWeight: 700, letterSpacing: 0.1 }}>
+        <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: "#a3e635", textDecoration: "underline" }}>Contact Support</a></span>
       </div>
     </div>
   );
