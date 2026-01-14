@@ -248,6 +248,7 @@ export default function AbandonedCheckoutWinback() {
       const [loading, setLoading] = React.useState(false);
       const [error, setError] = React.useState("");
       const [connecting, setConnecting] = React.useState(null);
+      const [filter, setFilter] = React.useState("");
 
       React.useEffect(() => {
         setLoading(true);
@@ -255,7 +256,12 @@ export default function AbandonedCheckoutWinback() {
           .then(async resp => {
             if (!resp.ok) throw new Error('Failed to fetch integrations');
             const data = await resp.json();
-            setIntegrations(data.integrations || []);
+            // Add mock description and lastConnected if not present
+            setIntegrations((data.integrations || []).map(i => ({
+              ...i,
+              description: i.description || `Integration with ${i.name}`,
+              lastConnected: i.lastConnected || (i.connected ? new Date().toISOString().slice(0, 19).replace('T', ' ') : null)
+            })));
           })
           .catch(e => setError(e.message))
           .finally(() => setLoading(false));
@@ -289,24 +295,41 @@ export default function AbandonedCheckoutWinback() {
         setConnecting(null);
       };
 
+      // Filtered integrations
+      const filtered = integrations.filter(i =>
+        i.name.toLowerCase().includes(filter.toLowerCase()) ||
+        (i.description && i.description.toLowerCase().includes(filter.toLowerCase()))
+      );
       return (
         <div style={{ marginTop: 24 }}>
           <h3 style={{ fontSize: 20, marginBottom: 16 }}>Integrations</h3>
+          <input
+            type="text"
+            value={filter}
+            onChange={e => setFilter(e.target.value)}
+            placeholder="Search integrations..."
+            style={{ marginBottom: 16, padding: 8, borderRadius: 6, border: '1px solid #333', width: 260, fontSize: 15 }}
+            aria-label="Filter integrations"
+          />
           {error && <div style={{ color: '#f87171', marginBottom: 12 }}>{error}</div>}
           {loading ? <div>Loading...</div> : (
             <table style={{ width: '100%', color: '#fff', fontSize: 15, background: '#18181b', borderRadius: 10 }}>
               <thead>
                 <tr style={{ color: '#aaa', textAlign: 'left' }}>
                   <th>Service</th>
+                  <th>Description</th>
                   <th>Status</th>
+                  <th>Last Connected</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {integrations.map(integration => (
+                {filtered.map(integration => (
                   <tr key={integration.id} style={{ borderTop: '1px solid #232336' }}>
                     <td>{integration.name}</td>
+                    <td>{integration.description}</td>
                     <td>{integration.connected ? 'Connected' : 'Not Connected'}</td>
+                    <td>{integration.connected && integration.lastConnected ? integration.lastConnected : '-'}</td>
                     <td>
                       {integration.connected ? (
                         <button onClick={() => handleDisconnect(integration)} disabled={connecting === integration.id} style={{ background: 'var(--button-tertiary-bg)', color: '#f87171', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Disconnect</button>
@@ -316,7 +339,7 @@ export default function AbandonedCheckoutWinback() {
                     </td>
                   </tr>
                 ))}
-                {integrations.length === 0 && <tr><td colSpan={3} style={{ color: '#aaa', padding: 12 }}>No integrations available.</td></tr>}
+                {filtered.length === 0 && <tr><td colSpan={5} style={{ color: '#aaa', padding: 12 }}>No integrations found.</td></tr>}
               </tbody>
             </table>
           )}
