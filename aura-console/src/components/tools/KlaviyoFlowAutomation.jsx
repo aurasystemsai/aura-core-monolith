@@ -9,15 +9,15 @@ function VisualFlowBuilder({ flow, setFlow, nodes = [], setNodes }) {
       <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 12, color: "#fafafa" }}>Visual Flow Builder <span style={{ color: '#64748b', fontWeight: 400, fontSize: 13 }} title="Drag and drop steps, triggers, and actions">(?)</span></div>
       <div style={{ display: 'flex', gap: 16, marginBottom: 18 }}>
         <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Step', type: 'step' }])} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Add Step</button>
-        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Trigger', type: 'trigger' }])} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Add Trigger</button>
-        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Action', type: 'action' }])} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Add Action</button>
+        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Trigger', type: 'trigger' }])} style={{ background: '#232336', color: '#fafafa', border: '1px solid #333', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Add Trigger</button>
+        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Action', type: 'action' }])} style={{ background: '#232336', color: '#fafafa', border: '1px solid #333', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Add Action</button>
       </div>
-      <div style={{ minHeight: 120, border: '1px dashed #6366f1', borderRadius: 10, padding: 16, background: '#18181b', marginBottom: 16 }}>
+      <div style={{ minHeight: 120, border: '1px dashed #232336', borderRadius: 10, padding: 16, background: '#18181b', marginBottom: 16 }}>
         {nodes.length ? (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {nodes.map((n, i) => (
               <li key={n.id} style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontWeight: 700, fontSize: 16, color: n.type === 'step' ? '#0ea5e9' : n.type === 'trigger' ? '#22c55e' : '#6366f1', background: darkMode ? '#232336' : '#18181b', borderRadius: 6, padding: '4px 12px' }}>{n.label}</span>
+                <span style={{ fontWeight: 700, fontSize: 16, color: '#fafafa', background: '#232336', borderRadius: 6, padding: '4px 12px' }}>{n.label}</span>
                 <button onClick={() => setNodes(nodes.filter((_, idx) => idx !== i))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '4px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Remove</button>
               </li>
             ))}
@@ -148,70 +148,69 @@ export default function KlaviyoFlowAutomation() {
     <div style={{
       maxWidth: 1100,
       margin: "48px auto",
-      background: "linear-gradient(135deg, #18181b 60%, #232336 100%)",
-      borderRadius: 28,
+      background: "#23232a",
+      borderRadius: 18,
       boxShadow: "0 8px 40px #000b, 0 1.5px 0 #232336",
       padding: 48,
-      color: "#f1f5f9",
+      color: "#fafafa",
       fontFamily: 'Inter, Segoe UI, sans-serif',
       transition: "background 0.3s, color 0.3s",
-      backdropFilter: "blur(2.5px)",
       border: "1.5px solid #232336"
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ fontWeight: 900, fontSize: 38, margin: 0, letterSpacing: -1, background: "linear-gradient(90deg,#a3e635,#0ea5e9 80%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Klaviyo Flow Automation</h2>
+        <h2 style={{ fontWeight: 900, fontSize: 32, margin: 0, letterSpacing: -1, color: "#fafafa" }}>Klaviyo Flow Automation</h2>
       </div>
-      <div style={{ marginBottom: 18, color: "#a3e635", fontWeight: 700, fontSize: 18, letterSpacing: 0.1 }}>⚡ Build, automate, and analyze Klaviyo flows with AI, analytics, and team collaboration.</div>
+      <div style={{ marginBottom: 18, color: "#64748b", fontWeight: 600, fontSize: 16, letterSpacing: 0.1 }}>Build, automate, and analyze Klaviyo flows with AI, analytics, and team collaboration.</div>
       <div style={{ display: "flex", gap: 36, flexWrap: "wrap" }}>
         <div style={{ flex: 2, minWidth: 340 }}>
           {showOnboarding && onboardingContent}
           <VisualFlowBuilder flow={flow} setFlow={setFlow} nodes={nodes} setNodes={setNodes} />
           <div style={{ display: "flex", gap: 16, marginBottom: 22, flexWrap: 'wrap' }}>
-            <button onClick={handleAISuggest} disabled={loading || !flow} style={{ background: "linear-gradient(90deg,#a3e635,#0ea5e9 80%)", color: "#23263a", border: 'none', borderRadius: 10, padding: "12px 28px", fontWeight: 800, fontSize: 18, cursor: "pointer", boxShadow: "0 2px 8px #0003", opacity: loading || !flow ? 0.7 : 1 }}>{loading ? "Thinking..." : "AI Suggest"}</button>
-            <button onClick={handleRun} disabled={loading || !flow} style={{ background: "linear-gradient(90deg,#7fffd4,#6366f1 80%)", color: "#23263a", border: 'none', borderRadius: 10, padding: "12px 28px", fontWeight: 800, fontSize: 18, cursor: "pointer", boxShadow: "0 2px 8px #0003", opacity: loading || !flow ? 0.7 : 1 }}>{loading ? "Running..." : "Run Automation"}</button>
-            <button onClick={() => fileInputRef.current?.click()} style={{ background: "linear-gradient(90deg,#fbbf24,#f472b6 80%)", color: "#23263a", border: 'none', borderRadius: 10, padding: "12px 28px", fontWeight: 800, fontSize: 18, cursor: "pointer", boxShadow: "0 2px 8px #0003" }}>Import</button>
+            <button onClick={handleAISuggest} disabled={loading || !flow} style={{ background: "#0ea5e9", color: "#fff", border: 'none', borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: loading || !flow ? 'not-allowed' : 'pointer', opacity: loading || !flow ? 0.7 : 1 }}>AI Suggest</button>
+            <button onClick={handleRun} disabled={loading || !flow} style={{ background: "#232336", color: "#fafafa", border: '1px solid #333', borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: loading || !flow ? 'not-allowed' : 'pointer', opacity: loading || !flow ? 0.7 : 1 }}>Run Automation</button>
+            <button onClick={() => fileInputRef.current?.click()} style={{ background: "#232336", color: "#fafafa", border: '1px solid #333', borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Import</button>
             <input ref={fileInputRef} type="file" accept=".txt,.json" style={{ display: "none" }} onChange={handleImport} aria-label="Import flow" />
-            <button onClick={handleExport} style={{ background: "linear-gradient(90deg,#0ea5e9,#6366f1 80%)", color: "#fff", border: 'none', borderRadius: 10, padding: "12px 28px", fontWeight: 800, fontSize: 18, cursor: "pointer", boxShadow: "0 2px 8px #0003" }}>Export</button>
+            <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: 'none', borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Export</button>
             {exported && <a href={exported} download="klaviyo-flow.txt" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 700, fontSize: 16, textDecoration: 'underline' }}>Download</a>}
           </div>
           {imported && <div style={{ color: "#22c55e", marginBottom: 10, fontWeight: 700, fontSize: 16 }}>Imported: {imported}</div>}
           {aiSuggestion && (
-            <div style={{ background: "linear-gradient(90deg,#23263a,#232336 80%)", borderRadius: 12, padding: 18, marginBottom: 14, color: "#a3e635", boxShadow: "0 1px 6px #0005" }}>
-              <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 17 }}>AI Suggestion:</div>
+            <div style={{ background: "#18181b", borderRadius: 10, padding: 16, marginBottom: 12, color: "#fafafa" }}>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Suggestion:</div>
               <div>{aiSuggestion}</div>
             </div>
           )}
-          {error && <div style={{ color: "#ef4444", marginBottom: 12, fontWeight: 700, fontSize: 16 }}>{error}</div>}
+          {error && <div style={{ color: "#ef4444", marginBottom: 10, fontWeight: 700, fontSize: 16 }}>{error}</div>}
         </div>
-        <div style={{ flex: 1, minWidth: 300, background: "linear-gradient(135deg,#232336 60%,#18181b 100%)", borderRadius: 18, padding: 32, boxShadow: "0 2px 16px #0007", display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ fontWeight: 900, fontSize: 22, marginBottom: 16, color: "#fafafa", letterSpacing: -0.5 }}>Analytics & Collaboration</div>
-          <div style={{ marginBottom: 22 }}>
-            <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 16 }}>Collaborators:</div>
-            <ul style={{ margin: 0, paddingLeft: 20, color: '#a3e635', fontWeight: 700, fontSize: 15 }}>
+        <div style={{ flex: 1, minWidth: 300, background: "#18181b", borderRadius: 14, padding: 24, boxShadow: "0 2px 8px #0004", display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 12, color: "#fafafa" }}>Analytics & Collaboration</div>
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Collaborators:</div>
+            <ul style={{ margin: 0, paddingLeft: 18, color: '#64748b', fontWeight: 600 }}>
               {collaborators.map(c => <li key={c}>{c}</li>)}
             </ul>
-            <button onClick={handleAddCollaborator} style={{ background: "linear-gradient(90deg,#0ea5e9,#6366f1 80%)", color: "#fff", border: "none", borderRadius: 10, padding: "10px 22px", fontWeight: 800, fontSize: 16, marginTop: 10, cursor: "pointer", boxShadow: "0 2px 8px #0003" }}>Add Collaborator</button>
+            <button onClick={handleAddCollaborator} style={{ background: "#232336", color: "#fafafa", border: "1px solid #333", borderRadius: 8, padding: "8px 18px", fontWeight: 700, fontSize: 15, marginTop: 8, cursor: "pointer" }}>Add Collaborator</button>
           </div>
-          <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 16 }}>Flow Analytics:</div>
-          <div style={{ fontSize: 15, color: "#a3e635", minHeight: 40 }}>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>Flow Analytics:</div>
+          <div style={{ fontSize: 15, color: "#64748b" }}>
             {analytics ? (
               <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "none", padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
             ) : (
               <span>No analytics yet. Run automation to see results.</span>
             )}
           </div>
-          <div style={{ marginTop: 22 }}>
-            <button onClick={() => setShowOnboarding(true)} style={{ background: "linear-gradient(90deg,#6366f1,#0ea5e9 80%)", color: "#fff", border: "none", borderRadius: 10, padding: "10px 22px", fontWeight: 800, fontSize: 16, cursor: "pointer", boxShadow: "0 2px 8px #0003" }}>Show Onboarding</button>
+          <div style={{ marginTop: 18 }}>
+            <button onClick={() => setShowOnboarding(true)} style={{ background: "#232336", color: "#fafafa", border: "1px solid #333", borderRadius: 8, padding: "8px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>Show Onboarding</button>
           </div>
-          <div style={{ marginTop: 22, fontSize: 14, color: "#a3e635" }}>
-            <div>Integrations: <span style={{ fontWeight: 800 }}>Klaviyo</span>, <span style={{ fontWeight: 800 }}>Shopify</span></div>
-            <div>Accessibility: <span style={{ fontWeight: 800 }}>WCAG 2.1</span> | <span style={{ fontWeight: 800 }}>Keyboard Shortcuts</span></div>
-            <div>Compliance: <span style={{ fontWeight: 800 }}>GDPR</span>, <span style={{ fontWeight: 800 }}>SOC2</span></div>
+          <div style={{ marginTop: 18, fontSize: 13, color: "#64748b" }}>
+            <div>Integrations: <span style={{ fontWeight: 700 }}>Klaviyo</span>, <span style={{ fontWeight: 700 }}>Shopify</span></div>
+            <div>Accessibility: <span style={{ fontWeight: 700 }}>WCAG 2.1</span> | <span style={{ fontWeight: 700 }}>Keyboard Shortcuts</span></div>
+            <div>Compliance: <span style={{ fontWeight: 700 }}>GDPR</span>, <span style={{ fontWeight: 700 }}>SOC2</span></div>
           </div>
         </div>
       </div>
-      <div style={{ marginTop: 40, fontSize: 15, color: "#a3e635", textAlign: "center", fontWeight: 700, letterSpacing: 0.1 }}>
-        <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: "#a3e635", textDecoration: "underline" }}>Contact Support</a></span>
+      <div style={{ marginTop: 32, fontSize: 13, color: "#64748b", textAlign: "center" }}>
+        <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: "#0ea5e9", textDecoration: "underline" }}>Contact Support</a></span>
       </div>
     </div>
   );
