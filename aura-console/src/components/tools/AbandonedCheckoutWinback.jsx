@@ -753,7 +753,9 @@ export default function AbandonedCheckoutWinback() {
                       <td>{n.created}</td>
                       <td>
                         <button onClick={() => openNotificationModal(n)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
-                        <button onClick={() => setNotificationsList(list => list.filter(x => x.id !== n.id))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                        <button onClick={() => deleteNotification(n.id)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                                    {notificationsLoading && <div style={{ color: '#aaa', padding: 12 }}>Loading notifications...</div>}
+                                    {notificationsError && <div style={{ color: '#f87171', padding: 12 }}>{notificationsError}</div>}
                       </td>
                     </tr>
                   ))}
@@ -784,6 +786,12 @@ export default function AbandonedCheckoutWinback() {
                         <option value="enabled">Enabled</option>
                         <option value="disabled">Disabled</option>
                       </select>
+                      {/* Delivery Preview & Test Send */}
+                      <div style={{ background: '#f3f4f6', borderRadius: 8, padding: 12, marginBottom: 16, color: '#232336' }}>
+                        <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Preview</div>
+                        <div style={{ fontFamily: 'monospace', fontSize: 15, whiteSpace: 'pre-wrap', background: '#fff', borderRadius: 6, padding: 10, minHeight: 40, color: '#232336', border: '1px solid #e5e7eb' }}>{editingNotification ? editingNotification.message : ''}</div>
+                        <button type="button" onClick={() => alert('Test send feature coming soon!')} style={{ marginTop: 10, background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Send Test</button>
+                      </div>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
                         <button type="button" onClick={closeNotificationModal} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
                         <button type="submit" style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>{editingNotification ? 'Save Changes' : 'Create Notification'}</button>
@@ -795,13 +803,28 @@ export default function AbandonedCheckoutWinback() {
             </div>
           </section>
         )}
-        // --- Notifications state and logic ---
-        const [notificationsList, setNotificationsList] = useState([
-          { id: 1, name: 'Order Shipped', channel: 'email', message: 'Your order has shipped!', status: 'enabled', created: '2026-01-01', selected: false },
-          { id: 2, name: 'Cart Reminder', channel: 'sms', message: 'You left something in your cart!', status: 'disabled', created: '2026-01-05', selected: false },
-        ]);
+        // --- Notifications state and logic (API-integrated) ---
+        const [notificationsList, setNotificationsList] = useState([]);
         const [showNotificationModal, setShowNotificationModal] = useState(false);
         const [editingNotification, setEditingNotification] = useState(null);
+        const [notificationsLoading, setNotificationsLoading] = useState(false);
+        const [notificationsError, setNotificationsError] = useState("");
+
+        // Load notifications from backend
+        useEffect(() => {
+          if (activeSection !== 'notifications') return;
+          setNotificationsLoading(true);
+          setNotificationsError("");
+          apiFetch('/api/abandoned-checkout-winback/notifications')
+            .then(async resp => {
+              if (!resp.ok) throw new Error('Failed to fetch notifications');
+              const data = await resp.json();
+              setNotificationsList((data.notifications || []).map(n => ({ ...n, selected: false })));
+            })
+            .catch(e => setNotificationsError(e.message))
+            .finally(() => setNotificationsLoading(false));
+        }, [activeSection]);
+
         const openNotificationModal = (notification = null) => {
           setEditingNotification(notification);
           setShowNotificationModal(true);
@@ -810,13 +833,39 @@ export default function AbandonedCheckoutWinback() {
           setEditingNotification(null);
           setShowNotificationModal(false);
         };
-        const saveNotification = (n) => {
+        const saveNotification = async (n) => {
+          setNotificationsError("");
           if (n.id) {
-            setNotificationsList(list => list.map(x => x.id === n.id ? { ...n, selected: false } : x));
+            // Update
+            try {
+              const resp = await apiFetch(`/api/abandoned-checkout-winback/notifications/${n.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(n)
+              });
+              if (!resp.ok) throw new Error('Failed to update notification');
+              const data = await resp.json();
+              setNotificationsList(list => list.map(x => x.id === n.id ? { ...data.notification, selected: false } : x));
+              closeNotificationModal();
+            } catch (e) {
+              setNotificationsError(e.message);
+            }
           } else {
-            setNotificationsList(list => [...list, { ...n, id: Date.now(), selected: false }]);
+            // Create
+            try {
+              const resp = await apiFetch('/api/abandoned-checkout-winback/notifications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(n)
+              });
+              if (!resp.ok) throw new Error('Failed to create notification');
+              const data = await resp.json();
+              setNotificationsList(list => [...list, { ...data.notification, selected: false }]);
+              closeNotificationModal();
+            } catch (e) {
+              setNotificationsError(e.message);
+            }
           }
-          closeNotificationModal();
         };
         const toggleSelectNotification = (id) => {
           setNotificationsList(list => list.map(x => x.id === id ? { ...x, selected: !x.selected } : x));
@@ -824,8 +873,31 @@ export default function AbandonedCheckoutWinback() {
         const selectAllNotifications = (checked) => {
           setNotificationsList(list => list.map(x => ({ ...x, selected: checked })));
         };
-        const deleteSelectedNotifications = () => {
-          setNotificationsList(list => list.filter(x => !x.selected));
+        const deleteSelectedNotifications = async () => {
+          setNotificationsError("");
+          const ids = notificationsList.filter(x => x.selected).map(x => x.id);
+          if (ids.length === 0) return;
+          try {
+            const resp = await apiFetch('/api/abandoned-checkout-winback/notifications/bulk-delete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ids })
+            });
+            if (!resp.ok) throw new Error('Failed to delete notifications');
+            setNotificationsList(list => list.filter(x => !ids.includes(x.id)));
+          } catch (e) {
+            setNotificationsError(e.message);
+          }
+        };
+        const deleteNotification = async (id) => {
+          setNotificationsError("");
+          try {
+            const resp = await apiFetch(`/api/abandoned-checkout-winback/notifications/${id}`, { method: 'DELETE' });
+            if (!resp.ok) throw new Error('Failed to delete notification');
+            setNotificationsList(list => list.filter(x => x.id !== id));
+          } catch (e) {
+            setNotificationsError(e.message);
+          }
         };
         {activeSection === 'activityLog' && (
           <section aria-label="Activity Log">
