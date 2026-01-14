@@ -723,9 +723,110 @@ export default function AbandonedCheckoutWinback() {
         {activeSection === 'notifications' && (
           <section aria-label="Notifications">
             <WinbackFeatureCard title="Notifications" description="Manage notification preferences and delivery channels." icon="🔔" />
-            {/* ...notifications code... */}
+            <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <div style={{ fontWeight: 700, fontSize: 20 }}>Your Notifications</div>
+                <button onClick={() => setShowNotificationModal(true)} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ New Notification</button>
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--background-secondary)', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
+                <thead>
+                  <tr style={{ background: '#232336', color: '#aaa' }}>
+                    <th><input type="checkbox" checked={notificationsList.length > 0 && notificationsList.every(n => n.selected)} onChange={e => selectAllNotifications(e.target.checked)} aria-label="Select all notifications" /></th>
+                    <th>Name</th>
+                    <th>Channel</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {notificationsList.length === 0 ? (
+                    <tr><td colSpan={7} style={{ textAlign: 'center', color: '#64748b', padding: 24 }}>No notifications yet.</td></tr>
+                  ) : notificationsList.map(n => (
+                    <tr key={n.id} style={{ background: n.selected ? '#e0e7ff' : undefined }}>
+                      <td><input type="checkbox" checked={!!n.selected} onChange={() => toggleSelectNotification(n.id)} aria-label={`Select notification ${n.name}`} /></td>
+                      <td>{n.name}</td>
+                      <td>{n.channel}</td>
+                      <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.message}</td>
+                      <td>{n.status}</td>
+                      <td>{n.created}</td>
+                      <td>
+                        <button onClick={() => openNotificationModal(n)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
+                        <button onClick={() => setNotificationsList(list => list.filter(x => x.id !== n.id))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {/* Bulk Actions */}
+              <div style={{ marginTop: 12, display: 'flex', gap: 12 }}>
+                <button onClick={deleteSelectedNotifications} disabled={!notificationsList.some(n => n.selected)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Delete Selected</button>
+              </div>
+              {/* Notification Modal (Add/Edit) */}
+              {showNotificationModal && (
+                <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
+                  <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                    <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingNotification ? 'Edit Notification' : 'New Notification'}</h3>
+                    <form onSubmit={e => { e.preventDefault(); saveNotification(editingNotification ? editingNotification : { name: '', channel: 'email', message: '', status: 'enabled', created: new Date().toISOString().slice(0, 10) }); }}>
+                      <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-notification-name">Name</label>
+                      <input id="modal-notification-name" value={editingNotification ? editingNotification.name : ''} onChange={e => setEditingNotification(editingNotification ? { ...editingNotification, name: e.target.value } : { name: e.target.value, channel: 'email', message: '', status: 'enabled', created: new Date().toISOString().slice(0, 10) })} placeholder="Notification name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required />
+                      <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-notification-channel">Channel</label>
+                      <select id="modal-notification-channel" value={editingNotification ? editingNotification.channel : 'email'} onChange={e => setEditingNotification(editingNotification ? { ...editingNotification, channel: e.target.value } : { name: '', channel: e.target.value, message: '', status: 'enabled', created: new Date().toISOString().slice(0, 10) })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12 }} required>
+                        <option value="email">Email</option>
+                        <option value="sms">SMS</option>
+                        <option value="push">Push</option>
+                      </select>
+                      <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-notification-message">Message</label>
+                      <textarea id="modal-notification-message" value={editingNotification ? editingNotification.message : ''} onChange={e => setEditingNotification(editingNotification ? { ...editingNotification, message: e.target.value } : { name: '', channel: 'email', message: e.target.value, status: 'enabled', created: new Date().toISOString().slice(0, 10) })} placeholder="Notification message" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 12, minHeight: 80 }} required />
+                      <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-notification-status">Status</label>
+                      <select id="modal-notification-status" value={editingNotification ? editingNotification.status : 'enabled'} onChange={e => setEditingNotification(editingNotification ? { ...editingNotification, status: e.target.value } : { name: '', channel: 'email', message: '', status: e.target.value, created: new Date().toISOString().slice(0, 10) })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid var(--border-color)', width: '100%', marginBottom: 18 }} required>
+                        <option value="enabled">Enabled</option>
+                        <option value="disabled">Disabled</option>
+                      </select>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                        <button type="button" onClick={closeNotificationModal} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
+                        <button type="submit" style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>{editingNotification ? 'Save Changes' : 'Create Notification'}</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
           </section>
         )}
+        // --- Notifications state and logic ---
+        const [notificationsList, setNotificationsList] = useState([
+          { id: 1, name: 'Order Shipped', channel: 'email', message: 'Your order has shipped!', status: 'enabled', created: '2026-01-01', selected: false },
+          { id: 2, name: 'Cart Reminder', channel: 'sms', message: 'You left something in your cart!', status: 'disabled', created: '2026-01-05', selected: false },
+        ]);
+        const [showNotificationModal, setShowNotificationModal] = useState(false);
+        const [editingNotification, setEditingNotification] = useState(null);
+        const openNotificationModal = (notification = null) => {
+          setEditingNotification(notification);
+          setShowNotificationModal(true);
+        };
+        const closeNotificationModal = () => {
+          setEditingNotification(null);
+          setShowNotificationModal(false);
+        };
+        const saveNotification = (n) => {
+          if (n.id) {
+            setNotificationsList(list => list.map(x => x.id === n.id ? { ...n, selected: false } : x));
+          } else {
+            setNotificationsList(list => [...list, { ...n, id: Date.now(), selected: false }]);
+          }
+          closeNotificationModal();
+        };
+        const toggleSelectNotification = (id) => {
+          setNotificationsList(list => list.map(x => x.id === id ? { ...x, selected: !x.selected } : x));
+        };
+        const selectAllNotifications = (checked) => {
+          setNotificationsList(list => list.map(x => ({ ...x, selected: checked })));
+        };
+        const deleteSelectedNotifications = () => {
+          setNotificationsList(list => list.filter(x => !x.selected));
+        };
         {activeSection === 'activityLog' && (
           <section aria-label="Activity Log">
             <WinbackFeatureCard title="Activity Log" description="Timeline of all actions, sends, edits, and results. Export, search, and filter options." icon="📜" />
