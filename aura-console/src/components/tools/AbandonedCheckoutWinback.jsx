@@ -3,6 +3,7 @@ import { exportCampaignPDF } from './WinbackExportPDF';
 import { apiFetch } from '../../api';
 
 import WinbackFeatureCard from './WinbackFeatureCard';
+import WinbackAnalyticsChart from './WinbackAnalyticsChart';
 import WinbackAnomalyBanner from './WinbackAnomalyBanner';
 
 import useWinbackSocket from './AbandonedCheckoutWinbackSocket';
