@@ -1205,97 +1205,6 @@ function AbandonedCheckoutWinback() {
             </div>
           </section>
         )}
-        // --- Flagship Settings section ---
-        function SettingsSection() {
-          const [settings, setSettings] = React.useState({
-            notificationsEnabled: true,
-            analyticsEnabled: true,
-            integrationsEnabled: true,
-            complianceEnabled: true,
-            apiKey: '',
-            shopName: '',
-            advancedMode: false
-          });
-          const [loading, setLoading] = React.useState(false);
-          const [error, setError] = React.useState("");
-          const [success, setSuccess] = React.useState("");
-
-          React.useEffect(() => {
-            setLoading(true);
-            setError("");
-            apiFetch('/api/abandoned-checkout-winback/settings')
-              .then(async resp => {
-                if (!resp.ok) throw new Error('Failed to load settings');
-                const data = await resp.json();
-                setSettings(s => ({ ...s, ...data.settings }));
-              })
-              .catch(e => setError(e.message))
-              .finally(() => setLoading(false));
-          }, []);
-
-          const handleChange = (field, value) => {
-            setSettings(s => ({ ...s, [field]: value }));
-          };
-
-          const handleSave = async () => {
-            setLoading(true);
-            setError("");
-            setSuccess("");
-            try {
-              const resp = await apiFetch('/api/abandoned-checkout-winback/settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(settings)
-              });
-              if (!resp.ok) throw new Error('Failed to save settings');
-              setSuccess('Settings saved successfully!');
-            } catch (e) {
-              setError(e.message);
-            }
-            setLoading(false);
-          };
-
-          return (
-            <form onSubmit={e => { e.preventDefault(); handleSave(); }}>
-              <div style={{ marginBottom: 18 }}>
-                <label style={{ fontWeight: 600, fontSize: 16, marginBottom: 8, display: 'block' }}>Shop Name</label>
-                <input type="text" value={settings.shopName} onChange={e => handleChange('shopName', e.target.value)} placeholder="Your shop name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #333', width: '100%', marginBottom: 12, background: '#18181c', color: '#fafafa' }} />
-              </div>
-              <div style={{ marginBottom: 18 }}>
-                <label style={{ fontWeight: 600, fontSize: 16, marginBottom: 8, display: 'block' }}>API Key <span style={{ color: '#64748b', fontWeight: 400, fontSize: 13 }} title="Used for integrations and advanced features.">(?)</span></label>
-                <input type="text" value={settings.apiKey} onChange={e => handleChange('apiKey', e.target.value)} placeholder="Enter API key" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #333', width: '100%', marginBottom: 12, background: '#18181c', color: '#fafafa' }} />
-              </div>
-              <div style={{ marginBottom: 18 }}>
-                <label style={{ fontWeight: 600, fontSize: 16, marginBottom: 8, display: 'block' }}>Preferences</label>
-                <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input type="checkbox" checked={settings.notificationsEnabled} onChange={e => handleChange('notificationsEnabled', e.target.checked)} /> Notifications
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input type="checkbox" checked={settings.analyticsEnabled} onChange={e => handleChange('analyticsEnabled', e.target.checked)} /> Analytics
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input type="checkbox" checked={settings.integrationsEnabled} onChange={e => handleChange('integrationsEnabled', e.target.checked)} /> Integrations
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input type="checkbox" checked={settings.complianceEnabled} onChange={e => handleChange('complianceEnabled', e.target.checked)} /> Compliance
-                  </label>
-                </div>
-              </div>
-              <div style={{ marginBottom: 18 }}>
-                <label style={{ fontWeight: 600, fontSize: 16, marginBottom: 8, display: 'block' }}>Advanced Options</label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <input type="checkbox" checked={settings.advancedMode} onChange={e => handleChange('advancedMode', e.target.checked)} /> Enable Advanced Mode
-                </label>
-              </div>
-              {error && <div style={{ color: '#ef4444', fontWeight: 600, marginBottom: 12 }}>{error}</div>}
-              {success && <div style={{ color: '#22c55e', fontWeight: 600, marginBottom: 12 }}>{success}</div>}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-                <button type="submit" disabled={loading} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer' }}>Save Settings</button>
-              </div>
-            </form>
-          );
-        }
         {activeSection === 'help' && (
           <section aria-label="Help & Docs">
             <WinbackFeatureCard title="Help & Documentation" description="Browse FAQs, onboarding guides, and get support. Everything you need to master winback automation." icon="❓" />
@@ -1322,6 +1231,98 @@ function AbandonedCheckoutWinback() {
       </div>
     );
   }
+
+// --- Flagship Settings section ---
+function SettingsSection() {
+  const [settings, setSettings] = React.useState({
+    notificationsEnabled: true,
+    analyticsEnabled: true,
+    integrationsEnabled: true,
+    complianceEnabled: true,
+    apiKey: '',
+    shopName: '',
+    advancedMode: false
+  });
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState("");
+  const [success, setSuccess] = React.useState("");
+
+  React.useEffect(() => {
+    setLoading(true);
+    setError("");
+    apiFetch('/api/abandoned-checkout-winback/settings')
+      .then(async resp => {
+        if (!resp.ok) throw new Error('Failed to load settings');
+        const data = await resp.json();
+        setSettings(s => ({ ...s, ...data.settings }));
+      })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleChange = (field, value) => {
+    setSettings(s => ({ ...s, [field]: value }));
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    try {
+      const resp = await apiFetch('/api/abandoned-checkout-winback/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      });
+      if (!resp.ok) throw new Error('Failed to save settings');
+      setSuccess('Settings saved successfully!');
+    } catch (e) {
+      setError(e.message);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <form onSubmit={e => { e.preventDefault(); handleSave(); }}>
+      <div style={{ marginBottom: 18 }}>
+        <label style={{ fontWeight: 600, fontSize: 16, marginBottom: 8, display: 'block' }}>Shop Name</label>
+        <input type="text" value={settings.shopName} onChange={e => handleChange('shopName', e.target.value)} placeholder="Your shop name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #333', width: '100%', marginBottom: 12, background: '#18181c', color: '#fafafa' }} />
+      </div>
+      <div style={{ marginBottom: 18 }}>
+        <label style={{ fontWeight: 600, fontSize: 16, marginBottom: 8, display: 'block' }}>API Key <span style={{ color: '#64748b', fontWeight: 400, fontSize: 13 }} title="Used for integrations and advanced features.">(?)</span></label>
+        <input type="text" value={settings.apiKey} onChange={e => handleChange('apiKey', e.target.value)} placeholder="Enter API key" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #333', width: '100%', marginBottom: 12, background: '#18181c', color: '#fafafa' }} />
+      </div>
+      <div style={{ marginBottom: 18 }}>
+        <label style={{ fontWeight: 600, fontSize: 16, marginBottom: 8, display: 'block' }}>Preferences</label>
+        <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input type="checkbox" checked={settings.notificationsEnabled} onChange={e => handleChange('notificationsEnabled', e.target.checked)} /> Notifications
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input type="checkbox" checked={settings.analyticsEnabled} onChange={e => handleChange('analyticsEnabled', e.target.checked)} /> Analytics
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input type="checkbox" checked={settings.integrationsEnabled} onChange={e => handleChange('integrationsEnabled', e.target.checked)} /> Integrations
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input type="checkbox" checked={settings.complianceEnabled} onChange={e => handleChange('complianceEnabled', e.target.checked)} /> Compliance
+          </label>
+        </div>
+      </div>
+      <div style={{ marginBottom: 18 }}>
+        <label style={{ fontWeight: 600, fontSize: 16, marginBottom: 8, display: 'block' }}>Advanced Options</label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input type="checkbox" checked={settings.advancedMode} onChange={e => handleChange('advancedMode', e.target.checked)} /> Enable Advanced Mode
+        </label>
+      </div>
+      {error && <div style={{ color: '#ef4444', fontWeight: 600, marginBottom: 12 }}>{error}</div>}
+      {success && <div style={{ color: '#22c55e', fontWeight: 600, marginBottom: 12 }}>{success}</div>}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+        <button type="submit" disabled={loading} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 22px', fontWeight: 700, fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer' }}>Save Settings</button>
+      </div>
+    </form>
+  );
+}
 
 export default AbandonedCheckoutWinback;
 // End of file
