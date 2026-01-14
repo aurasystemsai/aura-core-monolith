@@ -1,3 +1,22 @@
+const SETTINGS_KEY = 'winback-settings';
+
+// GET: Load settings for shop
+router.get('/settings', async (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop' });
+  const all = (await storage.get(SETTINGS_KEY)) || {};
+  res.json({ ok: true, settings: all[shop] || {} });
+});
+
+// POST: Save settings for shop
+router.post('/settings', async (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop' });
+  let all = (await storage.get(SETTINGS_KEY)) || {};
+  all[shop] = req.body;
+  await storage.set(SETTINGS_KEY, all);
+  res.json({ ok: true, settings: all[shop] });
+});
 
 // src/routes/abandoned-checkout-winback.js
 // Real API endpoints for winback integrations (Shopify multi-tenant)
