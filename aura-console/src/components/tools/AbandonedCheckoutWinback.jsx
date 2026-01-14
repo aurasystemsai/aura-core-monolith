@@ -653,56 +653,7 @@ function AbandonedCheckoutWinback() {
       );
     }
 
-    // --- Activity Log Columns State ---
-    const [activityLogColumns, setActivityLogColumns] = useState([
-      { key: 'timestamp', label: 'Date', visible: true },
-      { key: 'user', label: 'User', visible: true },
-      { key: 'action', label: 'Action', visible: true },
-      { key: 'type', label: 'Type', visible: true },
-      { key: 'campaignId', label: 'Campaign', visible: true },
-      { key: 'details', label: 'Details', visible: true },
-      { key: 'result', label: 'Result', visible: true },
-    ]);
-
-    // --- Column toggle handler ---
-    function toggleColumn(key) {
-      setActivityLogColumns(cols => cols.map(col =>
-        col.key === key ? { ...col, visible: !col.visible } : col
-      ));
-    }
-
-    // --- Export Activity Log as CSV ---
-    function exportActivityLog() {
-      // Only export visible columns
-      const visibleCols = activityLogColumns.filter(c => c.visible);
-      const headers = visibleCols.map(col => col.label);
-      // Add 'Raw' column for details
-      headers.push('Raw');
-      const rows = filteredActivityLog.map(log => {
-        const row = visibleCols.map(col => {
-          let val = log[col.key];
-          if (val === undefined || val === null) return '';
-          if (typeof val === 'object') return JSON.stringify(val);
-          return String(val);
-        });
-        row.push(JSON.stringify(log)); // Raw column
-        return row;
-      });
-      const csv = [headers, ...rows]
-        .map(r => r.map(field => '"' + String(field).replace(/"/g, '""') + '"').join(','))
-        .join('\r\n');
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'activity-log.csv';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 100);
-    }
+    // (Removed duplicate Activity Log Columns state, toggleColumn, and exportActivityLog definitions here. All logic is now at the top of the component.)
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: '#18181b' }}>
         {/* Flagship Navigation Sidebar */}
