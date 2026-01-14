@@ -244,6 +244,36 @@ export default function AbandonedCheckoutWinback() {
 
     // --- IntegrationsSection: flagship integrations management ---
     function IntegrationsSection() {
+            // Modal state for adding integrations
+            const [showAddModal, setShowAddModal] = React.useState(false);
+            const [selectedIntegration, setSelectedIntegration] = React.useState(null);
+            // List of available integrations (production-ready)
+            const availableIntegrations = [
+              { id: 'shopify', name: 'Shopify', description: 'Connect your Shopify store.' },
+              { id: 'klaviyo', name: 'Klaviyo', description: 'Sync with Klaviyo for email marketing.' },
+              { id: 'mailchimp', name: 'Mailchimp', description: 'Sync with Mailchimp for campaigns.' },
+              { id: 'google-ads', name: 'Google Ads', description: 'Connect Google Ads for retargeting.' },
+              { id: 'facebook-ads', name: 'Facebook Ads', description: 'Connect Facebook Ads for retargeting.' },
+            ];
+
+            // Add integration handler
+            const handleAddIntegration = async () => {
+              if (!selectedIntegration) return;
+              setError("");
+              setLoading(true);
+              try {
+                // Add integration for this shop
+                const resp = await apiFetch(`/api/abandoned-checkout-winback/integrations/${selectedIntegration.id}/connect`, { method: 'POST' });
+                const data = await resp.json();
+                if (!data.ok) throw new Error(data.error || 'Failed to add integration');
+                setIntegrations(list => [...list, { ...selectedIntegration, connected: true, lastConnected: new Date().toISOString().slice(0, 19).replace('T', ' ') }]);
+                setShowAddModal(false);
+                setSelectedIntegration(null);
+              } catch (e) {
+                setError(e.message);
+              }
+              setLoading(false);
+            };
       const [integrations, setIntegrations] = React.useState([]);
       const [loading, setLoading] = React.useState(false);
       const [error, setError] = React.useState("");
@@ -302,7 +332,10 @@ export default function AbandonedCheckoutWinback() {
       );
       return (
         <div style={{ marginTop: 24 }}>
-          <h3 style={{ fontSize: 20, marginBottom: 16 }}>Integrations</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h3 style={{ fontSize: 20 }}>Integrations</h3>
+            <button onClick={() => setShowAddModal(true)} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ Add Integration</button>
+          </div>
           <input
             type="text"
             value={filter}
@@ -342,6 +375,36 @@ export default function AbandonedCheckoutWinback() {
                 {filtered.length === 0 && <tr><td colSpan={5} style={{ color: '#aaa', padding: 12 }}>No integrations found.</td></tr>}
               </tbody>
             </table>
+          )}
+
+          {/* Add Integration Modal */}
+          {showAddModal && (
+            <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
+              <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 340, maxWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Add Integration</h3>
+                <div style={{ marginBottom: 18 }}>
+                  {availableIntegrations.map(intg => (
+                    <div key={intg.id} style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+                      <input
+                        type="radio"
+                        id={`add-intg-${intg.id}`}
+                        name="add-integration"
+                        value={intg.id}
+                        checked={selectedIntegration && selectedIntegration.id === intg.id}
+                        onChange={() => setSelectedIntegration(intg)}
+                        style={{ marginRight: 10 }}
+                      />
+                      <label htmlFor={`add-intg-${intg.id}`} style={{ fontWeight: 600, fontSize: 16 }}>{intg.name}</label>
+                      <span style={{ marginLeft: 8, color: '#64748b', fontSize: 14 }}>{intg.description}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                  <button type="button" onClick={() => { setShowAddModal(false); setSelectedIntegration(null); }} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
+                  <button type="button" onClick={handleAddIntegration} disabled={!selectedIntegration} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Add</button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       );
