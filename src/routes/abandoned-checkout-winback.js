@@ -1,3 +1,13 @@
+
+// src/routes/abandoned-checkout-winback.js
+// Real API endpoints for winback integrations (Shopify multi-tenant)
+const express = require('express');
+const router = express.Router();
+const storage = require('../core/storageJson');
+
+const INTEGRATIONS_KEY = 'winback-integrations';
+const COMPLIANCE_KEY = 'winback-compliance';
+const ACTIVITY_LOG_KEY = 'winback-activity-log';
 const SETTINGS_KEY = 'winback-settings';
 
 // GET: Load settings for shop
@@ -17,16 +27,6 @@ router.post('/settings', async (req, res) => {
   await storage.set(SETTINGS_KEY, all);
   res.json({ ok: true, settings: all[shop] });
 });
-
-// src/routes/abandoned-checkout-winback.js
-// Real API endpoints for winback integrations (Shopify multi-tenant)
-const express = require('express');
-const router = express.Router();
-const storage = require('../core/storageJson');
-
-const INTEGRATIONS_KEY = 'winback-integrations';
-const COMPLIANCE_KEY = 'winback-compliance';
-const ACTIVITY_LOG_KEY = 'winback-activity-log';
 
 // Helper: get shop from request (header, query, or session)
 function getShop(req) {
