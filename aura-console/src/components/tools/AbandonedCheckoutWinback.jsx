@@ -605,7 +605,24 @@ function AbandonedCheckoutWinback() {
       );
     }
 
-    // Main component return
+    // --- Activity Log Columns State ---
+    const [activityLogColumns, setActivityLogColumns] = useState([
+      { key: 'timestamp', label: 'Date', visible: true },
+      { key: 'user', label: 'User', visible: true },
+      { key: 'action', label: 'Action', visible: true },
+      { key: 'type', label: 'Type', visible: true },
+      { key: 'campaignId', label: 'Campaign', visible: true },
+      { key: 'details', label: 'Details', visible: true },
+      { key: 'result', label: 'Result', visible: true },
+    ]);
+
+    // --- Column toggle handler ---
+    function toggleColumn(key) {
+      setActivityLogColumns(cols => cols.map(col =>
+        col.key === key ? { ...col, visible: !col.visible } : col
+      ));
+    }
+
     // --- Export Activity Log as CSV ---
     function exportActivityLog() {
       // Only export visible columns
