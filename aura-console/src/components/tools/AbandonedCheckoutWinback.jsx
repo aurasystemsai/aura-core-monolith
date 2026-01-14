@@ -606,6 +606,38 @@ function AbandonedCheckoutWinback() {
     }
 
     // Main component return
+    // --- Export Activity Log as CSV ---
+    function exportActivityLog() {
+      // Only export visible columns
+      const visibleCols = activityLogColumns.filter(c => c.visible);
+      const headers = visibleCols.map(col => col.label);
+      // Add 'Raw' column for details
+      headers.push('Raw');
+      const rows = filteredActivityLog.map(log => {
+        const row = visibleCols.map(col => {
+          let val = log[col.key];
+          if (val === undefined || val === null) return '';
+          if (typeof val === 'object') return JSON.stringify(val);
+          return String(val);
+        });
+        row.push(JSON.stringify(log)); // Raw column
+        return row;
+      });
+      const csv = [headers, ...rows]
+        .map(r => r.map(field => '"' + String(field).replace(/"/g, '""') + '"').join(','))
+        .join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'activity-log.csv';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+    }
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: '#18181b' }}>
         {/* Flagship Navigation Sidebar */}
