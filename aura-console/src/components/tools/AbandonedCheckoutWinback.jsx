@@ -380,8 +380,8 @@ export default function AbandonedCheckoutWinback() {
           {/* Add Integration Modal */}
           {showAddModal && (
             <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-              <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 340, maxWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
-                <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Add Integration</h3>
+              <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, maxWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
+                <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18, color: '#fff' }}>Add Integration</h3>
                 <div style={{ marginBottom: 18 }}>
                   {availableIntegrations.map(intg => (
                     <div key={intg.id} style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
@@ -394,8 +394,8 @@ export default function AbandonedCheckoutWinback() {
                         onChange={() => setSelectedIntegration(intg)}
                         style={{ marginRight: 10 }}
                       />
-                      <label htmlFor={`add-intg-${intg.id}`} style={{ fontWeight: 600, fontSize: 16 }}>{intg.name}</label>
-                      <span style={{ marginLeft: 8, color: '#64748b', fontSize: 14 }}>{intg.description}</span>
+                      <label htmlFor={`add-intg-${intg.id}`} style={{ fontWeight: 600, fontSize: 16, color: '#fff' }}>{intg.name}</label>
+                      <span style={{ marginLeft: 8, color: '#a1a1aa', fontSize: 14 }}>{intg.description}</span>
                     </div>
                   ))}
                 </div>
