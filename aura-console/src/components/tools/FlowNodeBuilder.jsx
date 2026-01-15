@@ -2,6 +2,19 @@ import React, { useState, useRef, useEffect } from "react";
 
 // Node-based, drag-and-drop flow builder foundation
 export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
+          // Edge labels/conditions
+          const [editingEdge, setEditingEdge] = useState(null); // {from, to}
+          const [edgeLabelDraft, setEdgeLabelDraft] = useState("");
+
+          function handleEditEdgeLabel(edge) {
+            setEditingEdge(edge);
+            setEdgeLabelDraft(edge.label || "");
+          }
+          function handleSaveEdgeLabel() {
+            setEdges(edges.map(e => (e.from === editingEdge.from && e.to === editingEdge.to) ? { ...e, label: edgeLabelDraft } : e));
+            setEditingEdge(null);
+            setEdgeLabelDraft("");
+          }
         // Node grouping & collapse
         const [groups, setGroups] = useState([]); // [{id, name, nodeIds, collapsed}]
         const [groupDraft, setGroupDraft] = useState({ name: '', nodeIds: [] });
@@ -492,20 +505,41 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
           const from = getNodePos(edge.from);
           const to = getNodePos(edge.to);
           if (!from || !to) return null;
+          const mx = (from.x + 180 + to.x) / 2;
+          const my = (from.y + 28 + to.y + 28) / 2;
           return (
-            <line
-              key={i}
-              x1={from.x + 180}
-              y1={from.y + 28}
-              x2={to.x}
-              y2={to.y + 28}
-              stroke="#38bdf8"
-              strokeWidth={3}
-              markerEnd="url(#arrowhead)"
-              opacity={0.7}
-            />
+            <g key={i}>
+              <line
+                x1={from.x + 180}
+                y1={from.y + 28}
+                x2={to.x}
+                y2={to.y + 28}
+                stroke="#38bdf8"
+                strokeWidth={3}
+                markerEnd="url(#arrowhead)"
+                opacity={0.7}
+                onClick={() => handleEditEdgeLabel(edge)}
+                style={{ cursor: 'pointer' }}
+              />
+              {edge.label && (
+                <text x={mx} y={my - 8} fill="#eab308" fontSize="14" fontWeight="bold" textAnchor="middle" style={{ pointerEvents: 'none' }}>{edge.label}</text>
+              )}
+            </g>
           );
         })}
+              {/* Edge label modal */}
+              {editingEdge && (
+                <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+                    <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Edit Edge Label/Condition</div>
+                    <input value={edgeLabelDraft} onChange={e => setEdgeLabelDraft(e.target.value)} placeholder="Edge label (e.g. Yes/No)" style={{ width: '100%', borderRadius: 8, border: '1px solid #333', padding: '10px 14px', fontSize: 16, marginBottom: 18, background: '#18181b', color: '#fafafa' }} />
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      <button onClick={handleSaveEdgeLabel} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Save</button>
+                      <button onClick={() => setEditingEdge(null)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
+                    </div>
+                  </div>
+                </div>
+              )}
         <defs>
           <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto" markerUnits="strokeWidth">
             <polygon points="0 0, 8 4, 0 8" fill="#38bdf8" />
