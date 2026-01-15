@@ -202,6 +202,16 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
           headers: { "Content-Type": "application/json", "x-shopify-shop-domain": shop },
           body: JSON.stringify({ flow: { nodes, edges, comments } })
         });
+        // Broadcast to WebSocket for real-time sync
+        try {
+          const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+          const host = window.location.host;
+          const ws = new window.WebSocket(`${protocol}://${host}/ws/klaviyo-flow-automation`);
+          ws.onopen = () => {
+            ws.send(JSON.stringify({ type: 'flow-update', payload: { nodes, edges, comments } }));
+            ws.close();
+          };
+        } catch {}
       } catch (err) {
         // eslint-disable-next-line
         console.error("Failed to save flow", err);
