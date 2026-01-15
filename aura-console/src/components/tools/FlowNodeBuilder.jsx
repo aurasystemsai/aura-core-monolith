@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import FlowNodeCanvas from "./FlowNodeCanvas";
 
-export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
+function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
   // Responsive UI: add mobile detection
   const isMobile = window.innerWidth < 600;
   // Integrations state
@@ -1349,3 +1349,5 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
     </div>
   );
 }
+
+export default FlowNodeBuilder;
