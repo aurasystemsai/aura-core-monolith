@@ -268,19 +268,38 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
   }, [nodes, edges]);
 
   // Add a new node
-  function addNode(type) {
+  // Custom node types & marketplace
+  const [customNodeType, setCustomNodeType] = useState("");
+  const [marketplaceOpen, setMarketplaceOpen] = useState(false);
+  const [marketplaceNodes, setMarketplaceNodes] = useState([]);
+  const [marketplaceError, setMarketplaceError] = useState("");
+
+  function addNode(type, meta) {
     const id = Math.random().toString(36).substr(2, 9);
+    const label = meta?.name || type.charAt(0).toUpperCase() + type.slice(1);
     const newNodes = [
       ...nodes,
       {
         id,
         type,
-        label: type.charAt(0).toUpperCase() + type.slice(1),
-        data: {}
+        label,
+        data: meta?.examplePayload ? { params: JSON.stringify(meta.examplePayload) } : {}
       }
     ];
     setNodes(newNodes);
     pushHistory(newNodes, edges);
+  }
+
+  async function loadMarketplace() {
+    setMarketplaceError("");
+    try {
+      const res = await fetch("/api/tools/marketplace");
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Unknown error");
+      setMarketplaceNodes(data.tools || []);
+    } catch (err) {
+      setMarketplaceError(err.message);
+    }
   }
 
   // Drag and drop handlers
@@ -434,6 +453,47 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
         {aiSuggestion && <span style={{ color: '#38bdf8', fontWeight: 700, marginLeft: 10 }}>{aiSuggestion}</span>}
       </div>
       <div style={{ display: 'flex', gap: 12, marginBottom: 18, alignItems: 'center', position: 'relative', zIndex: 2 }}>
+                <button onClick={() => setMarketplaceOpen(true)} style={{ background: '#eab308', color: '#232336', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Marketplace</button>
+                <select value={customNodeType} onChange={e => setCustomNodeType(e.target.value)} style={{ marginLeft: 8, borderRadius: 8, border: '1px solid #333', padding: '8px 12px', background: '#232336', color: '#fafafa', fontWeight: 700, fontSize: 15 }}>
+                  <option value="">+ Custom Node Type...</option>
+                  <option value="trigger">Trigger</option>
+                  <option value="action">Action</option>
+                  <option value="condition">Condition</option>
+                  {/* Dynamically add custom node types from marketplace */}
+                  {marketplaceNodes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+                <button onClick={() => {
+                  if (!customNodeType) return;
+                  const meta = marketplaceNodes.find(t => t.id === customNodeType);
+                  addNode(customNodeType, meta);
+                }} disabled={!customNodeType} style={{ background: '#eab308', color: '#232336', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: customNodeType ? 'pointer' : 'not-allowed', opacity: customNodeType ? 1 : 0.6 }}>Add Custom Node</button>
+                {/* Marketplace Modal */}
+                {marketplaceOpen && (
+                  <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 520, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+                      <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Node Marketplace</div>
+                      <button onClick={() => setMarketplaceOpen(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+                      <button onClick={loadMarketplace} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 12 }}>Refresh</button>
+                      {marketplaceError && <div style={{ color: '#ef4444', fontWeight: 700, marginBottom: 10 }}>{marketplaceError}</div>}
+                      <div style={{ maxHeight: 340, overflowY: 'auto' }}>
+                        {marketplaceNodes.length === 0 ? (
+                          <div style={{ color: '#64748b', fontSize: 15 }}>No custom nodes available.</div>
+                        ) : (
+                          <ul style={{ listStyle: 'none', padding: 0 }}>
+                            {marketplaceNodes.map(t => (
+                              <li key={t.id} style={{ marginBottom: 18, background: '#18181b', borderRadius: 8, padding: 18, boxShadow: '0 2px 8px #0004' }}>
+                                <div style={{ fontWeight: 700, fontSize: 17 }}>{t.name}</div>
+                                <div style={{ color: '#eab308', fontSize: 14, marginBottom: 6 }}>{t.category}</div>
+                                <div style={{ color: '#64748b', fontSize: 14, marginBottom: 6 }}>{t.description}</div>
+                                <button onClick={() => { addNode(t.id, t); setMarketplaceOpen(false); }} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginTop: 8 }}>Add Node</button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
         <button onClick={() => addNode('trigger')} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ Trigger</button>
         <button onClick={() => addNode('action')} style={{ background: '#232336', color: '#fafafa', border: '1px solid #333', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ Action</button>
         <button onClick={() => addNode('condition')} style={{ background: '#232336', color: '#fafafa', border: '1px solid #333', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ Condition</button>
