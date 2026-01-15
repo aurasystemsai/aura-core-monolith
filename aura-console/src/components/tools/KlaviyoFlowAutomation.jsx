@@ -1,5 +1,61 @@
+  // Template Assistant
+  const handleTemplateAssistant = async (query) => {
+    setLoading(true);
+    setTemplateResult("");
+    try {
+      const res = await fetch("/api/automation-templates/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query })
+      });
+      const data = await res.json();
+      setTemplateResult(data.result || "No result");
+    } catch (err) {
+      setTemplateResult("Error: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-import React, { useState, useRef } from "react";
+  // Trigger Assistant
+  const handleTriggerAssistant = async (query) => {
+    setLoading(true);
+    setTriggerResult("");
+    try {
+      const res = await fetch("/api/webhook-api-triggers/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query })
+      });
+      const data = await res.json();
+      setTriggerResult(data.result || "No result");
+    } catch (err) {
+      setTriggerResult("Error: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reporting Assistant
+  const handleReportingAssistant = async (query) => {
+    setLoading(true);
+    setReportingResult("");
+    try {
+      const res = await fetch("/api/reporting-integrations/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query })
+      });
+      const data = await res.json();
+      setReportingResult(data.result || "No result");
+    } catch (err) {
+      setReportingResult("Error: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+import React, { useState, useRef, useEffect } from "react";
 import FlowNodeBuilder from "./FlowNodeBuilder";
 
 
@@ -16,6 +72,9 @@ export default function KlaviyoFlowAutomation() {
   const [exported, setExported] = useState(null);
   const [collaborators, setCollaborators] = useState(["You"]);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [templateResult, setTemplateResult] = useState("");
+  const [triggerResult, setTriggerResult] = useState("");
+  const [reportingResult, setReportingResult] = useState("");
   const fileInputRef = useRef();
 
   // AI Suggestion
@@ -78,10 +137,32 @@ export default function KlaviyoFlowAutomation() {
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
-  // Collaboration (placeholder)
-  const handleAddCollaborator = () => {
+  // Collaboration (backend)
+  const fetchCollaborators = async () => {
+    try {
+      const res = await fetch("/api/klaviyo-flow-automation/collaborators");
+      const data = await res.json();
+      if (data.ok) setCollaborators(data.collaborators);
+    } catch {}
+  };
+  const saveCollaborators = async (newList) => {
+    setCollaborators(newList);
+    await fetch("/api/klaviyo-flow-automation/collaborators", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ collaborators: newList })
+    });
+  };
+  const handleAddCollaborator = async () => {
     const name = prompt("Enter collaborator name/email:");
-    if (name && !collaborators.includes(name)) setCollaborators([...collaborators, name]);
+    if (name && !collaborators.includes(name)) {
+      const newList = [...collaborators, name];
+      await saveCollaborators(newList);
+    }
+  };
+  const handleRemoveCollaborator = async (name) => {
+    const newList = collaborators.filter(c => c !== name);
+    await saveCollaborators(newList);
   };
 
   // Onboarding
@@ -109,6 +190,21 @@ export default function KlaviyoFlowAutomation() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  // Analytics (backend)
+  const fetchAnalytics = async () => {
+    try {
+      const res = await fetch("/api/klaviyo-flow-automation/analytics");
+      const data = await res.json();
+      if (data.ok) setAnalytics(data.analytics);
+    } catch {}
+  };
+
+  // On mount, fetch analytics and collaborators
+  useEffect(() => {
+    fetchAnalytics();
+    fetchCollaborators();
   }, []);
 
   // Main UI - Always flagship dark theme, glassmorphism, gradients, depth, modern layout
@@ -148,6 +244,30 @@ export default function KlaviyoFlowAutomation() {
               <div>{aiSuggestion}</div>
             </div>
           )}
+          {/* Template Assistant */}
+          <div style={{ margin: '18px 0' }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Template Assistant:</div>
+            <input type="text" placeholder="Ask for a template..." style={{ width: 220, marginRight: 8, borderRadius: 6, border: '1px solid #333', padding: '6px 10px', background: '#18181b', color: '#fafafa' }}
+              onKeyDown={e => { if (e.key === 'Enter') handleTemplateAssistant(e.target.value); }} />
+            <button onClick={() => handleTemplateAssistant(document.querySelector('input[placeholder="Ask for a template..."]').value)} style={{ background: "#0ea5e9", color: "#fff", border: 'none', borderRadius: 8, padding: "6px 16px", fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Ask</button>
+            {templateResult && <div style={{ marginTop: 8, color: '#38bdf8', fontSize: 15 }}>{templateResult}</div>}
+          </div>
+          {/* Trigger Assistant */}
+          <div style={{ margin: '18px 0' }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Trigger/API Assistant:</div>
+            <input type="text" placeholder="Ask about triggers..." style={{ width: 220, marginRight: 8, borderRadius: 6, border: '1px solid #333', padding: '6px 10px', background: '#18181b', color: '#fafafa' }}
+              onKeyDown={e => { if (e.key === 'Enter') handleTriggerAssistant(e.target.value); }} />
+            <button onClick={() => handleTriggerAssistant(document.querySelector('input[placeholder="Ask about triggers..."]').value)} style={{ background: "#0ea5e9", color: "#fff", border: 'none', borderRadius: 8, padding: "6px 16px", fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Ask</button>
+            {triggerResult && <div style={{ marginTop: 8, color: '#fbbf24', fontSize: 15 }}>{triggerResult}</div>}
+          </div>
+          {/* Reporting Assistant */}
+          <div style={{ margin: '18px 0' }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Reporting Assistant:</div>
+            <input type="text" placeholder="Ask about reporting..." style={{ width: 220, marginRight: 8, borderRadius: 6, border: '1px solid #333', padding: '6px 10px', background: '#18181b', color: '#fafafa' }}
+              onKeyDown={e => { if (e.key === 'Enter') handleReportingAssistant(e.target.value); }} />
+            <button onClick={() => handleReportingAssistant(document.querySelector('input[placeholder="Ask about reporting..."]').value)} style={{ background: "#0ea5e9", color: "#fff", border: 'none', borderRadius: 8, padding: "6px 16px", fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Ask</button>
+            {reportingResult && <div style={{ marginTop: 8, color: '#22d3ee', fontSize: 15 }}>{reportingResult}</div>}
+          </div>
           {error && <div style={{ color: "#ef4444", marginBottom: 10, fontWeight: 700, fontSize: 16 }}>{error}</div>}
         </div>
         <div style={{ flex: 1, minWidth: 300, background: "#18181b", borderRadius: 14, padding: 24, boxShadow: "0 2px 8px #0004", display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -155,7 +275,14 @@ export default function KlaviyoFlowAutomation() {
           <div style={{ marginBottom: 18 }}>
             <div style={{ fontWeight: 700, marginBottom: 4 }}>Collaborators:</div>
             <ul style={{ margin: 0, paddingLeft: 18, color: '#64748b', fontWeight: 600 }}>
-              {collaborators.map(c => <li key={c}>{c}</li>)}
+              {collaborators.map(c => (
+                <li key={c} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {c}
+                  {c !== 'You' && (
+                    <button onClick={() => handleRemoveCollaborator(c)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Remove</button>
+                  )}
+                </li>
+              ))}
             </ul>
             <button onClick={handleAddCollaborator} style={{ background: "#232336", color: "#fafafa", border: "1px solid #333", borderRadius: 8, padding: "8px 18px", fontWeight: 700, fontSize: 15, marginTop: 8, cursor: "pointer" }}>Add Collaborator</button>
           </div>
