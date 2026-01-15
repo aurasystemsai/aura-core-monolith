@@ -2,6 +2,35 @@ import React, { useState, useRef, useEffect } from "react";
 
 // Node-based, drag-and-drop flow builder foundation
 export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
+    // Drag-to-connect edge state
+    const [edgeDrag, setEdgeDrag] = useState({ from: null, to: null, pos: null });
+
+    function handleEdgeDragStart(nodeId, e) {
+      e.stopPropagation();
+      setEdgeDrag({ from: nodeId, to: null, pos: { x: e.clientX, y: e.clientY } });
+      window.addEventListener('mousemove', handleEdgeDragMove);
+      window.addEventListener('mouseup', handleEdgeDragEnd);
+    }
+
+    function handleEdgeDragMove(e) {
+      setEdgeDrag(prev => prev.from ? { ...prev, pos: { x: e.clientX, y: e.clientY } } : prev);
+    }
+
+    function handleEdgeDragEnd(e) {
+      setEdgeDrag({ from: null, to: null, pos: null });
+      window.removeEventListener('mousemove', handleEdgeDragMove);
+      window.removeEventListener('mouseup', handleEdgeDragEnd);
+    }
+
+    function handleEdgeDrop(targetId) {
+      if (edgeDrag.from && edgeDrag.from !== targetId) {
+        setEdges([...edges, { from: edgeDrag.from, to: targetId }]);
+        pushHistory(nodes, [...edges, { from: edgeDrag.from, to: targetId }]);
+      }
+      setEdgeDrag({ from: null, to: null, pos: null });
+      window.removeEventListener('mousemove', handleEdgeDragMove);
+      window.removeEventListener('mouseup', handleEdgeDragEnd);
+    }
   // For MVP: nodes = [{id, type, label, data}], edges = [{from, to}]
   // Later: add branching, conditions, templates, etc.
   const [draggingNode, setDraggingNode] = useState(null);
@@ -413,6 +442,23 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
       )}
       {/* SVG edges */}
       <svg width="100%" height={Math.max(120, nodes.length * 70)} style={{ position: 'absolute', left: 0, top: 0, zIndex: 0, pointerEvents: 'none' }}>
+                {/* Edge being dragged */}
+                {edgeDrag.from && edgeDrag.pos && (() => {
+                  const from = getNodePos(edgeDrag.from);
+                  return (
+                    <line
+                      x1={from.x + 220}
+                      y1={from.y + 28}
+                      x2={edgeDrag.pos.x - builderRef.current.getBoundingClientRect().left}
+                      y2={edgeDrag.pos.y - builderRef.current.getBoundingClientRect().top}
+                      stroke="#eab308"
+                      strokeWidth={3}
+                      markerEnd="url(#arrowhead)"
+                      opacity={0.9}
+                      style={{ pointerEvents: 'none' }}
+                    />
+                  );
+                })()}
         {edges && edges.map((edge, i) => {
           const from = getNodePos(edge.from);
           const to = getNodePos(edge.to);
@@ -572,7 +618,16 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
                 if (e.key === 'Delete') setNodes(nodes.filter(n => n.id !== node.id));
                 if (e.key === 'c' && e.ctrlKey) setCommentingNode(node.id);
               }}
+              onMouseUp={() => edgeDrag.from && handleEdgeDrop(node.id)}
             >
+              {/* Edge handle (output) */}
+              <div
+                title="Drag to connect edge"
+                style={{ width: 16, height: 16, borderRadius: 8, background: '#eab308', marginRight: 6, cursor: 'crosshair', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                onMouseDown={e => handleEdgeDragStart(node.id, e)}
+              >
+                <span style={{ color: '#232336', fontWeight: 900, fontSize: 14 }}>→</span>
+              </div>
               <span id={`node-desc-${node.id}`} style={{ minWidth: 80 }}>{node.label}</span>
               <span style={{ fontSize: 13, color: color === nodeColors.trigger ? '#fff' : '#64748b', fontWeight: 400 }}>{node.type}</span>
               {/* Node analytics */}
