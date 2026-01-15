@@ -2,501 +2,799 @@ import React, { useState, useRef, useEffect } from "react";
 
 // Node-based, drag-and-drop flow builder foundation
 export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
-            // Node execution preview
-            const [previewNodeId, setPreviewNodeId] = useState(null);
-            const [previewOutput, setPreviewOutput] = useState("");
-            const [previewError, setPreviewError] = useState("");
+                                                                                                                                                          // Flow execution scheduling state
+                                                                                                                                                          const [showSchedule, setShowSchedule] = useState(false);
+                                                                                                                                                          const [schedule, setSchedule] = useState({ type: '', value: '' });
+                                                                                                                                                          const [nextRun, setNextRun] = useState('');
 
-            function handlePreviewNode(nodeId) {
-              setPreviewNodeId(nodeId);
-              setPreviewError("");
+                                                                                                                                                          function handleSaveSchedule() {
+                                                                                                                                                            setShowSchedule(false);
+                                                                                                                                                            // Compute next run time (simple demo: only supports daily/hourly)
+                                                                                                                                                            let next = '';
+                                                                                                                                                            const now = new Date();
+                                                                                                                                                            if (schedule.type === 'daily') {
+                                                                                                                                                              const [h, m] = schedule.value.split(':').map(Number);
+                                                                                                                                                              const nextDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
+                                                                                                                                                              if (nextDate <= now) nextDate.setDate(nextDate.getDate() + 1);
+                                                                                                                                                              next = nextDate.toLocaleString();
+                                                                                                                                                            } else if (schedule.type === 'hourly') {
+                                                                                                                                                              const nextDate = new Date(now.getTime() + 60 * 60 * 1000);
+                                                                                                                                                              next = nextDate.toLocaleString();
+                                                                                                                                                            }
+                                                                                                                                                            setNextRun(next);
+                                                                                                                                                          }
+                                                                                                                                    // Drag-and-drop node reordering state
+                                                                                                                                    const [draggedNodeId, setDraggedNodeId] = useState(null);
+
+                                                                                                                                    function handleDragStart(e, nodeId) {
+                                                                                                                                      setDraggedNodeId(nodeId);
+                                                                                                                                      e.dataTransfer.effectAllowed = "move";
+                                                                                                                                    }
+                                                                                                                                    function handleDragOver(e) {
+                                                                                                                                      e.preventDefault();
+                                                                                                                                      e.dataTransfer.dropEffect = "move";
+                                                                                                                                    }
+                                                                                                                                    function handleDrop(e, targetNodeId) {
+                                                                                                                                      e.preventDefault();
+                                                                                                                                      if (draggedNodeId === null || draggedNodeId === targetNodeId) return;
+                                                                                                                                      // Reorder nodes array
+                                                                                                                                      const idxFrom = nodes.findIndex(n => n.id === draggedNodeId);
+                                                                                                                                      const idxTo = nodes.findIndex(n => n.id === targetNodeId);
+                                                                                                                                      if (idxFrom === -1 || idxTo === -1) return;
+                                                                                                                                      const updated = [...nodes];
+                                                                                                                                      const [moved] = updated.splice(idxFrom, 1);
+                                                                                                                                      updated.splice(idxTo, 0, moved);
+                                                                                                                                      setNodes(updated);
+                                                                                                                                      setDraggedNodeId(null);
+                                                                                                                                    }
+                                                                                                              // Custom node types/fields state
+                                                                                                              const [showAddNode, setShowAddNode] = useState(false);
+                                                                                                              const [newNodeType, setNewNodeType] = useState('');
+                                                                                                              const [newNodeLabel, setNewNodeLabel] = useState('');
+                                                                                                              const [newNodeFields, setNewNodeFields] = useState('');
+
+                                                                                                              function handleAddCustomNode() {
+                                                                                                                if (!newNodeLabel || !newNodeType) return;
+                                                                                                                const id = newNodeLabel.toLowerCase().replace(/\s+/g, '-') + '-' + Math.floor(Math.random() * 10000);
+                                                                                                                let fields = {};
+                                                                                                                try {
+                                                                                                                  fields = newNodeFields ? JSON.parse(newNodeFields) : {};
+                                                                                                                } catch {}
+                                                                                                                setNodes([...nodes, { id, label: newNodeLabel, type: newNodeType, ...fields }]);
+                                                                                                                setShowAddNode(false);
+                                                                                                                setNewNodeType('');
+                                                                                                                setNewNodeLabel('');
+                                                                                                                setNewNodeFields('');
+                                                                                                              }
+                                                                                        // Flow validation state
+                                                                                        const [validationErrors, setValidationErrors] = useState([]);
+
+                                                                                        // Validate flow structure (simple demo: check for orphan nodes, missing labels)
+                                                                                        useEffect(() => {
+                                                                                          const errors = [];
+                                                                                          // Check for nodes with no label
+                                                                                          nodes.forEach(n => {
+                                                                                            if (!n.label || n.label.trim() === "") {
+                                                                                              errors.push({ type: "node", id: n.id, msg: `Node ${n.id} is missing a label.` });
+                                                                                            }
+                                                                                          });
+                                                                                          // Check for orphan nodes (no incoming or outgoing edges)
+                                                                                          nodes.forEach(n => {
+                                                                                            const hasEdge = edges.some(e => e.source === n.id || e.target === n.id);
+                                                                                            if (!hasEdge) {
+                                                                                              errors.push({ type: "node", id: n.id, msg: `Node ${n.label || n.id} is not connected to any edge.` });
+                                                                                            }
+                                                                                          });
+                                                                                          // Check for edges with missing source/target
+                                                                                          edges.forEach(e => {
+                                                                                            if (!e.source || !e.target) {
+                                                                                              errors.push({ type: "edge", id: e.id, msg: `Edge ${e.id} is missing source or target.` });
+                                                                                            }
+                                                                                          });
+                                                                                          setValidationErrors(errors);
+                                                                                        }, [nodes, edges]);
+                                                                  // Real-time collaboration state
+                                                                  const [collaborators, setCollaborators] = useState([]);
+                                                                  const wsRef = useRef(null);
+
+                                                                  useEffect(() => {
+                                                                    // Connect to WebSocket server (replace URL with your backend)
+                                                                    wsRef.current = new window.WebSocket('ws://localhost:8080/flow-sync');
+                                                                    wsRef.current.onopen = () => {
+                                                                      wsRef.current.send(JSON.stringify({ type: 'join', user: currentUser }));
+                                                                    };
+                                                                    wsRef.current.onmessage = (event) => {
+                                                                      try {
+                                                                        const msg = JSON.parse(event.data);
+                                                                        if (msg.type === 'sync' && msg.nodes && msg.edges) {
+                                                                          setNodes(msg.nodes);
+                                                                          setEdges(msg.edges);
+                                                                        }
+                                                                        if (msg.type === 'collaborators' && Array.isArray(msg.list)) {
+                                                                          setCollaborators(msg.list);
+                                                                        }
+                                                                      } catch {}
+                                                                    };
+                                                                    wsRef.current.onclose = () => {};
+                                                                    return () => {
+                                                                      wsRef.current && wsRef.current.close();
+                                                                    };
+                                                                    // eslint-disable-next-line
+                                                                  }, []);
+
+                                                                  // Broadcast changes to other collaborators
+                                                                  useEffect(() => {
+                                                                    if (wsRef.current && wsRef.current.readyState === 1) {
+                                                                      wsRef.current.send(JSON.stringify({ type: 'sync', nodes, edges }));
+                                                                    }
+                                                                    // eslint-disable-next-line
+                                                                  }, [JSON.stringify(nodes), JSON.stringify(edges)]);
+                                            // Node grouping/collapsible groups state
+                                            const [nodeGroups, setNodeGroups] = useState([
+                                              { id: 'group1', name: 'Email Actions', collapsed: false },
+                                              { id: 'group2', name: 'Triggers', collapsed: false }
+                                            ]);
+                                            // Assign nodes to groups (mock logic, could be dynamic)
+                                            const nodeGroupMap = {
+                                              'welcome-email': 'group1',
+                                              'reminder-email': 'group1',
+                                              'start': 'group2',
+                                              'cart-check': 'group2'
+                                            };
+                                            function toggleGroupCollapse(groupId) {
+                                              setNodeGroups(groups => groups.map(g => g.id === groupId ? { ...g, collapsed: !g.collapsed } : g));
+                                            }
+                      // Auto-save drafts state
+                      // Flow templates state
+                      const [showTemplates, setShowTemplates] = useState(false);
+                      const [selectedTemplate, setSelectedTemplate] = useState(null);
+                      // Example templates (could be fetched from backend)
+                      const flowTemplates = [
+                        {
+                          id: 'welcome-flow',
+                          name: 'Welcome Flow',
+                          description: 'Send a welcome email to new users.',
+                          nodes: [
+                            { id: 'start', label: 'Start', type: 'trigger' },
+                            { id: 'welcome-email', label: 'Send Welcome Email', type: 'email' }
+                          ],
+                          edges: [
+                            { id: 'e1', source: 'start', target: 'welcome-email' }
+                          ]
+                        },
+                        {
+                          id: 'abandoned-cart',
+                          name: 'Abandoned Cart Recovery',
+                          description: 'Recover abandoned carts with reminders.',
+                          nodes: [
+                            { id: 'cart-check', label: 'Cart Check', type: 'trigger' },
+                            { id: 'reminder-email', label: 'Send Reminder', type: 'email' }
+                          ],
+                          edges: [
+                            { id: 'e2', source: 'cart-check', target: 'reminder-email' }
+                          ]
+                        }
+                      ];
+
+                      function applyTemplate(template) {
+                        setNodes(template.nodes);
+                        setEdges(template.edges);
+                        setShowTemplates(false);
+                      }
+                      const [lastDraft, setLastDraft] = useState(null);
+                      const [autoSaveStatus, setAutoSaveStatus] = useState("");
+
+                      // Auto-save draft every 60 seconds if nodes/edges changed
+                      useEffect(() => {
+                        const interval = setInterval(() => {
+                          const draft = { nodes, edges, ts: Date.now(), comments: "Auto-saved draft", analytics: null, author: "You", action: "draft" };
+                          if (JSON.stringify(draft.nodes) !== JSON.stringify(lastDraft?.nodes) || JSON.stringify(draft.edges) !== JSON.stringify(lastDraft?.edges)) {
+                            setLastDraft(draft);
+                            setAutoSaveStatus("Draft auto-saved at " + new Date(draft.ts).toLocaleTimeString());
+                            // Optionally, POST to backend for persistent drafts
+                            // fetch('/api/klaviyo-flow-automation/versions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ version: draft }) });
+                          }
+                        }, 60000); // 60 seconds
+                        return () => clearInterval(interval);
+                        // eslint-disable-next-line
+                      }, [nodes, edges, lastDraft]);
+                    // Tagging/favorites state
+                    const [favoriteVersionIds, setFavoriteVersionIds] = useState([]);
+
+                    function toggleFavoriteVersion(ver) {
+                      setFavoriteVersionIds(favs =>
+                        favs.includes(ver.id)
+                          ? favs.filter(id => id !== ver.id)
+                          : [...favs, ver.id]
+                      );
+                    }
+                  // Undo/redo state
+                  const [history, setHistory] = useState([]); // [{nodes, edges}]
+                  const [future, setFuture] = useState([]); // [{nodes, edges}]
+
+                  // Push to history on nodes/edges change
+                  useEffect(() => {
+                    setHistory(prev => [...prev, { nodes: JSON.parse(JSON.stringify(nodes)), edges: JSON.parse(JSON.stringify(edges)) }]);
+                    // Clear redo stack on new change
+                    setFuture([]);
+                    // eslint-disable-next-line
+                  }, [JSON.stringify(nodes), JSON.stringify(edges)]);
+
+                  // Undo handler
+                  function handleUndo() {
+                    if (history.length < 2) return;
+                    const prev = history[history.length - 2];
+                    setFuture(f => [{ nodes, edges }, ...f]);
+                    setHistory(h => h.slice(0, -1));
+                    setNodes(prev.nodes);
+                    setEdges(prev.edges);
+                  }
+
+                  // Redo handler
+                  function handleRedo() {
+                    if (future.length === 0) return;
+                    const next = future[0];
+                    setHistory(h => [...h, next]);
+                    setNodes(next.nodes);
+                    setEdges(next.edges);
+                    setFuture(f => f.slice(1));
+                  }
+                // Mock current user (replace with real user context if available)
+                const currentUser = "You";
+              // Analytics dashboard state
+              const [showAnalytics, setShowAnalytics] = useState(false);
+              const [analyticsVersion, setAnalyticsVersion] = useState(null);
+            // Node search/filter state
+            const [nodeSearch, setNodeSearch] = useState("");
+          // Export/import state
+          const fileInputRef = useRef();
+          const [importError, setImportError] = useState("");
+
+          // Export flow as JSON
+          function handleExportFlow() {
+            const data = JSON.stringify({ nodes, edges }, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'flow-export.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }
+
+          // Import flow from JSON
+          function handleImportFlow(e) {
+            setImportError("");
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
               try {
-                const node = nodes.find(n => n.id === nodeId);
-                if (!node) throw new Error("Node not found");
-                // Simulate output (replace with real backend call if available)
-                let output = `Output for ${node.label}`;
-                if (node.type === "action" && node.data?.params) {
-                  output += `\nParams: ${node.data.params}`;
-                }
-                if (node.type === "condition") {
-                  output += `\nCondition: ${node.data?.params || "No condition"}`;
-                }
-                setPreviewOutput(output);
+                const data = JSON.parse(evt.target.result);
+                if (!Array.isArray(data.nodes) || !Array.isArray(data.edges)) throw new Error("Invalid flow format");
+                setNodes(data.nodes);
+                setEdges(data.edges);
               } catch (err) {
-                setPreviewError(err.message);
-                setPreviewOutput("");
+                setImportError("Import failed: " + err.message);
               }
-            }
-            function closePreview() {
-              setPreviewNodeId(null);
-              setPreviewOutput("");
-              setPreviewError("");
-            }
-          // Edge labels/conditions
-          const [editingEdge, setEditingEdge] = useState(null); // {from, to}
-          const [edgeLabelDraft, setEdgeLabelDraft] = useState("");
-
-          function handleEditEdgeLabel(edge) {
-            setEditingEdge(edge);
-            setEdgeLabelDraft(edge.label || "");
+            };
+            reader.readAsText(file);
           }
-          function handleSaveEdgeLabel() {
-            setEdges(edges.map(e => (e.from === editingEdge.from && e.to === editingEdge.to) ? { ...e, label: edgeLabelDraft } : e));
-            setEditingEdge(null);
-            setEdgeLabelDraft("");
-          }
-        // Node grouping & collapse
-        const [groups, setGroups] = useState([]); // [{id, name, nodeIds, collapsed}]
-        const [groupDraft, setGroupDraft] = useState({ name: '', nodeIds: [] });
-        const [groupModalOpen, setGroupModalOpen] = useState(false);
+        // Diff viewer state
+        const [diffVersionA, setDiffVersionA] = useState(null);
+        const [diffVersionB, setDiffVersionB] = useState(null);
+        const [showDiff, setShowDiff] = useState(false);
 
-        function handleCreateGroup() {
-          if (!groupDraft.name || groupDraft.nodeIds.length === 0) return;
-          setGroups([...groups, { id: Math.random().toString(36).substr(2, 9), name: groupDraft.name, nodeIds: groupDraft.nodeIds, collapsed: false }]);
-          setGroupDraft({ name: '', nodeIds: [] });
-          setGroupModalOpen(false);
+        // Compute a simple diff between two versions (nodes/edges)
+        function computeDiff(a, b) {
+          if (!a || !b) return { nodes: '', edges: '' };
+          const nodeDiff = JSON.stringify(a.nodes, null, 2) !== JSON.stringify(b.nodes, null, 2)
+            ? `Nodes changed\nA: ${JSON.stringify(a.nodes, null, 2)}\nB: ${JSON.stringify(b.nodes, null, 2)}`
+            : 'Nodes identical';
+          const edgeDiff = JSON.stringify(a.edges, null, 2) !== JSON.stringify(b.edges, null, 2)
+            ? `Edges changed\nA: ${JSON.stringify(a.edges, null, 2)}\nB: ${JSON.stringify(b.edges, null, 2)}`
+            : 'Edges identical';
+          return { nodes: nodeDiff, edges: edgeDiff };
         }
-        function handleToggleGroup(groupId) {
-          setGroups(groups.map(g => g.id === groupId ? { ...g, collapsed: !g.collapsed } : g));
-        }
-      // Node search & quick add
-      const [searchOpen, setSearchOpen] = useState(false);
-      const [searchQuery, setSearchQuery] = useState("");
-      const [searchResults, setSearchResults] = useState([]);
-      const allNodeOptions = [
-        { type: 'trigger', label: 'Trigger', meta: null },
-        { type: 'action', label: 'Action', meta: null },
-        { type: 'condition', label: 'Condition', meta: null },
-        ...templates.map(t => ({ type: 'template', label: t.name, meta: t }))
-      ];
-      useEffect(() => {
-        if (!searchOpen) return;
-        if (!searchQuery) setSearchResults(allNodeOptions);
-        else setSearchResults(allNodeOptions.filter(opt => opt.label.toLowerCase().includes(searchQuery.toLowerCase())));
-      }, [searchQuery, searchOpen]);
-    // Drag-to-connect edge state
-    const [edgeDrag, setEdgeDrag] = useState({ from: null, to: null, pos: null });
+      // Version comments state
+      const [versionComment, setVersionComment] = useState("");
 
-    function handleEdgeDragStart(nodeId, e) {
-      e.stopPropagation();
-      setEdgeDrag({ from: nodeId, to: null, pos: { x: e.clientX, y: e.clientY } });
-      window.addEventListener('mousemove', handleEdgeDragMove);
-      window.addEventListener('mouseup', handleEdgeDragEnd);
-    }
-
-    function handleEdgeDragMove(e) {
-      setEdgeDrag(prev => prev.from ? { ...prev, pos: { x: e.clientX, y: e.clientY } } : prev);
-    }
-
-    function handleEdgeDragEnd(e) {
-      setEdgeDrag({ from: null, to: null, pos: null });
-      window.removeEventListener('mousemove', handleEdgeDragMove);
-      window.removeEventListener('mouseup', handleEdgeDragEnd);
-    }
-
-    function handleEdgeDrop(targetId) {
-      if (edgeDrag.from && edgeDrag.from !== targetId) {
-        setEdges([...edges, { from: edgeDrag.from, to: targetId }]);
-        pushHistory(nodes, [...edges, { from: edgeDrag.from, to: targetId }]);
-      }
-      setEdgeDrag({ from: null, to: null, pos: null });
-      window.removeEventListener('mousemove', handleEdgeDragMove);
-      window.removeEventListener('mouseup', handleEdgeDragEnd);
-    }
-  // For MVP: nodes = [{id, type, label, data}], edges = [{from, to}]
-  // Later: add branching, conditions, templates, etc.
-  const [draggingNode, setDraggingNode] = useState(null);
-  const builderRef = useRef();
-  const [configNodeId, setConfigNodeId] = useState(null);
-  const [configDraft, setConfigDraft] = useState({});
-  const [configError, setConfigError] = useState("");
-  // Undo/Redo history
-  const [history, setHistory] = useState([{ nodes, edges }]);
-  const [historyIndex, setHistoryIndex] = useState(0);
-
-  // Comments: { [nodeId]: [{user, text, ts}] }
-  const [comments, setComments] = useState({});
-  const [commentingNode, setCommentingNode] = useState(null);
-  const [commentDraft, setCommentDraft] = useState("");
-
-  // Real collaborators
-  const [collaborators, setCollaborators] = useState([{ name: "You", color: "#0ea5e9" }]);
-  // Shop domain (for API)
-  const shop = window?.SHOP_DOMAIN || window?.location?.hostname || "demo-shop";
-
-   // AI Suggestions
-   const [aiLoading, setAiLoading] = useState(false);
-   const [aiError, setAiError] = useState("");
-   const [aiSuggestion, setAiSuggestion] = useState("");
-
-   async function handleAISuggest() {
-     setAiLoading(true);
-     setAiError("");
-     setAiSuggestion("");
-     try {
-       const res = await fetch("/api/klaviyo-flow-automation/ai/suggest", {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ nodes, edges })
-       });
-       const data = await res.json();
-       if (!data.ok) throw new Error(data.error || "Unknown error");
-       setAiSuggestion(data.suggestion || "No suggestion generated");
-       // If suggestion contains nodes, add them
-       if (data.nodes && Array.isArray(data.nodes)) {
-         const now = Date.now();
-         const newNodes = data.nodes.map((n, i) => ({
-           id: `${now}-${i}-${Math.random().toString(36).substr(2, 5)}`,
-           ...n
-         }));
-         const allNodes = [...nodes, ...newNodes];
-         setNodes(allNodes);
-         pushHistory(allNodes, edges);
-       }
-     } catch (err) {
-       setAiError(err.message);
-     } finally {
-       setAiLoading(false);
-     }
-   }
-
-  // Load flow, analytics, collaborators on mount and poll for changes every 2s
-  useEffect(() => {
-    let lastFlow = null;
-    let lastAnalytics = null;
-    let lastCollabs = null;
-    async function loadAll() {
+    // Preview a node's execution (calls backend)
+    async function handlePreviewNode(nodeId) {
+      setPreviewNodeId(nodeId);
+      setPreviewOutput("");
+      setPreviewError("");
       try {
-        const [flowRes, analyticsRes, collabRes] = await Promise.all([
-          fetch("/api/klaviyo-flow-automation/flow", { headers: { "x-shopify-shop-domain": shop } }),
-          fetch("/api/klaviyo-flow-automation/analytics", { headers: { "x-shopify-shop-domain": shop } }),
-          fetch("/api/klaviyo-flow-automation/collaborators", { headers: { "x-shopify-shop-domain": shop } })
-        ]);
-        const flowData = await flowRes.json();
-        if (flowData.ok && flowData.flow) {
-          const { nodes: n, edges: e, comments: c } = flowData.flow;
-          // Only update if changed
-          const flowString = JSON.stringify({ n, e, c });
-          if (flowString !== lastFlow) {
-            setNodes(n || []);
-            setEdges(e || []);
-            setComments(c || {});
-            lastFlow = flowString;
-          }
-        }
-        const analyticsData = await analyticsRes.json();
-        if (analyticsData.ok && analyticsData.analytics) {
-          const analyticsString = JSON.stringify(analyticsData.analytics);
-          if (analyticsString !== lastAnalytics) {
-            setAnalytics(analyticsData.analytics);
-            lastAnalytics = analyticsString;
-          }
-        }
-        const collabData = await collabRes.json();
-        if (collabData.ok && collabData.collaborators) {
-          const collabString = JSON.stringify(collabData.collaborators);
-          if (collabString !== lastCollabs) {
-            setCollaborators(collabData.collaborators.map(name => ({ name, color: '#0ea5e9' })));
-            lastCollabs = collabString;
-          }
-        }
-      } catch (err) {
-        // eslint-disable-next-line
-        console.error("Failed to load flow/collaborators/analytics", err);
-      }
-    }
-    loadAll();
-    // Poll for all changes every 2s
-    const interval = setInterval(loadAll, 2000);
-
-    // --- WebSocket integration: add event listeners here for instant updates ---
-    // Example:
-    // const socket = io('/api/klaviyo-flow-automation');
-    // socket.on('flow-update', data => { setNodes(data.nodes); setEdges(data.edges); setComments(data.comments); });
-    // socket.on('analytics-update', setAnalytics);
-    // socket.on('collaborators-update', setCollaborators);
-
-    return () => {
-      clearInterval(interval);
-      // if (socket) socket.disconnect();
-    };
-    // eslint-disable-next-line
-  }, []);
-
-  // Save flow to backend on change
-  useEffect(() => {
-    async function saveFlow() {
-      try {
-        await fetch("/api/klaviyo-flow-automation/flow", {
+        const node = nodes.find(n => n.id === nodeId);
+        if (!node) throw new Error("Node not found");
+        const res = await fetch(`/api/klaviyo-flow-automation/preview-node`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "x-shopify-shop-domain": shop },
-          body: JSON.stringify({ flow: { nodes, edges, comments } })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ node, nodes, edges })
         });
-        // Broadcast to WebSocket for real-time sync
-        try {
-          const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-          const host = window.location.host;
-          const ws = new window.WebSocket(`${protocol}://${host}/ws/klaviyo-flow-automation`);
-          ws.onopen = () => {
-            ws.send(JSON.stringify({ type: 'flow-update', payload: { nodes, edges, comments } }));
-            ws.close();
-          };
-        } catch {}
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || "Unknown error");
+        setPreviewOutput(typeof data.output === "string" ? data.output : JSON.stringify(data.output, null, 2));
       } catch (err) {
-        // eslint-disable-next-line
-        console.error("Failed to save flow", err);
+        setPreviewError(err.message || "Error previewing node");
       }
     }
-    if (nodes && edges) saveFlow();
-    // eslint-disable-next-line
-  }, [nodes, edges, comments]);
+  // Flow versioning
+  const [versions, setVersions] = useState([]); // [{id, ts, nodes, edges, comments, analytics}]
+  const [versionModalOpen, setVersionModalOpen] = useState(false);
+  const [versionError, setVersionError] = useState("");
 
-  // Save analytics to backend on change
-  useEffect(() => {
-    async function saveAnalytics() {
-      try {
-        await fetch("/api/klaviyo-flow-automation/analytics", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-shopify-shop-domain": shop },
-          body: JSON.stringify({ analytics })
-        });
-      } catch (err) {
-        // eslint-disable-next-line
-        console.error("Failed to save analytics", err);
-      }
-    }
-    if (analytics) saveAnalytics();
-    // eslint-disable-next-line
-  }, [analytics]);
+  // Node execution preview modal state
+  const [previewNodeId, setPreviewNodeId] = useState(null);
+  const [previewOutput, setPreviewOutput] = useState("");
+  const [previewError, setPreviewError] = useState("");
 
-  // Analytics: { flowRuns, lastRun, nodeStats: { [nodeId]: { executions, lastExec } } }
-  const [analytics, setAnalytics] = useState({
-    flowRuns: 0,
-    lastRun: null,
-    nodeStats: {}
-  });
-
-  // Simulate a flow run (increments stats)
-  // Flow simulation modal
-  const [simModalOpen, setSimModalOpen] = useState(false);
-  const [simSteps, setSimSteps] = useState([]);
-  const [simError, setSimError] = useState("");
-  const [simCurrent, setSimCurrent] = useState(0);
-
-  function runFlow() {
-    setSimModalOpen(true);
-    setSimError("");
-    // Simulate step-by-step execution
-    const steps = nodes.map((n, i) => ({
-      idx: i + 1,
-      id: n.id,
-      label: n.label,
-      type: n.type,
-      params: n.data?.params || "",
-      output: `Simulated output for ${n.label}`,
-      error: null
-    }));
-    setSimSteps(steps);
-    setSimCurrent(0);
-    // Update analytics as before
-    const now = Date.now();
-    setAnalytics(prev => ({
-      ...prev,
-      flowRuns: prev.flowRuns + 1,
-      lastRun: now,
-      nodeStats: nodes.reduce((acc, n) => {
-        acc[n.id] = {
-          executions: (prev.nodeStats[n.id]?.executions || 0) + 1,
-          lastExec: now
-        };
-        return acc;
-      }, { ...prev.nodeStats })
-    }));
-  }
-
-  // Export/import
-  function exportFlow() {
-    const data = JSON.stringify({ nodes, edges, comments, analytics }, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'flow-export.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-  function importFlow(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = evt => {
-      try {
-        const data = JSON.parse(evt.target.result);
-        setNodes(data.nodes || []);
-        setEdges(data.edges || []);
-        setComments(data.comments || {});
-        setAnalytics(data.analytics || { flowRuns: 0, lastRun: null, nodeStats: {} });
-      } catch {
-        alert('Invalid flow file.');
-      }
-    };
-    reader.readAsText(file);
-  }
-
-  // Helper: push new state to history
-  function pushHistory(newNodes, newEdges) {
-    const next = history.slice(0, historyIndex + 1);
-    next.push({ nodes: newNodes, edges: newEdges });
-    setHistory(next);
-    setHistoryIndex(next.length - 1);
-  }
-
-  // Undo/Redo handlers
-  function undo() {
-    if (historyIndex > 0) {
-      setHistoryIndex(historyIndex - 1);
-      setNodes(history[historyIndex - 1].nodes);
-      setEdges(history[historyIndex - 1].edges);
-    }
-  }
-  function redo() {
-    if (historyIndex < history.length - 1) {
-      setHistoryIndex(historyIndex + 1);
-      setNodes(history[historyIndex + 1].nodes);
-      setEdges(history[historyIndex + 1].edges);
-    }
-  }
-
-  // Sync history when nodes/edges change (but not from undo/redo)
-  React.useEffect(() => {
-    if (
-      (history[historyIndex]?.nodes !== nodes || history[historyIndex]?.edges !== edges) &&
-      (nodes.length !== 0 || edges.length !== 0)
-    ) {
-      pushHistory(nodes, edges);
-    }
-    // eslint-disable-next-line
-  }, [nodes, edges]);
-
-  // Add a new node
-  // Custom node types & marketplace
-  const [customNodeType, setCustomNodeType] = useState("");
-  const [marketplaceOpen, setMarketplaceOpen] = useState(false);
-  const [marketplaceNodes, setMarketplaceNodes] = useState([]);
-  const [marketplaceError, setMarketplaceError] = useState("");
-
-  function addNode(type, meta) {
-    const id = Math.random().toString(36).substr(2, 9);
-    const label = meta?.name || type.charAt(0).toUpperCase() + type.slice(1);
-    const newNodes = [
-      ...nodes,
-      {
-        id,
-        type,
-        label,
-        data: meta?.examplePayload ? { params: JSON.stringify(meta.examplePayload) } : {}
-      }
-    ];
-    setNodes(newNodes);
-    pushHistory(newNodes, edges);
-  }
-
-  async function loadMarketplace() {
-    setMarketplaceError("");
+  // Load versions from backend
+  async function loadVersions() {
+    setVersionError("");
     try {
-      const res = await fetch("/api/tools/marketplace");
+      const res = await fetch("/api/klaviyo-flow-automation/versions");
+      if (!res.ok) throw new Error("Failed to fetch versions");
       const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Unknown error");
-      setMarketplaceNodes(data.tools || []);
+      setVersions(data.versions || []);
     } catch (err) {
-      setMarketplaceError(err.message);
+      setVersionError(err.message || "Error loading versions");
     }
   }
 
-  // Drag and drop handlers
-  function onDragStart(id) {
-    setDraggingNode(id);
+  // Save current version to backend
+  async function saveVersion() {
+    setVersionError("");
+    try {
+      const version = {
+        nodes,
+        edges,
+        ts: Date.now(),
+        comments: versionComment,
+        analytics: null, // Placeholder, add analytics if available
+        author: currentUser,
+        action: "saved"
+      };
+      const res = await fetch("/api/klaviyo-flow-automation/versions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ version })
+      });
+      if (!res.ok) throw new Error("Failed to save version");
+      setVersionComment("");
+      await loadVersions();
+    } catch (err) {
+      setVersionError(err.message || "Error saving version");
+    }
   }
 
-  function onDragOver(e) {
-    e.preventDefault();
+  // Restore a version (replace nodes/edges)
+  function restoreVersion(ver) {
+    if (!ver) return;
+    setNodes(ver.nodes || []);
+    setEdges(ver.edges || []);
+    // Optionally, log restore action (mocked for now)
+    ver.lastRestoredBy = currentUser;
+    ver.lastRestoredAt = Date.now();
+    setVersionModalOpen(false);
   }
 
-  function onDrop(targetId) {
-    if (draggingNode && draggingNode !== targetId) {
-      const fromIdx = nodes.findIndex(n => n.id === draggingNode);
-      const toIdx = nodes.findIndex(n => n.id === targetId);
-      if (fromIdx !== -1 && toIdx !== -1) {
-        const reordered = [...nodes];
-        const [moved] = reordered.splice(fromIdx, 1);
-        reordered.splice(toIdx, 0, moved);
-        setNodes(reordered);
-        pushHistory(reordered, edges);
-      }
-    }
-    setDraggingNode(null);
+  // Node execution preview modal handlers (stub)
+  function closePreview() {
+    setPreviewNodeId(null);
+    setPreviewOutput("");
+    setPreviewError("");
   }
 
-  // Templates
-  const templates = [
-    {
-      name: 'Welcome Series',
-      nodes: [
-        { type: 'trigger', label: 'Signup Trigger', data: { params: '{"event":"signup"}' } },
-        { type: 'action', label: 'Send Welcome Email', data: { params: '{"template":"welcome"}' } },
-        { type: 'action', label: 'Add to Newsletter', data: { params: '{"list":"newsletter"}' } }
-      ]
-    },
-    {
-      name: 'Abandoned Cart',
-      nodes: [
-        { type: 'trigger', label: 'Cart Abandoned', data: { params: '{"event":"cart_abandoned"}' } },
-        { type: 'action', label: 'Send Reminder Email', data: { params: '{"template":"cart_reminder"}' } }
-      ]
-    },
-    {
-      name: 'Order Confirmation',
-      nodes: [
-        { type: 'trigger', label: 'Order Placed', data: { params: '{"event":"order_placed"}' } },
-        { type: 'action', label: 'Send Confirmation Email', data: { params: '{"template":"order_confirmation"}' } }
-      ]
-    }
-  ];
-  const [selectedTemplate, setSelectedTemplate] = useState("");
-  const handleAddTemplate = () => {
-    const t = templates.find(t => t.name === selectedTemplate);
-    if (t) {
-      const now = Date.now();
-      const newNodes = t.nodes.map((n, i) => ({
-        id: `${now}-${i}-${Math.random().toString(36).substr(2, 5)}`,
-        ...n
-      }));
-      const allNodes = [...nodes, ...newNodes];
-      setNodes(allNodes);
-      pushHistory(allNodes, edges);
-    }
-  };
-  // Color map for node types
-  const nodeColors = {
-    trigger: { bg: '#0ea5e9', border: '#38bdf8', color: '#fff' },
-    action: { bg: '#232336', border: '#22c55e', color: '#fafafa' },
-    condition: { bg: '#232336', border: '#eab308', color: '#fafafa' }
-  };
+  // Optionally, add useEffect to load versions when modal opens
+  useEffect(() => {
+    if (versionModalOpen) loadVersions();
+    // eslint-disable-next-line
+  }, [versionModalOpen]);
 
-  // For edge drawing: get node positions after render
-  const nodeRefs = useRef({});
-  // Layout: vertical stack, so y = idx * spacing
-  const nodePositions = nodes.map((n, idx) => ({
-    id: n.id,
-    x: 60, // left margin
-    y: 40 + idx * 70 // top margin + spacing
-  }));
-  // Helper to get node position by id
-  const getNodePos = id => nodePositions.find(p => p.id === id) || { x: 0, y: 0 };
+  // Place all logic above this line
+        // Undo/redo buttons
+        const canUndo = history.length > 1;
+        const canRedo = future.length > 0;
+      // Helper: get all versions with analytics
+      const versionsWithAnalytics = versions.filter(v => v.analytics);
+    // Filter nodes by search
+    const filteredNodes = nodeSearch.trim()
+      ? nodes.filter(n =>
+          (n.label && n.label.toLowerCase().includes(nodeSearch.toLowerCase())) ||
+          (n.type && n.type.toLowerCase().includes(nodeSearch.toLowerCase())) ||
+          (n.id && n.id.toLowerCase().includes(nodeSearch.toLowerCase()))
+        )
+      : nodes;
 
-  return (
-    <>
-      <>
+    return (
+      <div style={{ position: 'relative', minHeight: 600 }}>
+        {/* Flow execution scheduling toolbar */}
+        <div style={{ position: 'absolute', top: 18, left: 1020, zIndex: 10 }}>
+          <button
+            onClick={() => setShowSchedule(true)}
+            style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+          >
+            Schedule Flow
+          </button>
+          {nextRun && (
+            <span style={{ marginLeft: 12, background: '#22c55e', color: '#fff', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 14 }}>
+              Next Run: {nextRun}
+            </span>
+          )}
+        </div>
+        {/* Flow execution scheduling modal */}
+        {showSchedule && (
+          <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Schedule Flow Execution</div>
+              <button onClick={() => setShowSchedule(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+              <div style={{ marginBottom: 12 }}>
+                <select value={schedule.type} onChange={e => setSchedule(s => ({ ...s, type: e.target.value }))} style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}>
+                  <option value="">Select schedule type</option>
+                  <option value="daily">Daily</option>
+                  <option value="hourly">Hourly</option>
+                </select>
+                {schedule.type === 'daily' && (
+                  <input
+                    type="time"
+                    value={schedule.value}
+                    onChange={e => setSchedule(s => ({ ...s, value: e.target.value }))}
+                    style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}
+                  />
+                )}
+                <button onClick={handleSaveSchedule} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Save Schedule</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Add custom node modal trigger */}
+        {/* Add custom node modal trigger */}
+        <div style={{ position: 'absolute', top: 18, left: 820, zIndex: 10 }}>
+          <button
+            onClick={() => setShowAddNode(true)}
+            style={{ background: '#f59e42', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+          >
+            Add Custom Node
+          </button>
+        </div>
+        {/* Add custom node modal */}
+        {showAddNode && (
+          <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+                    <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Add Custom Node</div>
+                    <button onClick={() => setShowAddNode(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+                    <div style={{ marginBottom: 12 }}>
+                      <input
+                        type="text"
+                        value={newNodeLabel}
+                        onChange={e => setNewNodeLabel(e.target.value)}
+                        placeholder="Node Label"
+                        style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}
+                      />
+                      <input
+                        type="text"
+                        value={newNodeType}
+                        onChange={e => setNewNodeType(e.target.value)}
+                        placeholder="Node Type"
+                        style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}
+                      />
+                      <textarea
+                        value={newNodeFields}
+                        onChange={e => setNewNodeFields(e.target.value)}
+                        placeholder="Custom Fields (JSON)"
+                        style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, minHeight: 60, marginBottom: 8 }}
+                      />
+                      <button onClick={handleAddCustomNode} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Add Node</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+        {/* Flow validation errors toolbar (valid JSX placement) */}
+        {/* Flow validation errors toolbar (valid JSX placement) */}
+        <div style={{ position: 'absolute', top: 18, left: 620, zIndex: 10 }}>
+          {validationErrors.length > 0 ? (
+            <span style={{ background: '#ef4444', color: '#fff', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 14 }}>
+              {validationErrors.length} Flow Error{validationErrors.length > 1 ? 's' : ''}
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                {validationErrors.map((err, i) => (
+                  <li key={i} style={{ color: '#fff', fontSize: 13 }}>{err.msg}</li>
+                ))}
+              </ul>
+            </span>
+          ) : (
+            <span style={{ background: '#22c55e', color: '#fff', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 14 }}>
+              Flow Valid
+            </span>
+          )}
+        </div>
+        {/* Real-time collaborators indicator (valid JSX placement) */}
+        <div style={{ position: 'absolute', top: 18, left: 420, zIndex: 10 }}>
+          <span style={{ background: '#232336', color: '#a3e635', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 14 }}>
+            Online: {collaborators.length > 0 ? collaborators.join(', ') : 'Just you'}
+          </span>
+        </div>
+        {/* Flow Templates Toolbar */}
+        <div style={{ position: 'absolute', top: 18, left: 220, zIndex: 10 }}>
+          <button
+            onClick={() => setShowTemplates(true)}
+            style={{ background: '#a21caf', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+          >
+            Flow Templates
+          </button>
+        </div>
+        {/* Flow Templates Modal */}
+        {showTemplates && (
+          <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+              <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Flow Templates</div>
+              <button onClick={() => setShowTemplates(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                {flowTemplates.map(tmpl => (
+                  <li key={tmpl.id} style={{ marginBottom: 18, background: '#18181b', borderRadius: 8, padding: 18, boxShadow: '0 2px 8px #0004' }}>
+                    <div style={{ fontWeight: 700, fontSize: 17 }}>{tmpl.name}</div>
+                    <div style={{ color: '#38bdf8', fontSize: 14, marginBottom: 6 }}>{tmpl.description}</div>
+                    <button onClick={() => applyTemplate(tmpl)} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Use Template</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+        {/* Auto-save draft status */}
+        {autoSaveStatus && <div style={{ position: 'absolute', bottom: 18, left: 18, color: '#22c55e', fontWeight: 700, fontSize: 14, background: '#232336', borderRadius: 8, padding: '6px 14px', zIndex: 10 }}>{autoSaveStatus}</div>}
+        {/* Undo/Redo toolbar */}
+        <div style={{ position: 'absolute', top: 70, left: 18, zIndex: 10, display: 'flex', gap: 8 }}>
+          <button
+            onClick={handleUndo}
+            disabled={!canUndo}
+            style={{ background: canUndo ? '#f59e42' : '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: canUndo ? 'pointer' : 'not-allowed' }}
+          >
+            Undo
+          </button>
+          <button
+            onClick={handleRedo}
+            disabled={!canRedo}
+            style={{ background: canRedo ? '#0ea5e9' : '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: canRedo ? 'pointer' : 'not-allowed' }}
+          >
+            Redo
+          </button>
+        </div>
+        {/* Node search/filter bar */}
+        <div style={{ margin: '32px 0 0 0', padding: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <input
+            type="text"
+            value={nodeSearch}
+            onChange={e => setNodeSearch(e.target.value)}
+            placeholder="Search nodes by name, type, or ID..."
+            style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220 }}
+          />
+          {nodeSearch && (
+            <button onClick={() => setNodeSearch("")} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Clear</button>
+          )}
+        </div>
+        {/* Export/Import toolbar */}
+        <div style={{ position: 'absolute', top: 18, left: 18, zIndex: 10, display: 'flex', gap: 8 }}>
+          <button
+            onClick={handleExportFlow}
+            style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+          >
+            Export Flow
+          </button>
+          <button
+            onClick={() => fileInputRef.current && fileInputRef.current.click()}
+            style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+          >
+            Import Flow
+          </button>
+          <input
+            type="file"
+            accept="application/json"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={handleImportFlow}
+          />
+        </div>
+        {importError && <div style={{ color: '#ef4444', fontWeight: 700, marginTop: 8, marginLeft: 18 }}>{importError}</div>}
+        {/* Main toolbar */}
+        <div style={{ position: 'absolute', top: 18, right: 18, zIndex: 10 }}>
+          <button
+            onClick={() => setVersionModalOpen(true)}
+            style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginRight: 8 }}
+          >
+            Version History
+          </button>
+        </div>
+
+        {/* Node list with grouping and collapsible groups */}
+        <div style={{ margin: '0', padding: 12 }}>
+          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Nodes</div>
+          {nodeGroups.map(group => {
+            // Get nodes in this group
+            const groupNodes = filteredNodes.filter(n => nodeGroupMap[n.id] === group.id);
+            return (
+              <React.Fragment key={group.id}>
+                <div style={{ marginBottom: 18, background: '#18181b', borderRadius: 8, padding: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontWeight: 700, fontSize: 16 }}>{group.name}</span>
+                    <button onClick={() => toggleGroupCollapse(group.id)} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '4px 10px', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                      {group.collapsed ? 'Expand' : 'Collapse'}
+                    </button>
+                  </div>
+                  {!group.collapsed ? (
+                    groupNodes.length > 0 ? (
+                      <ul style={{ listStyle: 'none', padding: 0 }}>
+                        {groupNodes.map(node => (
+                          <li
+                            key={node.id}
+                            style={{ marginBottom: 10, background: validationErrors.some(e => e.type === 'node' && e.id === node.id) ? '#ef4444' : '#232336', borderRadius: 8, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'move' }}
+                            draggable
+                            onDragStart={e => handleDragStart(e, node.id)}
+                            onDragOver={handleDragOver}
+                            onDrop={e => handleDrop(e, node.id)}
+                          >
+                            <span style={{ fontWeight: 600 }}>{node.label || node.id}</span>
+                            <button
+                              onClick={() => handlePreviewNode(node.id)}
+                              style={{ background: '#a21caf', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 14, cursor: 'pointer', marginLeft: 12 }}
+                            >
+                              Preview
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div style={{ color: '#64748b', fontSize: 15 }}>No nodes in this group.</div>
+                    )
+                  ) : null}
+                </div>
+              </React.Fragment>
+            );
+          })}
+          {/* Ungrouped nodes */}
+          {(() => {
+            const ungrouped = filteredNodes.filter(n => !nodeGroupMap[n.id]);
+            if (ungrouped.length === 0) return null;
+            return (
+              <React.Fragment>
+                <div style={{ marginBottom: 18, background: '#18181b', borderRadius: 8, padding: 12 }}>
+                  <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Ungrouped</div>
+                  <ul style={{ listStyle: 'none', padding: 0 }}>
+                    {ungrouped.map(node => (
+                      <li
+                        key={node.id}
+                        style={{ marginBottom: 10, background: validationErrors.some(e => e.type === 'node' && e.id === node.id) ? '#ef4444' : '#232336', borderRadius: 8, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'move' }}
+                        draggable
+                        onDragStart={e => handleDragStart(e, node.id)}
+                        onDragOver={handleDragOver}
+                        onDrop={e => handleDrop(e, node.id)}
+                      >
+                        <span style={{ fontWeight: 600 }}>{node.label || node.id}</span>
+                        <button
+                          onClick={() => handlePreviewNode(node.id)}
+                          style={{ background: '#a21caf', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 14, cursor: 'pointer', marginLeft: 12 }}
+                        >
+                          Preview
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </React.Fragment>
+            );
+          })()}
+        </div>
+        {/* Analytics dashboard modal (root level) */}
+        {showAnalytics && analyticsVersion && (
+          <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 520, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+              <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Analytics Dashboard</div>
+              <button onClick={() => { setShowAnalytics(false); setAnalyticsVersion(null); }} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+              <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 16 }}>Version: {analyticsVersion.ts ? new Date(analyticsVersion.ts).toLocaleString() : 'Unknown'}</div>
+              <pre style={{ background: '#18181b', color: '#a3e635', borderRadius: 6, padding: 12, fontSize: 15 }}>{JSON.stringify(analyticsVersion.analytics, null, 2)}</pre>
+            </div>
+          </div>
+        )}
+        {/* Version history modal */}
+        {versionModalOpen && (
+          <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+              <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Flow Version History</div>
+              {versionError && <div style={{ color: '#ef4444', fontWeight: 700, marginBottom: 10 }}>{versionError}</div>}
+              <button onClick={() => setVersionModalOpen(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+              <button onClick={loadVersions} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 12 }}>Refresh</button>
+              <div style={{ marginBottom: 10 }}>
+                <textarea
+                  value={versionComment}
+                  onChange={e => setVersionComment(e.target.value)}
+                  placeholder="Add a comment for this version (optional)"
+                  style={{ width: '100%', minHeight: 38, borderRadius: 8, border: '1px solid #232336', padding: 8, fontSize: 15, marginBottom: 8 }}
+                />
+                <button onClick={saveVersion} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 4 }}>Save Current Version</button>
+              </div>
+              <div style={{ maxHeight: 340, overflowY: 'auto' }}>
+                {versions.length === 0 ? (
+                  <div style={{ color: '#64748b', fontSize: 15 }}>No versions saved yet.</div>
+                ) : (
+                  <>
+                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                      {versions.map((ver, i) => (
+                        <li key={ver.id || i} style={{ marginBottom: 18, background: '#18181b', borderRadius: 8, padding: 18, boxShadow: '0 2px 8px #0004' }}>
+                          <div style={{ fontWeight: 700, fontSize: 17, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            Version {i + 1}
+                            <button
+                              onClick={() => toggleFavoriteVersion(ver)}
+                              style={{ background: favoriteVersionIds.includes(ver.id) ? '#fbbf24' : '#232336', color: favoriteVersionIds.includes(ver.id) ? '#232336' : '#fbbf24', border: 'none', borderRadius: 8, padding: '2px 10px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+                              title={favoriteVersionIds.includes(ver.id) ? 'Unfavorite' : 'Favorite'}
+                            >
+                              ★
+                            </button>
+                          </div>
+                          <div style={{ color: '#fbbf24', fontSize: 13, marginBottom: 4 }}>
+                            {ver.author ? `By: ${ver.author}` : ''} {ver.action ? `(${ver.action})` : ''}
+                          </div>
+                          {ver.lastRestoredBy && (
+                            <div style={{ color: '#0ea5e9', fontSize: 13, marginBottom: 4 }}>
+                              Last restored by: {ver.lastRestoredBy} {ver.lastRestoredAt ? `at ${new Date(ver.lastRestoredAt).toLocaleString()}` : ''}
+                            </div>
+                          )}
+                          <div style={{ color: '#eab308', fontSize: 14, marginBottom: 6 }}>{ver.ts ? new Date(ver.ts).toLocaleString() : 'Unknown time'}</div>
+                          {ver.comments && <div style={{ color: '#38bdf8', fontSize: 14, marginBottom: 6 }}><b>Comment:</b> {ver.comments}</div>}
+                          {ver.analytics && (
+                            <div style={{ color: '#a3e635', fontSize: 13, marginBottom: 6 }}>
+                              <b>Analytics:</b>
+                              <pre style={{ background: '#232336', color: '#a3e635', borderRadius: 6, padding: 8, margin: 0 }}>{JSON.stringify(ver.analytics, null, 2)}</pre>
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                            <button onClick={() => restoreVersion(ver)} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Restore</button>
+                            <button onClick={() => { setDiffVersionA(ver); setShowDiff(true); }} style={{ background: '#f59e42', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Diff</button>
+                            {ver.analytics && (
+                              <button onClick={() => { setAnalyticsVersion(ver); setShowAnalytics(true); }} style={{ background: '#a3e635', color: '#232336', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Analytics</button>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                    {/* Diff viewer modal (outside map loop and ul) */}
+                    {showDiff && diffVersionA && (
+                      <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 520, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+                          <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Version Diff Viewer</div>
+                          <div style={{ marginBottom: 12 }}>
+                            <label style={{ fontWeight: 600, fontSize: 15, marginRight: 8 }}>Compare to:</label>
+                            <select value={diffVersionB ? diffVersionB.id : ''} onChange={e => {
+                              const v = versions.find(vv => vv.id === e.target.value);
+                              setDiffVersionB(v);
+                            }} style={{ fontSize: 15, borderRadius: 6, padding: 4, marginRight: 8 }}>
+                              <option value=''>Select version</option>
+                              {versions.filter(vv => vv !== diffVersionA).map((v, idx) => (
+                                <option key={v.id || idx} value={v.id}>{`Version ${versions.indexOf(v) + 1}`}</option>
+                              ))}
+                            </select>
+                            <button onClick={() => { setShowDiff(false); setDiffVersionA(null); setDiffVersionB(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+                          </div>
+                          {diffVersionB ? (
+                            <div>
+                              <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Nodes Diff</div>
+                              <pre style={{ background: '#18181b', color: '#fbbf24', borderRadius: 6, padding: 10, marginBottom: 16, fontSize: 14 }}>{computeDiff(diffVersionA, diffVersionB).nodes}</pre>
+                              <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Edges Diff</div>
+                              <pre style={{ background: '#18181b', color: '#fbbf24', borderRadius: 6, padding: 10, fontSize: 14 }}>{computeDiff(diffVersionA, diffVersionB).edges}</pre>
+                            </div>
+                          ) : (
+                            <div style={{ color: '#64748b', fontSize: 15 }}>Select a version to compare.</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
         {/* Node execution preview modal */}
         {previewNodeId && (
           <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -511,510 +809,6 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
             </div>
           </div>
         )}
-        <div ref={builderRef} style={{ background: '#18181b', border: '1px solid #232336', borderRadius: 14, padding: 24, minHeight: 320, position: 'relative' }}>
-          {/* Simulation Modal */}
-          {simModalOpen && (
-            <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
-                <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Flow Simulation</div>
-                {simSteps.length === 0 ? (
-                  <div>No nodes to simulate.</div>
-                ) : (
-                  <div>
-                    <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 16 }}>Step {simCurrent + 1} of {simSteps.length}</div>
-                    <div style={{ marginBottom: 8 }}>
-                      <span style={{ fontWeight: 700 }}>{simSteps[simCurrent].label}</span> <span style={{ color: '#64748b', fontWeight: 400 }}>({simSteps[simCurrent].type})</span>
-                    </div>
-                    <div style={{ marginBottom: 8, fontSize: 14 }}><b>Params:</b> <span style={{ color: '#38bdf8' }}>{simSteps[simCurrent].params}</span></div>
-                    <div style={{ marginBottom: 8, fontSize: 14 }}><b>Output:</b> <span style={{ color: '#22c55e' }}>{simSteps[simCurrent].output}</span></div>
-                    {simSteps[simCurrent].error && <div style={{ color: '#ef4444', fontWeight: 700 }}>{simSteps[simCurrent].error}</div>}
-                    <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
-                      <button onClick={() => setSimCurrent(c => Math.max(0, c - 1))} disabled={simCurrent === 0} style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: simCurrent === 0 ? 'not-allowed' : 'pointer', opacity: simCurrent === 0 ? 0.6 : 1 }}>Prev</button>
-                      <button onClick={() => setSimCurrent(c => Math.min(simSteps.length - 1, c + 1))} disabled={simCurrent === simSteps.length - 1} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: simCurrent === simSteps.length - 1 ? 'not-allowed' : 'pointer', opacity: simCurrent === simSteps.length - 1 ? 0.6 : 1 }}>Next</button>
-                      <button onClick={() => setSimModalOpen(false)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          {/* SVG edges */}
-          <svg width="100%" height={Math.max(120, nodes.length * 70)} style={{ position: 'absolute', left: 0, top: 0, zIndex: 0, pointerEvents: 'none' }}>
-            {/* Edge being dragged */}
-            {edgeDrag.from && edgeDrag.pos && (() => {
-              const from = getNodePos(edgeDrag.from);
-              return (
-                <line
-                  x1={from.x + 220}
-                  y1={from.y + 28}
-                  x2={edgeDrag.pos.x - builderRef.current.getBoundingClientRect().left}
-                  y2={edgeDrag.pos.y - builderRef.current.getBoundingClientRect().top}
-                  stroke="#eab308"
-                  strokeWidth={3}
-                  markerEnd="url(#arrowhead)"
-                  opacity={0.9}
-                  style={{ pointerEvents: 'none' }}
-                />
-              );
-            })()}
-            {edges && edges.map((edge, i) => {
-              const from = getNodePos(edge.from);
-              const to = getNodePos(edge.to);
-              if (!from || !to) return null;
-              const mx = (from.x + 180 + to.x) / 2;
-              const my = (from.y + 28 + to.y + 28) / 2;
-              return (
-                <g key={i}>
-                  <line
-                    x1={from.x + 180}
-                    y1={from.y + 28}
-                    x2={to.x}
-                    y2={to.y + 28}
-                    stroke="#38bdf8"
-                    strokeWidth={3}
-                    markerEnd="url(#arrowhead)"
-                    opacity={0.7}
-                    onClick={() => handleEditEdgeLabel(edge)}
-                    style={{ cursor: 'pointer' }}
-                  />
-                  {edge.label && (
-                    <text x={mx} y={my - 8} fill="#eab308" fontSize="14" fontWeight="bold" textAnchor="middle" style={{ pointerEvents: 'none' }}>{edge.label}</text>
-                  )}
-                </g>
-              );
-            })}
-            {/* Edge label modal */}
-            {editingEdge && (
-              <foreignObject x="0" y="0" width="100vw" height="100vh">
-                <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
-                    <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Edit Edge Label/Condition</div>
-                    <input value={edgeLabelDraft} onChange={e => setEdgeLabelDraft(e.target.value)} placeholder="Edge label (e.g. Yes/No)" style={{ width: '100%', borderRadius: 8, border: '1px solid #333', padding: '10px 14px', fontSize: 16, marginBottom: 18, background: '#18181b', color: '#fafafa' }} />
-                    <div style={{ display: 'flex', gap: 12 }}>
-                      <button onClick={handleSaveEdgeLabel} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Save</button>
-                      <button onClick={() => setEditingEdge(null)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
-                    </div>
-                  </div>
-                </div>
-              </foreignObject>
-            )}
-            <defs>
-              <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto" markerUnits="strokeWidth">
-                <polygon points="0 0, 8 4, 0 8" fill="#38bdf8" />
-              </marker>
-            </defs>
-          </svg>
-      {/* Controls */}
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
-        <button onClick={handleAISuggest} disabled={aiLoading} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: aiLoading ? 'not-allowed' : 'pointer', opacity: aiLoading ? 0.6 : 1 }}>AI Suggest</button>
-        <button onClick={runFlow} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Run Flow</button>
-        <button onClick={exportFlow} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Export</button>
-        <label style={{ background: '#232336', color: '#fafafa', border: '1px solid #333', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 0 }}>
-          Import
-          <input type="file" accept="application/json" onChange={importFlow} style={{ display: 'none' }} />
-        </label>
-        <span style={{ color: '#64748b', fontSize: 14, marginLeft: 10 }}>
-          Runs: <b>{analytics.flowRuns}</b> | Last: {analytics.lastRun ? new Date(analytics.lastRun).toLocaleString() : 'Never'}
-        </span>
-        {aiError && <span style={{ color: '#ef4444', fontWeight: 700, marginLeft: 10 }}>{aiError}</span>}
-        {aiSuggestion && <span style={{ color: '#38bdf8', fontWeight: 700, marginLeft: 10 }}>{aiSuggestion}</span>}
       </div>
-      <div style={{ display: 'flex', gap: 12, marginBottom: 18, alignItems: 'center', position: 'relative', zIndex: 2 }}>
-                                <button onClick={() => setGroupModalOpen(true)} style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Group Nodes</button>
-                                {groupModalOpen && (
-                                  <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
-                                      <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Create Node Group</div>
-                                      <button onClick={() => setGroupModalOpen(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
-                                      <input value={groupDraft.name} onChange={e => setGroupDraft(d => ({ ...d, name: e.target.value }))} placeholder="Group name" style={{ width: '100%', borderRadius: 8, border: '1px solid #333', padding: '10px 14px', fontSize: 16, marginBottom: 18, background: '#18181b', color: '#fafafa' }} />
-                                      <div style={{ marginBottom: 12, fontWeight: 700 }}>Select nodes to group:</div>
-                                      <div style={{ maxHeight: 180, overflowY: 'auto', marginBottom: 18 }}>
-                                        {nodes.map(n => (
-                                          <label key={n.id} style={{ display: 'block', marginBottom: 6 }}>
-                                            <input type="checkbox" checked={groupDraft.nodeIds.includes(n.id)} onChange={e => setGroupDraft(d => ({ ...d, nodeIds: e.target.checked ? [...d.nodeIds, n.id] : d.nodeIds.filter(id => id !== n.id) }))} />
-                                            <span style={{ marginLeft: 8 }}>{n.label}</span>
-                                          </label>
-                                        ))}
-                                      </div>
-                                      <button onClick={handleCreateGroup} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Create Group</button>
-                                    </div>
-                                  </div>
-                                )}
-                        <button onClick={() => setSearchOpen(true)} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Quick Add</button>
-                        {searchOpen && (
-                          <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
-                              <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Quick Add Node/Template</div>
-                              <button onClick={() => setSearchOpen(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
-                              <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search node or template..." style={{ width: '100%', borderRadius: 8, border: '1px solid #333', padding: '10px 14px', fontSize: 16, marginBottom: 18, background: '#18181b', color: '#fafafa' }} />
-                              <div style={{ maxHeight: 320, overflowY: 'auto' }}>
-                                {searchResults.length === 0 ? (
-                                  <div style={{ color: '#64748b', fontSize: 15 }}>No results found.</div>
-                                ) : (
-                                  <ul style={{ listStyle: 'none', padding: 0 }}>
-                                    {searchResults.map((opt, i) => (
-                                      <li key={i} style={{ marginBottom: 14, background: '#18181b', borderRadius: 8, padding: 14, boxShadow: '0 2px 8px #0004', display: 'flex', alignItems: 'center', gap: 12 }}>
-                                        <span style={{ fontWeight: 700, fontSize: 16 }}>{opt.label}</span>
-                                        <button onClick={() => {
-                                          if (opt.type === 'template' && opt.meta) {
-                                            const t = opt.meta;
-                                            const now = Date.now();
-                                            const newNodes = t.nodes.map((n, idx) => ({
-                                              id: `${now}-${idx}-${Math.random().toString(36).substr(2, 5)}`,
-                                              ...n
-                                            }));
-                                            const allNodes = [...nodes, ...newNodes];
-                                            setNodes(allNodes);
-                                            pushHistory(allNodes, edges);
-                                          } else {
-                                            addNode(opt.type);
-                                          }
-                                          setSearchOpen(false);
-                                        }} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Add</button>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                <button onClick={() => setMarketplaceOpen(true)} style={{ background: '#eab308', color: '#232336', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Marketplace</button>
-                <select value={customNodeType} onChange={e => setCustomNodeType(e.target.value)} style={{ marginLeft: 8, borderRadius: 8, border: '1px solid #333', padding: '8px 12px', background: '#232336', color: '#fafafa', fontWeight: 700, fontSize: 15 }}>
-                  <option value="">+ Custom Node Type...</option>
-                  <option value="trigger">Trigger</option>
-                  <option value="action">Action</option>
-                  <option value="condition">Condition</option>
-                  {/* Dynamically add custom node types from marketplace */}
-                  {marketplaceNodes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
-                <button onClick={() => {
-                  if (!customNodeType) return;
-                  const meta = marketplaceNodes.find(t => t.id === customNodeType);
-                  addNode(customNodeType, meta);
-                }} disabled={!customNodeType} style={{ background: '#eab308', color: '#232336', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: customNodeType ? 'pointer' : 'not-allowed', opacity: customNodeType ? 1 : 0.6 }}>Add Custom Node</button>
-                {/* Marketplace Modal */}
-                {marketplaceOpen && (
-                  <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 520, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
-                      <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Node Marketplace</div>
-                      <button onClick={() => setMarketplaceOpen(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
-                      <button onClick={loadMarketplace} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 12 }}>Refresh</button>
-                      {marketplaceError && <div style={{ color: '#ef4444', fontWeight: 700, marginBottom: 10 }}>{marketplaceError}</div>}
-                      <div style={{ maxHeight: 340, overflowY: 'auto' }}>
-                        {marketplaceNodes.length === 0 ? (
-                          <div style={{ color: '#64748b', fontSize: 15 }}>No custom nodes available.</div>
-                        ) : (
-                          <ul style={{ listStyle: 'none', padding: 0 }}>
-                            {marketplaceNodes.map(t => (
-                              <li key={t.id} style={{ marginBottom: 18, background: '#18181b', borderRadius: 8, padding: 18, boxShadow: '0 2px 8px #0004' }}>
-                                <div style={{ fontWeight: 700, fontSize: 17 }}>{t.name}</div>
-                                <div style={{ color: '#eab308', fontSize: 14, marginBottom: 6 }}>{t.category}</div>
-                                <div style={{ color: '#64748b', fontSize: 14, marginBottom: 6 }}>{t.description}</div>
-                                <button onClick={() => { addNode(t.id, t); setMarketplaceOpen(false); }} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginTop: 8 }}>Add Node</button>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-        <button onClick={() => addNode('trigger')} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ Trigger</button>
-        <button onClick={() => addNode('action')} style={{ background: '#232336', color: '#fafafa', border: '1px solid #333', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ Action</button>
-        <button onClick={() => addNode('condition')} style={{ background: '#232336', color: '#fafafa', border: '1px solid #333', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ Condition</button>
-        <select value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value)} style={{ marginLeft: 18, borderRadius: 8, border: '1px solid #333', padding: '8px 12px', background: '#232336', color: '#fafafa', fontWeight: 700, fontSize: 15 }}>
-          <option value="">+ Add Template...</option>
-          {templates.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
-        </select>
-        <button onClick={handleAddTemplate} disabled={!selectedTemplate} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: selectedTemplate ? 'pointer' : 'not-allowed', opacity: selectedTemplate ? 1 : 0.6 }}>Insert</button>
-        {/* Undo/Redo */}
-        <button onClick={undo} disabled={historyIndex === 0} style={{ marginLeft: 18, background: '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 14px', fontWeight: 700, fontSize: 15, cursor: historyIndex === 0 ? 'not-allowed' : 'pointer', opacity: historyIndex === 0 ? 0.5 : 1 }}>Undo</button>
-        <button onClick={redo} disabled={historyIndex === history.length - 1} style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 14px', fontWeight: 700, fontSize: 15, cursor: historyIndex === history.length - 1 ? 'not-allowed' : 'pointer', opacity: historyIndex === history.length - 1 ? 0.5 : 1 }}>Redo</button>
-      </div>
-      {/* Version history panel */}
-      <div style={{ marginBottom: 10, fontSize: 13, color: '#64748b', display: 'flex', gap: 8, alignItems: 'center' }}>
-        <span>History:</span>
-        {history.map((h, i) => (
-          <button key={i} onClick={() => {
-            setHistoryIndex(i);
-            setNodes(h.nodes);
-            setEdges(h.edges);
-          }} style={{
-            background: i === historyIndex ? '#0ea5e9' : '#232336',
-            color: i === historyIndex ? '#fff' : '#64748b',
-            border: 'none',
-            borderRadius: 6,
-            padding: '2px 10px',
-            fontWeight: 700,
-            cursor: i === historyIndex ? 'default' : 'pointer',
-            opacity: i === historyIndex ? 1 : 0.7
-          }}>v{i + 1}</button>
-        ))}
-      </div>
-      {/* Node list */}
-      <div style={{ minHeight: 180, position: 'relative', zIndex: 2 }} role="list" aria-label="Flow nodes list">
-        {nodes.length === 0 && <div style={{ color: '#64748b', fontSize: 15 }}>Add triggers, actions, or conditions to start building your flow.</div>}
-        {/* Render groups and nodes */}
-        {groups.map(group => (
-          <div key={group.id} style={{ position: 'relative', marginBottom: 18, border: '2px solid #eab308', borderRadius: 10, background: '#232336', padding: 10, minWidth: 240 }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-              <span style={{ fontWeight: 800, color: '#eab308', fontSize: 16 }}>{group.name}</span>
-              <button onClick={() => handleToggleGroup(group.id)} style={{ marginLeft: 12, background: '#eab308', color: '#232336', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>{group.collapsed ? 'Expand' : 'Collapse'}</button>
-            </div>
-            {!group.collapsed && group.nodeIds.map(nodeId => {
-              const node = nodes.find(n => n.id === nodeId);
-              if (!node) return null;
-              const color = nodeColors[node.type] || nodeColors.action;
-              const pos = getNodePos(node.id);
-              const nodeComments = comments?.[node.id] || [];
-              return (
-                <div
-                  key={node.id}
-                  ref={el => nodeRefs.current[node.id] = el}
-                  draggable
-                  onDragStart={() => onDragStart(node.id)}
-                  onDragOver={onDragOver}
-                  onDrop={() => onDrop(node.id)}
-                  tabIndex={0}
-                  role="listitem"
-                  aria-label={`Node ${node.label}, type ${node.type}`}
-                  aria-describedby={`node-desc-${node.id}`}
-                  style={{
-                    background: color.bg,
-                    color: color.color,
-                    borderRadius: 8,
-                    padding: '14px 18px',
-                    marginBottom: 10,
-                    border: draggingNode === node.id ? `2px dashed ${color.border}` : `2px solid ${color.border}`,
-                    opacity: draggingNode === node.id ? 0.7 : 1,
-                    cursor: 'move',
-                    fontWeight: 700,
-                    fontSize: 16,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    position: 'absolute',
-                    left: pos.x,
-                    top: pos.y,
-                    width: 220,
-                    boxShadow: draggingNode === node.id ? '0 0 0 2px #0ea5e9' : '0 2px 8px #0004',
-                    zIndex: configNodeId === node.id ? 11 : 2,
-                    transition: 'box-shadow 0.2s, border 0.2s, background 0.2s'
-                  }}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') setConfigNodeId(node.id);
-                    if (e.key === 'Delete') setNodes(nodes.filter(n => n.id !== node.id));
-                    if (e.key === 'c' && e.ctrlKey) setCommentingNode(node.id);
-                  }}
-                  onMouseUp={() => edgeDrag.from && handleEdgeDrop(node.id)}
-                >
-                  {/* Edge handle (output) */}
-                  <div
-                    title="Drag to connect edge"
-                    style={{ width: 16, height: 16, borderRadius: 8, background: '#eab308', marginRight: 6, cursor: 'crosshair', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    onMouseDown={e => handleEdgeDragStart(node.id, e)}
-                  >
-                    <span style={{ color: '#232336', fontWeight: 900, fontSize: 14 }}>→</span>
-                  </div>
-                  {/* ...existing code for node content... */}
-                </div>
-              );
-            })}
-          </div>
-        ))}
-        {/* Render ungrouped nodes */}
-        {nodes.filter(n => !groups.some(g => g.nodeIds.includes(n.id))).map((node, idx) => {
-          const color = nodeColors[node.type] || nodeColors.action;
-          const pos = getNodePos(node.id);
-          const nodeComments = comments?.[node.id] || [];
-          return (
-            <div
-              key={node.id}
-              ref={el => nodeRefs.current[node.id] = el}
-              draggable
-              onDragStart={() => onDragStart(node.id)}
-              onDragOver={onDragOver}
-              onDrop={() => onDrop(node.id)}
-              tabIndex={0}
-              role="listitem"
-              aria-label={`Node ${node.label}, type ${node.type}`}
-              aria-describedby={`node-desc-${node.id}`}
-              style={{
-                background: color.bg,
-                color: color.color,
-                borderRadius: 8,
-                padding: '14px 18px',
-                marginBottom: 10,
-                border: draggingNode === node.id ? `2px dashed ${color.border}` : `2px solid ${color.border}`,
-                opacity: draggingNode === node.id ? 0.7 : 1,
-                cursor: 'move',
-                fontWeight: 700,
-                fontSize: 16,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                position: 'absolute',
-                left: pos.x,
-                top: pos.y,
-                width: 220,
-                boxShadow: draggingNode === node.id ? '0 0 0 2px #0ea5e9' : '0 2px 8px #0004',
-                zIndex: configNodeId === node.id ? 11 : 2,
-                transition: 'box-shadow 0.2s, border 0.2s, background 0.2s'
-              }}
-              onKeyDown={e => {
-                if (e.key === 'Enter') setConfigNodeId(node.id);
-                if (e.key === 'Delete') setNodes(nodes.filter(n => n.id !== node.id));
-                if (e.key === 'c' && e.ctrlKey) setCommentingNode(node.id);
-              }}
-              onMouseUp={() => edgeDrag.from && handleEdgeDrop(node.id)}
-            >
-              {/* Edge handle (output) */}
-              <div
-                title="Drag to connect edge"
-                style={{ width: 16, height: 16, borderRadius: 8, background: '#eab308', marginRight: 6, cursor: 'crosshair', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                onMouseDown={e => handleEdgeDragStart(node.id, e)}
-              >
-                <span style={{ color: '#232336', fontWeight: 900, fontSize: 14 }}>→</span>
-              </div>
-              <span id={`node-desc-${node.id}`} style={{ minWidth: 80 }}>{node.label}</span>
-              <span style={{ fontSize: 13, color: color === nodeColors.trigger ? '#fff' : '#64748b', fontWeight: 400 }}>{node.type}</span>
-              {/* Node analytics */}
-              <span title="Node executions" aria-label={`Node executions: ${analytics.nodeStats[node.id]?.executions || 0}`} style={{ fontSize: 12, color: '#22c55e', marginLeft: 4 }}>
-                ▶ {analytics.nodeStats[node.id]?.executions || 0}
-              </span>
-              {analytics.nodeStats[node.id]?.lastExec && (
-                <span title="Last executed" aria-label={`Last executed: ${new Date(analytics.nodeStats[node.id].lastExec).toLocaleTimeString()}`} style={{ fontSize: 11, color: '#64748b', marginLeft: 2 }}>
-                  {new Date(analytics.nodeStats[node.id].lastExec).toLocaleTimeString()}
-                </span>
-              )}
-              {/* Comment icon */}
-              <button
-                title="View/Add Comments"
-                aria-label={`View or add comments for node ${node.label}`}
-                onClick={e => { e.stopPropagation(); setCommentingNode(node.id); }}
-                style={{ background: 'none', border: 'none', color: '#eab308', fontSize: 18, marginLeft: 2, cursor: 'pointer' }}>
-                💬
-                {nodeComments.length > 0 && <span style={{ fontSize: 12, color: '#eab308', marginLeft: 2 }}>({nodeComments.length})</span>}
-              </button>
-              {/* Comment panel */}
-              {commentingNode === node.id && (
-                <div role="dialog" aria-modal="true" aria-label={`Comments for node ${node.label}`} style={{ position: 'absolute', top: 50, left: 240, background: '#232336', border: '1.5px solid #eab308', borderRadius: 10, padding: 16, zIndex: 30, minWidth: 260, boxShadow: '0 2px 12px #0008' }}>
-                  <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 8, color: '#eab308' }}>Comments</div>
-                  <div style={{ maxHeight: 120, overflowY: 'auto', marginBottom: 8 }}>
-                    {nodeComments.length === 0 && <div style={{ color: '#64748b', fontSize: 14 }}>No comments yet.</div>}
-                    {nodeComments.map((c, i) => (
-                      <div key={i} style={{ marginBottom: 6 }}>
-                        <span style={{ fontWeight: 700, color: '#eab308', fontSize: 13 }}>{c.user}:</span>
-                        <span style={{ marginLeft: 6, color: '#fafafa', fontSize: 14 }}>{c.text}</span>
-                        <span style={{ marginLeft: 8, color: '#64748b', fontSize: 12 }}>{new Date(c.ts).toLocaleTimeString()}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <input
-                      value={commentDraft}
-                      onChange={e => setCommentDraft(e.target.value)}
-                      placeholder="Add a comment..."
-                      aria-label="Add a comment"
-                      style={{ flex: 1, borderRadius: 6, border: '1px solid #333', padding: '6px 10px', background: '#18181b', color: '#fafafa', fontSize: 14 }}
-                    />
-                    <button
-                      aria-label="Send comment"
-                      onClick={() => {
-                        if (!commentDraft.trim()) return;
-                        setComments(prev => ({
-                          ...prev,
-                          [node.id]: [...(prev[node.id] || []), { user: 'You', text: commentDraft, ts: Date.now() }]
-                        }));
-                        setCommentDraft("");
-                      }}
-                      style={{ background: '#eab308', color: '#232336', border: 'none', borderRadius: 6, padding: '6px 12px', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-                    >Send</button>
-                    <button
-                      aria-label="Close comments dialog"
-                      onClick={() => { setCommentingNode(null); setCommentDraft(""); }}
-                      style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-                    >Close</button>
-                  </div>
-                </div>
-              )}
-              {/* ...existing code... */}
-              <button onClick={() => setNodes(nodes.filter(n => n.id !== node.id))} style={{ marginLeft: 'auto', background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '4px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Remove</button>
-              <button onClick={() => {
-                setConfigNodeId(node.id);
-                setConfigDraft({ label: node.label, type: node.type, ...node.data });
-              }} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '4px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Configure</button>
-              {configNodeId === node.id && (
-                <div style={{ position: 'absolute', top: 50, left: 0, background: '#18181b', border: '1.5px solid #0ea5e9', borderRadius: 10, padding: 18, zIndex: 20, minWidth: 280, boxShadow: '0 2px 12px #0008' }}>
-                  <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>Configure Node</div>
-                  <form>
-                    <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <label style={{ fontSize: 14, color: '#fafafa' }}>Label:</label>
-                      <span title={'A human-friendly name for this node. Helps you identify it in the flow.'} style={{ color: '#38bdf8', cursor: 'help', fontSize: 16 }}>?</span>
-                    </div>
-                    <input value={configDraft.label || ''} onChange={e => setConfigDraft(d => ({ ...d, label: e.target.value }))} style={{ width: '100%', borderRadius: 6, border: '1px solid #333', padding: '6px 10px', background: '#232336', color: '#fafafa', marginBottom: 8 }} />
-                    <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <label style={{ fontSize: 14, color: '#fafafa' }}>Type:</label>
-                      <span title={'The kind of step: trigger (starts the flow), action (does something), or condition (branches logic).'} style={{ color: '#38bdf8', cursor: 'help', fontSize: 16 }}>?</span>
-                    </div>
-                    <select value={configDraft.type} onChange={e => setConfigDraft(d => ({ ...d, type: e.target.value }))} style={{ width: '100%', borderRadius: 6, border: '1px solid #333', padding: '6px 10px', background: '#232336', color: '#fafafa', marginBottom: 8 }}>
-                      <option value="trigger">Trigger</option>
-                      <option value="action">Action</option>
-                      <option value="condition">Condition</option>
-                    </select>
-                    <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <label style={{ fontSize: 14, color: '#fafafa' }}>Parameters (JSON):</label>
-                      <span title={'Extra settings for this node, in JSON format. Example: {"key":"value"}'} style={{ color: '#38bdf8', cursor: 'help', fontSize: 16 }}>?</span>
-                    </div>
-                    <textarea
-                      value={configDraft.params || ''}
-                      onChange={e => {
-                        setConfigDraft(d => ({ ...d, params: e.target.value }));
-                        // Validate JSON
-                        try {
-                          if (e.target.value.trim()) JSON.parse(e.target.value);
-                          setConfigError("");
-                        } catch {
-                          setConfigError("Invalid JSON");
-                        }
-                      }}
-                      rows={2}
-                      style={{ width: '100%', borderRadius: 6, border: '1px solid #333', padding: '6px 10px', background: '#232336', color: '#fafafa', marginBottom: 4, fontFamily: 'monospace', fontSize: 14 }}
-                      placeholder='{"key":"value"}'
-                    />
-                    {configError && <div style={{ color: '#ef4444', fontWeight: 700, fontSize: 14, marginBottom: 6 }}>{configError}</div>}
-                    <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          // Validate before save
-                          if (configDraft.params && configDraft.params.trim()) {
-                            try {
-                              JSON.parse(configDraft.params);
-                            } catch {
-                              setConfigError("Invalid JSON");
-                              return;
-                            }
-                          }
-                          setNodes(nodes.map(n => n.id === node.id ? { ...n, label: configDraft.label, type: configDraft.type, data: { params: configDraft.params } } : n));
-                          setConfigNodeId(null);
-                          setConfigError("");
-                        }}
-                        style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 18px', fontWeight: 700, fontSize: 15, cursor: configError ? 'not-allowed' : 'pointer', opacity: configError ? 0.6 : 1 }}
-                        disabled={!!configError}
-                      >Save</button>
-                      <button type="button" onClick={() => { setConfigNodeId(null); setConfigError(""); }} style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
-                    </div>
-                  </form>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-    </>
-    </>
   );
 }

@@ -1,3 +1,25 @@
+const VERSIONS_KEY = 'klaviyo-flow-versions';
+// GET: Load flow versions for shop
+router.get('/versions', async (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop' });
+  const all = (await storage.get(VERSIONS_KEY)) || {};
+  res.json({ ok: true, versions: all[shop] || [] });
+});
+
+// POST: Save new flow version for shop
+router.post('/versions', async (req, res) => {
+  const shop = getShop(req);
+  if (!shop) return res.status(400).json({ ok: false, error: 'Missing shop' });
+  let all = (await storage.get(VERSIONS_KEY)) || {};
+  const version = req.body.version;
+  if (!version) return res.status(400).json({ ok: false, error: 'Missing version data' });
+  if (!all[shop]) all[shop] = [];
+  version.id = Math.random().toString(36).substr(2, 9);
+  all[shop].push(version);
+  await storage.set(VERSIONS_KEY, all);
+  res.json({ ok: true, versions: all[shop] });
+});
 // src/routes/klaviyo-flow-automation.js
 // Flagship backend for Klaviyo Flow Automation (save/load flows, analytics, collaborators)
 const express = require('express');
