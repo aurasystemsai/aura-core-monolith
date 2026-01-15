@@ -2,6 +2,36 @@ import React, { useState, useRef, useEffect } from "react";
 
 // Node-based, drag-and-drop flow builder foundation
 export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
+            // Node execution preview
+            const [previewNodeId, setPreviewNodeId] = useState(null);
+            const [previewOutput, setPreviewOutput] = useState("");
+            const [previewError, setPreviewError] = useState("");
+
+            function handlePreviewNode(nodeId) {
+              setPreviewNodeId(nodeId);
+              setPreviewError("");
+              try {
+                const node = nodes.find(n => n.id === nodeId);
+                if (!node) throw new Error("Node not found");
+                // Simulate output (replace with real backend call if available)
+                let output = `Output for ${node.label}`;
+                if (node.type === "action" && node.data?.params) {
+                  output += `\nParams: ${node.data.params}`;
+                }
+                if (node.type === "condition") {
+                  output += `\nCondition: ${node.data?.params || "No condition"}`;
+                }
+                setPreviewOutput(output);
+              } catch (err) {
+                setPreviewError(err.message);
+                setPreviewOutput("");
+              }
+            }
+            function closePreview() {
+              setPreviewNodeId(null);
+              setPreviewOutput("");
+              setPreviewError("");
+            }
           // Edge labels/conditions
           const [editingEdge, setEditingEdge] = useState(null); // {from, to}
           const [edgeLabelDraft, setEdgeLabelDraft] = useState("");
@@ -465,80 +495,97 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
   const getNodePos = id => nodePositions.find(p => p.id === id) || { x: 0, y: 0 };
 
   return (
-    <div ref={builderRef} style={{ background: '#18181b', border: '1px solid #232336', borderRadius: 14, padding: 24, minHeight: 320, position: 'relative' }}>
-      {/* Simulation Modal */}
-      {simModalOpen && (
-        <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
-            <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Flow Simulation</div>
-            {simSteps.length === 0 ? (
-              <div>No nodes to simulate.</div>
-            ) : (
-              <div>
-                <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 16 }}>Step {simCurrent + 1} of {simSteps.length}</div>
-                <div style={{ marginBottom: 8 }}>
-                  <span style={{ fontWeight: 700 }}>{simSteps[simCurrent].label}</span> <span style={{ color: '#64748b', fontWeight: 400 }}>({simSteps[simCurrent].type})</span>
-                </div>
-                <div style={{ marginBottom: 8, fontSize: 14 }}><b>Params:</b> <span style={{ color: '#38bdf8' }}>{simSteps[simCurrent].params}</span></div>
-                <div style={{ marginBottom: 8, fontSize: 14 }}><b>Output:</b> <span style={{ color: '#22c55e' }}>{simSteps[simCurrent].output}</span></div>
-                {simSteps[simCurrent].error && <div style={{ color: '#ef4444', fontWeight: 700 }}>{simSteps[simCurrent].error}</div>}
-                <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
-                  <button onClick={() => setSimCurrent(c => Math.max(0, c - 1))} disabled={simCurrent === 0} style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: simCurrent === 0 ? 'not-allowed' : 'pointer', opacity: simCurrent === 0 ? 0.6 : 1 }}>Prev</button>
-                  <button onClick={() => setSimCurrent(c => Math.min(simSteps.length - 1, c + 1))} disabled={simCurrent === simSteps.length - 1} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: simCurrent === simSteps.length - 1 ? 'not-allowed' : 'pointer', opacity: simCurrent === simSteps.length - 1 ? 0.6 : 1 }}>Next</button>
-                  <button onClick={() => setSimModalOpen(false)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-      {/* SVG edges */}
-      <svg width="100%" height={Math.max(120, nodes.length * 70)} style={{ position: 'absolute', left: 0, top: 0, zIndex: 0, pointerEvents: 'none' }}>
-                {/* Edge being dragged */}
-                {edgeDrag.from && edgeDrag.pos && (() => {
-                  const from = getNodePos(edgeDrag.from);
-                  return (
-                    <line
-                      x1={from.x + 220}
-                      y1={from.y + 28}
-                      x2={edgeDrag.pos.x - builderRef.current.getBoundingClientRect().left}
-                      y2={edgeDrag.pos.y - builderRef.current.getBoundingClientRect().top}
-                      stroke="#eab308"
-                      strokeWidth={3}
-                      markerEnd="url(#arrowhead)"
-                      opacity={0.9}
-                      style={{ pointerEvents: 'none' }}
-                    />
-                  );
-                })()}
-        {edges && edges.map((edge, i) => {
-          const from = getNodePos(edge.from);
-          const to = getNodePos(edge.to);
-          if (!from || !to) return null;
-          const mx = (from.x + 180 + to.x) / 2;
-          const my = (from.y + 28 + to.y + 28) / 2;
-          return (
-            <g key={i}>
-              <line
-                x1={from.x + 180}
-                y1={from.y + 28}
-                x2={to.x}
-                y2={to.y + 28}
-                stroke="#38bdf8"
-                strokeWidth={3}
-                markerEnd="url(#arrowhead)"
-                opacity={0.7}
-                onClick={() => handleEditEdgeLabel(edge)}
-                style={{ cursor: 'pointer' }}
-              />
-              {edge.label && (
-                <text x={mx} y={my - 8} fill="#eab308" fontSize="14" fontWeight="bold" textAnchor="middle" style={{ pointerEvents: 'none' }}>{edge.label}</text>
+    <>
+      <>
+        {/* Node execution preview modal */}
+        {previewNodeId && (
+          <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Node Execution Preview</div>
+              {previewError ? (
+                <div style={{ color: '#ef4444', fontWeight: 700 }}>{previewError}</div>
+              ) : (
+                <pre style={{ background: '#18181b', color: '#22c55e', padding: 16, borderRadius: 8, fontSize: 15, marginBottom: 18 }}>{previewOutput}</pre>
               )}
-            </g>
-          );
-        })}
-              {/* Edge label modal */}
-              {editingEdge && (
+              <button onClick={closePreview} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+            </div>
+          </div>
+        )}
+        <div ref={builderRef} style={{ background: '#18181b', border: '1px solid #232336', borderRadius: 14, padding: 24, minHeight: 320, position: 'relative' }}>
+          {/* Simulation Modal */}
+          {simModalOpen && (
+            <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+                <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Flow Simulation</div>
+                {simSteps.length === 0 ? (
+                  <div>No nodes to simulate.</div>
+                ) : (
+                  <div>
+                    <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 16 }}>Step {simCurrent + 1} of {simSteps.length}</div>
+                    <div style={{ marginBottom: 8 }}>
+                      <span style={{ fontWeight: 700 }}>{simSteps[simCurrent].label}</span> <span style={{ color: '#64748b', fontWeight: 400 }}>({simSteps[simCurrent].type})</span>
+                    </div>
+                    <div style={{ marginBottom: 8, fontSize: 14 }}><b>Params:</b> <span style={{ color: '#38bdf8' }}>{simSteps[simCurrent].params}</span></div>
+                    <div style={{ marginBottom: 8, fontSize: 14 }}><b>Output:</b> <span style={{ color: '#22c55e' }}>{simSteps[simCurrent].output}</span></div>
+                    {simSteps[simCurrent].error && <div style={{ color: '#ef4444', fontWeight: 700 }}>{simSteps[simCurrent].error}</div>}
+                    <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
+                      <button onClick={() => setSimCurrent(c => Math.max(0, c - 1))} disabled={simCurrent === 0} style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: simCurrent === 0 ? 'not-allowed' : 'pointer', opacity: simCurrent === 0 ? 0.6 : 1 }}>Prev</button>
+                      <button onClick={() => setSimCurrent(c => Math.min(simSteps.length - 1, c + 1))} disabled={simCurrent === simSteps.length - 1} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: simCurrent === simSteps.length - 1 ? 'not-allowed' : 'pointer', opacity: simCurrent === simSteps.length - 1 ? 0.6 : 1 }}>Next</button>
+                      <button onClick={() => setSimModalOpen(false)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          {/* SVG edges */}
+          <svg width="100%" height={Math.max(120, nodes.length * 70)} style={{ position: 'absolute', left: 0, top: 0, zIndex: 0, pointerEvents: 'none' }}>
+            {/* Edge being dragged */}
+            {edgeDrag.from && edgeDrag.pos && (() => {
+              const from = getNodePos(edgeDrag.from);
+              return (
+                <line
+                  x1={from.x + 220}
+                  y1={from.y + 28}
+                  x2={edgeDrag.pos.x - builderRef.current.getBoundingClientRect().left}
+                  y2={edgeDrag.pos.y - builderRef.current.getBoundingClientRect().top}
+                  stroke="#eab308"
+                  strokeWidth={3}
+                  markerEnd="url(#arrowhead)"
+                  opacity={0.9}
+                  style={{ pointerEvents: 'none' }}
+                />
+              );
+            })()}
+            {edges && edges.map((edge, i) => {
+              const from = getNodePos(edge.from);
+              const to = getNodePos(edge.to);
+              if (!from || !to) return null;
+              const mx = (from.x + 180 + to.x) / 2;
+              const my = (from.y + 28 + to.y + 28) / 2;
+              return (
+                <g key={i}>
+                  <line
+                    x1={from.x + 180}
+                    y1={from.y + 28}
+                    x2={to.x}
+                    y2={to.y + 28}
+                    stroke="#38bdf8"
+                    strokeWidth={3}
+                    markerEnd="url(#arrowhead)"
+                    opacity={0.7}
+                    onClick={() => handleEditEdgeLabel(edge)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  {edge.label && (
+                    <text x={mx} y={my - 8} fill="#eab308" fontSize="14" fontWeight="bold" textAnchor="middle" style={{ pointerEvents: 'none' }}>{edge.label}</text>
+                  )}
+                </g>
+              );
+            })}
+            {/* Edge label modal */}
+            {editingEdge && (
+              <foreignObject x="0" y="0" width="100vw" height="100vh">
                 <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
                     <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Edit Edge Label/Condition</div>
@@ -549,13 +596,14 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
                     </div>
                   </div>
                 </div>
-              )}
-        <defs>
-          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto" markerUnits="strokeWidth">
-            <polygon points="0 0, 8 4, 0 8" fill="#38bdf8" />
-          </marker>
-        </defs>
-      </svg>
+              </foreignObject>
+            )}
+            <defs>
+              <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto" markerUnits="strokeWidth">
+                <polygon points="0 0, 8 4, 0 8" fill="#38bdf8" />
+              </marker>
+            </defs>
+          </svg>
       {/* Controls */}
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
         <button onClick={handleAISuggest} disabled={aiLoading} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: aiLoading ? 'not-allowed' : 'pointer', opacity: aiLoading ? 0.6 : 1 }}>AI Suggest</button>
@@ -966,5 +1014,7 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
         })}
       </div>
     </div>
+    </>
+    </>
   );
 }
