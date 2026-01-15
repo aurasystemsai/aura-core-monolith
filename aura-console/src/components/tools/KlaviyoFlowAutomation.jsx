@@ -56,7 +56,26 @@
   };
 
 import React, { useState, useRef, useEffect } from "react";
+
 import FlowNodeBuilder from "./FlowNodeBuilder";
+  const [saveStatus, setSaveStatus] = useState("");
+
+  // Save Flow (nodes/edges)
+  const handleSaveFlow = async () => {
+    setSaveStatus("");
+    try {
+      const res = await fetch("/api/klaviyo-flow-automation/flow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ flow: JSON.stringify({ nodes, edges }) })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Unknown error");
+      setSaveStatus("Flow saved!");
+    } catch (err) {
+      setSaveStatus("Error: " + err.message);
+    }
+  };
 
 
 
@@ -75,6 +94,9 @@ export default function KlaviyoFlowAutomation() {
   const [templateResult, setTemplateResult] = useState("");
   const [triggerResult, setTriggerResult] = useState("");
   const [reportingResult, setReportingResult] = useState("");
+  const [templateInput, setTemplateInput] = useState("");
+  const [triggerInput, setTriggerInput] = useState("");
+  const [reportingInput, setReportingInput] = useState("");
   const fileInputRef = useRef();
 
   // AI Suggestion
@@ -229,6 +251,28 @@ export default function KlaviyoFlowAutomation() {
         <div style={{ flex: 2, minWidth: 340 }}>
           {showOnboarding && onboardingContent}
           <FlowNodeBuilder nodes={nodes} setNodes={setNodes} edges={edges} setEdges={setEdges} />
+          <div style={{ margin: '18px 0', display: 'flex', gap: 16, alignItems: 'center' }}>
+            <button onClick={handleSaveFlow} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Save Flow</button>
+            {saveStatus && <span style={{ color: saveStatus.startsWith('Error') ? '#ef4444' : '#22c55e', fontWeight: 700 }}>{saveStatus}</span>}
+          </div>
+          {/* Flow Summary Panel */}
+          <div style={{ background: '#18181b', border: '1px solid #232336', borderRadius: 10, padding: 16, marginBottom: 18 }}>
+            <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 8, color: '#fafafa' }}>Flow Summary</div>
+            {nodes.length === 0 ? (
+              <div style={{ color: '#64748b', fontSize: 15 }}>No steps in this flow yet.</div>
+            ) : (
+              <ol style={{ color: '#fafafa', fontSize: 15, margin: 0, paddingLeft: 18 }}>
+                {nodes.map((n, i) => (
+                  <li key={n.id} style={{ marginBottom: 6 }}>
+                    <span style={{ fontWeight: 700 }}>{n.label}</span> <span style={{ color: '#64748b', fontWeight: 400 }}>({n.type})</span>
+                    {n.data && n.data.params && (
+                      <pre style={{ background: 'none', color: '#38bdf8', fontSize: 13, margin: 0, padding: 0 }}>{n.data.params}</pre>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
           <div style={{ display: "flex", gap: 16, marginBottom: 22, flexWrap: 'wrap' }}>
             <button onClick={handleAISuggest} disabled={loading || !flow} style={{ background: "#0ea5e9", color: "#fff", border: 'none', borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: loading || !flow ? 'not-allowed' : 'pointer', opacity: loading || !flow ? 0.7 : 1 }}>AI Suggest</button>
             <button onClick={handleRun} disabled={loading || !flow} style={{ background: "#232336", color: "#fafafa", border: '1px solid #333', borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: loading || !flow ? 'not-allowed' : 'pointer', opacity: loading || !flow ? 0.7 : 1 }}>Run Automation</button>
@@ -247,25 +291,55 @@ export default function KlaviyoFlowAutomation() {
           {/* Template Assistant */}
           <div style={{ margin: '18px 0' }}>
             <div style={{ fontWeight: 700, marginBottom: 4 }}>Template Assistant:</div>
-            <input type="text" placeholder="Ask for a template..." style={{ width: 220, marginRight: 8, borderRadius: 6, border: '1px solid #333', padding: '6px 10px', background: '#18181b', color: '#fafafa' }}
-              onKeyDown={e => { if (e.key === 'Enter') handleTemplateAssistant(e.target.value); }} />
-            <button onClick={() => handleTemplateAssistant(document.querySelector('input[placeholder="Ask for a template..."]').value)} style={{ background: "#0ea5e9", color: "#fff", border: 'none', borderRadius: 8, padding: "6px 16px", fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Ask</button>
+            <div style={{ color: '#64748b', fontSize: 14, marginBottom: 4 }}>
+              Get smart suggestions, install, or customize automation templates. Example: <span style={{ color: '#38bdf8' }}>'Welcome email template'</span>
+            </div>
+            <input
+              type="text"
+              placeholder="Ask for a template..."
+              style={{ width: 220, marginRight: 8, borderRadius: 6, border: '1px solid #333', padding: '6px 10px', background: '#18181b', color: '#fafafa' }}
+              value={templateInput}
+              onChange={e => setTemplateInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleTemplateAssistant(templateInput); }}
+              title="Type your template request and press Enter or click Ask."
+            />
+            <button onClick={() => handleTemplateAssistant(templateInput)} style={{ background: "#0ea5e9", color: "#fff", border: 'none', borderRadius: 8, padding: "6px 16px", fontWeight: 700, fontSize: 15, cursor: 'pointer' }} title="Get a template suggestion or install.">Ask</button>
             {templateResult && <div style={{ marginTop: 8, color: '#38bdf8', fontSize: 15 }}>{templateResult}</div>}
           </div>
           {/* Trigger Assistant */}
           <div style={{ margin: '18px 0' }}>
             <div style={{ fontWeight: 700, marginBottom: 4 }}>Trigger/API Assistant:</div>
-            <input type="text" placeholder="Ask about triggers..." style={{ width: 220, marginRight: 8, borderRadius: 6, border: '1px solid #333', padding: '6px 10px', background: '#18181b', color: '#fafafa' }}
-              onKeyDown={e => { if (e.key === 'Enter') handleTriggerAssistant(e.target.value); }} />
-            <button onClick={() => handleTriggerAssistant(document.querySelector('input[placeholder="Ask about triggers..."]').value)} style={{ background: "#0ea5e9", color: "#fff", border: 'none', borderRadius: 8, padding: "6px 16px", fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Ask</button>
+            <div style={{ color: '#64748b', fontSize: 14, marginBottom: 4 }}>
+              Get help with webhook listeners, API integrations, and event triggers. Example: <span style={{ color: '#fbbf24' }}>'Order placed trigger'</span>
+            </div>
+            <input
+              type="text"
+              placeholder="Ask about triggers..."
+              style={{ width: 220, marginRight: 8, borderRadius: 6, border: '1px solid #333', padding: '6px 10px', background: '#18181b', color: '#fafafa' }}
+              value={triggerInput}
+              onChange={e => setTriggerInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleTriggerAssistant(triggerInput); }}
+              title="Type your trigger/API question and press Enter or click Ask."
+            />
+            <button onClick={() => handleTriggerAssistant(triggerInput)} style={{ background: "#0ea5e9", color: "#fff", border: 'none', borderRadius: 8, padding: "6px 16px", fontWeight: 700, fontSize: 15, cursor: 'pointer' }} title="Get help with triggers or API.">Ask</button>
             {triggerResult && <div style={{ marginTop: 8, color: '#fbbf24', fontSize: 15 }}>{triggerResult}</div>}
           </div>
           {/* Reporting Assistant */}
           <div style={{ margin: '18px 0' }}>
             <div style={{ fontWeight: 700, marginBottom: 4 }}>Reporting Assistant:</div>
-            <input type="text" placeholder="Ask about reporting..." style={{ width: 220, marginRight: 8, borderRadius: 6, border: '1px solid #333', padding: '6px 10px', background: '#18181b', color: '#fafafa' }}
-              onKeyDown={e => { if (e.key === 'Enter') handleReportingAssistant(e.target.value); }} />
-            <button onClick={() => handleReportingAssistant(document.querySelector('input[placeholder="Ask about reporting..."]').value)} style={{ background: "#0ea5e9", color: "#fff", border: 'none', borderRadius: 8, padding: "6px 16px", fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Ask</button>
+            <div style={{ color: '#64748b', fontSize: 14, marginBottom: 4 }}>
+              Get help with notification setup, channel management, and alert customization. Example: <span style={{ color: '#22d3ee' }}>'Slack alert for failed order'</span>
+            </div>
+            <input
+              type="text"
+              placeholder="Ask about reporting..."
+              style={{ width: 220, marginRight: 8, borderRadius: 6, border: '1px solid #333', padding: '6px 10px', background: '#18181b', color: '#fafafa' }}
+              value={reportingInput}
+              onChange={e => setReportingInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleReportingAssistant(reportingInput); }}
+              title="Type your reporting/notification question and press Enter or click Ask."
+            />
+            <button onClick={() => handleReportingAssistant(reportingInput)} style={{ background: "#0ea5e9", color: "#fff", border: 'none', borderRadius: 8, padding: "6px 16px", fontWeight: 700, fontSize: 15, cursor: 'pointer' }} title="Get help with reporting or notifications.">Ask</button>
             {reportingResult && <div style={{ marginTop: 8, color: '#22d3ee', fontSize: 15 }}>{reportingResult}</div>}
           </div>
           {error && <div style={{ color: "#ef4444", marginBottom: 10, fontWeight: 700, fontSize: 16 }}>{error}</div>}
