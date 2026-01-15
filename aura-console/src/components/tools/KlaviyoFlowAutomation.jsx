@@ -1,45 +1,13 @@
 
 import React, { useState, useRef } from "react";
+import FlowNodeBuilder from "./FlowNodeBuilder";
 
-// Placeholder for visual flow builder (replace with real library/component)
-function VisualFlowBuilder({ flow, setFlow, nodes = [], setNodes }) {
-  // Always flagship dark theme
-  return (
-    <div style={{ border: "1px solid #232336", borderRadius: 14, padding: 24, background: "#23232a", marginBottom: 24, boxShadow: "0 2px 8px #0004" }}>
-      <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 12, color: "#fafafa" }}>Visual Flow Builder <span style={{ color: '#64748b', fontWeight: 400, fontSize: 13 }} title="Drag and drop steps, triggers, and actions">(?)</span></div>
-      <div style={{ display: 'flex', gap: 16, marginBottom: 18 }}>
-        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Step', type: 'step' }])} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Add Step</button>
-        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Trigger', type: 'trigger' }])} style={{ background: '#232336', color: '#fafafa', border: '1px solid #333', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Add Trigger</button>
-        <button onClick={() => setNodes([...nodes, { id: Date.now(), label: 'Action', type: 'action' }])} style={{ background: '#232336', color: '#fafafa', border: '1px solid #333', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Add Action</button>
-      </div>
-      <div style={{ minHeight: 120, border: '1px dashed #232336', borderRadius: 10, padding: 16, background: '#18181b', marginBottom: 16 }}>
-        {nodes.length ? (
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {nodes.map((n, i) => (
-              <li key={n.id} style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontWeight: 700, fontSize: 16, color: '#fafafa', background: '#232336', borderRadius: 6, padding: '4px 12px' }}>{n.label}</span>
-                <button onClick={() => setNodes(nodes.filter((_, idx) => idx !== i))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '4px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Remove</button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <span style={{ color: '#64748b', fontSize: 15 }}>Drag and drop steps, triggers, and actions here.</span>
-        )}
-      </div>
-      <textarea
-        value={flow}
-        onChange={e => setFlow(e.target.value)}
-        rows={4}
-        style={{ width: "100%", fontSize: 16, borderRadius: 10, border: "1px solid #333", padding: 12, background: '#18181b', color: '#fafafa', marginBottom: 8 }}
-        placeholder="Describe or edit your flow here..."
-      />
-    </div>
-  );
-}
+
 
 export default function KlaviyoFlowAutomation() {
   const [flow, setFlow] = useState("");
   const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
   const [aiSuggestion, setAiSuggestion] = useState("");
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -164,7 +132,7 @@ export default function KlaviyoFlowAutomation() {
       <div style={{ display: "flex", gap: 36, flexWrap: "wrap" }}>
         <div style={{ flex: 2, minWidth: 340 }}>
           {showOnboarding && onboardingContent}
-          <VisualFlowBuilder flow={flow} setFlow={setFlow} nodes={nodes} setNodes={setNodes} />
+          <FlowNodeBuilder nodes={nodes} setNodes={setNodes} edges={edges} setEdges={setEdges} />
           <div style={{ display: "flex", gap: 16, marginBottom: 22, flexWrap: 'wrap' }}>
             <button onClick={handleAISuggest} disabled={loading || !flow} style={{ background: "#0ea5e9", color: "#fff", border: 'none', borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: loading || !flow ? 'not-allowed' : 'pointer', opacity: loading || !flow ? 0.7 : 1 }}>AI Suggest</button>
             <button onClick={handleRun} disabled={loading || !flow} style={{ background: "#232336", color: "#fafafa", border: '1px solid #333', borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: loading || !flow ? 'not-allowed' : 'pointer', opacity: loading || !flow ? 0.7 : 1 }}>Run Automation</button>
