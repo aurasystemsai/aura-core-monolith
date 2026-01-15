@@ -166,9 +166,29 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
   });
 
   // Simulate a flow run (increments stats)
+  // Flow simulation modal
+  const [simModalOpen, setSimModalOpen] = useState(false);
+  const [simSteps, setSimSteps] = useState([]);
+  const [simError, setSimError] = useState("");
+  const [simCurrent, setSimCurrent] = useState(0);
+
   function runFlow() {
+    setSimModalOpen(true);
+    setSimError("");
+    // Simulate step-by-step execution
+    const steps = nodes.map((n, i) => ({
+      idx: i + 1,
+      id: n.id,
+      label: n.label,
+      type: n.type,
+      params: n.data?.params || "",
+      output: `Simulated output for ${n.label}`,
+      error: null
+    }));
+    setSimSteps(steps);
+    setSimCurrent(0);
+    // Update analytics as before
     const now = Date.now();
-    // Increment flow run count and last run
     setAnalytics(prev => ({
       ...prev,
       flowRuns: prev.flowRuns + 1,
@@ -346,6 +366,32 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
 
   return (
     <div ref={builderRef} style={{ background: '#18181b', border: '1px solid #232336', borderRadius: 14, padding: 24, minHeight: 320, position: 'relative' }}>
+      {/* Simulation Modal */}
+      {simModalOpen && (
+        <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+            <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Flow Simulation</div>
+            {simSteps.length === 0 ? (
+              <div>No nodes to simulate.</div>
+            ) : (
+              <div>
+                <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 16 }}>Step {simCurrent + 1} of {simSteps.length}</div>
+                <div style={{ marginBottom: 8 }}>
+                  <span style={{ fontWeight: 700 }}>{simSteps[simCurrent].label}</span> <span style={{ color: '#64748b', fontWeight: 400 }}>({simSteps[simCurrent].type})</span>
+                </div>
+                <div style={{ marginBottom: 8, fontSize: 14 }}><b>Params:</b> <span style={{ color: '#38bdf8' }}>{simSteps[simCurrent].params}</span></div>
+                <div style={{ marginBottom: 8, fontSize: 14 }}><b>Output:</b> <span style={{ color: '#22c55e' }}>{simSteps[simCurrent].output}</span></div>
+                {simSteps[simCurrent].error && <div style={{ color: '#ef4444', fontWeight: 700 }}>{simSteps[simCurrent].error}</div>}
+                <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
+                  <button onClick={() => setSimCurrent(c => Math.max(0, c - 1))} disabled={simCurrent === 0} style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: simCurrent === 0 ? 'not-allowed' : 'pointer', opacity: simCurrent === 0 ? 0.6 : 1 }}>Prev</button>
+                  <button onClick={() => setSimCurrent(c => Math.min(simSteps.length - 1, c + 1))} disabled={simCurrent === simSteps.length - 1} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: simCurrent === simSteps.length - 1 ? 'not-allowed' : 'pointer', opacity: simCurrent === simSteps.length - 1 ? 0.6 : 1 }}>Next</button>
+                  <button onClick={() => setSimModalOpen(false)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {/* SVG edges */}
       <svg width="100%" height={Math.max(120, nodes.length * 70)} style={{ position: 'absolute', left: 0, top: 0, zIndex: 0, pointerEvents: 'none' }}>
         {edges && edges.map((edge, i) => {
