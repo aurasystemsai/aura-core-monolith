@@ -2,6 +2,21 @@ import React, { useState, useRef, useEffect } from "react";
 
 // Node-based, drag-and-drop flow builder foundation
 export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
+      // Node search & quick add
+      const [searchOpen, setSearchOpen] = useState(false);
+      const [searchQuery, setSearchQuery] = useState("");
+      const [searchResults, setSearchResults] = useState([]);
+      const allNodeOptions = [
+        { type: 'trigger', label: 'Trigger', meta: null },
+        { type: 'action', label: 'Action', meta: null },
+        { type: 'condition', label: 'Condition', meta: null },
+        ...templates.map(t => ({ type: 'template', label: t.name, meta: t }))
+      ];
+      useEffect(() => {
+        if (!searchOpen) return;
+        if (!searchQuery) setSearchResults(allNodeOptions);
+        else setSearchResults(allNodeOptions.filter(opt => opt.label.toLowerCase().includes(searchQuery.toLowerCase())));
+      }, [searchQuery, searchOpen]);
     // Drag-to-connect edge state
     const [edgeDrag, setEdgeDrag] = useState({ from: null, to: null, pos: null });
 
@@ -499,6 +514,45 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
         {aiSuggestion && <span style={{ color: '#38bdf8', fontWeight: 700, marginLeft: 10 }}>{aiSuggestion}</span>}
       </div>
       <div style={{ display: 'flex', gap: 12, marginBottom: 18, alignItems: 'center', position: 'relative', zIndex: 2 }}>
+                        <button onClick={() => setSearchOpen(true)} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Quick Add</button>
+                        {searchOpen && (
+                          <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+                              <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Quick Add Node/Template</div>
+                              <button onClick={() => setSearchOpen(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+                              <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search node or template..." style={{ width: '100%', borderRadius: 8, border: '1px solid #333', padding: '10px 14px', fontSize: 16, marginBottom: 18, background: '#18181b', color: '#fafafa' }} />
+                              <div style={{ maxHeight: 320, overflowY: 'auto' }}>
+                                {searchResults.length === 0 ? (
+                                  <div style={{ color: '#64748b', fontSize: 15 }}>No results found.</div>
+                                ) : (
+                                  <ul style={{ listStyle: 'none', padding: 0 }}>
+                                    {searchResults.map((opt, i) => (
+                                      <li key={i} style={{ marginBottom: 14, background: '#18181b', borderRadius: 8, padding: 14, boxShadow: '0 2px 8px #0004', display: 'flex', alignItems: 'center', gap: 12 }}>
+                                        <span style={{ fontWeight: 700, fontSize: 16 }}>{opt.label}</span>
+                                        <button onClick={() => {
+                                          if (opt.type === 'template' && opt.meta) {
+                                            const t = opt.meta;
+                                            const now = Date.now();
+                                            const newNodes = t.nodes.map((n, idx) => ({
+                                              id: `${now}-${idx}-${Math.random().toString(36).substr(2, 5)}`,
+                                              ...n
+                                            }));
+                                            const allNodes = [...nodes, ...newNodes];
+                                            setNodes(allNodes);
+                                            pushHistory(allNodes, edges);
+                                          } else {
+                                            addNode(opt.type);
+                                          }
+                                          setSearchOpen(false);
+                                        }} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Add</button>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                 <button onClick={() => setMarketplaceOpen(true)} style={{ background: '#eab308', color: '#232336', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Marketplace</button>
                 <select value={customNodeType} onChange={e => setCustomNodeType(e.target.value)} style={{ marginLeft: 8, borderRadius: 8, border: '1px solid #333', padding: '8px 12px', background: '#232336', color: '#fafafa', fontWeight: 700, fontSize: 15 }}>
                   <option value="">+ Custom Node Type...</option>
