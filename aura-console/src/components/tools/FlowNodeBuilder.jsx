@@ -1,6 +1,139 @@
 import React, { useState, useRef, useEffect } from "react";
+import FlowNodeCanvas from "./FlowNodeCanvas";
 
 // Node-based, drag-and-drop flow builder foundation
+            // Responsive UI: add mobile detection
+            const isMobile = window.innerWidth < 600;
+          // Integrations state
+          const [showIntegrationModal, setShowIntegrationModal] = useState(false);
+          const [integrationNodeId, setIntegrationNodeId] = useState(null);
+          const [integrationConfig, setIntegrationConfig] = useState({}); // { nodeId: { type, url, method, headers, body } }
+
+          function openIntegrationModal(nodeId) {
+            setIntegrationNodeId(nodeId);
+            setShowIntegrationModal(true);
+          }
+          function saveIntegrationConfig(nodeId, config) {
+            setIntegrationConfig(prev => ({ ...prev, [nodeId]: config }));
+            setShowIntegrationModal(false);
+          }
+        // Flow simulation/testing state
+        const [isSimulating, setIsSimulating] = useState(false);
+        const [simulationResults, setSimulationResults] = useState([]);
+        const [showSimulationModal, setShowSimulationModal] = useState(false);
+
+        function handleSimulateFlow() {
+          setIsSimulating(true);
+          setSimulationResults([]);
+          // Simulate each node (replace with backend call if needed)
+          const results = nodes.map((node, idx) => {
+            let output = `Simulated output for ${node.label || node.id}`;
+            let error = null;
+            if (node.type === 'action' && node.params && node.params.failTest) {
+              error = 'Simulated error: test failed';
+            }
+            return { node: node.label || node.id, output, error };
+          });
+          setTimeout(() => {
+            setSimulationResults(results);
+            setIsSimulating(false);
+            setShowSimulationModal(true);
+          }, 1200);
+        }
+      // Audit trail & history state
+      const [auditTrail, setAuditTrail] = useState([]);
+      const [showAuditModal, setShowAuditModal] = useState(false);
+
+      // Helper to log actions
+      function logAudit(action, details) {
+        setAuditTrail(prev => [
+          ...prev,
+          {
+            timestamp: new Date().toLocaleString(),
+            user: userRole,
+            action,
+            details,
+          },
+        ]);
+      }
+
+      // Example: wrap node add/delete with audit log
+      function handleAddNode(node) {
+        if (!canEdit) return;
+        setNodes(prev => [...prev, node]);
+        logAudit('Add Node', `Node ${node.label || node.id}`);
+      }
+      function handleDeleteNode(nodeId) {
+        if (!canDelete) return;
+        setNodes(prev => prev.filter(n => n.id !== nodeId));
+        logAudit('Delete Node', `Node ID ${nodeId}`);
+      }
+    // Role-based permissions state
+    const [userRole, setUserRole] = useState('editor'); // 'admin', 'editor', 'viewer'
+    const [showRoleModal, setShowRoleModal] = useState(false);
+
+    // Permissions logic
+    const canEdit = userRole === 'admin' || userRole === 'editor';
+    const canDelete = userRole === 'admin';
+    const canView = true;
+
+    // Example: restrict node add/delete actions
+    function handleAddNode(node) {
+      if (!canEdit) return;
+      setNodes(prev => [...prev, node]);
+    }
+    function handleDeleteNode(nodeId) {
+      if (!canDelete) return;
+      setNodes(prev => prev.filter(n => n.id !== nodeId));
+    }
+  // Live execution & debugging state
+  const [isRunning, setIsRunning] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [runOutputs, setRunOutputs] = useState([]);
+  const [runErrors, setRunErrors] = useState([]);
+
+  function handleRunFlow() {
+    setIsRunning(true);
+    setCurrentStep(0);
+    setRunOutputs([]);
+    setRunErrors([]);
+    stepThroughFlow(0);
+  }
+
+  function stepThroughFlow(idx) {
+    if (idx >= nodes.length) {
+      setIsRunning(false);
+      return;
+    }
+    setCurrentStep(idx);
+    const node = nodes[idx];
+    // Simulate node execution (replace with backend call if needed)
+    setTimeout(() => {
+      try {
+        let output = `Output for ${node.label}`;
+        if (node.type === "action" && node.params) {
+          output += `\nParams: ${JSON.stringify(node.params)}`;
+        }
+        setRunOutputs(prev => {
+          const next = [...prev];
+          next[idx] = output;
+          return next;
+        });
+        setRunErrors(prev => {
+          const next = [...prev];
+          next[idx] = null;
+          return next;
+        });
+      } catch (err) {
+        setRunErrors(prev => {
+          const next = [...prev];
+          next[idx] = err.message;
+          return next;
+        });
+      }
+      stepThroughFlow(idx + 1);
+    }, 800);
+  }
 export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
                                                                                                                                                           // Flow execution scheduling state
                                                                                                                                                           const [showSchedule, setShowSchedule] = useState(false);
@@ -52,6 +185,12 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
                                                                                                               const [newNodeType, setNewNodeType] = useState('');
                                                                                                               const [newNodeLabel, setNewNodeLabel] = useState('');
                                                                                                               const [newNodeFields, setNewNodeFields] = useState('');
+                                                                                                              const [aiSuggestions, setAiSuggestions] = useState([]);
+                                                                                                              async function fetchAiSuggestions(input) {
+                                                                                                                // Simulate AI call (replace with backend API if available)
+                                                                                                                if (!input) return setAiSuggestions([]);
+                                                                                                                setAiSuggestions(['Send Welcome Email', 'Trigger Cart Check', 'Send Reminder', 'API Call', 'Webhook', 'Decision Node'].filter(s => s.toLowerCase().includes(input.toLowerCase())));
+                                                                                                              }
 
                                                                                                               function handleAddCustomNode() {
                                                                                                                 if (!newNodeLabel || !newNodeType) return;
@@ -66,6 +205,21 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
                                                                                                                 setNewNodeLabel('');
                                                                                                                 setNewNodeFields('');
                                                                                                               }
+
+        // Conditional edge creation state
+        const [showEdgeModal, setShowEdgeModal] = useState(false);
+        const [edgeSource, setEdgeSource] = useState("");
+        const [edgeTarget, setEdgeTarget] = useState("");
+        const [edgeCondition, setEdgeCondition] = useState("");
+
+        function handleAddConditionalEdge() {
+          if (!edgeSource || !edgeTarget) return;
+          setEdges([...edges, { id: `e${Math.random().toString(36).substr(2, 9)}`, source: edgeSource, target: edgeTarget, condition: edgeCondition }]);
+          setShowEdgeModal(false);
+          setEdgeSource("");
+          setEdgeTarget("");
+          setEdgeCondition("");
+        }
                                                                                         // Flow validation state
                                                                                         const [validationErrors, setValidationErrors] = useState([]);
 
@@ -244,6 +398,22 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
               // Analytics dashboard state
               const [showAnalytics, setShowAnalytics] = useState(false);
               const [analyticsVersion, setAnalyticsVersion] = useState(null);
+              const [performanceStats, setPerformanceStats] = useState(null);
+              async function handleShowPerformance() {
+                // Simulate performance stats (replace with backend call if needed)
+                const start = performance.now();
+                // Simulate node/edge processing
+                await new Promise(res => setTimeout(res, 120));
+                const end = performance.now();
+                setPerformanceStats({
+                  nodeCount: nodes.length,
+                  edgeCount: edges.length,
+                  renderTimeMs: Math.round(end - start),
+                  memoryUsage: window.performance?.memory?.usedJSHeapSize || 'N/A',
+                  timestamp: new Date().toLocaleString(),
+                });
+                setShowAnalytics(true);
+              }
             // Node search/filter state
             const [nodeSearch, setNodeSearch] = useState("");
           // Export/import state
@@ -410,7 +580,277 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
       : nodes;
 
     return (
+      <div
+        style={{
+          position: 'relative',
+          minHeight: isMobile ? 400 : 600,
+          padding: isMobile ? '8px 2px' : '24px 32px',
+          fontSize: isMobile ? 14 : 16,
+          boxSizing: 'border-box',
+        }}
+      >
+        <div style={{ position: 'absolute', top: 160, left: 18, zIndex: 20 }}>
+          <button
+            style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+            onClick={() => {
+              if (nodes.length > 0) openIntegrationModal(nodes[0].id);
+            }}
+          >
+            Add Integration to First Node
+          </button>
+        </div>
+        {showIntegrationModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', color: '#232336', position: 'relative', maxHeight: '80vh', overflowY: 'auto' }}>
+              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Add Integration to Node</div>
+              <form onSubmit={e => {
+                e.preventDefault();
+                const data = Object.fromEntries(new FormData(e.target));
+                saveIntegrationConfig(integrationNodeId, data);
+              }}>
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ fontWeight: 700 }}>Type:</label>
+                  <select name="type" defaultValue={integrationConfig[integrationNodeId]?.type || 'api'} style={{ marginLeft: 8, fontSize: 15, borderRadius: 6, padding: 4 }}>
+                    <option value="api">API</option>
+                    <option value="webhook">Webhook</option>
+                  </select>
+                </div>
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ fontWeight: 700 }}>URL:</label>
+                  <input name="url" type="url" defaultValue={integrationConfig[integrationNodeId]?.url || ''} required style={{ marginLeft: 8, fontSize: 15, borderRadius: 6, padding: 4, width: '80%' }} />
+                </div>
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ fontWeight: 700 }}>Method:</label>
+                  <select name="method" defaultValue={integrationConfig[integrationNodeId]?.method || 'POST'} style={{ marginLeft: 8, fontSize: 15, borderRadius: 6, padding: 4 }}>
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                  </select>
+                </div>
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ fontWeight: 700 }}>Headers (JSON):</label>
+                  <input name="headers" type="text" defaultValue={integrationConfig[integrationNodeId]?.headers || ''} style={{ marginLeft: 8, fontSize: 15, borderRadius: 6, padding: 4, width: '80%' }} />
+                      </div>
+                      <div style={{ marginBottom: 12 }}>
+                        <label style={{ fontWeight: 700 }}>Body (JSON):</label>
+                        <textarea name="body" defaultValue={integrationConfig[integrationNodeId]?.body || ''} style={{ marginLeft: 8, fontSize: 15, borderRadius: 6, padding: 4, width: '80%' }} />
+                      </div>
+                      <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
+                        <button type="submit" style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Save</button>
+                        <button type="button" style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }} onClick={() => setShowIntegrationModal(false)}>Cancel</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
       <div style={{ position: 'relative', minHeight: 600 }}>
+        <div style={{ position: 'absolute', top: 102, left: 18, zIndex: 20 }}>
+          <button
+            onClick={handleSimulateFlow}
+            disabled={isSimulating || nodes.length === 0}
+            style={{
+              background: isSimulating ? '#64748b' : '#fbbf24',
+              color: '#232336',
+              border: 'none',
+              borderRadius: 8,
+              padding: isMobile ? '4px 8px' : '8px 18px',
+              fontWeight: 700,
+              fontSize: isMobile ? 13 : 15,
+              cursor: isSimulating ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {isSimulating ? 'Simulating...' : 'Simulate Flow'}
+          </button>
+        </div>
+        {showSimulationModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', color: '#232336', position: 'relative', maxHeight: '80vh', overflowY: 'auto' }}>
+              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Flow Simulation Results</div>
+              <table style={{ width: '100%', fontSize: 15, marginBottom: 18 }}>
+                <thead>
+                  <tr style={{ background: '#f3f4f6', fontWeight: 700 }}>
+                    <td>Node</td>
+                    <td>Output</td>
+                    <td>Error</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {simulationResults.length === 0 ? (
+                    <tr><td colSpan={3} style={{ textAlign: 'center', color: '#64748b' }}>No results yet.</td></tr>
+                  ) : (
+                    simulationResults.map((res, idx) => (
+                      <tr key={idx} style={{ background: idx % 2 ? '#f9fafb' : '#fff' }}>
+                        <td>{res.node}</td>
+                        <td>{res.output}</td>
+                        <td style={{ color: res.error ? '#ef4444' : '#22c55e', fontWeight: 700 }}>{res.error || 'None'}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+              <button
+                style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginTop: 8 }}
+                onClick={() => setShowSimulationModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+      <div style={{ position: 'relative', minHeight: 600 }}>
+        {/* Audit trail toolbar */}
+        <div style={{ position: 'absolute', top: 60, left: 18, zIndex: 20 }}>
+          <button
+            style={{
+              background: '#f59e42',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: isMobile ? '4px 8px' : '6px 14px',
+              fontWeight: 700,
+              fontSize: isMobile ? 13 : 14,
+              marginRight: isMobile ? 4 : 8,
+              cursor: 'pointer',
+            }}
+            onClick={() => setShowAuditModal(true)}
+          >
+            View Audit Trail
+          </button>
+        </div>
+        {/* Audit trail modal */}
+        {showAuditModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#000a', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#fff', borderRadius: 12, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', maxHeight: '80vh', overflowY: 'auto' }}>
+              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Audit Trail & History</div>
+              <table style={{ width: '100%', fontSize: 15, marginBottom: 18 }}>
+                <thead>
+                  <tr style={{ background: '#f3f4f6', fontWeight: 700 }}>
+                    <td>Time</td>
+                    <td>User</td>
+                    <td>Action</td>
+                    <td>Details</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {auditTrail.length === 0 ? (
+                    <tr><td colSpan={4} style={{ textAlign: 'center', color: '#64748b' }}>No changes yet.</td></tr>
+                  ) : (
+                    auditTrail.map((entry, idx) => (
+                      <tr key={idx} style={{ background: idx % 2 ? '#f9fafb' : '#fff' }}>
+                        <td>{entry.timestamp}</td>
+                        <td>{entry.user}</td>
+                        <td>{entry.action}</td>
+                        <td>{entry.details}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+              <button
+                style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+                onClick={() => setShowAuditModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+        {/* Role selector toolbar */}
+        <div style={{ position: 'absolute', top: 18, left: 18, zIndex: 20 }}>
+          <button
+            style={{
+              background: '#6366f1',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: isMobile ? '4px 8px' : '6px 14px',
+              fontWeight: 700,
+              fontSize: isMobile ? 13 : 14,
+              marginRight: isMobile ? 4 : 8,
+              cursor: 'pointer',
+            }}
+            onClick={() => setShowRoleModal(true)}
+          >
+            Role: {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+          </button>
+        </div>
+        {/* Role selection modal */}
+        {showRoleModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#000a', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#fff', borderRadius: 12, padding: 32, minWidth: 320, boxShadow: '0 2px 24px #000a' }}>
+              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Select User Role</div>
+              <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
+                {['admin', 'editor', 'viewer'].map(role => (
+                  <button
+                    key={role}
+                    style={{ background: userRole === role ? '#6366f1' : '#e5e7eb', color: userRole === role ? '#fff' : '#222', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+                    onClick={() => setUserRole(role)}
+                  >
+                    {role.charAt(0).toUpperCase() + role.slice(1)}
+                  </button>
+                ))}
+              </div>
+              <button
+                style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+                onClick={() => setShowRoleModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+      <div style={{ position: 'relative', minHeight: 600 }}>
+        {/* Live execution & debugging toolbar */}
+        <div style={{ position: 'absolute', top: 140, left: 18, zIndex: 10, display: 'flex', gap: 8 }}>
+          <button
+            onClick={handleRunFlow}
+            disabled={isRunning || nodes.length === 0}
+            style={{
+              background: isRunning ? '#64748b' : '#22c55e',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: isMobile ? '4px 8px' : '8px 18px',
+              fontWeight: 700,
+              fontSize: isMobile ? 13 : 15,
+              cursor: isRunning ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {isRunning ? 'Running...' : 'Run Flow'}
+          </button>
+          <button
+            onClick={handleExportImport}
+            style={{
+              background: '#0ea5e9',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: isMobile ? '4px 8px' : '8px 18px',
+              fontWeight: 700,
+              fontSize: isMobile ? 13 : 15,
+              cursor: 'pointer',
+            }}
+          >
+            Export/Import
+          </button>
+        </div>
+        {/* Live execution step-through display */}
+        {isRunning && (
+          <div style={{ margin: '24px 0', background: '#232336', borderRadius: 12, padding: 24, color: '#fafafa', boxShadow: '0 2px 24px #000a', maxWidth: 520 }}>
+            <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Flow Execution Debugger</div>
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Step {currentStep + 1} of {nodes.length}</div>
+            <div style={{ marginBottom: 12 }}>
+              <span style={{ fontWeight: 700, color: '#38bdf8' }}>Current Node:</span> {nodes[currentStep]?.label || nodes[currentStep]?.id}
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <span style={{ fontWeight: 700, color: '#22c55e' }}>Output:</span> {runOutputs[currentStep] || '...'}
+            </div>
+            {runErrors[currentStep] && (
+              <div style={{ color: '#ef4444', fontWeight: 700 }}>Error: {runErrors[currentStep]}</div>
+            )}
+          </div>
+        )}
         {/* Flow execution scheduling toolbar */}
         <div style={{ position: 'absolute', top: 18, left: 1020, zIndex: 10 }}>
           <button
@@ -464,34 +904,47 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
         {showAddNode && (
           <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
-                    <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Add Custom Node</div>
-                    <button onClick={() => setShowAddNode(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
-                    <div style={{ marginBottom: 12 }}>
-                      <input
-                        type="text"
-                        value={newNodeLabel}
-                        onChange={e => setNewNodeLabel(e.target.value)}
-                        placeholder="Node Label"
-                        style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}
-                      />
-                      <input
-                        type="text"
-                        value={newNodeType}
-                        onChange={e => setNewNodeType(e.target.value)}
-                        placeholder="Node Type"
-                        style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}
-                      />
-                      <textarea
-                        value={newNodeFields}
-                        onChange={e => setNewNodeFields(e.target.value)}
-                        placeholder="Custom Fields (JSON)"
-                        style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, minHeight: 60, marginBottom: 8 }}
-                      />
-                      <button onClick={handleAddCustomNode} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Add Node</button>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Add Custom Node</div>
+              <button onClick={() => setShowAddNode(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+              <div style={{ marginBottom: 12 }}>
+                <input
+                  type="text"
+                  value={newNodeLabel}
+                  onChange={e => {
+                    setNewNodeLabel(e.target.value);
+                    fetchAiSuggestions(e.target.value);
+                  }}
+                  placeholder="Node Label"
+                  style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}
+                  autoFocus
+                />
+                {aiSuggestions.length > 0 && (
+                  <ul style={{ background: '#18181b', borderRadius: 8, padding: 8, margin: '4px 0', listStyle: 'none', fontSize: 14, color: '#a3e635' }}>
+                    {aiSuggestions.map((s, i) => (
+                      <li key={i} style={{ cursor: 'pointer', padding: '2px 0' }} onClick={() => { setNewNodeLabel(s); setAiSuggestions([]); }}>
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <input
+                  type="text"
+                  value={newNodeType}
+                  onChange={e => setNewNodeType(e.target.value)}
+                  placeholder="Node Type"
+                  style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}
+                />
+                <textarea
+                  value={newNodeFields}
+                  onChange={e => setNewNodeFields(e.target.value)}
+                  placeholder="Custom Fields (JSON)"
+                  style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, minHeight: 60, marginBottom: 8 }}
+                />
+                <button onClick={handleAddCustomNode} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Add Node</button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Flow validation errors toolbar (valid JSX placement) */}
         {/* Flow validation errors toolbar (valid JSX placement) */}
         <div style={{ position: 'absolute', top: 18, left: 620, zIndex: 10 }}>
@@ -516,66 +969,68 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
             Online: {collaborators.length > 0 ? collaborators.join(', ') : 'Just you'}
           </span>
         </div>
-        {/* Flow Templates Toolbar */}
-        <div style={{ position: 'absolute', top: 18, left: 220, zIndex: 10 }}>
+        {/* Audit trail toolbar */}
+        <div style={{ position: 'absolute', top: 60, left: 18, zIndex: 20 }}>
           <button
-            onClick={() => setShowTemplates(true)}
-            style={{ background: '#a21caf', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+            style={{ background: '#f59e42', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 14, marginRight: 8, cursor: 'pointer' }}
+            onClick={() => setShowAuditModal(true)}
           >
-            Flow Templates
+            View Audit Trail
           </button>
         </div>
-        {/* Flow Templates Modal */}
-        {showTemplates && (
-          <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
-              <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Flow Templates</div>
-              <button onClick={() => setShowTemplates(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                {flowTemplates.map(tmpl => (
-                  <li key={tmpl.id} style={{ marginBottom: 18, background: '#18181b', borderRadius: 8, padding: 18, boxShadow: '0 2px 8px #0004' }}>
-                    <div style={{ fontWeight: 700, fontSize: 17 }}>{tmpl.name}</div>
-                    <div style={{ color: '#38bdf8', fontSize: 14, marginBottom: 6 }}>{tmpl.description}</div>
-                    <button onClick={() => applyTemplate(tmpl)} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Use Template</button>
-                  </li>
-                ))}
-              </ul>
+        {/* Audit trail modal */}
+        {showAuditModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#000a', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#fff', borderRadius: 12, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', maxHeight: '80vh', overflowY: 'auto' }}>
+              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Audit Trail & History</div>
+              <table style={{ width: '100%', fontSize: 15, marginBottom: 18 }}>
+                <thead>
+                  <tr style={{ background: '#f3f4f6', fontWeight: 700 }}>
+                    <td>Time</td>
+                    <td>User</td>
+                    <td>Action</td>
+                    <td>Details</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {auditTrail.length === 0 ? (
+                    <tr><td colSpan={4} style={{ textAlign: 'center', color: '#64748b' }}>No changes yet.</td></tr>
+                  ) : (
+                    auditTrail.map((entry, idx) => (
+                      <tr key={idx} style={{ background: idx % 2 ? '#f9fafb' : '#fff' }}>
+                        <td>{entry.timestamp}</td>
+                        <td>{entry.user}</td>
+                        <td>{entry.action}</td>
+                        <td>{entry.details}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+              <button
+                style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+                onClick={() => setShowAuditModal(false)}
+              >
+                Close
+              </button>
             </div>
           </div>
         )}
-        {/* Auto-save draft status */}
-        {autoSaveStatus && <div style={{ position: 'absolute', bottom: 18, left: 18, color: '#22c55e', fontWeight: 700, fontSize: 14, background: '#232336', borderRadius: 8, padding: '6px 14px', zIndex: 10 }}>{autoSaveStatus}</div>}
-        {/* Undo/Redo toolbar */}
-        <div style={{ position: 'absolute', top: 70, left: 18, zIndex: 10, display: 'flex', gap: 8 }}>
+        {/* Role selector toolbar */}
+        <div style={{ position: 'absolute', top: 18, left: 18, zIndex: 20 }}>
           <button
-            onClick={handleUndo}
-            disabled={!canUndo}
-            style={{ background: canUndo ? '#f59e42' : '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: canUndo ? 'pointer' : 'not-allowed' }}
+            style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 14, marginRight: 8, cursor: 'pointer' }}
+            onClick={() => setShowRoleModal(true)}
           >
-            Undo
-          </button>
-          <button
-            onClick={handleRedo}
-            disabled={!canRedo}
-            style={{ background: canRedo ? '#0ea5e9' : '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: canRedo ? 'pointer' : 'not-allowed' }}
-          >
-            Redo
+            Role: {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
           </button>
         </div>
-        {/* Node search/filter bar */}
-        <div style={{ margin: '32px 0 0 0', padding: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <input
-            type="text"
-            value={nodeSearch}
-            onChange={e => setNodeSearch(e.target.value)}
-            placeholder="Search nodes by name, type, or ID..."
-            style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220 }}
-          />
-          {nodeSearch && (
-            <button onClick={() => setNodeSearch("")} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Clear</button>
-          )}
-        </div>
-        {/* Export/Import toolbar */}
+        {/* Role selection modal */}
+        {/* ...existing code... */}
+      </div>
+    </div>
+    </div>
+  );
         <div style={{ position: 'absolute', top: 18, left: 18, zIndex: 10, display: 'flex', gap: 8 }}>
           <button
             onClick={handleExportFlow}
@@ -589,6 +1044,36 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
           >
             Import Flow
           </button>
+          <button
+            onClick={handleUndo}
+            style={{
+              background: '#f59e42',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: isMobile ? '4px 8px' : '8px 18px',
+              fontWeight: 700,
+              fontSize: isMobile ? 13 : 15,
+              cursor: 'pointer',
+            }}
+          >
+            Undo
+          </button>
+          <button
+            onClick={handleRedo}
+            style={{
+              background: '#f59e42',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: isMobile ? '4px 8px' : '8px 18px',
+              fontWeight: 700,
+              fontSize: isMobile ? 13 : 15,
+              cursor: 'pointer',
+            }}
+          >
+            Redo
+          </button>
           <input
             type="file"
             accept="application/json"
@@ -599,18 +1084,59 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
         </div>
         {importError && <div style={{ color: '#ef4444', fontWeight: 700, marginTop: 8, marginLeft: 18 }}>{importError}</div>}
         {/* Main toolbar */}
-        <div style={{ position: 'absolute', top: 18, right: 18, zIndex: 10 }}>
+        <div style={{ position: 'absolute', top: 18, right: 18, zIndex: 10, display: 'flex', gap: 8 }}>
           <button
             onClick={() => setVersionModalOpen(true)}
-            style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginRight: 8 }}
+            style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
           >
             Version History
+          </button>
+          <button
+            onClick={handleShowPerformance}
+            style={{ background: '#a3e635', color: '#232336', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+          >
+            Performance Analytics
           </button>
         </div>
 
         {/* Node list with grouping and collapsible groups */}
         <div style={{ margin: '0', padding: 12 }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Nodes</div>
+          <button
+            onClick={() => setShowEdgeModal(true)}
+            style={{ background: '#eab308', color: '#232336', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 12 }}
+          >
+            Add Conditional Edge
+          </button>
+          {showEdgeModal && (
+            <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1500, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+                <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Add Conditional Edge</div>
+                <button onClick={() => setShowEdgeModal(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ fontWeight: 600 }}>Source Node:</label>
+                  <select value={edgeSource} onChange={e => setEdgeSource(e.target.value)} style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}>
+                    <option value="">Select source</option>
+                    {nodes.map(n => <option key={n.id} value={n.id}>{n.label || n.id}</option>)}
+                  </select>
+                  <label style={{ fontWeight: 600 }}>Target Node:</label>
+                  <select value={edgeTarget} onChange={e => setEdgeTarget(e.target.value)} style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}>
+                    <option value="">Select target</option>
+                    {nodes.map(n => <option key={n.id} value={n.id}>{n.label || n.id}</option>)}
+                  </select>
+                  <label style={{ fontWeight: 600 }}>Condition/Label:</label>
+                  <input
+                    type="text"
+                    value={edgeCondition}
+                    onChange={e => setEdgeCondition(e.target.value)}
+                    placeholder="e.g. If cart > $100"
+                    style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}
+                  />
+                  <button onClick={handleAddConditionalEdge} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Add Edge</button>
+                </div>
+              </div>
+            </div>
+          )}
           {nodeGroups.map(group => {
             // Get nodes in this group
             const groupNodes = filteredNodes.filter(n => nodeGroupMap[n.id] === group.id);
@@ -642,6 +1168,14 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
                             >
                               Preview
                             </button>
+                            {/* Show outgoing edges for this node */}
+                            <ul style={{ listStyle: 'none', paddingLeft: 0, marginLeft: 18 }}>
+                              {edges.filter(e => e.source === node.id).map(e => (
+                                <li key={e.id} style={{ color: '#eab308', fontSize: 13 }}>
+                                  → {e.target} {e.condition ? `[${e.condition}]` : ''}
+                                </li>
+                              ))}
+                            </ul>
                           </li>
                         ))}
                       </ul>
@@ -678,6 +1212,14 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
                         >
                           Preview
                         </button>
+                        {/* Show outgoing edges for this node */}
+                        <ul style={{ listStyle: 'none', paddingLeft: 0, marginLeft: 18 }}>
+                          {edges.filter(e => e.source === node.id).map(e => (
+                            <li key={e.id} style={{ color: '#eab308', fontSize: 13 }}>
+                              → {e.target} {e.condition ? `[${e.condition}]` : ''}
+                            </li>
+                          ))}
+                        </ul>
                       </li>
                     ))}
                   </ul>
@@ -686,14 +1228,19 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
             );
           })()}
         </div>
-        {/* Analytics dashboard modal (root level) */}
-        {showAnalytics && analyticsVersion && (
+        {/* Performance analytics dashboard modal */}
+        {showAnalytics && performanceStats && (
           <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 520, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
-              <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Analytics Dashboard</div>
-              <button onClick={() => { setShowAnalytics(false); setAnalyticsVersion(null); }} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
-              <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 16 }}>Version: {analyticsVersion.ts ? new Date(analyticsVersion.ts).toLocaleString() : 'Unknown'}</div>
-              <pre style={{ background: '#18181b', color: '#a3e635', borderRadius: 6, padding: 12, fontSize: 15 }}>{JSON.stringify(analyticsVersion.analytics, null, 2)}</pre>
+            <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+              <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Performance Analytics</div>
+              <button onClick={() => { setShowAnalytics(false); setPerformanceStats(null); }} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+              <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 16 }}>Timestamp: {performanceStats.timestamp}</div>
+              <ul style={{ fontSize: 15, marginBottom: 12 }}>
+                <li><b>Node Count:</b> {performanceStats.nodeCount}</li>
+                <li><b>Edge Count:</b> {performanceStats.edgeCount}</li>
+                <li><b>Render Time (ms):</b> {performanceStats.renderTimeMs}</li>
+                <li><b>Memory Usage:</b> {performanceStats.memoryUsage}</li>
+              </ul>
             </div>
           </div>
         )}
@@ -809,6 +1356,6 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
             </div>
           </div>
         )}
-      </div>
+    </div>
   );
 }
