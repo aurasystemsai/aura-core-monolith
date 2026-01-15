@@ -1,83 +1,82 @@
 import React, { useState, useRef, useEffect } from "react";
 import FlowNodeCanvas from "./FlowNodeCanvas";
 
-// Node-based, drag-and-drop flow builder foundation
-            // Responsive UI: add mobile detection
-            const isMobile = window.innerWidth < 600;
-          // Integrations state
-          const [showIntegrationModal, setShowIntegrationModal] = useState(false);
-          const [integrationNodeId, setIntegrationNodeId] = useState(null);
-          const [integrationConfig, setIntegrationConfig] = useState({}); // { nodeId: { type, url, method, headers, body } }
+export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
+  // Responsive UI: add mobile detection
+  const isMobile = window.innerWidth < 600;
+  // Integrations state
+  const [showIntegrationModal, setShowIntegrationModal] = useState(false);
+  const [integrationNodeId, setIntegrationNodeId] = useState(null);
+  const [integrationConfig, setIntegrationConfig] = useState({}); // { nodeId: { type, url, method, headers, body } }
 
-          function openIntegrationModal(nodeId) {
-            setIntegrationNodeId(nodeId);
-            setShowIntegrationModal(true);
-          }
-          function saveIntegrationConfig(nodeId, config) {
-            setIntegrationConfig(prev => ({ ...prev, [nodeId]: config }));
-            setShowIntegrationModal(false);
-          }
-        // Flow simulation/testing state
-        const [isSimulating, setIsSimulating] = useState(false);
-        const [simulationResults, setSimulationResults] = useState([]);
-        const [showSimulationModal, setShowSimulationModal] = useState(false);
+  function openIntegrationModal(nodeId) {
+    setIntegrationNodeId(nodeId);
+    setShowIntegrationModal(true);
+  }
+  function saveIntegrationConfig(nodeId, config) {
+    setIntegrationConfig(prev => ({ ...prev, [nodeId]: config }));
+    setShowIntegrationModal(false);
+  }
+  // Flow simulation/testing state
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simulationResults, setSimulationResults] = useState([]);
+  const [showSimulationModal, setShowSimulationModal] = useState(false);
 
-        function handleSimulateFlow() {
-          setIsSimulating(true);
-          setSimulationResults([]);
-          // Simulate each node (replace with backend call if needed)
-          const results = nodes.map((node, idx) => {
-            let output = `Simulated output for ${node.label || node.id}`;
-            let error = null;
-            if (node.type === 'action' && node.params && node.params.failTest) {
-              error = 'Simulated error: test failed';
-            }
-            return { node: node.label || node.id, output, error };
-          });
-          setTimeout(() => {
-            setSimulationResults(results);
-            setIsSimulating(false);
-            setShowSimulationModal(true);
-          }, 1200);
-        }
-      // Audit trail & history state
-      const [auditTrail, setAuditTrail] = useState([]);
-      const [showAuditModal, setShowAuditModal] = useState(false);
-
-      // Helper to log actions
-      function logAudit(action, details) {
-        setAuditTrail(prev => [
-          ...prev,
-          {
-            timestamp: new Date().toLocaleString(),
-            user: userRole,
-            action,
-            details,
-          },
-        ]);
+  function handleSimulateFlow() {
+    setIsSimulating(true);
+    setSimulationResults([]);
+    // Simulate each node (replace with backend call if needed)
+    const results = nodes.map((node, idx) => {
+      let output = `Simulated output for ${node.label || node.id}`;
+      let error = null;
+      if (node.type === 'action' && node.params && node.params.failTest) {
+        error = 'Simulated error: test failed';
       }
+      return { node: node.label || node.id, output, error };
+    });
+    setTimeout(() => {
+      setSimulationResults(results);
+      setIsSimulating(false);
+      setShowSimulationModal(true);
+    }, 1200);
+  }
+  // Audit trail & history state
+  const [auditTrail, setAuditTrail] = useState([]);
+  const [showAuditModal, setShowAuditModal] = useState(false);
 
-      // Example: wrap node add/delete with audit log
-      function handleAddNode(node) {
-        if (!canEdit) return;
-        setNodes(prev => [...prev, node]);
-        logAudit('Add Node', `Node ${node.label || node.id}`);
-      }
-      function handleDeleteNode(nodeId) {
-        if (!canDelete) return;
-        setNodes(prev => prev.filter(n => n.id !== nodeId));
-        logAudit('Delete Node', `Node ID ${nodeId}`);
-      }
-    // Role-based permissions state
-    const [userRole, setUserRole] = useState('editor'); // 'admin', 'editor', 'viewer'
-    const [showRoleModal, setShowRoleModal] = useState(false);
+  // Helper to log actions
+  function logAudit(action, details) {
+    setAuditTrail(prev => [
+      ...prev,
+      {
+        timestamp: new Date().toLocaleString(),
+        user: userRole,
+        action,
+        details,
+      },
+    ]);
+  }
 
-    // Permissions logic
-    const canEdit = userRole === 'admin' || userRole === 'editor';
-    const canDelete = userRole === 'admin';
-    const canView = true;
+  // Example: wrap node add/delete with audit log
+  function handleAddNode(node) {
+    if (!canEdit) return;
+    setNodes(prev => [...prev, node]);
+    logAudit('Add Node', `Node ${node.label || node.id}`);
+  }
+  function handleDeleteNode(nodeId) {
+    if (!canDelete) return;
+    setNodes(prev => prev.filter(n => n.id !== nodeId));
+    logAudit('Delete Node', `Node ID ${nodeId}`);
+  }
+  // Role-based permissions state
+  const [userRole, setUserRole] = useState('editor'); // 'admin', 'editor', 'viewer'
+  const [showRoleModal, setShowRoleModal] = useState(false);
 
-    // ...existing code...
+  // Permissions logic
+  const canEdit = userRole === 'admin' || userRole === 'editor';
+  const canDelete = userRole === 'admin';
+  const canView = true;
+
   // Live execution & debugging state
   const [isRunning, setIsRunning] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -126,7 +125,6 @@ import FlowNodeCanvas from "./FlowNodeCanvas";
       stepThroughFlow(idx + 1);
     }, 800);
   }
-export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
                                                                                                                                                           // Flow execution scheduling state
                                                                                                                                                           const [showSchedule, setShowSchedule] = useState(false);
                                                                                                                                                           const [schedule, setSchedule] = useState({ type: '', value: '' });
