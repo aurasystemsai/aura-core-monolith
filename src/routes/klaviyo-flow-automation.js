@@ -1,4 +1,18 @@
+// src/routes/klaviyo-flow-automation.js
+// Flagship backend for Klaviyo Flow Automation (save/load flows, analytics, collaborators)
+const express = require('express');
+const router = express.Router();
+const storage = require('../core/storageJson');
+
 const VERSIONS_KEY = 'klaviyo-flow-versions';
+const FLOWS_KEY = 'klaviyo-flows';
+const COLLAB_KEY = 'klaviyo-collaborators';
+const ANALYTICS_KEY = 'klaviyo-analytics';
+
+function getShop(req) {
+  return req.headers['x-shopify-shop-domain'] || req.query.shop || req.session?.shop || null;
+}
+
 // GET: Load flow versions for shop
 router.get('/versions', async (req, res) => {
   const shop = getShop(req);
@@ -20,19 +34,6 @@ router.post('/versions', async (req, res) => {
   await storage.set(VERSIONS_KEY, all);
   res.json({ ok: true, versions: all[shop] });
 });
-// src/routes/klaviyo-flow-automation.js
-// Flagship backend for Klaviyo Flow Automation (save/load flows, analytics, collaborators)
-const express = require('express');
-const router = express.Router();
-const storage = require('../core/storageJson');
-
-const FLOWS_KEY = 'klaviyo-flows';
-const COLLAB_KEY = 'klaviyo-collaborators';
-const ANALYTICS_KEY = 'klaviyo-analytics';
-
-function getShop(req) {
-  return req.headers['x-shopify-shop-domain'] || req.query.shop || req.session?.shop || null;
-}
 
 // GET: Load flow for shop
 router.get('/flow', async (req, res) => {
