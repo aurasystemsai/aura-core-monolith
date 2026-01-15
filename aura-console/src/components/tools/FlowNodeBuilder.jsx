@@ -23,6 +23,42 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
   // Shop domain (for API)
   const shop = window?.SHOP_DOMAIN || window?.location?.hostname || "demo-shop";
 
+   // AI Suggestions
+   const [aiLoading, setAiLoading] = useState(false);
+   const [aiError, setAiError] = useState("");
+   const [aiSuggestion, setAiSuggestion] = useState("");
+
+   async function handleAISuggest() {
+     setAiLoading(true);
+     setAiError("");
+     setAiSuggestion("");
+     try {
+       const res = await fetch("/api/klaviyo-flow-automation/ai/suggest", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ nodes, edges })
+       });
+       const data = await res.json();
+       if (!data.ok) throw new Error(data.error || "Unknown error");
+       setAiSuggestion(data.suggestion || "No suggestion generated");
+       // If suggestion contains nodes, add them
+       if (data.nodes && Array.isArray(data.nodes)) {
+         const now = Date.now();
+         const newNodes = data.nodes.map((n, i) => ({
+           id: `${now}-${i}-${Math.random().toString(36).substr(2, 5)}`,
+           ...n
+         }));
+         const allNodes = [...nodes, ...newNodes];
+         setNodes(allNodes);
+         pushHistory(allNodes, edges);
+       }
+     } catch (err) {
+       setAiError(err.message);
+     } finally {
+       setAiLoading(false);
+     }
+   }
+
   // Load flow, analytics, collaborators on mount and poll for changes every 2s
   useEffect(() => {
     let lastFlow = null;
@@ -338,6 +374,7 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
       </svg>
       {/* Controls */}
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
+        <button onClick={handleAISuggest} disabled={aiLoading} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: aiLoading ? 'not-allowed' : 'pointer', opacity: aiLoading ? 0.6 : 1 }}>AI Suggest</button>
         <button onClick={runFlow} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Run Flow</button>
         <button onClick={exportFlow} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Export</button>
         <label style={{ background: '#232336', color: '#fafafa', border: '1px solid #333', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 0 }}>
@@ -347,6 +384,8 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
         <span style={{ color: '#64748b', fontSize: 14, marginLeft: 10 }}>
           Runs: <b>{analytics.flowRuns}</b> | Last: {analytics.lastRun ? new Date(analytics.lastRun).toLocaleString() : 'Never'}
         </span>
+        {aiError && <span style={{ color: '#ef4444', fontWeight: 700, marginLeft: 10 }}>{aiError}</span>}
+        {aiSuggestion && <span style={{ color: '#38bdf8', fontWeight: 700, marginLeft: 10 }}>{aiSuggestion}</span>}
       </div>
       <div style={{ display: 'flex', gap: 12, marginBottom: 18, alignItems: 'center', position: 'relative', zIndex: 2 }}>
         <button onClick={() => addNode('trigger')} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ Trigger</button>
