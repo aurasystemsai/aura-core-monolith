@@ -2,6 +2,20 @@ import React, { useState, useRef, useEffect } from "react";
 
 // Node-based, drag-and-drop flow builder foundation
 export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
+        // Node grouping & collapse
+        const [groups, setGroups] = useState([]); // [{id, name, nodeIds, collapsed}]
+        const [groupDraft, setGroupDraft] = useState({ name: '', nodeIds: [] });
+        const [groupModalOpen, setGroupModalOpen] = useState(false);
+
+        function handleCreateGroup() {
+          if (!groupDraft.name || groupDraft.nodeIds.length === 0) return;
+          setGroups([...groups, { id: Math.random().toString(36).substr(2, 9), name: groupDraft.name, nodeIds: groupDraft.nodeIds, collapsed: false }]);
+          setGroupDraft({ name: '', nodeIds: [] });
+          setGroupModalOpen(false);
+        }
+        function handleToggleGroup(groupId) {
+          setGroups(groups.map(g => g.id === groupId ? { ...g, collapsed: !g.collapsed } : g));
+        }
       // Node search & quick add
       const [searchOpen, setSearchOpen] = useState(false);
       const [searchQuery, setSearchQuery] = useState("");
@@ -514,6 +528,26 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
         {aiSuggestion && <span style={{ color: '#38bdf8', fontWeight: 700, marginLeft: 10 }}>{aiSuggestion}</span>}
       </div>
       <div style={{ display: 'flex', gap: 12, marginBottom: 18, alignItems: 'center', position: 'relative', zIndex: 2 }}>
+                                <button onClick={() => setGroupModalOpen(true)} style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Group Nodes</button>
+                                {groupModalOpen && (
+                                  <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 420, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
+                                      <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Create Node Group</div>
+                                      <button onClick={() => setGroupModalOpen(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+                                      <input value={groupDraft.name} onChange={e => setGroupDraft(d => ({ ...d, name: e.target.value }))} placeholder="Group name" style={{ width: '100%', borderRadius: 8, border: '1px solid #333', padding: '10px 14px', fontSize: 16, marginBottom: 18, background: '#18181b', color: '#fafafa' }} />
+                                      <div style={{ marginBottom: 12, fontWeight: 700 }}>Select nodes to group:</div>
+                                      <div style={{ maxHeight: 180, overflowY: 'auto', marginBottom: 18 }}>
+                                        {nodes.map(n => (
+                                          <label key={n.id} style={{ display: 'block', marginBottom: 6 }}>
+                                            <input type="checkbox" checked={groupDraft.nodeIds.includes(n.id)} onChange={e => setGroupDraft(d => ({ ...d, nodeIds: e.target.checked ? [...d.nodeIds, n.id] : d.nodeIds.filter(id => id !== n.id) }))} />
+                                            <span style={{ marginLeft: 8 }}>{n.label}</span>
+                                          </label>
+                                        ))}
+                                      </div>
+                                      <button onClick={handleCreateGroup} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Create Group</button>
+                                    </div>
+                                  </div>
+                                )}
                         <button onClick={() => setSearchOpen(true)} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Quick Add</button>
                         {searchOpen && (
                           <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -629,7 +663,76 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
       {/* Node list */}
       <div style={{ minHeight: 180, position: 'relative', zIndex: 2 }} role="list" aria-label="Flow nodes list">
         {nodes.length === 0 && <div style={{ color: '#64748b', fontSize: 15 }}>Add triggers, actions, or conditions to start building your flow.</div>}
-        {nodes.map((node, idx) => {
+        {/* Render groups and nodes */}
+        {groups.map(group => (
+          <div key={group.id} style={{ position: 'relative', marginBottom: 18, border: '2px solid #eab308', borderRadius: 10, background: '#232336', padding: 10, minWidth: 240 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ fontWeight: 800, color: '#eab308', fontSize: 16 }}>{group.name}</span>
+              <button onClick={() => handleToggleGroup(group.id)} style={{ marginLeft: 12, background: '#eab308', color: '#232336', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>{group.collapsed ? 'Expand' : 'Collapse'}</button>
+            </div>
+            {!group.collapsed && group.nodeIds.map(nodeId => {
+              const node = nodes.find(n => n.id === nodeId);
+              if (!node) return null;
+              const color = nodeColors[node.type] || nodeColors.action;
+              const pos = getNodePos(node.id);
+              const nodeComments = comments?.[node.id] || [];
+              return (
+                <div
+                  key={node.id}
+                  ref={el => nodeRefs.current[node.id] = el}
+                  draggable
+                  onDragStart={() => onDragStart(node.id)}
+                  onDragOver={onDragOver}
+                  onDrop={() => onDrop(node.id)}
+                  tabIndex={0}
+                  role="listitem"
+                  aria-label={`Node ${node.label}, type ${node.type}`}
+                  aria-describedby={`node-desc-${node.id}`}
+                  style={{
+                    background: color.bg,
+                    color: color.color,
+                    borderRadius: 8,
+                    padding: '14px 18px',
+                    marginBottom: 10,
+                    border: draggingNode === node.id ? `2px dashed ${color.border}` : `2px solid ${color.border}`,
+                    opacity: draggingNode === node.id ? 0.7 : 1,
+                    cursor: 'move',
+                    fontWeight: 700,
+                    fontSize: 16,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    position: 'absolute',
+                    left: pos.x,
+                    top: pos.y,
+                    width: 220,
+                    boxShadow: draggingNode === node.id ? '0 0 0 2px #0ea5e9' : '0 2px 8px #0004',
+                    zIndex: configNodeId === node.id ? 11 : 2,
+                    transition: 'box-shadow 0.2s, border 0.2s, background 0.2s'
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') setConfigNodeId(node.id);
+                    if (e.key === 'Delete') setNodes(nodes.filter(n => n.id !== node.id));
+                    if (e.key === 'c' && e.ctrlKey) setCommentingNode(node.id);
+                  }}
+                  onMouseUp={() => edgeDrag.from && handleEdgeDrop(node.id)}
+                >
+                  {/* Edge handle (output) */}
+                  <div
+                    title="Drag to connect edge"
+                    style={{ width: 16, height: 16, borderRadius: 8, background: '#eab308', marginRight: 6, cursor: 'crosshair', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    onMouseDown={e => handleEdgeDragStart(node.id, e)}
+                  >
+                    <span style={{ color: '#232336', fontWeight: 900, fontSize: 14 }}>→</span>
+                  </div>
+                  {/* ...existing code for node content... */}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+        {/* Render ungrouped nodes */}
+        {nodes.filter(n => !groups.some(g => g.nodeIds.includes(n.id))).map((node, idx) => {
           const color = nodeColors[node.type] || nodeColors.action;
           const pos = getNodePos(node.id);
           const nodeComments = comments?.[node.id] || [];
