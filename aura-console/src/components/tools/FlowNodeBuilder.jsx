@@ -78,14 +78,7 @@ import FlowNodeCanvas from "./FlowNodeCanvas";
     const canView = true;
 
     // Example: restrict node add/delete actions
-    function handleAddNode(node) {
-      if (!canEdit) return;
-      setNodes(prev => [...prev, node]);
-    }
-    function handleDeleteNode(nodeId) {
-      if (!canDelete) return;
-      setNodes(prev => prev.filter(n => n.id !== nodeId));
-    }
+    // (Removed duplicate handleAddNode and handleDeleteNode)
   // Live execution & debugging state
   const [isRunning, setIsRunning] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
