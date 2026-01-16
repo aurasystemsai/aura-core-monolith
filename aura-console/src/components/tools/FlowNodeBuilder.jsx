@@ -185,12 +185,6 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
                                                                                                               const [newNodeType, setNewNodeType] = useState('');
                                                                                                               const [newNodeLabel, setNewNodeLabel] = useState('');
                                                                                                               const [newNodeFields, setNewNodeFields] = useState('');
-                                                                                                              const [aiSuggestions, setAiSuggestions] = useState([]);
-                                                                                                              async function fetchAiSuggestions(input) {
-                                                                                                                // Simulate AI call (replace with backend API if available)
-                                                                                                                if (!input) return setAiSuggestions([]);
-                                                                                                                setAiSuggestions(['Send Welcome Email', 'Trigger Cart Check', 'Send Reminder', 'API Call', 'Webhook', 'Decision Node'].filter(s => s.toLowerCase().includes(input.toLowerCase())));
-                                                                                                              }
 
                                                                                                               function handleAddCustomNode() {
                                                                                                                 if (!newNodeLabel || !newNodeType) return;
@@ -904,47 +898,34 @@ export default function FlowNodeBuilder({ nodes, setNodes, edges, setEdges }) {
         {showAddNode && (
           <div role="dialog" aria-modal="true" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#18181bcc', zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ background: '#232336', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 2px 24px #000a', color: '#fafafa', position: 'relative' }}>
-              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Add Custom Node</div>
-              <button onClick={() => setShowAddNode(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
-              <div style={{ marginBottom: 12 }}>
-                <input
-                  type="text"
-                  value={newNodeLabel}
-                  onChange={e => {
-                    setNewNodeLabel(e.target.value);
-                    fetchAiSuggestions(e.target.value);
-                  }}
-                  placeholder="Node Label"
-                  style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}
-                  autoFocus
-                />
-                {aiSuggestions.length > 0 && (
-                  <ul style={{ background: '#18181b', borderRadius: 8, padding: 8, margin: '4px 0', listStyle: 'none', fontSize: 14, color: '#a3e635' }}>
-                    {aiSuggestions.map((s, i) => (
-                      <li key={i} style={{ cursor: 'pointer', padding: '2px 0' }} onClick={() => { setNewNodeLabel(s); setAiSuggestions([]); }}>
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <input
-                  type="text"
-                  value={newNodeType}
-                  onChange={e => setNewNodeType(e.target.value)}
-                  placeholder="Node Type"
-                  style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}
-                />
-                <textarea
-                  value={newNodeFields}
-                  onChange={e => setNewNodeFields(e.target.value)}
-                  placeholder="Custom Fields (JSON)"
-                  style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, minHeight: 60, marginBottom: 8 }}
-                />
-                <button onClick={handleAddCustomNode} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Add Node</button>
-              </div>
-            </div>
-          </div>
-        )}
+                    <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Add Custom Node</div>
+                    <button onClick={() => setShowAddNode(false)} style={{ position: 'absolute', top: 18, right: 18, background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Close</button>
+                    <div style={{ marginBottom: 12 }}>
+                      <input
+                        type="text"
+                        value={newNodeLabel}
+                        onChange={e => setNewNodeLabel(e.target.value)}
+                        placeholder="Node Label"
+                        style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}
+                      />
+                      <input
+                        type="text"
+                        value={newNodeType}
+                        onChange={e => setNewNodeType(e.target.value)}
+                        placeholder="Node Type"
+                        style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, marginBottom: 8 }}
+                      />
+                      <textarea
+                        value={newNodeFields}
+                        onChange={e => setNewNodeFields(e.target.value)}
+                        placeholder="Custom Fields (JSON)"
+                        style={{ fontSize: 15, borderRadius: 8, border: '1px solid #232336', padding: '8px 12px', minWidth: 220, minHeight: 60, marginBottom: 8 }}
+                      />
+                      <button onClick={handleAddCustomNode} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Add Node</button>
+                    </div>
+                  </div>
+                </div>
+              )}
         {/* Flow validation errors toolbar (valid JSX placement) */}
         {/* Flow validation errors toolbar (valid JSX placement) */}
         <div style={{ position: 'absolute', top: 18, left: 620, zIndex: 10 }}>
