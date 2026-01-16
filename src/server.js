@@ -1255,15 +1255,16 @@ app.use((req, res, next) => {
 // ---------- START SERVER ----------
 
 const { initABTestingSuiteSocket } = require('./tools/ab-testing-suite/abTestingSuiteSocket');
+const { initFlowSocket } = require('./tools/klaviyo-flow-automation/flowSocket');
 const http = require('http');
 
 
 if (require.main === module) {
   const http = require('http');
   server = http.createServer(app);
-  // WebSocket for /ws/abandoned-checkout-winback removed (not supported in this environment)
-  // Attach other sockets
+  // Attach WebSocket servers
   initABTestingSuiteSocket(server);
+  initFlowSocket(server);
   server.listen(PORT, () => {
     console.log(
       `[Core] AURA Core API running on port ${PORT}\n` +
