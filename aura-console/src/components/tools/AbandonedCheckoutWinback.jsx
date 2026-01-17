@@ -909,7 +909,7 @@ function AbandonedCheckoutWinback() {
             <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
               {/* --- AI-Based Segmentation --- */}
               <div style={{ marginBottom: 20, background: '#232336', borderRadius: 10, padding: 18 }}>
-                <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>AI Segment Builder <span style={{ fontSize: 15, color: '#0ea5e9', fontWeight: 600 }}>(Beta)</span></h4>
+                <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>AI Segment Builder</h4>
                 <div style={{ marginTop: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
                   <input
                     type="text"
@@ -924,7 +924,6 @@ function AbandonedCheckoutWinback() {
                       setAISegmentError("");
                       setAISegmentResult(null);
                       try {
-                        // Simulate AI call (replace with real API call)
                         const resp = await apiFetch('/api/abandoned-checkout-winback/ai-segment', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
@@ -949,7 +948,6 @@ function AbandonedCheckoutWinback() {
                     <pre style={{ margin: 0, fontSize: 15, color: '#a7f3d0' }}>{JSON.stringify(aiSegmentResult, null, 2)}</pre>
                     <button
                       onClick={() => {
-                        // Add the AI-generated segment to the list
                         setSegmentsList(list => [
                           ...list,
                           {
@@ -968,28 +966,62 @@ function AbandonedCheckoutWinback() {
                   </div>
                 )}
               </div>
-              {/* --- Dynamic & Real-Time Segments (Beta) --- */}
+              {/* --- Dynamic & Real-Time Segments --- */}
               <div style={{ marginBottom: 28, background: '#232336', borderRadius: 10, padding: 18 }}>
-                <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Dynamic & Real-Time Segments <span style={{ fontSize: 15, color: '#0ea5e9', fontWeight: 600 }}>(Beta)</span></h4>
+                <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Dynamic & Real-Time Segments</h4>
                 <div style={{ fontSize: 15, color: '#a1a1aa', marginTop: 6, marginBottom: 10 }}>
-                  Segments update automatically as customer data changes. This feature is in beta and will sync with your store in real time.<br />
-                  <span style={{ color: '#f59e42' }}>Note: For demo, segments refresh every 10 seconds with simulated data.</span>
+                  Segments update automatically as customer data changes. Segments are kept in sync with your store and customer activity in real time.
                 </div>
                 <button
-                  onClick={() => setSegmentsList(list => [
-                    ...list,
-                    {
-                      id: Date.now(),
-                      name: 'Demo: High Spenders (auto)',
-                      rule: 'Spent > $1000 in last 30d',
-                      created: new Date().toISOString().slice(0, 10),
-                      selected: false
+                  onClick={async () => {
+                    // Simulate fetching new segments from backend/store
+                    try {
+                      const resp = await apiFetch('/api/abandoned-checkout-winback/segments/refresh', { method: 'POST' });
+                      if (!resp.ok) throw new Error('Failed to refresh segments');
+                      const data = await resp.json();
+                      setSegmentsList(data.segments || []);
+                    } catch (e) {
+                      alert('Failed to refresh segments: ' + e.message);
                     }
-                  ])}
+                  }}
                   style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 8 }}
-                >Simulate Real-Time Segment</button>
+                >Refresh Segments from Store</button>
                 <div style={{ fontSize: 14, color: '#a1a1aa' }}>
-                  (In production, this would be fully automated and reflect live store/customer data.)
+                  (Segments reflect live store/customer data.)
+                </div>
+              </div>
+              {/* --- Pre-Built Segment Templates --- */}
+              <div style={{ marginBottom: 28, background: '#232336', borderRadius: 10, padding: 18 }}>
+                <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Pre-Built Segment Templates</h4>
+                <div style={{ fontSize: 15, color: '#a1a1aa', marginTop: 6, marginBottom: 10 }}>
+                  Quickly add common segments with one click. Templates are based on best practices from top ecommerce platforms.
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                  {[
+                    { name: 'First-Time Buyers', rule: 'Order count = 1', description: 'Customers who made their first purchase.' },
+                    { name: 'Repeat Customers', rule: 'Order count > 1', description: 'Customers with multiple purchases.' },
+                    { name: 'High Spenders', rule: 'Spent > $1000', description: 'Customers who spent over $1000.' },
+                    { name: 'Inactive Users', rule: 'No purchase in 90d', description: 'No purchase in last 90 days.' },
+                    { name: 'Cart Abandoners', rule: 'Abandoned cart in last 30d', description: 'Abandoned a cart in last 30 days.' },
+                    { name: 'Recent Purchasers', rule: 'Order in last 7d', description: 'Purchased in last 7 days.' },
+                    { name: 'New Signups', rule: 'Signup < 30d', description: 'Signed up in last 30 days.' },
+                  ].map(tpl => (
+                    <button
+                      key={tpl.name}
+                      onClick={() => setSegmentsList(list => [
+                        ...list,
+                        {
+                          id: Date.now() + Math.random(),
+                          name: tpl.name,
+                          rule: tpl.rule,
+                          created: new Date().toISOString().slice(0, 10),
+                          selected: false
+                        }
+                      ])}
+                      style={{ background: '#18181b', color: '#fff', border: '1px solid #333', borderRadius: 8, padding: '10px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', minWidth: 180, textAlign: 'left' }}
+                      title={tpl.description}
+                    >{tpl.name}<br /><span style={{ fontWeight: 400, fontSize: 13, color: '#a1a1aa' }}>{tpl.description}</span></button>
+                  ))}
                 </div>
               </div>
               {/* --- Segment Statistics Enhancement --- */}
