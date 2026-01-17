@@ -1,3 +1,49 @@
+// --- Customer Lifecycle Bar Component ---
+function CustomerLifecycleBar({ segments, onFilter, selectedStage }) {
+  // Best-practice lifecycle stages
+  const stages = [
+    { key: 'New', label: 'New', color: '#38bdf8', desc: 'Signed up <30d ago' },
+    { key: 'Active', label: 'Active', color: '#22c55e', desc: 'Purchased in last 30d' },
+    { key: 'At Risk', label: 'At Risk', color: '#facc15', desc: 'No purchase 30-60d' },
+    { key: 'Churned', label: 'Churned', color: '#ef4444', desc: 'No purchase >60d' },
+    { key: 'Loyal', label: 'Loyal', color: '#6366f1', desc: 'Repeat/high-value' },
+  ];
+  // Count segments by stage (mock logic, real logic should use customer data)
+  const counts = stages.reduce((acc, stage) => {
+    acc[stage.key] = segments.filter(s => s.lifecycleStage === stage.key).length;
+    return acc;
+  }, {});
+  return (
+    <div style={{ display: 'flex', gap: 18, margin: '18px 0 18px 0', alignItems: 'center' }}>
+      {stages.map(stage => (
+        <button
+          key={stage.key}
+          onClick={() => onFilter(stage.key)}
+          style={{
+            background: selectedStage === stage.key ? stage.color : '#232336',
+            color: selectedStage === stage.key ? '#fff' : stage.color,
+            border: 'none',
+            borderRadius: 8,
+            padding: '10px 18px',
+            fontWeight: 700,
+            fontSize: 15,
+            cursor: 'pointer',
+            minWidth: 110,
+            boxShadow: selectedStage === stage.key ? '0 2px 8px #0004' : undefined,
+            outline: selectedStage === stage.key ? `2px solid ${stage.color}` : 'none',
+            transition: 'all 0.2s',
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+          }}
+          aria-pressed={selectedStage === stage.key}
+          title={stage.desc}
+        >
+          <span>{stage.label}</span>
+          <span style={{ fontSize: 13, fontWeight: 500, color: selectedStage === stage.key ? '#fff' : '#a1a1aa' }}>{counts[stage.key] || 0} segments</span>
+        </button>
+      ))}
+    </div>
+  );
+}
 import React, { useState, useEffect } from 'react';
 import { exportCampaignPDF } from './WinbackExportPDF';
 import { apiFetch } from '../../api';
