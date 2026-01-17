@@ -361,6 +361,8 @@ function ComplianceSection() {
 }
 
 function AbandonedCheckoutWinback() {
+      // Customer lifecycle filter state
+      const [lifecycleFilter, setLifecycleFilter] = useState(null);
     // --- Analytics state for Analytics section ---
     const [analytics, setAnalytics] = useState([]);
 
@@ -1035,8 +1037,17 @@ function AbandonedCheckoutWinback() {
               </div>
               {/* --- Segment Statistics Enhancement --- */}
               <SegmentStatistics segments={segmentsList} />
+                            {/* --- Customer Lifecycle Mapping --- */}
+                            <CustomerLifecycleBar segments={segmentsList} onFilter={setLifecycleFilter} selectedStage={lifecycleFilter} />
               {/* Segments Table & Bulk Actions */}
               <div style={{ marginTop: 24, marginBottom: 32 }}>
+                              {/* Filter segments by lifecycle stage if selected */}
+                              {lifecycleFilter && (
+                                <div style={{ marginBottom: 12, color: '#0ea5e9', fontWeight: 600 }}>
+                                  Showing: {lifecycleFilter} customers
+                                  <button onClick={() => setLifecycleFilter(null)} style={{ marginLeft: 16, background: 'none', color: '#ef4444', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Clear Filter</button>
+                                </div>
+                              )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <div style={{ fontWeight: 700, fontSize: 20 }}>Your Segments</div>
                   <button onClick={() => openSegmentModal()} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ New Segment</button>
@@ -1054,19 +1065,21 @@ function AbandonedCheckoutWinback() {
                   <tbody>
                     {segmentsList.length === 0 ? (
                       <tr><td colSpan={5} style={{ textAlign: 'center', color: '#64748b', padding: 24 }}>No segments yet.</td></tr>
-                    ) : segmentsList.map(s => (
-                      <tr key={s.id} style={{ background: s.selected ? '#e0e7ff' : undefined }}>
-                        <td><input type="checkbox" checked={!!s.selected} onChange={() => toggleSelectSegment(s.id)} aria-label={`Select segment ${s.name}`} /></td>
-                        <td>{s.name}</td>
-                        <td>{s.rule}</td>
-                        <td>{s.created}</td>
-                        <td>
-                          <button onClick={() => openSegmentModal(s)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
-                          <button onClick={() => setSegmentsList(list => list.filter(x => x.id !== s.id))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Delete</button>
-                          <SegmentQuickActions segment={s} onSend={handleSendWinback} onPreview={handlePreviewWinback} />
-                        </td>
-                      </tr>
-                    ))}
+                    ) : segmentsList
+                        .filter(s => !lifecycleFilter || (s.lifecycleStage === lifecycleFilter))
+                        .map(s => (
+                          <tr key={s.id} style={{ background: s.selected ? '#e0e7ff' : undefined }}>
+                            <td><input type="checkbox" checked={!!s.selected} onChange={() => toggleSelectSegment(s.id)} aria-label={`Select segment ${s.name}`} /></td>
+                            <td>{s.name}</td>
+                            <td>{s.rule}</td>
+                            <td>{s.created}</td>
+                            <td>
+                              <button onClick={() => openSegmentModal(s)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
+                              <button onClick={() => setSegmentsList(list => list.filter(x => x.id !== s.id))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                              <SegmentQuickActions segment={s} onSend={handleSendWinback} onPreview={handlePreviewWinback} />
+                            </td>
+                          </tr>
+                        ))}
                   </tbody>
                 </table>
                 {/* Bulk Actions */}
