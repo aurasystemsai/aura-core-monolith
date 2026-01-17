@@ -1123,6 +1123,8 @@ function AbandonedCheckoutWinback() {
                               <button onClick={() => openSegmentModal(s)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
                               <button onClick={() => setSegmentsList(list => list.filter(x => x.id !== s.id))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Delete</button>
                               <SegmentQuickActions segment={s} onSend={handleSendWinback} onPreview={handlePreviewWinback} />
+                              {/* --- Segment Automations --- */}
+                              <SegmentAutomations segment={s} onUpdate={automation => handleUpdateAutomation(s.id, automation)} />
                             </td>
                           </tr>
                         ))}
