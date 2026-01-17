@@ -904,6 +904,86 @@ function AbandonedCheckoutWinback() {
         </nav>
         <div style={{ flex: 1, padding: '32px 0 32px 32px' }}>
         {activeSection === 'segments' && (
+                        {/* --- Custom Segment Builder --- */}
+                        <div style={{ marginBottom: 28, background: '#232336', borderRadius: 10, padding: 18 }}>
+                          <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Custom Segment Builder</h4>
+                          <div style={{ fontSize: 15, color: '#a1a1aa', marginTop: 6, marginBottom: 10 }}>
+                            Build your own segment by combining rules and filters. Mix purchase history, engagement, demographics, and more.
+                          </div>
+                          <CustomSegmentBuilder onCreate={segment => setSegmentsList(list => [...list, { ...segment, id: Date.now(), created: new Date().toISOString().slice(0, 10), selected: false }])} />
+                        </div>
+          // --- Custom Segment Builder Component ---
+          export function CustomSegmentBuilder({ onCreate }) {
+            const [name, setName] = React.useState("");
+            const [rules, setRules] = React.useState([
+              { field: "purchaseCount", op: ">", value: "1" }
+            ]);
+            const [error, setError] = React.useState("");
+
+            const fields = [
+              { value: "purchaseCount", label: "Purchase Count" },
+              { value: "totalSpent", label: "Total Spent ($)" },
+              { value: "lastPurchase", label: "Last Purchase (days ago)" },
+              { value: "emailOpens", label: "Email Opens" },
+              { value: "emailClicks", label: "Email Clicks" },
+              { value: "country", label: "Country" },
+              { value: "signupDays", label: "Signup (days ago)" },
+              { value: "abandonedCart", label: "Abandoned Cart (days ago)" },
+            ];
+            const ops = [
+              { value: ">", label: ">" },
+              { value: "<", label: "<" },
+              { value: "=", label: "=" },
+              { value: "!=", label: "≠" },
+              { value: "contains", label: "contains" },
+            ];
+
+            const handleRuleChange = (idx, key, val) => {
+              setRules(rules => rules.map((r, i) => i === idx ? { ...r, [key]: val } : r));
+            };
+            const addRule = () => setRules(rules => [...rules, { field: "purchaseCount", op: ">", value: "1" }]);
+            const removeRule = idx => setRules(rules => rules.filter((_, i) => i !== idx));
+
+            const handleCreate = () => {
+              setError("");
+              if (!name.trim()) {
+                setError("Segment name required");
+                return;
+              }
+              if (!rules.length) {
+                setError("At least one rule required");
+                return;
+              }
+              onCreate({ name, rule: rules.map(r => `${fields.find(f => f.value === r.field)?.label || r.field} ${r.op} ${r.value}`).join(" AND ") });
+              setName("");
+              setRules([{ field: "purchaseCount", op: ">", value: "1" }]);
+            };
+
+            return (
+              <div style={{ background: '#18181b', borderRadius: 8, padding: 16, marginTop: 8 }}>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
+                  <input value={name} onChange={e => setName(e.target.value)} placeholder="Segment name" style={{ flex: 2, padding: 8, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#232336', color: '#fafafa' }} />
+                </div>
+                {rules.map((r, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                    <select value={r.field} onChange={e => handleRuleChange(idx, 'field', e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#232336', color: '#fafafa' }}>
+                      {fields.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                    </select>
+                    <select value={r.op} onChange={e => handleRuleChange(idx, 'op', e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#232336', color: '#fafafa' }}>
+                      {ops.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                    <input value={r.value} onChange={e => handleRuleChange(idx, 'value', e.target.value)} placeholder="Value" style={{ flex: 1, padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#232336', color: '#fafafa' }} />
+                    {rules.length > 1 && <button onClick={() => removeRule(idx)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Remove</button>}
+                  </div>
+                ))}
+                <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+                  <button onClick={addRule} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>+ Add Rule</button>
+                </div>
+                {error && <div style={{ color: '#f87171', marginBottom: 8 }}>{error}</div>}
+                <button onClick={handleCreate} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Create Segment</button>
+              </div>
+            );
+          }
           <section aria-label="Segments">
             <WinbackFeatureCard title="Advanced Segmentation" description="Create, manage, and apply dynamic customer segments. Saved segments, rule builder, and filters." icon="👥" />
             <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
