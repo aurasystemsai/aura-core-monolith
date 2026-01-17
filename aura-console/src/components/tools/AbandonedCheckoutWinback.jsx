@@ -832,7 +832,33 @@ function AbandonedCheckoutWinback() {
       );
     }
 
-    // Main component return
+    // Quick Actions for Segments
+    function SegmentQuickActions({ segment, onSend, onPreview }) {
+      return (
+        <span style={{ display: 'inline-flex', gap: 8 }}>
+          <button
+            title="Send Winback Email"
+            style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 6, padding: '3px 10px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+            onClick={() => onSend(segment)}
+          >Send</button>
+          <button
+            title="Preview Winback Email"
+            style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '3px 10px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+            onClick={() => onPreview(segment)}
+          >Preview</button>
+        </span>
+      );
+    }
+
+    // Handler stubs for quick actions
+    const handleSendWinback = (segment) => {
+      alert(`Send Winback Email for segment: ${segment.name}`);
+    };
+    const handlePreviewWinback = (segment) => {
+      alert(`Preview Winback Email for segment: ${segment.name}`);
+    };
+
+    // --- Main component return
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: '#18181b' }}>
         {/* Flagship Navigation Sidebar */}
@@ -906,6 +932,7 @@ function AbandonedCheckoutWinback() {
                         <td>
                           <button onClick={() => openSegmentModal(s)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
                           <button onClick={() => setSegmentsList(list => list.filter(x => x.id !== s.id))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                          <SegmentQuickActions segment={s} onSend={handleSendWinback} onPreview={handlePreviewWinback} />
                         </td>
                       </tr>
                     ))}
@@ -1018,8 +1045,7 @@ function AbandonedCheckoutWinback() {
               <div style={{ marginTop: 24, marginBottom: 32 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <div style={{ fontWeight: 700, fontSize: 20 }}>Your Experiments</div>
-                  <button onClick={() => openExperimentModal()} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ New Experiment</button>
-                </div>
+                  <button onClick={() => openExperimentModal()} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ New Experiment</button                </div>
                 <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--background-secondary)', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
                   <thead>
                     <tr style={{ background: '#f3f4f6' }}>
