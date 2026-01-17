@@ -523,6 +523,11 @@ function AbandonedCheckoutWinback() {
     ]);
     const [showSegmentModal, setShowSegmentModal] = useState(false);
     const [editingSegment, setEditingSegment] = useState(null);
+      // --- AI Segment Builder state ---
+      const [aiSegmentPrompt, setAISegmentPrompt] = useState("");
+      const [aiSegmentLoading, setAISegmentLoading] = useState(false);
+      const [aiSegmentError, setAISegmentError] = useState("");
+      const [aiSegmentResult, setAISegmentResult] = useState(null);
     const openSegmentModal = (segment = null) => {
       setEditingSegment(segment);
       setShowSegmentModal(true);
@@ -902,6 +907,67 @@ function AbandonedCheckoutWinback() {
           <section aria-label="Segments">
             <WinbackFeatureCard title="Advanced Segmentation" description="Create, manage, and apply dynamic customer segments. Saved segments, rule builder, and filters." icon="👥" />
             <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
+              {/* --- AI-Based Segmentation --- */}
+              <div style={{ marginBottom: 28, background: '#232336', borderRadius: 10, padding: 18 }}>
+                <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>AI Segment Builder <span style={{ fontSize: 15, color: '#0ea5e9', fontWeight: 600 }}>(Beta)</span></h4>
+                <div style={{ marginTop: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    value={aiSegmentPrompt || ''}
+                    onChange={e => setAISegmentPrompt(e.target.value)}
+                    placeholder="Describe your segment (e.g. 'VIPs who abandoned cart')"
+                    style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #333', fontSize: 15, background: '#18181b', color: '#fafafa' }}
+                  />
+                  <button
+                    onClick={async () => {
+                      setAISegmentLoading(true);
+                      setAISegmentError("");
+                      setAISegmentResult(null);
+                      try {
+                        // Simulate AI call (replace with real API call)
+                        const resp = await apiFetch('/api/abandoned-checkout-winback/ai-segment', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ prompt: aiSegmentPrompt })
+                        });
+                        if (!resp.ok) throw new Error('AI failed to generate segment');
+                        const data = await resp.json();
+                        setAISegmentResult(data.segment);
+                      } catch (e) {
+                        setAISegmentError(e.message);
+                      }
+                      setAISegmentLoading(false);
+                    }}
+                    disabled={!aiSegmentPrompt || aiSegmentLoading}
+                    style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: aiSegmentLoading ? 'not-allowed' : 'pointer' }}
+                  >{aiSegmentLoading ? 'Generating...' : 'Generate Segment'}</button>
+                </div>
+                {aiSegmentError && <div style={{ color: '#f87171', marginTop: 8 }}>{aiSegmentError}</div>}
+                {aiSegmentResult && (
+                  <div style={{ marginTop: 16, background: '#18181b', borderRadius: 8, padding: 14, color: '#a7f3d0' }}>
+                    <div style={{ fontWeight: 600, fontSize: 16 }}>AI Suggestion:</div>
+                    <pre style={{ margin: 0, fontSize: 15, color: '#a7f3d0' }}>{JSON.stringify(aiSegmentResult, null, 2)}</pre>
+                    <button
+                      onClick={() => {
+                        // Add the AI-generated segment to the list
+                        setSegmentsList(list => [
+                          ...list,
+                          {
+                            id: Date.now(),
+                            name: aiSegmentResult.name || aiSegmentPrompt,
+                            rule: aiSegmentResult.rule || aiSegmentPrompt,
+                            created: new Date().toISOString().slice(0, 10),
+                            selected: false
+                          }
+                        ]);
+                        setAISegmentPrompt("");
+                        setAISegmentResult(null);
+                      }}
+                      style={{ marginTop: 10, background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}
+                    >Add to Segments</button>
+                  </div>
+                )}
+              </div>
               {/* --- Segment Statistics Enhancement --- */}
               <SegmentStatistics segments={segmentsList} />
               {/* Segments Table & Bulk Actions */}
