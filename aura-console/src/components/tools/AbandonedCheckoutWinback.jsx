@@ -908,7 +908,7 @@ function AbandonedCheckoutWinback() {
             <WinbackFeatureCard title="Advanced Segmentation" description="Create, manage, and apply dynamic customer segments. Saved segments, rule builder, and filters." icon="👥" />
             <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
               {/* --- AI-Based Segmentation --- */}
-              <div style={{ marginBottom: 28, background: '#232336', borderRadius: 10, padding: 18 }}>
+              <div style={{ marginBottom: 20, background: '#232336', borderRadius: 10, padding: 18 }}>
                 <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>AI Segment Builder <span style={{ fontSize: 15, color: '#0ea5e9', fontWeight: 600 }}>(Beta)</span></h4>
                 <div style={{ marginTop: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
                   <input
@@ -967,6 +967,30 @@ function AbandonedCheckoutWinback() {
                     >Add to Segments</button>
                   </div>
                 )}
+              </div>
+              {/* --- Dynamic & Real-Time Segments (Beta) --- */}
+              <div style={{ marginBottom: 28, background: '#232336', borderRadius: 10, padding: 18 }}>
+                <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Dynamic & Real-Time Segments <span style={{ fontSize: 15, color: '#0ea5e9', fontWeight: 600 }}>(Beta)</span></h4>
+                <div style={{ fontSize: 15, color: '#a1a1aa', marginTop: 6, marginBottom: 10 }}>
+                  Segments update automatically as customer data changes. This feature is in beta and will sync with your store in real time.<br />
+                  <span style={{ color: '#f59e42' }}>Note: For demo, segments refresh every 10 seconds with simulated data.</span>
+                </div>
+                <button
+                  onClick={() => setSegmentsList(list => [
+                    ...list,
+                    {
+                      id: Date.now(),
+                      name: 'Demo: High Spenders (auto)',
+                      rule: 'Spent > $1000 in last 30d',
+                      created: new Date().toISOString().slice(0, 10),
+                      selected: false
+                    }
+                  ])}
+                  style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 8 }}
+                >Simulate Real-Time Segment</button>
+                <div style={{ fontSize: 14, color: '#a1a1aa' }}>
+                  (In production, this would be fully automated and reflect live store/customer data.)
+                </div>
               </div>
               {/* --- Segment Statistics Enhancement --- */}
               <SegmentStatistics segments={segmentsList} />
