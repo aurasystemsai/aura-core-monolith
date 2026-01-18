@@ -1126,6 +1126,7 @@ function AbandonedCheckoutWinback() {
                               {/* --- Segment Automations --- */}
                               <SegmentAutomations segment={s} onUpdate={automation => handleUpdateAutomation(s.id, automation)} />
                               <CrossChannelTargeting segment={s} onUpdate={channels => handleUpdateChannels(s.id, channels)} />
+                              <SegmentPerformanceInsights segment={s} />
                             </td>
                           </tr>
                         ))}
@@ -1564,15 +1565,15 @@ function SegmentAutomations({ segment, onUpdate }) {
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
           <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, maxWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
             <h3 style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Segment Automations</h3>
-            <div style={{ marginBottom: 18 }}>
-              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 8, display: 'block' }}>Add Automation</label>
-              <select id="automation-type" style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #333', fontSize: 15, background: '#232336', color: '#fafafa', marginBottom: 12 }}>
+            <div style={{ marginBottom: 12 }}>
+              <label>Add Automation</label>
+              <select id="automation-type" style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#232336', color: '#fafafa', marginBottom: 12 }}>
                 <option value="email">Send Email</option>
                 <option value="sms">Send SMS</option>
                 <option value="push">Send Push</option>
                 <option value="webhook">Trigger Webhook</option>
               </select>
-              <input id="automation-detail" placeholder="Details (e.g. template, URL)" style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #333', fontSize: 15, background: '#232336', color: '#fafafa', marginBottom: 12 }} />
+              <input id="automation-detail" placeholder="Details (e.g. template, URL)" style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#232336', color: '#fafafa', marginBottom: 12 }} />
               <button onClick={() => {
                 const type = document.getElementById('automation-type').value;
                 const detail = document.getElementById('automation-detail').value;
@@ -1646,6 +1647,39 @@ function CrossChannelTargeting({ segment, onUpdate }) {
         </button>
       ))}
     </div>
+  );
+}
+
+// --- Segment Performance Insights Component ---
+function SegmentPerformanceInsights({ segment }) {
+  const [show, setShow] = React.useState(false);
+  // Mock performance data
+  const data = segment.performance || {
+    openRate: 42,
+    clickRate: 18,
+    conversionRate: 7,
+    revenue: 1234,
+    recentActivity: '2026-01-17',
+    trend: '+12% MoM',
+  };
+  return (
+    <>
+      <button onClick={() => setShow(true)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 600, fontSize: 13, cursor: 'pointer', marginLeft: 6 }}>Performance</button>
+      {show && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
+          <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, maxWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
+            <h3 style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Segment Performance</h3>
+            <div style={{ marginBottom: 12 }}><b>Open Rate:</b> {data.openRate}%</div>
+            <div style={{ marginBottom: 12 }}><b>Click Rate:</b> {data.clickRate}%</div>
+            <div style={{ marginBottom: 12 }}><b>Conversion Rate:</b> {data.conversionRate}%</div>
+            <div style={{ marginBottom: 12 }}><b>Revenue:</b> ${data.revenue}</div>
+            <div style={{ marginBottom: 12 }}><b>Recent Activity:</b> {data.recentActivity}</div>
+            <div style={{ marginBottom: 12 }}><b>Trend:</b> {data.trend}</div>
+            <button onClick={() => setShow(false)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginTop: 18 }}>Close</button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
