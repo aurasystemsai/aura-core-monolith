@@ -1,3 +1,32 @@
+import React, { useState, useEffect } from 'react';
+
+// --- Onboarding Banner ---
+function OnboardingBanner() {
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return localStorage.getItem('acw_onboarding_dismissed') === '1';
+    } catch { return false; }
+  });
+  const handleDismiss = () => {
+    setDismissed(true);
+    try { localStorage.setItem('acw_onboarding_dismissed', '1'); } catch {}
+  };
+  if (dismissed) return null;
+  return (
+    <div style={{ background: '#6366f1', color: '#fff', borderRadius: 10, padding: 18, marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 2px 8px #0004' }}>
+      <div>
+        <b>Welcome to Abandoned Checkout Winback!</b> <br />
+        <span style={{ fontSize: 15 }}>
+          1. Create segments to target specific customer groups.<br />
+          2. Use templates for quick setup.<br />
+          3. Analyze performance and iterate.<br />
+        </span>
+      </div>
+      <button onClick={handleDismiss} style={{ background: '#18181b', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 16px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginLeft: 18 }}>Dismiss</button>
+    </div>
+  );
+}
+
 // --- Customer Lifecycle Bar Component ---
 function CustomerLifecycleBar({ segments, onFilter, selectedStage }) {
   // Best-practice lifecycle stages
@@ -35,10 +64,10 @@ function CustomerLifecycleBar({ segments, onFilter, selectedStage }) {
             display: 'flex', flexDirection: 'column', alignItems: 'center',
           }}
           aria-pressed={selectedStage === stage.key}
-          title={stage.desc}
+          title={stage.desc + ' (Click to filter segments by this stage)'}
         >
-          <span>{stage.label}</span>
-          <span style={{ fontSize: 13, fontWeight: 400, color: '#a1a1aa' }}>{counts[stage.key] || 0} segments</span>
+          <span title={stage.desc}>{stage.label}</span>
+          <span style={{ fontSize: 13, fontWeight: 400, color: '#a1a1aa' }} title="Number of segments in this stage">{counts[stage.key] || 0} segments</span>
         </button>
       ))}
     </div>
