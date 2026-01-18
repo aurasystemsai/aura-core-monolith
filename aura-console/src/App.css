@@ -21,6 +21,8 @@
 .page-frame {
   margin: 16px auto;
   max-width: 800px;
+    max-width: 1000px;
+    margin: 0 auto;
   background: var(--bg-alt);
   border-radius: 18px;
   box-shadow: 0 8px 32px #0003;
