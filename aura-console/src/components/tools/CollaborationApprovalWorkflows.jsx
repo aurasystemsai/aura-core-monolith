@@ -110,7 +110,7 @@ export default function CollaborationApprovalWorkflows() {
 
   return (
     <div style={{
-      maxWidth: 900,
+      
       margin: "40px auto",
       background: "#18181b",
       borderRadius: 18,

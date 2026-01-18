@@ -156,7 +156,7 @@ export default function PersonalizationRecommendationEngine() {
 
   return (
     <div style={{
-      maxWidth: 900,
+      
       margin: "40px auto",
       background: darkMode ? "#18181b" : accessibilityMode ? "#e0f7fa" : "#fff",
       borderRadius: 18,

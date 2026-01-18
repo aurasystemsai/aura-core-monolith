@@ -137,7 +137,7 @@ export default function InternalLinkOptimizer() {
 
   return (
     <div style={{
-      maxWidth: 900,
+      
       margin: "40px auto",
       background: darkMode ? "#18181b" : "#fff",
       borderRadius: 18,

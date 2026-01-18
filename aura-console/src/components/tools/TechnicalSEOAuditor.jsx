@@ -112,7 +112,7 @@ export default function TechnicalSEOAuditor() {
   return (
     <div
       style={{
-        maxWidth: 700,
+        
         margin: "40px auto",
         background: "#23263a",
         color: "#f3f4f6",

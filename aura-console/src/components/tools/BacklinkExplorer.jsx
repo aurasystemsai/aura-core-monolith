@@ -83,7 +83,7 @@ export default function BacklinkExplorer() {
 
   return (
     <div style={{
-      maxWidth: 900,
+      
       margin: "40px auto",
       background: "#23263a",
       borderRadius: 18,

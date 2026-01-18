@@ -102,7 +102,7 @@ export default function RankVisibilityTracker() {
   return (
     <div
       style={{
-        maxWidth: 700,
+        
         margin: "40px auto",
         background: darkMode ? "#23263a" : "#fff",
         color: darkMode ? "#f3f4f6" : "#23263a",

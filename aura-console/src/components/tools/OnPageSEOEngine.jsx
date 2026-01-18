@@ -109,7 +109,7 @@ export default function OnPageSEOEngine() {
   }, []);
 
   return (
-    <div style={{ maxWidth: 900, margin: "40px auto", background: "#fff", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ background: "#fff", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 8 }}>On-Page SEO Engine</h2>
       <div style={{ marginBottom: 10, color: "#0ea5e9", fontWeight: 600 }}>
         <span role="img" aria-label="sparkles">✨</span> Generate, manage, and analyze on-page SEO with AI and analytics.

@@ -69,7 +69,7 @@ export default function ConsentPrivacyManagement() {
       setImported(file.name);
     };
     return (
-      <div style={{ maxWidth: 900, margin: '40px auto', background: '#fff', borderRadius: 18, boxShadow: '0 2px 24px #0002', padding: 36, fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 2px 24px #0002', padding: 36, fontFamily: 'Inter, sans-serif' }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Consent & Privacy Management</h2>
         <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
         {showOnboarding && onboardingContent}

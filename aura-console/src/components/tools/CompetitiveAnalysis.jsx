@@ -7,7 +7,7 @@ export default function CompetitiveAnalysis() {
   // ...existing state and handlers...
   // Full flagship dashboard, no legacy toggles or help buttons
   return (
-    <div className="aura-card flagship-competitive-dashboard" style={{ maxWidth: 1200, margin: "0 auto", padding: 0, background: "var(--surface-card)", borderRadius: 24, boxShadow: "0 8px 32px #0006" }}>
+    <div className="aura-card flagship-competitive-dashboard" style={{ padding: 0, background: "var(--surface-card)", borderRadius: 24, boxShadow: "0 8px 32px #0006" }}>
       {/* Header & Benchmarking */}
       <div className="competitive-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "36px 48px 0 48px" }}>
         <div>

@@ -19,7 +19,7 @@ export default function WinbackEmptyState({ title, description, action, onAction
         outline: 'none',
         boxShadow: darkMode ? '0 2px 24px #22d3ee33' : '0 2px 16px #0001',
         transition: 'background 0.2s, color 0.2s, box-shadow 0.2s',
-        maxWidth: 520,
+        
         marginLeft: 'auto',
         marginRight: 'auto',
       }}

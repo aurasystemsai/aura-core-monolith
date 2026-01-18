@@ -100,7 +100,7 @@ export default function DynamicPricingEngine() {
 
   return (
     <div style={{
-      maxWidth: 800,
+      
       margin: "40px auto",
       background: darkMode ? "#18181b" : "#fff",
       borderRadius: 18,

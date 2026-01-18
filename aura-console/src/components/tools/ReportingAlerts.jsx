@@ -89,7 +89,7 @@ export default function ReportingAlerts() {
   ];
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
+    <div style={{ padding: 24 }}>
       <Card
         title={<span><BellOutlined /> Reporting Alerts</span>}
         extra={<>
@@ -123,7 +123,7 @@ export default function ReportingAlerts() {
             </div>
           </Tabs.TabPane>
           <Tabs.TabPane tab={<span><InfoCircleOutlined /> Onboarding</span>} key="onboarding">
-            <div style={{ maxWidth: 600, margin: "0 auto", padding: 24 }}>
+            <div style={{ padding: 24 }}>
               <h3>How to Use Reporting Alerts</h3>
               <ol>
                 <li>Click <b>Add</b> to create a new alert.</li>
@@ -136,7 +136,7 @@ export default function ReportingAlerts() {
             </div>
           </Tabs.TabPane>
           <Tabs.TabPane tab={<span><ShareAltOutlined /> Feedback</span>} key="feedback">
-            <div style={{ maxWidth: 600, margin: "0 auto", padding: 24 }}>
+            <div style={{ padding: 24 }}>
               <h3>Feedback & Suggestions</h3>
               <Input.TextArea rows={4} placeholder="Share your feedback or feature requests..." style={{ marginBottom: 12 }} />
               <Button type="primary">Submit Feedback</Button>

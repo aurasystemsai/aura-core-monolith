@@ -100,8 +100,8 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
         borderRadius: 16,
         boxShadow: "0 2px 16px #0001",
         padding: 32,
-        maxWidth: 600,
-        margin: "0 auto",
+        
+        
         fontFamily: 'Inter, sans-serif',
         transition: "background 0.3s, color 0.3s"
       }}
@@ -123,7 +123,7 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
           </ul>
         </div>
       )}
-      <form ref={formRef} onSubmit={handleSubmit} style={{ maxWidth: 500 }} aria-label={`Form for ${toolName}` }>
+      <form ref={formRef} onSubmit={handleSubmit} style={{}} aria-label={`Form for ${toolName}` }>
         {safeFields.map(f => (
           <div key={f.name} style={{ marginBottom: 16 }}>
             <label htmlFor={f.name} style={{ fontWeight: 600 }}>{f.label || f.name}{f.required ? '*' : ''}</label>

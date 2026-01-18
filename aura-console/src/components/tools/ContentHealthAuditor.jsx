@@ -111,7 +111,7 @@ export default function ContentHealthAuditor() {
 
   return (
     <div>
-      <div style={{ maxWidth: 900, margin: "40px auto", background: "#fff", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ background: "#fff", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 8 }}>Content Health Auditor</h2>
         <div style={{ marginBottom: 10, color: "#0ea5e9", fontWeight: 600 }}>
           <span role="img" aria-label="health">🩺</span> Audit, manage, and analyze content health with AI and analytics.

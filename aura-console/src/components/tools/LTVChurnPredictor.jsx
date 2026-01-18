@@ -77,7 +77,7 @@ export default function LTVChurnPredictor() {
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: "40px auto", background: "#23263a", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ background: "#23263a", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>LTV/Churn Predictor</h2>
       <div style={{ color: "#0ea5e9", fontWeight: 600, marginBottom: 18 }}>
         <span role="img" aria-label="ltv">📈</span> Predict lifetime value and churn risk.
