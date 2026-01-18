@@ -110,7 +110,7 @@ export default function BlogDraftEngine() {
   }, []);
 
   return (
-    <div className="tool-main-flex" style={{ background: "#fff", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
+    <div className="tool-main-flex" style={{ fontFamily: 'Inter, sans-serif' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 8 }}>Blog Draft Engine</h2>
       <div style={{ marginBottom: 10, color: "#0ea5e9", fontWeight: 600 }}>
         <span role="img" aria-label="sparkles">✨</span> Generate, manage, and analyze blog drafts with AI and analytics.

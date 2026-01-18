@@ -1057,7 +1057,7 @@ function AbandonedCheckoutWinback() {
             </button>
           ))}
         </nav>
-        <div style={{ flex: 1, padding: '32px 0 32px 0', minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
         {activeSection === 'segments' && (
           <>
             {/* --- Custom Segment Builder --- */}

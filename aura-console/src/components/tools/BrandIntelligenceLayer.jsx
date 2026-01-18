@@ -120,10 +120,6 @@ export default function BrandIntelligenceLayer() {
 
   return (
     <div className="tool-main-flex" style={{
-      background: "#18181b",
-      borderRadius: 18,
-      boxShadow: "0 2px 24px #0002",
-      padding: 36,
       color: "#a3e635",
       fontFamily: 'Inter, sans-serif',
       transition: "background 0.3s, color 0.3s"
