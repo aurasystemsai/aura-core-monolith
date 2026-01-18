@@ -1023,13 +1023,13 @@ function AbandonedCheckoutWinback() {
       <div style={{ display: 'flex', minHeight: '100vh', background: '#18181b' }}>
         {/* Flagship Navigation Sidebar */}
         <nav aria-label="Winback flagship navigation" style={{
-          width: 210,
+          width: 120,
           background: '#18181b',
           borderRight: '1px solid #232336',
-          padding: '32px 0 32px 0',
+          padding: '16px 0 16px 0',
           display: 'flex',
           flexDirection: 'column',
-          gap: 4,
+          gap: 2,
           minHeight: '100vh',
         }}>
           {flagshipSections.map(section => (
