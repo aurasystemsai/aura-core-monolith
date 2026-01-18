@@ -13,8 +13,8 @@
 .sidebar-nav li:focus:not(.active) {
   color: #7fffd4 !important;
 }
-.sidebar {
-  width: 240px;
+ .sidebar {
+  width: 120px;
   background: var(--card);
   color: var(--text);
   min-height: 100vh;
