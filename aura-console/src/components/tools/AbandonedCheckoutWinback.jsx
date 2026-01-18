@@ -626,7 +626,7 @@ function AbandonedCheckoutWinback() {
       setShowLogDetails(false);
       setLogDetails(null);
     };
-    // --- Flagship Navigation Sidebar ---
+    // --- Top Tab Navigation ---
     const flagshipSections = [
       { key: 'segments', label: 'Segments' },
       { key: 'templates', label: 'Templates' },
@@ -1020,17 +1020,19 @@ function AbandonedCheckoutWinback() {
 
     // --- Main component return
     return (
-      <div style={{ display: 'flex', minHeight: '100vh', background: '#18181b' }}>
-        {/* Flagship Navigation Sidebar */}
+      <div style={{ minHeight: '100vh', background: '#18181b', width: '100%' }}>
+        {/* Top Tab Navigation */}
         <nav aria-label="Winback flagship navigation" style={{
-          width: 120,
-          background: '#18181b',
-          borderRight: '1px solid #232336',
-          padding: '16px 0 16px 0',
           display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-          minHeight: '100vh',
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+          gap: 0,
+          background: '#18181b',
+          borderBottom: '1px solid #232336',
+          padding: '0 0 0 12px',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
         }}>
           {flagshipSections.map(section => (
             <button
@@ -1040,16 +1042,17 @@ function AbandonedCheckoutWinback() {
                 background: activeSection === section.key ? '#232336' : 'none',
                 color: activeSection === section.key ? '#fff' : '#cbd5e1',
                 border: 'none',
-                borderLeft: activeSection === section.key ? '4px solid #0ea5e9' : '4px solid transparent',
-                borderRadius: '0 8px 8px 0',
-                padding: '14px 24px',
+                borderBottom: activeSection === section.key ? '3px solid #0ea5e9' : '3px solid transparent',
+                borderRadius: '8px 8px 0 0',
+                padding: '14px 28px 10px 28px',
                 fontWeight: activeSection === section.key ? 700 : 500,
-                fontSize: 16,
-                textAlign: 'left',
+                fontSize: 17,
+                textAlign: 'center',
                 cursor: 'pointer',
                 outline: 'none',
                 transition: 'background 0.2s, color 0.2s',
                 marginRight: 0,
+                marginBottom: '-1px',
               }}
               aria-current={activeSection === section.key ? 'page' : undefined}
             >
@@ -1057,7 +1060,7 @@ function AbandonedCheckoutWinback() {
             </button>
           ))}
         </nav>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ width: '100%', maxWidth: '100vw', minWidth: 0, margin: 0, padding: 0 }}>
         {activeSection === 'segments' && (
           <>
             {/* --- Custom Segment Builder --- */}
