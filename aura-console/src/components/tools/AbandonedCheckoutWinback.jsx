@@ -1128,14 +1128,6 @@ function AbandonedCheckoutWinback() {
                               <CrossChannelTargeting segment={s} onUpdate={channels => handleUpdateChannels(s.id, channels)} />
                               <SegmentPerformanceInsights segment={s} />
                               <IncludeExcludeToggle segment={s} onUpdate={mode => handleUpdateIncludeMode(s.id, mode)} />
-                              // --- Handler for updating include/exclude mode ---
-                              function handleUpdateIncludeMode(segmentId, mode) {
-                                setSegmentsList(list => list.map(s =>
-                                  s.id === segmentId
-                                    ? { ...s, includeMode: mode }
-                                    : s
-                                ));
-                              }
                             </td>
                           </tr>
                         ))}
