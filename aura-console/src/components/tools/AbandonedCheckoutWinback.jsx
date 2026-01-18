@@ -1129,14 +1129,6 @@ function AbandonedCheckoutWinback() {
                               <SegmentPerformanceInsights segment={s} />
                               <IncludeExcludeToggle segment={s} onUpdate={mode => handleUpdateIncludeMode(s.id, mode)} />
                               <StoreLanguageSelector segment={s} onUpdate={opts => handleUpdateStoreLanguage(s.id, opts)} />
-                              // --- Handler for updating store/language ---
-                              function handleUpdateStoreLanguage(segmentId, opts) {
-                                setSegmentsList(list => list.map(s =>
-                                  s.id === segmentId
-                                    ? { ...s, ...opts }
-                                    : s
-                                ));
-                              }
                             </td>
                           </tr>
                         ))}
