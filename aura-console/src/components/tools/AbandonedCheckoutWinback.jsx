@@ -1128,6 +1128,15 @@ function AbandonedCheckoutWinback() {
                               <CrossChannelTargeting segment={s} onUpdate={channels => handleUpdateChannels(s.id, channels)} />
                               <SegmentPerformanceInsights segment={s} />
                               <IncludeExcludeToggle segment={s} onUpdate={mode => handleUpdateIncludeMode(s.id, mode)} />
+                              <StoreLanguageSelector segment={s} onUpdate={opts => handleUpdateStoreLanguage(s.id, opts)} />
+                              // --- Handler for updating store/language ---
+                              function handleUpdateStoreLanguage(segmentId, opts) {
+                                setSegmentsList(list => list.map(s =>
+                                  s.id === segmentId
+                                    ? { ...s, ...opts }
+                                    : s
+                                ));
+                              }
                             </td>
                           </tr>
                         ))}
@@ -1425,7 +1434,7 @@ function AbandonedCheckoutWinback() {
               {/* Log Details Modal */}
               {showLogDetails && logDetails && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: 'var(--background-secondary, #23232a)', color: 'var(--text-primary, #fafafa)', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                  <div style={{ background: 'var(--background-secondary, #23232a)', color: 'var(--text-primary, #fafafa)', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 600, maxHeight: '90vh', overflowY: 'auto' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Log Entry Details</h3>
                     <pre style={{ background: '#18181c', color: '#fafafa', borderRadius: 8, padding: 16, fontSize: 15, maxHeight: 400, overflow: 'auto' }}>{JSON.stringify(logDetails, null, 2)}</pre>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
@@ -1726,6 +1735,36 @@ function IncludeExcludeToggle({ segment, onUpdate }) {
         }}
         aria-pressed={mode === 'exclude'}
       >Exclude</button>
+    </div>
+  );
+}
+
+// --- Multi-Store & Multi-Language Selector Component ---
+function StoreLanguageSelector({ segment, onUpdate }) {
+  const [store, setStore] = React.useState(segment.store || 'Main Store');
+  const [language, setLanguage] = React.useState(segment.language || 'en');
+  const stores = ['Main Store', 'EU Store', 'US Store'];
+  const languages = [
+    { key: 'en', label: 'English' },
+    { key: 'fr', label: 'French' },
+    { key: 'es', label: 'Spanish' },
+    { key: 'de', label: 'German' },
+  ];
+  const handleChange = (type, value) => {
+    if (type === 'store') setStore(value);
+    if (type === 'language') setLanguage(value);
+    onUpdate({ store: type === 'store' ? value : store, language: type === 'language' ? value : language });
+  };
+  return (
+    <div style={{ marginTop: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
+      <span style={{ fontSize: 13, color: '#a1a1aa', fontWeight: 600 }}>Store:</span>
+      <select value={store} onChange={e => handleChange('store', e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 13, background: '#232336', color: '#fafafa' }}>
+        {stores.map(s => <option key={s} value={s}>{s}</option>)}
+      </select>
+      <span style={{ fontSize: 13, color: '#a1a1aa', fontWeight: 600 }}>Language:</span>
+      <select value={language} onChange={e => handleChange('language', e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 13, background: '#232336', color: '#fafafa' }}>
+        {languages.map(l => <option key={l.key} value={l.key}>{l.label}</option>)}
+      </select>
     </div>
   );
 }
