@@ -5,7 +5,7 @@ import React, { useState, useRef } from "react";
 export default function ChurnPredictionPlaybooks() {
   // ...churn-specific state and handlers...
   return (
-    <div className="aura-card flagship-churn-dashboard" style={{ maxWidth: 1200, margin: "0 auto", padding: 0, background: "var(--surface-card)", borderRadius: 24, boxShadow: "0 8px 32px #0006" }}>
+    <div className="aura-card flagship-churn-dashboard tool-main-flex" style={{ padding: 0, background: "var(--surface-card)", borderRadius: 24, boxShadow: "0 8px 32px #0006" }}>
       {/* Header & Churn Score */}
       <div className="churn-header" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "36px 48px 0 48px" }}>
         <div style={{ flex: 2 }}>

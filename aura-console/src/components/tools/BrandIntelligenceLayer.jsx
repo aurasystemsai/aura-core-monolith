@@ -119,9 +119,7 @@ export default function BrandIntelligenceLayer() {
   );
 
   return (
-    <div style={{
-      maxWidth: 800,
-      margin: "40px auto",
+    <div className="tool-main-flex" style={{
       background: "#18181b",
       borderRadius: 18,
       boxShadow: "0 2px 24px #0002",
