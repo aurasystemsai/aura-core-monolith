@@ -1127,6 +1127,15 @@ function AbandonedCheckoutWinback() {
                               <SegmentAutomations segment={s} onUpdate={automation => handleUpdateAutomation(s.id, automation)} />
                               <CrossChannelTargeting segment={s} onUpdate={channels => handleUpdateChannels(s.id, channels)} />
                               <SegmentPerformanceInsights segment={s} />
+                              <IncludeExcludeToggle segment={s} onUpdate={mode => handleUpdateIncludeMode(s.id, mode)} />
+                              // --- Handler for updating include/exclude mode ---
+                              function handleUpdateIncludeMode(segmentId, mode) {
+                                setSegmentsList(list => list.map(s =>
+                                  s.id === segmentId
+                                    ? { ...s, includeMode: mode }
+                                    : s
+                                ));
+                              }
                             </td>
                           </tr>
                         ))}
@@ -1680,6 +1689,52 @@ function SegmentPerformanceInsights({ segment }) {
         </div>
       )}
     </>
+  );
+}
+
+// --- Include/Exclude Segment Toggle Component ---
+function IncludeExcludeToggle({ segment, onUpdate }) {
+  const [mode, setMode] = React.useState(segment.includeMode || 'include');
+  const handleToggle = (newMode) => {
+    setMode(newMode);
+    onUpdate(newMode);
+  };
+  return (
+    <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center' }}>
+      <span style={{ fontSize: 13, color: '#a1a1aa', fontWeight: 600 }}>Mode:</span>
+      <button
+        onClick={() => handleToggle('include')}
+        style={{
+          background: mode === 'include' ? '#22c55e' : '#232336',
+          color: mode === 'include' ? '#fff' : '#22c55e',
+          border: 'none',
+          borderRadius: 6,
+          padding: '2px 10px',
+          fontWeight: 600,
+          fontSize: 13,
+          cursor: 'pointer',
+          outline: mode === 'include' ? '2px solid #22c55e' : 'none',
+          transition: 'all 0.2s',
+        }}
+        aria-pressed={mode === 'include'}
+      >Include</button>
+      <button
+        onClick={() => handleToggle('exclude')}
+        style={{
+          background: mode === 'exclude' ? '#ef4444' : '#232336',
+          color: mode === 'exclude' ? '#fff' : '#ef4444',
+          border: 'none',
+          borderRadius: 6,
+          padding: '2px 10px',
+          fontWeight: 600,
+          fontSize: 13,
+          cursor: 'pointer',
+          outline: mode === 'exclude' ? '2px solid #ef4444' : 'none',
+          transition: 'all 0.2s',
+        }}
+        aria-pressed={mode === 'exclude'}
+      >Exclude</button>
+    </div>
   );
 }
 
