@@ -534,145 +534,27 @@ function AbandonedCheckoutWinback() {
 
     // Export CSV
     const exportActivityLog = () => {
-      const cols = activityLogColumns.filter(c => c.visible);
-      const header = cols.map(c => c.label).join(',');
-      const rows = filteredActivityLog.map(log =>
-        cols.map(c => '"' + String(log[c.key] || '').replace(/"/g, '""') + '"').join(',')
+      // ...existing code...
+      return (
+        <div style={{ display: 'flex', minHeight: '100vh', background: '#18181b' }}>
+          {/* Flagship Navigation Sidebar */}
+          <nav aria-label="Winback flagship navigation" style={{
+            width: 210,
+            background: '#18181b',
+            /*...existing code...*/
+          }}>
+            {/* ...existing code... */}
+          </nav>
+          <div style={{ flex: 1, padding: '32px 0 32px 32px' }}>
+          {activeSection === 'segments' && (
+            <>
+              {/* ...existing code... */}
+            </>
+          )}
+          {/* ...existing code... */}
+          </div>
+        </div>
       );
-      const csv = [header, ...rows].join('\n');
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `activity-log-${new Date().toISOString().slice(0,10)}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-    };
-
-    // Column toggles
-    const toggleColumn = (key) => {
-      setActivityLogColumns(cols => cols.map(c => c.key === key ? { ...c, visible: !c.visible } : c));
-    };
-
-    // Log details modal
-    const openLogDetails = (log) => {
-      setLogDetails(log);
-      setShowLogDetails(true);
-    };
-    const closeLogDetails = () => {
-      setShowLogDetails(false);
-      setLogDetails(null);
-    };
-    // --- Flagship Navigation Sidebar ---
-    const flagshipSections = [
-      { key: 'segments', label: 'Segments' },
-      { key: 'templates', label: 'Templates' },
-      { key: 'abTesting', label: 'A/B Testing' },
-      { key: 'analytics', label: 'Analytics' },
-      { key: 'integrations', label: 'Integrations' },
-      { key: 'notifications', label: 'Notifications' },
-      { key: 'activityLog', label: 'Activity Log' },
-      { key: 'compliance', label: 'Compliance' },
-      { key: 'settings', label: 'Settings' },
-      { key: 'help', label: 'Help & Docs' },
-    ];
-    // --- Flagship state and logic ---
-    // Fix: Add activeSection state for navigation
-    const [activeSection, setActiveSection] = useState('segments'); // Default section, change as needed
-    // Experiments state for A/B Testing section
-    const [experimentsList, setExperimentsList] = useState([
-      { id: 1, name: 'Subject Line Test', variantA: 'Welcome to Aura!', variantB: 'Get Started with Aura', status: 'active', created: '2026-01-01', selected: false },
-      { id: 2, name: 'SMS Timing', variantA: 'Send 1h after abandon', variantB: 'Send 24h after abandon', status: 'draft', created: '2026-01-05', selected: false },
-    ]);
-    const [showExperimentModal, setShowExperimentModal] = useState(false);
-    const [editingExperiment, setEditingExperiment] = useState(null);
-    const openExperimentModal = (experiment = null) => {
-      setEditingExperiment(experiment);
-      setShowExperimentModal(true);
-    };
-    const closeExperimentModal = () => {
-      setEditingExperiment(null);
-      setShowExperimentModal(false);
-    };
-    const saveExperiment = (e) => {
-      if (e.id) {
-        setExperimentsList(list => list.map(x => x.id === e.id ? { ...e, selected: false } : x));
-      } else {
-        setExperimentsList(list => [...list, { ...e, id: Date.now(), selected: false }]);
-      }
-      closeExperimentModal();
-    };
-    const toggleSelectExperiment = (id) => {
-      setExperimentsList(list => list.map(x => x.id === id ? { ...x, selected: !x.selected } : x));
-    };
-    const selectAllExperiments = (checked) => {
-      setExperimentsList(list => list.map(x => ({ ...x, selected: checked })));
-    };
-    const deleteSelectedExperiments = () => {
-      setExperimentsList(list => list.filter(x => !x.selected));
-    };
-
-    // Templates state for flagship management
-    const [templatesList, setTemplatesList] = useState([
-      { id: 1, name: 'Welcome Email', channel: 'email', content: 'Welcome to Aura!', created: '2026-01-01', selected: false },
-      { id: 2, name: 'Cart Reminder SMS', channel: 'sms', content: 'You left something in your cart!', created: '2026-01-05', selected: false },
-    ]);
-    const [showTemplateModal, setShowTemplateModal] = useState(false);
-    const [editingTemplate, setEditingTemplate] = useState(null);
-    const openTemplateModal = (template = null) => {
-      setEditingTemplate(template);
-      setShowTemplateModal(true);
-    };
-    const closeTemplateModal = () => {
-      setEditingTemplate(null);
-      setShowTemplateModal(false);
-    };
-    const saveTemplate = (t) => {
-      if (t.id) {
-        setTemplatesList(list => list.map(x => x.id === t.id ? { ...t, selected: false } : x));
-      } else {
-        setTemplatesList(list => [...list, { ...t, id: Date.now(), selected: false }]);
-      }
-      closeTemplateModal();
-    };
-    const toggleSelectTemplate = (id) => {
-      setTemplatesList(list => list.map(x => x.id === id ? { ...x, selected: !x.selected } : x));
-    };
-    const selectAllTemplates = (checked) => {
-      setTemplatesList(list => list.map(x => ({ ...x, selected: checked })));
-    };
-    const deleteSelectedTemplates = () => {
-      setTemplatesList(list => list.filter(x => !x.selected));
-    };
-
-    // Segments state for advanced segmentation
-    const [segmentsList, setSegmentsList] = useState([
-      { id: 1, name: 'VIP Customers', rule: 'Spent > $500', created: '2026-01-01', selected: false },
-      { id: 2, name: 'New Signups', rule: 'Joined < 30d', created: '2026-01-10', selected: false },
-    ]);
-    const [showSegmentModal, setShowSegmentModal] = useState(false);
-    const [editingSegment, setEditingSegment] = useState(null);
-      // --- AI Segment Builder state ---
-      const [aiSegmentPrompt, setAISegmentPrompt] = useState("");
-      const [aiSegmentLoading, setAISegmentLoading] = useState(false);
-      const [aiSegmentError, setAISegmentError] = useState("");
-      const [aiSegmentResult, setAISegmentResult] = useState(null);
-    const openSegmentModal = (segment = null) => {
-      setEditingSegment(segment);
-      setShowSegmentModal(true);
-    };
-    const closeSegmentModal = () => {
-      setEditingSegment(null);
-      setShowSegmentModal(false);
-    };
-    const saveSegment = (s) => {
-      if (s.id) {
-        setSegmentsList(list => list.map(x => x.id === s.id ? { ...s, selected: false } : x));
-      } else {
-        setSegmentsList(list => [...list, { ...s, id: Date.now(), selected: false }]);
-      }
-      closeSegmentModal();
-    };
     const toggleSelectSegment = (id) => {
       setSegmentsList(list => list.map(x => x.id === id ? { ...x, selected: !x.selected } : x));
     };
@@ -1812,5 +1694,6 @@ function StoreLanguageSelector({ segment, onUpdate }) {
   );
 }
 
+}
 export default AbandonedCheckoutWinback;
 // End of file
