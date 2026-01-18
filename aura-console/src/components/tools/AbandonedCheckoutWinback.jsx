@@ -1,3 +1,25 @@
+// --- User Guide Modal ---
+function UserGuideModal({ open, onClose }) {
+  if (!open) return null;
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
+      <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, maxWidth: 500, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
+        <h2 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Abandoned Checkout Winback Guide</h2>
+        <ol style={{ fontSize: 16, marginBottom: 18, lineHeight: 1.7 }}>
+          <li><b>Create Segments:</b> Group customers by behavior, value, or activity.</li>
+          <li><b>Use Templates:</b> Start quickly with pre-built segment templates.</li>
+          <li><b>Analyze Performance:</b> Use segment stats to see what works.</li>
+          <li><b>Bulk Actions:</b> Select multiple segments for fast management.</li>
+          <li><b>Onboarding & Tooltips:</b> Hover for tips, and use the onboarding banner for a quick start.</li>
+        </ol>
+        <div style={{ fontSize: 15, color: '#a1a1aa', marginBottom: 18 }}>
+          For more help, contact support or check the documentation.
+        </div>
+        <button onClick={onClose} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: 16, cursor: 'pointer', marginTop: 8 }}>Close</button>
+      </div>
+    </div>
+  );
+}
 
 // --- Onboarding Banner ---
 function OnboardingBanner() {
@@ -73,6 +95,19 @@ function CustomerLifecycleBar({ segments, onFilter, selectedStage }) {
   );
 }
 import React, { useState, useEffect } from 'react';
+// --- Main Abandoned Checkout Winback Component (add guide button) ---
+function AbandonedCheckoutWinbackMain(props) {
+  const [showGuide, setShowGuide] = useState(false);
+  // ...existing code...
+  return (
+    <>
+      <OnboardingBanner />
+      <button onClick={() => setShowGuide(true)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 18 }}>User Guide</button>
+      <UserGuideModal open={showGuide} onClose={() => setShowGuide(false)} />
+      {/* ...rest of the tool UI... */}
+    </>
+  );
+}
 import { exportCampaignPDF } from './WinbackExportPDF';
 import { apiFetch } from '../../api';
 
