@@ -75,7 +75,7 @@ export default function ABTestingSuite() {
 
   // --- Main UI Layout ---
   return (
-    <div className="abtest-flagship" style={{ maxWidth: 1400, margin: '0 auto', padding: 32 }}>
+    <div className="abtest-flagship" style={{ padding: 32 }}>
       <style>{`
         @media (max-width: 900px) {
           .abtest-flagship { padding: 10px !important; }

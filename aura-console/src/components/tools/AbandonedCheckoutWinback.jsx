@@ -3,7 +3,7 @@ function UserGuideModal({ open, onClose }) {
   if (!open) return null;
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-      <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, maxWidth: 500, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
+      <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
         <h2 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Abandoned Checkout Winback Guide</h2>
         <ol style={{ fontSize: 16, marginBottom: 18, lineHeight: 1.7 }}>
           <li><b>Create Segments:</b> Group customers by behavior, value, or activity.</li>
@@ -248,7 +248,7 @@ function NotificationsSection() {
                 <td><input type="checkbox" checked={!!n.selected} onChange={() => toggleSelectNotification(n.id)} aria-label={`Select notification ${n.name}`} /></td>
                 <td>{n.name}</td>
                 <td>{n.channel}</td>
-                <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.message}</td>
+                <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.message}</td>
                 <td>{n.status}</td>
                 <td>{n.created}</td>
                 <td>
@@ -266,7 +266,7 @@ function NotificationsSection() {
         {/* Notification Modal (Add/Edit) */}
         {showNotificationModal && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-            <div style={{ background: 'var(--background-secondary, #23232a)', color: 'var(--text-primary, #fafafa)', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+            <div style={{ background: 'var(--background-secondary, #23232a)', color: 'var(--text-primary, #fafafa)', borderRadius: 14, padding: 32, minWidth: 400, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 8px 40px #0008', position: 'relative' }}>
               <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingNotification ? 'Edit Notification' : 'New Notification'}</h3>
               <form onSubmit={e => { e.preventDefault(); saveNotification(editingNotification ? editingNotification : { name: '', channel: 'email', message: '', status: 'enabled', created: new Date().toISOString().slice(0, 10) }); }}>
                 <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-notification-name">Name</label>
@@ -522,7 +522,7 @@ function AbandonedCheckoutWinback() {
                 {/* Experiment Modal (Add/Edit) */}
                 {showExperimentModal && (
                   <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                    <div style={{ background: '#232336', color: '#fafafa', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                    <div style={{ background: '#232336', color: '#fafafa', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
                       <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingExperiment ? 'Edit Experiment' : 'New Experiment'}</h3>
                       <form onSubmit={e => { e.preventDefault(); saveExperiment(editingExperiment ? editingExperiment : { name: '', segment: '', variantA: '', variantB: '', status: 'draft', created: new Date().toISOString().slice(0, 10), results: null }); }}>
                         <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-experiment-name">Name</label>
@@ -962,7 +962,7 @@ function AbandonedCheckoutWinback() {
           {/* Add Integration Modal */}
           {showAddModal && (
             <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-              <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, maxWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
+              <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
                 <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18, color: '#fff' }}>Add Integration</h3>
                 <div style={{ marginBottom: 18 }}>
                   {availableIntegrations.map(intg => (
@@ -1256,7 +1256,7 @@ function AbandonedCheckoutWinback() {
               {/* Segment Modal (Add/Edit) */}
               {showSegmentModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                  <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingSegment ? 'Edit Segment' : 'New Segment'}</h3>
                     <form onSubmit={e => { e.preventDefault(); saveSegment(editingSegment ? editingSegment : { name: '', rule: '', created: new Date().toISOString().slice(0, 10) }); }}>
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-segment-name">Name</label>
@@ -1305,7 +1305,7 @@ function AbandonedCheckoutWinback() {
                         <td><input type="checkbox" checked={!!t.selected} onChange={() => toggleSelectTemplate(t.id)} aria-label={`Select template ${t.name}`} /></td>
                         <td>{t.name}</td>
                         <td>{t.channel}</td>
-                        <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.content}</td>
+                        <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.content}</td>
                         <td>{t.created}</td>
                         <td>
                           <button onClick={() => openTemplateModal(t)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
@@ -1323,7 +1323,7 @@ function AbandonedCheckoutWinback() {
               {/* Template Modal (Add/Edit) */}
               {showTemplateModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                  <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingTemplate ? 'Edit Template' : 'New Template'}</h3>
                     <form onSubmit={e => { e.preventDefault(); saveTemplate(editingTemplate ? editingTemplate : { name: '', channel: 'email', content: '', created: new Date().toISOString().slice(0, 10) }); }}>
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-template-name">Name</label>
@@ -1397,7 +1397,7 @@ function AbandonedCheckoutWinback() {
               {/* Experiment Modal (Add/Edit) */}
               {showExperimentModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                  <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingExperiment ? 'Edit Experiment' : 'New Experiment'}</h3>
                     <form onSubmit={e => { e.preventDefault(); saveExperiment(editingExperiment ? editingExperiment : { name: '', variantA: '', variantB: '', status: 'draft', created: new Date().toISOString().slice(0, 10) }); }}>
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-experiment-name">Name</label>
@@ -1487,7 +1487,7 @@ function AbandonedCheckoutWinback() {
 
         {activeSection === 'activityLog' && (
           <section aria-label="Activity Log">
-            <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 32, marginBottom: 24, marginTop: 18, maxWidth: 900 }}>
+            <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 32, marginBottom: 24, marginTop: 18 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
                 <div style={{ fontWeight: 700, fontSize: 22 }}>Activity Log</div>
                 <div style={{ display: 'flex', gap: 10 }}>
@@ -1540,7 +1540,7 @@ function AbandonedCheckoutWinback() {
               {/* Log Details Modal */}
               {showLogDetails && logDetails && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: 'var(--background-secondary, #23232a)', color: 'var(--text-primary, #fafafa)', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 600, maxHeight: '90vh', overflowY: 'auto' }}>
+                  <div style={{ background: 'var(--background-secondary, #23232a)', color: 'var(--text-primary, #fafafa)', borderRadius: 14, padding: 32, minWidth: 400, maxHeight: '90vh', overflowY: 'auto' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Log Entry Details</h3>
                     <pre style={{ background: '#18181c', color: '#fafafa', borderRadius: 8, padding: 16, fontSize: 15, maxHeight: 400, overflow: 'auto' }}>{JSON.stringify(logDetails, null, 2)}</pre>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
@@ -1555,7 +1555,7 @@ function AbandonedCheckoutWinback() {
         {activeSection === 'compliance' && (
           <section aria-label="Compliance">
             <WinbackFeatureCard title="Compliance Center" description="GDPR/CCPA tools, opt-out, audit logs, data export/delete, and deliverability best practices." icon="🛡️" />
-            <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 32, marginBottom: 24, marginTop: 18, maxWidth: 700 }}>
+            <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 32, marginBottom: 24, marginTop: 18 }}>
               <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Compliance Tools</h3>
               <ComplianceSection />
             </div>
@@ -1679,7 +1679,7 @@ function SegmentAutomations({ segment, onUpdate }) {
       </div>
       {showModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-          <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, maxWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
+          <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
             <h3 style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Segment Automations</h3>
             <div style={{ marginBottom: 12 }}>
               <label>Add Automation</label>
@@ -1783,7 +1783,7 @@ function SegmentPerformanceInsights({ segment }) {
       <button onClick={() => setShow(true)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 600, fontSize: 13, cursor: 'pointer', marginLeft: 6 }}>Performance</button>
       {show && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-          <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, maxWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
+          <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
             <h3 style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Segment Performance</h3>
             <div style={{ marginBottom: 12 }}><b>Open Rate:</b> {data.openRate}%</div>
             <div style={{ marginBottom: 12 }}><b>Click Rate:</b> {data.clickRate}%</div>

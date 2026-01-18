@@ -62,7 +62,7 @@ export default function UpsellCrossSellEngine() {
 
   // Main UI
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: 24 }}>
+    <div style={{ padding: 24 }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Upsell/Cross-sell Engine</h2>
       <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}

@@ -39,7 +39,7 @@ export default function DataEnrichmentSuite() {
   ];
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
+    <div style={{ padding: 24 }}>
       <Card
         title={<span><BarChartOutlined /> Data Enrichment Suite</span>}
         extra={<Button icon={<DownloadOutlined />} loading={exporting} onClick={handleExport} />}>
@@ -73,7 +73,7 @@ export default function DataEnrichmentSuite() {
             </div>
           </Tabs.TabPane>
           <Tabs.TabPane tab={<span><InfoCircleOutlined /> Onboarding</span>} key="onboarding">
-            <div style={{ maxWidth: 600, margin: "0 auto", padding: 24 }}>
+            <div style={{ padding: 24 }}>
               <h3>How to Use Data Enrichment Suite</h3>
               <ol>
                 <li>Paste or describe data to enrich.</li>
@@ -84,7 +84,7 @@ export default function DataEnrichmentSuite() {
             </div>
           </Tabs.TabPane>
           <Tabs.TabPane tab={<span><ShareAltOutlined /> Feedback</span>} key="feedback">
-            <div style={{ maxWidth: 600, margin: "0 auto", padding: 24 }}>
+            <div style={{ padding: 24 }}>
               <h3>Feedback & Suggestions</h3>
               <Input.TextArea rows={4} value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Share your feedback or feature requests..." style={{ marginBottom: 12 }} />
               <Button type="primary">Submit Feedback</Button>

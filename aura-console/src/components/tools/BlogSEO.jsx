@@ -88,7 +88,7 @@ export default function BlogSEO() {
 
   // Main UI
   return (
-    <div style={{ maxWidth: 700, margin: "40px auto", background: "#fff", borderRadius: 16, boxShadow: "0 2px 16px #0001", padding: 32 }}>
+    <div style={{ background: "#fff", borderRadius: 16, boxShadow: "0 2px 16px #0001", padding: 32 }}>
       <h2 style={{ fontWeight: 700, fontSize: 28, marginBottom: 12 }}>Blog SEO</h2>
       <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}

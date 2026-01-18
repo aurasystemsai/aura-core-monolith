@@ -88,7 +88,7 @@ export default function AILaunchPlanner() {
 
   // Main UI
   return (
-    <div style={{ maxWidth: 800, margin: "40px auto", background: "var(--card)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-soft)", border: "1px solid var(--border)", padding: 32 }}>
+    <div style={{ background: "var(--card)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-soft)", border: "1px solid var(--border)", padding: 32 }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 12, color: "var(--text)" }}>AI Launch Planner</h2>
       <button onClick={() => setShowOnboarding(v => !v)} style={{ background: 'var(--accent)', color: '#23263a', border: 'none', borderRadius: 'var(--radius-md)', padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}

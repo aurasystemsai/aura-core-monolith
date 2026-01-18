@@ -93,7 +93,7 @@ export default function EntityTopicExplorer() {
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: "40px auto", background: "#fff", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ background: "#fff", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Entity/Topic Explorer</h2>
       <div style={{ color: "#0ea5e9", fontWeight: 600, marginBottom: 18 }}>
         <span role="img" aria-label="entity">🧠</span> Semantic SEO: discover entities and topics for your content.
