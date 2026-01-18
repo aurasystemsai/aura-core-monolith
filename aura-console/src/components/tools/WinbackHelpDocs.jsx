@@ -91,14 +91,11 @@ export default function WinbackHelpDocs() {
       <button
         onClick={() => setOpen((v) => !v)}
         style={{
-          background: darkMode ? "#18181b" : "#23263a",
+          // removed card constraints for full-width
           color: darkMode ? "#a3e635" : "#7fffd4",
           border: "none",
-          borderRadius: 24,
-          padding: "12px 24px",
           fontWeight: 700,
           fontSize: 18,
-          boxShadow: "0 2px 12px #22d3ee55",
           cursor: "pointer",
         }}
         aria-label="Help & Documentation"
@@ -114,11 +111,8 @@ export default function WinbackHelpDocs() {
             width: 440,
             maxHeight: 650,
             overflowY: "auto",
-            background: darkMode ? "#18181b" : "#fff",
+            // removed card constraints for full-width
             color: darkMode ? "#a3e635" : "#23263a",
-            borderRadius: 18,
-            boxShadow: "0 8px 40px #0008",
-            padding: 32,
             zIndex: 10000,
             fontFamily: 'Inter, sans-serif',
             transition: "background 0.3s, color 0.3s"
@@ -145,7 +139,7 @@ export default function WinbackHelpDocs() {
             <a href="mailto:support@aura-core.ai" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>Contact Support</a>
           </div>
           {showChecklist && (
-            <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 16 }}>
+            <div>
               <div style={{ fontWeight: 700, marginBottom: 8 }}>Onboarding Checklist</div>
               <ul style={{ margin: 0, paddingLeft: 18 }}>
                 {onboardingChecklist.map((item, idx) => (
@@ -179,7 +173,7 @@ export default function WinbackHelpDocs() {
             />
             <button onClick={handleAIHelp} disabled={loading || !aiInput} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>{loading ? "Thinking..." : "Ask"}</button>
           </div>
-          {aiResponse && <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 8, padding: 12, color: darkMode ? "#a3e635" : "#23263a" }}>{aiResponse}</div>}
+          {aiResponse && <div style={{ color: darkMode ? "#a3e635" : "#23263a" }}>{aiResponse}</div>}
           <div style={{ marginTop: 18, fontWeight: 700, fontSize: 17 }}>Feedback</div>
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             <input

@@ -27,7 +27,7 @@ export default function WinbackOnboardingWizard({ onComplete }) {
     }
   ];
   return (
-    <div style={{ padding: 28, background: 'var(--background-secondary)', borderRadius: 14 }}>
+    <div>
       <h3 style={{ fontWeight: 800, fontSize: 26, marginBottom: 12 }}>{steps[step].title}</h3>
       <div style={{ fontSize: 17, marginBottom: 24 }}>{steps[step].content}</div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>

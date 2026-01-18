@@ -31,7 +31,7 @@ export default function WorkflowAutomationBuilder() {
   };
 
   const onboardingContent = (
-    <div style={{ padding: 24, background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
+    <div>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Workflow Automation Builder</h3>
       <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#334155", fontSize: 16 }}>
         <li>Visually design and automate workflows</li>
@@ -44,17 +44,7 @@ export default function WorkflowAutomationBuilder() {
   );
 
   return (
-    <div style={{
-      
-      margin: "40px auto",
-      background: darkMode ? "#18181b" : "#fff",
-      borderRadius: 18,
-      boxShadow: "0 2px 24px #0002",
-      padding: 36,
-      color: darkMode ? "#a3e635" : "#23263a",
-      fontFamily: 'Inter, sans-serif',
-      transition: "background 0.3s, color 0.3s"
-    }}>
+    <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Workflow Automation Builder</h2>
         <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
@@ -75,13 +65,13 @@ export default function WorkflowAutomationBuilder() {
       <button onClick={handleBuild} disabled={loading || !workflow} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Building..." : "Build Workflow"}</button>
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {result && (
-        <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635" : "#23263a" }}>
+        <div>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>Workflow Output:</div>
           <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
       {history.length > 0 && (
-        <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24 }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Workflow History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, i) => (
