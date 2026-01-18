@@ -1125,6 +1125,7 @@ function AbandonedCheckoutWinback() {
                               <SegmentQuickActions segment={s} onSend={handleSendWinback} onPreview={handlePreviewWinback} />
                               {/* --- Segment Automations --- */}
                               <SegmentAutomations segment={s} onUpdate={automation => handleUpdateAutomation(s.id, automation)} />
+                              <CrossChannelTargeting segment={s} onUpdate={channels => handleUpdateChannels(s.id, channels)} />
                             </td>
                           </tr>
                         ))}
@@ -1597,6 +1598,53 @@ function SegmentAutomations({ segment, onUpdate }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// --- Cross-Channel Targeting Component ---
+function CrossChannelTargeting({ segment, onUpdate }) {
+  const [channels, setChannels] = React.useState(segment.channels || ['email']);
+  const allChannels = [
+    { key: 'email', label: 'Email', color: '#0ea5e9' },
+    { key: 'sms', label: 'SMS', color: '#facc15' },
+    { key: 'push', label: 'Push', color: '#6366f1' },
+    { key: 'webhook', label: 'Webhook', color: '#22c55e' },
+  ];
+  const toggleChannel = (key) => {
+    let updated;
+    if (channels.includes(key)) {
+      updated = channels.filter(c => c !== key);
+    } else {
+      updated = [...channels, key];
+    }
+    setChannels(updated);
+    onUpdate(updated);
+  };
+  return (
+    <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center' }}>
+      <span style={{ fontSize: 13, color: '#a1a1aa', fontWeight: 600 }}>Channels:</span>
+      {allChannels.map(ch => (
+        <button
+          key={ch.key}
+          onClick={() => toggleChannel(ch.key)}
+          style={{
+            background: channels.includes(ch.key) ? ch.color : '#232336',
+            color: channels.includes(ch.key) ? '#fff' : ch.color,
+            border: 'none',
+            borderRadius: 6,
+            padding: '2px 10px',
+            fontWeight: 600,
+            fontSize: 13,
+            cursor: 'pointer',
+            outline: channels.includes(ch.key) ? `2px solid ${ch.color}` : 'none',
+            transition: 'all 0.2s',
+          }}
+          aria-pressed={channels.includes(ch.key)}
+        >
+          {ch.label}
+        </button>
+      ))}
     </div>
   );
 }
