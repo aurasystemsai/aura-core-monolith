@@ -14,11 +14,11 @@
   color: #7fffd4 !important;
 }
  .sidebar {
-  width: 120px;
+  width: 90px !important;
   background: var(--card);
   color: var(--text);
   min-height: 100vh;
-  padding: 36px 0 0 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   position: sticky;
