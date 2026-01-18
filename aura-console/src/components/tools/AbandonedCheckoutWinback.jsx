@@ -1543,5 +1543,63 @@ function CustomSegmentBuilder({ onCreate }) {
   );
 }
 
+// --- Segment Automations Component ---
+function SegmentAutomations({ segment, onUpdate }) {
+  const [showModal, setShowModal] = React.useState(false);
+  const automations = segment.automations || [];
+  return (
+    <div style={{ marginTop: 8 }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        {automations.length === 0 ? (
+          <span style={{ color: '#f87171', fontSize: 13 }}>No automations</span>
+        ) : (
+          automations.map((a, idx) => (
+            <span key={idx} style={{ background: '#232336', color: '#fff', borderRadius: 6, padding: '2px 10px', fontSize: 13, fontWeight: 600, marginRight: 4 }}>{a.type}</span>
+          ))
+        )}
+        <button onClick={() => setShowModal(true)} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Automate</button>
+      </div>
+      {showModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
+          <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, maxWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
+            <h3 style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Segment Automations</h3>
+            <div style={{ marginBottom: 18 }}>
+              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 8, display: 'block' }}>Add Automation</label>
+              <select id="automation-type" style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #333', fontSize: 15, background: '#232336', color: '#fafafa', marginBottom: 12 }}>
+                <option value="email">Send Email</option>
+                <option value="sms">Send SMS</option>
+                <option value="push">Send Push</option>
+                <option value="webhook">Trigger Webhook</option>
+              </select>
+              <input id="automation-detail" placeholder="Details (e.g. template, URL)" style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #333', fontSize: 15, background: '#232336', color: '#fafafa', marginBottom: 12 }} />
+              <button onClick={() => {
+                const type = document.getElementById('automation-type').value;
+                const detail = document.getElementById('automation-detail').value;
+                if (type && detail) {
+                  onUpdate({ type, detail });
+                  setShowModal(false);
+                }
+              }} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginRight: 8 }}>Add Automation</button>
+              <button onClick={() => setShowModal(false)} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
+            </div>
+            <div style={{ marginTop: 18 }}>
+              <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 8, display: 'block' }}>Current Automations</label>
+              {automations.length === 0 ? (
+                <div style={{ color: '#f87171', fontSize: 14 }}>None</div>
+              ) : (
+                automations.map((a, idx) => (
+                  <div key={idx} style={{ background: '#232336', color: '#fff', borderRadius: 6, padding: '6px 10px', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>
+                    {a.type}: {a.detail}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default AbandonedCheckoutWinback;
 // End of file
