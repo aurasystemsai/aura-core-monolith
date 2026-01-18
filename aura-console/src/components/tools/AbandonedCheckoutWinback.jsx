@@ -2,11 +2,11 @@
 function CustomerLifecycleBar({ segments, onFilter, selectedStage }) {
   // Best-practice lifecycle stages
   const stages = [
-    { key: 'New', label: 'New', color: '#38bdf8', desc: 'Signed up <30d ago' },
-    { key: 'Active', label: 'Active', color: '#22c55e', desc: 'Purchased in last 30d' },
-    { key: 'At Risk', label: 'At Risk', color: '#facc15', desc: 'No purchase 30-60d' },
-    { key: 'Churned', label: 'Churned', color: '#ef4444', desc: 'No purchase >60d' },
-    { key: 'Loyal', label: 'Loyal', color: '#6366f1', desc: 'Repeat/high-value' },
+    { key: 'New', label: 'New', desc: 'Signed up <30d ago' },
+    { key: 'Active', label: 'Active', desc: 'Purchased in last 30d' },
+    { key: 'At Risk', label: 'At Risk', desc: 'No purchase 30-60d' },
+    { key: 'Churned', label: 'Churned', desc: 'No purchase >60d' },
+    { key: 'Loyal', label: 'Loyal', desc: 'Repeat/high-value' },
   ];
   // Count segments by stage (mock logic, real logic should use customer data)
   const counts = stages.reduce((acc, stage) => {
@@ -20,17 +20,17 @@ function CustomerLifecycleBar({ segments, onFilter, selectedStage }) {
           key={stage.key}
           onClick={() => onFilter(stage.key)}
           style={{
-            background: selectedStage === stage.key ? stage.color : '#232336',
-            color: selectedStage === stage.key ? '#fff' : stage.color,
-            border: 'none',
+            background: selectedStage === stage.key ? '#f5f5f7' : '#fff',
+            color: '#232336',
+            border: selectedStage === stage.key ? '2px solid #232336' : '1px solid #e5e7eb',
             borderRadius: 8,
             padding: '10px 18px',
-            fontWeight: 700,
+            fontWeight: 600,
             fontSize: 15,
             cursor: 'pointer',
             minWidth: 110,
-            boxShadow: selectedStage === stage.key ? '0 2px 8px #0004' : undefined,
-            outline: selectedStage === stage.key ? `2px solid ${stage.color}` : 'none',
+            boxShadow: selectedStage === stage.key ? '0 2px 8px #0001' : undefined,
+            outline: 'none',
             transition: 'all 0.2s',
             display: 'flex', flexDirection: 'column', alignItems: 'center',
           }}
@@ -38,7 +38,7 @@ function CustomerLifecycleBar({ segments, onFilter, selectedStage }) {
           title={stage.desc}
         >
           <span>{stage.label}</span>
-          <span style={{ fontSize: 13, fontWeight: 500, color: selectedStage === stage.key ? '#fff' : '#a1a1aa' }}>{counts[stage.key] || 0} segments</span>
+          <span style={{ fontSize: 13, fontWeight: 400, color: '#6b7280' }}>{counts[stage.key] || 0} segments</span>
         </button>
       ))}
     </div>
@@ -259,17 +259,17 @@ function SegmentStatistics({ segments }) {
     : '0.00';
   return (
     <div style={{ display: 'flex', gap: 24, margin: '18px 0' }}>
-      <div style={{ background: '#232336', borderRadius: 10, padding: 18, minWidth: 140 }}>
-        <div style={{ fontSize: 13, color: '#aaa' }}>Total Segments</div>
-        <div style={{ fontSize: 22, fontWeight: 700, color: '#0ea5e9' }}>{totalSegments}</div>
+      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: 18, minWidth: 140 }}>
+        <div style={{ fontSize: 13, color: '#6b7280' }}>Total Segments</div>
+        <div style={{ fontSize: 22, fontWeight: 600, color: '#232336' }}>{totalSegments}</div>
       </div>
-      <div style={{ background: '#232336', borderRadius: 10, padding: 18, minWidth: 140 }}>
-        <div style={{ fontSize: 13, color: '#aaa' }}>Total Customers</div>
-        <div style={{ fontSize: 22, fontWeight: 700, color: '#22c55e' }}>{totalCustomers}</div>
+      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: 18, minWidth: 140 }}>
+        <div style={{ fontSize: 13, color: '#6b7280' }}>Total Customers</div>
+        <div style={{ fontSize: 22, fontWeight: 600, color: '#232336' }}>{totalCustomers}</div>
       </div>
-      <div style={{ background: '#232336', borderRadius: 10, padding: 18, minWidth: 140 }}>
-        <div style={{ fontSize: 13, color: '#aaa' }}>Avg. Winback Rate</div>
-        <div style={{ fontSize: 22, fontWeight: 700, color: '#f59e42' }}>{avgWinbackRate}%</div>
+      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: 18, minWidth: 140 }}>
+        <div style={{ fontSize: 13, color: '#6b7280' }}>Avg. Winback Rate</div>
+        <div style={{ fontSize: 22, fontWeight: 600, color: '#232336' }}>{avgWinbackRate}%</div>
       </div>
     </div>
   );
@@ -1098,38 +1098,38 @@ function AbandonedCheckoutWinback() {
                   <div style={{ fontWeight: 700, fontSize: 20 }}>Your Segments</div>
                   <button onClick={() => openSegmentModal()} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ New Segment</button>
                 </div>
-                <table style={{ width: '100%', borderCollapse: 'collapse', background: '#23232a', color: '#fafafa', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', color: '#232336', borderRadius: 10, overflow: 'hidden', fontSize: 15, border: '1px solid #e5e7eb' }}>
                   <thead>
-                    <tr style={{ background: '#f3f4f6' }}>
-                      <th><input type="checkbox" checked={segmentsList.every(s => s.selected)} onChange={e => selectAllSegments(e.target.checked)} aria-label="Select all segments" /></th>
-                      <th>Name</th>
-                      <th>Rule</th>
-                      <th>Created</th>
-                      <th>Actions</th>
+                    <tr style={{ background: '#f9fafb' }}>
+                      <th style={{ fontWeight: 600, fontSize: 14, color: '#6b7280', padding: '12px 8px', borderBottom: '1px solid #e5e7eb' }}><input type="checkbox" checked={segmentsList.every(s => s.selected)} onChange={e => selectAllSegments(e.target.checked)} aria-label="Select all segments" /></th>
+                      <th style={{ fontWeight: 600, fontSize: 14, color: '#6b7280', padding: '12px 8px', borderBottom: '1px solid #e5e7eb' }}>Name</th>
+                      <th style={{ fontWeight: 600, fontSize: 14, color: '#6b7280', padding: '12px 8px', borderBottom: '1px solid #e5e7eb' }}>Rule</th>
+                      <th style={{ fontWeight: 600, fontSize: 14, color: '#6b7280', padding: '12px 8px', borderBottom: '1px solid #e5e7eb' }}>Created</th>
+                      <th style={{ fontWeight: 600, fontSize: 14, color: '#6b7280', padding: '12px 8px', borderBottom: '1px solid #e5e7eb' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {segmentsList.length === 0 ? (
-                      <tr><td colSpan={5} style={{ textAlign: 'center', color: '#64748b', padding: 24 }}>No segments yet.</td></tr>
+                      <tr><td colSpan={5} style={{ textAlign: 'center', color: '#64748b', padding: 24, background: '#fff' }}>No segments yet.</td></tr>
                     ) : segmentsList
                         .filter(s => !lifecycleFilter || (s.lifecycleStage === lifecycleFilter))
                         .map(s => (
-                          <tr key={s.id} style={{ background: s.selected ? '#e0e7ff' : undefined }}>
-                            <td><input type="checkbox" checked={!!s.selected} onChange={() => toggleSelectSegment(s.id)} aria-label={`Select segment ${s.name}`} /></td>
-                            <td>{s.name}</td>
-                            <td>{s.rule}</td>
-                            <td>{s.created}</td>
-                            <td style={{ verticalAlign: 'top', padding: '16px 8px', minWidth: 320 }}>
+                          <tr key={s.id} style={{ background: s.selected ? '#f3f4f6' : '#fff', borderBottom: '1px solid #e5e7eb' }}>
+                            <td style={{ padding: '12px 8px' }}><input type="checkbox" checked={!!s.selected} onChange={() => toggleSelectSegment(s.id)} aria-label={`Select segment ${s.name}`} /></td>
+                            <td style={{ padding: '12px 8px', fontWeight: 500 }}>{s.name}</td>
+                            <td style={{ padding: '12px 8px', color: '#374151' }}>{s.rule}</td>
+                            <td style={{ padding: '12px 8px', color: '#6b7280' }}>{s.created}</td>
+                            <td style={{ verticalAlign: 'top', padding: '12px 8px', minWidth: 320 }}>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 8 }}>
-                                <button onClick={() => openSegmentModal(s)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Edit</button>
-                                <button onClick={() => setSegmentsList(list => list.filter(x => x.id !== s.id))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                                <button onClick={() => openSegmentModal(s)} style={{ background: '#f3f4f6', color: '#232336', border: '1px solid #e5e7eb', borderRadius: 6, padding: '4px 12px', fontWeight: 500, fontSize: 14, cursor: 'pointer' }}>Edit</button>
+                                <button onClick={() => setSegmentsList(list => list.filter(x => x.id !== s.id))} style={{ background: '#fff', color: '#ef4444', border: '1px solid #e5e7eb', borderRadius: 6, padding: '4px 12px', fontWeight: 500, fontSize: 14, cursor: 'pointer' }}>Delete</button>
                                 <SegmentQuickActions segment={s} onSend={handleSendWinback} onPreview={handlePreviewWinback} />
                                 <SegmentPerformanceInsights segment={s} />
                               </div>
-                              <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid #232336' }}>
+                              <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid #e5e7eb' }}>
                                 <SegmentAutomations segment={s} onUpdate={automation => handleUpdateAutomation(s.id, automation)} />
                               </div>
-                              <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid #232336', display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                              <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid #e5e7eb', display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                                 <CrossChannelTargeting segment={s} onUpdate={channels => handleUpdateChannels(s.id, channels)} />
                                 <IncludeExcludeToggle segment={s} onUpdate={mode => handleUpdateIncludeMode(s.id, mode)} />
                               </div>
