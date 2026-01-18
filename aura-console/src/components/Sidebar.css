@@ -14,7 +14,7 @@
   color: #7fffd4 !important;
 }
  .sidebar {
-  width: 140px !important;
+  width: 200px !important;
   background: var(--card);
   color: var(--text);
   min-height: 100vh;

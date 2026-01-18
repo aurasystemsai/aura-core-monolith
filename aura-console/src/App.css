@@ -168,7 +168,7 @@ body {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 140px minmax(0, 1fr);
+  grid-template-columns: 200px minmax(0, 1fr);
   min-height: 100vh;
   background:
     radial-gradient(circle at top left, #0b1120 0, rgba(15, 23, 42, 0.8) 45%, #020617 100%);
@@ -219,7 +219,7 @@ body {
 }
 
 .sidebar-nav-shell {
-  width: 140px !important;
+  width: 200px !important;
   background: #0a1120;
   color: #7fffd4;
   border-right: 1.5px solid #1a2233;
