@@ -407,6 +407,87 @@ function ComplianceSection() {
 }
 
 function AbandonedCheckoutWinback() {
+        // --- A/B Testing Section UI ---
+        function ABTestingSection() {
+          return (
+            <section aria-label="A/B Testing">
+              <WinbackFeatureCard title="A/B Testing" description="Run experiments to optimize winback strategies." icon="🧪" />
+              <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <div style={{ fontWeight: 700, fontSize: 20 }}>Your Experiments</div>
+                  <button onClick={() => setShowExperimentModal(true)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ New Experiment</button>
+                </div>
+                <table style={{ width: '100%', borderCollapse: 'collapse', background: '#232336', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
+                  <thead>
+                    <tr style={{ background: '#18181b' }}>
+                      <th><input type="checkbox" checked={experimentsList.length > 0 && experimentsList.every(e => e.selected)} onChange={e => selectAllExperiments(e.target.checked)} aria-label="Select all experiments" /></th>
+                      <th>Name</th>
+                      <th>Segment</th>
+                      <th>Variant A</th>
+                      <th>Variant B</th>
+                      <th>Status</th>
+                      <th>Created</th>
+                      <th>Results</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {experimentsList.length === 0 ? (
+                      <tr><td colSpan={9} style={{ textAlign: 'center', color: '#64748b', padding: 24 }}>No experiments yet.</td></tr>
+                    ) : experimentsList.map(exp => (
+                      <tr key={exp.id} style={{ background: exp.selected ? '#18181b' : undefined }}>
+                        <td><input type="checkbox" checked={!!exp.selected} onChange={() => toggleSelectExperiment(exp.id)} aria-label={`Select experiment ${exp.name}`} /></td>
+                        <td>{exp.name}</td>
+                        <td>{exp.segment}</td>
+                        <td>{exp.variantA}</td>
+                        <td>{exp.variantB}</td>
+                        <td>{exp.status}</td>
+                        <td>{exp.created}</td>
+                        <td>{exp.results ? `A: ${exp.results.winbackRateA}% | B: ${exp.results.winbackRateB}%` : '-'}</td>
+                        <td>
+                          <button onClick={() => openExperimentModal(exp)} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #232336', borderRadius: 6, padding: '4px 12px', fontWeight: 500, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
+                          <button onClick={() => setExperimentsList(list => list.filter(x => x.id !== exp.id))} style={{ background: '#232336', color: '#ef4444', border: '1px solid #232336', borderRadius: 6, padding: '4px 12px', fontWeight: 500, fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {/* Bulk Actions */}
+                <div style={{ marginTop: 12, display: 'flex', gap: 12 }}>
+                  <button onClick={deleteSelectedExperiments} disabled={!experimentsList.some(e => e.selected)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Delete Selected</button>
+                </div>
+                {/* Experiment Modal (Add/Edit) */}
+                {showExperimentModal && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
+                    <div style={{ background: '#232336', color: '#fafafa', borderRadius: 14, padding: 32, minWidth: 400, maxWidth: 480, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                      <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingExperiment ? 'Edit Experiment' : 'New Experiment'}</h3>
+                      <form onSubmit={e => { e.preventDefault(); saveExperiment(editingExperiment ? editingExperiment : { name: '', segment: '', variantA: '', variantB: '', status: 'draft', created: new Date().toISOString().slice(0, 10), results: null }); }}>
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-experiment-name">Name</label>
+                        <input id="modal-experiment-name" value={editingExperiment ? editingExperiment.name : ''} onChange={e => setEditingExperiment(editingExperiment ? { ...editingExperiment, name: e.target.value } : { name: e.target.value, segment: '', variantA: '', variantB: '', status: 'draft', created: new Date().toISOString().slice(0, 10), results: null })} placeholder="Experiment name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #333', width: '100%', marginBottom: 12 }} required />
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }}>Segment</label>
+                        <input value={editingExperiment ? editingExperiment.segment : ''} onChange={e => setEditingExperiment(editingExperiment ? { ...editingExperiment, segment: e.target.value } : { name: '', segment: e.target.value, variantA: '', variantB: '', status: 'draft', created: new Date().toISOString().slice(0, 10), results: null })} placeholder="Segment name" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #333', width: '100%', marginBottom: 12 }} required />
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }}>Variant A</label>
+                        <input value={editingExperiment ? editingExperiment.variantA : ''} onChange={e => setEditingExperiment(editingExperiment ? { ...editingExperiment, variantA: e.target.value } : { name: '', segment: '', variantA: e.target.value, variantB: '', status: 'draft', created: new Date().toISOString().slice(0, 10), results: null })} placeholder="Variant A" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #333', width: '100%', marginBottom: 12 }} required />
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }}>Variant B</label>
+                        <input value={editingExperiment ? editingExperiment.variantB : ''} onChange={e => setEditingExperiment(editingExperiment ? { ...editingExperiment, variantB: e.target.value } : { name: '', segment: '', variantA: '', variantB: e.target.value, status: 'draft', created: new Date().toISOString().slice(0, 10), results: null })} placeholder="Variant B" style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #333', width: '100%', marginBottom: 12 }} required />
+                        <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }}>Status</label>
+                        <select value={editingExperiment ? editingExperiment.status : 'draft'} onChange={e => setEditingExperiment(editingExperiment ? { ...editingExperiment, status: e.target.value } : { name: '', segment: '', variantA: '', variantB: '', status: e.target.value, created: new Date().toISOString().slice(0, 10), results: null })} style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #333', width: '100%', marginBottom: 18 }} required>
+                          <option value="draft">Draft</option>
+                          <option value="active">Active</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                          <button type="button" onClick={closeExperimentModal} style={{ background: '#232336', color: '#fafafa', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
+                          <button type="submit" style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>{editingExperiment ? 'Save Changes' : 'Create Experiment'}</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          );
+        }
       // Customer lifecycle filter state
       const [lifecycleFilter, setLifecycleFilter] = useState(null);
     // --- Analytics state for Analytics section ---
@@ -673,45 +754,8 @@ function AbandonedCheckoutWinback() {
                   <th></th>
                 </tr>
               </thead>
-              <tbody>
-                {rules.map(rule => (
-                  <tr key={rule.id} style={{ borderTop: '1px solid #232336' }}>
-                    <td>{rule.trigger}</td>
-                    <td>{rule.action}</td>
-                    <td>{rule.enabled ? 'Enabled' : 'Disabled'}</td>
-                    <td><button onClick={() => handleDelete(rule.id)} style={{ background: 'none', color: '#f87171', border: 'none', cursor: 'pointer' }}>Delete</button></td>
-                  </tr>
-                ))}
-                {rules.length === 0 && <tr><td colSpan={4} style={{ color: '#aaa', padding: 12 }}>No automation rules yet.</td></tr>}
-              </tbody>
+              {/* ...existing code for table body and modal... */}
             </table>
-          )}
-          {/* Modal for new rule */}
-          {showModal && (
-            <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#000a', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ background: '#232336', borderRadius: 12, padding: 32, minWidth: 340 }}>
-                <h3 style={{ marginTop: 0 }}>Create Automation Rule</h3>
-                <div style={{ marginBottom: 12 }}>
-                  <label>Trigger<br />
-                    <input value={newRule.trigger} onChange={e => setNewRule(r => ({ ...r, trigger: e.target.value }))} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333', marginTop: 4 }} placeholder="e.g. Cart Abandoned" />
-                  </label>
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                  <label>Action<br />
-                    <input value={newRule.action} onChange={e => setNewRule(r => ({ ...r, action: e.target.value }))} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333', marginTop: 4 }} placeholder="e.g. Send Email" />
-                  </label>
-                </div>
-                <div style={{ marginBottom: 18 }}>
-                  <label>
-                    <input type="checkbox" checked={newRule.enabled} onChange={e => setNewRule(r => ({ ...r, enabled: e.target.checked }))} /> Enabled
-                  </label>
-                </div>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <button onClick={() => setShowModal(false)} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
-                  <button onClick={handleCreate} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Create</button>
-                </div>
-              </div>
-            </div>
           )}
         </div>
       );
