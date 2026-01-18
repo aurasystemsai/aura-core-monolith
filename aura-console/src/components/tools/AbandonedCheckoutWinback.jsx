@@ -1119,16 +1119,23 @@ function AbandonedCheckoutWinback() {
                             <td>{s.name}</td>
                             <td>{s.rule}</td>
                             <td>{s.created}</td>
-                            <td>
-                              <button onClick={() => openSegmentModal(s)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
-                              <button onClick={() => setSegmentsList(list => list.filter(x => x.id !== s.id))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Delete</button>
-                              <SegmentQuickActions segment={s} onSend={handleSendWinback} onPreview={handlePreviewWinback} />
-                              {/* --- Segment Automations --- */}
-                              <SegmentAutomations segment={s} onUpdate={automation => handleUpdateAutomation(s.id, automation)} />
-                              <CrossChannelTargeting segment={s} onUpdate={channels => handleUpdateChannels(s.id, channels)} />
-                              <SegmentPerformanceInsights segment={s} />
-                              <IncludeExcludeToggle segment={s} onUpdate={mode => handleUpdateIncludeMode(s.id, mode)} />
-                              <StoreLanguageSelector segment={s} onUpdate={opts => handleUpdateStoreLanguage(s.id, opts)} />
+                            <td style={{ verticalAlign: 'top', padding: '16px 8px', minWidth: 320 }}>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 8 }}>
+                                <button onClick={() => openSegmentModal(s)} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Edit</button>
+                                <button onClick={() => setSegmentsList(list => list.filter(x => x.id !== s.id))} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                                <SegmentQuickActions segment={s} onSend={handleSendWinback} onPreview={handlePreviewWinback} />
+                                <SegmentPerformanceInsights segment={s} />
+                              </div>
+                              <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid #232336' }}>
+                                <SegmentAutomations segment={s} onUpdate={automation => handleUpdateAutomation(s.id, automation)} />
+                              </div>
+                              <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid #232336', display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                                <CrossChannelTargeting segment={s} onUpdate={channels => handleUpdateChannels(s.id, channels)} />
+                                <IncludeExcludeToggle segment={s} onUpdate={mode => handleUpdateIncludeMode(s.id, mode)} />
+                              </div>
+                              <div style={{ marginBottom: 4, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                                <StoreLanguageSelector segment={s} onUpdate={opts => handleUpdateStoreLanguage(s.id, opts)} />
+                              </div>
                             </td>
                           </tr>
                         ))}
