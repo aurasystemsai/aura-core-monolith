@@ -1061,7 +1061,7 @@ function AbandonedCheckoutWinback() {
         {activeSection === 'segments' && (
           <>
             {/* --- Custom Segment Builder --- */}
-            <div style={{ marginBottom: 28, background: '#232336', borderRadius: 10, padding: 18 }}>
+            <div style={{ marginBottom: 28 }}>
               <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Custom Segment Builder</h4>
               <div style={{ fontSize: 15, color: '#a1a1aa', marginTop: 6, marginBottom: 10 }}>
                 Build your own segment by combining rules and filters. Mix purchase history, engagement, demographics, and more.
@@ -1070,9 +1070,9 @@ function AbandonedCheckoutWinback() {
             </div>
             <section aria-label="Segments">
             <WinbackFeatureCard title="Advanced Segmentation" description="Create, manage, and apply dynamic customer segments. Saved segments, rule builder, and filters." icon="👥" />
-            <div style={{ background: '#23232a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
+            <div style={{ marginBottom: 24 }}>
               {/* --- AI-Based Segmentation --- */}
-              <div style={{ marginBottom: 20, background: '#232336', borderRadius: 10, padding: 18 }}>
+              <div style={{ marginBottom: 20 }}>
                 <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>AI Segment Builder</h4>
                 <div style={{ marginTop: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
                   <input
@@ -1131,7 +1131,7 @@ function AbandonedCheckoutWinback() {
                 )}
               </div>
               {/* --- Dynamic & Real-Time Segments --- */}
-              <div style={{ marginBottom: 28, background: '#232336', borderRadius: 10, padding: 18 }}>
+              <div style={{ marginBottom: 28 }}>
                 <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Dynamic & Real-Time Segments</h4>
                 <div style={{ fontSize: 15, color: '#a1a1aa', marginTop: 6, marginBottom: 10 }}>
                   Segments update automatically as customer data changes. Segments are kept in sync with your store and customer activity in real time.
@@ -1155,7 +1155,7 @@ function AbandonedCheckoutWinback() {
                 </div>
               </div>
               {/* --- Pre-Built Segment Templates --- */}
-              <div style={{ marginBottom: 28, background: '#232336', borderRadius: 10, padding: 18 }}>
+              <div style={{ marginBottom: 28 }}>
                 <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Pre-Built Segment Templates</h4>
                 <div style={{ fontSize: 15, color: '#a1a1aa', marginTop: 6, marginBottom: 10 }}>
                   Quickly add common segments with one click. Templates are based on best practices from top ecommerce platforms.
@@ -1205,7 +1205,7 @@ function AbandonedCheckoutWinback() {
                   <div style={{ fontWeight: 700, fontSize: 20 }}>Your Segments</div>
                   <button onClick={() => openSegmentModal()} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ New Segment</button>
                 </div>
-                <table style={{ width: '100%', borderCollapse: 'collapse', background: '#232336', color: '#fafafa', borderRadius: 10, overflow: 'hidden', fontSize: 15, border: '1px solid #232336' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15 }}>
                   <thead>
                     <tr style={{ background: '#18181b' }}>
                       <th style={{ fontWeight: 600, fontSize: 14, color: '#a1a1aa', padding: '12px 8px', borderBottom: '1px solid #232336' }}><input type="checkbox" checked={segmentsList.every(s => s.selected)} onChange={e => selectAllSegments(e.target.checked)} aria-label="Select all segments" /></th>
@@ -1217,11 +1217,11 @@ function AbandonedCheckoutWinback() {
                   </thead>
                   <tbody>
                     {segmentsList.length === 0 ? (
-                      <tr><td colSpan={5} style={{ textAlign: 'center', color: '#64748b', padding: 24, background: '#232336' }}>No segments yet.</td></tr>
+                      <tr><td colSpan={5} style={{ textAlign: 'center', color: '#64748b', padding: 24 }}>No segments yet.</td></tr>
                     ) : segmentsList
                         .filter(s => !lifecycleFilter || (s.lifecycleStage === lifecycleFilter))
                         .map(s => (
-                          <tr key={s.id} style={{ background: s.selected ? '#18181b' : '#232336', borderBottom: '1px solid #232336' }}>
+                          <tr key={s.id} style={{ borderBottom: '1px solid #232336' }}>
                             <td style={{ padding: '12px 8px' }}><input type="checkbox" checked={!!s.selected} onChange={() => toggleSelectSegment(s.id)} aria-label={`Select segment ${s.name}`} /></td>
                             <td style={{ padding: '12px 8px', fontWeight: 500 }}>{s.name}</td>
                             <td style={{ padding: '12px 8px', color: '#fafafa' }}>{s.rule}</td>
