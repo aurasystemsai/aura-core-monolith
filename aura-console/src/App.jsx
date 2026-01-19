@@ -142,7 +142,7 @@ function App() {
       useEffect(() => {
         async function fetchProject() {
           try {
-            const res = await fetch('/api/session'); // Change to your actual endpoint if needed
+            const res = await apiFetch('/api/session');
             if (res.ok) {
               const data = await res.json();
               if (data && data.project) {
