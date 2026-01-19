@@ -138,6 +138,12 @@ class ErrorBoundary extends React.Component {
 }
 
 function App() {
+    // Debug: always show a visible banner in main content
+    const debugBanner = (
+      <div style={{position:'fixed',top:0,left:0,right:0,zIndex:9999999,background:'#0ff',color:'#000',fontSize:22,padding:12,textAlign:'center'}}>
+        APP MAIN CONTENT RENDERED - DEBUG BANNER
+      </div>
+    );
   // Main navigation state
   const [activeSection, setActiveSection] = useState('dashboard');
   // Project state (simulate or fetch as needed)
@@ -224,8 +230,11 @@ function App() {
           </div>
         </nav>
         <main className="app-main">
+          {debugBanner}
           <div className="page-frame fade-in">
             <section className="tool-section">
+              {/* DEBUG: dashboard render path */}
+              {activeSection === "dashboard" && !project && <div style={{color:'#ff0',background:'#232336',padding:16}}>DEBUG: No project found, dashboard not rendered</div>}
               {activeSection === "dashboard" && project && <DashboardHome setActiveSection={setActiveSection} />}
               <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading…</div>}>
                 {activeSection === "pricing" && <PricingPage />}
