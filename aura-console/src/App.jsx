@@ -138,13 +138,29 @@ class ErrorBoundary extends React.Component {
 }
 
 function App() {
-      // Restore project from localStorage on mount
+      // Fetch project/shop context from backend API on mount
       useEffect(() => {
-        const storedProjectId = localStorage.getItem('auraProjectId');
-        const storedProjectName = localStorage.getItem('auraProjectName');
-        if (storedProjectId) {
-          setProject({ id: storedProjectId, name: storedProjectName });
+        async function fetchProject() {
+          try {
+            const res = await fetch('/api/session'); // Change to your actual endpoint if needed
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.project) {
+                setProject(data.project);
+              } else if (data && data.shop) {
+                setProject({ id: data.shop.id, name: data.shop.name });
+              }
+            }
+          } catch (e) {
+            // Fallback: try localStorage for dev
+            const storedProjectId = localStorage.getItem('auraProjectId');
+            const storedProjectName = localStorage.getItem('auraProjectName');
+            if (storedProjectId) {
+              setProject({ id: storedProjectId, name: storedProjectName });
+            }
+          }
         }
+        fetchProject();
       }, []);
     // Debug: always show a visible banner in main content
     const debugBanner = (
