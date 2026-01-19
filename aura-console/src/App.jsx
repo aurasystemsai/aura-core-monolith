@@ -192,19 +192,36 @@ function App() {
             >AI Chatbot</button>
           </div>
           <div className="tab-group tab-group-tools">
-            <div className="tools-dropdown">
+            <div className="tools-dropdown mega-menu">
               <button className="tools-dropdown-btn">Tools ▾</button>
-              <div className="tools-dropdown-list">
-                {toolsMeta.map(tool => (
-                  <button
-                    key={tool.id}
-                    className={activeSection === tool.id ? 'tab-active' : ''}
-                    onClick={() => setActiveSection(tool.id)}
-                    title={tool.description}
-                  >
-                    {tool.name}
-                  </button>
-                ))}
+              <div className="tools-mega-menu-list">
+                {(() => {
+                  const grouped = toolsMeta.reduce((acc, tool) => {
+                    const cat = tool.category || 'Other';
+                    if (!acc[cat]) acc[cat] = [];
+                    acc[cat].push(tool);
+                    return acc;
+                  }, {});
+                  return (
+                    <div className="tools-mega-menu-columns">
+                      {Object.entries(grouped).map(([cat, tools]) => (
+                        <div key={cat} className="tools-mega-menu-col">
+                          <div className="tools-mega-menu-col-label">{cat}</div>
+                          {tools.map(tool => (
+                            <button
+                              key={tool.id}
+                              className={activeSection === tool.id ? 'tab-active' : ''}
+                              onClick={() => setActiveSection(tool.id)}
+                              title={tool.description}
+                            >
+                              {tool.name}
+                            </button>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
