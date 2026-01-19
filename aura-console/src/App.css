@@ -44,9 +44,13 @@
   border-bottom: 2px solid #232336;
   font-size: 1.15rem;
   min-height: 56px;
+  position: relative;
 }
 
 /* Mega menu styles - moved to global scope for interactivity */
+.mega-menu {
+  position: relative;
+}
 .mega-menu .tools-mega-menu-list {
   display: none;
   position: absolute;
@@ -168,33 +172,15 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #18181b;
+  background: #101223;
 }
 .app-main {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
-}
-/* Unified shell and main layout styles for AURA Console */
-:root {
-  --card: #181c2a;
-  --bg-alt: #23263a;
-  --accent: #6c47ff;
-  --text: #e6e6f0;
-}
-.app-shell {
-  display: flex;
-  min-height: 100vh;
-  background: #101223;
-}
-.app-main {
-  margin-left: 220px;
-  flex: 1;
-  min-height: 100vh;
   background: var(--card);
-  display: flex;
-  flex-direction: column;
+  margin-left: 0 !important;
 }
 .page-frame {
   margin: 16px auto;
