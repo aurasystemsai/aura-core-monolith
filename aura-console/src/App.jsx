@@ -138,6 +138,14 @@ class ErrorBoundary extends React.Component {
 }
 
 function App() {
+      // Restore project from localStorage on mount
+      useEffect(() => {
+        const storedProjectId = localStorage.getItem('auraProjectId');
+        const storedProjectName = localStorage.getItem('auraProjectName');
+        if (storedProjectId) {
+          setProject({ id: storedProjectId, name: storedProjectName });
+        }
+      }, []);
     // Debug: always show a visible banner in main content
     const debugBanner = (
       <div style={{position:'fixed',top:0,left:0,right:0,zIndex:9999999,background:'#0ff',color:'#000',fontSize:22,padding:12,textAlign:'center'}}>
