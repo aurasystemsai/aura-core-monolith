@@ -125,7 +125,10 @@ toolRouters.forEach(({ path, router }) => {
 // --- Session context endpoint for frontend ---
 // Returns current shop/project context for frontend dashboard
 app.get('/api/session', (req, res) => {
-  // Try to get shop and project from session, env, or fallback
+  // Debug log for session and env
+  console.log('[DEBUG /api/session] req.session:', req.session);
+  console.log('[DEBUG /api/session] process.env.SHOPIFY_SHOP_DOMAIN:', process.env.SHOPIFY_SHOP_DOMAIN);
+  console.log('[DEBUG /api/session] process.env.SHOPIFY_ADMIN_TOKEN:', process.env.SHOPIFY_ADMIN_TOKEN);
   const shop = req.session?.shop || process.env.SHOPIFY_SHOP_DOMAIN || null;
   const token = req.session?.shopifyToken || process.env.SHOPIFY_ADMIN_TOKEN || null;
   let project = null;
@@ -136,6 +139,7 @@ app.get('/api/session', (req, res) => {
       console.warn('[Session] Failed to get project for shop', shop, err);
     }
   }
+  console.log('[DEBUG /api/session] resolved shop:', shop, 'token:', token, 'project:', project);
   res.json({
     ok: true,
     shop,
