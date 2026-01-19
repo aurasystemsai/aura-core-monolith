@@ -131,12 +131,14 @@ app.get('/api/session', (req, res) => {
   if (!req.shopify) {
     return res.status(401).json({ ok: false, error: 'No valid Shopify session' });
   }
-  // You can expand this to include more project/shop info as needed
+  const shopDomain = req.shopify.dest || req.shopify.shop;
+  // Look up project by shop domain
+  const project = projectsCore.getProjectByDomain(shopDomain);
   res.json({
     ok: true,
-    shop: req.shopify.dest || req.shopify.shop, // dest for new JWT, shop for legacy
+    shop: shopDomain,
     user: req.shopify.user || null,
-    project: null // TODO: load project context if you have it
+    project
   });
 });
   try {
