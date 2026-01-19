@@ -123,6 +123,27 @@ toolRouters.forEach(({ path, router }) => {
 });
 
 // --- Session context endpoint for frontend ---
+// Returns current shop/project context for frontend dashboard
+app.get('/api/session', (req, res) => {
+  // Try to get shop and project from session, env, or fallback
+  const shop = req.session?.shop || process.env.SHOPIFY_SHOP_DOMAIN || null;
+  const token = req.session?.shopifyToken || process.env.SHOPIFY_ADMIN_TOKEN || null;
+  let project = null;
+  if (shop) {
+    try {
+      project = projectsCore.getProjectByDomain(shop);
+    } catch (err) {
+      console.warn('[Session] Failed to get project for shop', shop, err);
+    }
+  }
+  res.json({
+    ok: true,
+    shop,
+    token: token ? token.slice(0, 6) + '...' : null,
+    project,
+    sessionId: req.sessionID || null
+  });
+});
 // --- Product SEO Engine: Shopify Products Fetch Endpoint ---
 // GET /api/product-seo/shopify-products?limit=50
 app.get('/api/product-seo/shopify-products', async (req, res) => {
