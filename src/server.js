@@ -125,6 +125,7 @@ toolRouters.forEach(({ path, router }) => {
 // --- Session context endpoint for frontend ---
 // --- Product SEO Engine: Shopify Products Fetch Endpoint ---
 // GET /api/product-seo/shopify-products?limit=50
+app.get('/api/product-seo/shopify-products', async (req, res) => {
   try {
     // Try to get shop domain and token from DB, env, or session
     // Priority: session > env > fail
@@ -177,8 +178,9 @@ toolRouters.forEach(({ path, router }) => {
     res.json({ ok: true, products });
   } catch (err) {
     console.error('[Product SEO] Shopify products fetch error:', err);
-    res.status(500).json({ ok: false, error: err.message || 'Failed to fetch products' });
-  }
+      res.status(500).json({ ok: false, error: err.message || 'Failed to fetch products' });
+    }
+  });
 
 // --- AI Chatbot API (OpenAI-powered, v4 SDK) ---
 app.post('/api/ai/chatbot', async (req, res) => {
