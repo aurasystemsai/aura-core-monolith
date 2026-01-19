@@ -122,11 +122,34 @@ toolRouters.forEach(({ path, router }) => {
   }
 });
 
+// --- Session context endpoint for frontend ---
+app.get('/api/session', (req, res) => {
+  if (!req.shopify) {
+    console.log('[SESSION] No valid Shopify session');
+    return res.status(401).json({ ok: false, error: 'No valid Shopify session' });
+  }
+  const shopDomain = req.shopify.dest || req.shopify.shop;
+  let project = projectsCore.getProjectByDomain(shopDomain);
+  if (!project) {
+    console.log(`[SESSION] No project found for domain: ${shopDomain}. Creating new project.`);
+    project = projectsCore.createProject({
+      name: shopDomain,
+      domain: shopDomain,
+      platform: 'shopify'
+    });
+  } else {
+    console.log(`[SESSION] Found project for domain: ${shopDomain}`, project);
+  }
+  res.json({
+    ok: true,
+    shop: shopDomain,
+    user: req.shopify.user || null,
+    project
+  });
+});
 // --- Product SEO Engine: Shopify Products Fetch Endpoint ---
 // GET /api/product-seo/shopify-products?limit=50
 app.get('/api/product-seo/shopify-products', async (req, res) => {
-// --- Session context endpoint for frontend ---
-app.get('/api/session', (req, res) => {
   // If verifyShopifySession passed, req.shopify is set
   if (!req.shopify) {
     console.log('[SESSION] No valid Shopify session');
