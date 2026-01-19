@@ -173,33 +173,41 @@ function App() {
       <div className="app-shell">
         {/* Top tab navigation */}
         <nav className="top-tabs-nav">
-          <button
-            className={activeSection === 'dashboard' ? 'tab-active' : ''}
-            onClick={() => setActiveSection('dashboard')}
-          >Dashboard</button>
-          <button
-            className={activeSection === 'pricing' ? 'tab-active' : ''}
-            onClick={() => setActiveSection('pricing')}
-          >Pricing</button>
-          <button
-            className={activeSection === 'automation-scheduler' ? 'tab-active' : ''}
-            onClick={() => setActiveSection('automation-scheduler')}
-          >Automation Scheduler</button>
-          <button
-            className={activeSection === 'ai-chatbot' ? 'tab-active' : ''}
-            onClick={() => setActiveSection('ai-chatbot')}
-          >AI Chatbot</button>
-          {/* Dynamically add all tools from toolsMeta */}
-          {toolsMeta.map(tool => (
+          <div className="tab-group tab-group-main">
             <button
-              key={tool.id}
-              className={activeSection === tool.id ? 'tab-active' : ''}
-              onClick={() => setActiveSection(tool.id)}
-              title={tool.description}
-            >
-              {tool.name}
-            </button>
-          ))}
+              className={activeSection === 'dashboard' ? 'tab-active' : ''}
+              onClick={() => setActiveSection('dashboard')}
+            >Dashboard</button>
+            <button
+              className={activeSection === 'pricing' ? 'tab-active' : ''}
+              onClick={() => setActiveSection('pricing')}
+            >Pricing</button>
+            <button
+              className={activeSection === 'automation-scheduler' ? 'tab-active' : ''}
+              onClick={() => setActiveSection('automation-scheduler')}
+            >Automation</button>
+            <button
+              className={activeSection === 'ai-chatbot' ? 'tab-active' : ''}
+              onClick={() => setActiveSection('ai-chatbot')}
+            >AI Chatbot</button>
+          </div>
+          <div className="tab-group tab-group-tools">
+            <div className="tools-dropdown">
+              <button className="tools-dropdown-btn">Tools ▾</button>
+              <div className="tools-dropdown-list">
+                {toolsMeta.map(tool => (
+                  <button
+                    key={tool.id}
+                    className={activeSection === tool.id ? 'tab-active' : ''}
+                    onClick={() => setActiveSection(tool.id)}
+                    title={tool.description}
+                  >
+                    {tool.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </nav>
         <main className="app-main">
           <div className="page-frame fade-in">

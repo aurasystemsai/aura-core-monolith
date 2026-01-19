@@ -1,32 +1,112 @@
 /* Top tab navigation styles */
 .top-tabs-nav {
   display: flex;
-  gap: 2px;
+  justify-content: center;
+  align-items: center;
   background: #18181b;
-  padding: 0 24px;
   border-bottom: 2px solid #232336;
   position: sticky;
   top: 0;
   z-index: 100;
+  min-height: 54px;
+  padding: 0;
+  gap: 0;
+}
+.tab-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.tab-group-main {
+  margin-right: 32px;
+}
+.tab-group-tools {
+  position: relative;
 }
 .top-tabs-nav button {
   background: none;
   border: none;
   color: #fafafa;
   font-weight: 600;
-  font-size: 16px;
-  padding: 16px 22px 12px 22px;
+  font-size: 15px;
+  padding: 10px 16px 8px 16px;
   cursor: pointer;
-  border-bottom: 3px solid transparent;
+  border-bottom: 2.5px solid transparent;
   transition: color 0.15s, border-bottom 0.15s, background 0.15s;
   outline: none;
+  border-radius: 7px 7px 0 0;
+  margin: 0 1px;
+  white-space: nowrap;
 }
 .top-tabs-nav button.tab-active {
   color: #6366f1;
-  border-bottom: 3px solid #6366f1;
+  border-bottom: 2.5px solid #6366f1;
   background: #232336;
 }
 .top-tabs-nav button:hover:not(.tab-active) {
+  color: #a5b4fc;
+  background: #232336;
+}
+.tools-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.tools-dropdown-btn {
+  background: none;
+  border: none;
+  color: #fafafa;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 10px 16px 8px 16px;
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  border-radius: 7px 7px 0 0;
+  margin: 0 1px;
+  white-space: nowrap;
+  transition: color 0.15s, border-bottom 0.15s, background 0.15s;
+}
+.tools-dropdown-btn:hover,
+.tools-dropdown-btn:focus {
+  color: #a5b4fc;
+  background: #232336;
+}
+.tools-dropdown-list {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 220px;
+  background: #232336;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 8px 32px #0008;
+  z-index: 200;
+  padding: 6px 0;
+  flex-direction: column;
+}
+.tools-dropdown:hover .tools-dropdown-list,
+.tools-dropdown:focus-within .tools-dropdown-list {
+  display: flex;
+}
+.tools-dropdown-list button {
+  width: 100%;
+  text-align: left;
+  padding: 10px 18px;
+  font-size: 15px;
+  border-radius: 0;
+  border: none;
+  background: none;
+  color: #fafafa;
+  font-weight: 500;
+  border-bottom: none;
+  margin: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.tools-dropdown-list button.tab-active {
+  color: #6366f1;
+  background: #18181b;
+}
+.tools-dropdown-list button:hover:not(.tab-active) {
   color: #a5b4fc;
   background: #232336;
 }
