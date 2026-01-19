@@ -55,9 +55,11 @@
   display: none;
   position: absolute;
   top: 100%;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%);
   min-width: 600px;
-  max-width: 98vw;
+  max-width: min(98vw, 1100px);
+  box-sizing: border-box;
   background: #232336;
   border-radius: 0 0 16px 16px;
   box-shadow: 0 8px 32px #0008;
