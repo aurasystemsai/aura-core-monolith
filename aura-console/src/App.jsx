@@ -70,7 +70,6 @@ import AuraAPISDK from "./components/tools/AuraAPISDK.jsx";
 import AiSupportAssistant from "./components/tools/AISupportAssistant.jsx";
 import AiLaunchPlanner from "./components/tools/AILaunchPlanner.jsx";
 // import AiAltTextEngine from "./components/tools/AiAltTextEngine.jsx";
-import Sidebar from "./components/Sidebar";
 import ChangelogModal from "./components/ChangelogModal.jsx";
 import Toast from "./components/Toast.jsx";
 import DashboardHome from "./components/DashboardHome";
@@ -172,18 +171,36 @@ function App() {
       <ChangelogModal open={showChangelog} onClose={() => setShowChangelog(false)} />
       <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
       <div className="app-shell">
-        <Sidebar
-          current={activeSection}
-          onSelect={setActiveSection}
-          onShowChangelog={handleShowChangelog}
-          changelogUnread={!changelogSeen}
-          extraItems={[
-            { key: 'pricing', label: 'Pricing' },
-            { key: 'ai-chatbot', label: 'AI Chatbot' },
-            { key: 'automation-scheduler', label: 'Automation Scheduler' },
-            ...toolsMeta.map(tool => ({ key: tool.id, label: tool.name }))
-          ]}
-        />
+        {/* Top tab navigation */}
+        <nav className="top-tabs-nav">
+          <button
+            className={activeSection === 'dashboard' ? 'tab-active' : ''}
+            onClick={() => setActiveSection('dashboard')}
+          >Dashboard</button>
+          <button
+            className={activeSection === 'pricing' ? 'tab-active' : ''}
+            onClick={() => setActiveSection('pricing')}
+          >Pricing</button>
+          <button
+            className={activeSection === 'automation-scheduler' ? 'tab-active' : ''}
+            onClick={() => setActiveSection('automation-scheduler')}
+          >Automation Scheduler</button>
+          <button
+            className={activeSection === 'ai-chatbot' ? 'tab-active' : ''}
+            onClick={() => setActiveSection('ai-chatbot')}
+          >AI Chatbot</button>
+          {/* Dynamically add all tools from toolsMeta */}
+          {toolsMeta.map(tool => (
+            <button
+              key={tool.id}
+              className={activeSection === tool.id ? 'tab-active' : ''}
+              onClick={() => setActiveSection(tool.id)}
+              title={tool.description}
+            >
+              {tool.name}
+            </button>
+          ))}
+        </nav>
         <main className="app-main">
           <div className="page-frame fade-in">
             <section className="tool-section">
