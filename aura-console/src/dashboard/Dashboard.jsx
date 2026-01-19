@@ -95,6 +95,18 @@ const Dashboard = ({ setActiveSection }) => {
     integrations: ['Shopify', 'Klaviyo', 'Zapier'],
   };
 
+  // Onboarding checklist (simple static example, replace with real logic as needed)
+  const onboardingSteps = [
+    { label: 'Connect your Shopify store', key: 'connect-shopify' },
+    { label: 'Import your products', key: 'import-products' },
+    { label: 'Run your first audit', key: 'run-audit' },
+    { label: 'Set up automations', key: 'setup-automations' },
+    { label: 'Invite your team', key: 'invite-team' },
+  ];
+  // Simulate progress (replace with real completion logic)
+  const completedSteps = 2;
+  const onboardingPercent = Math.round((completedSteps / onboardingSteps.length) * 100);
+
   if (loading) {
     return <Spinner />;
   }
@@ -111,13 +123,36 @@ const Dashboard = ({ setActiveSection }) => {
         marginBottom: 40,
         boxShadow: '0 12px 48px rgba(0,0,0,0.13)',
         display: 'flex',
-        alignItems: 'center',
-        gap: 48,
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
+        flexDirection: 'column',
+        gap: 32,
         overflow: 'hidden',
         background: '#232b3b',
       }}>
+        {/* Personalized welcome */}
+        <div style={{fontSize: 28, fontWeight: 900, color: '#7fffd4', marginBottom: 8}}>
+          Welcome back{shop.name ? `, ${shop.name}` : ''}!
+        </div>
+        {/* Onboarding checklist */}
+        <div style={{marginBottom: 18, width: '100%', maxWidth: 520}}>
+          <div style={{fontWeight: 700, color: '#f3f4f6', marginBottom: 6, fontSize: 16}}>Getting Started Checklist</div>
+          <div style={{display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6}}>
+            <div style={{flex: 1, height: 8, background: '#181f2a', borderRadius: 6, overflow: 'hidden'}}>
+              <div style={{width: `${onboardingPercent}%`, height: '100%', background: '#7fffd4', borderRadius: 6, transition: 'width 0.3s'}} />
+            </div>
+            <span style={{color: '#7fffd4', fontWeight: 700, fontSize: 14}}>{onboardingPercent}%</span>
+          </div>
+          <div style={{display: 'flex', gap: 18, flexWrap: 'wrap'}}>
+            {onboardingSteps.map((step, idx) => (
+              <span key={step.key} style={{
+                color: idx < completedSteps ? '#7fffd4' : '#9ca3c7',
+                textDecoration: idx < completedSteps ? 'line-through' : 'none',
+                fontWeight: idx < completedSteps ? 700 : 500,
+                fontSize: 14,
+                marginRight: 8,
+              }}>{step.label}</span>
+            ))}
+          </div>
+        </div>
         {/* Removed animated background circles for clean look */}
         <div style={{display:'flex',flexDirection:'column',alignItems:'flex-start',flex:1,minWidth:260,zIndex:1}}>
           <div style={{display:'flex',alignItems:'center',gap:18,marginBottom:12}}>
