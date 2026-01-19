@@ -191,33 +191,36 @@ function App() {
               onClick={() => setActiveSection('ai-chatbot')}
             >AI Chatbot</button>
           </div>
-          <div className="tab-group tab-group-tools">
-            {(() => {
-              // Group tools by category
-              const grouped = toolsMeta.reduce((acc, tool) => {
-                const cat = tool.category || 'Other';
-                if (!acc[cat]) acc[cat] = [];
-                acc[cat].push(tool);
-                return acc;
-              }, {});
-              return Object.entries(grouped).map(([cat, tools]) => (
-                <div className="tools-dropdown" key={cat}>
-                  <button className="tools-dropdown-btn">{cat} ▾</button>
-                  <div className="tools-dropdown-list">
-                    {tools.map(tool => (
-                      <button
-                        key={tool.id}
-                        className={activeSection === tool.id ? 'tab-active' : ''}
-                        onClick={() => setActiveSection(tool.id)}
-                        title={tool.description}
-                      >
-                        {tool.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ));
-            })()}
+          <div className="mega-menu">
+            <button className="tools-dropdown-btn">Browse Tools ▾</button>
+            <div className="tools-mega-menu-list">
+              <div className="tools-mega-menu-columns">
+                {(() => {
+                  // Group tools by category
+                  const grouped = toolsMeta.reduce((acc, tool) => {
+                    const cat = tool.category || 'Other';
+                    if (!acc[cat]) acc[cat] = [];
+                    acc[cat].push(tool);
+                    return acc;
+                  }, {});
+                  return Object.entries(grouped).map(([cat, tools]) => (
+                    <div className="tools-mega-menu-col" key={cat}>
+                      <div className="tools-mega-menu-col-label">{cat}</div>
+                      {tools.map(tool => (
+                        <button
+                          key={tool.id}
+                          className={activeSection === tool.id ? 'tab-active' : ''}
+                          onClick={() => setActiveSection(tool.id)}
+                          title={tool.description}
+                        >
+                          {tool.name}
+                        </button>
+                      ))}
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
           </div>
         </nav>
         <main className="app-main">
