@@ -132,8 +132,15 @@ app.get('/api/session', (req, res) => {
     return res.status(401).json({ ok: false, error: 'No valid Shopify session' });
   }
   const shopDomain = req.shopify.dest || req.shopify.shop;
-  // Look up project by shop domain
-  const project = projectsCore.getProjectByDomain(shopDomain);
+  let project = projectsCore.getProjectByDomain(shopDomain);
+  if (!project) {
+    // Auto-create project for this shop
+    project = projectsCore.createProject({
+      name: shopDomain,
+      domain: shopDomain,
+      platform: 'shopify'
+    });
+  }
   res.json({
     ok: true,
     shop: shopDomain,
