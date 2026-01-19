@@ -125,6 +125,20 @@ toolRouters.forEach(({ path, router }) => {
 // --- Product SEO Engine: Shopify Products Fetch Endpoint ---
 // GET /api/product-seo/shopify-products?limit=50
 app.get('/api/product-seo/shopify-products', async (req, res) => {
+// --- Session context endpoint for frontend ---
+app.get('/api/session', (req, res) => {
+  // If verifyShopifySession passed, req.shopify is set
+  if (!req.shopify) {
+    return res.status(401).json({ ok: false, error: 'No valid Shopify session' });
+  }
+  // You can expand this to include more project/shop info as needed
+  res.json({
+    ok: true,
+    shop: req.shopify.dest || req.shopify.shop, // dest for new JWT, shop for legacy
+    user: req.shopify.user || null,
+    project: null // TODO: load project context if you have it
+  });
+});
   try {
     // Try to get shop domain and token from DB, env, or session
     // Priority: session > env > fail
