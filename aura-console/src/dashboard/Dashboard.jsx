@@ -1,6 +1,7 @@
 
 
 import React, { useState, useEffect, Suspense, lazy } from "react";
+import { apiFetch } from "../api";
 const DashboardCharts = lazy(() => import('./DashboardCharts'));
 const ShopInfoPanel = lazy(() => import('../components/ShopInfoPanel'));
 
@@ -83,7 +84,7 @@ const Dashboard = ({ setActiveSection }) => {
   useEffect(() => {
     async function fetchShop() {
       try {
-        const res = await fetch('/api/session');
+        const res = await apiFetch('/api/session');
         if (res.ok) {
           const data = await res.json();
           if (data && data.shop) {
