@@ -83,14 +83,11 @@ const Dashboard = ({ setActiveSection }) => {
         const res = await apiFetch('/api/session');
         if (res.ok) {
           const data = await res.json();
-          if (data && data.shop) {
+          if (data && data.projectDetails) {
             setShop({
-              name: data.shop.name,
-              domain: data.shop.domain,
-              plan: data.shop.plan || '',
-              status: data.shop.status || 'Active',
+              ...data.projectDetails,
               logoUrl: '/shopify-logo.svg',
-              integrations: data.shop.integrations || [],
+              integrations: data.shop?.integrations || [],
             });
           } else {
             setShop(null);
