@@ -1,19 +1,7 @@
-import React from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
-
-const sampleData = {
-  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-  datasets: [
-    {
-      label: 'SEO Issues',
-      data: [40, 37, 35, 32, 30, 28, 27],
-      fill: false,
-      borderColor: '#7fffd4',
-      tension: 0.1,
-    },
-  ],
-};
 
 const options = {
   responsive: true,
@@ -31,6 +19,32 @@ const options = {
 };
 
 export default function DashboardCharts() {
+  const [chartData, setChartData] = useState(null);
+  useEffect(() => {
+    async function fetchAnalytics() {
+      try {
+        const res = await fetch('/api/advanced-analytics-attribution/trends');
+        if (res.ok) {
+          const data = await res.json();
+          setChartData({
+            labels: data.labels,
+            datasets: [
+              {
+                label: 'SEO Issues',
+                data: data.seoIssues,
+                fill: false,
+                borderColor: '#7fffd4',
+                tension: 0.1,
+              },
+            ],
+          });
+        }
+      } catch {
+        setChartData(null);
+      }
+    }
+    fetchAnalytics();
+  }, []);
   return (
     <div
       className="dashboard-charts-card"
@@ -60,10 +74,10 @@ export default function DashboardCharts() {
         animation: 'pulse 5s infinite',
       }} />
       <h3 style={{ color: '#7fffd4', marginBottom: 18, fontSize: 22, fontWeight: 800, letterSpacing: '-0.01em', textShadow: '0 2px 12px #0006', zIndex: 1, position: 'relative' }}>
-        SEO Issues Trend (Sample)
+        SEO Issues Trend
       </h3>
       <div style={{zIndex:1,position:'relative'}}>
-        <Line data={sampleData} options={options} />
+        {chartData ? <Line data={chartData} options={options} /> : <div style={{color:'#9ca3c7'}}>Loading chart…</div>}
       </div>
     </div>
   );
