@@ -48,8 +48,8 @@ const Dashboard = ({ setActiveSection }) => {
         const projectId = localStorage.getItem('auraProjectId');
         let products = null, seoIssues = null, automations = null, credits = null, lastRun = null, systemHealth = null;
 
-        // Products count (replace endpoint as needed)
         if (projectId) {
+          // Products count
           const prodRes = await fetch(`${API_BASE}/projects/${projectId}/drafts`);
           if (prodRes.ok) {
             const prodData = await prodRes.json();
@@ -62,20 +62,12 @@ const Dashboard = ({ setActiveSection }) => {
             const fixData = await fixRes.json();
             seoIssues = fixData.counts && fixData.counts.open ? fixData.counts.open : 0;
           }
-
-          // Automations (placeholder, set to 5 or fetch real value if available)
-          automations = 5;
-
-          // Credits (placeholder, set to 120 or fetch real value if available)
-          credits = 120;
-
-          // Last run (placeholder, set to now or fetch real value if available)
-          lastRun = new Date().toISOString();
-
-          // System health (placeholder, set to 'Good' or fetch real value if available)
-          systemHealth = 'Good';
         }
-
+        // Mark other stats as N/A if not available
+        automations = 'N/A';
+        credits = 'N/A';
+        lastRun = 'N/A';
+        systemHealth = 'N/A';
         setStats({ products, seoIssues, automations, credits, lastRun, systemHealth });
       } catch (e) {
         setStats({ products: '-', seoIssues: '-', automations: '-', credits: '-', lastRun: '-', systemHealth: '-' });
