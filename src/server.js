@@ -36,26 +36,24 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const PORT = process.env.PORT || 10000;
 
 const express = require('express');
-const cors = require('cors');
-
 const app = express();
-// CORS setup for embedded Shopify app
-app.use(cors({
-  origin: [
-    'https://admin.shopify.com',
-    'https://aurasystemsai.myshopify.com',
-    'https://aura-core-monolith.onrender.com',
-  ],
-  credentials: true,
-}));
-// Defensive: set CORS headers for all responses
+// Dynamic CORS for embedded Shopify app
+const allowedOrigins = [
+  'https://admin.shopify.com',
+  'https://aurasystemsai.myshopify.com',
+  'https://aura-core-monolith.onrender.com',
+];
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
   }
   next();
 });
