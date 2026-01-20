@@ -162,12 +162,7 @@ function App() {
         }
         fetchProject();
       }, []);
-    // Debug: always show a visible banner in main content
-    const debugBanner = (
-      <div style={{position:'fixed',top:0,left:0,right:0,zIndex:9999999,background:'#0ff',color:'#000',fontSize:22,padding:12,textAlign:'center'}}>
-        APP MAIN CONTENT RENDERED - DEBUG BANNER
-      </div>
-    );
+    // Debug banner removed
   // Main navigation state
   const [activeSection, setActiveSection] = useState('dashboard');
   // Project state (simulate or fetch as needed)
@@ -254,7 +249,6 @@ function App() {
           </div>
         </nav>
         <main className="app-main">
-          {debugBanner}
           <div className="page-frame fade-in">
             <section className="tool-section">
               {/* DEBUG: dashboard render path */}
