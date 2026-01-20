@@ -78,14 +78,33 @@ const Dashboard = ({ setActiveSection }) => {
   };
 
   // Placeholder shop data (replace with real shop info as needed)
-  const shop = {
-    name: localStorage.getItem('auraProjectName') || 'Demo Store',
-    domain: localStorage.getItem('auraProjectDomain') || 'demo.myshopify.com',
-    plan: 'Shopify Plus',
-    status: 'Active',
-    logoUrl: '/shopify-logo.svg',
-    integrations: ['Shopify', 'Klaviyo', 'Zapier'],
-  };
+  // Use only real project/shop data from props or backend
+  const [shop, setShop] = useState(null);
+  useEffect(() => {
+    async function fetchShop() {
+      try {
+        const res = await fetch('/api/session');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.shop) {
+            setShop({
+              name: data.shop.name,
+              domain: data.shop.domain,
+              plan: data.shop.plan || '',
+              status: data.shop.status || 'Active',
+              logoUrl: '/shopify-logo.svg',
+              integrations: data.shop.integrations || [],
+            });
+          } else {
+            setShop(null);
+          }
+        }
+      } catch {
+        setShop(null);
+      }
+    }
+    fetchShop();
+  }, []);
 
   // Onboarding checklist (simple static example, replace with real logic as needed)
   const onboardingSteps = [
