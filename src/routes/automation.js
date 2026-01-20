@@ -60,4 +60,17 @@ router.delete('/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
+// Run all automations (stub implementation)
+router.post('/run', async (req, res) => {
+  // Here you would trigger all automations for the shop/project
+  // For now, just simulate success
+  try {
+    // TODO: Add real automation logic here
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    res.json({ ok: true, message: 'All automations triggered successfully.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, message: 'Failed to run automations.' });
+  }
+});
+
 module.exports = router;
