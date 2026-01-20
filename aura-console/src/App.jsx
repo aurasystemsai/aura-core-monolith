@@ -253,7 +253,7 @@ function App() {
             <section className="tool-section">
               {/* DEBUG: dashboard render path */}
               {activeSection === "dashboard" && !project && <div style={{color:'#ff0',background:'#232336',padding:16}}>DEBUG: No project found, dashboard not rendered</div>}
-              {activeSection === "dashboard" && project && <DashboardHome setActiveSection={setActiveSection} />}
+              {activeSection === "dashboard" && project && <Dashboard setActiveSection={setActiveSection} />}
               <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading…</div>}>
                 {activeSection === "pricing" && <PricingPage />}
                 {activeSection === "automation-scheduler" && <AutomationScheduler />}
