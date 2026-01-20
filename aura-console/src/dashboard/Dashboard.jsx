@@ -22,12 +22,6 @@ function Spinner() {
 const API_BASE = 'https://aura-core-monolith.onrender.com';
 
 const Dashboard = ({ setActiveSection }) => {
-    // Debug: always show a visible banner at the top
-    const debugBanner = (
-      <div style={{position:'fixed',top:0,left:0,right:0,zIndex:9999999,background:'#ff0',color:'#000',fontSize:22,padding:12,textAlign:'center'}}>
-        DASHBOARD RENDERED - DEBUG BANNER
-      </div>
-    );
   const [stats, setStats] = useState({
     products: null,
     seoIssues: null,
@@ -106,14 +100,13 @@ const Dashboard = ({ setActiveSection }) => {
   const onboardingPercent = Math.round((completedSteps / onboardingSteps.length) * 100);
 
   if (loading) {
-    return <div>{debugBanner}<Spinner /><div style={{color:'#000',background:'#ff0',padding:8}}>DEBUG: Dashboard loading…</div></div>;
+    return <div><Spinner /><div style={{color:'#000',background:'#ff0',padding:8}}>Loading…</div></div>;
   }
   if (stats.products === '-' && stats.seoIssues === '-') {
-    return <div>{debugBanner}<div style={{ color: '#ff4d4f', textAlign: 'center', fontWeight: 700, fontSize: 18, margin: '48px 0' }}>Error loading dashboard data. Please try again.</div></div>;
+    return <div><div style={{ color: '#ff4d4f', textAlign: 'center', fontWeight: 700, fontSize: 18, margin: '48px 0' }}>Error loading dashboard data. Please try again.</div></div>;
   }
   return (
     <div className="aura-dashboard-shell">
-      {debugBanner}
       {/* Hero/overview section - visually impactful */}
       <div className="dashboard-hero" style={{
         position: 'relative',
