@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch } from "../api";
+import UserManagement from "../components/UserManagement";
+import IntegrationHealthPanel from "../components/IntegrationHealthPanel";
+import NotificationsPanel from "../components/NotificationsPanel";
+import AnalyticsPanel from "../components/AnalyticsPanel";
 const DashboardCharts = lazy(() => import('./DashboardCharts'));
 const ShopInfoPanel = lazy(() => import('../components/ShopInfoPanel'));
 
@@ -211,6 +215,12 @@ const Dashboard = ({ setActiveSection }) => {
           </Suspense>
         </div>
       </div>
+      {/* Integration health panel */}
+      <IntegrationHealthPanel />
+      {/* Notifications panel */}
+      <NotificationsPanel />
+      {/* Analytics panel */}
+      <AnalyticsPanel />
       {/* Metrics row */}
       {/* Automation logs panel */}
       <div className="automation-logs-panel" style={{
@@ -298,6 +308,9 @@ const Dashboard = ({ setActiveSection }) => {
       }}>
         Note: Data updates every 24 hours.
       </div>
+
+      {/* User management panel (admin only) */}
+      <UserManagement />
     </div>
   );
 };

@@ -212,6 +212,10 @@ function App() {
               onClick={() => setActiveSection('automation-scheduler')}
             >Automation</button>
             <button
+              className={activeSection === 'user-management' ? 'tab-active' : ''}
+              onClick={() => setActiveSection('user-management')}
+            >User Management</button>
+            <button
               className={activeSection === 'ai-chatbot' ? 'tab-active' : ''}
               onClick={() => setActiveSection('ai-chatbot')}
             >AI Chatbot</button>

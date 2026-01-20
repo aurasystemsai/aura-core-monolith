@@ -95,6 +95,12 @@ app.use('/api', verifyShopifySession);
 
 // --- Register winback integrations API route (real backend) ---
 app.use('/api/abandoned-checkout-winback', require('./routes/abandoned-checkout-winback'));
+// --- Register integration health API route ---
+app.use('/api/integration', require('./routes/integration'));
+// --- Register notifications API route ---
+app.use('/api/notifications', require('./routes/notifications'));
+// --- Register analytics API route ---
+app.use('/api/analytics', require('./routes/analytics'));
 // --- Register all tool routers (auto-generated, advanced features) ---
 const toolRouters = [
   { path: '/api/product-seo', router: require('./tools/product-seo/router') },

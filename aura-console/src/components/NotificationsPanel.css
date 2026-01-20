@@ -1,0 +1,41 @@
+.notifications-panel-card {
+  background: #23263a;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px #0003;
+  padding: 24px 32px 18px 32px;
+  margin-bottom: 24px;
+}
+.notifications-list {
+  margin-top: 12px;
+}
+.notification-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #232b3b;
+  color: #f3f4f6;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.notification-item:last-child {
+  border-bottom: none;
+}
+.notification-info {
+  color: #7fffd4;
+}
+.notification-warning {
+  color: #ffe066;
+}
+.notification-error {
+  color: #ff4d4f;
+}
+.notification-time {
+  font-size: 13px;
+  color: #9ca3c7;
+  margin-right: 12px;
+  min-width: 120px;
+  display: inline-block;
+}
+.notification-message {
+  flex: 1;
+}
