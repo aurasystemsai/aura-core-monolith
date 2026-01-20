@@ -35,30 +35,24 @@ const Dashboard = ({ setActiveSection }) => {
   const [running, setRunning] = useState(false);
 
   useEffect(() => {
+    let intervalId;
     async function fetchStats() {
       setLoading(true);
       try {
-        // Example: Replace with your actual endpoints and logic
-        // Fetch product count
         const projectId = localStorage.getItem('auraProjectId');
         let products = null, seoIssues = null, automations = null, credits = null, lastRun = null, systemHealth = null;
-
         if (projectId) {
-          // Products count
           const prodRes = await fetch(`${API_BASE}/projects/${projectId}/drafts`);
           if (prodRes.ok) {
             const prodData = await prodRes.json();
             products = Array.isArray(prodData) ? prodData.length : (prodData.items ? prodData.items.length : null);
           }
-
-          // SEO Issues (fix queue open issues)
           const fixRes = await fetch(`${API_BASE}/projects/${projectId}/fix-queue`);
           if (fixRes.ok) {
             const fixData = await fixRes.json();
             seoIssues = fixData.counts && fixData.counts.open ? fixData.counts.open : 0;
           }
         }
-        // Mark other stats as N/A if not available
         automations = 'N/A';
         credits = 'N/A';
         lastRun = 'N/A';
@@ -71,6 +65,8 @@ const Dashboard = ({ setActiveSection }) => {
       }
     }
     fetchStats();
+    intervalId = setInterval(fetchStats, 60000); // refresh every minute
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleRunAutomation = () => {
