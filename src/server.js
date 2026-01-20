@@ -131,30 +131,58 @@ toolRouters.forEach(({ path, router }) => {
 
 // --- Session context endpoint for frontend ---
 // Returns current shop/project context for frontend dashboard
-app.get('/api/session', (req, res) => {
-  // Debug log for session and env
-  console.log('[DEBUG /api/session] req.session:', req.session);
-  console.log('[DEBUG /api/session] process.env.SHOPIFY_STORE_URL:', process.env.SHOPIFY_STORE_URL);
-  console.log('[DEBUG /api/session] process.env.SHOPIFY_CLIENT_SECRET:', process.env.SHOPIFY_CLIENT_SECRET);
-  const shop = req.session?.shop || process.env.SHOPIFY_STORE_URL || null;
-  const token = req.session?.shopifyToken || process.env.SHOPIFY_CLIENT_SECRET || null;
-  let project = null;
-  if (shop) {
-    try {
-      project = projectsCore.getProjectByDomain(shop);
-    } catch (err) {
-      console.warn('[Session] Failed to get project for shop', shop, err);
+if (process.env.NODE_ENV === 'production') {
+  const verifyShopifySession = require('./middleware/verifyShopifySession');
+  app.get('/api/session', verifyShopifySession, (req, res) => {
+    // Debug log for session and env
+    console.log('[DEBUG /api/session] req.session:', req.session);
+    console.log('[DEBUG /api/session] process.env.SHOPIFY_STORE_URL:', process.env.SHOPIFY_STORE_URL);
+    console.log('[DEBUG /api/session] process.env.SHOPIFY_CLIENT_SECRET:', process.env.SHOPIFY_CLIENT_SECRET);
+    const shop = req.session?.shop || process.env.SHOPIFY_STORE_URL || null;
+    const token = req.session?.shopifyToken || process.env.SHOPIFY_CLIENT_SECRET || null;
+    let project = null;
+    if (shop) {
+      try {
+        project = projectsCore.getProjectByDomain(shop);
+      } catch (err) {
+        console.warn('[Session] Failed to get project for shop', shop, err);
+      }
     }
-  }
-  console.log('[DEBUG /api/session] resolved shop:', shop, 'token:', token, 'project:', project);
-  res.json({
-    ok: true,
-    shop,
-    token: token ? token.slice(0, 6) + '...' : null,
-    project,
-    sessionId: req.sessionID || null
+    console.log('[DEBUG /api/session] resolved shop:', shop, 'token:', token, 'project:', project);
+    res.json({
+      ok: true,
+      shop,
+      token: token ? token.slice(0, 6) + '...' : null,
+      project,
+      sessionId: req.sessionID || null
+    });
   });
-});
+} else {
+  app.get('/api/session', (req, res) => {
+    // Debug log for session and env
+    console.log('[DEBUG /api/session] req.session:', req.session);
+    console.log('[DEBUG /api/session] process.env.SHOPIFY_STORE_URL:', process.env.SHOPIFY_STORE_URL);
+    console.log('[DEBUG /api/session] process.env.SHOPIFY_CLIENT_SECRET:', process.env.SHOPIFY_CLIENT_SECRET);
+    const shop = req.session?.shop || process.env.SHOPIFY_STORE_URL || null;
+    const token = req.session?.shopifyToken || process.env.SHOPIFY_CLIENT_SECRET || null;
+    let project = null;
+    if (shop) {
+      try {
+        project = projectsCore.getProjectByDomain(shop);
+      } catch (err) {
+        console.warn('[Session] Failed to get project for shop', shop, err);
+      }
+    }
+    console.log('[DEBUG /api/session] resolved shop:', shop, 'token:', token, 'project:', project);
+    res.json({
+      ok: true,
+      shop,
+      token: token ? token.slice(0, 6) + '...' : null,
+      project,
+      sessionId: req.sessionID || null
+    });
+  });
+}
 // --- Product SEO Engine: Shopify Products Fetch Endpoint ---
 // GET /api/product-seo/shopify-products?limit=50
 app.get('/api/product-seo/shopify-products', async (req, res) => {
