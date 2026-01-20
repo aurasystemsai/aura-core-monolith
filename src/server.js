@@ -174,7 +174,16 @@ if (process.env.NODE_ENV === 'production') {
       shop,
       token: token ? token.slice(0, 6) + '...' : null,
       project,
-      sessionId: req.sessionID || null
+      sessionId: req.sessionID || null,
+      projectDetails: project ? {
+        id: project.id,
+        name: project.name,
+        domain: project.domain,
+        platform: project.platform,
+        createdAt: project.createdAt,
+        updatedAt: project.updatedAt,
+        // Add more fields here if available (owner, email, integrations, etc.)
+      } : null
     });
   });
 } else {
