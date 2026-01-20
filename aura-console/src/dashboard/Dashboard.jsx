@@ -124,6 +124,15 @@ const Dashboard = ({ setActiveSection }) => {
   if (stats.products === '-' && stats.seoIssues === '-') {
     return <div><div style={{ color: '#ff4d4f', textAlign: 'center', fontWeight: 700, fontSize: 18, margin: '48px 0' }}>Error loading dashboard data. Please try again.</div></div>;
   }
+  if (!shop) {
+    return (
+      <div className="aura-dashboard-shell">
+        <div style={{ color: '#ff4d4f', textAlign: 'center', fontWeight: 700, fontSize: 18, margin: '48px 0' }}>
+          Error: No shop data available. Please check your backend or session.
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="aura-dashboard-shell">
       {/* Hero/overview section - visually impactful */}
@@ -141,7 +150,7 @@ const Dashboard = ({ setActiveSection }) => {
       }}>
         {/* Personalized welcome */}
         <div style={{fontSize: 28, fontWeight: 900, color: '#7fffd4', marginBottom: 8}}>
-          Welcome back{shop.name ? `, ${shop.name}` : ''}!
+          Welcome back, {shop.name}!
         </div>
         {/* Onboarding checklist */}
         <div style={{marginBottom: 18, width: '100%', maxWidth: 520}}>
