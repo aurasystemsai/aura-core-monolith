@@ -69,9 +69,23 @@ const Dashboard = ({ setActiveSection }) => {
     return () => clearInterval(intervalId);
   }, []);
 
-  const handleRunAutomation = () => {
+  const [automationLogs, setAutomationLogs] = useState([]);
+  const handleRunAutomation = async () => {
     setRunning(true);
-    setTimeout(() => setRunning(false), 1500);
+    try {
+      const res = await apiFetch('/api/automation/run', { method: 'POST' });
+      const data = await res.json();
+      setAutomationLogs((logs) => [
+        { time: new Date().toLocaleString(), status: data.ok ? 'Success' : 'Error', message: data.message || (data.ok ? 'Automations triggered.' : 'Failed to run automations.') },
+        ...logs
+      ].slice(0, 10));
+    } catch (e) {
+      setAutomationLogs((logs) => [
+        { time: new Date().toLocaleString(), status: 'Error', message: 'Network or server error.' },
+        ...logs
+      ].slice(0, 10));
+    }
+    setRunning(false);
   };
 
   // Placeholder shop data (replace with real shop info as needed)
@@ -198,6 +212,30 @@ const Dashboard = ({ setActiveSection }) => {
         </div>
       </div>
       {/* Metrics row */}
+      {/* Automation logs panel */}
+      <div className="automation-logs-panel" style={{
+        background: '#232b3b',
+        borderRadius: 12,
+        padding: '18px 32px',
+        marginBottom: 32,
+        boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
+        maxWidth: 540,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+      }}>
+        <div style={{fontWeight:700,fontSize:16,color:'#7fffd4',marginBottom:8}}>Automation Logs</div>
+        {automationLogs.length === 0 ? (
+          <div style={{color:'#9ca3c7'}}>No recent automation runs.</div>
+        ) : (
+          <ul style={{listStyle:'none',padding:0,margin:0}}>
+            {automationLogs.map((log, idx) => (
+              <li key={idx} style={{marginBottom:6,color:log.status==='Error'?'#ff4d4f':'#7fffd4'}}>
+                <b>[{log.time}]</b> {log.status}: {log.message}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       <div className="aura-dashboard-stats" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
