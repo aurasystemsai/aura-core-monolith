@@ -34,9 +34,31 @@ const OpenAI = require('openai');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // const lusca = require('lusca');
 const PORT = process.env.PORT || 10000;
+
 const express = require('express');
+const cors = require('cors');
 
 const app = express();
+// CORS setup for embedded Shopify app
+app.use(cors({
+  origin: [
+    'https://admin.shopify.com',
+    'https://aurasystemsai.myshopify.com',
+    'https://aura-core-monolith.onrender.com',
+  ],
+  credentials: true,
+}));
+// Defensive: set CORS headers for all responses
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -63,7 +85,7 @@ app.use(session({
   cookie: {
     secure: true, // Required for Shopify embedded apps (HTTPS)
     httpOnly: true,
-    sameSite: 'lax', // Shopify recommends 'lax' for embedded apps
+    sameSite: 'none', // Required for cross-site cookies in embedded apps
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   }
 }));
