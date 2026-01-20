@@ -21,4 +21,13 @@ router.get("/health", (req, res) => {
   res.json({ ok: true, status: "Advanced Analytics Attribution API running" });
 });
 
+// GET /api/advanced-analytics-attribution/trends
+router.get('/trends', async (req, res) => {
+  // Stub: return sample SEO issues trend data
+  res.json({
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    seoIssues: [40, 37, 35, 32, 30, 28, 27]
+  });
+});
+
 module.exports = router;
