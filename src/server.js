@@ -44,10 +44,17 @@ app.use(express.urlencoded({ extended: true }));
 
 const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
+// Allow session DB path override for persistent disk (Render)
+const sessionDbDir = process.env.SESSION_DB_PATH
+  ? path.dirname(process.env.SESSION_DB_PATH)
+  : process.env.RENDER_DISK_PATH || path.join(__dirname, '../data');
+const sessionDbFile = process.env.SESSION_DB_PATH
+  ? path.basename(process.env.SESSION_DB_PATH)
+  : 'aura-core-session.sqlite';
 app.use(session({
   store: new SQLiteStore({
-    db: 'aura-core-session.sqlite',
-    dir: path.join(__dirname, '../data'),
+    db: sessionDbFile,
+    dir: sessionDbDir,
     concurrentDB: true
   }),
   secret: process.env.SESSION_SECRET || 'aura-core-monolith-secret',
@@ -127,10 +134,10 @@ toolRouters.forEach(({ path, router }) => {
 app.get('/api/session', (req, res) => {
   // Debug log for session and env
   console.log('[DEBUG /api/session] req.session:', req.session);
-  console.log('[DEBUG /api/session] process.env.SHOPIFY_SHOP_DOMAIN:', process.env.SHOPIFY_SHOP_DOMAIN);
-  console.log('[DEBUG /api/session] process.env.SHOPIFY_ADMIN_TOKEN:', process.env.SHOPIFY_ADMIN_TOKEN);
-  const shop = req.session?.shop || process.env.SHOPIFY_SHOP_DOMAIN || null;
-  const token = req.session?.shopifyToken || process.env.SHOPIFY_ADMIN_TOKEN || null;
+  console.log('[DEBUG /api/session] process.env.SHOPIFY_STORE_URL:', process.env.SHOPIFY_STORE_URL);
+  console.log('[DEBUG /api/session] process.env.SHOPIFY_CLIENT_SECRET:', process.env.SHOPIFY_CLIENT_SECRET);
+  const shop = req.session?.shop || process.env.SHOPIFY_STORE_URL || null;
+  const token = req.session?.shopifyToken || process.env.SHOPIFY_CLIENT_SECRET || null;
   let project = null;
   if (shop) {
     try {
@@ -162,8 +169,8 @@ app.get('/api/product-seo/shopify-products', async (req, res) => {
       token: token ? token.slice(0, 6) + '...' : undefined,
       cookies: req.headers.cookie
     });
-    if (!shop) shop = process.env.SHOPIFY_SHOP_DOMAIN;
-    if (!token) token = process.env.SHOPIFY_ADMIN_TOKEN;
+    if (!shop) shop = process.env.SHOPIFY_STORE_URL;
+    if (!token) token = process.env.SHOPIFY_CLIENT_SECRET;
     console.log('[Product SEO] /api/product-seo/shopify-products called', { shop, token: token ? token.slice(0, 6) + '...' : undefined });
     if (!shop || !token) {
       console.warn('[Product SEO] Missing shop domain or admin token', { shop, token });
@@ -555,7 +562,7 @@ app.get("/api/health", (_req, res) => {
 // Usage:
 //   GET /debug/shopify/products?shop=aurasystemsai.myshopify.com
 //   Optional: &limit=10
-//   Token: pass ?token=shpat_... OR set env SHOPIFY_ADMIN_TOKEN
+//   Token: pass ?token=shpat_... OR set env SHOPIFY_CLIENT_SECRET
 //   Optional safety: set env DEBUG_KEY and pass ?key=thevalue
 //
 
@@ -690,7 +697,7 @@ app.get("/debug/shopify/products", async (req, res) => {
 
     const token =
       req.query.token ||
-      process.env.SHOPIFY_ADMIN_TOKEN || // recommended for Render
+      process.env.SHOPIFY_CLIENT_SECRET || // recommended for Render
       "";
 
     if (!shop) {
@@ -700,7 +707,7 @@ app.get("/debug/shopify/products", async (req, res) => {
       return res.status(400).json({
         ok: false,
         error:
-          "Missing token. Pass ?token=shpat_... or set env SHOPIFY_ADMIN_TOKEN on Render.",
+          "Missing token. Pass ?token=shpat_... or set env SHOPIFY_CLIENT_SECRET on Render.",
       });
     }
 
@@ -739,7 +746,7 @@ app.get("/api/shopify/products", async (req, res) => {
     const apiVersion = req.query.apiVersion;
 
     // Accept token from query, env, or Authorization header
-    let token = req.query.token || process.env.SHOPIFY_ADMIN_TOKEN || "";
+    let token = req.query.token || process.env.SHOPIFY_CLIENT_SECRET || "";
     if (!token && req.headers.authorization) {
       const authHeader = req.headers.authorization;
       if (authHeader.startsWith("Bearer ")) {
@@ -760,7 +767,7 @@ app.get("/api/shopify/products", async (req, res) => {
       return res.status(400).json({
         ok: false,
         error:
-          "Missing token. Pass ?token=shpat_... or set env SHOPIFY_ADMIN_TOKEN on Render.",
+          "Missing token. Pass ?token=shpat_... or set env SHOPIFY_CLIENT_SECRET on Render.",
       });
     }
 
@@ -1161,7 +1168,7 @@ const winbackShopify = require('./tools/abandoned-checkout-winback/shopify.js');
 // Fetch abandoned checkouts from Shopify for a given shop
 app.get('/api/winback/shopify/abandoned-checkouts', async (req, res) => {
   const shop = req.query.shop;
-  let token = req.query.token || process.env.SHOPIFY_ADMIN_TOKEN || '';
+  let token = req.query.token || process.env.SHOPIFY_CLIENT_SECRET || '';
   try {
     const apiVersion = req.query.apiVersion || process.env.SHOPIFY_API_VERSION || '2023-10';
     const checkouts = await winbackShopify.fetchAbandonedCheckouts({ shop, token, apiVersion });
