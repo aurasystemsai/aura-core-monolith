@@ -78,9 +78,8 @@ router.get('/export', (req, res) => {
 // Shopify sync endpoints
 router.post('/shopify/sync', (req, res) => {
 	// Integrate with Shopify API in production
-
-// Shopify sync endpoint (to be implemented live)
-// router.post('/shopify/sync', ...)
+	res.json({ ok: true, message: 'Shopify sync not yet implemented.' });
+});
 
 // Notifications endpoints
 router.post('/notify', (req, res) => {
