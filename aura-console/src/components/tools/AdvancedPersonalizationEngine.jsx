@@ -78,7 +78,7 @@ export default function AdvancedPersonalizationEngine() {
       {/* Personalization Rules */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Personalization Rules</div>
-        <textarea value={JSON.stringify(rules, null, 2)} onChange={e => setRules(JSON.parse(e.target.value))} rows={4} style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid #ccc', marginBottom: 18 }} placeholder="Paste rules JSON here" aria-label="Rules" />
+        <textarea value={JSON.stringify(rules, null, 2)} onChange={e => setRules(JSON.parse(e.target.value))} rows={4} style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid #ccc', marginBottom: 18 }} placeholder="Enter rules JSON (live only)" aria-label="Rules" />
       </div>
       {/* Recommendations */}
       <div style={{ marginBottom: 32 }}>
@@ -86,9 +86,7 @@ export default function AdvancedPersonalizationEngine() {
         <div style={{ fontSize: 15, color: '#23263a' }}>
           {recommendations.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(recommendations, null, 2)}</pre>
-          ) : (
-            <span>No recommendations yet. Add rules to generate suggestions.</span>
-          )}
+          ) : null}
         </div>
       </div>
       {/* Channels */}
@@ -122,7 +120,7 @@ export default function AdvancedPersonalizationEngine() {
           onChange={e => setFeedback(e.target.value)}
           rows={3}
           style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid #ccc', marginBottom: 12 }}
-          placeholder="Share your feedback or suggestions..."
+          placeholder="Feedback (live only)"
           aria-label="Feedback"
         />
         <button type="submit" style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Send Feedback</button>
@@ -131,14 +129,7 @@ export default function AdvancedPersonalizationEngine() {
       {/* Accessibility & Compliance */}
       <div style={{ marginTop: 32, fontSize: 13, color: '#64748b', textAlign: 'center' }}>
         <span>Best-in-class SaaS features. Accessibility: WCAG 2.1, keyboard navigation, color contrast.<br />
-          <button onClick={async () => {
-            await fetch('/api/advanced-personalization-engine/compliance/export', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: 'demo-user' }) });
-            alert('Data export request submitted.');
-          }} style={{ margin: '0 8px', background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '4px 12px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Request Data Export</button>
-          <button onClick={async () => {
-            await fetch('/api/advanced-personalization-engine/compliance/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: 'demo-user' }) });
-            alert('Data deletion request submitted.');
-          }} style={{ margin: '0 8px', background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '4px 12px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Request Data Deletion</button>
+          {/* Live user context required for compliance actions. No demo-user. */}
           Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
       </div>
     </div>

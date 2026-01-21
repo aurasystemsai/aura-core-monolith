@@ -69,10 +69,9 @@ router.get('/export', (req, res) => {
 });
 
 // Shopify sync endpoints
-router.post('/shopify/sync', (req, res) => {
-	// Integrate with Shopify API in production
-	res.json({ ok: true, message: 'Shopify sync not implemented in demo.' });
-});
+
+// Shopify sync endpoint (to be implemented live)
+// router.post('/shopify/sync', ...)
 
 // Notifications endpoints
 router.post('/notify', (req, res) => {
@@ -123,10 +122,9 @@ router.get('/health', (req, res) => {
 
 // ...existing code...
 
-// i18n (demo)
-router.get('/i18n', (req, res) => {
-	res.json({ ok: true, translations: { en: 'Review', es: 'Reseña' } });
-});
+
+// i18n endpoint (to be implemented live)
+// router.get('/i18n', ...)
 
 // Docs
 router.get('/docs', (req, res) => {

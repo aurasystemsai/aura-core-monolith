@@ -92,8 +92,8 @@ const Dashboard = ({ setActiveSection }) => {
     setRunning(false);
   };
 
-  // Placeholder shop data (replace with real shop info as needed)
-  // Use only real project/shop data from props or backend
+
+  // Live shop/project data only
   const [shop, setShop] = useState(null);
   useEffect(() => {
     async function fetchShop() {
@@ -118,20 +118,13 @@ const Dashboard = ({ setActiveSection }) => {
     fetchShop();
   }, []);
 
-  // Onboarding checklist (simple static example, replace with real logic as needed)
-  const onboardingSteps = [
-    { label: 'Connect your Shopify store', key: 'connect-shopify' },
-    { label: 'Import your products', key: 'import-products' },
-    { label: 'Run your first audit', key: 'run-audit' },
-    { label: 'Set up automations', key: 'setup-automations' },
-    { label: 'Invite your team', key: 'invite-team' },
-  ];
-  // Simulate progress (replace with real completion logic)
-  const completedSteps = 2;
-  const onboardingPercent = Math.round((completedSteps / onboardingSteps.length) * 100);
+  // Onboarding checklist must be live (remove static example)
+  // const onboardingSteps = [...];
+  // const completedSteps = ...;
+  // const onboardingPercent = ...;
 
   if (loading) {
-    return <div><Spinner /><div style={{color:'#000',background:'#ff0',padding:8}}>Loading…</div></div>;
+    return <div><Spinner /></div>;
   }
   if (stats.products === '-' && stats.seoIssues === '-') {
     return <div><div style={{ color: '#ff4d4f', textAlign: 'center', fontWeight: 700, fontSize: 18, margin: '48px 0' }}>Error loading dashboard data. Please try again.</div></div>;
@@ -254,13 +247,13 @@ const Dashboard = ({ setActiveSection }) => {
         marginBottom: 40,
         width: '100%',
       }}>
-        {[
-          { label: 'Products', value: loading ? '…' : stats.products },
-          { label: 'SEO Issues', value: loading ? '…' : stats.seoIssues },
-          { label: 'Automations', value: loading ? '…' : stats.automations },
-          { label: 'Credits', value: loading ? '…' : stats.credits },
-          { label: 'Last Run', value: loading ? '…' : (stats.lastRun ? new Date(stats.lastRun).toLocaleString() : '-') },
-          { label: 'System Health', value: loading ? '…' : stats.systemHealth },
+        {[ 
+          { label: 'Products', value: loading ? '' : stats.products },
+          { label: 'SEO Issues', value: loading ? '' : stats.seoIssues },
+          { label: 'Automations', value: loading ? '' : stats.automations },
+          { label: 'Credits', value: loading ? '' : stats.credits },
+          { label: 'Last Run', value: loading ? '' : (stats.lastRun ? new Date(stats.lastRun).toLocaleString() : '') },
+          { label: 'System Health', value: loading ? '' : stats.systemHealth },
         ].map((stat, idx) => (
           <div
             key={stat.label}

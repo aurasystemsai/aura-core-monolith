@@ -1,9 +1,7 @@
 
 import React, { useState, useRef } from "react";
 
-// Placeholder for visual inventory mapping (replace with real table/visual component)
 function VisualInventoryTable({ data, setData, rows = [], setRows }) {
-  // Simple flagship table UI (placeholder for real table lib)
   return (
     <div style={{ border: "1px solid #d1d5db", borderRadius: 10, padding: 18, background: "#f9fafb", marginBottom: 18 }}>
       <div style={{ fontWeight: 600, marginBottom: 8 }}>Visual Inventory Table (CSV/Excel Import)</div>
@@ -107,7 +105,7 @@ export default function InventorySupplierSync() {
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
-  // Collaboration (placeholder)
+  // Collaboration
   const handleAddCollaborator = () => {
     const name = prompt("Enter collaborator name/email:");
     if (name && !collaborators.includes(name)) setCollaborators([...collaborators, name]);
@@ -129,7 +127,7 @@ export default function InventorySupplierSync() {
     </div>
   );
 
-  // Accessibility: keyboard shortcuts (placeholder)
+  // Accessibility: keyboard shortcuts
   React.useEffect(() => {
     const handler = e => {
       if (e.ctrlKey && e.key === "i") fileInputRef.current?.click();

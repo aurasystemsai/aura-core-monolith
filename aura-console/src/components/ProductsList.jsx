@@ -313,9 +313,9 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
               <option value="ko">Korean</option>
             </select>
             <label htmlFor="pl-ai-prompt" className="pl-sr">Custom AI prompt</label>
-            <input id="pl-ai-prompt" type="text" placeholder="Custom AI prompt (optional)" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} className="pl-input pl-input--wide" aria-label="Custom AI prompt" />
+            <input id="pl-ai-prompt" type="text" placeholder="Custom AI prompt" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} className="pl-input pl-input--wide" aria-label="Custom AI prompt" />
             <label htmlFor="pl-search" className="pl-sr">Search products</label>
-            <input id="pl-search" type="text" placeholder="Search products..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-input" aria-label="Search products" />
+            <input id="pl-search" type="text" placeholder="Search products" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-input" aria-label="Search products" />
             <label htmlFor="pl-status-filter" className="pl-sr">Status filter</label>
             <select id="pl-status-filter" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="pl-select" aria-label="Status filter">
               <option value="all">All</option>
@@ -401,7 +401,7 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
                                 style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border-color)', background: 'var(--background-tertiary)' }}
                               />
                             ) : (
-                              <span className="pl-thumb-placeholder" aria-label="No image">—</span>
+                              <span className="pl-thumb-placeholder" aria-label="No image"></span>
                             )}
                           </td>
                           <td className="pl-product-cell">
@@ -509,13 +509,7 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
                                   <div className="pl-fix-buttons">
                                     {issues.map((issue, i) => (
                                       <button key={i} className="pl-btn pl-btn--fix" onClick={() => {
-                                        // For now, just patch the field with a placeholder fix
-                                        const patch = { ...seoSuggestions[product.id] || seo };
-                                        if (issue.field === 'Title') patch.title = 'Fixed Title';
-                                        if (issue.field === 'Meta Description') patch.metaDescription = 'Fixed meta description.';
-                                        if (issue.field === 'Keywords') patch.keywords = ['fixed', 'keywords'];
-                                        if (issue.field === 'Slug') patch.slug = 'fixed-slug';
-                                        setSeoSuggestions(s => ({ ...s, [product.id]: patch }));
+                                        // TODO: Implement live fix logic only. No placeholder fixes.
                                       }}>Fix {issue.field}</button>
                                     ))}
                                   </div>

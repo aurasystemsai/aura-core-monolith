@@ -4,35 +4,31 @@ const router = express.Router();
 const OpenAI = require('openai');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// In-memory store for demo (replace with DB in production)
-let images = [];
-let idCounter = 1;
 
-// CRUD endpoints
+const db = require('./db');
+
+// CRUD endpoints (persistent)
 router.get('/images', (req, res) => {
-	res.json({ ok: true, images });
+  res.json({ ok: true, images: db.list() });
 });
 router.get('/images/:id', (req, res) => {
-	const image = images.find(i => i.id == req.params.id);
-	if (!image) return res.status(404).json({ ok: false, error: 'Not found' });
-	res.json({ ok: true, image });
+  const image = db.get(req.params.id);
+  if (!image) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, image });
 });
 router.post('/images', (req, res) => {
-	const image = { ...req.body, id: idCounter++ };
-	images.push(image);
-	res.json({ ok: true, image });
+  const image = db.create(req.body || {});
+  res.json({ ok: true, image });
 });
 router.put('/images/:id', (req, res) => {
-	const idx = images.findIndex(i => i.id == req.params.id);
-	if (idx === -1) return res.status(404).json({ ok: false, error: 'Not found' });
-	images[idx] = { ...images[idx], ...req.body };
-	res.json({ ok: true, image: images[idx] });
+  const image = db.update(req.params.id, req.body || {});
+  if (!image) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, image });
 });
 router.delete('/images/:id', (req, res) => {
-	const idx = images.findIndex(i => i.id == req.params.id);
-	if (idx === -1) return res.status(404).json({ ok: false, error: 'Not found' });
-	images.splice(idx, 1);
-	res.json({ ok: true });
+  const ok = db.delete(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true });
 });
 
 // AI endpoint: generate alt text
@@ -56,45 +52,21 @@ router.post('/ai/generate-alt', async (req, res) => {
 	}
 });
 
-// Analytics endpoint (placeholder)
+
+// Analytics endpoint (live)
 router.get('/analytics', (req, res) => {
-	res.json({ ok: true, analytics: { totalImages: images.length } });
+  res.json({ ok: true, analytics: { totalImages: db.list().length } });
 });
 
-// Import/export endpoints (placeholder logic)
+// Import/export endpoints (live)
 router.post('/import', (req, res) => {
-	const { data } = req.body;
-	if (!Array.isArray(data)) return res.status(400).json({ ok: false, error: 'Invalid data' });
-	images = data.map((i, idx) => ({ ...i, id: idCounter++ }));
-	res.json({ ok: true, count: images.length });
+  const { items } = req.body || {};
+  if (!Array.isArray(items)) return res.status(400).json({ ok: false, error: 'items[] required' });
+  db.import(items);
+  res.json({ ok: true, count: db.list().length });
 });
 router.get('/export', (req, res) => {
-	res.json({ ok: true, data: images });
-});
-
-// Shopify sync endpoint (placeholder)
-router.post('/shopify/sync', (req, res) => {
-	res.json({ ok: true, message: 'Shopify sync not implemented in demo.' });
-});
-
-// Notifications endpoint (placeholder)
-router.post('/notify', (req, res) => {
-	res.json({ ok: true, message: 'Notification sent (demo).' });
-});
-
-// RBAC check endpoint (placeholder)
-router.post('/rbac/check', (req, res) => {
-	res.json({ ok: true, allowed: true });
-});
-
-// i18n endpoint (placeholder)
-router.get('/i18n', (req, res) => {
-	res.json({ ok: true, translations: { en: 'Image Alt Media SEO', fr: 'SEO des médias alternatifs d\'image' } });
-});
-
-// Docs endpoint (placeholder)
-router.get('/docs', (req, res) => {
-	res.json({ ok: true, docs: 'Image Alt Media SEO API. Endpoints: /images, /ai/generate-alt, /analytics, /import, /export, /shopify/sync, /notify, /rbac/check, /i18n, /docs' });
+  res.json({ ok: true, items: db.list() });
 });
 
 module.exports = router;

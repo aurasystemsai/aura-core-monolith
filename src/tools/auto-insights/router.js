@@ -12,28 +12,32 @@ const pluginSystem = require('./pluginSystem');
 const router = express.Router();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// CRUD endpoints
+
+// Persistent DB store
+const db = require('./db');
+
+// CRUD endpoints (persistent)
 router.get('/insights', (req, res) => {
-	res.json({ ok: true, insights: db.list() });
+  res.json({ ok: true, insights: db.list() });
 });
 router.get('/insights/:id', (req, res) => {
-	const insight = db.get(req.params.id);
-	if (!insight) return res.status(404).json({ ok: false, error: 'Not found' });
-	res.json({ ok: true, insight });
+  const insight = db.get(req.params.id);
+  if (!insight) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, insight });
 });
 router.post('/insights', (req, res) => {
-	const insight = db.create(req.body || {});
-	res.json({ ok: true, insight });
+  const insight = db.create(req.body || {});
+  res.json({ ok: true, insight });
 });
 router.put('/insights/:id', (req, res) => {
-	const insight = db.update(req.params.id, req.body || {});
-	if (!insight) return res.status(404).json({ ok: false, error: 'Not found' });
-	res.json({ ok: true, insight });
+  const insight = db.update(req.params.id, req.body || {});
+  if (!insight) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, insight });
 });
 router.delete('/insights/:id', (req, res) => {
-	const ok = db.delete(req.params.id);
-	if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
-	res.json({ ok: true });
+  const ok = db.delete(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true });
 });
 
 // AI endpoint: generate insight
@@ -66,37 +70,23 @@ router.get('/analytics', (req, res) => {
 	res.json({ ok: true, events: analyticsModel.listEvents(req.query || {}) });
 });
 
-// Import/export endpoints
+
+// Import/export endpoints (live)
 router.post('/import', (req, res) => {
-	const { items } = req.body || {};
-	if (!Array.isArray(items)) return res.status(400).json({ ok: false, error: 'items[] required' });
-	db.import(items);
-	res.json({ ok: true, count: db.list().length });
+	try {
+		const { items } = req.body || {};
+		db.import(items);
+		res.json({ ok: true, count: db.list().length });
+	} catch (err) {
+		res.status(400).json({ ok: false, error: err.message });
+	}
 });
 router.get('/export', (req, res) => {
 	res.json({ ok: true, items: db.list() });
 });
 
-// Shopify sync endpoints
-router.post('/shopify/sync', (req, res) => {
-	// Integrate with Shopify API in production
-	res.json({ ok: true, message: 'Shopify sync not implemented in demo.' });
-});
 
-// Notifications endpoints
-router.post('/notify', (req, res) => {
-	const { to, message } = req.body || {};
-	if (!to || !message) return res.status(400).json({ ok: false, error: 'to and message required' });
-	notificationModel.send(to, message);
-	res.json({ ok: true });
-});
-
-// RBAC endpoint
-router.post('/rbac/check', (req, res) => {
-	const { user, action } = req.body || {};
-	const allowed = rbac.check(user, action);
-	res.json({ ok: true, allowed });
-});
+// All other endpoints removed or to be implemented live as needed
 
 // i18n endpoint
 router.get('/i18n', (req, res) => {

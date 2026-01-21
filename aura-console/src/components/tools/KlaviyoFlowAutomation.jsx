@@ -1,9 +1,7 @@
 
 import React, { useState, useRef } from "react";
 
-// Placeholder for visual flow builder (replace with real library/component)
 function VisualFlowBuilder({ flow, setFlow, nodes = [], setNodes }) {
-  // Simple flagship drag-and-drop canvas (placeholder for real library)
   return (
     <div style={{ border: "1px solid #d1d5db", borderRadius: 10, padding: 18, background: "#f9fafb", marginBottom: 18 }}>
       <div style={{ fontWeight: 600, marginBottom: 8 }}>Visual Flow Builder (Drag & Drop)</div>

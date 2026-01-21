@@ -3,7 +3,7 @@ import React, { useState, Suspense, lazy } from "react";
 import ErrorBoundary from "./ErrorBoundary";
 import { useGlobalApiError } from "../globalApiError";
 import toolsMeta from "../toolMeta";
-import ToolPlaceholder from "./ToolPlaceholder";
+// ...existing code...
 import ToolScaffold from "./tools/ToolScaffold";
 import AbandonedCheckoutWinback from "./tools/AbandonedCheckoutWinback";
 import ProductSeoEngine from "./ProductSeoEngine";
@@ -54,9 +54,7 @@ function ToolDetailModal({ tool, onClose }) {
                 <ToolComponent />
               ) : tool.id && tool.id.endsWith("engine") ? (
                 <ToolScaffold toolId={tool.id} toolName={tool.name} fields={genericFields} />
-              ) : (
-                <ToolPlaceholder name={tool.name} />
-              )}
+              ) : null}
             </Suspense>
           </ErrorBoundary>
         </div>

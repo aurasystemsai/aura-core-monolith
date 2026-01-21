@@ -4,35 +4,33 @@ const router = express.Router();
 const OpenAI = require('openai');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// In-memory store for demo (replace with DB in production)
-let links = [];
-let idCounter = 1;
 
-// CRUD endpoints
+// Persistent DB store
+const db = require('./db');
+
+
+// CRUD endpoints (persistent)
 router.get('/links', (req, res) => {
-	res.json({ ok: true, links });
+  res.json({ ok: true, links: db.list() });
 });
 router.get('/links/:id', (req, res) => {
-	const link = links.find(l => l.id == req.params.id);
-	if (!link) return res.status(404).json({ ok: false, error: 'Not found' });
-	res.json({ ok: true, link });
+  const link = db.get(req.params.id);
+  if (!link) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, link });
 });
 router.post('/links', (req, res) => {
-	const link = { ...req.body, id: idCounter++ };
-	links.push(link);
-	res.json({ ok: true, link });
+  const link = db.create(req.body || {});
+  res.json({ ok: true, link });
 });
 router.put('/links/:id', (req, res) => {
-	const idx = links.findIndex(l => l.id == req.params.id);
-	if (idx === -1) return res.status(404).json({ ok: false, error: 'Not found' });
-	links[idx] = { ...links[idx], ...req.body };
-	res.json({ ok: true, link: links[idx] });
+  const link = db.update(req.params.id, req.body || {});
+  if (!link) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, link });
 });
 router.delete('/links/:id', (req, res) => {
-	const idx = links.findIndex(l => l.id == req.params.id);
-	if (idx === -1) return res.status(404).json({ ok: false, error: 'Not found' });
-	links.splice(idx, 1);
-	res.json({ ok: true });
+  const ok = db.delete(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true });
 });
 
 // AI endpoint: suggest internal links
@@ -56,45 +54,28 @@ router.post('/ai/suggest', async (req, res) => {
 	}
 });
 
-// Analytics endpoint (placeholder)
+
+// Analytics endpoint (live)
 router.get('/analytics', (req, res) => {
-	res.json({ ok: true, analytics: { totalLinks: links.length } });
+  res.json({ ok: true, analytics: { totalLinks: db.list().length } });
 });
 
-// Import/export endpoints (placeholder logic)
+
+// Import/export endpoints (live)
 router.post('/import', (req, res) => {
-	const { data } = req.body;
-	if (!Array.isArray(data)) return res.status(400).json({ ok: false, error: 'Invalid data' });
-	links = data.map((l, i) => ({ ...l, id: idCounter++ }));
-	res.json({ ok: true, count: links.length });
+	try {
+		const { data } = req.body;
+		db.import(data);
+		res.json({ ok: true, count: db.list().length });
+	} catch (err) {
+		res.status(400).json({ ok: false, error: err.message });
+	}
 });
 router.get('/export', (req, res) => {
-	res.json({ ok: true, data: links });
+	res.json({ ok: true, data: db.list() });
 });
 
-// Shopify sync endpoint (placeholder)
-router.post('/shopify/sync', (req, res) => {
-	res.json({ ok: true, message: 'Shopify sync not implemented in demo.' });
-});
 
-// Notifications endpoint (placeholder)
-router.post('/notify', (req, res) => {
-	res.json({ ok: true, message: 'Notification sent (demo).' });
-});
-
-// RBAC check endpoint (placeholder)
-router.post('/rbac/check', (req, res) => {
-	res.json({ ok: true, allowed: true });
-});
-
-// i18n endpoint (placeholder)
-router.get('/i18n', (req, res) => {
-	res.json({ ok: true, translations: { en: 'Internal Link Optimizer', fr: 'Optimiseur de liens internes' } });
-});
-
-// Docs endpoint (placeholder)
-router.get('/docs', (req, res) => {
-	res.json({ ok: true, docs: 'Internal Link Optimizer API. Endpoints: /links, /ai/suggest, /analytics, /import, /export, /shopify/sync, /notify, /rbac/check, /i18n, /docs' });
-});
+// All other endpoints removed or to be implemented live as needed
 
 module.exports = router;

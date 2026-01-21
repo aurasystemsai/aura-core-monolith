@@ -136,7 +136,7 @@ export default function KeywordResearchSuite() {
     const res = await fetch("/api/keyword-research-suite/plugin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plugin: "sample" })
+      // ...existing code...
     });
     setPluginStatus("Plugin executed");
   };

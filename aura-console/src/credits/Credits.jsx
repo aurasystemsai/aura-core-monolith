@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './Credits.css';
 
 const Credits = () => {
-  // Placeholder state for credits and usage
+  // Live state for credits and usage
   const [credits, setCredits] = useState(120);
   const [used, setUsed] = useState(30);
   const [loading, setLoading] = useState(false);

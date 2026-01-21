@@ -12,16 +12,22 @@ const complianceModel = require('./complianceModel');
 const pluginSystem = require('./pluginSystem');
 module.exports = router;
 
-// In-memory store for demo (replace with DB in prod)
-let workflows = [];
-let analytics = [];
 
-// CRUD
+// CRUD endpoints (persistent)
 router.get('/workflows', (req, res) => {
 	res.json({ ok: true, workflows: db.list() });
 });
+router.get('/workflows/:id', (req, res) => {
+	const wf = db.get(req.params.id);
+	if (!wf) return res.status(404).json({ ok: false, error: 'Not found' });
+	res.json({ ok: true, workflow: wf });
+});
+router.post('/workflows', (req, res) => {
+	const wf = db.create(req.body || {});
+	res.json({ ok: true, workflow: wf });
+});
 router.put('/workflows/:id', (req, res) => {
-	const wf = db.update(req.params.id, req.body);
+	const wf = db.update(req.params.id, req.body || {});
 	if (!wf) return res.status(404).json({ ok: false, error: 'Not found' });
 	res.json({ ok: true, workflow: wf });
 });

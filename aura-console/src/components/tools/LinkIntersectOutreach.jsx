@@ -140,7 +140,7 @@ export default function LinkIntersectOutreach() {
     const res = await fetch("/api/link-intersect-outreach/plugin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plugin: "sample" })
+      // ...existing code...
     });
     setPluginStatus("Plugin executed");
   };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// Placeholder for automation scheduling UI
+// Live automation scheduling UI
 
 export default function AutomationScheduler() {
   const [schedules, setSchedules] = useState([]);

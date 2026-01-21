@@ -149,7 +149,7 @@ export default function PersonalizationRecommendationEngine() {
     const res = await fetch("/api/personalization-recommendation-engine/plugin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plugin: "sample" })
+      // ...existing code...
     });
     setPluginStatus("Plugin executed");
   };

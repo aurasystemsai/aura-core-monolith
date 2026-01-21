@@ -81,13 +81,23 @@ router.get('/analytics', (req, res) => {
 });
 
 // Import/export
-router.post('/import', (req, res) => {
   // Placeholder: implement import logic
   res.json({ ok: true, message: 'Import not implemented' });
 });
 router.get('/export', (req, res) => {
   // Placeholder: implement export logic
   res.json({ ok: true, data: db.list() });
+});
+
+// Import/export endpoints (persistent)
+router.post('/import', (req, res) => {
+  const { items } = req.body || {};
+  if (!Array.isArray(items)) return res.status(400).json({ ok: false, error: 'items[] required' });
+  db.import(items);
+  res.json({ ok: true, count: db.list().length });
+});
+router.get('/export', (req, res) => {
+  res.json({ ok: true, items: db.list() });
 });
 
 // Notifications

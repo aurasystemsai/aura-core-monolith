@@ -148,7 +148,7 @@ export default function CustomerDataPlatform() {
     const res = await fetch("/api/customer-data-platform/plugin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plugin: "sample" })
+      // ...existing code...
     });
     setPluginStatus("Plugin executed");
   };

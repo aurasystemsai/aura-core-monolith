@@ -4,6 +4,8 @@ let wss;
 // Replace app.listen with server.listen at the end of the file:
 // server.listen(PORT, ...)
 // --- All requires and initializations at the top ---
+// ...existing code...
+
 const projectsCore = require('./core/projects');
 const path = require('path');
 const morgan = require('morgan');
@@ -219,7 +221,6 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 // --- Product SEO Engine: Shopify Products Fetch Endpoint ---
-// GET /api/product-seo/shopify-products?limit=50
 app.get('/api/product-seo/shopify-products', async (req, res) => {
   try {
     // Try to get shop domain and token from DB, env, or session

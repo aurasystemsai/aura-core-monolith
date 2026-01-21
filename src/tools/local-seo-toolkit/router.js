@@ -80,14 +80,13 @@ router.get('/analytics', (req, res) => {
 });
 
 // Import/export
-router.post('/import', (req, res) => {
   // Placeholder: implement import logic
   res.json({ ok: true, message: 'Import not implemented' });
 });
-router.get('/export', (req, res) => {
   // Placeholder: implement export logic
   res.json({ ok: true, data: db.list() });
 });
+
 
 // Notifications
 router.post('/notify', (req, res) => {

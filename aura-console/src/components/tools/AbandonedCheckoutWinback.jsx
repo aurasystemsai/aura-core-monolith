@@ -58,7 +58,7 @@ function CustomerLifecycleBar({ segments, onFilter, selectedStage }) {
     { key: 'Churned', label: 'Churned', desc: 'No purchase >60d' },
     { key: 'Loyal', label: 'Loyal', desc: 'Repeat/high-value' },
   ];
-  // Count segments by stage (mock logic, real logic should use customer data)
+  // Count segments by stage (live data only)
   const counts = stages.reduce((acc, stage) => {
     acc[stage.key] = segments.filter(s => s.lifecycleStage === stage.key).length;
     return acc;
@@ -868,12 +868,7 @@ function AbandonedCheckoutWinback() {
           .then(async resp => {
             if (!resp.ok) throw new Error('Failed to fetch integrations');
             const data = await resp.json();
-            // Add mock description and lastConnected if not present
-            setIntegrations((data.integrations || []).map(i => ({
-              ...i,
-              description: i.description || `Integration with ${i.name}`,
-              lastConnected: i.lastConnected || (i.connected ? new Date().toISOString().slice(0, 19).replace('T', ' ') : null)
-            })));
+            setIntegrations((data.integrations || []));
           })
           .catch(e => setError(e.message))
           .finally(() => setLoading(false));
@@ -1772,15 +1767,8 @@ function CrossChannelTargeting({ segment, onUpdate }) {
 // --- Segment Performance Insights Component ---
 function SegmentPerformanceInsights({ segment }) {
   const [show, setShow] = React.useState(false);
-  // Mock performance data
-  const data = segment.performance || {
-    openRate: 42,
-    clickRate: 18,
-    conversionRate: 7,
-    revenue: 1234,
-    recentActivity: '2026-01-17',
-    trend: '+12% MoM',
-  };
+  // Live performance data only
+  const data = segment.performance;
   return (
     <>
       <button onClick={() => setShow(true)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 600, fontSize: 13, cursor: 'pointer', marginLeft: 6 }}>Performance</button>

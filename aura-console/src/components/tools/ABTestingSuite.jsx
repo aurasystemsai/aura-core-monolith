@@ -4,7 +4,7 @@ import OnboardingChecklist from "../../onboarding/OnboardingChecklist";
 
 // --- Flagship A/B Testing Suite ---
 export default function ABTestingSuite() {
-  // State for all advanced features (placeholders for now)
+  // State for all advanced features (live-only)
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [showChecklist, setShowChecklist] = useState(() => !localStorage.getItem("abTestOnboarded"));
   const [testName, setTestName] = useState("");
@@ -282,33 +282,21 @@ export default function ABTestingSuite() {
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Conversion Rate</div>
             <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
-              {/* Placeholder for chart */}
-              <svg width="100%" height="60" style={{ background: 'none' }}>
-                <rect x="10" y="30" width="40" height="20" fill="#0ea5e9" />
-                <rect x="60" y="20" width="40" height="30" fill="#38bdf8" />
-              </svg>
-              <div style={{ fontSize: 15, marginTop: 8 }}>A: 12.4% &nbsp; B: 15.8%</div>
+              {/* Live chart integration required. No placeholder. */}
             </div>
           </div>
           {/* Engagement Chart */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Engagement</div>
             <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
-              {/* Placeholder for chart */}
-              <svg width="100%" height="60" style={{ background: 'none' }}>
-                <circle cx="30" cy="30" r="18" fill="#0ea5e9" />
-                <circle cx="80" cy="30" r="14" fill="#38bdf8" />
-              </svg>
-              <div style={{ fontSize: 15, marginTop: 8 }}>A: 1.2k &nbsp; B: 1.6k</div>
+              {/* Live chart integration required. No placeholder. */}
             </div>
           </div>
           {/* AI Insights */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>AI Insights</div>
             <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
-              <div><strong>Winner:</strong> Variant B (statistically significant)</div>
-              <div style={{ marginTop: 6 }}>B outperformed A by 3.4% conversion and 400 more engagements.</div>
-              <div style={{ marginTop: 6, color: '#38bdf8' }}>Recommendation: Roll out Variant B to 100% of users.</div>
+              {/* Live AI insights only. No static winner or recommendation. */}
             </div>
           </div>
         </div>
@@ -359,7 +347,7 @@ export default function ABTestingSuite() {
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Shopify</div>
             <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
-              <div>Connected store: <strong>demo-shop.myshopify.com</strong></div>
+              <div>Connected store: <strong>{window?.AURA_SHOP_DOMAIN || ''}</strong></div>
               <button className="btn btn-secondary" style={{ marginTop: 10 }}>Manage Connection</button>
             </div>
           </div>

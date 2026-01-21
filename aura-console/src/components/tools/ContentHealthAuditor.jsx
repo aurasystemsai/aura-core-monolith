@@ -121,7 +121,7 @@ export default function ContentHealthAuditor() {
           onChange={e => setInput(e.target.value)}
           rows={4}
           style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #ccc", marginBottom: 18 }}
-          placeholder="Paste your content here..."
+          placeholder="Enter content to audit (live only)"
           aria-label="Content input"
         />
         <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
@@ -156,9 +156,7 @@ export default function ContentHealthAuditor() {
           <div style={{ fontSize: 15, color: "#23263a" }}>
             {analytics.length ? (
               <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "none", padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
-            ) : (
-              <span>No analytics yet. Generate or import history to see results.</span>
-            )}
+            ) : null}
           </div>
         </div>
         <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#f8fafc", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
@@ -168,7 +166,7 @@ export default function ContentHealthAuditor() {
             onChange={e => setFeedback(e.target.value)}
             rows={2}
             style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #ccc", marginBottom: 12, background: "#fff", color: "#23263a" }}
-            placeholder="Share your feedback or suggestions..."
+            placeholder="Feedback (live only)"
             aria-label="Feedback input"
           />
           <button type="submit" style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send Feedback</button>

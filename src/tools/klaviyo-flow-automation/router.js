@@ -12,28 +12,32 @@ const pluginSystem = require('./pluginSystem');
 const router = express.Router();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// CRUD endpoints
+
+// Persistent DB store
+const db = require('./db');
+
+// CRUD endpoints (persistent)
 router.get('/flows', (req, res) => {
-	res.json({ ok: true, flows: db.list() });
+  res.json({ ok: true, flows: db.list() });
 });
 router.get('/flows/:id', (req, res) => {
-	const flow = db.get(req.params.id);
-	if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
-	res.json({ ok: true, flow });
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, flow });
 });
 router.post('/flows', (req, res) => {
-	const flow = db.create(req.body || {});
-	res.json({ ok: true, flow });
+  const flow = db.create(req.body || {});
+  res.json({ ok: true, flow });
 });
 router.put('/flows/:id', (req, res) => {
-	const flow = db.update(req.params.id, req.body || {});
-	if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
-	res.json({ ok: true, flow });
+  const flow = db.update(req.params.id, req.body || {});
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, flow });
 });
 router.delete('/flows/:id', (req, res) => {
-	const ok = db.delete(req.params.id);
-	if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
-	res.json({ ok: true });
+  const ok = db.delete(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true });
 });
 
 // AI endpoint: generate flow ideas
@@ -66,37 +70,23 @@ router.get('/analytics', (req, res) => {
 	res.json({ ok: true, events: analyticsModel.listEvents(req.query || {}) });
 });
 
-// Import/export endpoints
+
+// Import/export endpoints (live)
 router.post('/import', (req, res) => {
-	const { items } = req.body || {};
-	if (!Array.isArray(items)) return res.status(400).json({ ok: false, error: 'items[] required' });
-	db.import(items);
-	res.json({ ok: true, count: db.list().length });
+	try {
+		const { items } = req.body || {};
+		db.import(items);
+		res.json({ ok: true, count: db.list().length });
+	} catch (err) {
+		res.status(400).json({ ok: false, error: err.message });
+	}
 });
 router.get('/export', (req, res) => {
 	res.json({ ok: true, items: db.list() });
 });
 
-// Shopify sync endpoints
-router.post('/shopify/sync', (req, res) => {
-	// Integrate with Shopify API in production
-	res.json({ ok: true, message: 'Shopify sync not implemented in demo.' });
-});
 
-// Notifications endpoints
-router.post('/notify', (req, res) => {
-	const { to, message } = req.body || {};
-	if (!to || !message) return res.status(400).json({ ok: false, error: 'to and message required' });
-	notificationModel.send(to, message);
-	res.json({ ok: true });
-});
-
-// RBAC endpoint
-router.post('/rbac/check', (req, res) => {
-	const { user, action } = req.body || {};
-	const allowed = rbac.check(user, action);
-	res.json({ ok: true, allowed });
-});
+// All other endpoints removed or to be implemented live as needed
 
 // i18n endpoint
 router.get('/i18n', (req, res) => {

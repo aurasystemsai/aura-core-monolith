@@ -12,6 +12,7 @@ const router = express.Router();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // CRUD endpoints
+
 router.get('/returns', (req, res) => {
   res.json({ ok: true, returns: db.list() });
 });
@@ -76,11 +77,8 @@ router.get('/export', (req, res) => {
   res.json({ ok: true, items: db.list() });
 });
 
-// Shopify sync endpoints
-router.post('/shopify/sync', (req, res) => {
-  // Integrate with Shopify API in production
-  res.json({ ok: true, message: 'Shopify sync not implemented in demo.' });
-});
+
+// Shopify sync endpoint removed (implement live if needed)
 
 // Notifications endpoints
 router.post('/notify', (req, res) => {
@@ -129,41 +127,32 @@ router.get('/health', (req, res) => {
   res.json({ ok: true, status: 'healthy', timestamp: Date.now() });
 });
 
-// Import/export endpoints (placeholder logic)
+
+// Import/export endpoints (live, persistent)
 router.post('/import', (req, res) => {
-  const { data } = req.body;
-  if (!Array.isArray(data)) return res.status(400).json({ ok: false, error: 'Invalid data' });
-  returns = data.map((r, i) => ({ ...r, id: idCounter++ }));
-  res.json({ ok: true, count: returns.length });
+  const { items } = req.body || {};
+  if (!Array.isArray(items)) return res.status(400).json({ ok: false, error: 'items[] required' });
+  db.import(items);
+  res.json({ ok: true, count: db.list().length });
 });
 router.get('/export', (req, res) => {
-  res.json({ ok: true, data: returns });
+  res.json({ ok: true, items: db.list() });
 });
 
-// Shopify sync endpoint (placeholder)
-router.post('/shopify/sync', (req, res) => {
-  res.json({ ok: true, message: 'Shopify sync not implemented in demo.' });
-});
+// Shopify sync endpoint (to be implemented live)
+// router.post('/shopify/sync', ...)
 
-// Notifications endpoint (placeholder)
-router.post('/notify', (req, res) => {
-  res.json({ ok: true, message: 'Notification sent (demo).' });
-});
+// Notifications endpoint (to be implemented live)
+// router.post('/notify', ...)
 
-// RBAC check endpoint (placeholder)
-router.post('/rbac/check', (req, res) => {
-  res.json({ ok: true, allowed: true });
-});
+// RBAC check endpoint (to be implemented live)
+// router.post('/rbac/check', ...)
 
-// i18n endpoint (placeholder)
-router.get('/i18n', (req, res) => {
-  res.json({ ok: true, translations: { en: 'Returns/RMA Automation', fr: 'Automatisation des retours/RMA' } });
-});
+// i18n endpoint (to be implemented live)
+// router.get('/i18n', ...)
 
-// Docs endpoint (placeholder)
-router.get('/docs', (req, res) => {
-  res.json({ ok: true, docs: 'Returns/RMA Automation API. Endpoints: /returns, /ai/suggest, /analytics, /import, /export, /shopify/sync, /notify, /rbac/check, /i18n, /docs' });
-});
+// Docs endpoint (to be implemented live)
+// router.get('/docs', ...)
 
 // module.exports = router; (already exported above)
 

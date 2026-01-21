@@ -132,41 +132,33 @@ router.get('/health', (req, res) => {
 
 // ...existing code...
 
-// Import/export endpoints (placeholder logic)
+
+// Import/export endpoints (live, persistent)
 router.post('/import', (req, res) => {
-	const { data } = req.body;
-	if (!Array.isArray(data)) return res.status(400).json({ ok: false, error: 'Invalid data' });
-	campaigns = data.map((c, i) => ({ ...c, id: idCounter++ }));
-	res.json({ ok: true, count: campaigns.length });
+  const { items } = req.body || {};
+  if (!Array.isArray(items)) return res.status(400).json({ ok: false, error: 'items[] required' });
+  db.import(items);
+  res.json({ ok: true, count: db.list().length });
 });
 router.get('/export', (req, res) => {
-	res.json({ ok: true, data: campaigns });
+  res.json({ ok: true, items: db.list() });
 });
 
-// Shopify sync endpoint (placeholder)
-router.post('/shopify/sync', (req, res) => {
-	res.json({ ok: true, message: 'Shopify sync not implemented in demo.' });
-});
 
-// Notifications endpoint (placeholder)
-router.post('/notify', (req, res) => {
-	res.json({ ok: true, message: 'Notification sent (demo).' });
-});
+// Shopify sync endpoint (to be implemented live)
+// router.post('/shopify/sync', ...)
 
-// RBAC check endpoint (placeholder)
-router.post('/rbac/check', (req, res) => {
-	res.json({ ok: true, allowed: true });
-});
+// Notifications endpoint (to be implemented live)
+// router.post('/notify', ...)
 
-// i18n endpoint (placeholder)
-router.get('/i18n', (req, res) => {
-	res.json({ ok: true, translations: { en: 'Multi-Channel Optimizer', fr: 'Optimiseur multi-canal' } });
-});
+// RBAC check endpoint (to be implemented live)
+// router.post('/rbac/check', ...)
 
-// Docs endpoint (placeholder)
-router.get('/docs', (req, res) => {
-	res.json({ ok: true, docs: 'Multi-Channel Optimizer API. Endpoints: /campaigns, /ai/suggest, /analytics, /import, /export, /shopify/sync, /notify, /rbac/check, /i18n, /docs' });
-});
+// i18n endpoint (to be implemented live)
+// router.get('/i18n', ...)
+
+// Docs endpoint (to be implemented live)
+// router.get('/docs', ...)
 
 // ...existing code...
 // ...existing code...

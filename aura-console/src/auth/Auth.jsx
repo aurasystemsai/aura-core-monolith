@@ -20,26 +20,25 @@ const Auth = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     setState(s => ({ ...s, loading: true, error: '' }));
-    // Simulate backend call
-    setTimeout(() => {
-      if (!state.email || !state.password) {
-        setState(s => ({ ...s, loading: false, error: 'Email and password required.' }));
-        return;
-      }
-      if (state.mode === 'login') {
-        // Simulate login success/failure
-        if (state.email === 'demo@aura.com' && state.password === 'demo123') {
-          setState(s => ({ ...s, loading: false, error: '', email: '', password: '' }));
-          alert('Login successful!');
-        } else {
-          setState(s => ({ ...s, loading: false, error: 'Invalid credentials.' }));
-        }
-      } else {
-        // Simulate signup
-        setState(s => ({ ...s, loading: false, error: '', email: '', password: '' }));
-        alert('Signup successful!');
-      }
-    }, 1200);
+    // TODO: Replace with real backend authentication API call
+    // Example using fetch (uncomment and implement your real endpoint):
+    /*
+    try {
+      const res = await fetch('/api/auth/' + state.mode, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: state.email, password: state.password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Authentication failed.');
+      // Handle successful login/signup (e.g., redirect, set session, etc.)
+      setState(s => ({ ...s, loading: false, error: '', email: '', password: '' }));
+      // window.location.href = '/';
+    } catch (err) {
+      setState(s => ({ ...s, loading: false, error: err.message }));
+    }
+    */
+    setState(s => ({ ...s, loading: false, error: 'Live authentication required. Please connect to backend.' }));
   };
 
   const switchMode = () => {
@@ -88,7 +87,7 @@ const Auth = () => {
           </>
         )}
       </div>
-      <div className="aura-auth-demo">Demo login: demo@aura.com / demo123</div>
+      {/* No demo login available. Live authentication only. */}
     </div>
   );
 };

@@ -6,24 +6,27 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 let creatives = [];
 let analytics = [];
 
-// CRUD
-router.get('/creatives', (req, res) => res.json({ ok: true, creatives }));
+
+// Persistent DB store
+const db = require('./db');
+
+// CRUD endpoints (persistent)
+router.get('/creatives', (req, res) => {
+  res.json({ ok: true, creatives: db.list() });
+});
 router.post('/creatives', (req, res) => {
-	const creative = { ...req.body, id: Date.now().toString() };
-	creatives.push(creative);
-	res.json({ ok: true, creative });
+  const creative = db.create(req.body || {});
+  res.json({ ok: true, creative });
 });
 router.put('/creatives/:id', (req, res) => {
-	const idx = creatives.findIndex(c => c.id === req.params.id);
-	if (idx === -1) return res.status(404).json({ ok: false, error: 'Not found' });
-	creatives[idx] = { ...creatives[idx], ...req.body };
-	res.json({ ok: true, creative: creatives[idx] });
+  const creative = db.update(req.params.id, req.body || {});
+  if (!creative) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, creative });
 });
 router.delete('/creatives/:id', (req, res) => {
-	const idx = creatives.findIndex(c => c.id === req.params.id);
-	if (idx === -1) return res.status(404).json({ ok: false, error: 'Not found' });
-	creatives.splice(idx, 1);
-	res.json({ ok: true });
+  const ok = db.delete(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true });
 });
 
 // AI (OpenAI-powered creative generator)
@@ -45,54 +48,28 @@ router.post('/ai/generate', async (req, res) => {
 	}
 });
 
-// Analytics
-router.get('/analytics', (req, res) => res.json({ ok: true, analytics }));
 
-// Import/Export
+// Analytics endpoint (live)
+router.get('/analytics', (req, res) => {
+	res.json({ ok: true, analytics: { totalCreatives: db.list().length } });
+});
+
+
+// Import/export endpoints (live)
 router.post('/import', (req, res) => {
-	const { data } = req.body;
-	if (!Array.isArray(data)) return res.status(400).json({ ok: false, error: 'Data array required' });
-	creatives = creatives.concat(data);
-	res.json({ ok: true, count: creatives.length });
+	try {
+		const { data } = req.body;
+		db.import(data);
+		res.json({ ok: true, count: db.list().length });
+	} catch (err) {
+		res.status(400).json({ ok: false, error: err.message });
+	}
 });
 router.get('/export', (req, res) => {
-	res.json({ ok: true, data: creatives });
+	res.json({ ok: true, data: db.list() });
 });
 
-// Shopify Sync (placeholder)
-router.post('/shopify/import', (req, res) => {
-	// TODO: Implement Shopify import logic
-	res.json({ ok: true, message: 'Shopify import not implemented' });
-});
-router.get('/shopify/export', (req, res) => {
-	// TODO: Implement Shopify export logic
-	res.json({ ok: true, message: 'Shopify export not implemented' });
-});
 
-// Notifications (placeholder)
-router.post('/notify', (req, res) => {
-	// TODO: Implement notification logic
-	res.json({ ok: true, message: 'Notification sent (placeholder)' });
-});
-
-// RBAC (placeholder)
-router.post('/rbac/check', (req, res) => {
-	// TODO: Implement RBAC logic
-	res.json({ ok: true, allowed: true });
-});
-
-// i18n (placeholder)
-router.get('/i18n', (req, res) => {
-	// TODO: Implement i18n logic
-	res.json({ ok: true, translations: {} });
-});
-
-// Docs (OpenAPI-style, placeholder)
-router.get('/docs', (req, res) => {
-	res.json({
-		ok: true,
-		docs: 'Creative Automation Engine API. Endpoints: /creatives, /ai/generate, /analytics, /import, /export, /shopify/import, /shopify/export, /notify, /rbac/check, /i18n, /docs'
-	});
-});
+// All other endpoints removed or to be implemented live as needed
 
 module.exports = router;

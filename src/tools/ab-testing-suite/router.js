@@ -1,68 +1,52 @@
-// --- Automated Anomaly Detection (stub) ---
-router.get('/anomaly-detection', (req, res) => {
-  // TODO: Analyze test data for anomalies
-  res.json({ ok: true, anomalies: [{ variant: 'A', metric: 'conversion', change: '+300%', ts: Date.now() }] });
-});
+const express = require('express');
+const db = require('./db');
+const router = express.Router();
 
-// --- Multi-arm Bandit Support (stub) ---
-router.post('/bandit/allocate', (req, res) => {
-  // TODO: Auto-allocate traffic to best-performing variants
-  res.json({ ok: true, allocation: { A: 0.2, B: 0.8 } });
+// CRUD endpoints for tests
+router.get('/tests', (req, res) => {
+  res.json({ ok: true, tests: db.list() });
 });
-
-// --- Advanced Scheduling (stub) ---
-router.post('/schedule', (req, res) => {
-  // TODO: Pause, resume, auto-end tests
-  res.json({ ok: true, status: 'scheduled' });
+router.get('/tests/:id', (req, res) => {
+  const test = db.get(req.params.id);
+  if (!test) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, test });
 });
-
-// --- Custom Metrics (stub) ---
-router.post('/metrics', (req, res) => {
-  // TODO: Save custom metrics for a test
+router.post('/tests', (req, res) => {
+  const test = db.create(req.body || {});
+  res.json({ ok: true, test });
+});
+router.put('/tests/:id', (req, res) => {
+  const test = db.update(req.params.id, req.body || {});
+  if (!test) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, test });
+});
+router.delete('/tests/:id', (req, res) => {
+  const ok = db.delete(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
   res.json({ ok: true });
 });
 
-// --- Full Audit Log (stub) ---
-let auditLog = [];
+// Audit log endpoints
 router.post('/audit', (req, res) => {
-  auditLog.push({ ...req.body, ts: Date.now() });
+  db.auditLog.add(JSON.stringify(req.body));
   res.json({ ok: true });
 });
 router.get('/audit', (req, res) => {
-  res.json({ ok: true, auditLog });
+  res.json({ ok: true, auditLog: db.auditLog.list() });
 });
 
-// --- Granular RBAC (stub) ---
-router.post('/rbac/grant', (req, res) => {
-  // TODO: Grant/revoke permissions per test/action
-  res.json({ ok: true });
-});
-
-// --- Data Residency & Export Controls (stub) ---
-router.post('/data-residency', (req, res) => {
-  // TODO: Set/get data residency region
-  res.json({ ok: true, region: req.body.region || 'us-east-1' });
-});
-
-// --- White-labeling (stub) ---
-router.post('/branding', (req, res) => {
-  // TODO: Save custom branding settings
-  res.json({ ok: true });
-});
-
-// --- API Key Management (stub) ---
-let apiKeys = [];
+// API Key Management
 router.post('/apikeys/generate', (req, res) => {
   const key = 'api_' + Math.random().toString(36).slice(2, 18);
-  apiKeys.push(key);
+  db.apiKeys.add(key);
   res.json({ ok: true, key });
 });
 router.post('/apikeys/revoke', (req, res) => {
-  apiKeys = apiKeys.filter(k => k !== req.body.key);
+  db.apiKeys.remove(req.body.key);
   res.json({ ok: true });
 });
 router.get('/apikeys', (req, res) => {
-  res.json({ ok: true, apiKeys });
+  res.json({ ok: true, apiKeys: db.apiKeys.list() });
 });
 // --- Slack/Teams Notification Webhook Endpoint ---
 const fetch = require('node-fetch');

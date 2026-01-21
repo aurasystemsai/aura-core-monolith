@@ -4,34 +4,34 @@ const router = express.Router();
 const OpenAI = require('openai');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// In-memory store for demo (replace with DB in production)
-let emails = [];
-let idCounter = 1;
+
+// Persistent DB store
+const emailDb = require('../../core/emailAutomation');
 
 // CRUD endpoints
+
 router.get('/emails', (req, res) => {
-	res.json({ ok: true, emails });
+	res.json({ ok: true, emails: emailDb.listEmails(100) });
 });
 router.get('/emails/:id', (req, res) => {
-	const email = emails.find(e => e.id == req.params.id);
+	const email = emailDb.getEmail(req.params.id);
 	if (!email) return res.status(404).json({ ok: false, error: 'Not found' });
 	res.json({ ok: true, email });
 });
 router.post('/emails', (req, res) => {
-	const email = { ...req.body, id: idCounter++ };
-	emails.push(email);
+	const { subject, body } = req.body;
+	if (!subject || !body) return res.status(400).json({ ok: false, error: 'Missing subject or body' });
+	const email = emailDb.addEmail({ subject, body });
 	res.json({ ok: true, email });
 });
 router.put('/emails/:id', (req, res) => {
-	const idx = emails.findIndex(e => e.id == req.params.id);
-	if (idx === -1) return res.status(404).json({ ok: false, error: 'Not found' });
-	emails[idx] = { ...emails[idx], ...req.body };
-	res.json({ ok: true, email: emails[idx] });
+	const { subject, body } = req.body;
+	if (!subject || !body) return res.status(400).json({ ok: false, error: 'Missing subject or body' });
+	const updated = emailDb.updateEmail(req.params.id, { subject, body });
+	res.json({ ok: true, email: updated });
 });
 router.delete('/emails/:id', (req, res) => {
-	const idx = emails.findIndex(e => e.id == req.params.id);
-	if (idx === -1) return res.status(404).json({ ok: false, error: 'Not found' });
-	emails.splice(idx, 1);
+	emailDb.deleteEmail(req.params.id);
 	res.json({ ok: true });
 });
 
@@ -56,45 +56,28 @@ router.post('/ai/generate', async (req, res) => {
 	}
 });
 
-// Analytics endpoint (placeholder)
+
+// Analytics endpoint (live)
 router.get('/analytics', (req, res) => {
-	res.json({ ok: true, analytics: { totalEmails: emails.length } });
+	res.json({ ok: true, analytics: { totalEmails: emailDb.totalEmails() } });
 });
 
-// Import/export endpoints (placeholder logic)
+
+// Import/export endpoints (live)
 router.post('/import', (req, res) => {
-	const { data } = req.body;
-	if (!Array.isArray(data)) return res.status(400).json({ ok: false, error: 'Invalid data' });
-	emails = data.map((e, i) => ({ ...e, id: idCounter++ }));
-	res.json({ ok: true, count: emails.length });
+	try {
+		const { data } = req.body;
+		const count = emailDb.importEmails(data);
+		res.json({ ok: true, count });
+	} catch (err) {
+		res.status(400).json({ ok: false, error: err.message });
+	}
 });
 router.get('/export', (req, res) => {
-	res.json({ ok: true, data: emails });
+	res.json({ ok: true, data: emailDb.exportEmails(1000) });
 });
 
-// Shopify sync endpoint (placeholder)
-router.post('/shopify/sync', (req, res) => {
-	res.json({ ok: true, message: 'Shopify sync not implemented in demo.' });
-});
 
-// Notifications endpoint (placeholder)
-router.post('/notify', (req, res) => {
-	res.json({ ok: true, message: 'Notification sent (demo).' });
-});
-
-// RBAC check endpoint (placeholder)
-router.post('/rbac/check', (req, res) => {
-	res.json({ ok: true, allowed: true });
-});
-
-// i18n endpoint (placeholder)
-router.get('/i18n', (req, res) => {
-	res.json({ ok: true, translations: { en: 'Email Automation Builder', fr: 'Générateur d\'automatisation des e-mails' } });
-});
-
-// Docs endpoint (placeholder)
-router.get('/docs', (req, res) => {
-	res.json({ ok: true, docs: 'Email Automation Builder API. Endpoints: /emails, /ai/generate, /analytics, /import, /export, /shopify/sync, /notify, /rbac/check, /i18n, /docs' });
-});
+// All other endpoints removed or to be implemented live as needed
 
 module.exports = router;

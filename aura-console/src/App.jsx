@@ -12,7 +12,7 @@ import SystemHealthPanel from "./components/SystemHealthPanel";
 import DraftLibrary from "./components/DraftLibrary";
 import ContentIngestor from "./components/ContentIngestor";
 import ProductsList from "./components/ProductsList.jsx";
-import ToolPlaceholder from "./components/ToolPlaceholder.jsx";
+// ...existing code...
 import ToolScaffold from "./components/tools/ToolScaffold.jsx";
 import AbandonedCheckoutWinback from "./components/tools/AbandonedCheckoutWinback.jsx";
 import CustomerDataPlatform from "./components/tools/CustomerDataPlatform.jsx";
