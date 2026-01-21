@@ -150,69 +150,70 @@ const Dashboard = ({ setActiveSection }) => {
       {/* Hero/overview section - visually impactful */}
       <div className="dashboard-hero" style={{
         position: 'relative',
-        borderRadius: '24px',
+        borderRadius: '28px',
         padding: '56px 48px 40px 48px',
-        marginBottom: 40,
-        boxShadow: '0 12px 48px rgba(0,0,0,0.13)',
+        marginBottom: 44,
+        boxShadow: '0 16px 48px #0007',
+        background: 'linear-gradient(120deg, #232b3b 70%, #1a1d2e 100%)',
+        overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        gap: 32,
-        overflow: 'hidden',
-        background: '#232b3b',
+        alignItems: 'center',
+        minHeight: 340,
       }}>
-        {/* Personalized welcome */}
-        <div style={{fontSize: 28, fontWeight: 900, color: '#7fffd4', marginBottom: 8}}>
-          Welcome back, {shop.name}!
+        {/* Subtle background accent */}
+        <div style={{
+          position: 'absolute',
+          top: -60,
+          right: -60,
+          width: 220,
+          height: 220,
+          background: 'radial-gradient(circle, #7fffd4 0%, #232b3b 80%)',
+          opacity: 0.08,
+          borderRadius: '50%',
+          zIndex: 0,
+          pointerEvents: 'none',
+        }} />
+        {/* Title and subtitle */}
+        <div style={{ zIndex: 1, textAlign: 'center', marginBottom: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, marginBottom: 8 }}>
+            <img src="/logo-aura.png" alt="AURA Logo" style={{ height: 72, width: 72, objectFit: 'contain', borderRadius: 18, boxShadow: '0 2px 24px #22d3ee33' }} />
+            <span style={{ fontWeight: 900, fontSize: 38, color: '#fff', letterSpacing: '-0.02em', textShadow: '0 2px 12px #0008' }}>AURA Systems</span>
+          </div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: '#7fffd4', marginBottom: 6, letterSpacing: '-0.01em', textShadow: '0 2px 12px #0006' }}>Your Store at a Glance</div>
+          <div style={{ fontSize: 18, color: '#b3c2e0', fontWeight: 500, marginBottom: 0 }}>Key Metrics & Automations</div>
         </div>
-        {/* Onboarding checklist */}
-        <div style={{marginBottom: 18, width: '100%', maxWidth: 520}}>
-          <div style={{fontWeight: 700, color: '#f3f4f6', marginBottom: 6, fontSize: 16}}>Getting Started Checklist</div>
-          <div style={{display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6}}>
-            <div style={{flex: 1, height: 8, background: '#181f2a', borderRadius: 6, overflow: 'hidden'}}>
-              <div style={{width: `${onboardingPercent}%`, height: '100%', background: '#7fffd4', borderRadius: 6, transition: 'width 0.3s'}} />
-            </div>
-            <span style={{color: '#7fffd4', fontWeight: 700, fontSize: 14}}>{onboardingPercent}%</span>
+        {/* Project card */}
+        <div style={{
+          background: 'linear-gradient(120deg, #23263a 60%, #23284a 100%)',
+          borderRadius: 22,
+          boxShadow: '0 4px 24px #0004',
+          padding: '32px 36px',
+          minWidth: 340,
+          maxWidth: 420,
+          margin: '0 auto 18px auto',
+          zIndex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}>
+          <div style={{ fontWeight: 900, fontSize: 26, color: '#7fffd4', marginBottom: 6, textAlign: 'center' }}>{shop.name || 'My Project'}</div>
+          <div style={{ color: '#b3c2e0', fontSize: 16, marginBottom: 8, textAlign: 'center' }}>{shop.domain || shop.url || '—'}</div>
+          <div style={{ color: '#b3c2e0', fontSize: 15, marginBottom: 18, textAlign: 'center' }}>Platform: <b style={{ color: '#7fffd4' }}>Shopify</b></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+            <span style={{ background: '#7fffd4', color: '#23263a', fontWeight: 900, fontSize: 17, borderRadius: 12, padding: '4px 18px', letterSpacing: '0.01em', boxShadow: '0 2px 8px #22d3ee33' }}>Shopify</span>
+            <span style={{ background: '#22d37f', color: '#fff', fontWeight: 800, fontSize: 15, borderRadius: 10, padding: '4px 14px', marginLeft: 6, boxShadow: '0 2px 8px #22d37f33' }}>Active</span>
           </div>
-          <div style={{display: 'flex', gap: 18, flexWrap: 'wrap'}}>
-            {onboardingSteps.map((step, idx) => (
-              <span key={step.key} style={{
-                color: idx < completedSteps ? '#7fffd4' : '#9ca3c7',
-                textDecoration: idx < completedSteps ? 'line-through' : 'none',
-                fontWeight: idx < completedSteps ? 700 : 500,
-                fontSize: 14,
-                marginRight: 8,
-              }}>{step.label}</span>
-            ))}
-          </div>
+          <div style={{ color: '#b3c2e0', fontSize: 14, marginBottom: 2 }}>Created: <span style={{ color: '#fff', fontWeight: 700 }}>{shop.createdAt || '—'}</span></div>
+          <div style={{ color: '#b3c2e0', fontSize: 14 }}>Updated: <span style={{ color: '#fff', fontWeight: 700 }}>{shop.updatedAt || '—'}</span></div>
         </div>
-        {/* Removed animated background circles for clean look */}
-        <div style={{display:'flex',flexDirection:'column',alignItems:'flex-start',flex:1,minWidth:260,zIndex:1}}>
-          <div style={{display:'flex',alignItems:'center',gap:18,marginBottom:12}}>
-            <img src="/logo-aura.png" alt="AURA Logo" style={{height:64,width:64,objectFit:'contain',borderRadius:16,boxShadow:'0 2px 24px rgba(0,0,0,0.13)'}} />
-            <span style={{fontWeight:900,fontSize:32,color:'#f3f4f6',letterSpacing:'-0.02em'}}>AURA Systems</span>
-          </div>
-          <div style={{fontSize: 24, color: '#f3f4f6', marginBottom: 18, fontWeight: 700}}>
-            Your Store at a Glance
-          </div>
-          <div style={{fontSize: 16, color: '#9ca3c7', marginBottom: 24, maxWidth: 480}}>
-            Key Metrics
-            <br />
-            <span style={{color:'#f3f4f6'}}>Automate and Optimize</span>
-          </div>
-          <div style={{display: 'flex', gap: 16, flexWrap: 'wrap'}}>
-            <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('products')} title="View all products">Products</button>
-            <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('content-health')} title="View content health">Content Health</button>
-            <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('fix-queue')} title="View fix queue">Fix Queue</button>
-            <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('tools')} title="View all tools">Tools</button>
-            <button className="quick-link-btn" onClick={handleRunAutomation} disabled={running} title="Run all automations">
-              {running ? 'Running automations...' : 'Run All Automations'}
-            </button>
-          </div>
-        </div>
-        <div style={{minWidth: 260, maxWidth: 340, zIndex:1}}>
-          <Suspense fallback={<Spinner />}>
-            <ShopInfoPanel shop={shop} />
-          </Suspense>
+        {/* Quick links */}
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginTop: 10, zIndex: 1 }}>
+          <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('products')} title="View all products">Products</button>
+          <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('content-health')} title="View content health">Content Health</button>
+          <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('fix-queue')} title="View fix queue">Fix Queue</button>
+          <button className="quick-link-btn" onClick={() => setActiveSection && setActiveSection('tools')} title="View all tools">Tools</button>
+          <button className="quick-link-btn" onClick={handleRunAutomation} disabled={running} title="Run all automations">{running ? 'Running automations...' : 'Run All Automations'}</button>
         </div>
       </div>
       {/* Integration health panel */}
