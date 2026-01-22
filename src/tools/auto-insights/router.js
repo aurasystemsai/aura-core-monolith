@@ -1,20 +1,8 @@
 const express = require('express');
 // ...existing code...
 const OpenAI = require('openai');
-const db = require('./db');
-const analyticsModel = require('./analyticsModel');
-const notificationModel = require('./notificationModel');
-const rbac = require('./rbac');
-const i18n = require('./i18n');
-const webhookModel = require('./webhookModel');
-const complianceModel = require('./complianceModel');
-const pluginSystem = require('./pluginSystem');
-const router = express.Router();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-
 // Persistent DB store
-const db = require('./db');
+// const db = require('./db');
 
 // CRUD endpoints (persistent)
 router.get('/insights', (req, res) => {
@@ -119,8 +107,6 @@ router.post('/plugin', (req, res) => {
 router.get('/health', (req, res) => {
 	res.json({ ok: true, status: 'healthy', timestamp: Date.now() });
 });
-
-// ...existing code...
 
 // Import/export endpoints (placeholder logic)
 router.post('/import', (req, res) => {
