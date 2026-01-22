@@ -1,9 +1,9 @@
-
 const express = require('express');
 const router = express.Router();
 const OpenAI = require('openai');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
+// Ensure db is required
+const db = require('./db');
 
 // CRUD endpoints (persistent)
 router.get('/autopilots', (req, res) => {
@@ -70,3 +70,6 @@ router.delete('/autopilots/:id', (req, res) => {
 	if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
 	res.json({ ok: true });
 });
+
+// Ensure router is exported
+module.exports = router;
