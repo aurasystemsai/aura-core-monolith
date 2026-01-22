@@ -46,9 +46,9 @@ Scope: Bring parity and differentiation vs. Klaviyo, Attentive, Iterable, Braze,
 - Holdouts and control groups; reporting and alerts.
 
 ### Phase 5 — Collaboration, Compliance, Ops
-- Approvals workflow, comments, versions, share links, audit log UI.
-- Compliance toggles: HIPAA/TCPA/CCPA; consent registry; DSR endpoints.
-- Observability: alerts hooks (email/webhook), replay/dead-letter, scheduler SLAs.
+- Approvals workflow, comments, versions, share links, audit log UI. **(comments/approvals/versions/share-link endpoints + audit log storage added; UI pending)**
+- Compliance toggles: HIPAA/TCPA/CCPA; consent registry; DSR endpoints. **(toggles + DSR endpoint added; consent sync earlier)**
+- Observability: alerts hooks (email/webhook), replay/dead-letter, scheduler SLAs. **(alerts/dead-letter earlier; replay & scheduler endpoints added)**
 
 ## Minimal Backlog Tickets (cut to ship)
 - backend: add channel models (push/web push/in-app), update flow schema, RBAC in responses.

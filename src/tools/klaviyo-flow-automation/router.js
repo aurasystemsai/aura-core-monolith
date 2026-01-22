@@ -392,6 +392,7 @@ const analyticsModel = require('./analyticsModel');
 const eventsStore = require('./eventsStore');
 const segments = require('./segments');
 const connectors = require('./connectors');
+const auditLog = require('./auditLog');
 const notificationModel = require('./notificationModel');
 const rbac = require('./rbac');
 const i18n = require('./i18n');
@@ -713,6 +714,63 @@ router.get('/docs', (_req, res) => {
 
 router.get('/health', (_req, res) => {
   res.json({ ok: true, status: 'healthy', timestamp: Date.now(), counts: { flows: db.list().length, events: eventsStore.summary().total, segments: segments.list().length } });
+});
+
+// Collaboration & compliance & ops (Phase 5)
+router.post('/collab/comment', (req, res) => {
+  const { flowId, user = 'anon', comment = '' } = req.body || {};
+  const entry = auditLog.record({ type: 'comment', flowId, user, comment });
+  res.json({ ok: true, entry });
+});
+
+router.post('/collab/approve', (req, res) => {
+  const { flowId, user = 'admin' } = req.body || {};
+  const entry = auditLog.record({ type: 'approval', flowId, user, status: 'approved' });
+  res.json({ ok: true, entry });
+});
+
+router.post('/collab/version', (req, res) => {
+  const { flowId, label = 'v1' } = req.body || {};
+  const entry = auditLog.record({ type: 'version', flowId, label });
+  res.json({ ok: true, entry });
+});
+
+router.post('/collab/share-link', (req, res) => {
+  const { flowId } = req.body || {};
+  const token = Buffer.from(`${flowId}-${Date.now()}`).toString('base64url');
+  const link = `/share/${token}`;
+  const entry = auditLog.record({ type: 'share', flowId, link });
+  res.json({ ok: true, link, entry });
+});
+
+router.get('/audit/logs', (_req, res) => {
+  res.json({ ok: true, entries: auditLog.list() });
+});
+
+let complianceToggles = { HIPAA: false, TCPA: true, CCPA: true };
+router.post('/compliance/toggles', (req, res) => {
+  complianceToggles = { ...complianceToggles, ...(req.body || {}) };
+  res.json({ ok: true, toggles: complianceToggles });
+});
+
+router.post('/compliance/dsr', (req, res) => {
+  const { userId, action = 'export' } = req.body || {};
+  if (!userId) return res.status(400).json({ ok: false, error: 'Missing userId' });
+  const entry = auditLog.record({ type: 'dsr', userId, action });
+  res.json({ ok: true, request: entry });
+});
+
+router.post('/ops/replay', (req, res) => {
+  const { eventIds = [] } = req.body || {};
+  const replayed = eventsStore.list().filter(e => eventIds.includes(e.id));
+  replayed.forEach(e => auditLog.record({ type: 'replay', eventId: e.id }));
+  res.json({ ok: true, replayed: replayed.length });
+});
+
+router.post('/ops/scheduler', (req, res) => {
+  const { job = 'sync', slaMs = 60000 } = req.body || {};
+  auditLog.record({ type: 'scheduler', job, slaMs });
+  res.json({ ok: true, scheduled: job, slaMs });
 });
 
 // Integrations & data (Phase 3)
