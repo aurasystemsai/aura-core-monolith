@@ -46,7 +46,7 @@ export default function KlaviyoFlowAutomation() {
   const [exported, setExported] = useState(null);
   const [collaborators, setCollaborators] = useState(["You"]);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [runHistory, setRunHistory] = useState([]);
   const templates = [
     {
@@ -146,9 +146,9 @@ export default function KlaviyoFlowAutomation() {
 
   // Onboarding
   const onboardingContent = (
-    <div style={{ padding: 24, background: "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
-      <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Klaviyo Flow Automation</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: "#334155", fontSize: 16 }}>
+    <div style={{ padding: 24, background: darkMode ? "#1e3a3f" : "#e0f2fe", borderRadius: 12, marginBottom: 18 }}>
+      <h3 style={{ fontWeight: 700, fontSize: 22, color: darkMode ? "#06b6d4" : "#0369a1" }}>Welcome to Klaviyo Flow Automation</h3>
+      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#cbd5e1" : "#0369a1", fontSize: 16 }}>
         <li>Build, import, or export advanced Klaviyo flows visually</li>
         <li>Get AI-powered suggestions and templates</li>
         <li>Analyze flow performance with real-time analytics</li>
@@ -176,31 +176,31 @@ export default function KlaviyoFlowAutomation() {
     <div style={{
 
       margin: "40px auto",
-      background: darkMode ? "#18181b" : "#fff",
+      background: darkMode ? "#0f172a" : "#f8fafc",
       borderRadius: 18,
       boxShadow: "0 2px 24px #0002",
       padding: 36,
-      color: darkMode ? "#f1f5f9" : "#23263a",
+      color: darkMode ? "#e0e7ff" : "#1e293b",
       fontFamily: 'Inter, sans-serif',
       transition: "background 0.3s, color 0.3s"
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Klaviyo Flow Automation</h2>
-        <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
+        <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: darkMode ? "#f3f4f6" : "#23263a", color: darkMode ? "#23263a" : "#f3f4f6", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
       </div>
-      <div style={{ marginBottom: 14, color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+      <div style={{ marginBottom: 14, color: darkMode ? "#06b6d4" : "#0369a1", fontWeight: 600, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <span role="img" aria-label="bolt">⚡</span> Build, automate, and analyze Klaviyo flows with AI, analytics, and team collaboration.
-        <span style={{ padding: "6px 10px", borderRadius: 999, background: darkMode ? "#1f2937" : "#e0f2fe", color: darkMode ? "#7dd3fc" : "#0369a1", fontWeight: 700 }}>Live</span>
-        <span style={{ padding: "6px 10px", borderRadius: 999, background: darkMode ? "#1e293b" : "#ecfeff", color: darkMode ? "#67e8f9" : "#0ea5e9", fontWeight: 700 }}>Compliance: GDPR | SOC2</span>
+        <span style={{ padding: "6px 10px", borderRadius: 999, background: darkMode ? "#1e3a3f" : "#e0f2fe", color: darkMode ? "#06b6d4" : "#0369a1", fontWeight: 700 }}>Live</span>
+        <span style={{ padding: "6px 10px", borderRadius: 999, background: darkMode ? "#1f2937" : "#ecfeff", color: darkMode ? "#34d399" : "#059669", fontWeight: 700 }}>Compliance: GDPR | SOC2</span>
       </div>
       <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
         <div style={{ flex: 2, minWidth: 320 }}>
           {showOnboarding && onboardingContent}
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
             {templates.map(tpl => (
-              <button key={tpl.name} onClick={() => applyTemplate(tpl)} style={{ background: darkMode ? "#1f2937" : "#eef2ff", color: darkMode ? "#c7d2fe" : "#312e81", border: '1px solid #cbd5e1', borderRadius: 10, padding: '10px 14px', textAlign: 'left', minWidth: 180, cursor: 'pointer', boxShadow: '0 1px 4px #0001', fontWeight: 700 }}>
+              <button key={tpl.name} onClick={() => applyTemplate(tpl)} style={{ background: darkMode ? "#1e3a3f" : "#e0f2fe", color: darkMode ? "#06b6d4" : "#0369a1", border: '1px solid #cbd5e1', borderRadius: 10, padding: '10px 14px', textAlign: 'left', minWidth: 180, cursor: 'pointer', boxShadow: '0 1px 4px #0001', fontWeight: 700 }}>
                 {tpl.name}
-                <div style={{ fontWeight: 500, fontSize: 13, marginTop: 4, color: darkMode ? "#e2e8f0" : "#475569" }}>{tpl.desc}</div>
+                <div style={{ fontWeight: 500, fontSize: 13, marginTop: 4, color: darkMode ? "#cbd5e1" : "#475569" }}>{tpl.desc}</div>
               </button>
             ))}
           </div>
@@ -213,20 +213,20 @@ export default function KlaviyoFlowAutomation() {
             <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
             {exported && <a href={exported} download="klaviyo-flow.txt" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
           </div>
-          {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
+          {imported && <div style={{ color: "#22c55e", marginBottom: 8, fontWeight: 600 }}>Imported: {imported}</div>}
           {aiSuggestion && (
-            <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635" : "#23263a" }}>
+            <div style={{ background: darkMode ? "#1e3a3f" : "#e0f2fe", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#06b6d4" : "#0369a1" }}>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Suggestion:</div>
               <div>{aiSuggestion}</div>
             </div>
           )}
           {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-          <div style={{ marginTop: 12, background: darkMode ? "#111827" : "#f8fafc", borderRadius: 10, padding: 12, border: "1px solid #e2e8f0" }}>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Recent Runs</div>
+          <div style={{ marginTop: 12, background: darkMode ? "#1e293b" : "#f8fafc", borderRadius: 10, padding: 12, border: "1px solid #334155" }}>
+            <div style={{ fontWeight: 700, marginBottom: 6, color: darkMode ? "#e0e7ff" : "#1e293b" }}>Recent Runs</div>
             {runHistory.length === 0 ? <div style={{ color: '#64748b' }}>No runs yet. Execute a flow to see history.</div> : (
               <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                 {runHistory.map((r, idx) => (
-                  <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: idx < runHistory.length - 1 ? '1px solid #e2e8f0' : 'none' }}>
+                  <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: idx < runHistory.length - 1 ? '1px solid #334155' : 'none' }}>
                     <span style={{ color: darkMode ? '#cbd5e1' : '#334155' }}>{new Date(r.ts).toLocaleString()}</span>
                     <span style={{ fontWeight: 700, color: r.result === 'success' ? '#22c55e' : '#ef4444' }}>{r.result === 'success' ? 'Success' : 'Error'}</span>
                   </li>
@@ -235,17 +235,17 @@ export default function KlaviyoFlowAutomation() {
             )}
           </div>
         </div>
-        <div style={{ flex: 1, minWidth: 260, background: darkMode ? "#23263a" : "#f8fafc", borderRadius: 12, padding: 18, boxShadow: "0 1px 6px #0001" }}>
-          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics & Collaboration</div>
+        <div style={{ flex: 1, minWidth: 260, background: darkMode ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 18, boxShadow: "0 1px 6px #0001" }}>
+          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: darkMode ? "#e0e7ff" : "#1e293b" }}>Analytics & Collaboration</div>
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontWeight: 600, marginBottom: 2 }}>Collaborators:</div>
-            <ul style={{ margin: 0, paddingLeft: 18 }}>
+            <div style={{ fontWeight: 600, marginBottom: 2, color: darkMode ? "#e0e7ff" : "#1e293b" }}>Collaborators:</div>
+            <ul style={{ margin: 0, paddingLeft: 18, color: darkMode ? "#cbd5e1" : "#334155" }}>
               {collaborators.map(c => <li key={c}>{c}</li>)}
             </ul>
             <button onClick={handleAddCollaborator} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "6px 16px", fontWeight: 600, fontSize: 14, marginTop: 6, cursor: "pointer" }}>Add Collaborator</button>
           </div>
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>Flow Analytics:</div>
-          <div style={{ fontSize: 15, color: darkMode ? "#a3e635" : "#23263a" }}>
+          <div style={{ fontWeight: 600, marginBottom: 2, color: darkMode ? "#e0e7ff" : "#1e293b" }}>Flow Analytics:</div>
+          <div style={{ fontSize: 15, color: darkMode ? "#cbd5e1" : "#475569" }}>
             {analytics ? (
               <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "none", padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
             ) : (
@@ -255,18 +255,18 @@ export default function KlaviyoFlowAutomation() {
           <div style={{ marginTop: 18 }}>
             <button onClick={() => setShowOnboarding(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Show Onboarding</button>
           </div>
-          <div style={{ marginTop: 18, fontSize: 13, color: darkMode ? "#a3e635" : "#64748b" }}>
+          <div style={{ marginTop: 18, fontSize: 13, color: darkMode ? "#cbd5e1" : "#64748b" }}>
             <div>Integrations: <span style={{ fontWeight: 600 }}>Klaviyo</span>, <span style={{ fontWeight: 600 }}>Shopify</span></div>
             <div>Accessibility: <span style={{ fontWeight: 600 }}>WCAG 2.1</span> | <span style={{ fontWeight: 600 }}>Keyboard Shortcuts</span></div>
             <div>Compliance: <span style={{ fontWeight: 600 }}>GDPR</span>, <span style={{ fontWeight: 600 }}>SOC2</span></div>
           </div>
-          <div style={{ marginTop: 14, fontSize: 13, color: darkMode ? '#a3e635' : '#0f172a', background: darkMode ? '#0f172a' : '#e0f2fe', borderRadius: 10, padding: 10 }}>
-            <div style={{ fontWeight: 700, marginBottom: 4 }}>Status</div>
+          <div style={{ marginTop: 14, fontSize: 13, color: darkMode ? '#cbd5e1' : '#1e293b', background: darkMode ? '#1f2937' : '#e0f2fe', borderRadius: 10, padding: 10 }}>
+            <div style={{ fontWeight: 700, marginBottom: 4, color: darkMode ? '#06b6d4' : '#0369a1' }}>Status</div>
             <div>API: <span style={{ fontWeight: 800, color: '#22c55e' }}>Healthy</span></div>
             <div>Last Sync: <span style={{ fontWeight: 700 }}>Live</span></div>
           </div>
-          <div style={{ marginTop: 12, fontSize: 13, color: darkMode ? '#cbd5e1' : '#475569', background: darkMode ? '#0f172a' : '#eef2ff', borderRadius: 10, padding: 10 }}>
-            <div style={{ fontWeight: 700, marginBottom: 4 }}>Checklist</div>
+          <div style={{ marginTop: 12, fontSize: 13, color: darkMode ? '#cbd5e1' : '#475569', background: darkMode ? '#1e3a3f' : '#f0f4ff', borderRadius: 10, padding: 10 }}>
+            <div style={{ fontWeight: 700, marginBottom: 4, color: darkMode ? '#06b6d4' : '#0369a1' }}>Checklist</div>
             <ul style={{ margin: 0, paddingLeft: 18 }}>
               <li>Set triggers & actions</li>
               <li>Sync Klaviyo credentials</li>
@@ -276,8 +276,8 @@ export default function KlaviyoFlowAutomation() {
           </div>
         </div>
       </div>
-      <div style={{ marginTop: 32, fontSize: 13, color: darkMode ? "#a3e635" : "#64748b", textAlign: "center" }}>
-        <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", textDecoration: "underline" }}>Contact Support</a></span>
+      <div style={{ marginTop: 32, fontSize: 13, color: darkMode ? "#cbd5e1" : "#64748b", textAlign: "center" }}>
+        <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: darkMode ? "#06b6d4" : "#0ea5e9", textDecoration: "underline" }}>Contact Support</a></span>
       </div>
     </div>
   );
