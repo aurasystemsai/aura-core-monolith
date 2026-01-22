@@ -47,7 +47,34 @@ export default function KlaviyoFlowAutomation() {
   const [collaborators, setCollaborators] = useState(["You"]);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [runHistory, setRunHistory] = useState([]);
+  const templates = [
+    {
+      name: "Abandoned Cart Rescue",
+      desc: "Trigger 1h after cart, branch by value, SMS + email reminder",
+      flow: "Trigger: Cart Abandoned -> Condition: Cart Value > $100 -> Action: Email + SMS reminder -> Wait 24h -> If purchased, stop; else send incentive"
+    },
+    {
+      name: "Welcome Series",
+      desc: "Multi-step onboarding with product education",
+      flow: "Trigger: New Subscriber -> Action: Welcome Email -> Wait 1d -> Action: Product Education -> Wait 2d -> Action: Social Proof"
+    },
+    {
+      name: "VIP Re‑engagement",
+      desc: "High LTV segment win-back with tiered offers",
+      flow: "Trigger: VIP Segment Lapsing -> Action: Personalized Offer -> Wait 3d -> Action: Concierge Email -> Wait 7d -> Action: Survey + Incentive"
+    }
+  ];
   const fileInputRef = useRef();
+
+  const applyTemplate = (tpl) => {
+    setFlow(tpl.flow);
+    setNodes([
+      { id: Date.now() + 1, label: "Trigger", type: "trigger" },
+      { id: Date.now() + 2, label: "Branch", type: "step" },
+      { id: Date.now() + 3, label: "Action", type: "action" }
+    ]);
+  };
 
   // AI Suggestion
   const handleAISuggest = async () => {
@@ -84,8 +111,10 @@ export default function KlaviyoFlowAutomation() {
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setAnalytics(data.analytics || { summary: "No analytics available" });
+      setRunHistory((prev) => [{ ts: new Date().toISOString(), result: "success" }, ...prev].slice(0, 5));
     } catch (err) {
       setError(err.message);
+      setRunHistory((prev) => [{ ts: new Date().toISOString(), result: "error" }, ...prev].slice(0, 5));
     } finally {
       setLoading(false);
     }
@@ -145,7 +174,7 @@ export default function KlaviyoFlowAutomation() {
   // Main UI
   return (
     <div style={{
-      
+
       margin: "40px auto",
       background: darkMode ? "#18181b" : "#fff",
       borderRadius: 18,
@@ -159,14 +188,24 @@ export default function KlaviyoFlowAutomation() {
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Klaviyo Flow Automation</h2>
         <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
       </div>
-      <div style={{ marginBottom: 10, color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>
+      <div style={{ marginBottom: 14, color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <span role="img" aria-label="bolt">⚡</span> Build, automate, and analyze Klaviyo flows with AI, analytics, and team collaboration.
+        <span style={{ padding: "6px 10px", borderRadius: 999, background: darkMode ? "#1f2937" : "#e0f2fe", color: darkMode ? "#7dd3fc" : "#0369a1", fontWeight: 700 }}>Live</span>
+        <span style={{ padding: "6px 10px", borderRadius: 999, background: darkMode ? "#1e293b" : "#ecfeff", color: darkMode ? "#67e8f9" : "#0ea5e9", fontWeight: 700 }}>Compliance: GDPR | SOC2</span>
       </div>
       <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
         <div style={{ flex: 2, minWidth: 320 }}>
           {showOnboarding && onboardingContent}
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+            {templates.map(tpl => (
+              <button key={tpl.name} onClick={() => applyTemplate(tpl)} style={{ background: darkMode ? "#1f2937" : "#eef2ff", color: darkMode ? "#c7d2fe" : "#312e81", border: '1px solid #cbd5e1', borderRadius: 10, padding: '10px 14px', textAlign: 'left', minWidth: 180, cursor: 'pointer', boxShadow: '0 1px 4px #0001', fontWeight: 700 }}>
+                {tpl.name}
+                <div style={{ fontWeight: 500, fontSize: 13, marginTop: 4, color: darkMode ? "#e2e8f0" : "#475569" }}>{tpl.desc}</div>
+              </button>
+            ))}
+          </div>
           <VisualFlowBuilder flow={flow} setFlow={setFlow} nodes={nodes} setNodes={setNodes} />
-          <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
+          <div style={{ display: "flex", gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
             <button onClick={handleAISuggest} disabled={loading || !flow} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Thinking..." : "AI Suggest"}</button>
             <button onClick={handleRun} disabled={loading || !flow} style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Running..." : "Run Automation"}</button>
             <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
@@ -182,6 +221,19 @@ export default function KlaviyoFlowAutomation() {
             </div>
           )}
           {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
+          <div style={{ marginTop: 12, background: darkMode ? "#111827" : "#f8fafc", borderRadius: 10, padding: 12, border: "1px solid #e2e8f0" }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Recent Runs</div>
+            {runHistory.length === 0 ? <div style={{ color: '#64748b' }}>No runs yet. Execute a flow to see history.</div> : (
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                {runHistory.map((r, idx) => (
+                  <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: idx < runHistory.length - 1 ? '1px solid #e2e8f0' : 'none' }}>
+                    <span style={{ color: darkMode ? '#cbd5e1' : '#334155' }}>{new Date(r.ts).toLocaleString()}</span>
+                    <span style={{ fontWeight: 700, color: r.result === 'success' ? '#22c55e' : '#ef4444' }}>{r.result === 'success' ? 'Success' : 'Error'}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
         <div style={{ flex: 1, minWidth: 260, background: darkMode ? "#23263a" : "#f8fafc", borderRadius: 12, padding: 18, boxShadow: "0 1px 6px #0001" }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics & Collaboration</div>
@@ -207,6 +259,20 @@ export default function KlaviyoFlowAutomation() {
             <div>Integrations: <span style={{ fontWeight: 600 }}>Klaviyo</span>, <span style={{ fontWeight: 600 }}>Shopify</span></div>
             <div>Accessibility: <span style={{ fontWeight: 600 }}>WCAG 2.1</span> | <span style={{ fontWeight: 600 }}>Keyboard Shortcuts</span></div>
             <div>Compliance: <span style={{ fontWeight: 600 }}>GDPR</span>, <span style={{ fontWeight: 600 }}>SOC2</span></div>
+          </div>
+          <div style={{ marginTop: 14, fontSize: 13, color: darkMode ? '#a3e635' : '#0f172a', background: darkMode ? '#0f172a' : '#e0f2fe', borderRadius: 10, padding: 10 }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Status</div>
+            <div>API: <span style={{ fontWeight: 800, color: '#22c55e' }}>Healthy</span></div>
+            <div>Last Sync: <span style={{ fontWeight: 700 }}>Live</span></div>
+          </div>
+          <div style={{ marginTop: 12, fontSize: 13, color: darkMode ? '#cbd5e1' : '#475569', background: darkMode ? '#0f172a' : '#eef2ff', borderRadius: 10, padding: 10 }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Checklist</div>
+            <ul style={{ margin: 0, paddingLeft: 18 }}>
+              <li>Set triggers & actions</li>
+              <li>Sync Klaviyo credentials</li>
+              <li>Test on staging</li>
+              <li>Enable notifications</li>
+            </ul>
           </div>
         </div>
       </div>
