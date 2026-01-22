@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./IntegrationHealthPanel.css";
+import { apiFetch } from "../api";
 
 // Only show Shopify integration for health check
 const INTEGRATIONS = [
@@ -18,7 +19,7 @@ function IntegrationHealthPanel() {
       await Promise.all(
         INTEGRATIONS.map(async (integration) => {
           try {
-            const res = await fetch(integration.api, { credentials: "include" });
+            const res = await apiFetch(integration.api, { credentials: "include" });
             const data = await res.json();
             results[integration.id] = data.status || "unknown";
           } catch {
