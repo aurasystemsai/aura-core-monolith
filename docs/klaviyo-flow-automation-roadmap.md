@@ -41,8 +41,8 @@ Scope: Bring parity and differentiation vs. Klaviyo, Attentive, Iterable, Braze,
 - Export/import flows with dependencies; template gallery + marketplace stubs.
 
 ### Phase 4 — Analytics & Experiments
-- Cohort/funnel/attribution dashboards; deliverability and revenue per step.
-- Stats engine for A/B/n with configurable metrics and minimum sample guardrails.
+- Cohort/funnel/attribution dashboards; deliverability and revenue per step. **(added cohort/attribution endpoints; funnel already present)**
+- Stats engine for A/B/n with configurable metrics and minimum sample guardrails. **(experiment results endpoint aggregating impressions/conversions/revenue per variant)**
 - Holdouts and control groups; reporting and alerts.
 
 ### Phase 5 — Collaboration, Compliance, Ops

@@ -591,6 +591,33 @@ router.get('/analytics/funnel', (_req, res) => {
   res.json({ ok: true, summary });
 });
 
+router.get('/analytics/cohort', (_req, res) => {
+  const events = eventsStore.list();
+  const cohorts = {};
+  events.forEach(e => {
+    const day = new Date(e.ts || Date.now()).toISOString().slice(0, 10);
+    const cohort = e.cohort || day;
+    cohorts[cohort] = cohorts[cohort] || { cohort, count: 0 };
+    cohorts[cohort].count += 1;
+  });
+  res.json({ ok: true, cohorts: Object.values(cohorts) });
+});
+
+router.get('/analytics/attribution', (_req, res) => {
+  const events = eventsStore.list();
+  const bySource = {};
+  events.forEach(e => {
+    const src = e.source || 'unknown';
+    const rev = Number(e.revenue || 0);
+    const conv = e.type === 'conversion' ? 1 : 0;
+    bySource[src] = bySource[src] || { source: src, revenue: 0, conversions: 0, count: 0 };
+    bySource[src].revenue += rev;
+    bySource[src].conversions += conv;
+    bySource[src].count += 1;
+  });
+  res.json({ ok: true, sources: Object.values(bySource) });
+});
+
 router.post('/analytics', (req, res) => {
   const event = analyticsModel.recordEvent(req.body || {});
   res.json({ ok: true, event });
@@ -598,6 +625,21 @@ router.post('/analytics', (req, res) => {
 
 router.get('/analytics', (req, res) => {
   res.json({ ok: true, events: analyticsModel.listEvents(req.query || {}) });
+});
+
+router.get('/experiments/results', (_req, res) => {
+  const events = eventsStore.list({ type: 'experiment' });
+  const byVariant = {};
+  events.forEach(e => {
+    const v = e.variant || 'control';
+    const conv = e.conversion ? 1 : 0;
+    const rev = Number(e.revenue || 0);
+    byVariant[v] = byVariant[v] || { variant: v, impressions: 0, conversions: 0, revenue: 0 };
+    byVariant[v].impressions += 1;
+    byVariant[v].conversions += conv;
+    byVariant[v].revenue += rev;
+  });
+  res.json({ ok: true, results: Object.values(byVariant) });
 });
 
 router.post('/import', (req, res) => {
