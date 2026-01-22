@@ -92,13 +92,14 @@ app.use(session({
 
 
 
-// --- Shopify session token verification for all /api routes ---
+// --- Register integration health API route (public; no auth required) ---
+app.use('/api/integration', require('./routes/integration'));
+
+// --- Shopify session token verification for all other /api routes ---
 app.use('/api', verifyShopifySession);
 
 // --- Register winback integrations API route (real backend) ---
 app.use('/api/abandoned-checkout-winback', require('./routes/abandoned-checkout-winback'));
-// --- Register integration health API route ---
-app.use('/api/integration', require('./routes/integration'));
 // --- Register notifications API route ---
 app.use('/api/notifications', require('./routes/notifications'));
 // --- Register analytics API route ---
