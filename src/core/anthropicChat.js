@@ -1,11 +1,11 @@
 // src/core/anthropicChat.js
-// Simple Anthropic Claude Haiku 4.5 integration
+// Simple Anthropic Claude Sonnet 4.5 integration
 
 const fetch = require('node-fetch');
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const DEFAULT_MODEL = 'claude-3-haiku-20240307'; // Claude Haiku 4.5
+const DEFAULT_MODEL = 'claude-3-5-sonnet-20241022'; // Claude Sonnet 4.5
 
 async function chatWithClaude(messages, { model = DEFAULT_MODEL, temperature = 0.7, max_tokens = 512 } = {}) {
   if (!ANTHROPIC_API_KEY) throw new Error('Missing ANTHROPIC_API_KEY');
