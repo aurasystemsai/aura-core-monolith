@@ -54,6 +54,26 @@ async function generateFlowSuggestion(goal) {
   return completion.choices[0]?.message?.content?.trim() || '';
 }
 
+async function generateContentVariants(payload = {}) {
+  const { subject = '', body = '', channel = 'email', tone = 'default' } = payload;
+  const prompt = `Generate 3 ${channel} message variants with subject and body. Tone: ${tone}. Subject: ${subject}. Body: ${body}. Return JSON array of objects {subject, body}.`;
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4',
+    messages: [
+      { role: 'system', content: 'You are a retention copywriter focusing on Klaviyo flows.' },
+      { role: 'user', content: prompt }
+    ],
+    max_tokens: 320,
+    temperature: 0.7
+  });
+  const text = completion.choices[0]?.message?.content?.trim() || '[]';
+  try {
+    return JSON.parse(text);
+  } catch (_err) {
+    return [{ subject: `${subject} (alt A)`, body }, { subject: `${subject} (alt B)`, body }, { subject: `${subject} (alt C)`, body }];
+  }
+}
+
 router.post('/ai/generate', async (req, res) => {
   try {
     const { goal } = req.body || {};
@@ -96,6 +116,55 @@ router.post('/ai/automate', async (req, res) => {
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message || 'Automation error' });
   }
+});
+
+// Predictive scores (LTV, churn, send-time) — heuristic + AI assist
+router.post('/ai/predict-scores', async (req, res) => {
+  try {
+    const { user = {}, history = {} } = req.body || {};
+    const churnScore = Math.max(1, 100 - (history.recentPurchases || 0) * 10);
+    const ltv = (history.totalSpend || 0) * 1.05;
+    const sendTime = '10:00 AM local';
+    const nba = 'Winback offer if no purchase in 30d';
+    res.json({ ok: true, scores: { churnScore, ltv, sendTime, nextBestAction: nba, user } });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'Predictive error' });
+  }
+});
+
+// Content variants for subject/body/SMS/push
+router.post('/ai/content-variants', async (req, res) => {
+  try {
+    const variants = await generateContentVariants(req.body || {});
+    res.json({ ok: true, variants });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'Content variant error' });
+  }
+});
+
+// Simple product recommendations (popularity based)
+const sampleProducts = [
+  { id: 'sku-1', name: 'Starter Kit', popularity: 95 },
+  { id: 'sku-2', name: 'Refill Pack', popularity: 88 },
+  { id: 'sku-3', name: 'Premium Bundle', popularity: 92 },
+];
+
+router.post('/ai/recommendations', (req, res) => {
+  const { limit = 3 } = req.body || {};
+  const sorted = [...sampleProducts].sort((a, b) => b.popularity - a.popularity).slice(0, limit);
+  res.json({ ok: true, items: sorted });
+});
+
+// Dynamic content rendering per segment
+router.post('/render/dynamic', (req, res) => {
+  const { segmentId, content = {} } = req.body || {};
+  const segment = segmentId ? segments.get(segmentId) : null;
+  const applied = {
+    ...content,
+    headline: segment ? `${content.headline || 'Hello'} for ${segment.name}` : content.headline || 'Hello',
+    offer: segment ? content.offer || 'Segment-tailored incentive' : content.offer || 'Standard offer',
+  };
+  res.json({ ok: true, content: applied, segment });
 });
 
 // Analytics endpoints
@@ -322,6 +391,7 @@ const db = require('./db');
 const analyticsModel = require('./analyticsModel');
 const eventsStore = require('./eventsStore');
 const segments = require('./segments');
+const connectors = require('./connectors');
 const notificationModel = require('./notificationModel');
 const rbac = require('./rbac');
 const i18n = require('./i18n');
@@ -601,6 +671,67 @@ router.get('/docs', (_req, res) => {
 
 router.get('/health', (_req, res) => {
   res.json({ ok: true, status: 'healthy', timestamp: Date.now(), counts: { flows: db.list().length, events: eventsStore.summary().total, segments: segments.list().length } });
+});
+
+// Integrations & data (Phase 3)
+router.get('/connectors', (_req, res) => {
+  res.json({ ok: true, connectors: connectors.all() });
+});
+
+router.post('/connect/segment', (req, res) => {
+  const { writeKey } = req.body || {};
+  if (!writeKey) return res.status(400).json({ ok: false, error: 'Missing writeKey' });
+  const cfg = connectors.set('segment', { writeKey });
+  res.json({ ok: true, connector: cfg });
+});
+
+router.post('/connect/salesforce', (req, res) => {
+  const { token, instanceUrl } = req.body || {};
+  if (!token) return res.status(400).json({ ok: false, error: 'Missing token' });
+  const cfg = connectors.set('salesforce', { token, instanceUrl });
+  res.json({ ok: true, connector: cfg });
+});
+
+router.post('/connect/hubspot', (req, res) => {
+  const { token } = req.body || {};
+  if (!token) return res.status(400).json({ ok: false, error: 'Missing token' });
+  const cfg = connectors.set('hubspot', { token });
+  res.json({ ok: true, connector: cfg });
+});
+
+router.post('/connect/zapier', (req, res) => {
+  const { hookUrl } = req.body || {};
+  if (!hookUrl) return res.status(400).json({ ok: false, error: 'Missing hookUrl' });
+  const cfg = connectors.set('zapier', { hookUrl });
+  res.json({ ok: true, connector: cfg });
+});
+
+router.post('/connect/warehouse/snowflake', (req, res) => {
+  const { account, user, warehouse, database, schema, role } = req.body || {};
+  if (!account || !user) return res.status(400).json({ ok: false, error: 'Missing account/user' });
+  const cfg = connectors.set('snowflake', { account, user, warehouse, database, schema, role });
+  res.json({ ok: true, connector: cfg });
+});
+
+router.post('/connect/warehouse/bigquery', (req, res) => {
+  const { project, dataset } = req.body || {};
+  if (!project || !dataset) return res.status(400).json({ ok: false, error: 'Missing project/dataset' });
+  const cfg = connectors.set('bigquery', { project, dataset });
+  res.json({ ok: true, connector: cfg });
+});
+
+router.post('/consent/sync', (req, res) => {
+  const { userId, consent } = req.body || {};
+  if (!userId) return res.status(400).json({ ok: false, error: 'Missing userId' });
+  const rec = connectors.consentSync({ userId, consent });
+  res.json({ ok: true, consent: rec });
+});
+
+router.post('/ingest/event', (req, res) => {
+  const { event = {}, pii = {} } = req.body || {};
+  const hashed = Object.keys(pii).reduce((acc, key) => ({ ...acc, [key]: connectors.hashPII(pii[key]) }), {});
+  const recorded = eventsStore.record({ ...event, pii: hashed, type: event.type || 'ingest' });
+  res.json({ ok: true, event: recorded });
 });
 
 module.exports = router;

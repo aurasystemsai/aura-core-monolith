@@ -36,8 +36,8 @@ Scope: Bring parity and differentiation vs. Klaviyo, Attentive, Iterable, Braze,
 - Dynamic content blocks and conditional rendering per segment.
 
 ### Phase 3 — Integrations & Data
-- Connectors: Segment (sources), Salesforce/HubSpot (CRM), Zapier, Snowflake/BigQuery (warehouse sync), webhooks-in with signing/verification, consent sync.
-- Event ingestion pipeline, retention, PII hashing, and per-project isolation.
+- Connectors: Segment (sources), Salesforce/HubSpot (CRM), Zapier, Snowflake/BigQuery (warehouse sync), webhooks-in with signing/verification, consent sync. **(added API stubs and config storage)**
+- Event ingestion pipeline, retention, PII hashing, and per-project isolation. **(event ingest endpoint with PII hashing added; persistence via events store)**
 - Export/import flows with dependencies; template gallery + marketplace stubs.
 
 ### Phase 4 — Analytics & Experiments

@@ -48,6 +48,10 @@ export default function KlaviyoFlowAutomation() {
   const [selectedFlowId, setSelectedFlowId] = useState(null);
   const [aiSuggestion, setAiSuggestion] = useState("");
   const [analytics, setAnalytics] = useState(null);
+  const [predictive, setPredictive] = useState(null);
+  const [contentVariants, setContentVariants] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
+  const [dynamicContent, setDynamicContent] = useState(null);
   const [funnel, setFunnel] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -271,6 +275,55 @@ export default function KlaviyoFlowAutomation() {
     }
   };
 
+  const handlePredict = async () => {
+    try {
+      setLoading(true); setError("");
+      const data = await api('/ai/predict-scores', { method: 'POST', body: JSON.stringify({ user: { id: 'demo' }, history: { recentPurchases: 1, totalSpend: 240 } }) });
+      setPredictive(data.scores || null);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleContentVariants = async () => {
+    try {
+      setLoading(true); setError("");
+      const data = await api('/ai/content-variants', { method: 'POST', body: JSON.stringify({ subject: 'Welcome back!', body: flow || 'Default body', channel: 'email', tone: 'friendly' }) });
+      setContentVariants(data.variants || []);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRecommendations = async () => {
+    try {
+      setLoading(true); setError("");
+      const data = await api('/ai/recommendations', { method: 'POST', body: JSON.stringify({ limit: 3 }) });
+      setRecommendations(data.items || []);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDynamicRender = async () => {
+    try {
+      setLoading(true); setError("");
+      const segmentId = attachedSegments[0];
+      const data = await api('/render/dynamic', { method: 'POST', body: JSON.stringify({ segmentId, content: { headline: 'Hello!', offer: 'Standard' } }) });
+      setDynamicContent(data.content || null);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAttachSegments = async (ids) => {
     setAttachedSegments(ids);
     if (!selectedFlowId) return;
@@ -377,6 +430,10 @@ export default function KlaviyoFlowAutomation() {
           <div style={{ display: "flex", gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
             <button onClick={handleAISuggest} disabled={loading || !flow} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Thinking..." : "AI Suggest"}</button>
             <button onClick={handleRun} disabled={loading || !flow} style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Running..." : "Run Automation"}</button>
+            <button onClick={handlePredict} disabled={loading} style={{ background: "#c084fc", color: "#0f172a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Predict</button>
+            <button onClick={handleContentVariants} disabled={loading} style={{ background: "#f472b6", color: "#0f172a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Content Variants</button>
+            <button onClick={handleRecommendations} disabled={loading} style={{ background: "#38bdf8", color: "#0f172a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Recs</button>
+            <button onClick={handleDynamicRender} disabled={loading} style={{ background: "#f59e0b", color: "#0f172a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Dynamic Render</button>
             <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
             <input ref={fileInputRef} type="file" accept=".txt,.json" style={{ display: "none" }} onChange={handleImport} aria-label="Import flow" />
             <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
@@ -401,6 +458,41 @@ export default function KlaviyoFlowAutomation() {
             <div style={{ background: "#1e3a3f", borderRadius: 10, padding: 16, marginBottom: 12, color: "#06b6d4" }}>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Suggestion:</div>
               <div>{aiSuggestion}</div>
+            </div>
+          )}
+          {predictive && (
+            <div style={{ background: "#0b1220", borderRadius: 10, padding: 12, marginBottom: 12, border: '1px solid #334155', color: '#cbd5e1' }}>
+              <div style={{ fontWeight: 700, marginBottom: 4, color: '#c084fc' }}>Predictive Scores</div>
+              <pre style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{JSON.stringify(predictive, null, 2)}</pre>
+            </div>
+          )}
+          {contentVariants?.length > 0 && (
+            <div style={{ background: "#0b1220", borderRadius: 10, padding: 12, marginBottom: 12, border: '1px solid #334155', color: '#cbd5e1' }}>
+              <div style={{ fontWeight: 700, marginBottom: 4, color: '#f472b6' }}>Content Variants</div>
+              <ul style={{ margin: 0, paddingLeft: 16 }}>
+                {contentVariants.map((v, i) => (
+                  <li key={i} style={{ marginBottom: 6 }}>
+                    <div style={{ fontWeight: 700, color: '#e0e7ff' }}>{v.subject || `Variant ${i + 1}`}</div>
+                    <div style={{ color: '#cbd5e1' }}>{v.body}</div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {recommendations?.length > 0 && (
+            <div style={{ background: "#0b1220", borderRadius: 10, padding: 12, marginBottom: 12, border: '1px solid #334155', color: '#cbd5e1' }}>
+              <div style={{ fontWeight: 700, marginBottom: 4, color: '#38bdf8' }}>Recommendations</div>
+              <ul style={{ margin: 0, paddingLeft: 16 }}>
+                {recommendations.map((p) => (
+                  <li key={p.id}>{p.name} (popularity {p.popularity})</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {dynamicContent && (
+            <div style={{ background: "#0b1220", borderRadius: 10, padding: 12, marginBottom: 12, border: '1px solid #334155', color: '#cbd5e1' }}>
+              <div style={{ fontWeight: 700, marginBottom: 4, color: '#f59e0b' }}>Dynamic Content</div>
+              <pre style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{JSON.stringify(dynamicContent, null, 2)}</pre>
             </div>
           )}
           {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
