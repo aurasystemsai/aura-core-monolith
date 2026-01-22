@@ -1,4 +1,5 @@
 const express = require('express');
+const router = express.Router();
 // ...existing code...
 const OpenAI = require('openai');
 // Persistent DB store
