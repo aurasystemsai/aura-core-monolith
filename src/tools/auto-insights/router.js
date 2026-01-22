@@ -2,6 +2,17 @@ const express = require('express');
 const router = express.Router();
 // ...existing code...
 const OpenAI = require('openai');
+const db = require('./db');
+const analyticsModel = require('./analyticsModel');
+const notificationModel = require('./notificationModel');
+const rbac = require('./rbac');
+const i18n = require('./i18n');
+const webhookModel = require('./webhookModel');
+const complianceModel = require('./complianceModel');
+const pluginSystem = require('./pluginSystem');
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+
 // Persistent DB store
 // const db = require('./db');
 
