@@ -146,7 +146,6 @@ export default function RankVisibilityTracker() {
         <label style={{ fontWeight: 600, marginRight: 12 }}>AI Model:</label>
         <select value={aiModel} onChange={e => setAiModel(e.target.value)} style={{ fontSize: 15, padding: 8, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc" }}>
           <option value="gpt-4">GPT-4</option>
-          <option value="claude">Claude</option>
           <option value="gemini">Gemini</option>
           <option value="custom">Custom</option>
         </select>
