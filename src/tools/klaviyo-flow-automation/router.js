@@ -835,30 +835,3 @@ router.post('/ingest/event', (req, res) => {
 });
 
 module.exports = router;
-});
-
-// Compliance endpoint
-	const { userRole = 'viewer', action = 'read' } = req.body || {};
-	const allowed = rbac.check(userRole, action);
-	res.json({ ok: true, allowed });
-	res.json({ ok: true, message: 'Notification sent (demo).' });
-});
-
-// RBAC check endpoint (placeholder)
-router.post('/rbac/check', (req, res) => {
-	res.json({ ok: true, allowed: true });
-});
-
-// i18n endpoint (placeholder)
-router.get('/i18n', (req, res) => {
-	res.json({ ok: true, translations: { en: 'Klaviyo Flow Automation', fr: 'Automatisation Klaviyo' } });
-});
-
-// Docs endpoint (placeholder)
-router.get('/docs', (req, res) => {
-	res.json({ ok: true, docs: 'Klaviyo Flow Automation API. Endpoints: /flows, /ai/generate, /analytics, /import, /export, /shopify/sync, /notify, /rbac/check, /i18n, /docs' });
-});
-router.post('/notify', (req, res) => {
-	const { to = 'ops@aura', message = 'Notification' } = req.body || {};
-	notificationModel.send(to, message);
-	res.json({ ok: true, message: 'Notification queued', to });

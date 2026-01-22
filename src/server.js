@@ -1,6 +1,15 @@
 // --- WebSocket stub will be attached to the main server instance at startup ---
 let wss;
 
+// Ensure env is loaded before any modules that rely on it (Shopify config, etc.)
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    require('dotenv').config();
+  } catch (_err) {
+    // no-op if dotenv is unavailable
+  }
+}
+
 // Replace app.listen with server.listen at the end of the file:
 // server.listen(PORT, ...)
 // --- All requires and initializations at the top ---
@@ -29,9 +38,6 @@ console.log('[Shopify ENV] SHOPIFY_CLIENT_ID:', !!process.env.SHOPIFY_CLIENT_ID)
 console.log('[Shopify ENV] SHOPIFY_CLIENT_SECRET:', !!process.env.SHOPIFY_CLIENT_SECRET);
 console.log('[Shopify ENV] SHOPIFY_APP_URL:', process.env.SHOPIFY_APP_URL ? process.env.SHOPIFY_APP_URL.replace(/^https?:\/\//, '').replace(/\/$/, '') : undefined);
 console.log('[Shopify ENV] SHOPIFY_API_VERSION:', process.env.SHOPIFY_API_VERSION);
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
-}
 const OpenAI = require('openai');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // const lusca = require('lusca');
@@ -65,7 +71,16 @@ app.use(express.urlencoded({ extended: true }));
 // --- Session Middleware (legacy, not used for embedded Shopify app) ---
 
 const session = require('express-session');
-const SQLiteStore = require('connect-sqlite3')(session);
+let SQLiteStoreFactory;
+let useMemoryStore = process.env.DISABLE_SQLITE === 'true' || process.env.NODE_ENV === 'test';
+if (!useMemoryStore) {
+  try {
+    SQLiteStoreFactory = require('connect-sqlite3')(session);
+  } catch (err) {
+    console.warn('[Session] sqlite3 bindings missing, falling back to MemoryStore for this run');
+    useMemoryStore = true;
+  }
+}
 // Allow session DB path override for persistent disk (Render)
 const sessionDbDir = process.env.SESSION_DB_PATH
   ? path.dirname(process.env.SESSION_DB_PATH)
@@ -73,12 +88,11 @@ const sessionDbDir = process.env.SESSION_DB_PATH
 const sessionDbFile = process.env.SESSION_DB_PATH
   ? path.basename(process.env.SESSION_DB_PATH)
   : 'aura-core-session.sqlite';
+const sessionStore = useMemoryStore
+  ? new session.MemoryStore()
+  : new SQLiteStoreFactory({ db: sessionDbFile, dir: sessionDbDir, concurrentDB: true });
 app.use(session({
-  store: new SQLiteStore({
-    db: sessionDbFile,
-    dir: sessionDbDir,
-    concurrentDB: true
-  }),
+  store: sessionStore,
   secret: process.env.SESSION_SECRET || 'aura-core-monolith-secret',
   resave: false,
   saveUninitialized: false,

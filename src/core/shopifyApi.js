@@ -1,6 +1,7 @@
 // src/core/shopifyApi.js
 // Shopify API helpers for analytics endpoints
-const fetch = require('node-fetch');
+// Use global fetch (Node 18+) to avoid ESM/require conflicts in tests
+const fetch = (...args) => globalThis.fetch(...args);
 const { getToken } = require('./shopTokens');
 
 async function shopifyFetch(shop, endpoint, params = {}) {

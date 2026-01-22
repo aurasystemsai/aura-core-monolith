@@ -1,6 +1,6 @@
 // src/tools/abandoned-checkout-winback/slackNotify.js
 // Slack notification utility for winback tool
-const fetch = require('node-fetch');
+const fetch = (...args) => globalThis.fetch(...args);
 
 async function sendSlackNotification(webhookUrl, message) {
   if (!webhookUrl) throw new Error('Missing Slack webhook URL');

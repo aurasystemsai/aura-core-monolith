@@ -53,6 +53,34 @@ export default function KlaviyoFlowAutomation() {
   const [recommendations, setRecommendations] = useState([]);
   const [dynamicContent, setDynamicContent] = useState(null);
   const [funnel, setFunnel] = useState(null);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [comment, setComment] = useState("");
+  const [versionLabel, setVersionLabel] = useState("v1");
+  const [shareLink, setShareLink] = useState("");
+  const [compliance, setCompliance] = useState({ HIPAA: false, TCPA: true, CCPA: true });
+  const [connectorsState, setConnectorsState] = useState({});
+  const [integrationForm, setIntegrationForm] = useState({
+    segmentWriteKey: '',
+    salesforceToken: '',
+    salesforceInstance: '',
+    hubspotToken: '',
+    zapierHook: '',
+    snowflakeAccount: '',
+    snowflakeUser: '',
+    snowflakeWarehouse: '',
+    snowflakeDatabase: '',
+    snowflakeSchema: '',
+    snowflakeRole: '',
+    bqProject: '',
+    bqDataset: '',
+  });
+  const [cohorts, setCohorts] = useState([]);
+  const [attribution, setAttribution] = useState([]);
+  const [experimentResults, setExperimentResults] = useState([]);
+  const [consentUser, setConsentUser] = useState('user-1');
+  const [consentValue, setConsentValue] = useState('granted');
+  const [ingestSource, setIngestSource] = useState('email');
+  const [ingestRevenue, setIngestRevenue] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [imported, setImported] = useState(null);
@@ -92,14 +120,16 @@ export default function KlaviyoFlowAutomation() {
   useEffect(() => {
     (async () => {
       try {
-        const [flowsResp, channelsResp, segmentsResp] = await Promise.all([
+        const [flowsResp, channelsResp, segmentsResp, connectorsResp] = await Promise.all([
           api('/flows'),
           api('/channels'),
-          api('/segments')
+          api('/segments'),
+          api('/connectors').catch(() => ({ connectors: {} }))
         ]);
         setFlows(flowsResp.flows || []);
         setChannels(channelsResp.channels || []);
         setSegments(segmentsResp.segments || []);
+        setConnectorsState(connectorsResp.connectors || {});
       } catch (e) {
         console.error(e);
       }
@@ -317,6 +347,241 @@ export default function KlaviyoFlowAutomation() {
       const segmentId = attachedSegments[0];
       const data = await api('/render/dynamic', { method: 'POST', body: JSON.stringify({ segmentId, content: { headline: 'Hello!', offer: 'Standard' } }) });
       setDynamicContent(data.content || null);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleComment = async () => {
+    if (!selectedFlowId) return setError("Select a flow to comment");
+    if (!comment) return setError("Comment cannot be empty");
+    try {
+      setLoading(true); setError("");
+      await api('/collab/comment', { method: 'POST', body: JSON.stringify({ flowId: selectedFlowId, user: 'you', comment }) });
+      setComment("");
+      await handleFetchAudit();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!selectedFlowId) return setError("Select a flow to approve");
+    try {
+      setLoading(true); setError("");
+      await api('/collab/approve', { method: 'POST', body: JSON.stringify({ flowId: selectedFlowId, user: 'you' }) });
+      await handleFetchAudit();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVersion = async () => {
+    if (!selectedFlowId) return setError("Select a flow to version");
+    try {
+      setLoading(true); setError("");
+      await api('/collab/version', { method: 'POST', body: JSON.stringify({ flowId: selectedFlowId, label: versionLabel || 'v1' }) });
+      await handleFetchAudit();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!selectedFlowId) return setError("Select a flow to share");
+    try {
+      setLoading(true); setError("");
+      const data = await api('/collab/share-link', { method: 'POST', body: JSON.stringify({ flowId: selectedFlowId }) });
+      setShareLink(data.link || "");
+      await handleFetchAudit();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFetchAudit = async () => {
+    try {
+      const data = await api('/audit/logs');
+      setAuditLogs(data.entries || []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleComplianceSave = async () => {
+    try {
+      setLoading(true); setError("");
+      const data = await api('/compliance/toggles', { method: 'POST', body: JSON.stringify(compliance) });
+      setCompliance(data.toggles || compliance);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFetchConnectors = async () => {
+    try {
+      setLoading(true); setError("");
+      const data = await api('/connectors');
+      setConnectorsState(data.connectors || {});
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConnectSegment = async () => {
+    if (!integrationForm.segmentWriteKey) return setError('Segment write key required');
+    try {
+      setLoading(true); setError("");
+      const data = await api('/connect/segment', { method: 'POST', body: JSON.stringify({ writeKey: integrationForm.segmentWriteKey }) });
+      setConnectorsState(prev => ({ ...prev, segment: data.connector }));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConnectSalesforce = async () => {
+    if (!integrationForm.salesforceToken) return setError('Salesforce token required');
+    try {
+      setLoading(true); setError("");
+      const data = await api('/connect/salesforce', { method: 'POST', body: JSON.stringify({ token: integrationForm.salesforceToken, instanceUrl: integrationForm.salesforceInstance }) });
+      setConnectorsState(prev => ({ ...prev, salesforce: data.connector }));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConnectHubspot = async () => {
+    if (!integrationForm.hubspotToken) return setError('HubSpot token required');
+    try {
+      setLoading(true); setError("");
+      const data = await api('/connect/hubspot', { method: 'POST', body: JSON.stringify({ token: integrationForm.hubspotToken }) });
+      setConnectorsState(prev => ({ ...prev, hubspot: data.connector }));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConnectZapier = async () => {
+    if (!integrationForm.zapierHook) return setError('Zapier hook URL required');
+    try {
+      setLoading(true); setError("");
+      const data = await api('/connect/zapier', { method: 'POST', body: JSON.stringify({ hookUrl: integrationForm.zapierHook }) });
+      setConnectorsState(prev => ({ ...prev, zapier: data.connector }));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConnectSnowflake = async () => {
+    if (!integrationForm.snowflakeAccount || !integrationForm.snowflakeUser) return setError('Snowflake account and user required');
+    try {
+      setLoading(true); setError("");
+      const data = await api('/connect/warehouse/snowflake', { method: 'POST', body: JSON.stringify({
+        account: integrationForm.snowflakeAccount,
+        user: integrationForm.snowflakeUser,
+        warehouse: integrationForm.snowflakeWarehouse,
+        database: integrationForm.snowflakeDatabase,
+        schema: integrationForm.snowflakeSchema,
+        role: integrationForm.snowflakeRole,
+      }) });
+      setConnectorsState(prev => ({ ...prev, snowflake: data.connector }));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConnectBigQuery = async () => {
+    if (!integrationForm.bqProject || !integrationForm.bqDataset) return setError('BigQuery project and dataset required');
+    try {
+      setLoading(true); setError("");
+      const data = await api('/connect/warehouse/bigquery', { method: 'POST', body: JSON.stringify({ project: integrationForm.bqProject, dataset: integrationForm.bqDataset }) });
+      setConnectorsState(prev => ({ ...prev, bigquery: data.connector }));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConsentSync = async () => {
+    if (!consentUser) return setError('Consent user required');
+    try {
+      setLoading(true); setError("");
+      await api('/consent/sync', { method: 'POST', body: JSON.stringify({ userId: consentUser, consent: consentValue }) });
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleIngestEvent = async () => {
+    try {
+      setLoading(true); setError("");
+      await api('/ingest/event', { method: 'POST', body: JSON.stringify({
+        event: { type: 'conversion', source: ingestSource, revenue: Number(ingestRevenue) || 0 },
+        pii: { email: 'demo@example.com' },
+      }) });
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFetchCohorts = async () => {
+    try {
+      setLoading(true); setError("");
+      const data = await api('/analytics/cohort');
+      setCohorts(data.cohorts || []);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFetchAttribution = async () => {
+    try {
+      setLoading(true); setError("");
+      const data = await api('/analytics/attribution');
+      setAttribution(data.sources || []);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFetchExperimentResults = async () => {
+    try {
+      setLoading(true); setError("");
+      const data = await api('/experiments/results');
+      setExperimentResults(data.results || []);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -550,6 +815,158 @@ export default function KlaviyoFlowAutomation() {
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
+          </div>
+          <div style={{ marginTop: 12, background: '#0b1220', borderRadius: 10, padding: 10, border: '1px solid #334155' }}>
+            <div style={{ fontWeight: 700, marginBottom: 6, color: '#e0e7ff' }}>Collaboration & Compliance</div>
+            <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Add comment" rows={2} style={{ width: '100%', marginBottom: 6, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+            <button onClick={handleComment} disabled={loading} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 12px', fontWeight: 700, cursor: 'pointer', marginBottom: 6 }}>Comment</button>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+              <input value={versionLabel} onChange={e => setVersionLabel(e.target.value)} placeholder="Version label" style={{ flex: 1, minWidth: 120, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+              <button onClick={handleVersion} disabled={loading} style={{ background: '#c084fc', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 12px', fontWeight: 700, cursor: 'pointer' }}>Version</button>
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+              <button onClick={handleApprove} disabled={loading} style={{ background: '#22c55e', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 12px', fontWeight: 700, cursor: 'pointer' }}>Approve</button>
+              <button onClick={handleShare} disabled={loading} style={{ background: '#f59e0b', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 12px', fontWeight: 700, cursor: 'pointer' }}>Share Link</button>
+              <button onClick={handleFetchAudit} disabled={loading} style={{ background: '#7dd3fc', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 12px', fontWeight: 700, cursor: 'pointer' }}>Refresh Audit</button>
+            </div>
+            {shareLink && <div style={{ color: '#fbbf24', marginBottom: 8, wordBreak: 'break-all' }}>Share: {shareLink}</div>}
+            <div style={{ marginBottom: 8, color: '#e0e7ff' }}>
+              Compliance:
+              <label style={{ marginLeft: 8 }}><input type="checkbox" checked={compliance.HIPAA} onChange={e => setCompliance({ ...compliance, HIPAA: e.target.checked })} /> HIPAA</label>
+              <label style={{ marginLeft: 8 }}><input type="checkbox" checked={compliance.TCPA} onChange={e => setCompliance({ ...compliance, TCPA: e.target.checked })} /> TCPA</label>
+              <label style={{ marginLeft: 8 }}><input type="checkbox" checked={compliance.CCPA} onChange={e => setCompliance({ ...compliance, CCPA: e.target.checked })} /> CCPA</label>
+            </div>
+            <button onClick={handleComplianceSave} disabled={loading} style={{ background: '#f472b6', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 12px', fontWeight: 700, cursor: 'pointer', marginBottom: 8 }}>Save Compliance</button>
+            <div style={{ maxHeight: 180, overflowY: 'auto', borderTop: '1px solid #334155', paddingTop: 8 }}>
+              {auditLogs.length === 0 ? <div style={{ color: '#94a3b8' }}>No audit entries yet.</div> : (
+                <ul style={{ margin: 0, paddingLeft: 16, color: '#e0e7ff' }}>
+                  {auditLogs.slice(0, 20).map((e, idx) => (
+                    <li key={idx} style={{ marginBottom: 6 }}>
+                      <span style={{ fontWeight: 700 }}>{e.type}</span> · <span>{new Date(e.ts).toLocaleString()}</span> {e.user ? `· ${e.user}` : ''} {e.comment ? `· ${e.comment}` : ''} {e.label ? `· ${e.label}` : ''}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+          <div style={{ marginTop: 12, background: '#0b1220', borderRadius: 10, padding: 10, border: '1px solid #334155' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <div style={{ fontWeight: 700, color: '#e0e7ff' }}>Integrations & Data</div>
+              <button onClick={handleFetchConnectors} disabled={loading} style={{ background: '#1d4ed8', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', fontWeight: 700, cursor: 'pointer' }}>Refresh</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8 }}>
+              <div>
+                <label style={{ color: '#cbd5e1', fontWeight: 600 }}>Segment</label>
+                <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                  <input value={integrationForm.segmentWriteKey} onChange={e => setIntegrationForm({ ...integrationForm, segmentWriteKey: e.target.value })} placeholder="Write key" style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                  <button onClick={handleConnectSegment} disabled={loading} style={{ background: '#22c55e', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 10px', fontWeight: 700, cursor: 'pointer' }}>Connect</button>
+                </div>
+              </div>
+              <div>
+                <label style={{ color: '#cbd5e1', fontWeight: 600 }}>Salesforce</label>
+                <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                  <input value={integrationForm.salesforceToken} onChange={e => setIntegrationForm({ ...integrationForm, salesforceToken: e.target.value })} placeholder="Token" style={{ flex: 1, minWidth: 160, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                  <input value={integrationForm.salesforceInstance} onChange={e => setIntegrationForm({ ...integrationForm, salesforceInstance: e.target.value })} placeholder="Instance URL" style={{ flex: 1, minWidth: 160, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                  <button onClick={handleConnectSalesforce} disabled={loading} style={{ background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 10px', fontWeight: 700, cursor: 'pointer' }}>Connect</button>
+                </div>
+              </div>
+              <div>
+                <label style={{ color: '#cbd5e1', fontWeight: 600 }}>HubSpot</label>
+                <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                  <input value={integrationForm.hubspotToken} onChange={e => setIntegrationForm({ ...integrationForm, hubspotToken: e.target.value })} placeholder="Token" style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                  <button onClick={handleConnectHubspot} disabled={loading} style={{ background: '#f97316', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 10px', fontWeight: 700, cursor: 'pointer' }}>Connect</button>
+                </div>
+              </div>
+              <div>
+                <label style={{ color: '#cbd5e1', fontWeight: 600 }}>Zapier</label>
+                <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                  <input value={integrationForm.zapierHook} onChange={e => setIntegrationForm({ ...integrationForm, zapierHook: e.target.value })} placeholder="Hook URL" style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                  <button onClick={handleConnectZapier} disabled={loading} style={{ background: '#fbbf24', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 10px', fontWeight: 700, cursor: 'pointer' }}>Connect</button>
+                </div>
+              </div>
+              <div>
+                <label style={{ color: '#cbd5e1', fontWeight: 600 }}>Snowflake</label>
+                <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                  <input value={integrationForm.snowflakeAccount} onChange={e => setIntegrationForm({ ...integrationForm, snowflakeAccount: e.target.value })} placeholder="Account" style={{ flex: 1, minWidth: 120, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                  <input value={integrationForm.snowflakeUser} onChange={e => setIntegrationForm({ ...integrationForm, snowflakeUser: e.target.value })} placeholder="User" style={{ flex: 1, minWidth: 120, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                  <input value={integrationForm.snowflakeWarehouse} onChange={e => setIntegrationForm({ ...integrationForm, snowflakeWarehouse: e.target.value })} placeholder="Warehouse" style={{ flex: 1, minWidth: 120, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                  <input value={integrationForm.snowflakeDatabase} onChange={e => setIntegrationForm({ ...integrationForm, snowflakeDatabase: e.target.value })} placeholder="Database" style={{ flex: 1, minWidth: 120, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                  <input value={integrationForm.snowflakeSchema} onChange={e => setIntegrationForm({ ...integrationForm, snowflakeSchema: e.target.value })} placeholder="Schema" style={{ flex: 1, minWidth: 120, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                  <input value={integrationForm.snowflakeRole} onChange={e => setIntegrationForm({ ...integrationForm, snowflakeRole: e.target.value })} placeholder="Role" style={{ flex: 1, minWidth: 120, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                  <button onClick={handleConnectSnowflake} disabled={loading} style={{ background: '#c084fc', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 10px', fontWeight: 700, cursor: 'pointer' }}>Connect</button>
+                </div>
+              </div>
+              <div>
+                <label style={{ color: '#cbd5e1', fontWeight: 600 }}>BigQuery</label>
+                <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                  <input value={integrationForm.bqProject} onChange={e => setIntegrationForm({ ...integrationForm, bqProject: e.target.value })} placeholder="Project" style={{ flex: 1, minWidth: 140, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                  <input value={integrationForm.bqDataset} onChange={e => setIntegrationForm({ ...integrationForm, bqDataset: e.target.value })} placeholder="Dataset" style={{ flex: 1, minWidth: 140, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                  <button onClick={handleConnectBigQuery} disabled={loading} style={{ background: '#06b6d4', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 10px', fontWeight: 700, cursor: 'pointer' }}>Connect</button>
+                </div>
+              </div>
+            </div>
+            <div style={{ marginTop: 10, background: '#0f172a', borderRadius: 8, padding: 8, border: '1px solid #1e293b', color: '#cbd5e1', maxHeight: 140, overflowY: 'auto' }}>
+              <div style={{ fontWeight: 700, marginBottom: 6, color: '#7dd3fc' }}>Connected</div>
+              {Object.keys(connectorsState || {}).length === 0 ? <div style={{ color: '#94a3b8' }}>No connectors yet.</div> : (
+                <ul style={{ margin: 0, paddingLeft: 16 }}>
+                  {Object.entries(connectorsState).map(([k, v]) => (
+                    <li key={k} style={{ marginBottom: 4 }}>
+                      <span style={{ fontWeight: 700, color: '#e0e7ff' }}>{k}</span> · updated {v?.updatedAt ? new Date(v.updatedAt).toLocaleString() : 'n/a'}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+          <div style={{ marginTop: 12, background: '#0b1220', borderRadius: 10, padding: 10, border: '1px solid #334155' }}>
+            <div style={{ fontWeight: 700, marginBottom: 6, color: '#e0e7ff' }}>Analytics: Cohort & Attribution</div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+              <button onClick={handleFetchCohorts} disabled={loading} style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 12px', fontWeight: 700, cursor: 'pointer' }}>Refresh Cohorts</button>
+              <button onClick={handleFetchAttribution} disabled={loading} style={{ background: '#34d399', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 12px', fontWeight: 700, cursor: 'pointer' }}>Refresh Attribution</button>
+              <button onClick={handleFetchExperimentResults} disabled={loading} style={{ background: '#fde047', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 12px', fontWeight: 700, cursor: 'pointer' }}>Experiments</button>
+            </div>
+            <div style={{ marginBottom: 8, color: '#e0e7ff' }}>Cohorts</div>
+            {cohorts.length === 0 ? <div style={{ color: '#94a3b8' }}>No cohorts yet.</div> : (
+              <ul style={{ margin: 0, paddingLeft: 16, color: '#cbd5e1' }}>
+                {cohorts.map((c, idx) => (
+                  <li key={idx}>{c.cohort} — {c.count}</li>
+                ))}
+              </ul>
+            )}
+            <div style={{ marginTop: 10, marginBottom: 6, color: '#e0e7ff' }}>Attribution</div>
+            {attribution.length === 0 ? <div style={{ color: '#94a3b8' }}>No attribution yet.</div> : (
+              <ul style={{ margin: 0, paddingLeft: 16, color: '#cbd5e1' }}>
+                {attribution.map((s, idx) => (
+                  <li key={idx}>{s.source}: ${s.revenue || 0} · conv {s.conversions || 0} · events {s.count || 0}</li>
+                ))}
+              </ul>
+            )}
+            <div style={{ marginTop: 10, marginBottom: 6, color: '#e0e7ff' }}>Experiment Results</div>
+            {experimentResults.length === 0 ? <div style={{ color: '#94a3b8' }}>No experiments yet.</div> : (
+              <ul style={{ margin: 0, paddingLeft: 16, color: '#cbd5e1' }}>
+                {experimentResults.map((r, idx) => (
+                  <li key={idx}>{r.variant}: {r.impressions || 0} imp · {r.conversions || 0} conv · ${r.revenue || 0}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div style={{ marginTop: 12, background: '#0b1220', borderRadius: 10, padding: 10, border: '1px solid #334155' }}>
+            <div style={{ fontWeight: 700, marginBottom: 6, color: '#e0e7ff' }}>Consent & Ingest</div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+              <input value={consentUser} onChange={e => setConsentUser(e.target.value)} placeholder="User id" style={{ flex: 1, minWidth: 140, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+              <select value={consentValue} onChange={e => setConsentValue(e.target.value)} style={{ minWidth: 140, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }}>
+                <option value="granted">Granted</option>
+                <option value="revoked">Revoked</option>
+                <option value="pending">Pending</option>
+              </select>
+              <button onClick={handleConsentSync} disabled={loading} style={{ background: '#22c55e', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 12px', fontWeight: 700, cursor: 'pointer' }}>Sync Consent</button>
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+              <input value={ingestSource} onChange={e => setIngestSource(e.target.value)} placeholder="Event source" style={{ flex: 1, minWidth: 140, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+              <input type="number" value={ingestRevenue} onChange={e => setIngestRevenue(e.target.value)} placeholder="Revenue" style={{ width: 120, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+              <button onClick={handleIngestEvent} disabled={loading} style={{ background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: 6, padding: '7px 12px', fontWeight: 700, cursor: 'pointer' }}>Ingest Event</button>
+            </div>
+            <div style={{ color: '#94a3b8', fontSize: 13 }}>PII is hashed before storage.</div>
           </div>
           <div style={{ marginTop: 18 }}>
             <button onClick={() => setShowOnboarding(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Show Onboarding</button>
