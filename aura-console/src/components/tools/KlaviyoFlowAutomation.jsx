@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 function VisualFlowBuilder({ flow, setFlow, nodes = [], setNodes }) {
   return (
@@ -38,8 +38,17 @@ function VisualFlowBuilder({ flow, setFlow, nodes = [], setNodes }) {
 export default function KlaviyoFlowAutomation() {
   const [flow, setFlow] = useState("");
   const [nodes, setNodes] = useState([]);
+  const [channels, setChannels] = useState(["email", "sms"]);
+  const [segments, setSegments] = useState([]);
+  const [segmentName, setSegmentName] = useState("");
+  const [segmentRules, setSegmentRules] = useState("");
+  const [attachedSegments, setAttachedSegments] = useState([]);
+  const [variants, setVariants] = useState([{ id: "control", weight: 100 }]);
+  const [flows, setFlows] = useState([]);
+  const [selectedFlowId, setSelectedFlowId] = useState(null);
   const [aiSuggestion, setAiSuggestion] = useState("");
   const [analytics, setAnalytics] = useState(null);
+  const [funnel, setFunnel] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [imported, setImported] = useState(null);
@@ -66,13 +75,44 @@ export default function KlaviyoFlowAutomation() {
   ];
   const fileInputRef = useRef();
 
+  const api = async (path, opts = {}) => {
+    const res = await fetch(`/api/klaviyo-flow-automation${path}`, {
+      headers: { "Content-Type": "application/json" },
+      ...opts,
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || res.statusText);
+    return data;
+  };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [flowsResp, channelsResp, segmentsResp] = await Promise.all([
+          api('/flows'),
+          api('/channels'),
+          api('/segments')
+        ]);
+        setFlows(flowsResp.flows || []);
+        setChannels(channelsResp.channels || []);
+        setSegments(segmentsResp.segments || []);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, []);
+
   const applyTemplate = (tpl) => {
     setFlow(tpl.flow);
     setNodes([
-      { id: Date.now() + 1, label: "Trigger", type: "trigger" },
-      { id: Date.now() + 2, label: "Branch", type: "step" },
-      { id: Date.now() + 3, label: "Action", type: "action" }
+      { id: Date.now() + 1, label: "Trigger", type: "trigger", channel: "email" },
+      { id: Date.now() + 2, label: "Branch", type: "step", channel: "email" },
+      { id: Date.now() + 3, label: "Action", type: "action", channel: "sms" }
     ]);
+  };
+
+  const addChannelNode = (channel, kind = "action") => {
+    setNodes(prev => [...prev, { id: Date.now(), label: `${channel} ${kind}`, type: kind, channel }]);
   };
 
   // AI Suggestion
@@ -81,13 +121,7 @@ export default function KlaviyoFlowAutomation() {
     setError("");
     setAiSuggestion("");
     try {
-      const res = await fetch("/api/klaviyo-flow-automation/ai/suggest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ flow })
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Unknown error");
+      const data = await api('/ai/suggest', { method: 'POST', body: JSON.stringify({ flow }) });
       setAiSuggestion(data.suggestion || "No suggestion generated");
     } catch (err) {
       setError(err.message);
@@ -102,13 +136,7 @@ export default function KlaviyoFlowAutomation() {
     setError("");
     setAnalytics(null);
     try {
-      const res = await fetch("/api/klaviyo-flow-automation/ai/automate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ flow })
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Unknown error");
+      const data = await api('/ai/automate', { method: 'POST', body: JSON.stringify({ flow }) });
       setAnalytics(data.analytics || { summary: "No analytics available" });
       setRunHistory((prev) => [{ ts: new Date().toISOString(), result: "success" }, ...prev].slice(0, 5));
     } catch (err) {
@@ -135,6 +163,134 @@ export default function KlaviyoFlowAutomation() {
     const url = URL.createObjectURL(blob);
     setExported(url);
     setTimeout(() => URL.revokeObjectURL(url), 10000);
+  };
+
+  // Server-backed CRUD & sync
+  const handleSaveNew = async () => {
+    if (!flow) return setError("Flow is empty");
+    const name = prompt("Name this flow:");
+    if (!name) return;
+    try {
+      setLoading(true); setError("");
+      const data = await api('/flows', { method: 'POST', body: JSON.stringify({ name, flow, nodes, variants, segmentIds: attachedSegments, channels }) });
+      setFlows(prev => [...prev, data.flow]);
+      setSelectedFlowId(data.flow.id);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!selectedFlowId) return setError("Select a flow to update");
+    try {
+      setLoading(true); setError("");
+      const data = await api(`/flows/${selectedFlowId}`, { method: 'PUT', body: JSON.stringify({ flow, nodes, variants, segmentIds: attachedSegments, channels }) });
+      setFlows(prev => prev.map(f => f.id === data.flow.id ? data.flow : f));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedFlowId) return setError("Select a flow to delete");
+    if (!window.confirm("Delete this flow?")) return;
+    try {
+      setLoading(true); setError("");
+      await api(`/flows/${selectedFlowId}`, { method: 'DELETE' });
+      setFlows(prev => prev.filter(f => f.id !== selectedFlowId));
+      setSelectedFlowId(null);
+      setFlow("");
+      setNodes([]);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectFlow = (id) => {
+    setSelectedFlowId(id);
+    const f = flows.find(fl => fl.id === id);
+    if (f) {
+      setFlow(f.flow || "");
+      setNodes(f.nodes || []);
+      setVariants(f.variants || [{ id: "control", weight: 100 }]);
+      setAttachedSegments(f.segmentIds || []);
+    }
+  };
+
+  const handleServerExport = async () => {
+    try {
+      setLoading(true); setError("");
+      const data = await api('/export');
+      const blob = new Blob([JSON.stringify(data.items || [], null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      setExported(url);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleServerImport = async () => {
+    if (!exported) return;
+    try {
+      setLoading(true); setError("");
+      const txt = await (await fetch(exported)).text();
+      const items = JSON.parse(txt);
+      const data = await api('/import', { method: 'POST', body: JSON.stringify({ items }) });
+      const refreshed = await api('/flows');
+      setFlows(refreshed.flows || []);
+      setImported(`Server import: ${data.count} flows`);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateSegment = async () => {
+    if (!segmentName) return setError("Segment name is required");
+    try {
+      setLoading(true); setError("");
+      const rules = segmentRules ? segmentRules.split(',').map(r => r.trim()).filter(Boolean) : [];
+      const resp = await api('/segments', { method: 'POST', body: JSON.stringify({ name: segmentName, rules }) });
+      setSegments(prev => [...prev, resp.segment]);
+      setSegmentName("");
+      setSegmentRules("");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAttachSegments = async (ids) => {
+    setAttachedSegments(ids);
+    if (!selectedFlowId) return;
+    try {
+      await api(`/flows/${selectedFlowId}/segments`, { method: 'POST', body: JSON.stringify({ segmentIds: ids }) });
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  const handleRefreshFunnel = async () => {
+    try {
+      setLoading(true); setError("");
+      const data = await api('/analytics/funnel');
+      setFunnel(data.summary || null);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Collaboration (placeholder)
@@ -164,7 +320,6 @@ export default function KlaviyoFlowAutomation() {
     const handler = e => {
       if (e.ctrlKey && e.key === "i") fileInputRef.current?.click();
       if (e.ctrlKey && e.key === "e") handleExport();
-      if (e.ctrlKey && e.key === "d") setDarkMode(d => !d);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
@@ -185,6 +340,17 @@ export default function KlaviyoFlowAutomation() {
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Klaviyo Flow Automation</h2>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <select value={selectedFlowId || ''} onChange={e => handleSelectFlow(e.target.value ? Number(e.target.value) : null)} style={{ padding: 6, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }}>
+            <option value="">Load saved flow…</option>
+            {flows.map(f => (
+              <option key={f.id} value={f.id}>{f.name || `Flow ${f.id}`}</option>
+            ))}
+          </select>
+          <button onClick={handleSaveNew} disabled={loading} style={{ background: '#22c55e', color: '#0f172a', border: 'none', borderRadius: 8, padding: '8px 12px', fontWeight: 700, cursor: 'pointer' }}>Save New</button>
+          <button onClick={handleUpdate} disabled={loading || !selectedFlowId} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 12px', fontWeight: 700, cursor: 'pointer' }}>Update</button>
+          <button onClick={handleDelete} disabled={loading || !selectedFlowId} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 12px', fontWeight: 700, cursor: 'pointer' }}>Delete</button>
+        </div>
       </div>
       <div style={{ marginBottom: 14, color: "#06b6d4", fontWeight: 600, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <span role="img" aria-label="bolt">⚡</span> Build, automate, and analyze Klaviyo flows with AI, analytics, and team collaboration.
@@ -202,6 +368,11 @@ export default function KlaviyoFlowAutomation() {
               </button>
             ))}
           </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+              {channels.map(ch => (
+                <button key={ch} onClick={() => addChannelNode(ch, 'action')} style={{ background: '#0b172a', color: '#e0e7ff', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', fontWeight: 700 }}>{`Add ${ch} node`}</button>
+              ))}
+            </div>
           <VisualFlowBuilder flow={flow} setFlow={setFlow} nodes={nodes} setNodes={setNodes} />
           <div style={{ display: "flex", gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
             <button onClick={handleAISuggest} disabled={loading || !flow} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Thinking..." : "AI Suggest"}</button>
@@ -209,9 +380,23 @@ export default function KlaviyoFlowAutomation() {
             <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
             <input ref={fileInputRef} type="file" accept=".txt,.json" style={{ display: "none" }} onChange={handleImport} aria-label="Import flow" />
             <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
+            <button onClick={handleServerExport} disabled={loading} style={{ background: "#10b981", color: "#0f172a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export from Server</button>
+            <button onClick={handleServerImport} disabled={loading || !exported} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import to Server</button>
             {exported && <a href={exported} download="klaviyo-flow.txt" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
           </div>
+          <div style={{ marginBottom: 16, background: '#0b1220', borderRadius: 10, padding: 12, border: '1px solid #334155' }}>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}>A/B/n Variants</div>
+            {variants.map((v, idx) => (
+              <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+                <input value={v.id} onChange={e => setVariants(variants.map((vv, i) => i === idx ? { ...vv, id: e.target.value } : vv))} placeholder="Variant id" style={{ flex: 1, minWidth: 120, padding: 6, borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                <input type="number" value={v.weight} onChange={e => setVariants(variants.map((vv, i) => i === idx ? { ...vv, weight: Number(e.target.value) } : vv))} placeholder="Weight" style={{ width: 100, padding: 6, borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+                <button onClick={() => setVariants(variants.filter((_, i) => i !== idx))} disabled={variants.length <= 1} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', fontWeight: 700, cursor: 'pointer' }}>Remove</button>
+              </div>
+            ))}
+            <button onClick={() => setVariants([...variants, { id: `var-${variants.length + 1}`, weight: 10 }])} style={{ marginTop: 4, background: '#22c55e', color: '#0f172a', border: 'none', borderRadius: 6, padding: '8px 12px', fontWeight: 700, cursor: 'pointer' }}>Add Variant</button>
+          </div>
           {imported && <div style={{ color: "#22c55e", marginBottom: 8, fontWeight: 600 }}>Imported: {imported}</div>}
+          {selectedFlowId && <div style={{ color: "#7dd3fc", marginBottom: 8, fontWeight: 600 }}>Loaded flow ID: {selectedFlowId}</div>}
           {aiSuggestion && (
             <div style={{ background: "#1e3a3f", borderRadius: 10, padding: 16, marginBottom: 12, color: "#06b6d4" }}>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Suggestion:</div>
@@ -249,6 +434,30 @@ export default function KlaviyoFlowAutomation() {
             ) : (
               <span>No analytics yet. Run automation to see results.</span>
             )}
+          </div>
+          <div style={{ marginTop: 12, background: '#0b1220', borderRadius: 10, padding: 10, border: '1px solid #334155' }}>
+            <div style={{ fontWeight: 700, marginBottom: 6, color: '#e0e7ff' }}>Funnel / Events</div>
+            <button onClick={handleRefreshFunnel} disabled={loading} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 12px', fontWeight: 700, cursor: 'pointer', marginBottom: 8 }}>Refresh Funnel</button>
+            {funnel ? (
+              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(funnel, null, 2)}</pre>
+            ) : (
+              <div style={{ color: '#94a3b8' }}>No events yet.</div>
+            )}
+          </div>
+          <div style={{ marginTop: 12, background: '#0b1220', borderRadius: 10, padding: 10, border: '1px solid #334155' }}>
+            <div style={{ fontWeight: 700, marginBottom: 6, color: '#e0e7ff' }}>Segmentation</div>
+            <input value={segmentName} onChange={e => setSegmentName(e.target.value)} placeholder="Segment name" style={{ width: '100%', marginBottom: 6, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+            <input value={segmentRules} onChange={e => setSegmentRules(e.target.value)} placeholder="Rules (comma separated)" style={{ width: '100%', marginBottom: 6, padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff' }} />
+            <button onClick={handleCreateSegment} disabled={loading} style={{ background: '#22c55e', color: '#0f172a', border: 'none', borderRadius: 6, padding: '8px 12px', fontWeight: 700, cursor: 'pointer', marginBottom: 8 }}>Create Segment</button>
+            <div style={{ fontWeight: 600, marginBottom: 4, color: '#e0e7ff' }}>Attach to flow</div>
+            <select multiple value={attachedSegments.map(String)} onChange={e => {
+              const options = Array.from(e.target.selectedOptions).map(o => Number(o.value));
+              handleAttachSegments(options);
+            }} style={{ width: '100%', minHeight: 90, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e0e7ff', padding: 6 }}>
+              {segments.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
           </div>
           <div style={{ marginTop: 18 }}>
             <button onClick={() => setShowOnboarding(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Show Onboarding</button>
