@@ -144,5 +144,6 @@ router.get('/docs', (req, res) => {
 	res.json({ ok: true, docs: 'Auto Insights API. Endpoints: /insights, /ai/generate, /analytics, /import, /export, /shopify/sync, /notify, /rbac/check, /i18n, /docs' });
 });
 
-// ...existing code...
+// Remove duplicate import/export, i18n, docs, and placeholder endpoints
+
 module.exports = router;
