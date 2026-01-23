@@ -9,7 +9,29 @@ const i18n = require('./i18n');
 const webhookModel = require('./webhookModel');
 const complianceModel = require('./complianceModel');
 const pluginSystem = require('./pluginSystem');
+const approvalsStore = require('./approvalsStore');
+const presenceStore = require('./presenceStore');
+const regressionStore = require('./regressionStore');
+const traceStore = require('./traceStore');
+const metricsStore = require('./metricsStore');
 const router = express.Router();
+
+function getRole(req) {
+  // Prefer authenticated user role if present, else header, else viewer
+  return req.user?.role || req.headers['x-user-role'] || 'viewer';
+}
+
+function requireRole(action) {
+  return (req, res, next) => {
+    const role = getRole(req);
+    try {
+      rbac.assert(role, action);
+      next();
+    } catch (err) {
+      res.status(err.status || 403).json({ ok: false, error: err.message || 'Forbidden' });
+    }
+  };
+}
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // CRUD endpoints (persistent JSON store)
@@ -83,6 +105,16 @@ router.post('/ai/generate', async (req, res) => {
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message || 'AI error' });
   }
+});
+
+router.post('/ai/next-best', async (req, res) => {
+  const { context = '' } = req.body || {};
+  const ideas = [
+    'Send a personalized email with dynamic product picks',
+    'Follow up with SMS after 24 hours if unopened',
+    'Offer free shipping to high-intent users',
+  ];
+  res.json({ ok: true, ideas, context });
 });
 
 router.post('/ai/suggest', async (req, res) => {
@@ -167,6 +199,17 @@ router.post('/render/dynamic', (req, res) => {
   res.json({ ok: true, content: applied, segment });
 });
 
+router.post('/render/personalized', (req, res) => {
+  const { user = {}, content = {} } = req.body || {};
+  const traits = user.traits || {};
+  const applied = {
+    ...content,
+    headline: `${content.headline || 'Hello'}, ${traits.firstName || user.name || 'friend'}`,
+    offer: traits.loyalty === 'vip' ? 'VIP exclusive offer' : content.offer || 'Welcome offer',
+  };
+  res.json({ ok: true, content: applied, traits });
+});
+
 // Analytics endpoints
 router.post('/analytics', (req, res) => {
   const event = analyticsModel.recordEvent(req.body || {});
@@ -175,6 +218,21 @@ router.post('/analytics', (req, res) => {
 
 router.get('/analytics', (req, res) => {
   res.json({ ok: true, events: analyticsModel.listEvents(req.query || {}) });
+});
+
+router.get('/analytics/widgets', (_req, res) => {
+  const summary = eventsStore.summary();
+  res.json({ ok: true, widgets: {
+    totalEvents: summary.total,
+    byType: summary.byType,
+    byChannel: summary.byChannel,
+  }});
+});
+
+router.post('/analytics/node', (req, res) => {
+  const { flowId, nodeId, metrics = {} } = req.body || {};
+  const event = eventsStore.record({ type: 'node_metrics', flowId, nodeId, metrics });
+  res.json({ ok: true, event });
 });
 
 // Import/export endpoints
@@ -256,24 +314,27 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // const db = require('./db');
 
 // CRUD endpoints (persistent)
-router.get('/flows', (req, res) => {
+router.get('/flows', requireRole('read'), (req, res) => {
   res.json({ ok: true, flows: db.list() });
 });
-router.get('/flows/:id', (req, res) => {
+router.get('/flows/:id', requireRole('read'), (req, res) => {
   const flow = db.get(req.params.id);
   if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
   res.json({ ok: true, flow });
 });
-router.post('/flows', (req, res) => {
+router.post('/flows', requireRole('write'), (req, res) => {
   const flow = db.create(req.body || {});
   res.json({ ok: true, flow });
 });
-router.put('/flows/:id', (req, res) => {
+router.put('/flows/:id', requireRole('write'), (req, res) => {
+  const latestApproval = approvalsStore.latest(req.params.id);
+  if (!latestApproval) return res.status(412).json({ ok: false, error: 'Approval required before updating' });
+  if (latestApproval.status !== 'approved') return res.status(412).json({ ok: false, error: 'Latest approval not approved' });
   const flow = db.update(req.params.id, req.body || {});
   if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, flow });
+  res.json({ ok: true, flow, approval: latestApproval.id });
 });
-router.delete('/flows/:id', (req, res) => {
+router.delete('/flows/:id', requireRole('delete'), (req, res) => {
   const ok = db.delete(req.params.id);
   if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
   res.json({ ok: true });
@@ -388,17 +449,24 @@ const express = require('express');
 const crypto = require('crypto');
 const OpenAI = require('openai');
 const db = require('./db');
+const { applyDefaults } = db;
 const analyticsModel = require('./analyticsModel');
 const eventsStore = require('./eventsStore');
 const segments = require('./segments');
 const connectors = require('./connectors');
 const auditLog = require('./auditLog');
 const notificationModel = require('./notificationModel');
+const approvalsStore = require('./approvalsStore');
+const presenceStore = require('./presenceStore');
+const traceStore = require('./traceStore');
+const metricsStore = require('./metricsStore');
 const rbac = require('./rbac');
 const i18n = require('./i18n');
 const webhookModel = require('./webhookModel');
 const complianceModel = require('./complianceModel');
 const pluginSystem = require('./pluginSystem');
+const customNodes = require('./customNodes');
+const brands = require('./brands');
 
 const router = express.Router();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -406,13 +474,31 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const CHANNELS = ['email', 'sms', 'push', 'web_push', 'in_app', 'whatsapp'];
 const WEBHOOK_SECRET = process.env.KLAVIYO_WEBHOOK_SECRET || 'dev-secret';
 const deadLetters = [];
+const uxPreferences = { theme: 'light', shortcuts: true, mobileMode: false };
 
-function normalizeFlow(payload = {}) {
+function getRole(req) {
+  return req.user?.role || req.headers['x-user-role'] || req.headers['x-role'] || 'viewer';
+}
+
+function requireRole(action) {
+  return (req, res, next) => {
+    const role = getRole(req);
+    try {
+      rbac.assert(role, action);
+      next();
+    } catch (err) {
+      res.status(err.status || 403).json({ ok: false, error: err.message || 'Forbidden' });
+    }
+  };
+}
+
+function normalizeFlow(payload = {}, existing = {}) {
+  if (typeof applyDefaults === 'function') return applyDefaults(payload, existing);
   const variants = payload.variants && Array.isArray(payload.variants) && payload.variants.length
     ? payload.variants
     : [{ id: 'control', weight: 100 }];
   const channels = payload.channels && payload.channels.length ? payload.channels : ['email', 'sms'];
-  return { ...payload, variants, channels };
+  return { ...existing, ...payload, variants, channels };
 }
 
 function hmacValid(raw, signature) {
@@ -436,32 +522,44 @@ router.get('/channels', (_req, res) => {
   res.json({ ok: true, channels: CHANNELS });
 });
 
-router.get('/flows', (req, res) => {
+router.get('/flows', requireRole('read'), (req, res) => {
   const meta = withRBAC(req);
   res.json({ ok: true, flows: db.list(), rbac: meta });
 });
 
-router.get('/flows/:id', (req, res) => {
+router.get('/flows/:id', requireRole('read'), (req, res) => {
   const flow = db.get(req.params.id);
   if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
   res.json({ ok: true, flow, rbac: withRBAC(req) });
 });
 
-router.post('/flows', (req, res) => {
+router.post('/flows', requireRole('write'), (req, res) => {
   const flow = db.create(normalizeFlow(req.body || {}));
   res.json({ ok: true, flow, rbac: withRBAC(req) });
 });
 
-router.put('/flows/:id', (req, res) => {
-  const flow = db.update(req.params.id, normalizeFlow(req.body || {}));
-  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+router.put('/flows/:id', requireRole('write'), (req, res) => {
+  const existing = db.get(req.params.id);
+  if (!existing) return res.status(404).json({ ok: false, error: 'Not found' });
+  const flow = db.update(req.params.id, normalizeFlow(req.body || {}, existing));
   res.json({ ok: true, flow, rbac: withRBAC(req) });
 });
 
-router.delete('/flows/:id', (req, res) => {
+router.delete('/flows/:id', requireRole('delete'), (req, res) => {
   const ok = db.delete(req.params.id);
   if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
   res.json({ ok: true, rbac: withRBAC(req) });
+});
+
+router.post('/flows/bulk-clone', requireRole('write'), (req, res) => {
+  const { ids = [], suffix = 'Copy' } = req.body || {};
+  const cloned = ids.map((id) => {
+    const flow = db.get(id);
+    if (!flow) return null;
+    const copy = { ...flow, id: undefined, name: `${flow.name} ${suffix}` };
+    return db.create(copy);
+  }).filter(Boolean);
+  res.json({ ok: true, cloned });
 });
 
 router.post('/flows/:id/variants', (req, res) => {
@@ -470,6 +568,305 @@ router.post('/flows/:id/variants', (req, res) => {
   const variants = Array.isArray(req.body?.variants) ? req.body.variants : [];
   const updated = db.update(req.params.id, { ...flow, variants });
   res.json({ ok: true, flow: updated });
+});
+
+router.post('/flows/:id/builder', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const preferences = { ...(flow.preferences || {}), ...(req.body?.preferences || {}) };
+  const updated = db.update(req.params.id, { preferences });
+  res.json({ ok: true, flow: updated });
+});
+
+router.post('/flows/:id/triggers', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const triggers = Array.isArray(req.body?.triggers) ? req.body.triggers : [];
+  const updated = db.update(req.params.id, { triggers });
+  auditLog.record({ type: 'triggers_updated', flowId: flow.id, triggersCount: triggers.length });
+  res.json({ ok: true, flow: updated });
+});
+
+router.post('/flows/:id/conditions', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const conditions = Array.isArray(req.body?.conditions) ? req.body.conditions : [];
+  const updated = db.update(req.params.id, { conditions });
+  auditLog.record({ type: 'conditions_updated', flowId: flow.id, conditionsCount: conditions.length });
+  res.json({ ok: true, flow: updated });
+});
+
+router.post('/flows/:id/schedule', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const schedule = {
+    ...flow.schedule,
+    ...(req.body || {}),
+  };
+  const updated = db.update(req.params.id, { schedule });
+  auditLog.record({ type: 'schedule_updated', flowId: flow.id, schedule });
+  res.json({ ok: true, flow: updated });
+});
+
+router.post('/flows/:id/waits', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const waits = Array.isArray(req.body?.waits) ? req.body.waits : [];
+  const updated = db.update(req.params.id, { waits });
+  res.json({ ok: true, flow: updated });
+});
+
+router.post('/flows/:id/external-data', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const externalData = Array.isArray(req.body?.sources) ? req.body.sources : [];
+  const updated = db.update(req.params.id, { externalData });
+  res.json({ ok: true, flow: updated });
+});
+
+router.post('/flows/:id/content-blocks', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const contentBlocks = Array.isArray(req.body?.blocks) ? req.body.blocks : [];
+  const updated = db.update(req.params.id, { contentBlocks });
+  res.json({ ok: true, flow: updated });
+});
+
+router.post('/flows/:id/channels', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const channels = Array.isArray(req.body?.channels) && req.body.channels.length ? req.body.channels : flow.channels;
+  const updated = db.update(req.params.id, { channels });
+  res.json({ ok: true, flow: updated, channels });
+});
+
+router.post('/orchestrate', (req, res) => {
+  const { flowId, userId = 'anon', channelPlan = [] } = req.body || {};
+  const orchestration = { flowId, userId, channelPlan, ts: Date.now() };
+  eventsStore.record({ type: 'orchestration', ...orchestration });
+  res.json({ ok: true, orchestration });
+});
+
+router.post('/flows/:id/throttle', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const throttling = { ...flow.throttling, ...(req.body || {}) };
+  const updated = db.update(req.params.id, { throttling });
+  res.json({ ok: true, flow: updated });
+});
+
+router.post('/flows/:id/acl', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const allowedRoles = Array.isArray(req.body?.roles) ? req.body.roles : ['admin', 'editor'];
+  const updated = db.update(req.params.id, { allowedRoles });
+  res.json({ ok: true, flow: updated });
+});
+
+router.post('/flows/:id/test-run', requireRole('run'), (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const sampleUser = req.body?.user || { id: 'sample', email: 'sample@example.com' };
+  const steps = (flow.nodes || []).length || (flow.actions || []).length || (flow.triggers || []).length;
+  const result = {
+    flowId: flow.id,
+    steps,
+    sampleUser,
+    status: 'simulated',
+    preview: (flow.nodes || []).slice(0, 5),
+  };
+  eventsStore.record({ type: 'test_run', flowId: flow.id, result });
+  traceStore.record({ flowId: flow.id, runId: `test-${Date.now()}`, status: 'ok', steps: (flow.nodes || []).map((n, i) => ({ idx: i + 1, label: n.label, type: n.type })) });
+  res.json({ ok: true, result });
+});
+
+router.get('/flows/:id/traces', requireRole('read'), (req, res) => {
+  try {
+    const from = req.query?.from ? Number(req.query.from) : undefined;
+    const to = req.query?.to ? Number(req.query.to) : undefined;
+    const traces = traceStore.list({ flowId: req.params.id, runId: req.query?.runId, from, to });
+    res.json({ ok: true, traces });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'Trace fetch failed' });
+  }
+});
+
+router.post('/flows/:id/metrics/targets', requireRole('metrics'), (req, res) => {
+  try {
+    const { name, target } = req.body || {};
+    if (!name) return res.status(400).json({ ok: false, error: 'Missing metric name' });
+    const entry = metricsStore.create({ flowId: req.params.id, name, target });
+    auditLog.record({ type: 'metric_target', flowId: req.params.id, name, target });
+    res.json({ ok: true, metric: entry });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'Metrics target error' });
+  }
+});
+
+router.post('/flows/:id/metrics/record', requireRole('metrics'), (req, res) => {
+  try {
+    const { name, value, ts } = req.body || {};
+    if (!name || value === undefined) return res.status(400).json({ ok: false, error: 'Missing name or value' });
+    const entry = metricsStore.record({ flowId: req.params.id, name, value, ts });
+    res.json({ ok: true, metric: entry });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'Metrics record error' });
+  }
+});
+
+router.get('/flows/:id/metrics', requireRole('metrics'), (req, res) => {
+  try {
+    const items = metricsStore.list(req.params.id);
+    const summary = metricsStore.summary(req.params.id);
+    const rollup = metricsStore.rollup(req.params.id);
+    res.json({ ok: true, metrics: items, summary, rollup });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'Metrics fetch error' });
+  }
+});
+
+router.post('/flows/:id/validate', requireRole('read'), (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const errors = [];
+  if (!flow.triggers || !flow.triggers.length) errors.push('Flow has no triggers');
+  if (!flow.actions || !flow.actions.length) errors.push('Flow has no actions');
+  if ((flow.schedule?.blackout || []).length > 0 && !flow.schedule?.timezone) errors.push('Timezone required for blackout windows');
+  const warnings = [];
+  if ((flow.channels || []).length > 3) warnings.push('Too many channels may fatigue users');
+  res.json({ ok: true, valid: errors.length === 0, errors, warnings });
+});
+
+router.get('/flows/:id/report', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const events = eventsStore.list({ flowId: flow.id });
+  const report = {
+    flowId: flow.id,
+    sends: events.filter(e => e.type === 'send').length,
+    conversions: events.filter(e => e.conversion).length,
+    revenue: events.reduce((sum, e) => sum + Number(e.revenue || 0), 0),
+    errors: events.filter(e => e.type === 'error').length,
+  };
+  res.json({ ok: true, report });
+});
+
+router.get('/flows/:id/health', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const events = eventsStore.list({ flowId: flow.id });
+  const errors = events.filter(e => e.type === 'error').slice(-5);
+  const status = errors.length ? 'degraded' : 'healthy';
+  const health = { status, errors, lastChecked: Date.now() };
+  db.update(flow.id, { health });
+  res.json({ ok: true, health });
+});
+
+router.post('/flows/:id/optimize', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const suggestions = [
+    'Shorten delays between key steps',
+    'Add a branch for high-intent users',
+    'Test SMS vs email for the second touch',
+  ];
+  const overrides = req.body?.overrides || {};
+  const recommendation = { flowId: flow.id, suggestions, overrides };
+  eventsStore.record({ type: 'optimization', flowId: flow.id, recommendation });
+  res.json({ ok: true, recommendation });
+});
+
+router.get('/flows/:id/versions', requireRole('read'), (req, res) => {
+  const versions = db.versions(req.params.id) || [];
+  res.json({ ok: true, versions });
+});
+
+router.post('/flows/:id/version', requireRole('write'), (req, res) => {
+  const snap = db.snapshot(req.params.id);
+  if (!snap) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, flow: snap });
+});
+
+router.post('/flows/:id/rollback', requireRole('write'), (req, res) => {
+  const { version } = req.body || {};
+  const restored = db.rollback(req.params.id, version);
+  if (!restored) return res.status(404).json({ ok: false, error: 'Version not found' });
+  auditLog.record({ type: 'rollback', flowId: req.params.id, version });
+  res.json({ ok: true, flow: restored });
+});
+
+router.post('/flows/:id/publish', requireRole('publish'), (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const latestApproval = approvalsStore.latest(req.params.id);
+  if (!latestApproval) return res.status(412).json({ ok: false, error: 'Approval required before publish' });
+  if (latestApproval.status !== 'approved') return res.status(412).json({ ok: false, error: 'Latest approval not approved' });
+  const updated = db.update(req.params.id, { ...flow, status: 'published', publishedAt: Date.now() });
+  auditLog.record({ type: 'publish', flowId: req.params.id, approval: latestApproval.id });
+  res.json({ ok: true, flow: updated, approval: latestApproval.id });
+});
+
+router.post('/flows/:id/approvals', requireRole('approve'), (req, res) => {
+  const { reason = '' } = req.body || {};
+  const requestedBy = req.headers['x-user-id'] || 'unknown';
+  const entry = approvalsStore.create({ flowId: req.params.id, requestedBy, reason });
+  auditLog.record({ type: 'approval_requested', flowId: req.params.id, requestedBy, reason, approvalId: entry.id });
+  res.json({ ok: true, approval: entry });
+});
+
+router.post('/flows/:id/approvals/:approvalId/status', requireRole('approve'), (req, res) => {
+  const { status } = req.body || {};
+  const actor = req.headers['x-user-id'] || 'unknown';
+  const updated = approvalsStore.updateStatus(req.params.approvalId, status, actor);
+  if (!updated) return res.status(404).json({ ok: false, error: 'Approval not found or invalid status' });
+  auditLog.record({ type: 'approval_status', flowId: req.params.id, approvalId: req.params.approvalId, status, actor });
+  res.json({ ok: true, approval: updated });
+});
+
+router.get('/flows/:id/approvals', requireRole('read'), (req, res) => {
+  const approvals = approvalsStore.list(req.params.id);
+  res.json({ ok: true, approvals });
+});
+
+router.post('/flows/:id/dependencies', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const dependencies = Array.isArray(req.body?.dependencies) ? req.body.dependencies : [];
+  const updated = db.update(req.params.id, { dependencies });
+  res.json({ ok: true, flow: updated });
+});
+
+router.get('/flows/dependencies', (_req, res) => {
+  const flows = db.list();
+  const map = flows.map(f => ({ id: f.id, name: f.name, dependsOn: f.dependencies || [] }));
+  res.json({ ok: true, dependencies: map });
+});
+
+router.post('/flows/:id/consent', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const consentMode = req.body?.mode || 'standard';
+  const updated = db.update(req.params.id, { consentMode });
+  res.json({ ok: true, flow: updated });
+});
+
+router.post('/flows/:id/brand', (req, res) => {
+  const flow = db.get(req.params.id);
+  if (!flow) return res.status(404).json({ ok: false, error: 'Not found' });
+  const brandId = req.body?.brandId || 'default';
+  const updated = db.update(req.params.id, { brandId });
+  res.json({ ok: true, flow: updated });
+});
+
+router.get('/journeys', (_req, res) => {
+  const flows = db.list();
+  const journeys = flows.map(f => ({
+    id: f.id,
+    name: f.name,
+    dependencies: f.dependencies || [],
+    channels: f.channels || [],
+  }));
+  res.json({ ok: true, journeys });
 });
 
 router.post('/experiments/assign', (req, res) => {
@@ -509,6 +906,13 @@ router.delete('/segments/:id', (req, res) => {
   const ok = segments.delete(req.params.id);
   if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
   res.json({ ok: true });
+});
+
+router.post('/segments/smart-split', (req, res) => {
+  const { audience = [], buckets = 2 } = req.body || {};
+  const enriched = audience.map((u, idx) => ({ ...u, score: (u.score || 50) + (idx % buckets) }));
+  const splits = Array.from({ length: buckets }).map((_, i) => ({ bucket: i, users: enriched.filter((_, idx) => idx % buckets === i) }));
+  res.json({ ok: true, splits });
 });
 
 router.post('/flows/:id/segments', (req, res) => {
@@ -587,6 +991,18 @@ router.get('/events', (req, res) => {
   res.json({ ok: true, events: eventsStore.list(req.query || {}) });
 });
 
+router.post('/triggers/iot', (req, res) => {
+  const { deviceId, flowId, payload = {} } = req.body || {};
+  const event = eventsStore.record({ type: 'iot_trigger', flowId, deviceId, payload });
+  res.json({ ok: true, event });
+});
+
+router.post('/triggers/voice', (req, res) => {
+  const { provider = 'alexa', utterance = '', flowId } = req.body || {};
+  const event = eventsStore.record({ type: 'voice_trigger', provider, utterance, flowId });
+  res.json({ ok: true, event });
+});
+
 router.get('/analytics/funnel', (_req, res) => {
   const summary = eventsStore.summary();
   res.json({ ok: true, summary });
@@ -643,6 +1059,14 @@ router.get('/experiments/results', (_req, res) => {
   res.json({ ok: true, results: Object.values(byVariant) });
 });
 
+router.post('/experiments/mab', (req, res) => {
+  const { flowId, arms = [] } = req.body || {};
+  if (!flowId || !arms.length) return res.status(400).json({ ok: false, error: 'Missing flowId/arms' });
+  const assignment = arms.map((arm, idx) => ({ arm, probability: Number(arm.weight || 1) / arms.length, idx }));
+  eventsStore.record({ type: 'experiment', flowId, variant: assignment[0]?.arm, assignment });
+  res.json({ ok: true, assignment });
+});
+
 router.post('/import', (req, res) => {
   try {
     const { items } = req.body || {};
@@ -673,6 +1097,23 @@ router.get('/compliance', (_req, res) => {
   res.json({ ok: true, compliance: complianceModel.get() });
 });
 
+router.post('/compliance/scan', (req, res) => {
+  const { flowId } = req.body || {};
+  const flow = flowId ? db.get(flowId) : null;
+  const issues = [];
+  if (flow) {
+    if ((flow.channels || []).includes('sms') && !complianceModel.get().tcpa) issues.push('TCPA consent missing');
+    if ((flow.schedule?.blackout || []).length && !flow.schedule?.timezone) issues.push('Timezone required for blackout');
+  }
+  res.json({ ok: true, issues, passed: issues.length === 0 });
+});
+
+router.post('/security/mask', (req, res) => {
+  const fields = Array.isArray(req.body?.fields) ? req.body.fields : [];
+  const masked = fields.reduce((acc, f) => ({ ...acc, [f]: '***masked***' }), {});
+  res.json({ ok: true, masked });
+});
+
 router.post('/plugin', (req, res) => {
   pluginSystem.run(req.body || {});
   res.json({ ok: true });
@@ -699,9 +1140,25 @@ router.get('/dead-letter', (_req, res) => {
   res.json({ ok: true, items: deadLetters });
 });
 
+router.post('/dead-letter/retry', (_req, res) => {
+  const retried = deadLetters.splice(0, deadLetters.length);
+  retried.forEach(item => eventsStore.record({ type: 'dead_letter_retry', item }));
+  res.json({ ok: true, retried: retried.length });
+});
+
 router.post('/rbac/check', (req, res) => {
   const { role, allowed } = withRBAC(req);
   res.json({ ok: true, role, allowed });
+});
+
+router.post('/ux/preferences', (req, res) => {
+  Object.assign(uxPreferences, req.body || {});
+  res.json({ ok: true, preferences: uxPreferences });
+});
+
+router.post('/mobile/mode', (req, res) => {
+  uxPreferences.mobileMode = Boolean(req.body?.enabled);
+  res.json({ ok: true, mobileMode: uxPreferences.mobileMode });
 });
 
 router.get('/i18n', (_req, res) => {
@@ -716,11 +1173,42 @@ router.get('/health', (_req, res) => {
   res.json({ ok: true, status: 'healthy', timestamp: Date.now(), counts: { flows: db.list().length, events: eventsStore.summary().total, segments: segments.list().length } });
 });
 
+router.get('/health/flows', (_req, res) => {
+  const flows = db.list();
+  const report = flows.map(f => ({ id: f.id, name: f.name, status: (f.health || {}).status || 'unknown', channels: f.channels || [] }));
+  res.json({ ok: true, report });
+});
+
+router.post('/presence', requireRole('read'), (req, res) => {
+  const user = req.headers['x-user-id'] || req.body?.user || 'anon';
+  const status = req.body?.status || 'editing';
+  const locale = req.body?.locale || 'en';
+  const flowId = req.body?.flowId || null;
+  const record = presenceStore.upsert({ user, status, locale, flowId });
+  res.json({ ok: true, presence: record });
+});
+
+router.get('/presence', requireRole('read'), (_req, res) => {
+  res.json({ ok: true, presence: presenceStore.list() });
+});
+
 // Collaboration & compliance & ops (Phase 5)
 router.post('/collab/comment', (req, res) => {
   const { flowId, user = 'anon', comment = '' } = req.body || {};
   const entry = auditLog.record({ type: 'comment', flowId, user, comment });
   res.json({ ok: true, entry });
+});
+
+router.post('/collab/annotate', (req, res) => {
+  const { flowId, nodeId, user = 'anon', note = '' } = req.body || {};
+  const entry = auditLog.record({ type: 'annotation', flowId, nodeId, user, note });
+  res.json({ ok: true, entry });
+});
+
+router.post('/collab/presence', requireRole('read'), (req, res) => {
+  const { user = 'anon', flowId, status = 'editing', locale = 'en' } = req.body || {};
+  const record = presenceStore.upsert({ user, flowId, status, locale });
+  res.json({ ok: true, presence: presenceStore.list(), record });
 });
 
 router.post('/collab/approve', (req, res) => {
@@ -820,11 +1308,81 @@ router.post('/connect/warehouse/bigquery', (req, res) => {
   res.json({ ok: true, connector: cfg });
 });
 
+router.post('/connect/slack', (req, res) => {
+  const { token, channel } = req.body || {};
+  if (!token || !channel) return res.status(400).json({ ok: false, error: 'Missing token/channel' });
+  const cfg = connectors.set('slack', { token, channel });
+  res.json({ ok: true, connector: cfg });
+});
+
+router.post('/connect/twilio', (req, res) => {
+  const { accountSid, authToken, from } = req.body || {};
+  if (!accountSid || !authToken || !from) return res.status(400).json({ ok: false, error: 'Missing twilio credentials' });
+  const cfg = connectors.set('twilio', { accountSid, authToken, from });
+  res.json({ ok: true, connector: cfg });
+});
+
+router.post('/connect/whatsapp', (req, res) => {
+  const { provider = 'twilio', number } = req.body || {};
+  if (!number) return res.status(400).json({ ok: false, error: 'Missing number' });
+  const cfg = connectors.set('whatsapp', { provider, number });
+  res.json({ ok: true, connector: cfg });
+});
+
+router.post('/connect/push', (req, res) => {
+  const { provider = 'onesignal', apiKey } = req.body || {};
+  if (!apiKey) return res.status(400).json({ ok: false, error: 'Missing apiKey' });
+  const cfg = connectors.set('push', { provider, apiKey });
+  res.json({ ok: true, connector: cfg });
+});
+
 router.post('/consent/sync', (req, res) => {
   const { userId, consent } = req.body || {};
   if (!userId) return res.status(400).json({ ok: false, error: 'Missing userId' });
   const rec = connectors.consentSync({ userId, consent });
   res.json({ ok: true, consent: rec });
+});
+
+router.get('/custom-nodes', (_req, res) => {
+  res.json({ ok: true, nodes: customNodes.list() });
+});
+
+router.post('/custom-nodes', (req, res) => {
+  const node = customNodes.create(req.body || {});
+  res.json({ ok: true, node });
+});
+
+router.put('/custom-nodes/:id', (req, res) => {
+  const node = customNodes.update(req.params.id, req.body || {});
+  if (!node) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, node });
+});
+
+router.delete('/custom-nodes/:id', (req, res) => {
+  const ok = customNodes.delete(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true });
+});
+
+router.get('/brands', (_req, res) => {
+  res.json({ ok: true, brands: brands.list() });
+});
+
+router.post('/brands', (req, res) => {
+  const brand = brands.create(req.body || {});
+  res.json({ ok: true, brand });
+});
+
+router.put('/brands/:id', (req, res) => {
+  const brand = brands.update(req.params.id, req.body || {});
+  if (!brand) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true, brand });
+});
+
+router.delete('/brands/:id', (req, res) => {
+  const ok = brands.delete(req.params.id);
+  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+  res.json({ ok: true });
 });
 
 router.post('/ingest/event', (req, res) => {

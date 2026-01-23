@@ -1,0 +1,86 @@
+[
+  {
+    "id": 1,
+    "ts": 1769154758335,
+    "type": "test_run",
+    "flowId": 7,
+    "result": {
+      "flowId": 7,
+      "steps": 1,
+      "sampleUser": {
+        "id": "sample",
+        "email": "sample@example.com"
+      },
+      "status": "simulated",
+      "preview": [
+        {
+          "label": "Send",
+          "type": "action"
+        }
+      ]
+    }
+  },
+  {
+    "id": 2,
+    "ts": 1769155666055,
+    "type": "test_run",
+    "flowId": 7,
+    "result": {
+      "flowId": 7,
+      "steps": 1,
+      "sampleUser": {
+        "id": "sample",
+        "email": "sample@example.com"
+      },
+      "status": "simulated",
+      "preview": [
+        {
+          "label": "Send",
+          "type": "action"
+        }
+      ]
+    }
+  },
+  {
+    "id": 3,
+    "ts": 1769155932395,
+    "type": "test_run",
+    "flowId": 8,
+    "result": {
+      "flowId": 8,
+      "steps": 1,
+      "sampleUser": {
+        "id": "sample",
+        "email": "sample@example.com"
+      },
+      "status": "simulated",
+      "preview": [
+        {
+          "label": "Send",
+          "type": "action"
+        }
+      ]
+    }
+  },
+  {
+    "id": 4,
+    "ts": 1769156206998,
+    "type": "test_run",
+    "flowId": 9,
+    "result": {
+      "flowId": 9,
+      "steps": 1,
+      "sampleUser": {
+        "id": "sample",
+        "email": "sample@example.com"
+      },
+      "status": "simulated",
+      "preview": [
+        {
+          "label": "Send",
+          "type": "action"
+        }
+      ]
+    }
+  }
+]
