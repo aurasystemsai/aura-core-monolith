@@ -18,9 +18,45 @@ function getShop(req) {
   return shop.replace(/^https?:\/\//, '').replace(/\/.*/, '');
 }
 
+function envTokenNames() {
+  return Object.entries({
+    SHOPIFY_ACCESS_TOKEN: !!process.env.SHOPIFY_ACCESS_TOKEN,
+    SHOPIFY_ADMIN_API_TOKEN: !!process.env.SHOPIFY_ADMIN_API_TOKEN,
+    SHOPIFY_API_TOKEN: !!process.env.SHOPIFY_API_TOKEN,
+    SHOPIFY_ADMIN_TOKEN: !!process.env.SHOPIFY_ADMIN_TOKEN,
+    SHOPIFY_CLIENT_SECRET: !!process.env.SHOPIFY_CLIENT_SECRET,
+  }).filter(([, present]) => present).map(([name]) => name);
+}
+
+// Resolve token with fallbacks: session -> persisted -> env
+function resolveToken(req, shop) {
+  const sessionToken = req.session?.shopifyToken || null;
+  if (sessionToken) {
+    return { token: sessionToken, source: 'session' };
+  }
+  const shopTokens = require('../core/shopTokens');
+  const persisted = shopTokens.getToken(shop);
+  if (persisted) {
+    return { token: persisted, source: 'persisted' };
+  }
+  const envToken = process.env.SHOPIFY_ACCESS_TOKEN
+    || process.env.SHOPIFY_ADMIN_API_TOKEN
+    || process.env.SHOPIFY_API_TOKEN
+    || process.env.SHOPIFY_ADMIN_TOKEN
+    || process.env.SHOPIFY_CLIENT_SECRET
+    || null;
+  if (envToken) {
+    return { token: envToken, source: 'env' };
+  }
+  return { token: null, source: 'none' };
+}
+
 router.get('/revenue', async (req, res) => {
+  let shop;
   try {
-    const shop = getShop(req);
+    shop = getShop(req);
+    const { token, source } = resolveToken(req, shop);
+    if (!token) return res.status(401).json({ ok: false, error: `No Shopify admin token available (source=${source}). Reinstall or set SHOPIFY_ACCESS_TOKEN.` });
     // Get total sales for current month
     const today = new Date();
     const start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
@@ -31,17 +67,21 @@ router.get('/revenue', async (req, res) => {
       created_at_max: end,
       fields: 'total_price',
       limit: 250
-    });
+    }, token);
     const total = (orders.orders || []).reduce((sum, o) => sum + parseFloat(o.total_price || 0), 0);
-    res.json({ value: total });
+    res.json({ value: total, tokenSource: source });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    const status = err?.status === 401 || err?.status === 403 ? 401 : 500;
+    res.status(status).json({ ok: false, error: err.message, source: err?.source, shop });
   }
 });
 
 router.get('/orders', async (req, res) => {
+  let shop;
   try {
-    const shop = getShop(req);
+    shop = getShop(req);
+    const { token, source } = resolveToken(req, shop);
+    if (!token) return res.status(401).json({ ok: false, error: `No Shopify admin token available (source=${source}).` });
     const today = new Date();
     const start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
     const end = today.toISOString();
@@ -51,20 +91,25 @@ router.get('/orders', async (req, res) => {
       created_at_max: end,
       fields: 'id',
       limit: 250
-    });
-    res.json({ value: (orders.orders || []).length });
+    }, token);
+    res.json({ value: (orders.orders || []).length, tokenSource: source });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    const status = err?.status === 401 || err?.status === 403 ? 401 : 500;
+    res.status(status).json({ ok: false, error: err.message, source: err?.source, shop });
   }
 });
 
 router.get('/customers', async (req, res) => {
+  let shop;
   try {
-    const shop = getShop(req);
-    const customers = await shopifyFetch(shop, 'customers/count.json');
-    res.json({ value: customers.count });
+    shop = getShop(req);
+    const { token, source } = resolveToken(req, shop);
+    if (!token) return res.status(401).json({ ok: false, error: `No Shopify admin token available (source=${source}).` });
+    const customers = await shopifyFetch(shop, 'customers/count.json', {}, token);
+    res.json({ value: customers.count, tokenSource: source });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    const status = err?.status === 401 || err?.status === 403 ? 401 : 500;
+    res.status(status).json({ ok: false, error: err.message, source: err?.source, shop });
   }
 });
 

@@ -4,8 +4,9 @@
 const fetch = (...args) => globalThis.fetch(...args);
 const { getToken } = require('./shopTokens');
 
-async function shopifyFetch(shop, endpoint, params = {}) {
-  const token = getToken(shop)
+async function shopifyFetch(shop, endpoint, params = {}, tokenOverride = null) {
+  const token = tokenOverride
+    || getToken(shop)
     || process.env.SHOPIFY_ACCESS_TOKEN
     || process.env.SHOPIFY_ADMIN_API_TOKEN
     || process.env.SHOPIFY_API_TOKEN
