@@ -5,7 +5,13 @@ const fetch = (...args) => globalThis.fetch(...args);
 const { getToken } = require('./shopTokens');
 
 async function shopifyFetch(shop, endpoint, params = {}) {
-  const token = getToken(shop);
+  const token = getToken(shop)
+    || process.env.SHOPIFY_ACCESS_TOKEN
+    || process.env.SHOPIFY_ADMIN_API_TOKEN
+    || process.env.SHOPIFY_API_TOKEN
+    || process.env.SHOPIFY_ADMIN_TOKEN
+    || process.env.SHOPIFY_CLIENT_SECRET
+    || null;
   if (!token) throw new Error('No Shopify token for shop: ' + shop);
   const apiVersion = process.env.SHOPIFY_API_VERSION || '2023-10';
   let url = `https://${shop}/admin/api/${apiVersion}/${endpoint}`;
@@ -22,7 +28,12 @@ async function shopifyFetch(shop, endpoint, params = {}) {
   });
   if (!resp.ok) {
     const text = await resp.text();
-    throw new Error(`Shopify fetch failed: ${text}`);
+    const err = new Error(`Shopify fetch failed (${resp.status}) for ${endpoint}: ${text}`);
+    err.status = resp.status;
+    err.body = text;
+    err.endpoint = endpoint;
+    err.url = url;
+    throw err;
   }
   return await resp.json();
 }

@@ -5,11 +5,17 @@ const router = express.Router();
 // Live analytics endpoints using Shopify API
 const { shopifyFetch } = require('../core/shopifyApi');
 
-// Helper: get shop from query param
+// Helper: get shop from query/header/session/env (App Bridge adds x-shopify-shop-domain)
 function getShop(req) {
-  const shop = req.query.shop;
+  const shop = (req.query.shop
+    || req.headers['x-shopify-shop-domain']
+    || req.headers['x-shopify-shop']
+    || req.session?.shop
+    || process.env.SHOPIFY_STORE_URL
+    || '').trim();
   if (!shop) throw new Error('Missing shop parameter');
-  return shop;
+  // Normalize to bare domain (strip protocol/path)
+  return shop.replace(/^https?:\/\//, '').replace(/\/.*/, '');
 }
 
 router.get('/revenue', async (req, res) => {

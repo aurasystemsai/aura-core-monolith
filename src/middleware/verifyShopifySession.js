@@ -19,6 +19,10 @@ module.exports = async function verifyShopifySession(req, res, next) {
   if (process.env.NODE_ENV === 'test') {
     return next();
   }
+  // Allow public read for analytics/notifications dashboards and advanced attribution
+  if (req.path && (req.path.startsWith('/analytics') || req.path.startsWith('/notifications') || req.path.startsWith('/advanced-analytics-attribution'))) {
+    return next();
+  }
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).send('Unauthorized: No Authorization header');
   const token = authHeader.replace('Bearer ', '');
