@@ -68,15 +68,18 @@ const brandIntelligenceLayer = require("../tools/brand-intelligence-layer");
 const creativeAutomationEngine = require("../tools/creative-automation-engine");
 const auraOperationsAi = require("../tools/aura-operations-ai");
 
-// Stub factory to keep new tools productive while full logic is built
-const makeStubTool = require("../tools/_stub-tool");
-const stubTool = (id, name, category) => {
-  const stub = makeStubTool(id);
-  return {
-    meta: { id, name, category: category || null },
-    run: stub.run,
-  };
-};
+// Ads, analytics, and new feature tools (actual modules, not stubs)
+const googleAdsIntegration = require("../tools/google-ads-integration");
+const facebookAdsIntegration = require("../tools/facebook-ads-integration");
+const tiktokAdsIntegration = require("../tools/tiktok-ads-integration");
+const adsAnomalyGuard = require("../tools/ads-anomaly-guard");
+const adCreativeOptimizer = require("../tools/ad-creative-optimizer");
+const omnichannelCampaignBuilder = require("../tools/omnichannel-campaign-builder");
+const aiSegmentationEngine = require("../tools/ai-segmentation-engine");
+const predictiveAnalyticsWidgets = require("../tools/predictive-analytics-widgets");
+const aiContentImageGen = require("../tools/ai-content-image-gen");
+const selfServiceAnalytics = require("../tools/self-service-analytics");
+const compliancePrivacySuite = require("../tools/compliance-privacy-suite");
 
 // ------------------------------------------------------
 // Platform / orchestration
@@ -132,62 +135,18 @@ const allTools = [
   creativeAutomationEngine,
   auraOperationsAi,
 
-  // Ads, analytics, and orchestration stubs (fully wired, stub logic)
-  stubTool(
-    "google-ads-integration",
-    "Google Ads Integration",
-    "Ads / Marketing"
-  ),
-  stubTool(
-    "facebook-ads-integration",
-    "Facebook/Instagram Ads Integration",
-    "Ads / Marketing"
-  ),
-  stubTool(
-    "tiktok-ads-integration",
-    "TikTok Ads Integration",
-    "Ads / Marketing"
-  ),
-  stubTool(
-    "ads-anomaly-guard",
-    "Ads Anomaly Guard",
-    "Ads / Marketing"
-  ),
-  stubTool(
-    "ad-creative-optimizer",
-    "Ad Creative Optimizer",
-    "Ads / Marketing"
-  ),
-  stubTool(
-    "omnichannel-campaign-builder",
-    "Omnichannel Campaign Builder",
-    "Marketing / Automation"
-  ),
-  stubTool(
-    "ai-segmentation-engine",
-    "AI Segmentation Engine",
-    "Personalization / AI"
-  ),
-  stubTool(
-    "predictive-analytics-widgets",
-    "Predictive Analytics Widgets",
-    "Analytics / AI"
-  ),
-  stubTool(
-    "ai-content-image-gen",
-    "AI Content & Image Gen",
-    "Content / AI"
-  ),
-  stubTool(
-    "self-service-analytics",
-    "Self-Service Analytics",
-    "Analytics"
-  ),
-  stubTool(
-    "compliance-privacy-suite",
-    "Compliance & Privacy Suite",
-    "Compliance"
-  ),
+  // Ads, analytics, and orchestration modules (minimal functional handlers)
+  googleAdsIntegration,
+  facebookAdsIntegration,
+  tiktokAdsIntegration,
+  adsAnomalyGuard,
+  adCreativeOptimizer,
+  omnichannelCampaignBuilder,
+  aiSegmentationEngine,
+  predictiveAnalyticsWidgets,
+  aiContentImageGen,
+  selfServiceAnalytics,
+  compliancePrivacySuite,
 
   // Platform / orchestration
   workflowOrchestrator,
