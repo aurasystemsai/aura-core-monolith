@@ -26,9 +26,10 @@ export async function apiFetch(url, options = {}) {
   try {
     const resp = await fetch(url, opts);
     if (!resp.ok) {
+      const clone = resp.clone();
       let msg = `API error: ${resp.status} ${resp.statusText}`;
       try {
-        const data = await resp.json();
+        const data = await clone.json();
         if (data && data.error) msg += ` - ${data.error}`;
       } catch {}
       setApiError(msg);
