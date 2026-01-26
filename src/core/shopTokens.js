@@ -22,6 +22,9 @@ function loadTokens() {
 		if (fs.existsSync(TOKENS_FILE)) {
 			return JSON.parse(fs.readFileSync(TOKENS_FILE, 'utf8'));
 		}
+		// Auto-create an empty token file so first-time OAuth saves succeed without manual setup
+		saveTokens({});
+		return {};
 	} catch (e) {
 		console.error('[shopTokens] Failed to load tokens:', e);
 	}
