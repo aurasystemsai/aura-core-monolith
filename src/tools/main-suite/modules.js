@@ -24,7 +24,9 @@ const moduleGroups = [
       { id: "advanced-analytics-attribution", name: "Advanced Attribution", description: "Attribution insights and trending." },
       { id: "reporting-integrations", name: "Reporting Integrations", description: "Pipelines into BI/reporting destinations.", status: "new" },
       { id: "custom-dashboard-builder", name: "Custom Dashboards", description: "Assemble dashboards from data sources.", docUrl: "https://github.com/aurasystemsai/aura-core-monolith/docs/ANALYTICS.md" },
-      { id: "auto-insights", name: "Auto Insights", description: "Automated executive-ready highlights.", status: "beta" }
+      { id: "auto-insights", name: "Auto Insights", description: "Automated executive-ready highlights.", status: "beta" },
+      { id: "predictive-analytics-widgets", name: "Predictive Analytics Widgets", description: "Churn, LTV, demand forecasts, and anomaly alerts.", status: "beta" },
+      { id: "self-service-analytics", name: "Self-Service Analytics", description: "Custom dashboards and scheduled reporting." }
     ]
   },
   {
@@ -51,7 +53,8 @@ const moduleGroups = [
       { id: "personalization-recommendation-engine", name: "Recommendations", description: "AI-driven product/content recs." },
       { id: "advanced-personalization-engine", name: "Advanced Personalization", description: "Contextual and real-time rendering." },
       { id: "upsell-cross-sell-engine", name: "Upsell / Cross-Sell", description: "Offer targeting for AOV lift.", status: "new" },
-      { id: "ltv-churn-predictor", name: "LTV & Churn", description: "Predictive scoring for lifecycle actions." }
+      { id: "ltv-churn-predictor", name: "LTV & Churn", description: "Predictive scoring for lifecycle actions." },
+      { id: "ai-segmentation-engine", name: "AI Segmentation", description: "Auto-discovered high-value audiences and traits.", status: "beta" }
     ]
   },
   {
@@ -76,7 +79,9 @@ const moduleGroups = [
       { id: "abandoned-checkout-winback", name: "Checkout Winback", description: "Recover abandoned carts." },
       { id: "multi-channel-optimizer", name: "Multi-Channel Optimizer", description: "Budget/channel allocation." },
       { id: "returns-rma-automation", name: "Returns / RMA", description: "Post-purchase returns flows." },
-      { id: "churn-prediction-playbooks", name: "Churn Playbooks", description: "Retention actions by segment.", status: "beta" }
+      { id: "churn-prediction-playbooks", name: "Churn Playbooks", description: "Retention actions by segment.", status: "beta" },
+      { id: "omnichannel-campaign-builder", name: "Omnichannel Campaign Builder", description: "Email, SMS, and ads in one drag-and-drop flow.", status: "beta" },
+      { id: "ai-content-image-gen", name: "AI Content & Image Gen", description: "Generate ad/email copy and creative on demand." }
     ]
   },
   {
@@ -86,7 +91,8 @@ const moduleGroups = [
     modules: [
       { id: "social-media-analytics-listening", name: "Social Listening", description: "Monitor mentions and sentiment." },
       { id: "social-scheduler-content-engine", name: "Social Scheduler", description: "Plan and queue content." },
-      { id: "brand-mention-tracker", name: "Brand Mention Tracker", description: "Track and alert on brand mentions." }
+      { id: "brand-mention-tracker", name: "Brand Mention Tracker", description: "Track and alert on brand mentions." },
+      { id: "ad-creative-optimizer", name: "Ad Creative Optimizer", description: "Iterate ad creatives and variants with AI." }
     ]
   },
   {
@@ -96,7 +102,19 @@ const moduleGroups = [
     modules: [
       { id: "self-service-portal", name: "Self-Service Portal", description: "Customer self-help." },
       { id: "self-service-support-portal", name: "Support Portal", description: "Support workflows and forms." },
-      { id: "customer-support-ai", name: "Customer Support AI", description: "AI-assisted macros and replies." }
+      { id: "customer-support-ai", name: "Customer Support AI", description: "AI-assisted macros and replies." },
+      { id: "compliance-privacy-suite", name: "Compliance & Privacy Suite", description: "Consent, data export, and audit controls.", status: "new" }
+    ]
+  },
+  {
+    id: "ads",
+    title: "Ads & Acquisition",
+    summary: "Acquisition via Google, Meta, and TikTok with AI insights.",
+    modules: [
+      { id: "google-ads-integration", name: "Google Ads Integration", description: "Sync campaigns, audiences, and budgets." },
+      { id: "facebook-ads-integration", name: "Facebook/Instagram Ads", description: "Manage and analyze Meta campaigns." },
+      { id: "tiktok-ads-integration", name: "TikTok Ads Integration", description: "Sync audiences and creatives for TikTok." },
+      { id: "ads-anomaly-guard", name: "Ads Anomaly Guard", description: "Detect spend and performance anomalies." }
     ]
   }
 ];

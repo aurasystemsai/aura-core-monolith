@@ -104,11 +104,14 @@ const toolToMainSuiteGroup = {
   "visual-workflow-builder": "workflows",
   "webhook-api-triggers": "workflows",
   "conditional-logic-automation": "workflows",
+  "omnichannel-campaign-builder": "lifecycle",
   // Analytics & Reporting
   "advanced-analytics-attribution": "analytics",
   "reporting-integrations": "analytics",
   "custom-dashboard-builder": "analytics",
   "auto-insights": "analytics",
+  "predictive-analytics-widgets": "analytics",
+  "self-service-analytics": "analytics",
   "ab-testing-suite": "analytics",
   // SEO Core
   "seo-site-crawler": "seo",
@@ -125,6 +128,7 @@ const toolToMainSuiteGroup = {
   "advanced-personalization-engine": "personalization",
   "upsell-cross-sell-engine": "personalization",
   "ltv-churn-predictor": "personalization",
+  "ai-segmentation-engine": "personalization",
   // Pricing, Inventory & Finance
   "advanced-finance-inventory-planning": "revenue",
   "inventory-forecasting": "revenue",
@@ -139,6 +143,13 @@ const toolToMainSuiteGroup = {
   "returns-rma-automation": "lifecycle",
   "churn-prediction-playbooks": "lifecycle",
   "klaviyo-flow-automation": "lifecycle",
+  "ai-content-image-gen": "lifecycle",
+  // Ads & Acquisition
+  "google-ads-integration": "ads",
+  "facebook-ads-integration": "ads",
+  "tiktok-ads-integration": "ads",
+  "ads-anomaly-guard": "ads",
+  "ad-creative-optimizer": "ads",
   // Social & Listening
   "social-media-analytics-listening": "social",
   "social-scheduler-content-engine": "social",
@@ -149,6 +160,7 @@ const toolToMainSuiteGroup = {
   "customer-support-ai": "support",
   "inbox-assistant": "support",
   "inbox-reply-assistant": "support",
+  "compliance-privacy-suite": "support",
 };
 
 // Global error boundary for graceful error handling
