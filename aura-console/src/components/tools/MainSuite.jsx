@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../api";
 import Toast from "../Toast";
 
+const PREF_KEY = "main-suite-prefs";
+
 export default function MainSuite({ setActiveSection }) {
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,6 +12,7 @@ export default function MainSuite({ setActiveSection }) {
   const [filter, setFilter] = useState("");
   const [collapsed, setCollapsed] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
+  const [sortKey, setSortKey] = useState("az");
 
   useEffect(() => {
     let mounted = true;
@@ -22,8 +25,13 @@ export default function MainSuite({ setActiveSection }) {
         }
         const groups = data.modules || [];
         if (mounted) {
+          const stored = (() => {
+            try { return JSON.parse(localStorage.getItem(PREF_KEY) || "{}"); } catch { return {}; }
+          })();
           setModules(groups);
-          setActiveGroup(groups[0]?.id || null);
+          setActiveGroup(stored.activeGroup || groups[0]?.id || null);
+          setDarkMode(stored.darkMode ?? true);
+          setSortKey(stored.sortKey || "az");
           setError(null);
         }
       } catch (err) {
@@ -73,6 +81,22 @@ export default function MainSuite({ setActiveSection }) {
     );
   }, [active, filter]);
 
+  const sortedModules = useMemo(() => {
+    const list = [...filteredModules];
+    switch (sortKey) {
+      case "status":
+        return list.sort((a, b) => ((b.status === "new") - (a.status === "new")) || ((b.status === "beta") - (a.status === "beta")) || a.name.localeCompare(b.name));
+      case "az":
+      default:
+        return list.sort((a, b) => a.name.localeCompare(b.name));
+    }
+  }, [filteredModules, sortKey]);
+
+  useEffect(() => {
+    const prefs = { darkMode, activeGroup, sortKey };
+    try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (_) {}
+  }, [darkMode, activeGroup, sortKey]);
+
   if (loading) {
     return <div style={{ color: "#fff", padding: 16 }}>Loading Main Suite…</div>;
   }
@@ -103,6 +127,21 @@ export default function MainSuite({ setActiveSection }) {
         >
           {darkMode ? "Dark Mode" : "Light Mode"}
         </button>
+        <select
+          value={sortKey}
+          onChange={(e) => setSortKey(e.target.value)}
+          style={{
+            padding: "8px 10px",
+            borderRadius: 10,
+            border: `1px solid ${palette.border}`,
+            background: palette.card,
+            color: palette.text,
+            fontWeight: 700,
+          }}
+        >
+          <option value="az">Sort: A → Z</option>
+          <option value="status">Sort: New/Beta first</option>
+        </select>
         <input
           type="search"
           placeholder="Search modules..."
@@ -118,6 +157,22 @@ export default function MainSuite({ setActiveSection }) {
             color: palette.text,
           }}
         />
+        {filter && (
+          <button
+            onClick={() => setFilter("")}
+            style={{
+              padding: "8px 12px",
+              borderRadius: 10,
+              border: `1px solid ${palette.border}`,
+              background: palette.card,
+              color: palette.text,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            Clear
+          </button>
+        )}
         <button
           onClick={() => window.open("mailto:team@aurasystems.ai?subject=Main%20Suite%20Feedback", "_self")}
           style={{
@@ -132,6 +187,22 @@ export default function MainSuite({ setActiveSection }) {
         >
           Feedback / Suggest module
         </button>
+        {setActiveSection && (
+          <button
+            onClick={() => setActiveSection("tools")}
+            style={{
+              padding: "8px 12px",
+              borderRadius: 10,
+              border: `1px solid ${palette.border}`,
+              background: palette.card,
+              color: palette.text,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            Open All Tools
+          </button>
+        )}
       </div>
 
       {/* Tabs */}
@@ -211,7 +282,7 @@ export default function MainSuite({ setActiveSection }) {
           </div>
           {!collapsed && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, transition: "opacity 200ms ease", opacity: collapsed ? 0 : 1 }}>
-            {(filteredModules || []).map((m) => (
+            {(sortedModules || []).map((m) => (
               <div
                 key={m.id}
                 style={{
