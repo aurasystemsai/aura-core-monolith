@@ -247,6 +247,7 @@ function App() {
   const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('auraOnboarded'));
   // Changelog modal state
   const [showChangelog, setShowChangelog] = useState(false);
+  const [showToolsMenu, setShowToolsMenu] = useState(false);
   // Changelog unread state (simple: mark as seen after open)
   const [changelogSeen, setChangelogSeen] = useState(() => !!localStorage.getItem('auraChangelogSeen'));
   // Toast state
@@ -309,43 +310,55 @@ function App() {
               onClick={() => setActiveSection('ai-chatbot')}
             >AI Chatbot</button>
           </div>
-          <div className="mega-menu">
-            <button className="tools-dropdown-btn">Browse Tools ▾</button>
-            <div className="tools-mega-menu-list">
-              <div className="tools-mega-menu-columns">
-                {(() => {
-                  // Group tools by category
-                  const grouped = toolsMeta.reduce((acc, tool) => {
-                    const cat = tool.category || 'Other';
-                    if (!acc[cat]) acc[cat] = [];
-                    acc[cat].push(tool);
-                    return acc;
-                  }, {});
-                  return Object.entries(grouped).map(([cat, tools]) => (
-                    <div className="tools-mega-menu-col" key={cat}>
-                      <div className="tools-mega-menu-col-label">{cat}</div>
-                      {tools.map(tool => (
-                        <button
-                          key={tool.id}
-                          className={activeSection === tool.id ? 'tab-active' : ''}
-                          onClick={() => {
-                            const targetGroup = toolToMainSuiteGroup[tool.id];
-                            if (targetGroup || tool.id === 'main-suite') {
-                              navigateToMainSuite(targetGroup);
-                            } else {
-                              setActiveSection(tool.id);
-                            }
-                          }}
-                          title={tool.description}
-                        >
-                          {tool.name}
-                        </button>
-                      ))}
-                    </div>
-                  ));
-                })()}
+          <div
+            className="mega-menu"
+            onMouseLeave={() => setShowToolsMenu(false)}
+          >
+            <button
+              className="tools-dropdown-btn"
+              onClick={() => setShowToolsMenu((v) => !v)}
+              aria-expanded={showToolsMenu}
+            >
+              Browse Tools ▾
+            </button>
+            {showToolsMenu && (
+              <div className="tools-mega-menu-list">
+                <div className="tools-mega-menu-columns">
+                  {(() => {
+                    // Group tools by category
+                    const grouped = toolsMeta.reduce((acc, tool) => {
+                      const cat = tool.category || 'Other';
+                      if (!acc[cat]) acc[cat] = [];
+                      acc[cat].push(tool);
+                      return acc;
+                    }, {});
+                    return Object.entries(grouped).map(([cat, tools]) => (
+                      <div className="tools-mega-menu-col" key={cat}>
+                        <div className="tools-mega-menu-col-label">{cat}</div>
+                        {tools.map(tool => (
+                          <button
+                            key={tool.id}
+                            className={activeSection === tool.id ? 'tab-active' : ''}
+                            onClick={() => {
+                              const targetGroup = toolToMainSuiteGroup[tool.id];
+                              setShowToolsMenu(false);
+                              if (targetGroup || tool.id === 'main-suite') {
+                                navigateToMainSuite(targetGroup);
+                              } else {
+                                setActiveSection(tool.id);
+                              }
+                            }}
+                            title={tool.description}
+                          >
+                            {tool.name}
+                          </button>
+                        ))}
+                      </div>
+                    ));
+                  })()}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </nav>
         <main className="app-main">
