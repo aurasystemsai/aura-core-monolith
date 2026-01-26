@@ -462,6 +462,154 @@ function App() {
                       case "ai-support-assistant": return <AiSupportAssistant key={tool.id} />;
                       case "ai-launch-planner": return <AiLaunchPlanner key={tool.id} />;
                       case "ai-alt-text-engine": return <ImageAltMediaSEO key={tool.id} />;
+                      case "google-ads-integration":
+                        return (
+                          <ToolScaffold
+                            key={tool.id}
+                            toolId={tool.id}
+                            toolName={tool.name}
+                            fields={[
+                              { name: "customerId", label: "Google Ads Customer ID", type: "text", required: true },
+                              { name: "developerToken", label: "Developer Token", type: "password", required: true },
+                              { name: "refreshToken", label: "OAuth Refresh Token", type: "password", required: true },
+                              { name: "notes", label: "Notes", type: "textarea" },
+                            ]}
+                          />
+                        );
+                      case "facebook-ads-integration":
+                        return (
+                          <ToolScaffold
+                            key={tool.id}
+                            toolId={tool.id}
+                            toolName={tool.name}
+                            fields={[
+                              { name: "adAccountId", label: "Ad Account ID", type: "text", required: true },
+                              { name: "accessToken", label: "Access Token", type: "password", required: true },
+                              { name: "appId", label: "App ID", type: "text" },
+                              { name: "appSecret", label: "App Secret", type: "password" },
+                            ]}
+                          />
+                        );
+                      case "tiktok-ads-integration":
+                        return (
+                          <ToolScaffold
+                            key={tool.id}
+                            toolId={tool.id}
+                            toolName={tool.name}
+                            fields={[
+                              { name: "advertiserId", label: "Advertiser ID", type: "text", required: true },
+                              { name: "accessToken", label: "Access Token", type: "password", required: true },
+                              { name: "notes", label: "Notes", type: "textarea" },
+                            ]}
+                          />
+                        );
+                      case "ads-anomaly-guard":
+                        return (
+                          <ToolScaffold
+                            key={tool.id}
+                            toolId={tool.id}
+                            toolName={tool.name}
+                            fields={[
+                              { name: "channels", label: "Channels (Google, Meta, TikTok)", type: "text", required: true },
+                              { name: "alertEmails", label: "Alert Emails", type: "text" },
+                              { name: "alertThreshold", label: "Alert Threshold (%)", type: "number", required: true },
+                            ]}
+                          />
+                        );
+                      case "ad-creative-optimizer":
+                        return (
+                          <ToolScaffold
+                            key={tool.id}
+                            toolId={tool.id}
+                            toolName={tool.name}
+                            fields={[
+                              { name: "productOrOffer", label: "Product/Offer", type: "text", required: true },
+                              { name: "targetAudience", label: "Target Audience", type: "textarea" },
+                              { name: "tone", label: "Tone/Voice", type: "text" },
+                              { name: "channels", label: "Channels (Google, Meta, TikTok)", type: "text" },
+                            ]}
+                          />
+                        );
+                      case "omnichannel-campaign-builder":
+                        return (
+                          <ToolScaffold
+                            key={tool.id}
+                            toolId={tool.id}
+                            toolName={tool.name}
+                            fields={[
+                              { name: "campaignName", label: "Campaign Name", type: "text", required: true },
+                              { name: "channels", label: "Channels (Email, SMS, Ads)", type: "text", required: true },
+                              { name: "goal", label: "Goal (Launch, Winback, Retarget)", type: "text" },
+                              { name: "budget", label: "Budget", type: "text" },
+                            ]}
+                          />
+                        );
+                      case "ai-segmentation-engine":
+                        return (
+                          <ToolScaffold
+                            key={tool.id}
+                            toolId={tool.id}
+                            toolName={tool.name}
+                            fields={[
+                              { name: "seedSignals", label: "Seed Signals (events, traits)", type: "textarea" },
+                              { name: "minAudienceSize", label: "Min Audience Size", type: "number" },
+                            ]}
+                          />
+                        );
+                      case "predictive-analytics-widgets":
+                        return (
+                          <ToolScaffold
+                            key={tool.id}
+                            toolId={tool.id}
+                            toolName={tool.name}
+                            fields={[
+                              { name: "metrics", label: "Metrics (Churn, LTV, Demand)", type: "text", required: true },
+                              { name: "frequency", label: "Refresh Frequency", type: "text" },
+                              { name: "alertEmails", label: "Alert Emails", type: "text" },
+                            ]}
+                          />
+                        );
+                      case "ai-content-image-gen":
+                        return (
+                          <ToolScaffold
+                            key={tool.id}
+                            toolId={tool.id}
+                            toolName={tool.name}
+                            fields={[
+                              { name: "purpose", label: "Purpose (Ad, Email, Landing)", type: "text", required: true },
+                              { name: "productDetails", label: "Product/Offer Details", type: "textarea" },
+                              { name: "tone", label: "Tone/Voice", type: "text" },
+                              { name: "imageStyle", label: "Image Style", type: "text" },
+                            ]}
+                          />
+                        );
+                      case "self-service-analytics":
+                        return (
+                          <ToolScaffold
+                            key={tool.id}
+                            toolId={tool.id}
+                            toolName={tool.name}
+                            fields={[
+                              { name: "dashboards", label: "Dashboards to create", type: "text", required: true },
+                              { name: "sources", label: "Data Sources", type: "text" },
+                              { name: "schedule", label: "Schedule (daily/weekly)", type: "text" },
+                            ]}
+                          />
+                        );
+                      case "compliance-privacy-suite":
+                        return (
+                          <ToolScaffold
+                            key={tool.id}
+                            toolId={tool.id}
+                            toolName={tool.name}
+                            fields={[
+                              { name: "regions", label: "Regions (GDPR/CCPA)", type: "text", required: true },
+                              { name: "dpoEmail", label: "DPO / Compliance Email", type: "text" },
+                              { name: "dataExport", label: "Data Export Requested", type: "checkbox" },
+                              { name: "notes", label: "Notes", type: "textarea" },
+                            ]}
+                          />
+                        );
                       default:
                         // Fallback to generic scaffold for any tool not custom-mapped
                         const defaultFields = [
