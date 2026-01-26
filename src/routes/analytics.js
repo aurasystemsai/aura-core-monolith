@@ -76,7 +76,7 @@ router.get('/revenue', async (req, res) => {
   try {
     shop = getShop(req);
     const { token, source } = resolveToken(req, shop);
-    if (!token) return res.status(401).json({ ok: false, error: `No Shopify admin token available (source=${source}). Reinstall or set SHOPIFY_ACCESS_TOKEN.` });
+    if (!token) return res.json({ ok: false, error: `No Shopify admin token available (source=${source}). Reinstall or set SHOPIFY_ACCESS_TOKEN.`, tokenSource: source, shop });
     // Get total sales for current month
     const today = new Date();
     const start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
@@ -91,8 +91,7 @@ router.get('/revenue', async (req, res) => {
     const total = (orders.orders || []).reduce((sum, o) => sum + parseFloat(o.total_price || 0), 0);
     res.json({ value: total, tokenSource: source });
   } catch (err) {
-    const status = err?.status === 401 || err?.status === 403 ? 401 : 500;
-    res.status(status).json({ ok: false, error: err.message, source: err?.source, shop });
+    res.json({ ok: false, error: err.message, source: err?.source || 'shopify', shop });
   }
 });
 
@@ -101,7 +100,7 @@ router.get('/orders', async (req, res) => {
   try {
     shop = getShop(req);
     const { token, source } = resolveToken(req, shop);
-    if (!token) return res.status(401).json({ ok: false, error: `No Shopify admin token available (source=${source}).` });
+    if (!token) return res.json({ ok: false, error: `No Shopify admin token available (source=${source}).`, tokenSource: source, shop });
     const today = new Date();
     const start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
     const end = today.toISOString();
@@ -114,8 +113,7 @@ router.get('/orders', async (req, res) => {
     }, token);
     res.json({ value: (orders.orders || []).length, tokenSource: source });
   } catch (err) {
-    const status = err?.status === 401 || err?.status === 403 ? 401 : 500;
-    res.status(status).json({ ok: false, error: err.message, source: err?.source, shop });
+    res.json({ ok: false, error: err.message, source: err?.source || 'shopify', shop });
   }
 });
 
@@ -124,12 +122,11 @@ router.get('/customers', async (req, res) => {
   try {
     shop = getShop(req);
     const { token, source } = resolveToken(req, shop);
-    if (!token) return res.status(401).json({ ok: false, error: `No Shopify admin token available (source=${source}).` });
+    if (!token) return res.json({ ok: false, error: `No Shopify admin token available (source=${source}).`, tokenSource: source, shop });
     const customers = await shopifyFetch(shop, 'customers/count.json', {}, token);
     res.json({ value: customers.count, tokenSource: source });
   } catch (err) {
-    const status = err?.status === 401 || err?.status === 403 ? 401 : 500;
-    res.status(status).json({ ok: false, error: err.message, source: err?.source, shop });
+    res.json({ ok: false, error: err.message, source: err?.source || 'shopify', shop });
   }
 });
 
