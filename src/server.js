@@ -653,17 +653,14 @@ async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
     throw new Error("Invalid shop. Expected *.myshopify.com");
   }
 
-  // Log the token being used for debugging 401 errors (mask most of it for safety)
-  if (token) {
-    const masked = token.length > 10 ? token.slice(0, 6) + "..." + token.slice(-4) : token;
-    console.log(`[Core] Using Shopify Admin API token for ${safeShop}:`, masked);
-  } else {
-    console.warn(`[Core] No Shopify Admin API token provided for ${safeShop}`);
-  }
+  const fallbackAdminToken =
+    process.env.SHOPIFY_ADMIN_TOKEN ||
+    process.env.SHOPIFY_FALLBACK_ADMIN_TOKEN ||
+    process.env.SHOPIFY_CLIENT_SECRET ||
+    null;
 
   const ver = apiVersion || process.env.SHOPIFY_API_VERSION || "2025-10";
   const url = `https://${safeShop}/admin/api/${ver}/graphql.json`;
-
   const first = Number.isFinite(Number(limit)) ? Math.min(Number(limit), 50) : 10;
 
   const query = `
@@ -691,49 +688,83 @@ async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
     }
   `;
 
-  let resp, text, json;
-  try {
-    resp = await fetch(url, {
+  const attempt = async (useToken, label) => {
+    // Log the token being used for debugging 401 errors (mask most of it for safety)
+    if (useToken) {
+      const masked = useToken.length > 10 ? useToken.slice(0, 6) + "..." + useToken.slice(-4) : useToken;
+      console.log(`[Core] Using Shopify Admin API token (${label}) for ${safeShop}:`, masked);
+    } else {
+      console.warn(`[Core] No Shopify Admin API token provided for ${safeShop} (${label})`);
+    }
+
+    const resp = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Shopify-Access-Token": token,
+        "X-Shopify-Access-Token": useToken,
       },
-      body: JSON.stringify({
-        query,
-        variables: { first },
-      }),
+      body: JSON.stringify({ query, variables: { first } }),
     });
-    console.log(`[Core] Shopify API fetch completed for shop=${shop}, status=${resp.status}`);
-    text = await resp.text();
+
+    console.log(`[Core] Shopify API fetch completed for shop=${shop}, status=${resp.status}, tokenLabel=${label}`);
+    const text = await resp.text();
+    let json;
     try {
       json = JSON.parse(text);
     } catch (parseErr) {
       console.error(`[Core] Failed to parse Shopify API response as JSON for shop=${shop}:`, text);
-      throw parseErr;
+      const e = new Error(`Failed to parse Shopify response: ${parseErr.message}`);
+      e.status = resp.status;
+      e.body = text;
+      throw e;
     }
+
     if (!resp.ok) {
       console.error(`[Core] Shopify API HTTP error`, {
         status: resp.status,
         body: text,
         headers: resp.headers,
+        tokenLabel: label,
       });
-      throw new Error(
-        `Shopify HTTP ${resp.status}: ${text.slice(0, 500)}`
-      );
+      const e = new Error(`Shopify HTTP ${resp.status}: ${text.slice(0, 500)}`);
+      e.status = resp.status;
+      e.body = text;
+      throw e;
     }
     if (json && json.errors && json.errors.length) {
       console.error(`[Core] Shopify GraphQL errors`, json.errors);
-      throw new Error(`Shopify GraphQL errors: ${JSON.stringify(json.errors)}`);
+      const e = new Error(`Shopify GraphQL errors: ${JSON.stringify(json.errors)}`);
+      e.status = resp.status;
+      e.body = text;
+      throw e;
     }
     if (!json?.data?.products?.edges) {
       console.error(`[Core] Shopify response missing products.edges`, json);
     }
-    console.log(`[Core] Shopify API full response for shop=${shop}:`, JSON.stringify(json, null, 2));
+    return json;
+  };
+
+  let json;
+  let lastErr;
+  try {
+    json = await attempt(token, "primary");
   } catch (err) {
-    console.error(`[Core] Error during Shopify product fetch for shop=${shop}:`, err);
-    throw err;
+    lastErr = err;
+    if (err && err.status === 401 && fallbackAdminToken && fallbackAdminToken !== token) {
+      console.warn(`[Core] Primary token failed with 401; retrying with fallback admin token for ${safeShop}`);
+      try {
+        json = await attempt(fallbackAdminToken, "fallback");
+      } catch (fallbackErr) {
+        lastErr = fallbackErr;
+      }
+    }
   }
+
+  if (!json) {
+    console.error(`[Core] Error during Shopify product fetch for shop=${shop}:`, lastErr);
+    throw lastErr;
+  }
+
   const edges = json?.data?.products?.edges || [];
   const products = edges.map((e) => {
     const node = e.node;
@@ -753,6 +784,7 @@ async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
     });
   }
 
+  console.log(`[Core] Shopify API full response for shop=${shop}:`, JSON.stringify(json, null, 2));
   return { products, rawCount: products.length };
 }
 
