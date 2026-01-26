@@ -66,7 +66,8 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
   const [fatal, setFatal] = useState(null);
   // FIX: editState must be at top level, not inside map
   const [editState, setEditState] = useState({});
-  // Aggressive debug: always show debug info panel
+  // Debug: only show when AURA_DEBUG is set in localStorage
+  const showDebug = (typeof window !== 'undefined' && window.localStorage && window.localStorage.getItem('AURA_DEBUG'));
   function DebugPanel() {
     return (
       <div className="pl-debug-panel">
@@ -251,7 +252,7 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
     return (
       <div className="pl-fatal">
         Fatal error: {fatal}
-        <DebugPanel />
+        {showDebug && <DebugPanel />}
       </div>
     );
   }
@@ -259,12 +260,12 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
     return (
       <div className="pl-init">
         <div>Initializing Products screen...</div>
-        <DebugPanel />
+        {showDebug && <DebugPanel />}
       </div>
     );
   }
-  if (!shopToken || !shopDomain) {
-    debugLog('No shopToken or shopDomain', { shopToken, shopDomain });
+  if (!shopDomain) {
+    debugLog('No shopDomain', { shopToken, shopDomain });
     return (
       <div className="pl-connect">
         <h1 className="pl-title">Shopify Products</h1>
@@ -278,7 +279,7 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
             className="pl-btn pl-btn--accent pl-btn--connect"
           >Connect to Shopify</button>
         </div>
-        <DebugPanel />
+        {showDebug && <DebugPanel />}
       </div>
     );
   }
@@ -333,14 +334,14 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
           {error && (
             <div className="pl-error">
               {error}
-              <DebugPanel />
+              {showDebug && <DebugPanel />}
             </div>
           )}
           {!loading && !error && (
             filteredProducts.length === 0 ? (
               <div className="pl-empty">
                 No products found.<br/>
-                <DebugPanel />
+                {showDebug && <DebugPanel />}
               </div>
             ) : (
               <div className="pl-table-wrap" role="region" aria-label="Products Table">
