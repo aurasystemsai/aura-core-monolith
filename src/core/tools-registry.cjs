@@ -68,6 +68,16 @@ const brandIntelligenceLayer = require("../tools/brand-intelligence-layer");
 const creativeAutomationEngine = require("../tools/creative-automation-engine");
 const auraOperationsAi = require("../tools/aura-operations-ai");
 
+// Stub factory to keep new tools productive while full logic is built
+const makeStubTool = require("../tools/_stub-tool");
+const stubTool = (id, name, category) => {
+  const stub = makeStubTool(id);
+  return {
+    meta: { id, name, category: category || null },
+    run: stub.run,
+  };
+};
+
 // ------------------------------------------------------
 // Platform / orchestration
 // (SDKs like aura-api-sdk should NOT be registered as tools)
@@ -121,6 +131,63 @@ const allTools = [
   brandIntelligenceLayer,
   creativeAutomationEngine,
   auraOperationsAi,
+
+  // Ads, analytics, and orchestration stubs (fully wired, stub logic)
+  stubTool(
+    "google-ads-integration",
+    "Google Ads Integration",
+    "Ads / Marketing"
+  ),
+  stubTool(
+    "facebook-ads-integration",
+    "Facebook/Instagram Ads Integration",
+    "Ads / Marketing"
+  ),
+  stubTool(
+    "tiktok-ads-integration",
+    "TikTok Ads Integration",
+    "Ads / Marketing"
+  ),
+  stubTool(
+    "ads-anomaly-guard",
+    "Ads Anomaly Guard",
+    "Ads / Marketing"
+  ),
+  stubTool(
+    "ad-creative-optimizer",
+    "Ad Creative Optimizer",
+    "Ads / Marketing"
+  ),
+  stubTool(
+    "omnichannel-campaign-builder",
+    "Omnichannel Campaign Builder",
+    "Marketing / Automation"
+  ),
+  stubTool(
+    "ai-segmentation-engine",
+    "AI Segmentation Engine",
+    "Personalization / AI"
+  ),
+  stubTool(
+    "predictive-analytics-widgets",
+    "Predictive Analytics Widgets",
+    "Analytics / AI"
+  ),
+  stubTool(
+    "ai-content-image-gen",
+    "AI Content & Image Gen",
+    "Content / AI"
+  ),
+  stubTool(
+    "self-service-analytics",
+    "Self-Service Analytics",
+    "Analytics"
+  ),
+  stubTool(
+    "compliance-privacy-suite",
+    "Compliance & Privacy Suite",
+    "Compliance"
+  ),
 
   // Platform / orchestration
   workflowOrchestrator,
