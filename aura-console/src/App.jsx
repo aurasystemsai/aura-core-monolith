@@ -261,8 +261,9 @@ function App() {
           <div className="page-frame fade-in">
             <section className="tool-section">
               {/* DEBUG: dashboard render path */}
-              {activeSection === "dashboard" && !project && <div style={{color:'#ff0',background:'#232336',padding:16}}>DEBUG: No project found, dashboard not rendered</div>}
+                {activeSection === "dashboard" && !project && <div style={{color:'#ff0',background:'#232336',padding:16}}>DEBUG: No project found, dashboard not rendered</div>}
                 {activeSection === "dashboard" && project && <Dashboard setActiveSection={setActiveSection} />}
+                {activeSection === "main-suite" && <MainSuite setActiveSection={setActiveSection} />}
               <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading…</div>}>
                 {activeSection === "pricing" && <PricingPage />}
                 {activeSection === "automation-scheduler" && <AutomationScheduler />}
@@ -314,7 +315,7 @@ function App() {
                 {toolsMeta.map(tool => {
                   if (activeSection === tool.id) {
                     switch (tool.id) {
-                      case "main-suite": return <MainSuite key={tool.id} />;
+                      case "main-suite": return <MainSuite key={tool.id} setActiveSection={setActiveSection} />;
                       case "abandoned-checkout-winback": return <AbandonedCheckoutWinback key={tool.id} />;
                       case "customer-data-platform": return <CustomerDataPlatform key={tool.id} />;
                       case "visual-workflow-builder": return <VisualWorkflowBuilder key={tool.id} />;

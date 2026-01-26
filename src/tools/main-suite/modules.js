@@ -10,9 +10,9 @@ const moduleGroups = [
     summary: "Orchestrate and execute flows with triggers, conditions, and webhooks.",
     modules: [
       { id: "workflow-orchestrator", name: "Workflow Orchestrator", description: "Coordinate multi-step automations across tools." },
-      { id: "workflow-automation-builder", name: "Workflow Automation Builder", description: "Design reusable automation blueprints." },
-      { id: "visual-workflow-builder", name: "Visual Workflow Builder", description: "Drag-and-drop canvas for workflows." },
-      { id: "webhook-api-triggers", name: "Webhook & API Triggers", description: "Trigger flows from webhooks and API events." },
+      { id: "workflow-automation-builder", name: "Workflow Automation Builder", description: "Design reusable automation blueprints.", status: "new", docUrl: "https://github.com/aurasystemsai/aura-core-monolith/docs/AUTOMATION.md" },
+      { id: "visual-workflow-builder", name: "Visual Workflow Builder", description: "Drag-and-drop canvas for workflows.", status: "beta" },
+      { id: "webhook-api-triggers", name: "Webhook & API Triggers", description: "Trigger flows from webhooks and API events.", docUrl: "https://github.com/aurasystemsai/aura-core-monolith/docs/API.md" },
       { id: "conditional-logic-automation", name: "Conditional Logic Automation", description: "Branching rules and decisioning." }
     ]
   },
@@ -22,9 +22,9 @@ const moduleGroups = [
     summary: "Attribution, dashboards, and integrations in one place.",
     modules: [
       { id: "advanced-analytics-attribution", name: "Advanced Attribution", description: "Attribution insights and trending." },
-      { id: "reporting-integrations", name: "Reporting Integrations", description: "Pipelines into BI/reporting destinations." },
-      { id: "custom-dashboard-builder", name: "Custom Dashboards", description: "Assemble dashboards from data sources." },
-      { id: "auto-insights", name: "Auto Insights", description: "Automated executive-ready highlights." }
+      { id: "reporting-integrations", name: "Reporting Integrations", description: "Pipelines into BI/reporting destinations.", status: "new" },
+      { id: "custom-dashboard-builder", name: "Custom Dashboards", description: "Assemble dashboards from data sources.", docUrl: "https://github.com/aurasystemsai/aura-core-monolith/docs/ANALYTICS.md" },
+      { id: "auto-insights", name: "Auto Insights", description: "Automated executive-ready highlights.", status: "beta" }
     ]
   },
   {
@@ -37,7 +37,7 @@ const moduleGroups = [
       { id: "technical-seo-auditor", name: "Technical SEO", description: "Technical diagnostics and fixes." },
       { id: "on-page-seo-engine", name: "On-Page SEO", description: "Optimize on-page elements and content." },
       { id: "rank-visibility-tracker", name: "Rank Visibility", description: "Track rankings and visibility." },
-      { id: "serp-tracker", name: "SERP Tracker", description: "SERP monitoring and deltas." },
+      { id: "serp-tracker", name: "SERP Tracker", description: "SERP monitoring and deltas.", status: "beta" },
       { id: "schema-rich-results-engine", name: "Schema / Rich Results", description: "Structured data generation." },
       { id: "image-alt-media-seo", name: "Media SEO", description: "Image/alt/media optimization." }
     ]
@@ -50,7 +50,7 @@ const moduleGroups = [
       { id: "customer-data-platform", name: "Customer Data Platform", description: "Profiles, traits, and audiences." },
       { id: "personalization-recommendation-engine", name: "Recommendations", description: "AI-driven product/content recs." },
       { id: "advanced-personalization-engine", name: "Advanced Personalization", description: "Contextual and real-time rendering." },
-      { id: "upsell-cross-sell-engine", name: "Upsell / Cross-Sell", description: "Offer targeting for AOV lift." },
+      { id: "upsell-cross-sell-engine", name: "Upsell / Cross-Sell", description: "Offer targeting for AOV lift.", status: "new" },
       { id: "ltv-churn-predictor", name: "LTV & Churn", description: "Predictive scoring for lifecycle actions." }
     ]
   },
@@ -63,7 +63,7 @@ const moduleGroups = [
       { id: "inventory-forecasting", name: "Inventory Forecasting", description: "Demand projections and stock risk." },
       { id: "inventory-supplier-sync", name: "Supplier Sync", description: "Supplier sync and POs." },
       { id: "dynamic-pricing-engine", name: "Dynamic Pricing", description: "Pricing rules and experiments." },
-      { id: "finance-autopilot", name: "Finance Autopilot", description: "Ops automations for finance." },
+      { id: "finance-autopilot", name: "Finance Autopilot", description: "Ops automations for finance.", status: "beta" },
       { id: "daily-cfo-pack", name: "Daily CFO Pack", description: "Daily KPIs and alerts." }
     ]
   },
@@ -76,7 +76,7 @@ const moduleGroups = [
       { id: "abandoned-checkout-winback", name: "Checkout Winback", description: "Recover abandoned carts." },
       { id: "multi-channel-optimizer", name: "Multi-Channel Optimizer", description: "Budget/channel allocation." },
       { id: "returns-rma-automation", name: "Returns / RMA", description: "Post-purchase returns flows." },
-      { id: "churn-prediction-playbooks", name: "Churn Playbooks", description: "Retention actions by segment." }
+      { id: "churn-prediction-playbooks", name: "Churn Playbooks", description: "Retention actions by segment.", status: "beta" }
     ]
   },
   {
