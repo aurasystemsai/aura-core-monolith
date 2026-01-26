@@ -314,6 +314,7 @@ function App() {
                 {/* Other custom UIs and fallback ToolScaffold */}
                 {toolsMeta.map(tool => {
                   if (activeSection === tool.id) {
+                    if (tool.id === "main-suite") return null; // main suite handled by top-level render
                     switch (tool.id) {
                       case "abandoned-checkout-winback": return <AbandonedCheckoutWinback key={tool.id} />;
                       case "customer-data-platform": return <CustomerDataPlatform key={tool.id} />;
