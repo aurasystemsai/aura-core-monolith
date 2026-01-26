@@ -10,7 +10,6 @@ A modern, full-stack Shopify automation and AI platform.
 - Automated tests (Jest, React Testing Library, supertest)
 - Robust error handling (backend and frontend)
 - Tool registry and modular architecture
-- Shopify app bridge integration
 - Project, content, and automation management
 
 ## Getting Started
