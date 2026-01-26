@@ -1,122 +1,160 @@
-// ...existing code...
+import React, { useState } from "react";
+
+const samplePayload = {
+  shopifyOrders: [
+    {
+      id: "order-123",
+      name: "#123",
+      customer: { email: "user@example.com" },
+      total_price: 120,
+      subtotal_price: 100,
+      currency: "USD",
+      created_at: new Date().toISOString(),
+      referring_site: "https://google.com?q=shoes",
+      landing_site: "/product/shoes",
+      source_name: "google",
+    },
+  ],
+  adEvents: [
+    {
+      id: "click-1",
+      type: "click",
+      channel: "google-ads",
+      campaign: "Spring Sale",
+      value: 0,
+      currency: "USD",
+      user_id: "user@example.com",
+      timestamp: new Date(Date.now() - 3600 * 1000).toISOString(),
+    },
+  ],
+  offlineEvents: [],
+  model: "linear",
+  includeJourneys: true,
+  cohortKey: "channel",
+};
 
 export default function AdvancedAnalyticsAttribution() {
-  // ...existing code...
-  // Remove stray closing parenthesis and misplaced code
-  // If you need async logic, place it inside a function (e.g., handleAnalyze)
+  const [payload, setPayload] = useState(JSON.stringify(samplePayload, null, 2));
+  const [query, setQuery] = useState("How is performance by channel and where should we shift budget?");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-// Import/export handlers
-const handleImport = e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = evt => {
+  const run = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const importedHistory = JSON.parse(evt.target.result);
-      setHistory(importedHistory);
-      setImported(file.name);
-    } catch (err) {
-      setError("Invalid file format");
+      const body = JSON.parse(payload);
+      const res = await fetch("/api/advanced-analytics-attribution/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...body, query }),
+      });
+      const data = await res.json();
+      if (!data.ok && data.error) throw new Error(data.error);
+      setResult(data);
+    } catch (e) {
+      setError(e.message || "Request failed");
+    } finally {
+      setLoading(false);
     }
   };
-  reader.readAsText(file);
-};
-const handleExport = () => {
-  const blob = new Blob([JSON.stringify(history)], { type: "application/json" });
-  setExported(URL.createObjectURL(blob));
-};
-const handleFeedback = () => {
-  setFeedback("");
-  // Could POST feedback to backend here
-};
 
-const onboardingContent = (
-  <div className="aura-card" style={{ padding: 16, marginBottom: 18 }}>
-    <div style={{ fontWeight: 600, marginBottom: 6 }}>How to use Advanced Analytics Attribution:</div>
-    <ol style={{ margin: 0, paddingLeft: 18 }}>
-      <li>Describe your analytics or attribution question in the input box.</li>
-      <li>Click Analyze to get actionable insights and channel breakdowns.</li>
-      <li>Review results, export history, and send feedback for improvements.</li>
-    </ol>
-  </div>
-);
-
-return (
-  <div className="aura-card" style={{ padding: 32 }}>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-      <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0, color: "var(--text-primary)" }}>Advanced Analytics Attribution</h2>
-    </div>
-    <div style={{ marginBottom: 10, color: "var(--text-accent)", fontWeight: 600 }}>
-      <span role="img" aria-label="chart">📊</span> Analyze attribution and performance across all channels.
-    </div>
-    <button onClick={() => setShowOnboarding(v => !v)} className="aura-btn" style={{ marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
-    {showOnboarding && onboardingContent}
-
-    {/* Query Input */}
-    <input
-      value={query}
-      onChange={e => setQuery(e.target.value)}
-      type="text"
-      className="aura-input"
-      style={{ width: "100%", marginBottom: 18 }}
-      placeholder="Describe your analytics or attribution question..."
-      aria-label="Analytics query input"
-    />
-    <button onClick={handleAnalyze} disabled={loading || !query} className="aura-btn" style={{ marginBottom: 18 }}>{loading ? "Analyzing..." : "Analyze"}</button>
-    {error && <div style={{ color: "var(--button-danger-bg)", marginBottom: 10 }}>{error}</div>}
-
-    {/* Result Visualization */}
-    {result && (
-      <div className="aura-card" style={{ padding: 16, marginBottom: 12 }}>
-        <div style={{ fontWeight: 600, marginBottom: 4 }}>Analysis Result:</div>
-        <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{JSON.stringify(result, null, 2)}</pre>
+  return (
+    <div style={{ padding: 24, display: "grid", gap: 16 }}>
+      <div style={{ display: "grid", gap: 4 }}>
+        <h2 style={{ margin: 0 }}>Advanced Analytics Attribution</h2>
+        <div style={{ color: "#b8c2d0" }}>
+          Ingest Shopify + ads + offline events, run attribution models, and view performance, journeys, and cohorts.
+        </div>
       </div>
-    )}
 
-    {/* Import/Export */}
-    <div style={{ marginBottom: 24 }}>
-      <input type="file" accept="application/json" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImport} />
-      <button onClick={() => fileInputRef.current.click()} className="aura-btn" style={{ marginRight: 12 }}>Import History</button>
-      <button onClick={handleExport} className="aura-btn">Export History</button>
-      {imported && <span style={{ marginLeft: 12, color: 'var(--text-accent)' }}>Imported: {imported}</span>}
-      {exported && <a href={exported} download="analytics-history.json" style={{ marginLeft: 12, color: 'var(--text-accent)', textDecoration: 'underline' }}>Download Export</a>}
-    </div>
-
-    {/* History */}
-    {history.length > 0 && (
-      <div className="aura-card" style={{ marginTop: 24, padding: 18 }}>
-        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analysis History</div>
-        <ul style={{ paddingLeft: 18 }}>
-          {history.map((h, i) => (
-            <li key={i} style={{ marginBottom: 10 }}>
-              <div><b>Query:</b> {h.query}</div>
-              <div><b>Result:</b> {JSON.stringify(h.result).slice(0, 120)}{JSON.stringify(h.result).length > 120 ? "..." : ""}</div>
-            </li>
-          ))}
-        </ul>
+      <div style={{ display: "grid", gap: 8 }}>
+        <label style={{ fontWeight: 700 }}>Query for AI Insights</label>
+        <textarea
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          rows={3}
+          style={{ width: "100%", padding: 12, borderRadius: 8, border: "1px solid #2c3a4d", background: "#101726", color: "#e9efff" }}
+        />
       </div>
-    )}
 
-    {/* Feedback */}
-    <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} className="aura-card" style={{ marginTop: 32, padding: 20 }} aria-label="Send feedback">
-      <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
-      <textarea
-        value={feedback}
-        onChange={e => setFeedback(e.target.value)}
-        rows={3}
-        className="aura-input"
-        style={{ width: '100%', marginBottom: 12 }}
-        placeholder="Share your feedback or suggestions..."
-        aria-label="Feedback"
-      />
-      <button type="submit" className="aura-btn">Send Feedback</button>
-      {error && <div style={{ color: 'var(--button-danger-bg)', marginTop: 8 }}>{error}</div>}
-    </form>
+      <div style={{ display: "grid", gap: 8 }}>
+        <label style={{ fontWeight: 700 }}>Payload (JSON)</label>
+        <textarea
+          value={payload}
+          onChange={(e) => setPayload(e.target.value)}
+          rows={18}
+          style={{ width: "100%", padding: 12, borderRadius: 8, border: "1px solid #2c3a4d", background: "#0d1420", color: "#e9efff", fontFamily: "monospace" }}
+        />
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button onClick={run} disabled={loading} style={{ padding: "10px 14px", borderRadius: 8, border: "none", background: "#22d3ee", color: "#031018", fontWeight: 800, cursor: "pointer" }}>
+            {loading ? "Running..." : "Run Attribution"}
+          </button>
+          <button onClick={() => setPayload(JSON.stringify(samplePayload, null, 2))} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#131c2c", color: "#e9efff", fontWeight: 700, cursor: "pointer" }}>
+            Reset Sample
+          </button>
+        </div>
+        {error && <div style={{ color: "#ff8a8a", fontWeight: 700 }}>{error}</div>}
+      </div>
 
-    {/* Accessibility & Compliance */}
-    <div style={{ marginTop: 32, fontSize: 13, color: 'var(--text-accent)', textAlign: "center" }}>
-      <span>Best-in-class SaaS features. Accessibility: WCAG 2.1, keyboard navigation, color contrast. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: 'var(--text-accent)', textDecoration: "underline" }}>Contact Support</a></span>
+      {result && (
+        <div style={{ display: "grid", gap: 12, background: "#0d1420", border: "1px solid #24314a", borderRadius: 10, padding: 16 }}>
+          {result.insights && (
+            <div>
+              <div style={{ fontWeight: 800, marginBottom: 6 }}>AI Insights</div>
+              <div style={{ whiteSpace: "pre-wrap", color: "#dbeafe" }}>{result.insights}</div>
+            </div>
+          )}
+          {result.performance && (
+            <div>
+              <div style={{ fontWeight: 800, marginBottom: 6 }}>Performance by Channel</div>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ textAlign: "left", borderBottom: "1px solid #24314a" }}>
+                    <th style={{ padding: "6px 4px" }}>Channel</th>
+                    <th style={{ padding: "6px 4px" }}>Revenue</th>
+                    <th style={{ padding: "6px 4px" }}>Count</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(result.performance).map(([channel, stats]) => (
+                    <tr key={channel} style={{ borderBottom: "1px solid #1a2538" }}>
+                      <td style={{ padding: "6px 4px" }}>{channel}</td>
+                      <td style={{ padding: "6px 4px" }}>${stats.revenue.toFixed(2)}</td>
+                      <td style={{ padding: "6px 4px" }}>{stats.count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {result.result && (
+            <div>
+              <div style={{ fontWeight: 800, marginBottom: 6 }}>Attribution Result</div>
+              <pre style={{ background: "#0a101b", border: "1px solid #24314a", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 260, overflow: "auto" }}>
+                {JSON.stringify(result.result, null, 2)}
+              </pre>
+            </div>
+          )}
+          {result.journeys && (
+            <div>
+              <div style={{ fontWeight: 800, marginBottom: 6 }}>Journeys</div>
+              <pre style={{ background: "#0a101b", border: "1px solid #24314a", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 260, overflow: "auto" }}>
+                {JSON.stringify(result.journeys, null, 2)}
+              </pre>
+            </div>
+          )}
+          {result.cohorts && (
+            <div>
+              <div style={{ fontWeight: 800, marginBottom: 6 }}>Cohorts</div>
+              <pre style={{ background: "#0a101b", border: "1px solid #24314a", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 200, overflow: "auto" }}>
+                {JSON.stringify(result.cohorts, null, 2)}
+              </pre>
+            </div>
+          )}
+        </div>
+      )}
     </div>
-  </div>
-);
+  );
 }

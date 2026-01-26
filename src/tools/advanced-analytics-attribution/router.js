@@ -1,18 +1,37 @@
 const express = require("express");
 const router = express.Router();
-const { analyzeAttribution } = require("./analyticsAttributionService");
+const tool = require("./index");
+const {
+  ingestData,
+  summarizePerformance,
+  buildJourneys,
+  simpleCohorts,
+} = require("./analyticsAttributionService");
 
 // POST /api/advanced-analytics-attribution/analyze
+// Body: { query?, model?, events?, shopifyOrders?, adEvents?, offlineEvents?, options?, includeJourneys?, cohortKey? }
 router.post("/analyze", async (req, res) => {
   try {
-    const { query } = req.body;
-    if (!query || typeof query !== "string") {
-      return res.json({ ok: false, error: "Missing or invalid query" });
-    }
-    const result = await analyzeAttribution(query);
-    res.json({ ok: true, result });
+    const payload = req.body || {};
+    const result = await tool.run(payload, { requestId: req.id || null });
+    return res.json(result);
   } catch (err) {
-    res.json({ ok: false, error: err.message });
+    return res.json({ ok: false, error: err.message });
+  }
+});
+
+// POST /api/advanced-analytics-attribution/ingest
+// Quickly normalize inbound events and return summaries
+router.post("/ingest", async (req, res) => {
+  try {
+    const { shopifyOrders, adEvents, offlineEvents, events, cohortKey, includeJourneys } = req.body || {};
+    const normalized = ingestData({ shopifyOrders, adEvents, offlineEvents }).concat(events || []);
+    const performance = summarizePerformance(normalized);
+    const journeys = includeJourneys ? buildJourneys(normalized) : undefined;
+    const cohorts = cohortKey ? simpleCohorts(normalized, cohortKey) : undefined;
+    return res.json({ ok: true, events: normalized, performance, journeys, cohorts });
+  } catch (err) {
+    return res.json({ ok: false, error: err.message });
   }
 });
 
