@@ -146,10 +146,10 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
   const fetchProducts = useCallback(() => {
     debugLog('fetchProducts called', { shopDomain, shopToken });
     setInit(true);
-    if (!shopDomain || !shopToken) {
-      debugLog('Missing shopDomain or shopToken', { shopDomain, shopToken });
+    if (!shopDomain) {
+      debugLog('Missing shopDomain', { shopDomain, shopToken });
       setProducts([]);
-      setError('Missing Shopify connection. Please connect your store.');
+      setError('Missing Shopify shop domain. Please connect your store.');
       setLoading(false);
       return;
     }
