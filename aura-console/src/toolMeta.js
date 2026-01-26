@@ -5,6 +5,7 @@
 
 // Unified and deduplicated tool meta registry
 const toolsMeta = [
+  { id: "main-suite", name: "Main Suite", description: "Unified entry point with grouped modules (workflows, analytics, SEO, personalization, lifecycle).", category: "Platform" },
   { id: "abandoned-checkout-winback", name: "Abandoned Checkout Winback", description: "Generates abandoned checkout winback flows.", category: "Email / Automation" },
   { id: "ab-testing-suite", name: "A/B Testing Suite", description: "A/B test creation, management, and analytics.", category: "Analytics" },
   { id: "advanced-analytics-attribution", name: "Advanced Analytics Attribution", description: "Advanced attribution analytics.", category: "Analytics" },

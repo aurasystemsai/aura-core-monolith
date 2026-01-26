@@ -73,6 +73,7 @@ const auraOperationsAi = require("../tools/aura-operations-ai");
 // (SDKs like aura-api-sdk should NOT be registered as tools)
 // ------------------------------------------------------
 const workflowOrchestrator = require("../tools/workflow-orchestrator");
+const mainSuite = require("../tools/main-suite");
 
 // ------------------------------------------------------
 // Master list – ONE place to register tools.
@@ -123,6 +124,7 @@ const allTools = [
 
   // Platform / orchestration
   workflowOrchestrator,
+  mainSuite,
 ];
 
 // ------------------------------------------------------

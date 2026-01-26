@@ -5,6 +5,7 @@ import { useGlobalApiError } from "../globalApiError";
 import toolsMeta from "../toolMeta";
 // ...existing code...
 import ToolScaffold from "./tools/ToolScaffold";
+import MainSuite from "./tools/MainSuite";
 import AbandonedCheckoutWinback from "./tools/AbandonedCheckoutWinback";
 import ProductSeoEngine from "./ProductSeoEngine";
 import AiAltTextEngine from "./AiAltTextEngine";
@@ -16,6 +17,7 @@ import "./ToolsList.css";
 // Map tool IDs to dedicated components if available
 const toolComponents = {
   "abandoned-checkout-winback": AbandonedCheckoutWinback,
+  "main-suite": MainSuite,
   "product-seo": ProductSeoEngine,
   "ai-alt-text-engine": AiAltTextEngine,
   "content-health-auditor": ContentHealthAuditor,

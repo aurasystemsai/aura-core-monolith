@@ -155,6 +155,7 @@ const toolRouters = [
   { path: '/api/blog-draft-engine', router: require('./tools/blog-draft-engine/router') },
   { path: '/api/blog-seo', router: require('./tools/blog-seo/router') },
   { path: '/api/content-health-auditor', router: require('./tools/content-health-auditor/router') },
+  { path: '/api/main-suite', router: require('./tools/main-suite/router') },
 ];
 toolRouters.forEach(({ path, router }) => {
   try {

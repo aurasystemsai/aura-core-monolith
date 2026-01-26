@@ -32,6 +32,7 @@ import ConditionalLogicAutomation from "./components/tools/ConditionalLogicAutom
 import WebhookApiTriggers from "./components/tools/WebhookApiTriggers.jsx";
 import ReportingIntegrations from "./components/tools/ReportingIntegrations.jsx";
 import CustomDashboardBuilder from "./components/tools/CustomDashboardBuilder.jsx";
+import MainSuite from "./components/tools/MainSuite.jsx";
 import ScheduledExport from "./components/tools/ScheduledExport.jsx";
 import ChurnPredictionPlaybooks from "./components/tools/ChurnPredictionPlaybooks.jsx";
 import UpsellCrossSellEngine from "./components/tools/UpsellCrossSellEngine.jsx";
@@ -204,6 +205,10 @@ function App() {
               onClick={() => setActiveSection('dashboard')}
             >Dashboard</button>
             <button
+              className={activeSection === 'main-suite' ? 'tab-active' : ''}
+              onClick={() => setActiveSection('main-suite')}
+            >Main Suite</button>
+            <button
               className={activeSection === 'pricing' ? 'tab-active' : ''}
               onClick={() => setActiveSection('pricing')}
             >Pricing</button>
@@ -258,6 +263,7 @@ function App() {
               {/* DEBUG: dashboard render path */}
               {activeSection === "dashboard" && !project && <div style={{color:'#ff0',background:'#232336',padding:16}}>DEBUG: No project found, dashboard not rendered</div>}
               {activeSection === "dashboard" && project && <Dashboard setActiveSection={setActiveSection} />}
+                {activeSection === "main-suite" && <MainSuite />}
               <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading…</div>}>
                 {activeSection === "pricing" && <PricingPage />}
                 {activeSection === "automation-scheduler" && <AutomationScheduler />}
