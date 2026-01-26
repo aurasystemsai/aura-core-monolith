@@ -380,7 +380,7 @@ function App() {
                 {activeSection === "products" && (
                   <ProductsList 
                     shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
-                    shopToken={localStorage.getItem("shopToken")}
+                    shopToken={undefined /* rely on backend persisted token; avoid stale local token */}
                   />
                 )}
                 {activeSection === "content-health" && project && (

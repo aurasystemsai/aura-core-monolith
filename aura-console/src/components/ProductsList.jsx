@@ -155,7 +155,8 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
     }
     setLoading(true);
     setError(null);
-    fetch(`/api/shopify/products?shop=${encodeURIComponent(shopDomain)}&token=${encodeURIComponent(shopToken)}`)
+    // Do not send a potentially stale client token; let the backend resolve the persisted/session token.
+    fetch(`/api/shopify/products?shop=${encodeURIComponent(shopDomain)}`)
       .then((res) => {
         debugLog('Fetch response', res);
         if (!res.ok) throw new Error('Failed to fetch products');
