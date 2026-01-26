@@ -70,6 +70,7 @@ import AuraOperationsAI from "./components/tools/AuraOperationsAI.jsx";
 import AuraAPISDK from "./components/tools/AuraAPISDK.jsx";
 import AiSupportAssistant from "./components/tools/AISupportAssistant.jsx";
 import AiLaunchPlanner from "./components/tools/AILaunchPlanner.jsx";
+import MainSuite from "./components/tools/MainSuite.jsx";
 // import AiAltTextEngine from "./components/tools/AiAltTextEngine.jsx";
 import ChangelogModal from "./components/ChangelogModal.jsx";
 import Toast from "./components/Toast.jsx";
@@ -315,6 +316,7 @@ function App() {
                 {toolsMeta.map(tool => {
                   if (activeSection === tool.id) {
                     switch (tool.id) {
+                      case "main-suite": return <MainSuite key={tool.id} />;
                       case "abandoned-checkout-winback": return <AbandonedCheckoutWinback key={tool.id} />;
                       case "customer-data-platform": return <CustomerDataPlatform key={tool.id} />;
                       case "visual-workflow-builder": return <VisualWorkflowBuilder key={tool.id} />;

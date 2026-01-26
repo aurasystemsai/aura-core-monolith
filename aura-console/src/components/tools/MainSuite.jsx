@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../api";
 import Toast from "../Toast";
 
@@ -6,6 +6,7 @@ export default function MainSuite() {
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeGroup, setActiveGroup] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -16,8 +17,10 @@ export default function MainSuite() {
         if (!data.ok && !data.modules) {
           throw new Error(data.error || "Failed to load suite modules");
         }
+        const groups = data.modules || [];
         if (mounted) {
-          setModules(data.modules || []);
+          setModules(groups);
+          setActiveGroup(groups[0]?.id || null);
           setError(null);
         }
       } catch (err) {
@@ -31,6 +34,11 @@ export default function MainSuite() {
       mounted = false;
     };
   }, []);
+
+  const active = useMemo(
+    () => modules.find((g) => g.id === activeGroup) || modules[0],
+    [modules, activeGroup]
+  );
 
   if (loading) {
     return <div style={{ color: "#fff", padding: 16 }}>Loading Main Suite…</div>;
@@ -46,9 +54,49 @@ export default function MainSuite() {
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
-      {modules.map((group) => (
+      {/* Tabs */}
+      <div
+        style={{
+          display: "flex",
+          gap: 10,
+          flexWrap: "wrap",
+          background: "#0b1220",
+          border: "1px solid #1f2535",
+          borderRadius: 14,
+          padding: 10,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.24)",
+        }}
+      >
+        {modules.map((group) => {
+          const isActive = group.id === active?.id;
+          return (
+            <button
+              key={group.id}
+              onClick={() => setActiveGroup(group.id)}
+              style={{
+                padding: "10px 14px",
+                borderRadius: 10,
+                border: "1px solid " + (isActive ? "#3b82f6" : "#1f2937"),
+                background: isActive ? "#111827" : "#0f172a",
+                color: isActive ? "#e5e7eb" : "#9ca3af",
+                fontWeight: 700,
+                boxShadow: isActive ? "0 6px 16px rgba(59,130,246,0.28)" : "none",
+                cursor: "pointer",
+              }}
+              aria-pressed={isActive}
+            >
+              {group.title}
+              <span style={{ marginLeft: 8, fontSize: 12, color: isActive ? "#93c5fd" : "#6b7280" }}>
+                {group.modules?.length || 0}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Active group content */}
+      {active && (
         <div
-          key={group.id}
           style={{
             background: "#111827",
             border: "1px solid #233047",
@@ -59,13 +107,13 @@ export default function MainSuite() {
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 18, color: "#7fffd4" }}>{group.title}</div>
-              <div style={{ color: "#c7d2fe", fontSize: 14 }}>{group.summary}</div>
+              <div style={{ fontWeight: 800, fontSize: 18, color: "#7fffd4" }}>{active.title}</div>
+              <div style={{ color: "#c7d2fe", fontSize: 14 }}>{active.summary}</div>
             </div>
-            <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 700 }}>{group.modules?.length || 0} modules</span>
+            <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 700 }}>{active.modules?.length || 0} modules</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
-            {(group.modules || []).map((m) => (
+            {(active.modules || []).map((m) => (
               <div
                 key={m.id}
                 style={{
@@ -88,7 +136,7 @@ export default function MainSuite() {
             ))}
           </div>
         </div>
-      ))}
+      )}
     </div>
   );
 }
