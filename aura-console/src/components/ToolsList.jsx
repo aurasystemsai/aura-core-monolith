@@ -11,6 +11,7 @@ import ProductSeoEngine from "./ProductSeoEngine";
 import AiAltTextEngine from "./AiAltTextEngine";
 import ContentHealthAuditor from "./ContentHealthAuditor";
 import InternalLinkOptimizer from "./InternalLinkOptimizer";
+import AdvancedAnalyticsAttribution from "./tools/AdvancedAnalyticsAttribution.jsx";
 import Toast from "./Toast";
 import "./ToolsList.css";
 
@@ -22,6 +23,7 @@ const toolComponents = {
   "ai-alt-text-engine": AiAltTextEngine,
   "content-health-auditor": ContentHealthAuditor,
   "internal-link-optimizer": InternalLinkOptimizer,
+  "advanced-analytics-attribution": AdvancedAnalyticsAttribution,
   // Add more mappings as you build more UIs
 };
 
