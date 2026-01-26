@@ -180,9 +180,26 @@ app.get('/api/session', (req, res) => {
   // Debug log for session and env
   console.log('[DEBUG /api/session] req.session:', req.session);
   console.log('[DEBUG /api/session] process.env.SHOPIFY_STORE_URL:', process.env.SHOPIFY_STORE_URL);
+
   const shopFromQuery = req.query.shop || null;
-  const shop = req.session?.shop || shopFromQuery || process.env.SHOPIFY_STORE_URL || null;
-  const token = req.session?.shopifyToken || shopTokens.getToken(shop) || null;
+  let shop = req.session?.shop || shopFromQuery || process.env.SHOPIFY_STORE_URL || null;
+
+  // Fallback: if no shop in session/query/env, but exactly one persisted token exists, use it
+  if (!shop) {
+    try {
+      const all = shopTokens.loadAll && shopTokens.loadAll();
+      if (all && typeof all === 'object') {
+        const shops = Object.keys(all);
+        if (shops.length === 1) {
+          shop = shops[0];
+        }
+      }
+    } catch (e) {
+      console.warn('[DEBUG /api/session] failed to load persisted tokens for fallback shop', e);
+    }
+  }
+
+  const token = req.session?.shopifyToken || (shop ? shopTokens.getToken(shop) : null) || null;
   let project = null;
   if (shop) {
     try {
