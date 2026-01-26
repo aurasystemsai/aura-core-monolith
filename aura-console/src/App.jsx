@@ -93,6 +93,64 @@ const ProductSeoEngine = lazy(() => import("./components/ProductSeoEngine"));
 const InternalLinkOptimizer = lazy(() => import("./components/InternalLinkOptimizer"));
 import AiChatbot from "./components/AiChatbot.jsx";
 
+const MAIN_SUITE_PREF_KEY = "main-suite-prefs";
+
+// Map tool ids to Main Suite group ids so the mega menu can deep-link into the suite.
+// Groups come from src/tools/main-suite/modules.js
+const toolToMainSuiteGroup = {
+  // Workflows & Automation
+  "workflow-orchestrator": "workflows",
+  "workflow-automation-builder": "workflows",
+  "visual-workflow-builder": "workflows",
+  "webhook-api-triggers": "workflows",
+  "conditional-logic-automation": "workflows",
+  // Analytics & Reporting
+  "advanced-analytics-attribution": "analytics",
+  "reporting-integrations": "analytics",
+  "custom-dashboard-builder": "analytics",
+  "auto-insights": "analytics",
+  "ab-testing-suite": "analytics",
+  // SEO Core
+  "seo-site-crawler": "seo",
+  "site-audit-health": "seo",
+  "technical-seo-auditor": "seo",
+  "on-page-seo-engine": "seo",
+  "rank-visibility-tracker": "seo",
+  "serp-tracker": "seo",
+  "schema-rich-results-engine": "seo",
+  "image-alt-media-seo": "seo",
+  // Personalization & CDP
+  "customer-data-platform": "personalization",
+  "personalization-recommendation-engine": "personalization",
+  "advanced-personalization-engine": "personalization",
+  "upsell-cross-sell-engine": "personalization",
+  "ltv-churn-predictor": "personalization",
+  // Pricing, Inventory & Finance
+  "advanced-finance-inventory-planning": "revenue",
+  "inventory-forecasting": "revenue",
+  "inventory-supplier-sync": "revenue",
+  "dynamic-pricing-engine": "revenue",
+  "finance-autopilot": "revenue",
+  "daily-cfo-pack": "revenue",
+  // Lifecycle Automation
+  "email-automation-builder": "lifecycle",
+  "abandoned-checkout-winback": "lifecycle",
+  "multi-channel-optimizer": "lifecycle",
+  "returns-rma-automation": "lifecycle",
+  "churn-prediction-playbooks": "lifecycle",
+  "klaviyo-flow-automation": "lifecycle",
+  // Social & Listening
+  "social-media-analytics-listening": "social",
+  "social-scheduler-content-engine": "social",
+  "brand-mention-tracker": "social",
+  // Support & Portals
+  "self-service-portal": "support",
+  "self-service-support-portal": "support",
+  "customer-support-ai": "support",
+  "inbox-assistant": "support",
+  "inbox-reply-assistant": "support",
+};
+
 // Global error boundary for graceful error handling
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -180,6 +238,19 @@ function App() {
   const [changelogSeen, setChangelogSeen] = useState(() => !!localStorage.getItem('auraChangelogSeen'));
   // Toast state
   const [toast, setToast] = useState({ message: '', type: 'info' });
+
+  const navigateToMainSuite = (targetGroupId) => {
+    try {
+      const prefs = JSON.parse(localStorage.getItem(MAIN_SUITE_PREF_KEY) || "{}") || {};
+      localStorage.setItem(
+        MAIN_SUITE_PREF_KEY,
+        JSON.stringify({ ...prefs, activeGroup: targetGroupId || prefs.activeGroup })
+      );
+    } catch (e) {
+      // ignore prefs errors
+    }
+    setActiveSection('main-suite');
+  };
   // Mark onboarding as complete
   const handleCloseOnboarding = () => {
     setShowOnboarding(false);
@@ -244,7 +315,14 @@ function App() {
                         <button
                           key={tool.id}
                           className={activeSection === tool.id ? 'tab-active' : ''}
-                          onClick={() => setActiveSection(tool.id)}
+                          onClick={() => {
+                            const targetGroup = toolToMainSuiteGroup[tool.id];
+                            if (targetGroup || tool.id === 'main-suite') {
+                              navigateToMainSuite(targetGroup);
+                            } else {
+                              setActiveSection(tool.id);
+                            }
+                          }}
                           title={tool.description}
                         >
                           {tool.name}
