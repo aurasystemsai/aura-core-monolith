@@ -317,8 +317,7 @@ export default function MainSuite({ setActiveSection }) {
                       {m.status.toUpperCase()}
                     </span>
                   )}
-                }}
-              >
+                </div>
                 <div style={{ color: palette.muted, fontSize: 13 }}>{m.description}</div>
                 <div style={{ marginTop: "auto", color: palette.primary, fontSize: 12, fontWeight: 700 }}>
                   Tool ID: {m.id}
