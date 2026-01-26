@@ -25,7 +25,9 @@ module.exports = async function verifyShopifySession(req, res, next) {
     req.path.startsWith('/analytics') ||
     req.path.startsWith('/notifications') ||
     req.path.startsWith('/advanced-analytics-attribution') ||
-    req.path.startsWith('/integration')
+    req.path.startsWith('/integration') ||
+    req.path.startsWith('/shopify/products') ||
+    req.path.startsWith('/product-seo')
   )) {
     return next();
   }

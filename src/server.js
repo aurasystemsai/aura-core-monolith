@@ -33,6 +33,7 @@ const YAML = require('yamljs');
 const fs = require('fs');
 const productSeoRouter = require('./tools/product-seo/router');
 const verifyShopifySession = require('./middleware/verifyShopifySession');
+const shopTokens = require('./core/shopTokens');
 // Log which Shopify env vars are loaded (no secrets)
 console.log('[Shopify ENV] SHOPIFY_CLIENT_ID:', !!process.env.SHOPIFY_CLIENT_ID);
 console.log('[Shopify ENV] SHOPIFY_CLIENT_SECRET:', !!process.env.SHOPIFY_CLIENT_SECRET);
@@ -210,23 +211,49 @@ app.get('/api/session', (req, res) => {
 // --- Product SEO Engine: Shopify Products Fetch Endpoint ---
 app.get('/api/product-seo/shopify-products', async (req, res) => {
   try {
-    // Try to get shop domain and token from DB, env, or session
-    // Priority: session > env > fail
-    let shop = req.session && req.session.shop;
-    let token = req.session && req.session.shopifyToken;
-    console.log('[Product SEO] Session values:', {
-      sessionId: req.sessionID,
+    const shopFromQuery = req.query.shop;
+    const shopFromSession = req.session && req.session.shop;
+    const envShop = process.env.SHOPIFY_STORE_URL;
+    const allTokens = (shopTokens && shopTokens.loadAll) ? shopTokens.loadAll() : {};
+    let shop = shopFromQuery || shopFromSession || envShop;
+    if (!shop && allTokens && Object.keys(allTokens).length === 1) {
+      shop = Object.keys(allTokens)[0];
+    }
+
+    const authHeader = req.headers.authorization;
+    const bearerToken = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
+
+    let token =
+      req.query.token ||
+      bearerToken ||
+      (req.session && req.session.shopifyToken) ||
+      (shop ? shopTokens.getToken(shop) : null) ||
+      null;
+
+    if (!token && allTokens && Object.keys(allTokens).length === 1) {
+      const onlyShop = Object.keys(allTokens)[0];
+      token = allTokens[onlyShop]?.token || token;
+      if (!shop) shop = onlyShop;
+    }
+
+    if (!token) token = process.env.SHOPIFY_CLIENT_SECRET || null;
+
+    console.log('[Product SEO] /api/product-seo/shopify-products called', {
       shop,
       token: token ? token.slice(0, 6) + '...' : undefined,
-      cookies: req.headers.cookie
+      sessionId: req.sessionID,
+      cookies: req.headers.cookie,
     });
-    if (!shop) shop = process.env.SHOPIFY_STORE_URL;
-    if (!token) token = process.env.SHOPIFY_CLIENT_SECRET;
-    console.log('[Product SEO] /api/product-seo/shopify-products called', { shop, token: token ? token.slice(0, 6) + '...' : undefined });
-    if (!shop || !token) {
-      console.warn('[Product SEO] Missing shop domain or admin token', { shop, token });
-      return res.status(400).json({ ok: false, error: 'Missing shop domain or admin token. Please connect your Shopify store and provide an Admin API token.' });
+
+    if (!shop) {
+      console.warn('[Product SEO] Missing shop domain');
+      return res.status(400).json({ ok: false, error: 'Missing shop domain. Please connect your Shopify store.' });
     }
+    if (!token) {
+      console.warn('[Product SEO] Missing admin token');
+      return res.status(400).json({ ok: false, error: 'Missing Shopify admin token. Please reinstall the app or provide a valid token.' });
+    }
+
     const apiVersion = '2023-10';
     const limit = Math.max(1, Math.min(250, parseInt(req.query.limit) || 50));
     const url = `https://${shop}/admin/api/${apiVersion}/products.json?limit=${limit}`;
@@ -261,9 +288,9 @@ app.get('/api/product-seo/shopify-products', async (req, res) => {
     res.json({ ok: true, products });
   } catch (err) {
     console.error('[Product SEO] Shopify products fetch error:', err);
-      res.status(500).json({ ok: false, error: err.message || 'Failed to fetch products' });
-    }
-  });
+    res.status(500).json({ ok: false, error: err.message || 'Failed to fetch products' });
+  }
+});
 
 // --- AI Chatbot API (OpenAI-powered, v4 SDK) ---
 app.post('/api/ai/chatbot', async (req, res) => {
@@ -787,49 +814,60 @@ app.get("/api/debug/shopify/products", async (req, res) => {
 // Correct /api/shopify/products route (must be after all middleware, before SPA fallback)
 app.get("/api/shopify/products", async (req, res) => {
   try {
-    if (!debugGuard(req)) {
-      return res.status(401).json({ ok: false, error: "Unauthorized (bad key)" });
+    const shopFromQuery = req.query.shop;
+    const shopFromSession = req.session && req.session.shop;
+    const envShop = process.env.SHOPIFY_STORE_URL;
+    const allTokens = (shopTokens && shopTokens.loadAll) ? shopTokens.loadAll() : {};
+    let shop = shopFromQuery || shopFromSession || envShop;
+    if (!shop && allTokens && Object.keys(allTokens).length === 1) {
+      shop = Object.keys(allTokens)[0];
     }
 
+    const authHeader = req.headers.authorization;
+    const bearerToken = authHeader && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
 
-    const shop = req.query.shop;
-    const limit = req.query.limit;
-    const apiVersion = req.query.apiVersion;
+    let token =
+      req.query.token ||
+      bearerToken ||
+      (req.session && req.session.shopifyToken) ||
+      (shop ? shopTokens.getToken(shop) : null) ||
+      null;
 
-    // Accept token from query, env, or Authorization header
-    let token = req.query.token || process.env.SHOPIFY_CLIENT_SECRET || "";
-    if (!token && req.headers.authorization) {
-      const authHeader = req.headers.authorization;
-      if (authHeader.startsWith("Bearer ")) {
-        token = authHeader.substring(7);
-      }
+    if (!token && allTokens && Object.keys(allTokens).length === 1) {
+      const onlyShop = Object.keys(allTokens)[0];
+      token = allTokens[onlyShop]?.token || token;
+      if (!shop) shop = onlyShop;
     }
+
+    if (!token) token = process.env.SHOPIFY_CLIENT_SECRET || null;
 
     console.log("[Core] /api/shopify/products called", {
       query: req.query,
       headers: req.headers,
+      resolvedShop: shop,
+      token: token ? token.slice(0, 6) + '...' : undefined,
       time: new Date().toISOString(),
     });
 
     if (!shop) {
-      return res.status(400).json({ ok: false, error: "Missing ?shop=" });
+      return res.status(400).json({ ok: false, error: "Missing shop domain. Please connect your Shopify store." });
     }
     if (!token) {
       return res.status(400).json({
         ok: false,
         error:
-          "Missing token. Pass ?token=shpat_... or set env SHOPIFY_CLIENT_SECRET on Render.",
+          "Missing Shopify admin token. Please reinstall the app or provide a valid token.",
       });
     }
 
     try {
       console.log("[Core] About to call fetchShopifyProducts in /api/shopify/products route");
-      const out = await fetchShopifyProducts({ shop, token, apiVersion, limit });
+      const out = await fetchShopifyProducts({ shop, token, apiVersion: req.query.apiVersion, limit: req.query.limit });
       console.log("[Core] fetchShopifyProducts returned in /api/shopify/products route", { count: out.rawCount });
       return res.json({
         ok: true,
         shop,
-        apiVersion: apiVersion || process.env.SHOPIFY_API_VERSION || "2025-10",
+        apiVersion: req.query.apiVersion || process.env.SHOPIFY_API_VERSION || "2025-10",
         count: out.rawCount,
         products: out.products,
       });
@@ -837,8 +875,8 @@ app.get("/api/shopify/products", async (req, res) => {
       console.error("[Core] Shopify fetch error in /api/shopify/products route", {
         shop,
         token: token ? token.slice(0, 6) + '...' : undefined,
-        apiVersion,
-        limit,
+        apiVersion: req.query.apiVersion,
+        limit: req.query.limit,
         error: shopifyErr && shopifyErr.message,
         stack: shopifyErr && shopifyErr.stack,
       });
