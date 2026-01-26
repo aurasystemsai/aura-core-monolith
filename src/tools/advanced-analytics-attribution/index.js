@@ -1,6 +1,10 @@
 "use strict";
 
-const { analyzeAttribution } = require("./analyticsAttributionService");
+const {
+  analyzeAttribution,
+  ingestData,
+  summarizePerformance,
+} = require("./analyticsAttributionService");
 
 module.exports = {
   meta: {
@@ -14,36 +18,46 @@ module.exports = {
    * @param {Object} ctx - request context
    */
   async run(input = {}, ctx = {}) {
-    const { query, model, events, options } = input;
+    const { query, model, events, options, shopifyOrders, adEvents, offlineEvents } = input;
+
+    // Ingest external sources into normalized events
+    let unifiedEvents = Array.isArray(events) ? [...events] : [];
+    if (shopifyOrders || adEvents || offlineEvents) {
+      unifiedEvents = unifiedEvents.concat(
+        ingestData({ shopifyOrders, adEvents, offlineEvents })
+      );
+    }
     // If a query is provided, use the OpenAI-powered assistant for smart analysis
     if (query) {
-      const insights = await analyzeAttribution(query);
-      return { ok: true, insights };
+      const perf = summarizePerformance(unifiedEvents);
+      const insights = await analyzeAttribution(query, { performance: perf, model });
+      return { ok: true, insights, performance: perf };
     }
     // If events and a model are provided, run the attribution model
-    if (Array.isArray(events) && model) {
+    if (Array.isArray(unifiedEvents) && unifiedEvents.length && model) {
       const models = require("./models");
       let result;
       switch (model) {
         case "first-touch":
-          result = models.firstTouch(events);
+          result = models.firstTouch(unifiedEvents);
           break;
         case "last-touch":
-          result = models.lastTouch(events);
+          result = models.lastTouch(unifiedEvents);
           break;
         case "linear":
-          result = models.linearAttribution(events);
+          result = models.linearAttribution(unifiedEvents);
           break;
         case "time-decay":
-          result = models.timeDecayAttribution(events, options?.halfLife);
+          result = models.timeDecayAttribution(unifiedEvents, options?.halfLife);
           break;
         case "position-based":
-          result = models.positionBasedAttribution(events);
+          result = models.positionBasedAttribution(unifiedEvents);
           break;
         default:
           return { ok: false, error: `Unknown model: ${model}` };
       }
-      return { ok: true, model, result };
+      const perf = summarizePerformance(unifiedEvents);
+      return { ok: true, model, result, performance: perf };
     }
     return {
       ok: false,

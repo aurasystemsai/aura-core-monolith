@@ -1,11 +1,24 @@
 const { OpenAI } = require("openai");
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-async function analyzeAttribution(query) {
-  // In production, connect to your analytics DB, attribution models, etc.
-  // Here, we use OpenAI to simulate a smart analytics assistant.
-  const prompt = `You are an advanced analytics and attribution assistant. Analyze the following query and return actionable insights, attribution models, and recommendations.\nQuery: ${query}`;
-  const completion = await openai.chat.completions.create({
+// Lazy init to avoid errors if key is missing in some environments
+function getClient() {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return null;
+  return new OpenAI({ apiKey });
+}
+
+async function analyzeAttribution(query, facts = {}) {
+  const client = getClient();
+  const context = Object.entries(facts)
+    .map(([k, v]) => `${k}: ${JSON.stringify(v)}`)
+    .join("\n");
+
+  if (!client) {
+    return `AI summary unavailable (missing OPENAI_API_KEY). Context: ${context}`;
+  }
+
+  const prompt = `You are an advanced analytics and attribution assistant. Analyze the query and return actionable insights, recommended attribution models, lift drivers, and next actions.\nContext:\n${context}\nQuery: ${query}`;
+  const completion = await client.chat.completions.create({
     model: "gpt-4",
     messages: [
       { role: "system", content: "You are an expert analytics and attribution assistant." },
@@ -13,7 +26,97 @@ async function analyzeAttribution(query) {
     ],
     max_tokens: 600
   });
-  return completion.choices[0].message.content;
+  return completion.choices?.[0]?.message?.content || "No AI response";
 }
 
-module.exports = { analyzeAttribution };
+function normalizeShopifyOrder(order = {}) {
+  const {
+    id,
+    name,
+    customer,
+    total_price: total,
+    subtotal_price: subtotal,
+    currency,
+    created_at: created,
+    referring_site,
+    landing_site,
+    source_name,
+    current_total_tax: tax,
+    current_total_discounts: discounts,
+    current_total_price: totalWithFees,
+  } = order;
+
+  return {
+    id: String(id || name || crypto.randomUUID()),
+    type: "conversion",
+    channel: source_name || "shopify",
+    source: referring_site || "direct",
+    medium: landing_site || "unknown",
+    value: Number(total || subtotal || 0),
+    revenue: Number(totalWithFees || total || subtotal || 0),
+    tax: Number(tax || 0),
+    discounts: Number(discounts || 0),
+    currency: currency || "USD",
+    userId: customer?.id || customer?.email || null,
+    timestamp: created ? new Date(created).toISOString() : new Date().toISOString(),
+    raw: order,
+  };
+}
+
+function normalizeAdEvent(event = {}, source = "ads") {
+  return {
+    id: String(event.id || event.event_id || crypto.randomUUID()),
+    type: event.type || "click",
+    channel: source,
+    campaign: event.campaign || event.campaign_name || null,
+    adset: event.adset || event.adset_name || null,
+    creative: event.creative || event.creative_name || null,
+    value: Number(event.value || event.revenue || 0),
+    currency: event.currency || "USD",
+    userId: event.user_id || event.user || null,
+    timestamp: event.timestamp ? new Date(event.timestamp).toISOString() : new Date().toISOString(),
+    raw: event,
+  };
+}
+
+function normalizeOfflineEvent(evt = {}) {
+  return {
+    id: String(evt.id || crypto.randomUUID()),
+    type: evt.type || "offline_conversion",
+    channel: evt.channel || "offline",
+    source: evt.source || "offline",
+    value: Number(evt.value || 0),
+    currency: evt.currency || "USD",
+    userId: evt.userId || null,
+    timestamp: evt.timestamp ? new Date(evt.timestamp).toISOString() : new Date().toISOString(),
+    raw: evt,
+  };
+}
+
+function ingestData({ shopifyOrders = [], adEvents = [], offlineEvents = [] } = {}) {
+  const events = [];
+  shopifyOrders.forEach(o => events.push(normalizeShopifyOrder(o)));
+  adEvents.forEach(e => events.push(normalizeAdEvent(e, e.source || e.platform || "ads")));
+  offlineEvents.forEach(e => events.push(normalizeOfflineEvent(e)));
+  return events;
+}
+
+function summarizePerformance(events = []) {
+  const summary = {};
+  for (const e of events) {
+    const key = e.channel || "unknown";
+    summary[key] = summary[key] || { revenue: 0, count: 0 };
+    summary[key].revenue += Number(e.revenue || e.value || 0);
+    summary[key].count += 1;
+  }
+  return summary;
+}
+
+module.exports = {
+  analyzeAttribution,
+  ingestData,
+  summarizePerformance,
+  normalizeShopifyOrder,
+  normalizeAdEvent,
+  normalizeOfflineEvent,
+};
