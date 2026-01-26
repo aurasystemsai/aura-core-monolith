@@ -315,7 +315,6 @@ function App() {
                 {toolsMeta.map(tool => {
                   if (activeSection === tool.id) {
                     switch (tool.id) {
-                      case "main-suite": return <MainSuite key={tool.id} setActiveSection={setActiveSection} />;
                       case "abandoned-checkout-winback": return <AbandonedCheckoutWinback key={tool.id} />;
                       case "customer-data-platform": return <CustomerDataPlatform key={tool.id} />;
                       case "visual-workflow-builder": return <VisualWorkflowBuilder key={tool.id} />;
