@@ -19,8 +19,13 @@ module.exports = async function verifyShopifySession(req, res, next) {
   if (process.env.NODE_ENV === 'test') {
     return next();
   }
-  // Allow public read for analytics/notifications dashboards and advanced attribution
-  if (req.path && (req.path.startsWith('/analytics') || req.path.startsWith('/notifications') || req.path.startsWith('/advanced-analytics-attribution'))) {
+  // Allow public for specific endpoints (session context, analytics dashboards, notifications, attribution)
+  if (req.path && (
+    req.path === '/session' ||
+    req.path.startsWith('/analytics') ||
+    req.path.startsWith('/notifications') ||
+    req.path.startsWith('/advanced-analytics-attribution')
+  )) {
     return next();
   }
   const authHeader = req.headers.authorization;
