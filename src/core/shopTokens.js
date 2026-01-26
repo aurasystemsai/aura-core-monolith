@@ -28,6 +28,11 @@ function loadTokens() {
 	return {};
 }
 
+// Internal helper for modules needing all tokens
+function loadAllTokens() {
+	return loadTokens();
+}
+
 function saveTokens(tokens) {
 	try {
 		ensureDirExists(TOKENS_FILE);
@@ -53,4 +58,6 @@ function getToken(shop) {
 module.exports = {
 	upsertToken,
 	getToken,
+	loadAll: loadAllTokens,
+	_loadAll: loadAllTokens,
 };

@@ -5,17 +5,27 @@ const router = express.Router();
 // Live analytics endpoints using Shopify API
 const { shopifyFetch } = require('../core/shopifyApi');
 
-// Helper: get shop from query/header/session/env (App Bridge adds x-shopify-shop-domain)
+// Helper: get shop from query/header/session/env or persisted tokens
 function getShop(req) {
-  const shop = (req.query.shop
+  const shopTokens = require('../core/shopTokens');
+  const fromReq = (req.query.shop
     || req.headers['x-shopify-shop-domain']
     || req.headers['x-shopify-shop']
     || req.session?.shop
     || process.env.SHOPIFY_STORE_URL
     || '').trim();
-  if (!shop) throw new Error('Missing shop parameter');
-  // Normalize to bare domain (strip protocol/path)
-  return shop.replace(/^https?:\/\//, '').replace(/\/.*/, '');
+  if (fromReq) {
+    return fromReq.replace(/^https?:\/\//, '').replace(/\/.*/, '');
+  }
+  // Fallback: if only one persisted shop, use it
+  const persistedAll = shopTokens.loadAll?.() || shopTokens._loadAll?.() || null;
+  if (persistedAll && typeof persistedAll === 'object') {
+    const keys = Object.keys(persistedAll);
+    if (keys.length === 1) {
+      return keys[0];
+    }
+  }
+  throw new Error('Missing shop parameter');
 }
 
 function envTokenNames() {
@@ -38,6 +48,16 @@ function resolveToken(req, shop) {
   const persisted = shopTokens.getToken(shop);
   if (persisted) {
     return { token: persisted, source: 'persisted' };
+  }
+  // If only one persisted token exists, use it even if shop missing
+  if (!shop) {
+    const all = shopTokens.loadAll?.() || shopTokens._loadAll?.() || null;
+    if (all && typeof all === 'object') {
+      const entries = Object.entries(all);
+      if (entries.length === 1) {
+        return { token: entries[0][1].token || entries[0][1], source: 'persisted-default' };
+      }
+    }
   }
   const envToken = process.env.SHOPIFY_ACCESS_TOKEN
     || process.env.SHOPIFY_ADMIN_API_TOKEN
