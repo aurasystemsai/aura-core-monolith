@@ -4,6 +4,8 @@ const {
   analyzeAttribution,
   ingestData,
   summarizePerformance,
+  buildJourneys,
+  simpleCohorts,
 } = require("./analyticsAttributionService");
 
 module.exports = {
@@ -18,7 +20,7 @@ module.exports = {
    * @param {Object} ctx - request context
    */
   async run(input = {}, ctx = {}) {
-    const { query, model, events, options, shopifyOrders, adEvents, offlineEvents } = input;
+    const { query, model, events, options, shopifyOrders, adEvents, offlineEvents, includeJourneys, cohortKey } = input;
 
     // Ingest external sources into normalized events
     let unifiedEvents = Array.isArray(events) ? [...events] : [];
@@ -30,8 +32,10 @@ module.exports = {
     // If a query is provided, use the OpenAI-powered assistant for smart analysis
     if (query) {
       const perf = summarizePerformance(unifiedEvents);
-      const insights = await analyzeAttribution(query, { performance: perf, model });
-      return { ok: true, insights, performance: perf };
+      const journeys = includeJourneys ? buildJourneys(unifiedEvents) : undefined;
+      const cohorts = cohortKey ? simpleCohorts(unifiedEvents, cohortKey) : undefined;
+      const insights = await analyzeAttribution(query, { performance: perf, model, cohorts });
+      return { ok: true, insights, performance: perf, journeys, cohorts };
     }
     // If events and a model are provided, run the attribution model
     if (Array.isArray(unifiedEvents) && unifiedEvents.length && model) {
@@ -57,7 +61,9 @@ module.exports = {
           return { ok: false, error: `Unknown model: ${model}` };
       }
       const perf = summarizePerformance(unifiedEvents);
-      return { ok: true, model, result, performance: perf };
+      const journeys = includeJourneys ? buildJourneys(unifiedEvents) : undefined;
+      const cohorts = cohortKey ? simpleCohorts(unifiedEvents, cohortKey) : undefined;
+      return { ok: true, model, result, performance: perf, journeys, cohorts };
     }
     return {
       ok: false,

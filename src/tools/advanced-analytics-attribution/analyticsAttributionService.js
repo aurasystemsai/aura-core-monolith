@@ -1,4 +1,5 @@
 const { OpenAI } = require("openai");
+const crypto = require("crypto");
 
 // Lazy init to avoid errors if key is missing in some environments
 function getClient() {
@@ -112,6 +113,32 @@ function summarizePerformance(events = []) {
   return summary;
 }
 
+function buildJourneys(events = []) {
+  const byUser = new Map();
+  events.forEach((e) => {
+    const uid = e.userId || "anon";
+    if (!byUser.has(uid)) byUser.set(uid, []);
+    byUser.get(uid).push(e);
+  });
+  const journeys = [];
+  for (const [userId, evts] of byUser.entries()) {
+    const sorted = evts.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    journeys.push({ userId, events: sorted, length: sorted.length, conversion: sorted.find((x) => x.type === "conversion") || null });
+  }
+  return journeys;
+}
+
+function simpleCohorts(events = [], key = "channel") {
+  const cohorts = {};
+  events.forEach((e) => {
+    const k = e[key] || "unknown";
+    cohorts[k] = cohorts[k] || { revenue: 0, count: 0 };
+    cohorts[k].revenue += Number(e.revenue || e.value || 0);
+    cohorts[k].count += 1;
+  });
+  return cohorts;
+}
+
 module.exports = {
   analyzeAttribution,
   ingestData,
@@ -119,4 +146,6 @@ module.exports = {
   normalizeShopifyOrder,
   normalizeAdEvent,
   normalizeOfflineEvent,
+  buildJourneys,
+  simpleCohorts,
 };
