@@ -1,30 +1,30 @@
 // src/api.js
-// Global API utility for Shopify App Bridge authenticatedFetch
-
-import createApp from '@shopify/app-bridge';
-import { authenticatedFetch } from '@shopify/app-bridge-utils';
+// Simple OAuth-friendly fetch helper (no App Bridge)
 import { setApiError } from './globalApiError';
 
-const apiKey = import.meta.env.VITE_SHOPIFY_API_KEY;
-const host = new URLSearchParams(window.location.search).get('host');
-const app = createApp({
-  apiKey,
-  host,
-  forceRedirect: true
-});
-
-const fetchFunction = authenticatedFetch(app);
-
 export async function apiFetch(url, options = {}) {
-  options.headers = options.headers || {};
-  // Always send shop domain for backend multi-tenant support
-  const shopDomain = new URLSearchParams(window.location.search).get('shop');
-  if (shopDomain) {
-    options.headers['x-shopify-shop-domain'] = shopDomain;
+  const headers = options.headers ? { ...options.headers } : {};
+
+  // Prefer OAuth/token auth (localStorage) and fall back to cookies
+  const bearer = localStorage.getItem('accessToken') || localStorage.getItem('shopToken');
+  if (bearer && !headers['Authorization']) {
+    headers['Authorization'] = `Bearer ${bearer}`;
   }
-  // authenticatedFetch automatically attaches the session token
+
+  // Preserve shop domain header for backend multi-tenant logic
+  const shopDomain = new URLSearchParams(window.location.search).get('shop');
+  if (shopDomain && !headers['x-shopify-shop-domain']) {
+    headers['x-shopify-shop-domain'] = shopDomain;
+  }
+
+  const opts = {
+    credentials: options.credentials || 'include',
+    ...options,
+    headers,
+  };
+
   try {
-    const resp = await fetchFunction(url, options);
+    const resp = await fetch(url, opts);
     if (!resp.ok) {
       let msg = `API error: ${resp.status} ${resp.statusText}`;
       try {
