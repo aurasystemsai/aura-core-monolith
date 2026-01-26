@@ -19,10 +19,6 @@ module.exports = async function verifyShopifySession(req, res, next) {
   if (process.env.NODE_ENV === 'test') {
     return next();
   }
-  // Allow local/dev without Shopify session token for easier embedding
-  if (process.env.ALLOW_DEV_NOAUTH === 'true' || process.env.NODE_ENV === 'development') {
-    return next();
-  }
   // Allow public read for analytics/notifications dashboards and advanced attribution
   if (req.path && (req.path.startsWith('/analytics') || req.path.startsWith('/notifications') || req.path.startsWith('/advanced-analytics-attribution'))) {
     return next();
