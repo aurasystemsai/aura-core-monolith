@@ -1,6 +1,5 @@
-const { Configuration, OpenAIApi } = require("openai");
-const config = new Configuration({ apiKey: process.env.OPENAI_API_KEY });
-const openai = new OpenAIApi(config);
+const { getOpenAIClient } = require("../../core/openaiClient");
+const openai = getOpenAIClient();
 
 async function handleChurnPredictionQuery(query) {
   // In production, connect to churn scoring, retention workflow APIs, etc.

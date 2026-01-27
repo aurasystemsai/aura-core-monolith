@@ -4,7 +4,8 @@ const express = require('express');
 const router = express.Router();
 const model = require('./model');
 
-const { OpenAI } = require('openai');
+const { getOpenAIClient } = require("../../core/openaiClient");
+const openai = getOpenAIClient();
 const analytics = require('./analytics');
 const notifications = require('./notifications');
 const rbac = require('./rbac');
@@ -21,7 +22,9 @@ router.post('/generate', async (req, res) => {
     if (!productName || !productDescription) {
       return res.status(400).json({ ok: false, error: 'Missing productName or productDescription' });
     }
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    if (!openai) {
+      return res.status(503).json({ ok: false, error: 'OpenAI not configured' });
+    }
     const prompt = `Generate an SEO title, meta description, slug, and keyword set for the following product.\nProduct Name: ${productName}\nProduct Description: ${productDescription}`;
     const completion = await openai.chat.completions.create({
       model: 'gpt-4',
@@ -46,7 +49,9 @@ router.post('/bulk-generate', async (req, res) => {
     if (!Array.isArray(products) || !products.length) {
       return res.status(400).json({ ok: false, error: 'No products provided' });
     }
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    if (!openai) {
+      return res.status(503).json({ ok: false, error: 'OpenAI not configured' });
+    }
     const results = [];
     for (const p of products) {
       const prompt = `Generate an SEO title, meta description, slug, and keyword set for the following product.\nProduct Name: ${p.productName}\nProduct Description: ${p.productDescription}`;

@@ -1,6 +1,5 @@
-const { Configuration, OpenAIApi } = require("openai");
-const config = new Configuration({ apiKey: process.env.OPENAI_API_KEY });
-const openai = new OpenAIApi(config);
+const { getOpenAIClient } = require("../../core/openaiClient");
+const openai = getOpenAIClient();
 
 async function analyzeCompetition(query) {
   // In production, connect to competitor APIs, keyword/content/backlink gap, etc.

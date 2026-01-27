@@ -1,7 +1,6 @@
 // OpenAI integration for Returns/RMA Automation
-const { Configuration, OpenAIApi } = require('openai');
-const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY });
-const openai = new OpenAIApi(configuration);
+const { getOpenAIClient } = require("../../core/openaiClient");
+const openai = getOpenAIClient();
 
 async function generateRmaMessage({ customerName, orderItems, reason, brand, tone, prompt, language }) {
   // Compose prompt for OpenAI

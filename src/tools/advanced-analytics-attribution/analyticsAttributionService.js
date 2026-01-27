@@ -1,11 +1,9 @@
-const { OpenAI } = require("openai");
+const { getOpenAIClient } = require("../../core/openaiClient");
 const crypto = require("crypto");
 
 // Lazy init to avoid errors if key is missing in some environments
 function getClient() {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return null;
-  return new OpenAI({ apiKey });
+  return getOpenAIClient();
 }
 
 async function analyzeAttribution(query, facts = {}) {
