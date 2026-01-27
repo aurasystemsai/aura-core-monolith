@@ -1,7 +1,4 @@
 import React, { useState, useEffect, Suspense, lazy } from "react";
-
-// DEBUG: Log the injected Shopify API key at runtime
-console.log("VITE_SHOPIFY_API_KEY:", import.meta.env.VITE_SHOPIFY_API_KEY);
 import { apiFetch } from "./api";
 import "./App.css";
 

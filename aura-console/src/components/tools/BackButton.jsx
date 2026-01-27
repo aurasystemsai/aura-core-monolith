@@ -1,11 +1,19 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 
-export default function BackButton({ style = {}, label = "← Go Back" }) {
-  const navigate = useNavigate();
+export default function BackButton({ style = {}, label = "← Go Back", onClick }) {
+  const handleClick = () => {
+    if (typeof onClick === "function") {
+      onClick();
+      return;
+    }
+    if (typeof window !== "undefined" && window.history) {
+      window.history.back();
+    }
+  };
+
   return (
     <button
-      onClick={() => navigate(-1)}
+      onClick={handleClick}
       style={{
         background: "#22223b",
         color: "#a5f3fc",
