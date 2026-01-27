@@ -149,7 +149,7 @@ export default function InventoryForecasting() {
         </div>
       )}
       {/* Feedback */}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#f8fafc', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#232336', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}

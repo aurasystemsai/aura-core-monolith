@@ -6,7 +6,7 @@ function FeedbackModal({ open, onClose, onSubmit }) {
   if (!open) return null;
   return (
     <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "#0008", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ background: "#fff", borderRadius: 12, padding: 32, minWidth: 340 }}>
+      <div style={{ background: "#232336", borderRadius: 12, padding: 32, minWidth: 340, color: '#e5e7eb' }}>
         <h3 style={{ marginBottom: 12 }}>Send Feedback</h3>
         <textarea value={feedback} onChange={e => setFeedback(e.target.value)} style={{ width: "100%", minHeight: 80, borderRadius: 8, border: "1px solid #ccc", marginBottom: 18 }} placeholder="Your feedback..." />
         <div style={{ display: "flex", gap: 12 }}>

@@ -129,7 +129,7 @@ export default function AiAltTextEngine() {
       </div>
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {result && (
-        <div style={{ background: "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: "#23263a" }}>
+        <div style={{ background: "#232336", borderRadius: 10, padding: 16, marginBottom: 12, color: "#e5e7eb" }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Alt Text:</div>
           <div>{typeof result === "string" ? result : JSON.stringify(result)}</div>
         </div>
@@ -157,7 +157,7 @@ export default function AiAltTextEngine() {
           )}
         </div>
       </div>
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#f8fafc", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#232336", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}

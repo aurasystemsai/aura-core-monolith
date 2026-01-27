@@ -75,7 +75,7 @@ export default function BlogSEO() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#f1f5f9', borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#e5e7eb' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Blog SEO</h3>
       <ul style={{ margin: '16px 0 0 18px', color: '#334155', fontSize: 16 }}>
         <li>Enter a blog post or SEO question to get AI-powered recommendations</li>
@@ -88,7 +88,7 @@ export default function BlogSEO() {
 
   // Main UI
   return (
-    <div style={{ background: "#fff", borderRadius: 16, boxShadow: "0 2px 16px #0001", padding: 32 }}>
+    <div style={{ background: "#18181b", borderRadius: 16, boxShadow: "0 2px 16px #0008", padding: 32, color: '#e5e7eb' }}>
       <h2 style={{ fontWeight: 700, fontSize: 28, marginBottom: 12 }}>Blog SEO</h2>
       <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}
@@ -112,7 +112,7 @@ export default function BlogSEO() {
       </button>
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
       {response && (
-        <div style={{ marginTop: 32, background: "#f8fafc", borderRadius: 12, padding: 24 }}>
+        <div style={{ marginTop: 32, background: "#232336", borderRadius: 12, padding: 24, color: '#e5e7eb' }}>
           <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>AI Response:</div>
           <div style={{ fontSize: 16, color: "#23263a" }}>{response}</div>
         </div>
@@ -143,7 +143,7 @@ export default function BlogSEO() {
       )}
 
       {/* Feedback */}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#f8fafc', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#232336', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}

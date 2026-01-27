@@ -15,7 +15,7 @@ export default function AIContentBriefGenerator() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#f1f5f9', borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#e5e7eb' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to AI Content Brief Generator</h3>
       <ul style={{ margin: '16px 0 0 18px', color: '#334155', fontSize: 16 }}>
         <li>Generate, import, and manage content briefs with AI</li>
@@ -107,7 +107,7 @@ export default function AIContentBriefGenerator() {
         </div>
       </div>
       {/* Feedback */}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#f8fafc', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#232336', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}

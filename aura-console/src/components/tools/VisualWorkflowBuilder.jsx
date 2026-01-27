@@ -14,7 +14,7 @@ export default function VisualWorkflowBuilder() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#f1f5f9', borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#e5e7eb' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Visual Workflow Builder</h3>
       <ul style={{ margin: '16px 0 0 18px', color: '#334155', fontSize: 16 }}>
         <li>Drag-and-drop canvas for building automations</li>
@@ -67,7 +67,7 @@ export default function VisualWorkflowBuilder() {
       <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}
       {/* Drag-and-drop canvas (placeholder for now) */}
-      <div style={{ background: '#f1f5f9', borderRadius: 10, padding: 18, marginBottom: 18 }}>
+      <div style={{ background: '#232336', borderRadius: 10, padding: 18, marginBottom: 18, color: '#e5e7eb' }}>
         <b>Workflow Canvas:</b> Drag and drop steps, triggers, and actions here.
         <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(canvas, null, 2)}</pre>
       </div>
@@ -106,7 +106,7 @@ export default function VisualWorkflowBuilder() {
         </div>
       </div>
       {/* Feedback */}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#f8fafc', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#232336', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}

@@ -109,7 +109,7 @@ export default function OnPageSEOEngine() {
   }, []);
 
   return (
-    <div style={{ background: "#fff", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ background: "#18181b", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#e5e7eb' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 8 }}>On-Page SEO Engine</h2>
       <div style={{ marginBottom: 10, color: "#0ea5e9", fontWeight: 600 }}>
         <span role="img" aria-label="sparkles">✨</span> Generate, manage, and analyze on-page SEO with AI and analytics.
@@ -131,7 +131,7 @@ export default function OnPageSEOEngine() {
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {response && (
-        <div style={{ background: "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: "#23263a" }}>
+        <div style={{ background: "#232336", borderRadius: 10, padding: 16, marginBottom: 12, color: "#e5e7eb" }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>AI SEO Report:</div>
           <div>{response}</div>
         </div>
@@ -159,13 +159,13 @@ export default function OnPageSEOEngine() {
           )}
         </div>
       </div>
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#f8fafc", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#232336", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #ccc", marginBottom: 12, background: "#fff", color: "#23263a" }}
+          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #6366f1", marginBottom: 12, background: "#18181b", color: "#e5e7eb" }}
           placeholder="Share your feedback or suggestions..."
           aria-label="Feedback input"
         />

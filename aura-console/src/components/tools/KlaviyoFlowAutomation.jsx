@@ -18,7 +18,7 @@ function VisualFlowBuilder({ flow, setFlow, nodes = [], setNodes, onMoveNode, on
           <button onClick={onRedo} disabled={!canRedo} style={{ background: '#334155', color: '#e0e7ff', border: 'none', borderRadius: 8, padding: '7px 12px', fontWeight: 700, cursor: canRedo ? 'pointer' : 'not-allowed', opacity: canRedo ? 1 : 0.5 }}>Redo</button>
         </div>
       </div>
-      <div style={{ minHeight: 120, border: '1px dashed #bbb', borderRadius: 8, padding: 12, background: '#fff', marginBottom: 12 }}>
+      <div style={{ minHeight: 120, border: '1px dashed #bbb', borderRadius: 8, padding: 12, background: '#232336', marginBottom: 12, color: '#e5e7eb' }}>
         {nodes.length ? (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {nodes.map((n, i) => (

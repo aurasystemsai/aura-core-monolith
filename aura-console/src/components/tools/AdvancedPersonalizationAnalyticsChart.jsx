@@ -32,7 +32,7 @@ export default function AdvancedPersonalizationAnalyticsChart({ data }) {
     ],
   };
   return (
-    <div style={{ background: '#f8fafc', borderRadius: 12, padding: 18, marginBottom: 24 }}>
+    <div style={{ background: '#18181b', borderRadius: 12, padding: 18, marginBottom: 24, color: '#e5e7eb' }}>
       <Line data={chartData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
     </div>
   );

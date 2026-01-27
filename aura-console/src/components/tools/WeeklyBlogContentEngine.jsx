@@ -118,7 +118,7 @@ export default function WeeklyBlogContentEngine() {
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {response && (
-        <div style={{ background: "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: "#23263a" }}>
+        <div style={{ background: "#232336", borderRadius: 10, padding: 16, marginBottom: 12, color: "#e5e7eb" }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Blog Content:</div>
           <div>{response}</div>
         </div>
@@ -146,7 +146,7 @@ export default function WeeklyBlogContentEngine() {
           )}
         </div>
       </div>
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#f8fafc", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#232336", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}

@@ -14,7 +14,7 @@ export default function ConsentPrivacyManagement() {
   const fileInputRef = useRef();
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#f1f5f9', borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#e5e7eb' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Consent & Privacy Management</h3>
       <ul style={{ margin: '16px 0 0 18px', color: '#334155', fontSize: 16 }}>
         <li>Manage user consents, privacy requests, and compliance reports</li>
@@ -69,7 +69,7 @@ export default function ConsentPrivacyManagement() {
       setImported(file.name);
     };
     return (
-      <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 2px 24px #0002', padding: 36, fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ background: '#18181b', borderRadius: 18, boxShadow: '0 2px 24px #0008', padding: 36, fontFamily: 'Inter, sans-serif', color: '#e5e7eb' }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Consent & Privacy Management</h2>
         <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
         {showOnboarding && onboardingContent}
@@ -126,7 +126,7 @@ export default function ConsentPrivacyManagement() {
           </div>
         </div>
         {/* Feedback */}
-        <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#f8fafc', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+        <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#232336', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
           <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
           <textarea
             value={feedback}

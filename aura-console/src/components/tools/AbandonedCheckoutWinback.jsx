@@ -1254,7 +1254,7 @@ function AbandonedCheckoutWinback() {
               {/* Segment Modal (Add/Edit) */}
               {showSegmentModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                  <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#e5e7eb' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingSegment ? 'Edit Segment' : 'New Segment'}</h3>
                     <form onSubmit={e => { e.preventDefault(); saveSegment(editingSegment ? editingSegment : { name: '', rule: '', created: new Date().toISOString().slice(0, 10) }); }}>
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-segment-name">Name</label>
@@ -1321,7 +1321,7 @@ function AbandonedCheckoutWinback() {
               {/* Template Modal (Add/Edit) */}
               {showTemplateModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                  <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#e5e7eb' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingTemplate ? 'Edit Template' : 'New Template'}</h3>
                     <form onSubmit={e => { e.preventDefault(); saveTemplate(editingTemplate ? editingTemplate : { name: '', channel: 'email', content: '', created: new Date().toISOString().slice(0, 10) }); }}>
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-template-name">Name</label>
@@ -1395,7 +1395,7 @@ function AbandonedCheckoutWinback() {
               {/* Experiment Modal (Add/Edit) */}
               {showExperimentModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: '#fff', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                  <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#e5e7eb' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingExperiment ? 'Edit Experiment' : 'New Experiment'}</h3>
                     <form onSubmit={e => { e.preventDefault(); saveExperiment(editingExperiment ? editingExperiment : { name: '', variantA: '', variantB: '', status: 'draft', created: new Date().toISOString().slice(0, 10) }); }}>
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-experiment-name">Name</label>
