@@ -137,6 +137,7 @@ const toolRouters = [
   { path: '/api/klaviyo-flow-automation', router: require('./tools/klaviyo-flow-automation/router') },
   { path: '/api/internal-link-optimizer', router: require('./tools/internal-link-optimizer/router') },
   { path: '/api/multi-channel-optimizer', router: require('./tools/multi-channel-optimizer/router') },
+  { path: '/api/conditional-logic-automation', router: require('./tools/conditional-logic-automation/router') },
   { path: '/api/abandoned-checkout-winback', router: require('./tools/abandoned-checkout-winback/router') },
   { path: '/api/inbox-assistant', router: require('./tools/inbox-assistant/router') },
   { path: '/api/inbox-reply-assistant', router: require('./tools/inbox-reply-assistant/router') },
