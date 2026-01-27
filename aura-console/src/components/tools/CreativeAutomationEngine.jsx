@@ -138,20 +138,19 @@ export default function CreativeAutomationEngine() {
   }, []);
 
   return (
-    <div style={{
-      
-      }}>
+    <div
+      style={{
+        margin: "40px auto",
+        background: darkMode ? "#18181b" : "#fff",
+        borderRadius: 18,
+        boxShadow: "0 2px 24px #0002",
+        padding: 36,
+        color: darkMode ? "#a3e635" : "#23263a",
+        fontFamily: "Inter, sans-serif",
+        transition: "background 0.3s, color 0.3s",
+      }}
+    >
       <BackButton />
-      
-      margin: "40px auto",
-      background: darkMode ? "#18181b" : "#fff",
-      borderRadius: 18,
-      boxShadow: "0 2px 24px #0002",
-      padding: 36,
-      color: darkMode ? "#a3e635" : "#23263a",
-      fontFamily: 'Inter, sans-serif',
-      transition: "background 0.3s, color 0.3s"
-    }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Creative Automation Engine</h2>
         <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
