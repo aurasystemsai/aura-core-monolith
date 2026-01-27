@@ -112,6 +112,7 @@ export default function SocialSchedulerContentEngine() {
 
   return (
     <div style={{ background: "#23263a", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
+      <BackButton />
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 8 }}>Social Scheduler Content Engine</h2>
       <div style={{ marginBottom: 10, color: "#0ea5e9", fontWeight: 600 }}>
         <span role="img" aria-label="sparkles">✨</span> Schedule, manage, and analyze social content with AI and analytics.
@@ -120,7 +121,6 @@ export default function SocialSchedulerContentEngine() {
         value={input}
         onChange={e => setInput(e.target.value)}
         rows={4}
-        <BackButton />
         style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #ccc", marginBottom: 18 }}
         placeholder="Type your social content or prompt here..."
         aria-label="Social content input"
