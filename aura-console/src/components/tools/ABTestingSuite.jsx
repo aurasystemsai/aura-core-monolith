@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { apiFetch } from "../../api";
 import OnboardingChecklist from "../../onboarding/OnboardingChecklist";
+import BackButton from "./BackButton";
 
 // --- Flagship A/B Testing Suite ---
 export default function ABTestingSuite() {
@@ -94,6 +95,7 @@ export default function ABTestingSuite() {
           A/B Testing Suite
           <span title="Flagship enterprise-grade A/B testing tool. Every feature is best-in-class." style={{ marginLeft: 10, fontSize: 22, color: '#38bdf8', cursor: 'help' }}>ⓘ</span>
         </h2>
+        <BackButton />
         <div style={{ display: 'flex', gap: 12 }}>
           <button onClick={() => setShowOnboarding(v => !v)} className="btn btn-secondary">{showOnboarding ? "Hide" : "Show"} Onboarding</button>
           <button onClick={() => setShowChecklist(v => !v)} className="btn btn-tertiary">{showChecklist ? "Hide" : "Show"} Checklist</button>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import BackButton from "./BackButton";
 
 export default function WorkflowAutomationBuilder() {
   const [workflow, setWorkflow] = useState("");
@@ -80,6 +81,7 @@ export default function WorkflowAutomationBuilder() {
 
   return (
     <div style={{ background: "#0f1115", color: "#e5e7eb", padding: 24, borderRadius: 16, border: "1px solid #1f2937", boxShadow: "0 12px 48px #0007" }}>
+      <BackButton />
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0, color: "#a5f3fc" }}>Workflow Automation Builder</h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

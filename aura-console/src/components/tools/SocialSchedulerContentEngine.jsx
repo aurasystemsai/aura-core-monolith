@@ -21,6 +21,7 @@ export default function SocialSchedulerContentEngine() {
       const data = await res.json();
       if (data.ok) setHistory(data.history || []);
     } catch {}
+    import BackButton from "./BackButton";
   };
   // Fetch analytics
   const fetchAnalytics = async () => {
@@ -119,6 +120,7 @@ export default function SocialSchedulerContentEngine() {
         value={input}
         onChange={e => setInput(e.target.value)}
         rows={4}
+        <BackButton />
         style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #ccc", marginBottom: 18 }}
         placeholder="Type your social content or prompt here..."
         aria-label="Social content input"

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import BackButton from "./BackButton";
 
 export default function AILaunchPlanner() {
   const [input, setInput] = useState("");
@@ -91,6 +92,7 @@ export default function AILaunchPlanner() {
     <div style={{ background: "var(--card)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-soft)", border: "1px solid var(--border)", padding: 32 }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 12, color: "var(--text)" }}>AI Launch Planner</h2>
       <button onClick={() => setShowOnboarding(v => !v)} style={{ background: 'var(--accent)', color: '#23263a', border: 'none', borderRadius: 'var(--radius-md)', padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
+      <BackButton />
       {showOnboarding && onboardingContent}
       <p style={{ color: "var(--muted)", marginBottom: 18 }}>
         Enter your launch details or questions below. The AI will generate a launch plan or checklist.

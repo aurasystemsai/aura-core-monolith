@@ -40,10 +40,12 @@ export default function AIContentBriefGenerator() {
   const handleExport = () => {
     const blob = new Blob([JSON.stringify(outline, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
+      import BackButton from "./BackButton";
     setExported(url);
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
+          <BackButton />
   // Feedback
   const handleFeedback = async () => {
     if (!feedback) return;

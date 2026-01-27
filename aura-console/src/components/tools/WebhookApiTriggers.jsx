@@ -1,5 +1,7 @@
+
 import React from "react";
 import { apiFetch } from "../../api";
+import BackButton from "./BackButton";
 
 export default function WebhookApiTriggers() {
   // Flagship UI state
@@ -616,6 +618,7 @@ export default function WebhookApiTriggers() {
   // Main UI
   return (
     <div style={{ padding: 24, background: '#0f1115', color: '#e5e7eb', borderRadius: 16, border: '1px solid #1f2937', boxShadow: '0 12px 48px #0007' }}>
+      <BackButton />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18, color: '#a5f3fc' }}>Webhook & API Triggers</h2>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

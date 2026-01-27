@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import BackButton from "./BackButton";
 import { apiFetch } from "../../api";
 
 export default function SiteAuditHealth() {
@@ -61,6 +62,7 @@ export default function SiteAuditHealth() {
         // Add your component's JSX here
         return (
           <div>
+      <BackButton />
             {/* Component UI goes here */}
           </div>
         );

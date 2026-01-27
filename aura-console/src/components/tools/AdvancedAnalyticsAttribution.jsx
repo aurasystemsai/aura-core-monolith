@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import BackButton from "./BackButton";
 
 const samplePayload = {
   shopifyOrders: [
@@ -98,6 +99,7 @@ export default function AdvancedAnalyticsAttribution() {
         {error && <div style={{ color: "#ff8a8a", fontWeight: 700 }}>{error}</div>}
       </div>
 
+        <BackButton />
       {result && (
         <div style={{ display: "grid", gap: 12, background: "#0d1420", border: "1px solid #24314a", borderRadius: 10, padding: 16 }}>
           {result.insights && (

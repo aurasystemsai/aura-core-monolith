@@ -1,5 +1,6 @@
 
 import React, { useState, useRef } from "react";
+import BackButton from "./BackButton";
 
 export default function AdvancedFinanceInventoryPlanning() {
   const [query, setQuery] = useState("");
@@ -93,6 +94,7 @@ export default function AdvancedFinanceInventoryPlanning() {
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Advanced Finance & Inventory Planning</h2>
         <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
       </div>
+      <BackButton />
       <div style={{ marginBottom: 10, color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>
         <span role="img" aria-label="finance">💹</span> Forecast, budget, and optimize inventory.
       </div>

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import BackButton from "./BackButton";
 import { apiFetch } from "../../api";
 
 export default function ConsentPrivacyManagement() {
@@ -70,6 +71,7 @@ export default function ConsentPrivacyManagement() {
     };
     return (
       <div style={{ background: '#18181b', borderRadius: 18, boxShadow: '0 2px 24px #0008', padding: 36, fontFamily: 'Inter, sans-serif', color: '#e5e7eb' }}>
+        <BackButton />
         <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Consent & Privacy Management</h2>
         <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
         {showOnboarding && onboardingContent}

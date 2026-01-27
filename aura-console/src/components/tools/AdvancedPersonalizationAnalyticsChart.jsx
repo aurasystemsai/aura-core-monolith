@@ -2,6 +2,7 @@
 // Advanced analytics chart for Advanced Personalization Engine
 import React from 'react';
 import { Line } from 'react-chartjs-2';
+import BackButton from './BackButton';
 
 export default function AdvancedPersonalizationAnalyticsChart({ data }) {
   if (!data || !data.length) return <div>No analytics data yet.</div>;
@@ -33,6 +34,7 @@ export default function AdvancedPersonalizationAnalyticsChart({ data }) {
   };
   return (
     <div style={{ background: '#18181b', borderRadius: 12, padding: 18, marginBottom: 24, color: '#e5e7eb' }}>
+      <BackButton />
       <Line data={chartData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
     </div>
   );
