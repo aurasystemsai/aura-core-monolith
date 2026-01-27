@@ -7,6 +7,7 @@ const PRESETS = [
   {
     id: "order-to-slack",
     name: "Order → Slack + Email",
+    tags: ["ops", "slack", "email"],
     steps: [
       { id: 1, name: "Order Created", type: "trigger", config: "Shopify order created" },
       { id: 2, name: "Notify Slack", type: "action", config: "Send Slack message to #orders" },
@@ -16,6 +17,7 @@ const PRESETS = [
   {
     id: "checkout-winback",
     name: "Checkout Winback",
+    tags: ["winback", "email", "sms"],
     steps: [
       { id: 1, name: "Abandoned Checkout", type: "trigger", config: "Shopify checkout abandoned" },
       { id: 2, name: "Reminder Email", type: "action", config: "Send Klaviyo email with coupon" },
@@ -25,12 +27,28 @@ const PRESETS = [
   {
     id: "post-purchase-feedback",
     name: "Post-purchase Feedback",
+    tags: ["seo", "feedback", "email"],
     steps: [
       { id: 1, name: "Order Fulfilled", type: "trigger", config: "Order fulfilled" },
       { id: 2, name: "Delay 3d", type: "action", config: "Wait 3 days" },
       { id: 3, name: "CSAT Survey", type: "action", config: "Send CSAT survey link" }
     ]
   }
+];
+
+const ACTION_LIBRARY = [
+  { id: "slack", name: "Slack Alert", type: "action", tags: ["slack", "ops"], config: "Send Slack message to #alerts" },
+  { id: "email", name: "Send Email", type: "action", tags: ["email", "marketing"], config: "Send email via Klaviyo" },
+  { id: "webhook", name: "Webhook", type: "action", tags: ["webhook", "dev"], config: "POST to https://example.com/webhook" },
+  { id: "jira", name: "Jira Ticket", type: "action", tags: ["jira", "ops"], config: "Create Jira issue in OPS project" },
+  { id: "checkout", name: "Checkout Abandoned", type: "trigger", tags: ["winback", "shopify"], config: "Listen for checkout.abandoned" },
+  { id: "order", name: "Order Created", type: "trigger", tags: ["shopify", "ops"], config: "Listen for order.created" }
+];
+
+const PAYLOAD_PRESETS = [
+  { id: "abandoned-cart", name: "Abandoned Cart", payload: { customer: "jane@example.com", subtotal: 120, stage: "checkout_abandoned" } },
+  { id: "seo-issue", name: "SEO Issue", payload: { url: "/blog/post", issue: "Missing meta description" } },
+  { id: "high-aov", name: "High AOV", payload: { customer: "vip@example.com", subtotal: 820, segment: "VIP" } }
 ];
 
 export default function WorkflowAutomationBuilder() {
@@ -53,12 +71,42 @@ export default function WorkflowAutomationBuilder() {
   const [lastSavedAt, setLastSavedAt] = useState(null);
   const [preflightIssues, setPreflightIssues] = useState([]);
   const [selectedPreset, setSelectedPreset] = useState("");
+  const [presetTag, setPresetTag] = useState("");
+  const [actionSearch, setActionSearch] = useState("");
+  const [actionTag, setActionTag] = useState("");
+  const [selectedPayloadPreset, setSelectedPayloadPreset] = useState("abandoned-cart");
+  const [testStatus, setTestStatus] = useState("idle"); // idle | running | passed | failed
+  const [stepStatuses, setStepStatuses] = useState({});
+  const [lastBuiltSnapshot, setLastBuiltSnapshot] = useState(null);
+  const [confirmationNote, setConfirmationNote] = useState("");
+  const [newVersionLabel, setNewVersionLabel] = useState("");
+  const [userTemplates, setUserTemplates] = useState([]);
 
   const stepSummary = useMemo(() => {
     const triggers = steps.filter(s => s.type === "trigger").length;
     const actions = steps.filter(s => s.type === "action").length;
     return { triggers, actions };
   }, [steps]);
+
+  const riskLevel = useMemo(() => {
+    const actions = stepSummary.actions;
+    if (env === "prod" && actions >= 4) return "high";
+    if (actions >= 3) return "medium";
+    return "low";
+  }, [env, stepSummary.actions]);
+
+  const diffSummary = useMemo(() => {
+    if (!lastBuiltSnapshot) return null;
+    const prev = lastBuiltSnapshot.steps || [];
+    const added = steps.filter(s => !prev.find(p => p.id === s.id));
+    const removed = prev.filter(p => !steps.find(s => s.id === p.id));
+    const changed = steps.filter(s => {
+      const p = prev.find(prevStep => prevStep.id === s.id);
+      if (!p) return false;
+      return p.name !== s.name || p.type !== s.type || p.config !== s.config;
+    });
+    return { added, removed, changed };
+  }, [steps, lastBuiltSnapshot]);
 
   // Format a friendly timestamp
   const formatTime = ts => ts ? new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
@@ -74,11 +122,24 @@ export default function WorkflowAutomationBuilder() {
         e.preventDefault();
         handleBuild();
       }
+      if (!e.ctrlKey && !e.metaKey && e.key === "a") {
+        e.preventDefault();
+        handleAddStep();
+      }
+      if (!e.ctrlKey && !e.metaKey && e.key === "t") {
+        e.preventDefault();
+        const nextId = Math.max(...steps.map(s => s.id)) + 1;
+        setSteps([...steps, { id: nextId, name: `Trigger ${nextId}`, type: "trigger", config: "" }]);
+        setSelectedStep(nextId);
+      }
+      if (!e.ctrlKey && !e.metaKey && e.key === "c") {
+        e.preventDefault();
+        handleCloneStep();
+      }
     };
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [steps]);
 
   // Load draft on mount
   useEffect(() => {
@@ -157,6 +218,12 @@ export default function WorkflowAutomationBuilder() {
     if (snapshot.approvalRequired && !snapshot.approverEmail) {
       issues.push("Approver email is required when approvals are enabled.");
     }
+    if (snapshot.env === "prod" && riskLevel === "high" && !confirmationNote.trim()) {
+      issues.push("Prod/high risk requires a confirmation note.");
+    }
+    if (snapshot.env === "prod" && snapshot.approvalRequired && !confirmationNote.trim()) {
+      issues.push("Approvals in prod require a confirmation note.");
+    }
     return issues;
   };
 
@@ -199,18 +266,86 @@ export default function WorkflowAutomationBuilder() {
   };
 
   const handleApplyPreset = (presetId) => {
-    const preset = PRESETS.find(p => p.id === presetId);
+    const preset = PRESETS.find(p => p.id === presetId) || userTemplates.find(t => t.id === presetId);
     if (!preset) return;
     setSteps(preset.steps);
     setSelectedStep(preset.steps[0]?.id || 1);
     setSelectedPreset(presetId);
   };
 
+  const handleClearDraft = () => {
+    setSteps([
+      { id: 1, name: "Trigger", type: "trigger", config: "" },
+      { id: 2, name: "Action", type: "action", config: "" }
+    ]);
+    setSelectedStep(1);
+    setEnv("dev");
+    setVersionTag("v1");
+    setApprovalRequired(true);
+    setApproverEmail("");
+    setVersions([]);
+    setSelectedPreset("");
+    setConfirmationNote("");
+    setStepStatuses({});
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
+  };
+
+  const handleCloneStep = () => {
+    const current = steps.find(s => s.id === selectedStep);
+    if (!current) return;
+    const nextId = Math.max(...steps.map(s => s.id)) + 1;
+    const clone = { ...current, id: nextId, name: `${current.name} Copy` };
+    const idx = steps.findIndex(s => s.id === selectedStep);
+    const newSteps = [...steps.slice(0, idx + 1), clone, ...steps.slice(idx + 1)];
+    setSteps(newSteps);
+    setSelectedStep(nextId);
+  };
+
+  const handleTestInDev = () => {
+    setTestStatus("running");
+    const payload = PAYLOAD_PRESETS.find(p => p.id === selectedPayloadPreset)?.payload || {};
+    const runningStatuses = {};
+    steps.forEach(s => { runningStatuses[s.id] = "running"; });
+    setStepStatuses(runningStatuses);
+    setTimeout(() => {
+      const passedStatuses = {};
+      steps.forEach(s => { passedStatuses[s.id] = "passed"; });
+      setStepStatuses(passedStatuses);
+      setTestStatus("passed");
+      setHistory(prev => [{ steps, result: { test: "dev", payload }, env: "dev", versionTag, approvalRequired }, ...prev].slice(0, 10));
+    }, 800);
+  };
+
+  const handleExportJson = async () => {
+    const json = JSON.stringify({ steps, env, versionTag, approvalRequired, approverEmail }, null, 2);
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(json);
+      setError("Export copied to clipboard");
+      setTimeout(() => setError(""), 1500);
+    }
+  };
+
+  const handleCopySummary = async () => {
+    const summary = `Workflow (${env}, risk: ${riskLevel})\nApprovals: ${approvalRequired ? "On" : "Off"}\nSteps:\n${steps.map((s, i) => `${i + 1}. [${s.type}] ${s.name} — ${s.config}`).join("\n")}`;
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(summary);
+      setError("Summary copied");
+      setTimeout(() => setError(""), 1200);
+    }
+  };
+
+  const handleSaveTemplate = () => {
+    const id = `user-${Date.now()}`;
+    setUserTemplates(prev => [{ id, name: versionTag || `Template ${prev.length + 1}`, steps }, ...prev].slice(0, 6));
+  };
+
   const handleBuild = async () => {
     setLoading(true);
     setError("");
     setResult(null);
-    const snapshot = { steps, env, versionTag, approvalRequired, approverEmail };
+    const snapshot = { steps, env, versionTag, approvalRequired, approverEmail, confirmationNote };
     const issues = runPreflight(snapshot);
     setPreflightIssues(issues);
     if (issues.length) {
@@ -228,6 +363,7 @@ export default function WorkflowAutomationBuilder() {
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setResult(data.result);
       setHistory(prev => [{ steps, result: data.result, env, versionTag, approvalRequired }, ...prev].slice(0, 10));
+      setLastBuiltSnapshot({ steps, env, versionTag, approvalRequired, approverEmail, builtAt: Date.now() });
       setDraftStatus("saved");
     } catch (err) {
       setError(err.message);
@@ -258,7 +394,7 @@ export default function WorkflowAutomationBuilder() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
         <div>
           <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0, color: "#a5f3fc" }}>Workflow Automation Builder</h2>
-          <div style={{ color: "#9ca3af", fontSize: 13, marginTop: 4 }}>Autosaves locally · Hotkeys: Ctrl+S save, Ctrl+Enter build</div>
+          <div style={{ color: "#9ca3af", fontSize: 13, marginTop: 4 }}>Autosaves locally · Hotkeys: Ctrl+S save, Ctrl+Enter build, a add action, t add trigger, c clone</div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", fontWeight: 700 }}>
@@ -272,25 +408,50 @@ export default function WorkflowAutomationBuilder() {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
-        <div style={{ background: "#111827", border: "1px solid #1f2937", padding: "8px 12px", borderRadius: 10, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ color: draftStatus === "saving" ? "#facc15" : "#22c55e" }}>{draftStatus === "saving" ? "Saving..." : "Saved"}</span>
-          {lastSavedAt && <span style={{ color: "#9ca3af", fontWeight: 500 }}>· {formatTime(lastSavedAt)}</span>}
+      {(env === "prod" || riskLevel === "high") && (
+        <div style={{ marginBottom: 10, background: "#1f2937", border: "1px solid #374151", borderRadius: 10, padding: 10, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ color: "#fbbf24", fontWeight: 700 }}>Prod / high-risk confirmation</div>
+          <input value={confirmationNote} onChange={e => setConfirmationNote(e.target.value)} placeholder="Add a confirmation note" style={{ flex: 1, minWidth: 220, background: "#0b1221", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px" }} />
         </div>
-        <button onClick={handleManualSave} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Save draft</button>
-        <button onClick={handleCreateVersion} style={{ background: "#a855f7", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Snapshot version</button>
-        <button onClick={() => setPreflightIssues(runPreflight({ steps, env, versionTag, approvalRequired, approverEmail }))} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Preflight check</button>
-        <button onClick={() => handleBuild()} disabled={loading} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 15, cursor: loading ? "not-allowed" : "pointer" }}>{loading ? "Building..." : "Build"}</button>
+      )}
+
+      <div style={{ position: "sticky", top: 0, zIndex: 2, background: "#0f1115", paddingBottom: 6, marginBottom: 12 }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
+          <div style={{ background: "#111827", border: "1px solid #1f2937", padding: "8px 12px", borderRadius: 10, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ color: draftStatus === "saving" ? "#facc15" : "#22c55e" }}>{draftStatus === "saving" ? "Saving..." : "Saved"}</span>
+            {lastSavedAt && <span style={{ color: "#9ca3af", fontWeight: 500 }}>· {formatTime(lastSavedAt)}</span>}
+          </div>
+          <button onClick={handleManualSave} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Save draft</button>
+          <input value={newVersionLabel} onChange={e => setNewVersionLabel(e.target.value)} placeholder="Version name" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "8px 12px", minWidth: 140 }} />
+          <button onClick={() => { if (newVersionLabel) setVersionTag(newVersionLabel); handleCreateVersion(); }} style={{ background: "#a855f7", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Snapshot version</button>
+          <button onClick={() => setPreflightIssues(runPreflight({ steps, env, versionTag, approvalRequired, approverEmail, confirmationNote }))} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Preflight</button>
+          <button onClick={handleExportJson} style={{ background: "#14b8a6", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Export JSON</button>
+          <button onClick={handleCopySummary} style={{ background: "#8b5cf6", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Copy summary</button>
+          <button onClick={handleSaveTemplate} style={{ background: "#22d3ee", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Save as template</button>
+          <button onClick={() => handleBuild()} disabled={loading} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 15, cursor: loading ? "not-allowed" : "pointer" }}>{loading ? "Building..." : "Build"}</button>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: preflightIssues.length ? "#f97316" : "#22c55e", fontWeight: 700 }}>Trigger: {steps.some(s => s.type === "trigger") ? "OK" : "Missing"}</span>
+          <span style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: approvalRequired && !approverEmail ? "#f97316" : "#22c55e", fontWeight: 700 }}>Approvals: {approvalRequired ? (approverEmail ? "Ready" : "Email needed") : "Off"}</span>
+          <span style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: riskLevel === "high" ? "#f87171" : riskLevel === "medium" ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>Risk: {riskLevel}</span>
+          {env === "prod" && <span style={{ background: "#7c2d12", border: "1px solid #b45309", borderRadius: 999, padding: "6px 10px", color: confirmationNote ? "#facc15" : "#fca5a5", fontWeight: 700 }}>Prod note {confirmationNote ? "ready" : "required"}</span>}
+        </div>
       </div>
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
         <div style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: 10, minWidth: 220 }}>
           <div style={{ fontWeight: 700, marginBottom: 6 }}>Presets</div>
+          <select value={presetTag} onChange={e => setPresetTag(e.target.value)} style={{ width: "100%", background: "#18181b", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 8, padding: 8, marginBottom: 6 }}>
+            <option value="">All tags</option>
+            {Array.from(new Set(PRESETS.flatMap(p => p.tags))).map(tag => <option key={tag} value={tag}>{tag}</option>)}
+          </select>
           <select value={selectedPreset} onChange={e => handleApplyPreset(e.target.value)} style={{ width: "100%", background: "#18181b", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 8, padding: 8, marginBottom: 8 }}>
             <option value="">Pick a preset...</option>
-            {PRESETS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            {PRESETS.filter(p => !presetTag || p.tags.includes(presetTag)).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            {userTemplates.map(t => <option key={t.id} value={t.id}>{t.name} (yours)</option>)}
           </select>
           <div style={{ fontSize: 12, color: "#9ca3af" }}>Jump-start a workflow with a curated template.</div>
+          <button onClick={handleClearDraft} style={{ marginTop: 8, background: "#ef4444", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer", width: "100%" }}>Reset draft</button>
         </div>
         <div style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: 10, flex: 1, minWidth: 260 }}>
           <div style={{ fontWeight: 700, marginBottom: 6 }}>Preflight guardrails</div>
@@ -301,6 +462,12 @@ export default function WorkflowAutomationBuilder() {
               {preflightIssues.map((issue, idx) => <li key={idx}>{issue}</li>)}
             </ul>
           )}
+          <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <select value={selectedPayloadPreset} onChange={e => setSelectedPayloadPreset(e.target.value)} style={{ background: "#18181b", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 8, padding: 8 }}>
+              {PAYLOAD_PRESETS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+            <button onClick={handleTestInDev} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>{testStatus === "running" ? "Testing..." : "Test in dev"}</button>
+          </div>
         </div>
         <div style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: 10, minWidth: 220 }}>
           <div style={{ fontWeight: 700, marginBottom: 6 }}>Versions</div>
@@ -318,18 +485,50 @@ export default function WorkflowAutomationBuilder() {
       <button onClick={() => setShowOnboarding(v => !v)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}
       <div style={{ display: "flex", gap: 18, marginBottom: 18, flexWrap: "wrap" }}>
-        <div style={{ minWidth: 220 }}>
+        <div style={{ minWidth: 260, maxWidth: 320 }}>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Workflow Steps</div>
           <ul style={{ listStyle: "none", padding: 0 }}>
             {steps.map(step => (
               <li key={step.id} style={{ marginBottom: 8, background: selectedStep === step.id ? "#23263a" : "#18181b", borderRadius: 8, padding: 8, cursor: "pointer", border: selectedStep === step.id ? "2px solid #6366f1" : "1px solid #23263a" }} onClick={() => setSelectedStep(step.id)}>
-                <b>{step.name}</b> <span style={{ color: "#a5f3fc", fontSize: 12 }}>({step.type})</span>
-                {steps.length > 1 && <button onClick={e => { e.stopPropagation(); handleRemoveStep(step.id); }} style={{ float: "right", background: "none", color: "#fca5a5", border: "none", fontWeight: 700, cursor: "pointer" }}>✕</button>}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6 }}>
+                  <div>
+                    <b>{step.name}</b> <span style={{ color: "#a5f3fc", fontSize: 12 }}>({step.type})</span>
+                  </div>
+                  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    {stepStatuses[step.id] && <span style={{ background: stepStatuses[step.id] === "passed" ? "#14532d" : "#78350f", color: stepStatuses[step.id] === "passed" ? "#bbf7d0" : "#fed7aa", borderRadius: 999, padding: "4px 8px", fontSize: 11 }}>{stepStatuses[step.id]}</span>}
+                    {steps.length > 1 && <button onClick={e => { e.stopPropagation(); handleRemoveStep(step.id); }} style={{ background: "none", color: "#fca5a5", border: "none", fontWeight: 700, cursor: "pointer" }}>✕</button>}
+                  </div>
+                </div>
               </li>
             ))}
           </ul>
-          <button onClick={handleAddStep} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: "pointer", marginTop: 8 }}>+ Add Step</button>
-        {error && <div style={{ color: "#fca5a5", marginBottom: 10 }}>{error}</div>}
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+            <button onClick={handleAddStep} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: "pointer" }}>+ Add Action</button>
+            <button onClick={() => { const nextId = Math.max(...steps.map(s => s.id)) + 1; setSteps([...steps, { id: nextId, name: `Trigger ${nextId}`, type: "trigger", config: "" }]); setSelectedStep(nextId); }} style={{ background: "#38bdf8", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: "pointer" }}>+ Add Trigger</button>
+            <button onClick={handleCloneStep} style={{ background: "#a855f7", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: "pointer" }}>Clone step</button>
+          </div>
+          <div style={{ marginTop: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10 }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Action library</div>
+            <input value={actionSearch} onChange={e => setActionSearch(e.target.value)} placeholder="Search actions/triggers" style={{ width: "100%", background: "#18181b", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 8, padding: 8, marginBottom: 6 }} />
+            <select value={actionTag} onChange={e => setActionTag(e.target.value)} style={{ width: "100%", background: "#18181b", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 8, padding: 8, marginBottom: 8 }}>
+              <option value="">All tags</option>
+              {Array.from(new Set(ACTION_LIBRARY.flatMap(a => a.tags))).map(tag => <option key={tag} value={tag}>{tag}</option>)}
+            </select>
+            <div style={{ maxHeight: 180, overflowY: "auto", display: "grid", gap: 6 }}>
+              {ACTION_LIBRARY.filter(a => (!actionTag || a.tags.includes(actionTag)) && (!actionSearch || a.name.toLowerCase().includes(actionSearch.toLowerCase()) || a.tags.some(t => t.includes(actionSearch.toLowerCase())))).map(item => (
+                <div key={item.id} style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 8, padding: 8 }}>
+                  <div style={{ fontWeight: 700 }}>{item.name} <span style={{ color: "#a5f3fc", fontSize: 11 }}>({item.type})</span></div>
+                  <div style={{ color: "#9ca3af", fontSize: 12 }}>{item.config}</div>
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 4 }}>
+                    {item.tags.map(t => <span key={t} style={{ background: "#0f172a", color: "#cbd5f5", borderRadius: 999, padding: "2px 8px", fontSize: 11 }}>{t}</span>)}
+                  </div>
+                  <button onClick={() => { const nextId = Math.max(...steps.map(s => s.id)) + 1; setSteps([...steps, { id: nextId, name: item.name, type: item.type, config: item.config }]); setSelectedStep(nextId); }} style={{ marginTop: 6, background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer", width: "100%" }}>Add</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div style={{ flex: 1, minWidth: 260 }}>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Step Configuration</div>
           {steps.map(step => step.id === selectedStep && (
             <div key={step.id}>
@@ -339,11 +538,14 @@ export default function WorkflowAutomationBuilder() {
                 <option value="action">Action</option>
               </select>
               <textarea value={step.config} onChange={e => handleStepChange(step.id, e.target.value)} rows={4} style={{ width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 8, background: "#23263a", color: "#e5e7eb" }} placeholder={step.type === "trigger" ? "Describe the trigger (e.g. 'Order placed')" : "Describe the action (e.g. 'Send Slack notification')"} />
+              <div style={{ display: "flex", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+                <button onClick={() => handleStepChange(step.id, step.type === "trigger" ? "Auto-detected event with debounce" : "Send Slack + email with retry") } style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Suggest config</button>
+                <button onClick={() => setStepStatuses(prev => ({ ...prev, [step.id]: "pending" }))} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Mark pending</button>
+              </div>
             </div>
           ))}
         </div>
       </div>
-      <button onClick={handleBuild} disabled={loading} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 22px", fontWeight: 800, fontSize: 16, cursor: loading ? "not-allowed" : "pointer", marginBottom: 12 }}>{loading ? "Building..." : "Build Workflow"}</button>
       {error && <div style={{ color: "#fca5a5", marginBottom: 10 }}>{error}</div>}
       {result && (
         <div style={{ marginTop: 16, background: "#111827", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
@@ -362,6 +564,17 @@ export default function WorkflowAutomationBuilder() {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+      {diffSummary && (
+        <div style={{ marginTop: 18, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>Changes since last build</div>
+          <div style={{ color: "#9ca3af", fontSize: 13 }}>Added: {diffSummary.added.length} · Removed: {diffSummary.removed.length} · Edited: {diffSummary.changed.length}</div>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 8 }}>
+            {diffSummary.added.length > 0 && <div style={{ color: "#22c55e", fontSize: 13 }}>+ {diffSummary.added.map(a => a.name).join(", ")}</div>}
+            {diffSummary.removed.length > 0 && <div style={{ color: "#fca5a5", fontSize: 13 }}>- {diffSummary.removed.map(r => r.name).join(", ")}</div>}
+            {diffSummary.changed.length > 0 && <div style={{ color: "#fbbf24", fontSize: 13 }}>~ {diffSummary.changed.map(c => c.name).join(", ")}</div>}
+          </div>
         </div>
       )}
       <div style={{ marginTop: 18, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12, display: "flex", gap: 12, flexWrap: "wrap" }}>
