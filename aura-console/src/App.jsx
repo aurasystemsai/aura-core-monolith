@@ -234,6 +234,9 @@ function App() {
     // Debug banner removed
   // Main navigation state
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [sectionHistory, setSectionHistory] = useState([]);
+  const navModeRef = React.useRef(null);
+  const prevSectionRef = React.useRef(null);
   // Project state (simulate or fetch as needed)
   const [project, setProject] = useState(null);
   // Core API URL (simulate or fetch as needed)
@@ -262,6 +265,32 @@ function App() {
     }
     setActiveSection('main-suite');
   };
+  // Track section transitions for an in-app back action
+  useEffect(() => {
+    if (navModeRef.current === 'back') {
+      navModeRef.current = null;
+    } else if (prevSectionRef.current && prevSectionRef.current !== activeSection) {
+      setSectionHistory(prev => [...prev.slice(-9), prevSectionRef.current]);
+    }
+    prevSectionRef.current = activeSection;
+  }, [activeSection]);
+
+  useEffect(() => {
+    window.__AURA_SECTION_BACK = () => {
+      setSectionHistory(prev => {
+        if (!prev.length) {
+          if (typeof window !== 'undefined' && window.history?.back) window.history.back();
+          return prev;
+        }
+        const last = prev[prev.length - 1];
+        navModeRef.current = 'back';
+        setActiveSection(last);
+        return prev.slice(0, -1);
+      });
+    };
+    return () => { delete window.__AURA_SECTION_BACK; };
+  }, []);
+
   // Mark onboarding as complete
   const handleCloseOnboarding = () => {
     setShowOnboarding(false);

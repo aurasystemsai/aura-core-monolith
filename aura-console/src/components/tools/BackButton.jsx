@@ -6,7 +6,11 @@ export default function BackButton({ style = {}, label = "← Go Back", onClick 
       onClick();
       return;
     }
-    if (typeof window !== "undefined" && window.history) {
+    if (typeof window !== "undefined" && typeof window.__AURA_SECTION_BACK === 'function') {
+      window.__AURA_SECTION_BACK();
+      return;
+    }
+    if (typeof window !== "undefined" && window.history?.back) {
       window.history.back();
     }
   };
