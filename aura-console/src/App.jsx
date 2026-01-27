@@ -474,6 +474,8 @@ function App() {
                       case "ai-launch-planner": return <AiLaunchPlanner key={tool.id} />;
                       case "advanced-analytics-attribution": return <AdvancedAnalyticsAttribution key={tool.id} />;
                       case "ai-alt-text-engine": return <ImageAltMediaSEO key={tool.id} />;
+                      case "workflow-orchestrator":
+                        return null; // custom UI rendered earlier; skip scaffold duplicate
                       case "google-ads-integration":
                         return (
                           <ToolScaffold
