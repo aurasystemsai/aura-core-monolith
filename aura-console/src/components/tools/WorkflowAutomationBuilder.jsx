@@ -18,6 +18,12 @@ export default function WorkflowAutomationBuilder() {
   const [approvalRequired, setApprovalRequired] = useState(true);
   const [approverEmail, setApproverEmail] = useState("");
 
+  const goBackToSuite = () => {
+    if (typeof window !== "undefined" && typeof window.__AURA_TO_SUITE === "function") {
+      window.__AURA_TO_SUITE("workflows");
+    }
+  };
+
   const handleStepChange = (id, value) => {
     setSteps(steps.map(s => s.id === id ? { ...s, config: value } : s));
   };
@@ -67,7 +73,10 @@ export default function WorkflowAutomationBuilder() {
 
   return (
     <div style={{ background: "#0f1115", color: "#e5e7eb", padding: 24, borderRadius: 16, border: "1px solid #1f2937", boxShadow: "0 12px 48px #0007" }}>
-      <BackButton />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, gap: 12, flexWrap: "wrap" }}>
+        <BackButton label="← Back to Suite" onClick={goBackToSuite} />
+        <div style={{ color: "#9ca3af", fontSize: 13 }}>Workflows Suite · Automation Builder</div>
+      </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0, color: "#a5f3fc" }}>Workflow Automation Builder</h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

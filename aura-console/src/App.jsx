@@ -30,6 +30,7 @@ import WebhookApiTriggers from "./components/tools/WebhookApiTriggers.jsx";
 import ReportingIntegrations from "./components/tools/ReportingIntegrations.jsx";
 import CustomDashboardBuilder from "./components/tools/CustomDashboardBuilder.jsx";
 import MainSuite from "./components/tools/MainSuite.jsx";
+import WorkflowAutomationBuilder from "./components/tools/WorkflowAutomationBuilder.jsx";
 import ScheduledExport from "./components/tools/ScheduledExport.jsx";
 import ChurnPredictionPlaybooks from "./components/tools/ChurnPredictionPlaybooks.jsx";
 import UpsellCrossSellEngine from "./components/tools/UpsellCrossSellEngine.jsx";
@@ -529,6 +530,7 @@ function App() {
                       case "automation-templates": return <AutomationTemplates key={tool.id} />;
                       case "conditional-logic-automation": return <ConditionalLogicAutomation key={tool.id} />;
                       case "webhook-api-triggers": return <WebhookApiTriggers key={tool.id} />;
+                      case "workflow-automation-builder": return <WorkflowAutomationBuilder key={tool.id} />;
                       case "reporting-integrations": return <ReportingIntegrations key={tool.id} />;
                       case "custom-dashboard-builder": return <CustomDashboardBuilder key={tool.id} />;
                       case "scheduled-export": return <ScheduledExport key={tool.id} />;
