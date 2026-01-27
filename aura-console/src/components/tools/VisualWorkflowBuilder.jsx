@@ -417,6 +417,27 @@ export default function VisualWorkflowBuilder() {
     return { added, removed, changed };
   }, [canvas, lastSimulatedSnapshot]);
 
+  const launchHealth = useMemo(() => {
+    const guardrailsOk = preflightIssues.length === 0;
+    const approvalsOk = approvalRequired ? !!approverEmail : true;
+    const steps = canvas.length;
+    const coverage = Math.min(100, (steps * 14) + (guardrailsOk ? 16 : 0) + (approvalsOk ? 10 : 0) + (canaryPercent ? 4 : 0) + (performanceBudgetMs ? 4 : 0));
+    return {
+      coverage,
+      guardrailsOk,
+      approvalsOk,
+      steps,
+      analytics: analyticsSummary?.successRate ? `${analyticsSummary.successRate}% success` : "No analytics yet"
+    };
+  }, [preflightIssues.length, approvalRequired, approverEmail, canvas.length, canaryPercent, performanceBudgetMs, analyticsSummary]);
+
+  const healthChecklist = useMemo(() => ([
+    { label: "Preflight clear", ok: preflightIssues.length === 0 },
+    { label: "At least one step on canvas", ok: canvas.length > 0 },
+    { label: "Approver email when approvals on", ok: approvalRequired ? !!approverEmail : true },
+    { label: "Prod/shadow note added", ok: env !== "prod" ? true : !!confirmationNote.trim() }
+  ]), [preflightIssues.length, canvas.length, approvalRequired, approverEmail, env, confirmationNote]);
+
   // Onboarding content
   const onboardingContent = (
     <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#e5e7eb' }}>
@@ -758,6 +779,39 @@ export default function VisualWorkflowBuilder() {
             ))}
           </select>
           <button onClick={loadWorkflows} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 12px', fontWeight: 700, cursor: 'pointer' }}>{loading ? 'Loading…' : 'Refresh'}</button>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10, marginBottom: 10 }}>
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+          <div style={{ color: "#9ca3af", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 }}>Readiness</div>
+          <div style={{ fontWeight: 800, fontSize: 22, color: launchHealth.coverage >= 85 ? "#22c55e" : "#fbbf24" }}>{launchHealth.coverage}%</div>
+          <div style={{ color: "#9ca3af", fontSize: 13 }}>{launchHealth.steps} steps on canvas</div>
+        </div>
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>Guardrails</div>
+          <div style={{ color: launchHealth.guardrailsOk ? "#22c55e" : "#f59e0b", fontWeight: 700 }}>{launchHealth.guardrailsOk ? "Clear" : `${preflightIssues.length} issues`}</div>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>Approvals: {launchHealth.approvalsOk ? "Ready" : "Need email"} · Analytics: {launchHealth.analytics}</div>
+        </div>
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>Workflow hygiene</div>
+          <div style={{ color: dirtySinceSave ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>{dirtySinceSave ? "Unsaved edits" : "Clean"}</div>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>Last saved {lastSavedAt ? formatTime(lastSavedAt) : "—"}</div>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
+          <div style={{ fontWeight: 800 }}>Operational checklist</div>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>Auto-refreshes as you tweak steps</div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 8 }}>
+          {healthChecklist.map(item => (
+            <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 10, background: "#0f172a", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px" }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: item.ok ? "#22c55e" : "#f97316" }} />
+              <div style={{ color: "#e5e7eb", fontWeight: 600 }}>{item.label}</div>
+            </div>
+          ))}
         </div>
       </div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>

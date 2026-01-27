@@ -278,6 +278,27 @@ export default function WorkflowOrchestrator() {
     steps
   }), [workflowName, objective, env, versionTag, tags, approvalRequired, approverEmail, riskLevel, owner, steps]);
 
+  const readinessSummary = useMemo(() => {
+    const triggerOk = steps.some(s => s.type === "trigger");
+    const approvalsOk = approvalRequired ? !!approverEmail : true;
+    const guardrails = preflightIssues.length ? "Attention" : "Clear";
+    const coverage = Math.min(100, (steps.length * 18) + (approvalsOk ? 10 : 0) + (triggerOk ? 12 : 0));
+    return {
+      triggerOk,
+      approvalsOk,
+      guardrails,
+      coverage,
+      summary: `${steps.length} steps · ${steps.filter(s => s.type === "trigger").length} triggers · ${steps.filter(s => s.type === "action").length} actions`
+    };
+  }, [steps, approvalRequired, approverEmail, preflightIssues.length]);
+
+  const checklist = useMemo(() => ([
+    { label: "At least one trigger", ok: steps.some(s => s.type === "trigger") },
+    { label: "Approver email set when approvals on", ok: approvalRequired ? !!approverEmail : true },
+    { label: "Preflight clear", ok: preflightIssues.length === 0 },
+    { label: "Prod/high risk has confirmation note", ok: env !== "prod" && riskLevel !== "high" ? true : !!confirmationNote.trim() }
+  ]), [steps, approvalRequired, approverEmail, preflightIssues.length, env, riskLevel, confirmationNote]);
+
   const validate = () => {
     if (!workflowName.trim()) return "Give this workflow a name.";
     if (!steps.some(s => s.type === "trigger")) return "At least one trigger is required.";
@@ -457,6 +478,39 @@ export default function WorkflowOrchestrator() {
             <input type="checkbox" checked={approvalRequired} onChange={e => setApprovalRequired(e.target.checked)} disabled={isViewer} /> Approvals
           </label>
           <input value={approverEmail} onChange={e => setApproverEmail(e.target.value)} disabled={isViewer} placeholder="Approver email" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", minWidth: 180, opacity: isViewer ? 0.7 : 1 }} />
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10, marginBottom: 10 }}>
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+          <div style={{ color: "#9ca3af", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 }}>Readiness</div>
+          <div style={{ fontWeight: 800, fontSize: 22, color: readinessSummary.coverage >= 85 ? "#22c55e" : "#fbbf24" }}>{readinessSummary.coverage}%</div>
+          <div style={{ color: "#9ca3af", fontSize: 13 }}>{readinessSummary.summary}</div>
+        </div>
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>Guardrails</div>
+          <div style={{ color: preflightIssues.length ? "#f59e0b" : "#22c55e", fontWeight: 700 }}>{preflightIssues.length ? `${preflightIssues.length} issue${preflightIssues.length > 1 ? "s" : ""}` : "Clear"}</div>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>Triggers ok: {readinessSummary.triggerOk ? "Yes" : "No"} · Approvals: {readinessSummary.approvalsOk ? "Ready" : "Need email"}</div>
+        </div>
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>Workflow hygiene</div>
+          <div style={{ color: dirtySinceSave ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>{dirtySinceSave ? "Unsaved edits" : "Clean"}</div>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>Last saved {lastSavedAt ? formatTime(lastSavedAt) : "—"}</div>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 10, flexWrap: "wrap" }}>
+          <div style={{ fontWeight: 800 }}>Operational checklist</div>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>Auto-updates as you edit</div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 8 }}>
+          {checklist.map(item => (
+            <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 10, background: "#0f172a", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px" }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: item.ok ? "#22c55e" : "#f97316" }} />
+              <div style={{ color: "#e5e7eb", fontWeight: 600 }}>{item.label}</div>
+            </div>
+          ))}
         </div>
       </div>
 

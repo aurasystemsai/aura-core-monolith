@@ -559,6 +559,26 @@ export default function ConditionalLogicAutomation() {
     return { added, removed, changed, branchDelta };
   }, [flowNodes, branchGroup, lastSimulatedSnapshot]);
 
+  const healthSignals = useMemo(() => {
+    const guardrailsOk = preflightIssues.length === 0;
+    const triggerOk = stats.triggers > 0;
+    const branchDepth = (branchGroup.branches || []).length;
+    const coverage = Math.min(100, (flowNodes.length * 12) + (branchDepth * 6) + (guardrailsOk ? 16 : 0) + (triggerOk ? 10 : 0) + (simulationResult ? 6 : 0));
+    return {
+      guardrailsOk,
+      triggerOk,
+      coverage,
+      summary: `${stats.triggers} triggers · ${stats.conditions} conditions · ${stats.actions} actions · ${branchDepth} branches`
+    };
+  }, [flowNodes.length, branchGroup.branches, stats, preflightIssues.length, simulationResult]);
+
+  const healthChecklist = useMemo(() => ([
+    { label: "Trigger present", ok: stats.triggers > 0 },
+    { label: "Branch paths defined", ok: (branchGroup.branches || []).length > 0 },
+    { label: "Preflight clear", ok: preflightIssues.length === 0 },
+    { label: "Prod note when required", ok: env !== "prod" ? true : !!confirmationNote.trim() }
+  ]), [stats.triggers, branchGroup.branches, preflightIssues.length, env, confirmationNote]);
+
   const formatTime = ts => ts ? new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
 
   const handleManualSave = () => {
@@ -749,6 +769,39 @@ export default function ConditionalLogicAutomation() {
             ⬇️ Export
           </button>
           {exported && <a href={exported} download="conditional-logic.json" style={{ alignSelf: "center", color: "#0ea5e9", fontWeight: 700 }}>Download</a>}
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10, marginBottom: 12 }}>
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+          <div style={{ color: "#9ca3af", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 }}>Readiness</div>
+          <div style={{ fontWeight: 800, fontSize: 22, color: healthSignals.coverage >= 85 ? "#22c55e" : "#fbbf24" }}>{healthSignals.coverage}%</div>
+          <div style={{ color: "#9ca3af", fontSize: 13 }}>{healthSignals.summary}</div>
+        </div>
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>Guardrails</div>
+          <div style={{ color: healthSignals.guardrailsOk ? "#22c55e" : "#f59e0b", fontWeight: 700 }}>{healthSignals.guardrailsOk ? "Clear" : `${preflightIssues.length} issue${preflightIssues.length === 1 ? "" : "s"}`}</div>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>Trigger ready: {healthSignals.triggerOk ? "Yes" : "No"}</div>
+        </div>
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>Workflow hygiene</div>
+          <div style={{ color: dirtySinceSave ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>{dirtySinceSave ? "Unsaved edits" : "Clean"}</div>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>Last saved {lastSavedAt ? formatTime(lastSavedAt) : "—"}</div>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
+          <div style={{ fontWeight: 800 }}>Operational checklist</div>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>Keeps you honest before shipping</div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 8 }}>
+          {healthChecklist.map(item => (
+            <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 10, background: "#0f172a", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px" }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: item.ok ? "#22c55e" : "#f97316" }} />
+              <div style={{ color: "#e5e7eb", fontWeight: 600 }}>{item.label}</div>
+            </div>
+          ))}
         </div>
       </div>
 

@@ -309,6 +309,25 @@ export default function CollaborationApprovalWorkflows() {
     return { delta, at: lastBuiltSnapshot.ts };
   }, [workflow, lastBuiltSnapshot]);
 
+  const readinessSummary = useMemo(() => {
+    const guardrailsOk = preflightIssues.length === 0;
+    const contentRich = workflow.length >= 24;
+    const coverage = Math.min(100, (workflow.length / 2) + (guardrailsOk ? 20 : 0) + (contentRich ? 20 : 0) + (confirmationNote ? 8 : 0));
+    return {
+      guardrailsOk,
+      contentRich,
+      coverage,
+      summary: `${workflow.length || 0} chars · ${history.length} history entries`
+    };
+  }, [workflow.length, preflightIssues.length, confirmationNote, history.length]);
+
+  const checklist = useMemo(() => ([
+    { label: "Workflow described", ok: workflow.trim().length > 0 },
+    { label: "Preflight clear", ok: preflightIssues.length === 0 },
+    { label: "Prod note when required", ok: env !== "prod" ? true : !!confirmationNote.trim() },
+    { label: "Recent build snapshot", ok: !!lastBuiltSnapshot }
+  ]), [workflow, preflightIssues.length, env, confirmationNote, lastBuiltSnapshot]);
+
   const formatTime = ts => ts ? new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
 
   useEffect(() => {
@@ -362,6 +381,39 @@ export default function CollaborationApprovalWorkflows() {
           </button>
         </div>
       )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10, marginBottom: 12 }}>
+        <div style={{ background: "#10111a", border: "1px solid #2f2f36", borderRadius: 12, padding: 12 }}>
+          <div style={{ color: "#9ca3af", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 }}>Readiness</div>
+          <div style={{ fontWeight: 800, fontSize: 22, color: readinessSummary.coverage >= 85 ? "#22c55e" : "#fbbf24" }}>{readinessSummary.coverage}%</div>
+          <div style={{ color: "#9ca3af", fontSize: 13 }}>{readinessSummary.summary}</div>
+        </div>
+        <div style={{ background: "#10111a", border: "1px solid #2f2f36", borderRadius: 12, padding: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>Guardrails</div>
+          <div style={{ color: readinessSummary.guardrailsOk ? "#22c55e" : "#f59e0b", fontWeight: 700 }}>{readinessSummary.guardrailsOk ? "Clear" : `${preflightIssues.length} issue${preflightIssues.length === 1 ? "" : "s"}`}</div>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>Content depth: {readinessSummary.contentRich ? "Rich" : "Needs detail"}</div>
+        </div>
+        <div style={{ background: "#10111a", border: "1px solid #2f2f36", borderRadius: 12, padding: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>Workflow hygiene</div>
+          <div style={{ color: dirtySinceSave ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>{dirtySinceSave ? "Unsaved edits" : "Clean"}</div>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>Last saved {lastSavedAt ? formatTime(lastSavedAt) : "—"}</div>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 12, background: "#10111a", border: "1px solid #2f2f36", borderRadius: 12, padding: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
+          <div style={{ fontWeight: 800, color: "#e4e4e7" }}>Operational checklist</div>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>Auto-updates as you edit</div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 8 }}>
+          {checklist.map(item => (
+            <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 10, background: "#0f0f16", border: "1px solid #2f2f36", borderRadius: 10, padding: "8px 10px" }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: item.ok ? "#22c55e" : "#f97316" }} />
+              <div style={{ color: "#e5e7eb", fontWeight: 600 }}>{item.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
       {showCommandPalette && (
         <div style={{ position: "fixed", inset: 0, background: "#0009", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20 }}>
           <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 14, padding: 16, width: "min(520px, 92vw)", boxShadow: "0 18px 60px #000" }}>
