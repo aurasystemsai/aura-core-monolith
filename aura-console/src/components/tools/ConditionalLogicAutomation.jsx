@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useRef } from "react";
 import { apiFetch } from "../../api";
+import BackButton from "./BackButton";
 
 const OPERATORS = [
   "equals",
@@ -151,6 +152,12 @@ export default function ConditionalLogicAutomation() {
   const [activeTemplate, setActiveTemplate] = useState(null);
   const [queryLoading, setQueryLoading] = useState(false);
   const fileInputRef = useRef();
+
+  const goBackToSuite = () => {
+    if (typeof window !== "undefined" && typeof window.__AURA_TO_SUITE === "function") {
+      window.__AURA_TO_SUITE("workflows");
+    }
+  };
 
   const filteredPalette = useMemo(() => {
     const term = paletteFilter.toLowerCase();
@@ -443,6 +450,10 @@ export default function ConditionalLogicAutomation() {
 
   return (
     <div style={{ background: "#0f1115", borderRadius: 18, boxShadow: "0 15px 60px #0007", padding: 32, fontFamily: "Inter, sans-serif", color: "#e5e7eb", border: "1px solid #1f2937" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12, flexWrap: "wrap" }}>
+        <BackButton label="← Back to Suite" onClick={goBackToSuite} />
+        <div style={{ color: "#9ca3af", fontSize: 13 }}>Workflows Suite · Conditional Logic & Branching</div>
+      </div>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 18 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
