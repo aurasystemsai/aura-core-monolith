@@ -1,5 +1,5 @@
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import BackButton from "./BackButton";
 
 const STORAGE_KEY = "workflow-automation-builder:draft";
@@ -81,6 +81,18 @@ export default function WorkflowAutomationBuilder() {
   const [confirmationNote, setConfirmationNote] = useState("");
   const [newVersionLabel, setNewVersionLabel] = useState("");
   const [userTemplates, setUserTemplates] = useState([]);
+  const [role] = useState(() => {
+    if (typeof window === "undefined") return "admin";
+    return window.__AURA_USER?.role || window.localStorage.getItem("aura-role") || "admin";
+  });
+  const [accessRequested, setAccessRequested] = useState(false);
+  const [dirtySinceSave, setDirtySinceSave] = useState(false);
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+
+  const isViewer = role === "viewer";
+  const hydratedRef = useRef(false);
 
   const stepSummary = useMemo(() => {
     const triggers = steps.filter(s => s.type === "trigger").length;
@@ -136,10 +148,34 @@ export default function WorkflowAutomationBuilder() {
         e.preventDefault();
         handleCloneStep();
       }
+      if (e.ctrlKey && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        handleUndo();
+      }
+      if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "z") || (e.ctrlKey && e.key.toLowerCase() === "y")) {
+        e.preventDefault();
+        handleRedo();
+      }
+      if (e.ctrlKey && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setShowCommandPalette(prev => !prev);
+      }
     };
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);
   }, [steps]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (dirtySinceSave || preflightIssues.length) {
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirtySinceSave, preflightIssues.length]);
 
   // Load draft on mount
   useEffect(() => {
@@ -162,6 +198,14 @@ export default function WorkflowAutomationBuilder() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!hydratedRef.current) {
+      hydratedRef.current = true;
+      return;
+    }
+    setDirtySinceSave(true);
+  }, [steps, env, versionTag, approvalRequired, approverEmail, selectedStep, confirmationNote]);
+
   // Autosave draft with debounce
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -179,6 +223,7 @@ export default function WorkflowAutomationBuilder() {
       }));
       setDraftStatus("saved");
       setLastSavedAt(Date.now());
+      setDirtySinceSave(false);
     }, 450);
     return () => clearTimeout(handle);
   }, [steps, env, versionTag, approvalRequired, approverEmail, selectedStep, versions]);
@@ -189,18 +234,45 @@ export default function WorkflowAutomationBuilder() {
     }
   };
 
+  const pushUndoSnapshot = () => {
+    setUndoStack(prev => [...prev.slice(-9), JSON.parse(JSON.stringify(steps))]);
+    setRedoStack([]);
+  };
+
+  const handleUndo = () => {
+    if (!undoStack.length) return;
+    const previous = undoStack[undoStack.length - 1];
+    setUndoStack(undoStack.slice(0, -1));
+    setRedoStack(prev => [...prev.slice(-9), JSON.parse(JSON.stringify(steps))]);
+    setSteps(previous);
+  };
+
+  const handleRedo = () => {
+    if (!redoStack.length) return;
+    const next = redoStack[redoStack.length - 1];
+    setRedoStack(redoStack.slice(0, -1));
+    setUndoStack(prev => [...prev.slice(-9), JSON.parse(JSON.stringify(steps))]);
+    setSteps(next);
+  };
+
   const handleStepChange = (id, value) => {
+    if (isViewer) return;
+    pushUndoSnapshot();
     setSteps(steps.map(s => s.id === id ? { ...s, config: value } : s));
   };
 
   const handleAddStep = () => {
+    if (isViewer) return;
     const nextId = Math.max(...steps.map(s => s.id)) + 1;
+    pushUndoSnapshot();
     setSteps([...steps, { id: nextId, name: `Step ${nextId}`, type: "action", config: "" }]);
     setSelectedStep(nextId);
   };
 
   const handleRemoveStep = id => {
     if (steps.length <= 1) return;
+    if (isViewer) return;
+    pushUndoSnapshot();
     setSteps(steps.filter(s => s.id !== id));
     setSelectedStep(steps[0].id);
   };
@@ -241,9 +313,11 @@ export default function WorkflowAutomationBuilder() {
     }));
     setDraftStatus("saved");
     setLastSavedAt(Date.now());
+    setDirtySinceSave(false);
   }
 
   const handleCreateVersion = () => {
+    if (isViewer) return;
     const snapshot = {
       id: `${Date.now()}`,
       label: `${versionTag || "v"}${versions.length + 1}`,
@@ -257,6 +331,8 @@ export default function WorkflowAutomationBuilder() {
   };
 
   const handleRestoreVersion = (version) => {
+    if (isViewer) return;
+    pushUndoSnapshot();
     setSteps(version.steps);
     setEnv(version.env);
     setApprovalRequired(version.approvalRequired);
@@ -268,12 +344,16 @@ export default function WorkflowAutomationBuilder() {
   const handleApplyPreset = (presetId) => {
     const preset = PRESETS.find(p => p.id === presetId) || userTemplates.find(t => t.id === presetId);
     if (!preset) return;
+    if (isViewer) return;
+    pushUndoSnapshot();
     setSteps(preset.steps);
     setSelectedStep(preset.steps[0]?.id || 1);
     setSelectedPreset(presetId);
   };
 
   const handleClearDraft = () => {
+    if (isViewer) return;
+    pushUndoSnapshot();
     setSteps([
       { id: 1, name: "Trigger", type: "trigger", config: "" },
       { id: 2, name: "Action", type: "action", config: "" }
@@ -295,15 +375,18 @@ export default function WorkflowAutomationBuilder() {
   const handleCloneStep = () => {
     const current = steps.find(s => s.id === selectedStep);
     if (!current) return;
+    if (isViewer) return;
     const nextId = Math.max(...steps.map(s => s.id)) + 1;
     const clone = { ...current, id: nextId, name: `${current.name} Copy` };
     const idx = steps.findIndex(s => s.id === selectedStep);
     const newSteps = [...steps.slice(0, idx + 1), clone, ...steps.slice(idx + 1)];
+    pushUndoSnapshot();
     setSteps(newSteps);
     setSelectedStep(nextId);
   };
 
   const handleTestInDev = () => {
+    if (isViewer) return;
     setTestStatus("running");
     const payload = PAYLOAD_PRESETS.find(p => p.id === selectedPayloadPreset)?.payload || {};
     const runningStatuses = {};
@@ -337,11 +420,13 @@ export default function WorkflowAutomationBuilder() {
   };
 
   const handleSaveTemplate = () => {
+    if (isViewer) return;
     const id = `user-${Date.now()}`;
     setUserTemplates(prev => [{ id, name: versionTag || `Template ${prev.length + 1}`, steps }, ...prev].slice(0, 6));
   };
 
   const handleBuild = async () => {
+    if (isViewer) return;
     setLoading(true);
     setError("");
     setResult(null);
@@ -365,6 +450,7 @@ export default function WorkflowAutomationBuilder() {
       setHistory(prev => [{ steps, result: data.result, env, versionTag, approvalRequired }, ...prev].slice(0, 10));
       setLastBuiltSnapshot({ steps, env, versionTag, approvalRequired, approverEmail, builtAt: Date.now() });
       setDraftStatus("saved");
+      setDirtySinceSave(false);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -391,6 +477,33 @@ export default function WorkflowAutomationBuilder() {
         <BackButton label="← Back to Suite" onClick={goBackToSuite} />
         <div style={{ color: "#9ca3af", fontSize: 13 }}>Workflows Suite · Automation Builder</div>
       </div>
+      {isViewer && (
+        <div style={{ background: "#1f2937", border: "1px solid #374151", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontWeight: 800, color: "#fcd34d" }}>View-only mode</div>
+            <div style={{ color: "#9ca3af", fontSize: 13 }}>You can inspect workflows but need elevated access to edit or ship changes.</div>
+          </div>
+          <button onClick={() => setAccessRequested(true)} disabled={accessRequested} style={{ background: accessRequested ? "#374151" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: accessRequested ? "default" : "pointer" }}>
+            {accessRequested ? "Request sent" : "Request edit access"}
+          </button>
+        </div>
+      )}
+      {showCommandPalette && (
+        <div style={{ position: "fixed", inset: 0, background: "#0009", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20 }}>
+          <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 14, padding: 16, width: "min(520px, 92vw)", boxShadow: "0 18px 60px #000" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div style={{ fontWeight: 800, color: "#a5f3fc" }}>Command Palette</div>
+              <button onClick={() => setShowCommandPalette(false)} style={{ background: "transparent", color: "#9ca3af", border: "none", cursor: "pointer", fontWeight: 700 }}>Esc</button>
+            </div>
+            {[{ label: "Save draft", action: handleManualSave, hotkey: "Ctrl+S", disabled: false }, { label: "Run preflight", action: () => setPreflightIssues(runPreflight({ steps, env, versionTag, approvalRequired, approverEmail })), hotkey: "Ctrl+S", disabled: false }, { label: "Build", action: handleBuild, hotkey: "Ctrl+Enter", disabled: isViewer }, { label: "Undo", action: handleUndo, hotkey: "Ctrl+Z", disabled: !undoStack.length || isViewer }, { label: "Redo", action: handleRedo, hotkey: "Ctrl+Shift+Z", disabled: !redoStack.length || isViewer }].map(cmd => (
+              <button key={cmd.label} disabled={cmd.disabled} onClick={() => { cmd.action(); setShowCommandPalette(false); }} style={{ width: "100%", textAlign: "left", background: cmd.disabled ? "#1f2937" : "#111827", color: cmd.disabled ? "#6b7280" : "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", marginBottom: 8, cursor: cmd.disabled ? "not-allowed" : "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span>{cmd.label}</span>
+                <span style={{ fontSize: 12, color: "#9ca3af" }}>{cmd.hotkey}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
         <div>
           <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0, color: "#a5f3fc" }}>Workflow Automation Builder</h2>

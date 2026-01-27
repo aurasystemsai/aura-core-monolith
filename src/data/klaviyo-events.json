@@ -103,5 +103,68 @@
         }
       ]
     }
+  },
+  {
+    "id": 6,
+    "ts": 1769543403178,
+    "type": "test_run",
+    "flowId": 9,
+    "result": {
+      "flowId": 9,
+      "steps": 1,
+      "sampleUser": {
+        "id": "sample",
+        "email": "sample@example.com"
+      },
+      "status": "simulated",
+      "preview": [
+        {
+          "label": "Send",
+          "type": "action"
+        }
+      ]
+    }
+  },
+  {
+    "id": 7,
+    "ts": 1769543449996,
+    "type": "test_run",
+    "flowId": 9,
+    "result": {
+      "flowId": 9,
+      "steps": 1,
+      "sampleUser": {
+        "id": "sample",
+        "email": "sample@example.com"
+      },
+      "status": "simulated",
+      "preview": [
+        {
+          "label": "Send",
+          "type": "action"
+        }
+      ]
+    }
+  },
+  {
+    "id": 8,
+    "ts": 1769543497445,
+    "type": "test_run",
+    "flowId": 9,
+    "result": {
+      "flowId": 9,
+      "steps": 1,
+      "sampleUser": {
+        "id": "sample",
+        "email": "sample@example.com"
+      },
+      "status": "simulated",
+      "preview": [
+        {
+          "label": "Send",
+          "type": "action"
+        }
+      ]
+    }
   }
 ]

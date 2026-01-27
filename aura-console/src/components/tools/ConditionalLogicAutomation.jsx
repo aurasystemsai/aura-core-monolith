@@ -1,6 +1,8 @@
-import React, { useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { apiFetch } from "../../api";
 import BackButton from "./BackButton";
+
+const STORAGE_KEY = "conditional-logic-automation:draft";
 
 const OPERATORS = [
   "equals",
@@ -17,29 +19,57 @@ const OPERATORS = [
 
 const TRIGGER_LIBRARY = [
   { title: "Abandoned Cart", type: "trigger", description: "Fire when cart is left idle", config: { event: "abandoned_cart" } },
+      {isViewer && (
+        <div style={{ background: "#1f2937", border: "1px solid #374151", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontWeight: 800, color: "#fcd34d" }}>View-only mode</div>
+            <div style={{ color: "#9ca3af", fontSize: 13 }}>You can inspect conditional flows but need elevated access to edit or run simulations.</div>
+          </div>
+          <button onClick={() => setAccessRequested(true)} disabled={accessRequested} style={{ background: accessRequested ? "#374151" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: accessRequested ? "default" : "pointer" }}>
+            {accessRequested ? "Request sent" : "Request edit access"}
+          </button>
+        </div>
+      )}
+      {showCommandPalette && (
+        <div style={{ position: "fixed", inset: 0, background: "#0009", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20 }}>
+          <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 14, padding: 16, width: "min(520px, 92vw)", boxShadow: "0 18px 60px #000" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div style={{ fontWeight: 800, color: "#a5f3fc" }}>Command Palette</div>
+              <button onClick={() => setShowCommandPalette(false)} style={{ background: "transparent", color: "#9ca3af", border: "none", cursor: "pointer", fontWeight: 700 }}>Esc</button>
+            </div>
+            {[{ label: "Save draft", action: handleManualSave, hotkey: "Ctrl+S", disabled: false }, { label: "Run preflight", action: runPreflight, hotkey: "Alt+P", disabled: false }, { label: "Simulate", action: simulate, hotkey: "Ctrl+Enter", disabled: isViewer }, { label: "Undo", action: handleUndo, hotkey: "Ctrl+Z", disabled: !undoStack.length || isViewer }, { label: "Redo", action: handleRedo, hotkey: "Ctrl+Shift+Z", disabled: !redoStack.length || isViewer }].map(cmd => (
+              <button key={cmd.label} disabled={cmd.disabled} onClick={() => { cmd.action(); setShowCommandPalette(false); }} style={{ width: "100%", textAlign: "left", background: cmd.disabled ? "#1f2937" : "#111827", color: cmd.disabled ? "#6b7280" : "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", marginBottom: 8, cursor: cmd.disabled ? "not-allowed" : "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span>{cmd.label}</span>
+                <span style={{ fontSize: 12, color: "#9ca3af" }}>{cmd.hotkey}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
   { title: "Browse Abandonment", type: "trigger", description: "Viewed product but no add-to-cart", config: { event: "browse_abandonment" } },
   { title: "High AOV Visitor", type: "trigger", description: "AOV exceeds threshold", config: { event: "aov_over", threshold: 150 } },
   { title: "Low LTV Drop", type: "trigger", description: "LTV declined vs last period", config: { event: "ltv_drop" } }
-];
+          <div style={{ color: "#9ca3af", fontSize: 13, marginTop: 4 }}>Design conditional flows with triggers, branches, and actions. Hotkeys: Ctrl+S save, Ctrl+Enter simulate, Ctrl+Z undo, Ctrl+Shift+Z redo, b add branch, a add action, Ctrl+K palette.</div>
 
 const CONDITION_LIBRARY = [
-  { title: "Country / Region", type: "condition", description: "Match geo", config: { field: "country", operator: "equals", value: "US" } },
+          <select value={env} onChange={e => setEnv(e.target.value)} disabled={isViewer} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
   { title: "Cart Value", type: "condition", description: "Cart total compared to target", config: { field: "cart_value", operator: ">=", value: "100" } },
   { title: "Segment", type: "condition", description: "VIP / High Intent", config: { field: "segment", operator: "equals", value: "VIP" } },
   { title: "Product Contains", type: "condition", description: "SKU or tag contains value", config: { field: "product_tags", operator: "contains", value: "bundle" } }
 ];
-
+          <select value={selectedPayloadPreset} onChange={e => setSelectedPayloadPreset(e.target.value)} disabled={isViewer} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
 const ACTION_LIBRARY = [
   { title: "Send Email", type: "action", description: "Trigger lifecycle email", config: { channel: "email", template: "winback-1" } },
   { title: "Send SMS", type: "action", description: "Text with offer", config: { channel: "sms", template: "sms-nudge" } },
   { title: "Add To Flow", type: "action", description: "Route to orchestration flow", config: { channel: "flow", target: "vip-flow" } },
-  { title: "Create Task", type: "action", description: "Push to CRM task queue", config: { channel: "task", queue: "cs-playbook" } }
-];
-
+          <button onClick={() => setSimulationInput(JSON.stringify(PAYLOAD_PRESETS.find(p => p.id === selectedPayloadPreset)?.payload || {}, null, 2))} disabled={isViewer} style={{ background: "#111827", color: "#a5f3fc", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>Apply payload</button>
+          <button onClick={runPreflight} disabled={isViewer} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Preflight</button>
+          <button onClick={simulate} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 16px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{"Simulate"}</button>
 const TEMPLATE_PRESETS = [
   {
     id: "winback",
     name: "Churn / Winback",
+            {dirtySinceSave && <span style={{ color: "#fbbf24" }}>· Unsaved changes</span>}
     description: "Abandoned cart with VIP split and SMS follow-up",
     flowNodes: [
       { type: "trigger", title: "Abandoned Cart", description: "Cart left idle 2h", config: { event: "abandoned_cart" } },
@@ -125,6 +155,12 @@ const TEMPLATE_PRESETS = [
   }
 ];
 
+const PAYLOAD_PRESETS = [
+  { id: "abandoned-cart", name: "Abandoned Cart", payload: { event: "abandoned_cart", cart_value: 180, country: "US", segment: "VIP" }, badge: "dev" },
+  { id: "ltv-drop", name: "LTV Drop EU", payload: { event: "ltv_drop", region: "EU", ltv_delta: -60 }, badge: "dev" },
+  { id: "high-aov", name: "High AOV", payload: { event: "aov_over", cart_value: 320, segment: "High AOV" }, badge: "dev" }
+];
+
 const uniqueId = () => `node_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 
 export default function ConditionalLogicAutomation() {
@@ -151,12 +187,37 @@ export default function ConditionalLogicAutomation() {
   const [validationIssues, setValidationIssues] = useState([]);
   const [activeTemplate, setActiveTemplate] = useState(null);
   const [queryLoading, setQueryLoading] = useState(false);
+  const [env, setEnv] = useState("dev");
+  const [draftStatus, setDraftStatus] = useState("idle");
+  const [lastSavedAt, setLastSavedAt] = useState(null);
+  const [preflightIssues, setPreflightIssues] = useState([]);
+  const [selectedPayloadPreset, setSelectedPayloadPreset] = useState("abandoned-cart");
+  const [lastSimulatedSnapshot, setLastSimulatedSnapshot] = useState(null);
+  const [confirmationNote, setConfirmationNote] = useState("");
   const fileInputRef = useRef();
+  const [role] = useState(() => {
+    if (typeof window === "undefined") return "admin";
+    return window.__AURA_USER?.role || window.localStorage.getItem("aura-role") || "admin";
+  });
+  const [accessRequested, setAccessRequested] = useState(false);
+  const [dirtySinceSave, setDirtySinceSave] = useState(false);
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const hydratedRef = useRef(false);
+  const dirtySkipRef = useRef(true);
+
+  const isViewer = role === "viewer";
 
   const goBackToSuite = () => {
     if (typeof window !== "undefined" && typeof window.__AURA_TO_SUITE === "function") {
       window.__AURA_TO_SUITE("workflows");
     }
+  };
+
+  const pushUndoSnapshot = () => {
+    setUndoStack(prev => [...prev.slice(-9), JSON.parse(JSON.stringify({ flowNodes, branchGroup, simulationInput, env }))]);
+    setRedoStack([]);
   };
 
   const filteredPalette = useMemo(() => {
@@ -209,18 +270,26 @@ export default function ConditionalLogicAutomation() {
   };
 
   const addNode = item => {
+    if (isViewer) return;
+    pushUndoSnapshot();
     setFlowNodes(prev => [...prev, { ...item, id: uniqueId(), config: { ...(item.config || {}) } }]);
   };
 
   const updateNode = (id, patch) => {
+    if (isViewer) return;
+    pushUndoSnapshot();
     setFlowNodes(prev => prev.map(node => (node.id === id ? { ...node, ...patch } : node)));
   };
 
   const removeNode = id => {
+    if (isViewer) return;
+    pushUndoSnapshot();
     setFlowNodes(prev => prev.filter(n => n.id !== id));
   };
 
   const addBranch = () => {
+    if (isViewer) return;
+    pushUndoSnapshot();
     setBranchGroup(prev => ({
       ...prev,
       branches: [
@@ -236,6 +305,8 @@ export default function ConditionalLogicAutomation() {
   };
 
   const updateBranchCondition = (branchId, patch) => {
+    if (isViewer) return;
+    pushUndoSnapshot();
     setBranchGroup(prev => ({
       ...prev,
       branches: prev.branches.map(b => (b.id === branchId ? { ...b, condition: { ...b.condition, ...patch } } : b))
@@ -243,6 +314,8 @@ export default function ConditionalLogicAutomation() {
   };
 
   const addBranchAction = (branchId, action) => {
+    if (isViewer) return;
+    pushUndoSnapshot();
     setBranchGroup(prev => ({
       ...prev,
       branches: prev.branches.map(b =>
@@ -254,6 +327,8 @@ export default function ConditionalLogicAutomation() {
   };
 
   const removeBranchAction = (branchId, actionId) => {
+    if (isViewer) return;
+    pushUndoSnapshot();
     setBranchGroup(prev => ({
       ...prev,
       branches: prev.branches.map(b =>
@@ -263,6 +338,8 @@ export default function ConditionalLogicAutomation() {
   };
 
   const addElseAction = action => {
+    if (isViewer) return;
+    pushUndoSnapshot();
     setBranchGroup(prev => ({
       ...prev,
       elseActions: [...(prev.elseActions || []), { ...action, id: uniqueId(), config: { ...(action.config || {}) } }]
@@ -270,6 +347,8 @@ export default function ConditionalLogicAutomation() {
   };
 
   const removeElseAction = actionId => {
+    if (isViewer) return;
+    pushUndoSnapshot();
     setBranchGroup(prev => ({
       ...prev,
       elseActions: (prev.elseActions || []).filter(a => a.id !== actionId)
@@ -277,6 +356,8 @@ export default function ConditionalLogicAutomation() {
   };
 
   const applyTemplate = preset => {
+    if (isViewer) return;
+    pushUndoSnapshot();
     const mappedFlow = (preset.flowNodes || []).map(n => ({ ...n, id: uniqueId() }));
     const mappedBranches = (preset.branchGroup?.branches || []).map(b => ({
       ...b,
@@ -290,6 +371,7 @@ export default function ConditionalLogicAutomation() {
   };
 
   const handleImport = e => {
+    if (isViewer) return;
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -377,6 +459,7 @@ export default function ConditionalLogicAutomation() {
   };
 
   const simulate = () => {
+    if (isViewer) return;
     try {
       const payload = JSON.parse(simulationInput || "{}");
       let matchedBranch = null;
@@ -391,12 +474,53 @@ export default function ConditionalLogicAutomation() {
       if (!matchedBranch) {
         actions = branchGroup.elseActions || [];
       }
+      const snapshot = {
+        flowNodes,
+        branchGroup,
+        simulatedAt: Date.now(),
+        payload
+      };
       setSimulationResult({ payload, matchedBranch: matchedBranch || "Else", actions });
+      setLastSimulatedSnapshot(snapshot);
       setError("");
+      setDirtySinceSave(false);
     } catch (err) {
       setError("Simulation failed: " + err.message);
       setSimulationResult(null);
     }
+  };
+
+  const runPreflight = () => {
+    const issues = [];
+    if (env === "prod" && !confirmationNote.trim()) issues.push("Add a ship note/intent before running in prod.");
+    if (!flowNodes.find(n => n.type === "trigger")) issues.push("Add at least one trigger to start the flow.");
+    if (flowNodes.filter(n => n.type === "action").length === 0) issues.push("No actions configured yet.");
+    if ((branchGroup.branches || []).length === 0) issues.push("Define at least one IF branch for routing.");
+    if (validationIssues.length) issues.push(...validationIssues);
+    setPreflightIssues(issues);
+    return issues;
+  };
+
+  const handleUndo = () => {
+    if (!undoStack.length) return;
+    const prev = undoStack[undoStack.length - 1];
+    setUndoStack(undoStack.slice(0, -1));
+    setRedoStack(r => [...r.slice(-9), JSON.parse(JSON.stringify({ flowNodes, branchGroup, simulationInput, env }))]);
+    setFlowNodes(prev.flowNodes || []);
+    setBranchGroup(prev.branchGroup || { branches: [], elseActions: [] });
+    if (prev.simulationInput) setSimulationInput(prev.simulationInput);
+    if (prev.env) setEnv(prev.env);
+  };
+
+  const handleRedo = () => {
+    if (!redoStack.length) return;
+    const next = redoStack[redoStack.length - 1];
+    setRedoStack(redoStack.slice(0, -1));
+    setUndoStack(u => [...u.slice(-9), JSON.parse(JSON.stringify({ flowNodes, branchGroup, simulationInput, env }))]);
+    setFlowNodes(next.flowNodes || []);
+    setBranchGroup(next.branchGroup || { branches: [], elseActions: [] });
+    if (next.simulationInput) setSimulationInput(next.simulationInput);
+    if (next.env) setEnv(next.env);
   };
 
   const validate = () => {
@@ -448,11 +572,153 @@ export default function ConditionalLogicAutomation() {
     branches: branchGroup.branches?.length || 0
   }), [flowNodes, branchGroup]);
 
+  const diffSummary = useMemo(() => {
+    if (!lastSimulatedSnapshot) return null;
+    const prevFlow = lastSimulatedSnapshot.flowNodes || [];
+    const prevBranches = lastSimulatedSnapshot.branchGroup?.branches || [];
+    const added = flowNodes.filter(n => !prevFlow.find(p => p.id === n.id));
+    const removed = prevFlow.filter(p => !flowNodes.find(n => n.id === p.id));
+    const changed = flowNodes.filter(n => {
+      const prev = prevFlow.find(p => p.id === n.id);
+      if (!prev) return false;
+      return prev.title !== n.title || prev.type !== n.type || JSON.stringify(prev.config || {}) !== JSON.stringify(n.config || {});
+    });
+    const branchDelta = (branchGroup.branches || []).length - prevBranches.length;
+    return { added, removed, changed, branchDelta };
+  }, [flowNodes, branchGroup, lastSimulatedSnapshot]);
+
+  const formatTime = ts => ts ? new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+
+  const handleManualSave = () => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      flowNodes,
+      branchGroup,
+      simulationInput,
+      env,
+      lastSavedAt: Date.now()
+    }));
+    setDraftStatus("saved");
+    setLastSavedAt(Date.now());
+    setDirtySinceSave(false);
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.flowNodes) setFlowNodes(parsed.flowNodes);
+        if (parsed.branchGroup) setBranchGroup(parsed.branchGroup);
+        if (parsed.simulationInput) setSimulationInput(parsed.simulationInput);
+        if (parsed.env) setEnv(parsed.env);
+        if (parsed.lastSavedAt) setLastSavedAt(parsed.lastSavedAt);
+      } catch (err) {
+        console.warn("Failed to load draft", err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setDraftStatus("saving");
+    const handle = setTimeout(() => {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        flowNodes,
+        branchGroup,
+        simulationInput,
+        env,
+        lastSavedAt: Date.now()
+      }));
+      setDraftStatus("saved");
+      setLastSavedAt(Date.now());
+      setDirtySinceSave(false);
+    }, 400);
+    return () => clearTimeout(handle);
+  }, [flowNodes, branchGroup, simulationInput, env]);
+
+  useEffect(() => {
+    if (!hydratedRef.current) {
+      hydratedRef.current = true;
+      return;
+    }
+    if (dirtySkipRef.current) {
+      dirtySkipRef.current = false;
+      return;
+    }
+    setDirtySinceSave(true);
+  }, [flowNodes, branchGroup, simulationInput, env, confirmationNote]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (dirtySinceSave || preflightIssues.length) {
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirtySinceSave, preflightIssues.length]);
+
+  useEffect(() => {
+    const listener = e => {
+      if (e.ctrlKey && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        handleManualSave();
+      }
+      if (e.ctrlKey && e.key === "Enter") {
+        e.preventDefault();
+        simulate();
+      }
+      if (!e.ctrlKey && !e.metaKey && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        addBranch();
+      }
+      if (!e.ctrlKey && !e.metaKey && e.key.toLowerCase() === "a") {
+        e.preventDefault();
+        addNode(ACTION_LIBRARY[0]);
+      }
+      if (e.ctrlKey && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        handleUndo();
+      }
+      if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "z") || (e.ctrlKey && e.key.toLowerCase() === "y")) {
+        e.preventDefault();
+        handleRedo();
+      }
+      if (e.ctrlKey && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setShowCommandPalette(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", listener);
+    return () => window.removeEventListener("keydown", listener);
+  }, [flowNodes, branchGroup, undoStack, redoStack]);
+
   return (
     <div style={{ background: "#0f1115", borderRadius: 18, boxShadow: "0 15px 60px #0007", padding: 32, fontFamily: "Inter, sans-serif", color: "#e5e7eb", border: "1px solid #1f2937" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12, flexWrap: "wrap" }}>
         <BackButton label="← Back to Suite" onClick={goBackToSuite} />
         <div style={{ color: "#9ca3af", fontSize: 13 }}>Workflows Suite · Conditional Logic & Branching</div>
+      </div>
+
+      <div style={{ position: "sticky", top: 0, zIndex: 4, display: "flex", gap: 12, flexWrap: "wrap", background: "#0f1115", paddingBottom: 10 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", background: "#111827", border: "1px solid #1f2937", borderRadius: 12, padding: "8px 12px" }}>
+          <span style={{ color: "#9ca3af", fontWeight: 700 }}>Env</span>
+          {["dev", "stage", "prod"].map(opt => (
+            <button key={opt} onClick={() => setEnv(opt)} style={{ background: env === opt ? "#0ea5e9" : "#0b1221", color: env === opt ? "#0b1221" : "#e5e7eb", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 12px", fontWeight: 800, cursor: "pointer" }}>
+              {opt.toUpperCase()}
+            </button>
+          ))}
+          <span style={{ color: draftStatus === "saved" ? "#22c55e" : "#fbbf24", fontSize: 12 }}>{draftStatus === "saved" ? `Saved ${formatTime(lastSavedAt)}` : "Saving..."}</span>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button onClick={runPreflight} style={{ background: "#1e293b", color: "#fcd34d", border: "1px solid #334155", borderRadius: 12, padding: "10px 12px", fontWeight: 800, cursor: "pointer" }}>🔍 Preflight (Ctrl+S)</button>
+          <button onClick={simulate} style={{ background: "#22c55e", color: "#0f172a", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: "pointer" }}>▶️ Run Simulation (Ctrl+Enter)</button>
+          <button onClick={() => setSelectedPayloadPreset(p => p)} style={{ background: "#0ea5e91a", color: "#67e8f9", border: "1px solid #1f2937", borderRadius: 12, padding: "10px 12px", fontWeight: 800 }}>Dev Payload Presets</button>
+        </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 18 }}>
         <div>
@@ -729,6 +995,13 @@ export default function ConditionalLogicAutomation() {
               <div style={{ fontWeight: 800, color: "#e5e7eb" }}>Simulation Preview</div>
               <small style={{ color: "#9ca3af" }}>Paste sample payload to test pathing</small>
             </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+              {PAYLOAD_PRESETS.map(p => (
+                <button key={p.id} onClick={() => { setSelectedPayloadPreset(p.id); setSimulationInput(JSON.stringify(p.payload, null, 2)); }} style={{ background: selectedPayloadPreset === p.id ? "#0ea5e9" : "#0b1221", color: selectedPayloadPreset === p.id ? "#0b1221" : "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px", fontWeight: 700, cursor: "pointer" }}>
+                  {p.name} <span style={{ marginLeft: 6, background: "#0ea5e91a", color: "#67e8f9", padding: "2px 6px", borderRadius: 999, fontSize: 12 }}>{p.badge}</span>
+                </button>
+              ))}
+            </div>
             <textarea
               value={simulationInput}
               onChange={e => setSimulationInput(e.target.value)}
@@ -746,6 +1019,12 @@ export default function ConditionalLogicAutomation() {
                   ))}
                   {simulationResult.actions.length === 0 && <li style={{ color: "#6b7280" }}>No actions</li>}
                 </ul>
+                {diffSummary && (
+                  <div style={{ marginTop: 10, color: "#9ca3af", fontSize: 13 }}>
+                    <div style={{ color: "#e5e7eb", fontWeight: 700 }}>Changes since last simulation</div>
+                    <div>Added nodes: {diffSummary.added.length}, Removed: {diffSummary.removed.length}, Changed: {diffSummary.changed.length}, Branch delta: {diffSummary.branchDelta}</div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -808,6 +1087,27 @@ export default function ConditionalLogicAutomation() {
                   <li key={idx}>{issue}</li>
                 ))}
               </ul>
+            )}
+            {preflightIssues.length > 0 && (
+              <div style={{ marginTop: 10, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10 }}>
+                <div style={{ color: "#fcd34d", fontWeight: 800 }}>Preflight</div>
+                <ul style={{ margin: 6, paddingLeft: 18, color: "#e5e7eb" }}>
+                  {preflightIssues.map((issue, idx) => (
+                    <li key={idx}>{issue}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {env === "prod" && (
+              <div style={{ marginTop: 10, background: "#0ea5e91a", border: "1px solid #0ea5e9", borderRadius: 10, padding: 10 }}>
+                <div style={{ color: "#67e8f9", fontWeight: 800 }}>Prod note required</div>
+                <input
+                  value={confirmationNote}
+                  onChange={e => setConfirmationNote(e.target.value)}
+                  placeholder="Who approved? What changed?"
+                  style={{ marginTop: 6, width: "100%", background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "8px 10px" }}
+                />
+              </div>
             )}
           </div>
 

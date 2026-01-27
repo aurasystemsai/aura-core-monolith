@@ -6,10 +6,14 @@ const { shopifyApiAdapterNode } = require('@shopify/shopify-api/adapters/node');
 
 // NOTE: These use your current Render.com env variable names.
 // For best practice, consider renaming to Shopify's latest convention in the future.
+const hostName = process.env.SHOPIFY_APP_URL
+  ? process.env.SHOPIFY_APP_URL.replace(/^https?:\/\//, '').replace(/\/$/, '')
+  : (process.env.NODE_ENV === 'test' ? 'test-shop.myshopify.com' : undefined);
+
 const shopify = shopifyApi({
-  apiKey: process.env.SHOPIFY_CLIENT_ID, // Render.com: SHOPIFY_CLIENT_ID
-  apiSecretKey: process.env.SHOPIFY_CLIENT_SECRET, // Render.com: SHOPIFY_CLIENT_SECRET
-  hostName: process.env.SHOPIFY_APP_URL ? process.env.SHOPIFY_APP_URL.replace(/^https?:\/\//, '').replace(/\/$/, '') : undefined, // Render.com: SHOPIFY_APP_URL
+  apiKey: process.env.SHOPIFY_CLIENT_ID || (process.env.NODE_ENV === 'test' ? 'test_key' : undefined), // Render.com: SHOPIFY_CLIENT_ID
+  apiSecretKey: process.env.SHOPIFY_CLIENT_SECRET || (process.env.NODE_ENV === 'test' ? 'test_secret' : undefined), // Render.com: SHOPIFY_CLIENT_SECRET
+  hostName, // Render.com: SHOPIFY_APP_URL
   apiVersion: process.env.SHOPIFY_API_VERSION || LATEST_API_VERSION, // Add SHOPIFY_API_VERSION to Render.com for explicit versioning
   isEmbeddedApp: true,
   adapter: shopifyApiAdapterNode,

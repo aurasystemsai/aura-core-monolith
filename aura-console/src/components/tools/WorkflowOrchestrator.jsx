@@ -1,5 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import BackButton from "./BackButton";
+
+const STORAGE_KEY = "workflow-orchestrator:draft";
 
 export default function WorkflowOrchestrator() {
   const [workflowName, setWorkflowName] = useState("SEO Autopilot Orchestration");
@@ -29,6 +31,21 @@ export default function WorkflowOrchestrator() {
   const [lastRunSnapshot, setLastRunSnapshot] = useState(null);
   const [versionName, setVersionName] = useState("v1");
   const [versions, setVersions] = useState([]);
+  const [draftStatus, setDraftStatus] = useState("idle"); // idle | saving | saved
+  const [lastSavedAt, setLastSavedAt] = useState(null);
+  const [role] = useState(() => {
+    if (typeof window === "undefined") return "admin";
+    return window.__AURA_USER?.role || window.localStorage.getItem("aura-role") || "admin";
+  });
+  const [accessRequested, setAccessRequested] = useState(false);
+  const [dirtySinceSave, setDirtySinceSave] = useState(false);
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const hydratedRef = useRef(false);
+  const dirtySkipRef = useRef(true);
+
+  const isViewer = role === "viewer";
 
   const triggerTemplates = [
     { label: "Order Placed", config: "Trigger when an order is placed with value > $50" },
@@ -47,7 +64,115 @@ export default function WorkflowOrchestrator() {
     { id: "high-aov", name: "High AOV", payload: { customer: "vip@example.com", subtotal: 820 } }
   ];
 
+  // Load draft on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.workflowName) setWorkflowName(parsed.workflowName);
+        if (parsed.objective) setObjective(parsed.objective);
+        if (parsed.env) setEnv(parsed.env);
+        if (parsed.versionTag) setVersionTag(parsed.versionTag);
+        if (parsed.tags) setTags(parsed.tags);
+        if (typeof parsed.approvalRequired === "boolean") setApprovalRequired(parsed.approvalRequired);
+        if (parsed.approverEmail) setApproverEmail(parsed.approverEmail);
+        if (parsed.riskLevel) setRiskLevel(parsed.riskLevel);
+        if (parsed.owner) setOwner(parsed.owner);
+        if (parsed.steps) setSteps(parsed.steps);
+        if (parsed.selectedStep) setSelectedStep(parsed.selectedStep);
+        if (parsed.confirmationNote) setConfirmationNote(parsed.confirmationNote);
+        if (parsed.payloadPreset) setPayloadPreset(parsed.payloadPreset);
+        if (parsed.versionName) setVersionName(parsed.versionName);
+        if (parsed.versions) setVersions(parsed.versions);
+        if (parsed.lastSavedAt) setLastSavedAt(parsed.lastSavedAt);
+      } catch (err) {
+        console.warn("Failed to parse orchestrator draft", err);
+      }
+    }
+  }, []);
+
+  // Mark dirty after hydration on meaningful changes
+  useEffect(() => {
+    if (!hydratedRef.current) {
+      hydratedRef.current = true;
+      return;
+    }
+    if (dirtySkipRef.current) {
+      dirtySkipRef.current = false;
+      return;
+    }
+    setDirtySinceSave(true);
+  }, [workflowName, objective, env, versionTag, tags, approvalRequired, approverEmail, riskLevel, owner, steps, confirmationNote, payloadPreset, versionName]);
+
+  // Autosave draft with debounce
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setDraftStatus("saving");
+    const handle = setTimeout(() => {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        workflowName,
+        objective,
+        env,
+        versionTag,
+        tags,
+        approvalRequired,
+        approverEmail,
+        riskLevel,
+        owner,
+        steps,
+        selectedStep,
+        confirmationNote,
+        payloadPreset,
+        versionName,
+        versions,
+        lastSavedAt: Date.now()
+      }));
+      setDraftStatus("saved");
+      setLastSavedAt(Date.now());
+      setDirtySinceSave(false);
+    }, 450);
+    return () => clearTimeout(handle);
+  }, [workflowName, objective, env, versionTag, tags, approvalRequired, approverEmail, riskLevel, owner, steps, selectedStep, confirmationNote, payloadPreset, versionName, versions]);
+
+  // Exit warning for unsaved/guardrail issues
+  useEffect(() => {
+    const handler = (e) => {
+      if (dirtySinceSave || preflightIssues.length) {
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirtySinceSave, preflightIssues.length]);
+
+  const pushUndoSnapshot = () => {
+    setUndoStack(prev => [...prev.slice(-9), JSON.parse(JSON.stringify(steps))]);
+    setRedoStack([]);
+  };
+
+  const handleUndo = () => {
+    if (!undoStack.length) return;
+    const previous = undoStack[undoStack.length - 1];
+    setUndoStack(undoStack.slice(0, -1));
+    setRedoStack(prev => [...prev.slice(-9), JSON.parse(JSON.stringify(steps))]);
+    setSteps(previous);
+  };
+
+  const handleRedo = () => {
+    if (!redoStack.length) return;
+    const next = redoStack[redoStack.length - 1];
+    setRedoStack(redoStack.slice(0, -1));
+    setUndoStack(prev => [...prev.slice(-9), JSON.parse(JSON.stringify(steps))]);
+    setSteps(next);
+  };
+
   const handleStepChange = (id, changes) => {
+    if (isViewer) return;
+    pushUndoSnapshot();
     setSteps(steps.map(s => s.id === id ? { ...s, ...changes } : s));
   };
 
@@ -67,7 +192,9 @@ export default function WorkflowOrchestrator() {
   };
 
   const handleAddStep = (template = null, type = "action") => {
+    if (isViewer) return;
     const nextId = (Math.max(...steps.map(s => s.id)) || 0) + 1;
+    pushUndoSnapshot();
     setSteps([...steps, {
       id: nextId,
       name: template?.label || `Step ${nextId}`,
@@ -79,6 +206,8 @@ export default function WorkflowOrchestrator() {
 
   const handleRemoveStep = id => {
     if (steps.length <= 1) return;
+    if (isViewer) return;
+    pushUndoSnapshot();
     const nextSteps = steps.filter(s => s.id !== id);
     setSteps(nextSteps);
     setSelectedStep(nextSteps[0]?.id || null);
@@ -87,10 +216,12 @@ export default function WorkflowOrchestrator() {
   const handleCloneStep = () => {
     const current = steps.find(s => s.id === selectedStep);
     if (!current) return;
+    if (isViewer) return;
     const nextId = (Math.max(...steps.map(s => s.id)) || 0) + 1;
     const clone = { ...current, id: nextId, name: `${current.name} Copy` };
     const idx = steps.findIndex(s => s.id === selectedStep);
     const next = [...steps.slice(0, idx + 1), clone, ...steps.slice(idx + 1)];
+    pushUndoSnapshot();
     setSteps(next);
     setSelectedStep(nextId);
   };
@@ -98,10 +229,12 @@ export default function WorkflowOrchestrator() {
   const handleReorder = (id, direction) => {
     const idx = steps.findIndex(s => s.id === id);
     if (idx === -1) return;
+    if (isViewer) return;
     const swapWith = direction === "up" ? idx - 1 : idx + 1;
     if (swapWith < 0 || swapWith >= steps.length) return;
     const next = [...steps];
     [next[idx], next[swapWith]] = [next[swapWith], next[idx]];
+    pushUndoSnapshot();
     setSteps(next);
   };
 
@@ -125,6 +258,8 @@ export default function WorkflowOrchestrator() {
     };
     const chosen = presets[playbook];
     if (chosen) {
+      if (isViewer) return;
+      pushUndoSnapshot();
       setSteps(chosen);
       setSelectedStep(chosen[0].id);
     }
@@ -151,6 +286,7 @@ export default function WorkflowOrchestrator() {
   };
 
   const handleOrchestrate = async () => {
+    if (isViewer) return;
     const issues = runPreflight();
     if (issues.length) {
       setError("Resolve guardrails before orchestrating.");
@@ -179,6 +315,9 @@ export default function WorkflowOrchestrator() {
         workflowName
       }, ...prev].slice(0, 10));
       setLastRunSnapshot({ steps, env, versionTag, approvalRequired, riskLevel, confirmationNote, at: Date.now() });
+      setDirtySinceSave(false);
+      setDraftStatus("saved");
+      setLastSavedAt(Date.now());
     } catch (err) {
       setError(err.message);
     } finally {
@@ -212,7 +351,35 @@ export default function WorkflowOrchestrator() {
     return { added, removed, changed };
   }, [steps, lastRunSnapshot]);
 
+  const formatTime = ts => ts ? new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+
+  const handleManualSave = () => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      workflowName,
+      objective,
+      env,
+      versionTag,
+      tags,
+      approvalRequired,
+      approverEmail,
+      riskLevel,
+      owner,
+      steps,
+      selectedStep,
+      confirmationNote,
+      payloadPreset,
+      versionName,
+      versions,
+      lastSavedAt: Date.now()
+    }));
+    setDraftStatus("saved");
+    setLastSavedAt(Date.now());
+    setDirtySinceSave(false);
+  };
+
   const handleTestDev = () => {
+    if (isViewer) return;
     setTestStatus("running");
     const payload = payloadPresets.find(p => p.id === payloadPreset)?.payload || {};
     const running = {};
@@ -228,58 +395,94 @@ export default function WorkflowOrchestrator() {
   };
 
   const handleSnapshotVersion = () => {
+    if (isViewer) return;
     const label = versionName || `v${versions.length + 1}`;
     setVersions(prev => [{ label, steps, env, approvalRequired, createdAt: Date.now() }, ...prev].slice(0, 6));
   };
 
   useEffect(() => {
     const listener = e => {
-      if (e.ctrlKey && e.key === "s") { e.preventDefault(); runPreflight(); }
+      if (e.ctrlKey && e.key === "s") { e.preventDefault(); handleManualSave(); }
       if (e.ctrlKey && e.key === "Enter") { e.preventDefault(); handleOrchestrate(); }
-      if (!e.ctrlKey && !e.metaKey && e.key === "c") { e.preventDefault(); handleCloneStep(); }
+      if (!e.ctrlKey && !e.metaKey && e.key.toLowerCase() === "c") { e.preventDefault(); handleCloneStep(); }
+      if (e.ctrlKey && e.key.toLowerCase() === "z") { e.preventDefault(); handleUndo(); }
+      if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "z") || (e.ctrlKey && e.key.toLowerCase() === "y")) { e.preventDefault(); handleRedo(); }
+      if (e.ctrlKey && e.key.toLowerCase() === "k") { e.preventDefault(); setShowCommandPalette(prev => !prev); }
     };
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);
-  });
+  }, [steps, undoStack, redoStack, showCommandPalette]);
 
   return (
     <div style={{ background: "#0f1115", color: "#e5e7eb", padding: 24, borderRadius: 16, border: "1px solid #1f2937", boxShadow: "0 12px 48px #0007" }}>
       <BackButton />
+      {isViewer && (
+        <div style={{ background: "#1f2937", border: "1px solid #374151", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontWeight: 800, color: "#fcd34d" }}>View-only mode</div>
+            <div style={{ color: "#9ca3af", fontSize: 13 }}>You can inspect orchestrations but need elevated access to edit or ship changes.</div>
+          </div>
+          <button onClick={() => setAccessRequested(true)} disabled={accessRequested} style={{ background: accessRequested ? "#374151" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: accessRequested ? "default" : "pointer" }}>
+            {accessRequested ? "Request sent" : "Request edit access"}
+          </button>
+        </div>
+      )}
+      {showCommandPalette && (
+        <div style={{ position: "fixed", inset: 0, background: "#0009", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20 }}>
+          <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 14, padding: 16, width: "min(520px, 92vw)", boxShadow: "0 18px 60px #000" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div style={{ fontWeight: 800, color: "#a5f3fc" }}>Command Palette</div>
+              <button onClick={() => setShowCommandPalette(false)} style={{ background: "transparent", color: "#9ca3af", border: "none", cursor: "pointer", fontWeight: 700 }}>Esc</button>
+            </div>
+            {[{ label: "Save draft", action: handleManualSave, hotkey: "Ctrl+S", disabled: false }, { label: "Run preflight", action: () => setPreflightIssues(runPreflight()), hotkey: "Alt+P", disabled: false }, { label: "Orchestrate", action: handleOrchestrate, hotkey: "Ctrl+Enter", disabled: isViewer }, { label: "Undo", action: handleUndo, hotkey: "Ctrl+Z", disabled: !undoStack.length || isViewer }, { label: "Redo", action: handleRedo, hotkey: "Ctrl+Shift+Z", disabled: !redoStack.length || isViewer }].map(cmd => (
+              <button key={cmd.label} disabled={cmd.disabled} onClick={() => { cmd.action(); setShowCommandPalette(false); }} style={{ width: "100%", textAlign: "left", background: cmd.disabled ? "#1f2937" : "#111827", color: cmd.disabled ? "#6b7280" : "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", marginBottom: 8, cursor: cmd.disabled ? "not-allowed" : "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span>{cmd.label}</span>
+                <span style={{ fontSize: 12, color: "#9ca3af" }}>{cmd.hotkey}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12, flexWrap: "wrap" }}>
         <div>
           <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0, color: "#a5f3fc" }}>Workflow Orchestrator</h2>
-          <div style={{ color: "#9ca3af", marginTop: 4 }}>Plan, run, and approve orchestrations before shipping. Hotkeys: Ctrl+S preflight, Ctrl+Enter run, c clone.</div>
+          <div style={{ color: "#9ca3af", marginTop: 4 }}>Plan, run, and approve orchestrations before shipping. Hotkeys: Ctrl+S save, Ctrl+Enter run, Ctrl+Z undo, Ctrl+Shift+Z redo, c clone, Ctrl+K palette.</div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", fontWeight: 700 }}>
+          <select value={env} onChange={e => setEnv(e.target.value)} disabled={isViewer} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
             <option value="dev">Dev</option><option value="stage">Stage</option><option value="prod">Prod</option>
           </select>
-          <input value={versionTag} onChange={e => setVersionTag(e.target.value)} placeholder="Version tag" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", minWidth: 120 }} />
-          <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", fontWeight: 700 }}>
-            <input type="checkbox" checked={approvalRequired} onChange={e => setApprovalRequired(e.target.checked)} /> Approvals
+          <input value={versionTag} onChange={e => setVersionTag(e.target.value)} disabled={isViewer} placeholder="Version tag" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", minWidth: 120, opacity: isViewer ? 0.7 : 1 }} />
+          <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
+            <input type="checkbox" checked={approvalRequired} onChange={e => setApprovalRequired(e.target.checked)} disabled={isViewer} /> Approvals
           </label>
-          <input value={approverEmail} onChange={e => setApproverEmail(e.target.value)} placeholder="Approver email" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", minWidth: 180 }} />
+          <input value={approverEmail} onChange={e => setApproverEmail(e.target.value)} disabled={isViewer} placeholder="Approver email" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", minWidth: 180, opacity: isViewer ? 0.7 : 1 }} />
         </div>
       </div>
 
       {(env === "prod" || riskLevel === "high") && (
         <div style={{ marginBottom: 8, background: "#1f2937", border: "1px solid #374151", borderRadius: 10, padding: 10, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ color: "#fbbf24", fontWeight: 700 }}>Prod / high-risk confirmation</div>
-          <input value={confirmationNote} onChange={e => setConfirmationNote(e.target.value)} placeholder="Add a confirmation note" style={{ flex: 1, minWidth: 220, background: "#0b1221", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px" }} />
+          <input value={confirmationNote} onChange={e => setConfirmationNote(e.target.value)} disabled={isViewer} placeholder="Add a confirmation note" style={{ flex: 1, minWidth: 220, background: "#0b1221", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", opacity: isViewer ? 0.7 : 1 }} />
         </div>
       )}
 
       <div style={{ position: "sticky", top: 0, zIndex: 2, background: "#0f1115", paddingBottom: 6, marginBottom: 12 }}>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
-          <button onClick={() => setPreflightIssues(runPreflight())} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Preflight</button>
-          <button onClick={handleCloneStep} style={{ background: "#a855f7", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Clone step</button>
+          <button onClick={() => setPreflightIssues(runPreflight())} disabled={isViewer} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Preflight</button>
+          <button onClick={handleCloneStep} disabled={isViewer} style={{ background: "#a855f7", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Clone step</button>
           <input value={versionName} onChange={e => setVersionName(e.target.value)} placeholder="Version name" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "8px 12px", minWidth: 140 }} />
-          <button onClick={handleSnapshotVersion} style={{ background: "#8b5cf6", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Snapshot</button>
-          <select value={payloadPreset} onChange={e => setPayloadPreset(e.target.value)} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "8px 12px" }}>
+          <button onClick={handleSnapshotVersion} disabled={isViewer} style={{ background: "#8b5cf6", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Snapshot</button>
+          <select value={payloadPreset} onChange={e => setPayloadPreset(e.target.value)} disabled={isViewer} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "8px 12px", opacity: isViewer ? 0.7 : 1 }}>
             {payloadPresets.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
-          <button onClick={handleTestDev} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>{testStatus === "running" ? "Testing..." : "Test in dev"}</button>
-          <button onClick={handleOrchestrate} disabled={loading} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 15, cursor: loading ? "not-allowed" : "pointer" }}>{loading ? "Orchestrating..." : "Orchestrate"}</button>
+          <button onClick={handleTestDev} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{testStatus === "running" ? "Testing..." : "Test in dev"}</button>
+          <button onClick={handleOrchestrate} disabled={loading || isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 15, cursor: loading || isViewer ? "not-allowed" : "pointer", opacity: loading || isViewer ? 0.6 : 1 }}>{loading ? "Orchestrating..." : "Orchestrate"}</button>
+          <div style={{ color: "#9ca3af", fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ color: draftStatus === "saved" ? "#22c55e" : "#fbbf24" }}>{draftStatus === "saved" ? "Saved" : "Saving"}</span>
+            {lastSavedAt && <span>· {formatTime(lastSavedAt)}</span>}
+            {dirtySinceSave && <span style={{ color: "#fbbf24" }}>· Unsaved changes</span>}
+          </div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <span style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: steps.some(s => s.type === "trigger") ? "#22c55e" : "#f97316", fontWeight: 700 }}>Trigger {steps.some(s => s.type === "trigger") ? "OK" : "Missing"}</span>
@@ -291,16 +494,16 @@ export default function WorkflowOrchestrator() {
 
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 16, alignItems: "start", marginBottom: 14 }}>
         <div style={{ display: "grid", gap: 8 }}>
-          <input value={workflowName} onChange={e => setWorkflowName(e.target.value)} placeholder="Workflow name" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", fontWeight: 700 }} />
-          <textarea value={objective} onChange={e => setObjective(e.target.value)} placeholder="Objective / desired outcome" rows={2} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px" }} />
+          <input value={workflowName} onChange={e => setWorkflowName(e.target.value)} disabled={isViewer} placeholder="Workflow name" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }} />
+          <textarea value={objective} onChange={e => setObjective(e.target.value)} disabled={isViewer} placeholder="Objective / desired outcome" rows={2} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", opacity: isViewer ? 0.7 : 1 }} />
         </div>
         <div style={{ display: "grid", gap: 8 }}>
-          <input value={tags} onChange={e => setTags(e.target.value)} placeholder="Tags (comma separated)" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px" }} />
+          <input value={tags} onChange={e => setTags(e.target.value)} disabled={isViewer} placeholder="Tags (comma separated)" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", opacity: isViewer ? 0.7 : 1 }} />
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <select value={riskLevel} onChange={e => setRiskLevel(e.target.value)} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", fontWeight: 700 }}>
+            <select value={riskLevel} onChange={e => setRiskLevel(e.target.value)} disabled={isViewer} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
               <option value="low">Low risk</option><option value="medium">Medium risk</option><option value="high">High risk</option>
             </select>
-            <input value={owner} onChange={e => setOwner(e.target.value)} placeholder="Workflow owner" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", flex: 1 }} />
+            <input value={owner} onChange={e => setOwner(e.target.value)} disabled={isViewer} placeholder="Workflow owner" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", flex: 1, opacity: isViewer ? 0.7 : 1 }} />
           </div>
         </div>
       </div>
@@ -319,23 +522,23 @@ export default function WorkflowOrchestrator() {
                   <div style={{ color: "#a5f3fc", fontSize: 12 }}>({step.type})</div>
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
-                  <button onClick={e => { e.stopPropagation(); handleReorder(step.id, "up"); }} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 6, padding: "4px 8px", cursor: "pointer" }}>↑</button>
-                  <button onClick={e => { e.stopPropagation(); handleReorder(step.id, "down"); }} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 6, padding: "4px 8px", cursor: "pointer" }}>↓</button>
-                  {steps.length > 1 && <button onClick={e => { e.stopPropagation(); handleRemoveStep(step.id); }} style={{ background: "#111827", color: "#fca5a5", border: "1px solid #23263a", borderRadius: 6, padding: "4px 8px", cursor: "pointer" }}>✕</button>}
+                  <button onClick={e => { e.stopPropagation(); handleReorder(step.id, "up"); }} disabled={isViewer} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>↑</button>
+                  <button onClick={e => { e.stopPropagation(); handleReorder(step.id, "down"); }} disabled={isViewer} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>↓</button>
+                  {steps.length > 1 && <button onClick={e => { e.stopPropagation(); handleRemoveStep(step.id); }} disabled={isViewer} style={{ background: "#111827", color: "#fca5a5", border: "1px solid #23263a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>✕</button>}
                 </div>
               </li>
             ))}
           </ul>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button onClick={() => handleAddStep(null, "trigger")} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: "pointer", marginTop: 4 }}>+ Add Trigger</button>
-            <button onClick={() => handleAddStep()} style={{ background: "#10b981", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: "pointer", marginTop: 4 }}>+ Add Action</button>
+            <button onClick={() => handleAddStep(null, "trigger")} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>+ Add Trigger</button>
+            <button onClick={() => handleAddStep()} disabled={isViewer} style={{ background: "#10b981", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>+ Add Action</button>
           </div>
           <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
             <div style={{ color: "#9ca3af", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 }}>Playbooks</div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              <button onClick={() => applyPlaybook("seoFix")} style={{ background: "#1f2937", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 12px", cursor: "pointer" }}>SEO Fix Queue</button>
-              <button onClick={() => applyPlaybook("productSync")} style={{ background: "#1f2937", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 12px", cursor: "pointer" }}>Product Sync</button>
-              <button onClick={() => applyPlaybook("winback")} style={{ background: "#1f2937", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 12px", cursor: "pointer" }}>Winback</button>
+              <button onClick={() => applyPlaybook("seoFix")} disabled={isViewer} style={{ background: "#1f2937", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>SEO Fix Queue</button>
+              <button onClick={() => applyPlaybook("productSync")} disabled={isViewer} style={{ background: "#1f2937", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Product Sync</button>
+              <button onClick={() => applyPlaybook("winback")} disabled={isViewer} style={{ background: "#1f2937", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Winback</button>
             </div>
           </div>
         </div>
@@ -343,19 +546,19 @@ export default function WorkflowOrchestrator() {
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Step Configuration</div>
           {steps.map(step => step.id === selectedStep && (
             <div key={step.id}>
-              <input value={step.name} onChange={e => handleStepChange(step.id, { name: e.target.value })} style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 8, background: "#18181b", color: "#e5e7eb" }} />
-              <select value={step.type} onChange={e => handleStepChange(step.id, { type: e.target.value })} style={{ marginBottom: 8, width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 8, background: "#18181b", color: "#e5e7eb" }}>
+              <input value={step.name} onChange={e => handleStepChange(step.id, { name: e.target.value })} disabled={isViewer} style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 8, background: "#18181b", color: "#e5e7eb", opacity: isViewer ? 0.6 : 1 }} />
+              <select value={step.type} onChange={e => handleStepChange(step.id, { type: e.target.value })} disabled={isViewer} style={{ marginBottom: 8, width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 8, background: "#18181b", color: "#e5e7eb", opacity: isViewer ? 0.6 : 1 }}>
                 <option value="trigger">Trigger</option>
                 <option value="action">Action</option>
                 <option value="condition">Condition</option>
               </select>
-              <textarea value={step.config} onChange={e => handleStepChange(step.id, { config: e.target.value })} rows={5} style={{ width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 10, background: "#23263a", color: "#e5e7eb" }} placeholder={step.type === "trigger" ? "Describe the trigger (e.g. 'Order placed with AOV > $50')" : "Describe the action (e.g. 'Send Slack notification to #ops')"} />
+              <textarea value={step.config} onChange={e => handleStepChange(step.id, { config: e.target.value })} disabled={isViewer} rows={5} style={{ width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 10, background: "#23263a", color: "#e5e7eb", opacity: isViewer ? 0.6 : 1 }} placeholder={step.type === "trigger" ? "Describe the trigger (e.g. 'Order placed with AOV > $50')" : "Describe the action (e.g. 'Send Slack notification to #ops')"} />
               <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {step.type === "trigger" && triggerTemplates.map(t => (
-                  <button key={t.label} onClick={() => handleStepChange(step.id, { config: t.config, name: t.label })} style={{ background: "#111827", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 10px", cursor: "pointer" }}>{t.label}</button>
+                  <button key={t.label} onClick={() => handleStepChange(step.id, { config: t.config, name: t.label })} disabled={isViewer} style={{ background: "#111827", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 10px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>{t.label}</button>
                 ))}
                 {step.type !== "trigger" && actionTemplates.map(t => (
-                  <button key={t.label} onClick={() => handleStepChange(step.id, { config: t.config, name: t.label })} style={{ background: "#111827", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 10px", cursor: "pointer" }}>{t.label}</button>
+                  <button key={t.label} onClick={() => handleStepChange(step.id, { config: t.config, name: t.label })} disabled={isViewer} style={{ background: "#111827", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 10px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>{t.label}</button>
                 ))}
               </div>
             </div>
