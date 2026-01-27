@@ -85,7 +85,7 @@ const ContentHealthAuditor = lazy(() => import("./components/ContentHealthAudito
 const UserManagement = lazy(() => import("./components/UserManagement.jsx"));
 const AutomationScheduler = lazy(() => import("./components/AutomationScheduler.jsx"));
 const Reports = lazy(() => import("./components/Reports.jsx"));
-const Orchestration = lazy(() => import("./orchestration/Orchestration.jsx"));
+const WorkflowOrchestrator = lazy(() => import("./components/tools/WorkflowOrchestrator.jsx"));
 const ProductSeoEngine = lazy(() => import("./components/ProductSeoEngine"));
 // const AiAltTextEngine = lazy(() => import("./components/AiAltTextEngine"));
 const InternalLinkOptimizer = lazy(() => import("./components/InternalLinkOptimizer"));
@@ -373,7 +373,7 @@ function App() {
                 {activeSection === "user-management" && <UserManagement coreUrl={coreUrl} />}
                 {activeSection === "onboarding" && <Onboarding />}
                 {activeSection === "credits" && <Credits />}
-                {(activeSection === "workflow-orchestrator" || activeSection === "orchestration") && <Orchestration />}
+                {(activeSection === "workflow-orchestrator" || activeSection === "orchestration") && <WorkflowOrchestrator />}
                 {activeSection === "products" && (
                   <ProductsList 
                     shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
