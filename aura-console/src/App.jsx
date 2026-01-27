@@ -320,6 +320,28 @@ function App() {
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
+  // Provide a global helper for tool back buttons to jump to Main Suite
+  useEffect(() => {
+    window.__AURA_TO_SUITE = (targetGroupId) => {
+      try {
+        const prefs = JSON.parse(localStorage.getItem(MAIN_SUITE_PREF_KEY) || "{}") || {};
+        localStorage.setItem(
+          MAIN_SUITE_PREF_KEY,
+          JSON.stringify({ ...prefs, activeGroup: targetGroupId || prefs.activeGroup })
+        );
+      } catch (e) {
+        // ignore prefs errors
+      }
+      navModeRef.current = 'suite';
+      setSectionHistory([]);
+      setActiveSection('main-suite');
+      if (typeof window !== 'undefined' && window.history?.replaceState) {
+        window.history.replaceState({ section: 'main-suite' }, "");
+      }
+    };
+    return () => { delete window.__AURA_TO_SUITE; };
+  }, []);
+
   useEffect(() => {
     window.__AURA_SECTION_BACK = () => {
       setSectionHistory(prev => {
