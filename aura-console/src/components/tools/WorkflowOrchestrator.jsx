@@ -1,183 +1,141 @@
 import React, { useState } from "react";
+import BackButton from "./BackButton";
+
 export default function WorkflowOrchestrator() {
-  const [input, setInput] = useState("");
-  const [bulkUpload, setBulkUpload] = useState(null);
-  const [channels, setChannels] = useState({ automation: true, email: false, slack: false, webhook: false, crm: false });
-  const [aiModel, setAiModel] = useState("gpt-4");
-  const [response, setResponse] = useState("");
-  const [analytics, setAnalytics] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [darkMode, setDarkMode] = useState(true);
-  const [collaborators, setCollaborators] = useState("");
-  const [accessLevel, setAccessLevel] = useState("writer");
-  const [privacy, setPrivacy] = useState("private");
-  const [compliance, setCompliance] = useState({ gdpr: true, ccpa: false });
-  const [notification, setNotification] = useState("");
+  const [steps, setSteps] = useState([
+    { id: 1, name: "Trigger", type: "trigger", config: "" },
+    { id: 2, name: "Action", type: "action", config: "" }
+  ]);
+  const [selectedStep, setSelectedStep] = useState(1);
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [feedback, setFeedback] = useState("");
-  const [reportUrl, setReportUrl] = useState("");
-  const [education, setEducation] = useState("");
+  const [history, setHistory] = useState([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [env, setEnv] = useState("dev");
   const [versionTag, setVersionTag] = useState("v1");
   const [approvalRequired, setApprovalRequired] = useState(true);
   const [approverEmail, setApproverEmail] = useState("");
-  const [rateLimit, setRateLimit] = useState(1000);
-  const [concurrency, setConcurrency] = useState(5);
-  const [circuitBreaker, setCircuitBreaker] = useState({ enabled: true, errorRate: 0.2 });
-  const [schemaJson, setSchemaJson] = useState("{\n  \"type\": \"object\",\n  \"properties\": {}\n}");
-  const [testPayload, setTestPayload] = useState("{\n  \"event\": \"order_created\"\n}");
-  const [simulationResult, setSimulationResult] = useState(null);
-  const [validationIssues, setValidationIssues] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  const validate = () => {
-    const issues = [];
-    if (!input) issues.push("Workflow input is required");
-    if (!approverEmail && approvalRequired) issues.push("Approver email required when approvals are enabled");
-    if (rateLimit <= 0) issues.push("Rate limit must be positive");
-    if (concurrency <= 0) issues.push("Concurrency must be positive");
-    try { JSON.parse(schemaJson || "{}"); } catch { issues.push("Schema JSON is invalid"); }
-    setValidationIssues(issues);
-    return issues;
+  const handleStepChange = (id, value) => {
+    setSteps(steps.map(s => s.id === id ? { ...s, config: value } : s));
   };
-
-  const handleRun = async () => {
-    const issues = validate();
-    if (issues.length) {
-      setError("Fix validation issues before running.");
-      return;
-    }
-    setError("");
-    setResponse("");
-    setAnalytics(null);
-    setNotification("");
+  const handleAddStep = () => {
+    const nextId = Math.max(...steps.map(s => s.id)) + 1;
+    setSteps([...steps, { id: nextId, name: `Step ${nextId}`, type: "action", config: "" }]);
+    setSelectedStep(nextId);
+  };
+  const handleRemoveStep = id => {
+    if (steps.length <= 1) return;
+    setSteps(steps.filter(s => s.id !== id));
+    setSelectedStep(steps[0].id);
+  };
+  const handleOrchestrate = async () => {
     setLoading(true);
+    setError("");
+    setResult(null);
     try {
-      setNotification("Orchestrating in progress...");
       const res = await fetch("/api/workflow-orchestrator/ai/orchestrate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          workflow: input,
-          bulkUpload,
-          channels,
-          aiModel,
-          collaborators,
-          accessLevel,
-          privacy,
-          compliance,
-          education,
-          env,
-          versionTag,
-          approvalRequired,
-          approverEmail,
-          rateLimit,
-          concurrency,
-          circuitBreaker,
-          schema: schemaJson
-        })
+        body: JSON.stringify({ steps, env, versionTag, approvalRequired, approverEmail })
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Unknown error");
-      setResponse(data.orchestration || "No orchestration generated");
-      setAnalytics(data.analytics || null);
-      setNotification("Orchestration generated and saved.");
-      setHistory(prev => [{
-        workflow: input,
-        bulkUpload,
-        channels,
-        aiModel,
-        collaborators,
-        accessLevel,
-        privacy,
-        compliance,
-        education,
-        env,
-        versionTag,
-        approvalRequired,
-        approverEmail,
-        rateLimit,
-        concurrency,
-        circuitBreaker,
-        orchestration: data.orchestration || "No orchestration generated",
-        analytics: data.analytics || null
-      }, ...prev].slice(0, 10));
-      setReportUrl(window.location.origin + window.location.pathname + "?orchestration=" + encodeURIComponent(data.orchestration || ""));
+      setResult(data.orchestration);
+      setHistory(prev => [{ steps, orchestration: data.orchestration, env, versionTag, approvalRequired }, ...prev].slice(0, 10));
     } catch (err) {
       setError(err.message);
-      setNotification("");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSimulate = () => {
-    try {
-      const payload = JSON.parse(testPayload || "{}");
-      const schema = JSON.parse(schemaJson || "{}");
-      // Lightweight schema presence check
-      if (schema.type && typeof payload !== "object") throw new Error("Payload must be an object");
-      setSimulationResult({ payload, branch: "simulated", actions: Object.keys(channels).filter(k => channels[k]) });
-      setError("");
-    } catch (err) {
-      setError("Simulation failed: " + err.message);
-      setSimulationResult(null);
-    }
-  };
-
-  const handleExport = () => {
-    if (!response) return;
-    const blob = new Blob([response], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "workflow-orchestration.txt";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleShare = () => {
-    if (!reportUrl) return;
-    navigator.clipboard.writeText(reportUrl);
-    setNotification("Share link copied!");
-    setTimeout(() => setNotification("Orchestration generated and saved."), 2000);
-  };
-
-  const handleFeedback = async () => {
-    if (!feedback) return;
-    setNotification("Sending feedback...");
-    try {
-      await fetch("/api/workflow-orchestrator/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ feedback })
-      });
-      setNotification("Feedback sent. Thank you!");
-      setFeedback("");
-    } catch {
-      setNotification("Failed to send feedback");
-    }
-  };
+  const onboardingContent = (
+    <div>
+      <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Workflow Orchestrator</h3>
+      <ul style={{ margin: "16px 0 0 18px", color: "#a5f3fc", fontSize: 16 }}>
+        <li>Visually orchestrate complex workflows step by step</li>
+        <li>Add triggers and actions, configure each step</li>
+        <li>Export, share, and review orchestration history</li>
+        <li>Accessible, secure, and fully compliant</li>
+      </ul>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
+    </div>
+  );
 
   return (
-    <div
-      style={{
-        margin: "40px auto",
-        background: "#0f1115",
-        color: "#e5e7eb",
-        borderRadius: 16,
-        boxShadow: "0 12px 48px #0007",
-        padding: 32,
-        fontFamily: "Inter, Arial, sans-serif",
-        border: "1px solid #1f2937"
-      }}
-      aria-live="polite"
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <h2 style={{ fontWeight: 800, fontSize: 28, marginBottom: 12, color: "#a5f3fc" }}>Workflow Orchestrator</h2>
+    <div style={{ background: "#0f1115", color: "#e5e7eb", padding: 24, borderRadius: 16, border: "1px solid #1f2937", boxShadow: "0 12px 48px #0007" }}>
+      <BackButton />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
+        <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0, color: "#a5f3fc" }}>Workflow Orchestrator</h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", fontWeight: 700 }}>
-            <option value="dev">Dev</option>
+            <option value="dev">Dev</option><option value="stage">Stage</option><option value="prod">Prod</option>
+          </select>
+          <input value={versionTag} onChange={e => setVersionTag(e.target.value)} placeholder="Version tag" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", minWidth: 120 }} />
+          <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", fontWeight: 700 }}>
+            <input type="checkbox" checked={approvalRequired} onChange={e => setApprovalRequired(e.target.checked)} /> Approvals
+          </label>
+          <input value={approverEmail} onChange={e => setApproverEmail(e.target.value)} placeholder="Approver email" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", minWidth: 180 }} />
+        </div>
+      </div>
+      <button onClick={() => setShowOnboarding(v => !v)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
+      {showOnboarding && onboardingContent}
+      <div style={{ display: "flex", gap: 18, marginBottom: 18, flexWrap: "wrap" }}>
+        <div style={{ minWidth: 220 }}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>Workflow Steps</div>
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {steps.map(step => (
+              <li key={step.id} style={{ marginBottom: 8, background: selectedStep === step.id ? "#23263a" : "#18181b", borderRadius: 8, padding: 8, cursor: "pointer", border: selectedStep === step.id ? "2px solid #6366f1" : "1px solid #23263a" }} onClick={() => setSelectedStep(step.id)}>
+                <b>{step.name}</b> <span style={{ color: "#a5f3fc", fontSize: 12 }}>({step.type})</span>
+                {steps.length > 1 && <button onClick={e => { e.stopPropagation(); handleRemoveStep(step.id); }} style={{ float: "right", background: "none", color: "#fca5a5", border: "none", fontWeight: 700, cursor: "pointer" }}>✕</button>}
+              </li>
+            ))}
+          </ul>
+          <button onClick={handleAddStep} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: "pointer", marginTop: 8 }}>+ Add Step</button>
+        </div>
+        <div style={{ flex: 1, minWidth: 260 }}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>Step Configuration</div>
+          {steps.map(step => step.id === selectedStep && (
+            <div key={step.id}>
+              <input value={step.name} onChange={e => setSteps(steps.map(s => s.id === step.id ? { ...s, name: e.target.value } : s))} style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 8, background: "#18181b", color: "#e5e7eb" }} />
+              <select value={step.type} onChange={e => setSteps(steps.map(s => s.id === step.id ? { ...s, type: e.target.value } : s))} style={{ marginBottom: 8, width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 8, background: "#18181b", color: "#e5e7eb" }}>
+                <option value="trigger">Trigger</option>
+                <option value="action">Action</option>
+              </select>
+              <textarea value={step.config} onChange={e => handleStepChange(step.id, e.target.value)} rows={4} style={{ width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 8, background: "#23263a", color: "#e5e7eb" }} placeholder={step.type === "trigger" ? "Describe the trigger (e.g. 'Order placed')" : "Describe the action (e.g. 'Send Slack notification')"} />
+            </div>
+          ))}
+        </div>
+      </div>
+      <button onClick={handleOrchestrate} disabled={loading} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 22px", fontWeight: 800, fontSize: 16, cursor: loading ? "not-allowed" : "pointer", marginBottom: 12 }}>{loading ? "Orchestrating..." : "Orchestrate Workflow"}</button>
+      {error && <div style={{ color: "#fca5a5", marginBottom: 10 }}>{error}</div>}
+      {result && (
+        <div style={{ marginTop: 16, background: "#111827", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 4, color: "#e5e7eb" }}>Orchestration Output:</div>
+          <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", color: "#cbd5f5" }}>{JSON.stringify(result, null, 2)}</pre>
+        </div>
+      )}
+      {history.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Orchestration History</div>
+          <ul style={{ paddingLeft: 18 }}>
+            {history.map((h, i) => (
+              <li key={i} style={{ marginBottom: 10 }}>
+                <div><b>Steps:</b> {h.steps.map(s => s.name).join(", ")}</div>
+                <div><b>Orchestration:</b> {JSON.stringify(h.orchestration).slice(0, 120)}{JSON.stringify(h.orchestration).length > 120 ? "..." : ""}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <div style={{ marginTop: 32, fontSize: 13, color: "#a5f3fc", textAlign: "center" }}>
+        <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: "#a5f3fc", textDecoration: "underline" }}>Contact Support</a></span>
+      </div>
+    </div>
+  );
+}
             <option value="stage">Stage</option>
             <option value="prod">Prod</option>
           </select>
