@@ -1,8 +1,25 @@
-// Product SEO Engine: i18n module (stub)
-// Add internationalization support for UI strings
-module.exports = {
-  t(key) {
-    // TODO: Implement i18n logic
-    return key;
-  }
+// Product SEO Engine: i18n module
+const dictionaries = {
+  en: {
+    title: "Product SEO",
+    generate: "Generate SEO",
+    saving: "Saving...",
+  },
+  fr: {
+    title: "SEO Produit",
+    generate: "Générer le SEO",
+    saving: "Enregistrement...",
+  },
+  es: {
+    title: "SEO de Producto",
+    generate: "Generar SEO",
+    saving: "Guardando...",
+  },
 };
+
+function t(key, locale = "en") {
+  const dict = dictionaries[locale] || dictionaries.en;
+  return dict[key] || dictionaries.en[key] || key;
+}
+
+module.exports = { t, dictionaries };

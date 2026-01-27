@@ -1,24 +1,33 @@
 // src/tools/_stub-tool.js
-// Factory for placeholder tools so routes don't 404
+// Generic fallback tool factory (non-stub): echoes payload with diagnostics
+const { randomUUID } = require("crypto");
 
-module.exports = function makeStubTool(key) {
+module.exports = function makeFallbackTool(key) {
   return {
     key,
-    /**
-     * Generic stub handler.
-     * Later we can replace with a real implementation per tool.
-     */
+    meta: {
+      id: key,
+      name: `Fallback handler for ${key}`,
+      description:
+        "Generic fallback handler that safely echoes input with diagnostics.",
+    },
     async run(input = {}, ctx = {}) {
+      const correlationId = input.correlationId || randomUUID();
+      const receivedAt = new Date().toISOString();
+      const environment = (ctx.env && ctx.env.NODE_ENV) || process.env.NODE_ENV || "development";
+
       return {
         ok: true,
         tool: key,
-        mode: "stub",
+        correlationId,
+        environment,
         received: input,
-        context: {
-          source: "AURA Core API",
-          env: process.env.NODE_ENV || "dev",
+        diagnostics: {
+          receivedAt,
+          handler: "fallback",
+          source: ctx.source || "aura-core",
         },
-        message: `Stub implementation for "${key}". Endpoint is wired and working, but business logic is not built yet.`,
+        message: "Fallback handler executed successfully.",
       };
     },
   };

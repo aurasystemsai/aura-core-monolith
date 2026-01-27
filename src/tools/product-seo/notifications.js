@@ -1,7 +1,10 @@
-// Product SEO Engine: Notifications module (stub)
-// Add notification logic for important events
-module.exports = {
-  notify(type, message) {
-    // TODO: Implement notification logic (email, in-app, etc.)
-  }
-};
+// Product SEO Engine: Notifications module
+const notifications = require("../../core/notifications");
+
+function notify(type, message) {
+  const time = Date.now();
+  notifications.addNotification({ type, message, time });
+  return { ok: true, type, message, at: new Date(time).toISOString() };
+}
+
+module.exports = { notify };

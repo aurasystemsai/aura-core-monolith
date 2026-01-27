@@ -158,6 +158,8 @@ const toolRouters = [
   { path: '/api/blog-seo', router: require('./tools/blog-seo/router') },
   { path: '/api/content-health-auditor', router: require('./tools/content-health-auditor/router') },
   { path: '/api/main-suite', router: require('./tools/main-suite/router') },
+  { path: '/api/visual-workflow-builder', router: require('./tools/visual-workflow-builder/router') },
+  { path: '/api/webhook-api-triggers', router: require('./tools/webhook-api-triggers/router') },
 ];
 toolRouters.forEach(({ path, router }) => {
   try {

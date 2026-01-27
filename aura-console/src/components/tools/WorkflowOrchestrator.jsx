@@ -7,7 +7,7 @@ export default function WorkflowOrchestrator() {
   const [response, setResponse] = useState("");
   const [analytics, setAnalytics] = useState(null);
   const [history, setHistory] = useState([]);
-  // Dark mode enforced, no toggle
+  const [darkMode, setDarkMode] = useState(true);
   const [collaborators, setCollaborators] = useState("");
   const [accessLevel, setAccessLevel] = useState("writer");
   const [privacy, setPrivacy] = useState("private");
@@ -17,12 +17,41 @@ export default function WorkflowOrchestrator() {
   const [feedback, setFeedback] = useState("");
   const [reportUrl, setReportUrl] = useState("");
   const [education, setEducation] = useState("");
+  const [env, setEnv] = useState("dev");
+  const [versionTag, setVersionTag] = useState("v1");
+  const [approvalRequired, setApprovalRequired] = useState(true);
+  const [approverEmail, setApproverEmail] = useState("");
+  const [rateLimit, setRateLimit] = useState(1000);
+  const [concurrency, setConcurrency] = useState(5);
+  const [circuitBreaker, setCircuitBreaker] = useState({ enabled: true, errorRate: 0.2 });
+  const [schemaJson, setSchemaJson] = useState("{\n  \"type\": \"object\",\n  \"properties\": {}\n}");
+  const [testPayload, setTestPayload] = useState("{\n  \"event\": \"order_created\"\n}");
+  const [simulationResult, setSimulationResult] = useState(null);
+  const [validationIssues, setValidationIssues] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const validate = () => {
+    const issues = [];
+    if (!input) issues.push("Workflow input is required");
+    if (!approverEmail && approvalRequired) issues.push("Approver email required when approvals are enabled");
+    if (rateLimit <= 0) issues.push("Rate limit must be positive");
+    if (concurrency <= 0) issues.push("Concurrency must be positive");
+    try { JSON.parse(schemaJson || "{}"); } catch { issues.push("Schema JSON is invalid"); }
+    setValidationIssues(issues);
+    return issues;
+  };
 
   const handleRun = async () => {
+    const issues = validate();
+    if (issues.length) {
+      setError("Fix validation issues before running.");
+      return;
+    }
     setError("");
     setResponse("");
     setAnalytics(null);
     setNotification("");
+    setLoading(true);
     try {
       setNotification("Orchestrating in progress...");
       const res = await fetch("/api/workflow-orchestrator/ai/orchestrate", {
@@ -37,7 +66,15 @@ export default function WorkflowOrchestrator() {
           accessLevel,
           privacy,
           compliance,
-          education
+          education,
+          env,
+          versionTag,
+          approvalRequired,
+          approverEmail,
+          rateLimit,
+          concurrency,
+          circuitBreaker,
+          schema: schemaJson
         })
       });
       const data = await res.json();
@@ -55,6 +92,13 @@ export default function WorkflowOrchestrator() {
         privacy,
         compliance,
         education,
+        env,
+        versionTag,
+        approvalRequired,
+        approverEmail,
+        rateLimit,
+        concurrency,
+        circuitBreaker,
         orchestration: data.orchestration || "No orchestration generated",
         analytics: data.analytics || null
       }, ...prev].slice(0, 10));
@@ -62,6 +106,22 @@ export default function WorkflowOrchestrator() {
     } catch (err) {
       setError(err.message);
       setNotification("");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSimulate = () => {
+    try {
+      const payload = JSON.parse(testPayload || "{}");
+      const schema = JSON.parse(schemaJson || "{}");
+      // Lightweight schema presence check
+      if (schema.type && typeof payload !== "object") throw new Error("Payload must be an object");
+      setSimulationResult({ payload, branch: "simulated", actions: Object.keys(channels).filter(k => channels[k]) });
+      setError("");
+    } catch (err) {
+      setError("Simulation failed: " + err.message);
+      setSimulationResult(null);
     }
   };
 
@@ -102,29 +162,34 @@ export default function WorkflowOrchestrator() {
   return (
     <div
       style={{
-        
         margin: "40px auto",
-        background: darkMode ? "#23263a" : "#fff",
-        color: darkMode ? "#f3f4f6" : "#23263a",
+        background: "#0f1115",
+        color: "#e5e7eb",
         borderRadius: 16,
-        boxShadow: "0 2px 16px #0001",
+        boxShadow: "0 12px 48px #0007",
         padding: 32,
-        fontFamily: "Inter, Arial, sans-serif"
+        fontFamily: "Inter, Arial, sans-serif",
+        border: "1px solid #1f2937"
       }}
       aria-live="polite"
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2 style={{ fontWeight: 700, fontSize: 28, marginBottom: 12 }}>Workflow Orchestrator</h2>
-        <button
-          aria-label="Toggle dark mode"
-          onClick={() => setDarkMode(d => !d)}
-          style={{ background: darkMode ? "#f3f4f6" : "#23263a", color: darkMode ? "#23263a" : "#f3f4f6", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
-        >
-          {darkMode ? "Light" : "Dark"}
-        </button>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <h2 style={{ fontWeight: 800, fontSize: 28, marginBottom: 12, color: "#a5f3fc" }}>Workflow Orchestrator</h2>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", fontWeight: 700 }}>
+            <option value="dev">Dev</option>
+            <option value="stage">Stage</option>
+            <option value="prod">Prod</option>
+          </select>
+          <input value={versionTag} onChange={e => setVersionTag(e.target.value)} placeholder="Version tag" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", minWidth: 120 }} />
+          <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", fontWeight: 700 }}>
+            <input type="checkbox" checked={approvalRequired} onChange={e => setApprovalRequired(e.target.checked)} /> Approvals
+          </label>
+          <input value={approverEmail} onChange={e => setApproverEmail(e.target.value)} placeholder="Approver email" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", minWidth: 180 }} />
+        </div>
       </div>
-      <p style={{ color: darkMode ? "#e0e7ff" : "#444", marginBottom: 18 }}>
-        Enter a workflow or process below. The AI will orchestrate and optimize the workflow for all selected channels. <span style={{ fontWeight: 600 }}>All features are fully accessible.</span>
+      <p style={{ color: "#9ca3af", marginBottom: 18 }}>
+        Enter a workflow or process below. The AI will orchestrate and optimize it with guardrails, approvals, and validation.
       </p>
       <textarea
         value={input}
@@ -176,15 +241,15 @@ export default function WorkflowOrchestrator() {
       <button
         onClick={handleRun}
         disabled={loading || !input}
-        style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: "pointer", boxShadow: "0 2px 12px #22d3ee55", marginRight: 12 }}
+        style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "12px 32px", fontWeight: 800, fontSize: 17, cursor: loading || !input ? "not-allowed" : "pointer", boxShadow: "0 2px 18px #22c55e55", marginRight: 12 }}
         aria-label="Run orchestration"
       >
-        Orchestrate
+        {loading ? "Running..." : "Orchestrate"}
       </button>
       <button
         onClick={handleExport}
         disabled={!response}
-        style={{ background: "#e0e7ff", color: "#23263a", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: response ? "pointer" : "not-allowed", marginRight: 12 }}
+        style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 10, padding: "12px 24px", fontWeight: 800, fontSize: 15, cursor: response ? "pointer" : "not-allowed", marginRight: 12 }}
         aria-label="Export orchestration"
       >
         Export
@@ -205,19 +270,62 @@ export default function WorkflowOrchestrator() {
         Reset
       </button>
       {notification && (
-        <div style={{ color: "#0af", marginTop: 12, fontWeight: 600 }}>{notification}</div>
+        <div style={{ color: "#67e8f9", marginTop: 12, fontWeight: 700 }}>{notification}</div>
       )}
-      {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
+      {error && <div style={{ color: "#fca5a5", marginTop: 18 }}>{error}</div>}
+
+      <div style={{ marginTop: 18, background: "#111827", borderRadius: 12, padding: 14, border: "1px solid #1f2937" }}>
+        <div style={{ fontWeight: 700, marginBottom: 6, color: "#e5e7eb" }}>Guardrails</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <label style={{ color: "#9ca3af" }}>Rate limit
+            <input type="number" value={rateLimit} onChange={e => setRateLimit(Number(e.target.value))} style={{ marginLeft: 6, background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", width: 120 }} />/min
+          </label>
+          <label style={{ color: "#9ca3af" }}>Concurrency
+            <input type="number" value={concurrency} onChange={e => setConcurrency(Number(e.target.value))} style={{ marginLeft: 6, background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", width: 120 }} />
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#9ca3af" }}>
+            <input type="checkbox" checked={circuitBreaker.enabled} onChange={e => setCircuitBreaker(cb => ({ ...cb, enabled: e.target.checked }))} /> Circuit breaker
+          </label>
+          <label style={{ color: "#9ca3af" }}>Error rate
+            <input type="number" step="0.05" value={circuitBreaker.errorRate} onChange={e => setCircuitBreaker(cb => ({ ...cb, errorRate: Number(e.target.value) }))} style={{ marginLeft: 6, background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", width: 120 }} />
+          </label>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 18, background: "#111827", borderRadius: 12, padding: 14, border: "1px solid #1f2937" }}>
+        <div style={{ fontWeight: 700, marginBottom: 6, color: "#e5e7eb" }}>Data Contract</div>
+        <textarea value={schemaJson} onChange={e => setSchemaJson(e.target.value)} rows={5} style={{ width: "100%", background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: 10 }} />
+      </div>
+
+      <div style={{ marginTop: 18, background: "#111827", borderRadius: 12, padding: 14, border: "1px solid #1f2937" }}>
+        <div style={{ fontWeight: 700, marginBottom: 6, color: "#e5e7eb" }}>Simulation</div>
+        <textarea value={testPayload} onChange={e => setTestPayload(e.target.value)} rows={4} style={{ width: "100%", background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: 10 }} />
+        <button onClick={handleSimulate} style={{ marginTop: 8, background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Run Simulation</button>
+        {simulationResult && (
+          <div style={{ marginTop: 8, color: "#a5f3fc" }}>Actions: {simulationResult.actions.join(", ")}</div>
+        )}
+      </div>
+
+      <div style={{ marginTop: 18, background: "#111827", borderRadius: 12, padding: 14, border: "1px solid #1f2937" }}>
+        <div style={{ fontWeight: 700, marginBottom: 6, color: "#e5e7eb" }}>Validation</div>
+        {validationIssues.length === 0 ? (
+          <div style={{ color: "#22c55e" }}>No blocking issues detected.</div>
+        ) : (
+          <ul style={{ margin: 0, paddingLeft: 18, color: "#fca5a5" }}>
+            {validationIssues.map((v, i) => <li key={i}>{v}</li>)}
+          </ul>
+        )}
+      </div>
       {analytics && (
-        <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
-          <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Analytics</div>
-          <div style={{ fontSize: 16 }}>{JSON.stringify(analytics)}</div>
+        <div style={{ marginTop: 24, background: "#111827", borderRadius: 12, padding: 18, border: "1px solid #1f2937" }}>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: "#e5e7eb" }}>Analytics</div>
+          <div style={{ fontSize: 15, color: "#cbd5f5", whiteSpace: "pre-wrap" }}>{JSON.stringify(analytics, null, 2)}</div>
         </div>
       )}
       {response && (
-        <div style={{ marginTop: 32, background: darkMode ? "#23263a" : "#f8fafc", borderRadius: 12, padding: 24 }}>
-          <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>Orchestration:</div>
-          <div style={{ fontSize: 16, color: darkMode ? "#e0e7ff" : "#23263a" }}>{response}</div>
+        <div style={{ marginTop: 32, background: "#111827", borderRadius: 12, padding: 24, border: "1px solid #1f2937" }}>
+          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: "#e5e7eb" }}>Orchestration:</div>
+          <div style={{ fontSize: 15, color: "#cbd5f5", whiteSpace: "pre-wrap" }}>{response}</div>
         </div>
       )}
       {history.length > 0 && (
