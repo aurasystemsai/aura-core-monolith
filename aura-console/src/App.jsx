@@ -235,8 +235,10 @@ function App() {
   // Main navigation state
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sectionHistory, setSectionHistory] = useState([]);
+  const sectionHistoryRef = React.useRef([]);
   const navModeRef = React.useRef(null);
   const prevSectionRef = React.useRef(null);
+  const lastPushedSectionRef = React.useRef(null);
   // Project state (simulate or fetch as needed)
   const [project, setProject] = useState(null);
   // Core API URL (simulate or fetch as needed)
@@ -274,6 +276,49 @@ function App() {
     }
     prevSectionRef.current = activeSection;
   }, [activeSection]);
+
+  useEffect(() => {
+    sectionHistoryRef.current = sectionHistory;
+  }, [sectionHistory]);
+
+  // Keep browser history in sync so browser back stays inside the app
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.history?.pushState) return;
+    const state = { section: activeSection };
+    if (lastPushedSectionRef.current === null) {
+      window.history.replaceState(state, "");
+    } else if (navModeRef.current !== 'popstate') {
+      window.history.pushState(state, "");
+    }
+    lastPushedSectionRef.current = activeSection;
+    if (navModeRef.current === 'popstate') navModeRef.current = null;
+  }, [activeSection]);
+
+  useEffect(() => {
+    const onPopState = (e) => {
+      if (e.state && e.state.section) {
+        navModeRef.current = 'popstate';
+        setActiveSection(e.state.section);
+        return;
+      }
+      const historyStack = sectionHistoryRef.current;
+      if (historyStack.length) {
+        const last = historyStack[historyStack.length - 1];
+        navModeRef.current = 'popstate';
+        setSectionHistory(historyStack.slice(0, -1));
+        setActiveSection(last);
+        return;
+      }
+      // fallback to dashboard without leaving the embedded app
+      navModeRef.current = 'popstate';
+      setActiveSection('dashboard');
+      if (typeof window !== 'undefined' && window.history?.replaceState) {
+        window.history.replaceState({ section: 'dashboard' }, "");
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
 
   useEffect(() => {
     window.__AURA_SECTION_BACK = () => {
