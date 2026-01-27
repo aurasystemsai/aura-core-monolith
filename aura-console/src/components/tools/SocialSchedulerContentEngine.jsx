@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-// Import additional libraries for multi-channel, analytics, accessibility, integrations, etc. as needed
 import { apiFetch } from "../../api";
+import BackButton from "./BackButton";
 
 export default function SocialSchedulerContentEngine() {
   const [input, setInput] = useState("");
@@ -21,7 +21,7 @@ export default function SocialSchedulerContentEngine() {
       const data = await res.json();
       if (data.ok) setHistory(data.history || []);
     } catch {}
-    import BackButton from "./BackButton";
+    // ...existing code...
   };
   // Fetch analytics
   const fetchAnalytics = async () => {
