@@ -373,7 +373,7 @@ function App() {
                 {activeSection === "user-management" && <UserManagement coreUrl={coreUrl} />}
                 {activeSection === "onboarding" && <Onboarding />}
                 {activeSection === "credits" && <Credits />}
-                {activeSection === "orchestration" && <Orchestration />}
+                {(activeSection === "workflow-orchestrator" || activeSection === "orchestration") && <Orchestration />}
                 {activeSection === "products" && (
                   <ProductsList 
                     shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
