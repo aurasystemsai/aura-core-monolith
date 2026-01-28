@@ -22,6 +22,7 @@ export default function WorkflowOrchestrator() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [history, setHistory] = useState([]);
+  const [issueHelp, setIssueHelp] = useState(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [preflightIssues, setPreflightIssues] = useState([]);
   const [confirmationNote, setConfirmationNote] = useState("");
@@ -626,6 +627,22 @@ export default function WorkflowOrchestrator() {
           </label>
           <input value={approverEmail} onChange={e => setApproverEmail(e.target.value)} disabled={isViewer} placeholder="Approver email" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", minWidth: 180, opacity: isViewer ? 0.7 : 1 }} />
         </div>
+        {issueHelp && (
+          <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10, marginTop: 8, display: "grid", gap: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+              <div style={{ color: "#a5f3fc", fontWeight: 800 }}>Issue help</div>
+              <button onClick={() => setIssueHelp(null)} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "4px 8px", fontWeight: 700, cursor: "pointer" }}>Close</button>
+            </div>
+            <div style={{ color: "#e5e7eb" }}>{issueHelp}</div>
+            <div style={{ color: "#9ca3af", fontSize: 13 }}>Recommended fix: {issueHelp.toLowerCase().includes("approver") ? "Add or update an approver email, then rerun preflight." : issueHelp.toLowerCase().includes("trigger") ? "Add a trigger step so orchestration can start." : issueHelp.toLowerCase().includes("prod") ? "Add a production confirmation note and ensure approvals are set." : issueHelp.toLowerCase().includes("duplicate") ? "Clean up duplicate labels via quick fix." : "Review the trace for context, then apply the quick fix or adjust steps."}</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button onClick={() => applyQuickFix("approver")} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add approver</button>
+              <button onClick={() => applyQuickFix("prod-note")} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add prod note</button>
+              <button onClick={() => applyQuickFix("trigger-action")} style={{ background: "#22c55e", color: "#0f172a", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add trigger/action</button>
+              <button onClick={() => applyQuickFix("dedupe-labels")} style={{ background: "#6366f1", color: "#e5e7eb", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix duplicates</button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10, marginBottom: 10 }}>
@@ -640,7 +657,12 @@ export default function WorkflowOrchestrator() {
           <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: preflightIssues.length ? 6 : 0 }}>Triggers ok: {readinessSummary.triggerOk ? "Yes" : "No"} · Approvals: {readinessSummary.approvalsOk ? "Ready" : "Need email"}</div>
           {preflightIssues.length > 0 && (
             <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", fontSize: 12, display: "grid", gap: 4 }}>
-              {preflightIssues.slice(0, 3).map((issue, idx) => <li key={idx}>{issue}</li>)}
+              {preflightIssues.slice(0, 3).map((issue, idx) => (
+                <li key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                  <span>{issue}</span>
+                  <button onClick={() => setIssueHelp(issue)} style={{ background: "#1f2937", border: "1px solid #334155", color: "#a5f3fc", borderRadius: 8, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Explain</button>
+                </li>
+              ))}
               {preflightIssues.length > 3 && <li style={{ color: "#9ca3af" }}>+{preflightIssues.length - 3} more (open Trace)</li>}
             </ul>
           )}

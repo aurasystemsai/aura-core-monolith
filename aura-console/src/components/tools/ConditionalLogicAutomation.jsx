@@ -157,6 +157,7 @@ export default function ConditionalLogicAutomation() {
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
   const [validationIssues, setValidationIssues] = useState([]);
+  const [issueHelp, setIssueHelp] = useState(null);
   const [activeTemplate, setActiveTemplate] = useState(null);
   const [queryLoading, setQueryLoading] = useState(false);
   const [env, setEnv] = useState("dev");
@@ -941,6 +942,16 @@ export default function ConditionalLogicAutomation() {
           </button>
         </div>
       )}
+      {issueHelp && (
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10, display: "grid", gap: 8, marginBottom: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+            <div style={{ color: "#a5f3fc", fontWeight: 800 }}>Issue help</div>
+            <button onClick={() => setIssueHelp(null)} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "4px 8px", fontWeight: 700, cursor: "pointer" }}>Close</button>
+          </div>
+          <div style={{ color: "#e5e7eb" }}>{issueHelp}</div>
+          <div style={{ color: "#9ca3af", fontSize: 13 }}>Recommended fix: {issueHelp.toLowerCase().includes("branch") ? "Define branch conditions and ensure at least one action per branch." : issueHelp.toLowerCase().includes("trigger") ? "Add or enable a trigger node." : issueHelp.toLowerCase().includes("approval") ? "Capture an approver email or disable approvals." : "Review the trace, adjust conditions/actions, then rerun preflight."}</div>
+        </div>
+      )}
 
       {showCommandPalette && (
         <div style={{ position: "fixed", inset: 0, background: "#0009", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20 }}>
@@ -1071,7 +1082,12 @@ export default function ConditionalLogicAutomation() {
           <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: preflightIssues.length ? 6 : 0 }}>Trigger ready: {healthSignals.triggerOk ? "Yes" : "No"}</div>
           {preflightIssues.length > 0 && (
             <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", fontSize: 12, display: "grid", gap: 4 }}>
-              {preflightIssues.slice(0, 3).map((issue, idx) => <li key={idx}>{issue}</li>)}
+              {preflightIssues.slice(0, 3).map((issue, idx) => (
+                <li key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                  <span>{issue}</span>
+                  <button onClick={() => setIssueHelp(issue)} style={{ background: "#1f2937", border: "1px solid #334155", color: "#a5f3fc", borderRadius: 8, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Explain</button>
+                </li>
+              ))}
               {preflightIssues.length > 3 && <li style={{ color: "#9ca3af" }}>+{preflightIssues.length - 3} more (open Trace)</li>}
             </ul>
           )}

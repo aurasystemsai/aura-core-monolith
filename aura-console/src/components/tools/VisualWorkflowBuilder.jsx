@@ -63,7 +63,8 @@ export default function VisualWorkflowBuilder() {
   const [testRunning, setTestRunning] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [selectedStep, setSelectedStep] = useState(null);
+  const [issueHelp, setIssueHelp] = useState(null);
   const [analyticsSummary, setAnalyticsSummary] = useState({});
   const [schemaWarnings, setSchemaWarnings] = useState([]);
   const [canaryPercent, setCanaryPercent] = useState(0);
@@ -1104,11 +1105,26 @@ export default function VisualWorkflowBuilder() {
           <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: preflightIssues.length ? 6 : 0 }}>Approvals: {launchHealth.approvalsOk ? "Ready" : "Need email"} · Analytics: {launchHealth.analytics}</div>
           {preflightIssues.length > 0 && (
             <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", fontSize: 12, display: "grid", gap: 4 }}>
-              {preflightIssues.slice(0, 3).map((issue, idx) => <li key={idx}>{issue}</li>)}
+              {preflightIssues.slice(0, 3).map((issue, idx) => (
+                <li key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                  <span>{issue}</span>
+                  <button onClick={() => { setIssueHelp(issue); issue?.includes("node") && setSelectedStep(prev => prev); }} style={{ background: "#1f2937", border: "1px solid #334155", color: "#a5f3fc", borderRadius: 8, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Explain</button>
+                </li>
+              ))}
               {preflightIssues.length > 3 && <li style={{ color: "#9ca3af" }}>+{preflightIssues.length - 3} more (open Trace)</li>}
             </ul>
           )}
         </div>
+        {issueHelp && (
+          <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10, display: "grid", gap: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+              <div style={{ color: "#a5f3fc", fontWeight: 800 }}>Issue help</div>
+              <button onClick={() => setIssueHelp(null)} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "4px 8px", fontWeight: 700, cursor: "pointer" }}>Close</button>
+            </div>
+            <div style={{ color: "#e5e7eb" }}>{issueHelp}</div>
+            <div style={{ color: "#9ca3af", fontSize: 13 }}>Recommended fix: {issueHelp.toLowerCase().includes("node") ? "Select the node on canvas and update its config or connection." : issueHelp.toLowerCase().includes("approval") ? "Add an approver email or turn off approvals." : issueHelp.toLowerCase().includes("analytics") ? "Add event tracking or mark analytics as verified." : "Review the node referenced by this issue and rerun preflight."}</div>
+          </div>
+        )}
         <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Workflow hygiene</div>
           <div style={{ color: dirtySinceSave ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>{dirtySinceSave ? "Unsaved edits" : "Clean"}</div>
