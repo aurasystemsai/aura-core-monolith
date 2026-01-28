@@ -694,7 +694,13 @@ export default function WorkflowAutomationBuilder() {
         <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Guardrails</div>
           <div style={{ color: preflightIssues.length ? "#f59e0b" : "#22c55e", fontWeight: 700 }}>{preflightIssues.length ? `${preflightIssues.length} issue${preflightIssues.length > 1 ? "s" : ""}` : "Clear"}</div>
-          <div style={{ color: "#9ca3af", fontSize: 12 }}>Trigger: {readinessSummary.triggerOk ? "OK" : "Missing"} · Approvals: {readinessSummary.approvalsOk ? "Ready" : "Need email"}</div>
+          <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: preflightIssues.length ? 6 : 0 }}>Trigger: {readinessSummary.triggerOk ? "OK" : "Missing"} · Approvals: {readinessSummary.approvalsOk ? "Ready" : "Need email"}</div>
+          {preflightIssues.length > 0 && (
+            <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", fontSize: 12, display: "grid", gap: 4 }}>
+              {preflightIssues.slice(0, 3).map((issue, idx) => <li key={idx}>{issue}</li>)}
+              {preflightIssues.length > 3 && <li style={{ color: "#9ca3af" }}>+{preflightIssues.length - 3} more (open Trace)</li>}
+            </ul>
+          )}
         </div>
         <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Workflow hygiene</div>

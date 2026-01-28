@@ -1101,7 +1101,13 @@ export default function VisualWorkflowBuilder() {
         <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Guardrails</div>
           <div style={{ color: launchHealth.guardrailsOk ? "#22c55e" : "#f59e0b", fontWeight: 700 }}>{launchHealth.guardrailsOk ? "Clear" : `${preflightIssues.length} issues`}</div>
-          <div style={{ color: "#9ca3af", fontSize: 12 }}>Approvals: {launchHealth.approvalsOk ? "Ready" : "Need email"} · Analytics: {launchHealth.analytics}</div>
+          <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: preflightIssues.length ? 6 : 0 }}>Approvals: {launchHealth.approvalsOk ? "Ready" : "Need email"} · Analytics: {launchHealth.analytics}</div>
+          {preflightIssues.length > 0 && (
+            <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", fontSize: 12, display: "grid", gap: 4 }}>
+              {preflightIssues.slice(0, 3).map((issue, idx) => <li key={idx}>{issue}</li>)}
+              {preflightIssues.length > 3 && <li style={{ color: "#9ca3af" }}>+{preflightIssues.length - 3} more (open Trace)</li>}
+            </ul>
+          )}
         </div>
         <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Workflow hygiene</div>
