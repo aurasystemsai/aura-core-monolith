@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch } from "../api";
-import UserManagement from "../components/UserManagement";
 import IntegrationHealthPanel from "../components/IntegrationHealthPanel";
 import NotificationsPanel from "../components/NotificationsPanel";
 import AnalyticsPanel from "../components/AnalyticsPanel";
 const DashboardCharts = lazy(() => import('./DashboardCharts'));
 const ShopInfoPanel = lazy(() => import('../components/ShopInfoPanel'));
+const UserManagement = lazy(() => import('../components/UserManagement'));
 
 function Spinner() {
   return (
@@ -304,7 +304,9 @@ const Dashboard = ({ setActiveSection }) => {
       </div>
 
       {/* User management panel (admin only) */}
-      <UserManagement />
+      <Suspense fallback={<Spinner />}>
+        <UserManagement />
+      </Suspense>
     </div>
   );
 };

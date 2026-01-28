@@ -26,6 +26,7 @@ export default defineConfig({
         },
       },
     },
-    chunkSizeWarningLimit: 600,
+    // Raised to reduce noisy warnings; manualChunks above already splits major libs
+    chunkSizeWarningLimit: 1200,
   },
 });

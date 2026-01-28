@@ -10,9 +10,31 @@ const PAYLOAD_PRESETS = [
   { id: "performance", name: "Perf Budget", payload: { event: "order_created", latencyMs: 620, path: "checkout" }, badge: "dev" }
 ];
 
+const PALETTE_BLOCKS = [
+  { id: "trigger-order", label: "Trigger: Order Created", type: "trigger", description: "Listens for new orders" },
+  { id: "trigger-abandon", label: "Trigger: Checkout Abandoned", type: "trigger", description: "Fires on checkout.abandoned" },
+  { id: "action-slack", label: "Action: Slack Alert", type: "action", description: "Send Slack message to #ops" },
+  { id: "action-email", label: "Action: Email", type: "action", description: "Send Klaviyo email" },
+  { id: "condition-geo", label: "Condition: Geo == US", type: "condition", description: "Filter by region" },
+  { id: "condition-aov", label: "Condition: AOV >= 150", type: "condition", description: "High intent segment" }
+];
+
+const uniqueBlockId = () => `vwf_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+
+const hashString = (str) => {
+  // Simple FNV-1a style hash for integrity tagging
+  let hash = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = (hash * 16777619) >>> 0;
+  }
+  return hash.toString(16);
+};
+
 export default function VisualWorkflowBuilder() {
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [canvas, setCanvas] = useState([]);
+  const [canvasViewMode, setCanvasViewMode] = useState("cards");
   const [templateGallery, setTemplateGallery] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [imported, setImported] = useState(null);
@@ -36,6 +58,8 @@ export default function VisualWorkflowBuilder() {
   const [testName, setTestName] = useState("Smoke test");
   const [testCasePayload, setTestCasePayload] = useState("{\n  \"event\": \"order_created\"\n}");
   const [testResults, setTestResults] = useState([]);
+  const [testVariantsJson, setTestVariantsJson] = useState("[\n  { \"name\": \"US order\", \"payload\": { \"event\": \"order_created\", \"country\": \"US\" } },\n  { \"name\": \"EU order\", \"payload\": { \"event\": \"order_created\", \"country\": \"DE\" } }\n]");
+  const [variantResults, setVariantResults] = useState([]);
   const [testRunning, setTestRunning] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -63,11 +87,79 @@ export default function VisualWorkflowBuilder() {
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [preflightTrace, setPreflightTrace] = useState([]);
+  const [preflightStatus, setPreflightStatus] = useState(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      return JSON.parse(window.localStorage.getItem("suite:status:visual-workflow-builder")) || null;
+    } catch {
+      return null;
+    }
+  });
+  const [showPreflightPopover, setShowPreflightPopover] = useState(false);
+  const applyQuickFix = (kind) => {
+    if (kind === "approver") {
+      setApproverEmail(prev => prev || "ops@shopify-brand.com");
+      setApprovalRequired(true);
+    }
+    if (kind === "prod-note") {
+      setConfirmationNote(prev => prev || "Production rollout intent: enable workflow safely.");
+    }
+    if (kind === "trigger-action") {
+      if (!canvas.length) {
+        setCanvas([
+          { id: uniqueBlockId(), label: "Trigger: Order Created", type: "trigger", description: "Shopify order", config: { event: "order_created" } },
+          { id: uniqueBlockId(), label: "Action: Notify Slack", type: "action", description: "Slack #ops", config: { channel: "slack" } }
+        ]);
+      } else {
+        setCanvas(prev => {
+          const next = [...prev];
+          if (!next[0] || next[0].type !== "trigger") {
+            next.unshift({ id: uniqueBlockId(), label: "Trigger: Order Created", type: "trigger", description: "Shopify order" });
+          }
+          if (!next.find(b => b.type === "action")) {
+            next.push({ id: uniqueBlockId(), label: "Action: Email", type: "action", description: "Send Klaviyo email" });
+          }
+          return next;
+        });
+      }
+    }
+    if (kind === "dedupe-labels") {
+      setCanvas(prev => {
+        const seen = new Map();
+        return prev.map(b => {
+          const base = b.label || "Block";
+          const key = base.toLowerCase();
+          const count = seen.get(key) || 0;
+          seen.set(key, count + 1);
+          return count === 0 ? b : { ...b, label: `${base} (${count + 1})` };
+        });
+      });
+    }
+  };
   const fileInputRef = useRef();
   const hydratedRef = useRef(false);
   const dirtySkipRef = useRef(true);
 
   const isViewer = role === "viewer";
+
+  const clearPreflightStatus = () => {
+    setPreflightStatus(null);
+    setPreflightIssues([]);
+    setPreflightTrace([]);
+    try { window.localStorage.removeItem("suite:status:visual-workflow-builder"); } catch (_) {}
+  };
+
+  const downloadPreflightReport = () => {
+    const payload = { status: preflightStatus, issues: preflightIssues, trace: preflightTrace, generatedAt: Date.now() };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "visual-workflow-preflight.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
 
   const goBackToSuite = () => {
     if (typeof window !== "undefined" && typeof window.__AURA_TO_SUITE === "function") {
@@ -358,15 +450,46 @@ export default function VisualWorkflowBuilder() {
 
   const runPreflight = () => {
     const issues = [];
+    const trace = [];
     if (approvalRequired && !approverEmail) issues.push("Approver email required when approvals are on.");
     if (env === "prod" && !confirmationNote.trim()) issues.push("Add a prod ship note/intent before promoting.");
     if (!workflowName.trim()) issues.push("Workflow name is required.");
     if (canaryPercent < 0 || canaryPercent > 100) issues.push("Canary percent must be between 0 and 100.");
     if (performanceBudgetMs && performanceBudgetMs < 0) issues.push("Performance budget must be positive.");
     if (!canvas.length) issues.push("Add at least one step to the canvas.");
+
+    canvas.forEach((b, idx) => {
+      const blockIssues = [];
+      const type = (b?.type || "action").toLowerCase();
+      if (!b?.label?.trim()) blockIssues.push("Label missing");
+      if (!["trigger", "action", "condition"].includes(type)) blockIssues.push("Type must be trigger | action | condition");
+      if (type === "condition" && idx === 0) blockIssues.push("Condition needs a trigger before it");
+      if (type === "action" && shadowMode && env !== "prod") blockIssues.push("Action in shadow/non-prod will be dry-run only");
+      if (type === "condition" && !canvasStats.triggerFirst) blockIssues.push("Place a trigger first so conditions have context");
+      if (idx === canvas.length - 1 && type !== "action") blockIssues.push("Consider ending with an action");
+      if (canvasStats.duplicateLabels.includes(b.label)) blockIssues.push("Duplicate label");
+      if (blockIssues.length) trace.push({ label: b.label || `Block ${idx + 1}`, idx, issues: blockIssues });
+    });
+
+    if (canvas.length && !(canvasStats.triggers > 0)) issues.push("Add a trigger to start the flow.");
+    if (canvas.length && !canvasStats.triggerFirst) issues.push("Place a trigger as the first block.");
+    if (canvas.length && !(canvasStats.actions > 0)) issues.push("Add at least one action block.");
+    if (canvasStats.conditionWithoutTrigger) issues.push("Move conditions after a trigger so they have context.");
+    if (canvasStats.duplicateLabels.length) issues.push(`Duplicate block labels detected: ${canvasStats.duplicateLabels.join(', ')}`);
     setPreflightIssues(issues);
+    setPreflightTrace(trace);
+    const status = { ok: issues.length === 0, ts: Date.now(), issues: issues.length };
+    setPreflightStatus(status);
+    try { window.localStorage.setItem("suite:status:visual-workflow-builder", JSON.stringify(status)); } catch (_) {}
     return issues;
   };
+
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    if (env === "prod" || approvalRequired) {
+      runPreflight();
+    }
+  }, [env, approvalRequired, shadowMode, canaryPercent, performanceBudgetMs]);
 
   // Hotkeys
   useEffect(() => {
@@ -417,11 +540,52 @@ export default function VisualWorkflowBuilder() {
     return { added, removed, changed };
   }, [canvas, lastSimulatedSnapshot]);
 
+  const canvasStats = useMemo(() => {
+    let triggers = 0;
+    let actions = 0;
+    let conditions = 0;
+    let triggerFirst = false;
+    let lastIsAction = false;
+    let conditionWithoutTrigger = false;
+    const duplicateLabels = [];
+    const seenLabels = new Map();
+    let seenTrigger = false;
+
+    canvas.forEach((b, idx) => {
+      const type = (b?.type || "action").toLowerCase();
+      if (type === "trigger") {
+        triggers += 1;
+        seenTrigger = true;
+        if (idx === 0) triggerFirst = true;
+      }
+      if (type === "action") actions += 1;
+      if (type === "condition") {
+        conditions += 1;
+        if (!seenTrigger) conditionWithoutTrigger = true;
+      }
+      const labelKey = (b?.label || "").trim().toLowerCase();
+      if (labelKey) {
+        const count = (seenLabels.get(labelKey) || 0) + 1;
+        seenLabels.set(labelKey, count);
+        if (count === 2) duplicateLabels.push(b.label || labelKey);
+      }
+    });
+
+    if (canvas.length) {
+      const tailType = (canvas[canvas.length - 1]?.type || "action").toLowerCase();
+      lastIsAction = tailType === "action";
+    }
+
+    return { triggers, actions, conditions, triggerFirst, lastIsAction, conditionWithoutTrigger, duplicateLabels };
+  }, [canvas]);
+
   const launchHealth = useMemo(() => {
     const guardrailsOk = preflightIssues.length === 0;
     const approvalsOk = approvalRequired ? !!approverEmail : true;
     const steps = canvas.length;
-    const coverage = Math.min(100, (steps * 14) + (guardrailsOk ? 16 : 0) + (approvalsOk ? 10 : 0) + (canaryPercent ? 4 : 0) + (performanceBudgetMs ? 4 : 0));
+    const triggerScore = canvasStats.triggers > 0 && canvasStats.triggerFirst ? 8 : 0;
+    const actionScore = canvasStats.actions > 0 && canvasStats.lastIsAction ? 8 : 0;
+    const coverage = Math.min(100, (steps * 12) + triggerScore + actionScore + (guardrailsOk ? 16 : 0) + (approvalsOk ? 10 : 0) + (canaryPercent ? 4 : 0) + (performanceBudgetMs ? 4 : 0));
     return {
       coverage,
       guardrailsOk,
@@ -429,21 +593,23 @@ export default function VisualWorkflowBuilder() {
       steps,
       analytics: analyticsSummary?.successRate ? `${analyticsSummary.successRate}% success` : "No analytics yet"
     };
-  }, [preflightIssues.length, approvalRequired, approverEmail, canvas.length, canaryPercent, performanceBudgetMs, analyticsSummary]);
+  }, [preflightIssues.length, approvalRequired, approverEmail, canvas.length, canaryPercent, performanceBudgetMs, analyticsSummary, canvasStats]);
 
   const healthChecklist = useMemo(() => ([
     { label: "Preflight clear", ok: preflightIssues.length === 0 },
-    { label: "At least one step on canvas", ok: canvas.length > 0 },
+    { label: "Trigger starts the flow", ok: canvasStats.triggers > 0 && canvasStats.triggerFirst },
+    { label: "Has at least one action", ok: canvasStats.actions > 0 },
+    { label: "Conditions have a trigger before them", ok: !canvasStats.conditionWithoutTrigger },
     { label: "Approver email when approvals on", ok: approvalRequired ? !!approverEmail : true },
     { label: "Prod/shadow note added", ok: env !== "prod" ? true : !!confirmationNote.trim() }
-  ]), [preflightIssues.length, canvas.length, approvalRequired, approverEmail, env, confirmationNote]);
+  ]), [preflightIssues.length, canvasStats, approvalRequired, approverEmail, env, confirmationNote]);
 
   // Onboarding content
   const onboardingContent = (
     <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#e5e7eb' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Visual Workflow Builder</h3>
       <ul style={{ margin: '16px 0 0 18px', color: '#334155', fontSize: 16 }}>
-        <li>Drag-and-drop canvas for building automations</li>
+        <li>Drag blocks (triggers, actions, conditions) from the palette onto the canvas</li>
         <li>Template gallery for common workflows</li>
         <li>Import/export workflows, analyze results</li>
         <li>Accessible, secure, and fully compliant</li>
@@ -459,18 +625,88 @@ export default function VisualWorkflowBuilder() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = evt => {
-      pushUndoSnapshot();
-      setCanvas(JSON.parse(evt.target.result));
-      setImported(file.name);
+      try {
+        const parsed = JSON.parse(evt.target.result);
+        const payloadCanvas = Array.isArray(parsed) ? parsed : (parsed.canvas || []);
+        const meta = parsed.meta || {};
+        const normalized = payloadCanvas.map(b => ({
+          id: b.id || uniqueBlockId(),
+          label: b.label || "Untitled block",
+          type: b.type || "action",
+          description: b.description || "",
+        }));
+        if (meta.hash) {
+          const computed = hashString(JSON.stringify(normalized));
+          if (computed !== meta.hash) throw new Error("Integrity check failed (hash mismatch)");
+        }
+        pushUndoSnapshot();
+        setCanvas(normalized);
+        setImported(file.name + (meta.version ? ` v${meta.version}` : ""));
+        setError("");
+      } catch (err) {
+        setError("Import failed: " + err.message);
+      }
     };
     reader.readAsText(file);
   };
   const handleExport = () => {
     if (isViewer) return setError("View-only mode: request access to export.");
-    const blob = new Blob([JSON.stringify(canvas, null, 2)], { type: 'application/json' });
+    const normalized = canvas.map(b => ({ id: b.id || uniqueBlockId(), label: b.label || "Untitled block", type: b.type || "action", description: b.description || "" }));
+    const meta = { version: 1, exportedAt: Date.now(), hash: hashString(JSON.stringify(normalized)) };
+    const blob = new Blob([JSON.stringify({ meta, canvas: normalized }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     setExported(url);
     setTimeout(() => URL.revokeObjectURL(url), 10000);
+  };
+
+  const handleDropOnCanvas = (data) => {
+    if (isViewer) return setError("View-only mode: request access to edit.");
+    try {
+      const parsed = typeof data === "string" ? JSON.parse(data) : data;
+      const block = Array.isArray(parsed) ? parsed[0] : parsed;
+      if (!block || !block.label) return;
+      pushUndoSnapshot();
+      setCanvas(prev => [...prev, { id: uniqueBlockId(), label: block.label, type: block.type || "action", description: block.description || "" }]);
+      setError("");
+    } catch (err) {
+      setError("Drop failed: " + err.message);
+    }
+  };
+
+  const handleDragStart = (e, block) => {
+    e.dataTransfer.setData("application/json", JSON.stringify(block));
+    e.dataTransfer.effectAllowed = "copy";
+  };
+
+  const handleAddBlockQuick = (block) => {
+    if (isViewer) return setError("View-only mode: request access to edit.");
+    pushUndoSnapshot();
+    setCanvas(prev => [...prev, { id: uniqueBlockId(), label: block.label, type: block.type || "action", description: block.description || "" }]);
+  };
+
+  const handleBlockFieldChange = (idx, field, value) => {
+    if (isViewer) return setError("View-only mode: request access to edit.");
+    pushUndoSnapshot();
+    setCanvas(prev => prev.map((b, i) => i === idx ? { ...b, [field]: value } : b));
+  };
+
+  const handleRemoveBlock = (idx) => {
+    if (isViewer) return setError("View-only mode: request access to edit.");
+    pushUndoSnapshot();
+    setCanvas(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleMoveBlock = (idx, direction) => {
+    if (isViewer) return setError("View-only mode: request access to edit.");
+    const newIdx = idx + direction;
+    if (newIdx < 0 || newIdx >= canvas.length) return;
+    pushUndoSnapshot();
+    setCanvas(prev => {
+      const next = [...prev];
+      const [item] = next.splice(idx, 1);
+      next.splice(newIdx, 0, item);
+      return next;
+    });
   };
 
   const validate = () => {
@@ -486,6 +722,7 @@ export default function VisualWorkflowBuilder() {
     } catch { issues.push("Schema JSON invalid"); }
     if (canaryPercent < 0 || canaryPercent > 100) issues.push("Canary percent must be between 0 and 100");
     if (performanceBudgetMs && performanceBudgetMs < 0) issues.push("Performance budget must be positive");
+    if (canvasStats.duplicateLabels.length) issues.push(`Duplicate block labels detected: ${canvasStats.duplicateLabels.join(', ')}`);
     setValidationIssues(issues);
     return issues;
   };
@@ -517,6 +754,40 @@ export default function VisualWorkflowBuilder() {
       setError("Simulation failed: " + err.message);
       setSimulation(null);
     }
+  };
+
+  const handleRunVariantSimulations = async () => {
+    if (isViewer) return setError("View-only mode: request access to simulate.");
+    if (!currentId) return setError("Save the workflow before running simulations.");
+    let variants;
+    try {
+      variants = JSON.parse(testVariantsJson || "[]");
+      if (!Array.isArray(variants)) throw new Error("Variants must be an array");
+    } catch (err) {
+      setError("Variant parse failed: " + err.message);
+      return;
+    }
+    setError("");
+    setVariantResults([]);
+    setTestRunning(true);
+    const results = [];
+    for (const v of variants) {
+      try {
+        const payload = v.payload || {};
+        const resp = await apiFetch(`/api/visual-workflow-builder/workflows/${currentId}/simulate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ payload }),
+        });
+        const data = await resp.json();
+        if (!data.ok) throw new Error(data.error || "Simulation failed");
+        results.push({ name: v.name || "variant", ok: true, warnings: data.simulation?.warnings || [], actions: data.simulation?.actions || [] });
+      } catch (err) {
+        results.push({ name: v.name || "variant", ok: false, error: err.message });
+      }
+    }
+    setVariantResults(results);
+    setTestRunning(false);
   };
 
   const handleFormatJson = (which) => {
@@ -762,8 +1033,47 @@ export default function VisualWorkflowBuilder() {
           <span style={{ color: draftStatus === "saved" ? "#22c55e" : "#fbbf24", fontSize: 12 }}>{draftStatus === "saved" ? `Saved ${formatTime(lastSavedAt)}` : "Saving..."}</span>
           {dirtySinceSave && <span style={{ color: "#fbbf24", fontSize: 12 }}>· Unsaved changes</span>}
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           <button onClick={runPreflight} disabled={isViewer} style={{ background: "#1e293b", color: "#fcd34d", border: "1px solid #334155", borderRadius: 12, padding: "10px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>🔍 Preflight (Alt+P)</button>
+          {preflightStatus && (
+            <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 999, border: "1px solid #334155", background: preflightStatus.ok ? "#0b1221" : "#1f2937", color: preflightStatus.ok ? "#22c55e" : preflightStatus.issues ? "#fcd34d" : "#f87171", fontWeight: 800, fontSize: 12 }}>
+              <span style={{ width: 10, height: 10, borderRadius: "50%", background: preflightStatus.ok ? "#22c55e" : preflightStatus.issues ? "#f59e0b" : "#ef4444" }} />
+              <span>{preflightStatus.ok ? "Preflight pass" : preflightStatus.issues ? `${preflightStatus.issues} issues` : "Preflight failed"}</span>
+              {preflightStatus.ts ? <span style={{ color: "#9ca3af", fontWeight: 600 }}>· {new Date(preflightStatus.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span> : null}
+              <button onClick={() => setShowPreflightPopover(v => !v)} style={{ background: "transparent", border: "none", color: "#e5e7eb", cursor: "pointer", fontWeight: 800 }}>Trace</button>
+              <button onClick={clearPreflightStatus} style={{ marginLeft: 2, background: "transparent", border: "none", color: "#9ca3af", cursor: "pointer", fontWeight: 800 }}>Clear</button>
+              <button onClick={downloadPreflightReport} style={{ background: "transparent", border: "none", color: "#67e8f9", cursor: "pointer", fontWeight: 800 }}>Save</button>
+              {showPreflightPopover && (
+                <div style={{ position: "absolute", top: "110%", right: 0, minWidth: 240, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10, boxShadow: "0 10px 30px rgba(0,0,0,0.4)", zIndex: 10 }}>
+                  <div style={{ fontWeight: 800, color: "#fcd34d", marginBottom: 6 }}>Preflight issues</div>
+                  <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: 6 }}>Why this matters: catches misconfig before Shopify customers see broken flows.</div>
+                  {preflightIssues.length === 0 ? <div style={{ color: "#22c55e" }}>Clear</div> : (
+                    <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", maxHeight: 160, overflow: "auto" }}>
+                      {preflightIssues.slice(0, 6).map((p, i) => <li key={i}>{p}</li>)}
+                      {preflightIssues.length > 6 && <li style={{ color: "#9ca3af" }}>…{preflightIssues.length - 6} more</li>}
+                    </ul>
+                  )}
+                  <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    <button onClick={() => applyQuickFix("approver")} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add approver</button>
+                    <button onClick={() => applyQuickFix("prod-note")} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add prod note</button>
+                    <button onClick={() => applyQuickFix("trigger-action")} style={{ background: "#22c55e", color: "#0f172a", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add trigger/action</button>
+                    <button onClick={() => applyQuickFix("dedupe-labels")} style={{ background: "#6366f1", color: "#e5e7eb", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix duplicates</button>
+                  </div>
+                  {preflightTrace.length > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <div style={{ color: "#67e8f9", fontWeight: 700 }}>Trace</div>
+                      <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", maxHeight: 140, overflow: "auto" }}>
+                        {preflightTrace.slice(0, 5).map((t, i) => (
+                          <li key={i}>{t.label}: {t.issues?.join("; ")}</li>
+                        ))}
+                        {preflightTrace.length > 5 && <li style={{ color: "#9ca3af" }}>…{preflightTrace.length - 5} more</li>}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </span>
+          )}
           <button onClick={handleSimulate} disabled={isViewer} style={{ background: "#22c55e", color: "#0f172a", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>▶️ Simulate (Ctrl+Enter)</button>
           <button onClick={handleSave} disabled={isViewer} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{saving ? "Saving…" : "Save Draft"}</button>
         </div>
@@ -847,9 +1157,160 @@ export default function VisualWorkflowBuilder() {
       <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}
 
-      <div style={{ background: '#111827', borderRadius: 10, padding: 18, marginBottom: 18, color: '#e5e7eb', border: '1px solid #1f2937' }}>
-        <b>Workflow Canvas:</b> Drag and drop steps, triggers, and actions here.
-        <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0, color: '#cbd5f5' }}>{JSON.stringify(canvas, null, 2)}</pre>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(260px, 320px) 1fr', gap: 12, marginBottom: 18, alignItems: 'start' }}>
+        <div style={{ background: '#0b1221', border: '1px solid #1f2937', borderRadius: 12, padding: 12, boxShadow: '0 12px 30px #00000033' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <div style={{ fontWeight: 800, color: '#e5e7eb' }}>Palette</div>
+            <div style={{ color: '#9ca3af', fontSize: 12 }}>Drag blocks onto canvas</div>
+          </div>
+          <div style={{ display: 'grid', gap: 6, background: '#0f172a', border: '1px dashed #1f2937', borderRadius: 10, padding: 10, marginBottom: 10 }}>
+            <div style={{ color: '#cbd5f5', fontWeight: 700 }}>How to use</div>
+            <ul style={{ margin: '0 0 0 16px', padding: 0, color: '#9ca3af', fontSize: 13, lineHeight: 1.5 }}>
+              <li>Drag any block to the canvas</li>
+              <li>Or click “Add instantly” to append</li>
+              <li>Re-order later via JSON or your layout view</li>
+            </ul>
+          </div>
+          <div style={{ display: 'grid', gap: 8 }}>
+            {PALETTE_BLOCKS.map(block => (
+              <div key={block.label} style={{ background: '#0f172a', border: '1px solid #1f2937', borderRadius: 10, padding: 10, display: 'grid', gap: 6, boxShadow: '0 8px 20px #00000022' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                  <div style={{ fontWeight: 700, color: '#e5e7eb' }}>{block.label}</div>
+                  <span style={{ background: '#0ea5e91a', color: '#67e8f9', padding: '2px 8px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>{block.type}</span>
+                </div>
+                <div style={{ color: '#9ca3af', fontSize: 13 }}>{block.description}</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    title="Click and drag this block onto the canvas"
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, block)}
+                    disabled={isViewer}
+                    style={{ background: '#1e293b', color: '#fcd34d', border: '1px solid #334155', borderRadius: 10, padding: '6px 10px', fontWeight: 700, cursor: isViewer ? 'not-allowed' : 'grab', opacity: isViewer ? 0.7 : 1 }}
+                  >
+                    Drag to canvas
+                  </button>
+                  <button
+                    title="Append this block to the canvas instantly"
+                    onClick={() => handleAddBlockQuick(block)}
+                    disabled={isViewer}
+                    style={{ background: '#22c55e', color: '#0b1221', border: 'none', borderRadius: 10, padding: '6px 10px', fontWeight: 800, cursor: isViewer ? 'not-allowed' : 'pointer', opacity: isViewer ? 0.7 : 1 }}
+                  >
+                    Add instantly
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => { e.preventDefault(); handleDropOnCanvas(e.dataTransfer.getData('application/json')); }}
+          style={{ background: '#111827', borderRadius: 10, padding: 18, color: '#e5e7eb', border: '2px dashed #334155', minHeight: 260, boxShadow: '0 12px 30px #00000033' }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, gap: 10, flexWrap: 'wrap' }}>
+            <div>
+              <b>Workflow Canvas</b>
+              <div style={{ color: '#9ca3af', fontSize: 13 }}>Drop blocks here to assemble your workflow. Quick add also works.</div>
+              <div style={{ color: '#fcd34d', fontSize: 12, marginTop: 4 }}>Tip: Drag the gold button or click green to append instantly.</div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ color: '#a5f3fc', fontWeight: 700, background: '#0ea5e91a', borderRadius: 999, padding: '6px 12px' }}>{canvas.length} blocks</div>
+              <div style={{ display: 'flex', gap: 6, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 999, padding: 4 }}>
+                <button onClick={() => setCanvasViewMode('cards')} style={{ background: canvasViewMode === 'cards' ? '#0ea5e9' : 'transparent', color: canvasViewMode === 'cards' ? '#0b1221' : '#e5e7eb', border: 'none', borderRadius: 999, padding: '6px 10px', fontWeight: 700, cursor: 'pointer' }}>Card view</button>
+                <button onClick={() => setCanvasViewMode('json')} style={{ background: canvasViewMode === 'json' ? '#0ea5e9' : 'transparent', color: canvasViewMode === 'json' ? '#0b1221' : '#e5e7eb', border: 'none', borderRadius: 999, padding: '6px 10px', fontWeight: 700, cursor: 'pointer' }}>JSON</button>
+              </div>
+            </div>
+          </div>
+
+          {canvasViewMode === 'cards' ? (
+            <div style={{ background: '#0f172a', border: '1px solid #1f2937', borderRadius: 12, padding: 12, minHeight: 160 }}>
+              {canvas.length === 0 ? (
+                <div style={{ color: '#9ca3af', fontStyle: 'italic' }}>No blocks yet. Drag from the palette or use “Add instantly” to get started.</div>
+              ) : (
+                <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
+                  {canvas.map((block, idx) => (
+                    <div key={block.id || idx} style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: 10, padding: 10, display: 'grid', gap: 8 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                        <input
+                          value={block.label || ''}
+                          onChange={e => handleBlockFieldChange(idx, 'label', e.target.value)}
+                          disabled={isViewer}
+                          placeholder="Block label"
+                          style={{ flex: 1, background: '#0f172a', color: '#e5e7eb', border: '1px solid #1f2937', borderRadius: 8, padding: '6px 8px', fontWeight: 700, opacity: isViewer ? 0.6 : 1 }}
+                        />
+                        <select
+                          value={block.type || 'action'}
+                          onChange={e => handleBlockFieldChange(idx, 'type', e.target.value)}
+                          disabled={isViewer}
+                          style={{ background: '#0f172a', color: '#e5e7eb', border: '1px solid #1f2937', borderRadius: 8, padding: '6px 8px', fontWeight: 700, opacity: isViewer ? 0.6 : 1 }}
+                        >
+                          <option value="trigger">trigger</option>
+                          <option value="condition">condition</option>
+                          <option value="action">action</option>
+                        </select>
+                      </div>
+                      <textarea
+                        value={block.description || ''}
+                        onChange={e => handleBlockFieldChange(idx, 'description', e.target.value)}
+                        disabled={isViewer}
+                        rows={2}
+                        placeholder="Description"
+                        style={{ width: '100%', background: '#0f172a', color: '#9ca3af', border: '1px solid #1f2937', borderRadius: 8, padding: 8, resize: 'vertical', opacity: isViewer ? 0.6 : 1 }}
+                      />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                        <div style={{ color: '#6b7280', fontSize: 12 }}>Position: {idx + 1}</div>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button
+                            onClick={() => handleMoveBlock(idx, -1)}
+                            disabled={isViewer || idx === 0}
+                            title="Move up"
+                            style={{ background: 'transparent', color: '#e5e7eb', border: '1px solid #1f2937', borderRadius: 8, padding: '4px 8px', cursor: isViewer || idx === 0 ? 'not-allowed' : 'pointer', opacity: isViewer || idx === 0 ? 0.5 : 1 }}
+                          >
+                            ↑
+                          </button>
+                          <button
+                            onClick={() => handleMoveBlock(idx, 1)}
+                            disabled={isViewer || idx === canvas.length - 1}
+                            title="Move down"
+                            style={{ background: 'transparent', color: '#e5e7eb', border: '1px solid #1f2937', borderRadius: 8, padding: '4px 8px', cursor: isViewer || idx === canvas.length - 1 ? 'not-allowed' : 'pointer', opacity: isViewer || idx === canvas.length - 1 ? 0.5 : 1 }}
+                          >
+                            ↓
+                          </button>
+                          <button
+                            onClick={() => handleRemoveBlock(idx)}
+                            disabled={isViewer}
+                            title="Remove block"
+                            style={{ background: '#7f1d1d', color: '#fecdd3', border: '1px solid #b91c1c', borderRadius: 8, padding: '4px 10px', cursor: isViewer ? 'not-allowed' : 'pointer', opacity: isViewer ? 0.6 : 1 }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ background: '#0f172a', border: '1px solid #1f2937', borderRadius: 10, padding: 12 }}>
+              <div style={{ color: '#cbd5f5', marginBottom: 6 }}>Canvas JSON</div>
+              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0, color: '#cbd5f5' }}>{JSON.stringify(canvas, null, 2)}</pre>
+              {preflightTrace.length > 0 && (
+                <div style={{ marginTop: 10, background: '#111827', border: '1px solid #1f2937', borderRadius: 10, padding: 10 }}>
+                  <div style={{ color: '#fcd34d', fontWeight: 800, marginBottom: 6 }}>Preflight trace</div>
+                  <ul style={{ margin: 0, paddingLeft: 16, color: '#e5e7eb' }}>
+                    {preflightTrace.map((t, i) => (
+                      <li key={i}>
+                        <b>{t.label}</b>: {t.issues.join('; ')}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div style={{ marginBottom: 12, background: '#111827', border: '1px solid #1f2937', borderRadius: 12, padding: 12 }}>
@@ -886,6 +1347,27 @@ export default function VisualWorkflowBuilder() {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
             <button onClick={handleSimulate} disabled={isViewer} style={{ background: '#22c55e', color: '#0b1221', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: isViewer ? 'not-allowed' : 'pointer', opacity: isViewer ? 0.7 : 1 }}>Run Simulation</button>
             <button onClick={() => handleFormatJson('payload')} disabled={isViewer} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 12px', fontWeight: 700, cursor: isViewer ? 'not-allowed' : 'pointer', opacity: isViewer ? 0.7 : 1 }}>Format JSON</button>
+          </div>
+          <div style={{ marginTop: 10 }}>
+            <div style={{ color: '#e5e7eb', fontWeight: 700, marginBottom: 6 }}>Variant table (optional)</div>
+            <textarea value={testVariantsJson} onChange={e => setTestVariantsJson(e.target.value)} disabled={isViewer} rows={4} style={{ width: '100%', background: '#0f172a', color: '#e5e7eb', border: '1px solid #1f2937', borderRadius: 10, padding: 10, opacity: isViewer ? 0.7 : 1 }} />
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
+              <button onClick={handleRunVariantSimulations} disabled={isViewer || testRunning} style={{ background: '#a855f7', color: '#0b1221', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: isViewer ? 'not-allowed' : 'pointer', opacity: isViewer ? 0.7 : 1 }}>
+                {testRunning ? 'Running variants…' : 'Run variant simulations'}
+              </button>
+            </div>
+            {variantResults.length > 0 && (
+              <div style={{ marginTop: 8, background: '#0f172a', border: '1px solid #1f2937', borderRadius: 10, padding: 10 }}>
+                <div style={{ color: '#cbd5f5', marginBottom: 6 }}>Variant results</div>
+                <ul style={{ margin: 0, paddingLeft: 16, color: '#e5e7eb' }}>
+                  {variantResults.map((v, i) => (
+                    <li key={i} style={{ color: v.ok ? '#22c55e' : '#f87171' }}>
+                      {v.name}: {v.ok ? `ok · actions: ${v.actions?.length || 0}${v.warnings?.length ? ` · warnings: ${v.warnings.join(', ')}` : ''}` : `failed (${v.error})`}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
           {simulation && (
             <div style={{ marginTop: 6, color: '#a5f3fc' }}>

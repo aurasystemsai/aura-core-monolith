@@ -88,6 +88,8 @@ export default function KlaviyoFlowAutomation() {
   const [presence, setPresence] = useState([]);
   const [approvalQueue, setApprovalQueue] = useState([]);
   const [traceLog, setTraceLog] = useState([]);
+  const [preflightIssues, setPreflightIssues] = useState([]);
+  const [preflightTrace, setPreflightTrace] = useState([]);
   const [regressionTests, setRegressionTests] = useState([{ name: 'Smoke', expected: '200', input: 'sample user' }]);
   const [regressionResult, setRegressionResult] = useState(null);
   const [customMetrics, setCustomMetrics] = useState([{ name: 'uplift', target: 5 }]);
@@ -358,6 +360,93 @@ export default function KlaviyoFlowAutomation() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const runPreflight = () => {
+    const issues = [];
+    const trace = [];
+    const record = (status, detail) => trace.push({ status, detail });
+
+    if (!nodes.length) {
+      issues.push("Add at least one node to the flow builder.");
+      record("fail", "No nodes configured.");
+    } else {
+      record("pass", `${nodes.length} node(s) configured.`);
+    }
+
+    const triggers = nodes.filter(n => n.type === 'trigger');
+    const actions = nodes.filter(n => n.type === 'action');
+    if (!triggers.length) {
+      issues.push("Add at least one trigger node.");
+      record("fail", "No trigger nodes present.");
+    } else {
+      record("pass", `${triggers.length} trigger(s) present.`);
+    }
+    if (!actions.length) {
+      issues.push("Add at least one action node.");
+      record("fail", "No action nodes present.");
+    } else {
+      record("pass", `${actions.length} action(s) present.`);
+    }
+
+    if (nodes[0] && nodes[0].type !== 'trigger') {
+      issues.push("First node should be a trigger.");
+      record("fail", "Flow does not start with a trigger.");
+    } else if (nodes[0]) {
+      record("pass", "Flow starts with a trigger.");
+    }
+
+    if ((flow || '').length < 30) {
+      issues.push("Flow description is too short; add more detail.");
+      record("warn", "Flow text under 30 chars.");
+    } else {
+      record("pass", `Flow text length ${flow.length}.`);
+    }
+
+    const totalVariantWeight = variants.reduce((sum, v) => sum + (Number(v.weight) || 0), 0);
+    if (totalVariantWeight !== 100) {
+      issues.push("Variant weights should sum to 100%.");
+      record("fail", `Variant weights sum to ${totalVariantWeight}%.`);
+    } else {
+      record("pass", "Variant weights total 100%." );
+    }
+    const variantIds = variants.map(v => (v.id || '').trim()).filter(Boolean);
+    const duplicateVariants = variantIds.filter((id, idx) => variantIds.indexOf(id) !== idx);
+    if (duplicateVariants.length) {
+      const uniqueDupes = [...new Set(duplicateVariants)];
+      issues.push(`Duplicate variant ids: ${uniqueDupes.join(', ')}`);
+      record("fail", `Duplicate variant ids: ${uniqueDupes.join(', ')}.`);
+    }
+
+    const webhookNodes = nodes.filter(n => n.channel === 'webhook');
+    if (webhookNodes.length && !webhookUrl) {
+      issues.push("Provide a webhook URL for webhook nodes.");
+      record("fail", "Webhook node(s) missing URL.");
+    } else if (webhookNodes.length) {
+      record("pass", "Webhook URL provided for webhook nodes.");
+    }
+
+    const smsInFlow = nodes.some(n => (n.channel || '').toLowerCase() === 'sms' || (n.label || '').toLowerCase().includes('sms'));
+    if (smsInFlow && compliance?.TCPA && consentValue !== 'granted') {
+      issues.push("Consent not granted for SMS while TCPA is enabled.");
+      record("fail", "SMS present but consent not granted.");
+    } else if (smsInFlow) {
+      record("pass", "SMS present with consent alignment.");
+    }
+
+    if (!regressionTests.length) {
+      record("warn", "No regression tests defined.");
+    } else {
+      record("pass", `${regressionTests.length} regression test(s) configured.`);
+    }
+
+    if (offlineMode) {
+      record("warn", "Offline mode enabled; ensure sync before prod.");
+    }
+
+    setPreflightIssues(issues);
+    setPreflightTrace(trace);
+    return issues;
   };
 
   const handleTestRun = async () => {
@@ -1226,6 +1315,7 @@ export default function KlaviyoFlowAutomation() {
           <div style={{ display: "flex", gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
             <button title="AI suggestion for this flow" onClick={handleAISuggest} disabled={loading || !flow} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Thinking..." : "AI Suggest"}</button>
             <button title="Simulate flow run" onClick={handleRun} disabled={loading || !flow} style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Running..." : "Run Automation"}</button>
+            <button title="Run guardrail checks before ship" onClick={runPreflight} disabled={loading} style={{ background: "#1e293b", color: "#fcd34d", border: "1px solid #334155", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Preflight</button>
             <button title="Preview timeline without sending" onClick={handleSimulate} disabled={loading || !nodes.length} style={{ background: "#4ade80", color: "#0f172a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", opacity: (!nodes.length ? 0.6 : 1) }}>Simulate</button>
             <button title="Validate required triggers/actions and blackout rules" onClick={handleValidate} disabled={loading || !selectedFlowId} style={{ background: "#fde047", color: "#0f172a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", opacity: (!selectedFlowId ? 0.6 : 1) }}>Validate</button>
             <button title="Test-run with sample user" onClick={handleTestRun} disabled={loading || !selectedFlowId} style={{ background: "#c7d2fe", color: "#0f172a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", opacity: (!selectedFlowId ? 0.6 : 1) }}>Test Run</button>
@@ -1271,6 +1361,31 @@ export default function KlaviyoFlowAutomation() {
             <div style={{ background: "#0b1220", borderRadius: 10, padding: 12, marginBottom: 12, border: '1px solid #334155', color: '#cbd5e1' }}>
               <div style={{ fontWeight: 700, marginBottom: 4, color: '#fde047' }}>Validation</div>
               <pre style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{JSON.stringify(validationResult, null, 2)}</pre>
+            </div>
+          )}
+          {preflightIssues.length > 0 && (
+            <div style={{ background: "#0b1220", borderRadius: 10, padding: 12, marginBottom: 12, border: '1px solid #334155', color: '#cbd5e1' }}>
+              <div style={{ fontWeight: 700, marginBottom: 4, color: '#fcd34d' }}>Preflight Issues</div>
+              <ul style={{ margin: 0, paddingLeft: 18, color: '#e5e7eb' }}>
+                {preflightIssues.map((i, idx) => <li key={idx}>{i}</li>)}
+              </ul>
+            </div>
+          )}
+          {preflightTrace.length > 0 && (
+            <div style={{ background: "#0b1220", borderRadius: 10, padding: 12, marginBottom: 12, border: '1px solid #334155', color: '#cbd5e1' }}>
+              <div style={{ fontWeight: 700, marginBottom: 4, color: '#a5f3fc' }}>Preflight Trace</div>
+              <ul style={{ margin: 0, paddingLeft: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {preflightTrace.map((item, idx) => {
+                  const color = item.status === 'pass' ? '#22c55e' : item.status === 'warn' ? '#f59e0b' : '#f87171';
+                  const symbol = item.status === 'pass' ? '✓' : item.status === 'warn' ? '!' : '✕';
+                  return (
+                    <li key={idx} style={{ listStyle: 'none', display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: '50%', background: color }}>{symbol}</span>
+                      <span>{item.detail}</span>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           )}
           {testRunResult && (

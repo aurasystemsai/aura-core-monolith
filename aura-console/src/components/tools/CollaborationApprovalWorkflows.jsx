@@ -19,6 +19,7 @@ export default function CollaborationApprovalWorkflows() {
   const [draftStatus, setDraftStatus] = useState("idle");
   const [lastSavedAt, setLastSavedAt] = useState(null);
   const [preflightIssues, setPreflightIssues] = useState([]);
+  const [preflightTrace, setPreflightTrace] = useState([]);
   const [confirmationNote, setConfirmationNote] = useState("");
   const [selectedPreset, setSelectedPreset] = useState("multi-approver");
   const [lastBuiltSnapshot, setLastBuiltSnapshot] = useState(null);
@@ -54,10 +55,89 @@ export default function CollaborationApprovalWorkflows() {
 
   const runPreflight = () => {
     const issues = [];
-    if (!workflow.trim()) issues.push("Add a workflow description before building.");
-    if (env === "prod" && !confirmationNote.trim()) issues.push("Add a prod confirmation note (who approved, intent).");
-    if (workflow.length < 12) issues.push("Workflow is too short; add steps/owners.");
+    const trace = [];
+    const record = (status, detail) => trace.push({ status, detail });
+    const normalized = (workflow || "").trim();
+    const steps = normalized.split(/->|>/).map(s => s.trim()).filter(Boolean);
+    const lower = normalized.toLowerCase();
+
+    record("pass", `Env: ${env.toUpperCase()}`);
+    if (env === "prod" && !confirmationNote.trim()) {
+      issues.push("Add a prod confirmation note (who approved, intent).");
+      record("fail", "Prod mode requires a confirmation note.");
+    } else if (env === "prod") {
+      record("pass", "Prod note present.");
+    }
+
+    if (!normalized) {
+      issues.push("Add a workflow description before building.");
+      record("fail", "Workflow is empty.");
+    } else {
+      record("pass", "Workflow text provided.");
+    }
+
+    if (normalized.length < 30) {
+      issues.push("Workflow is too short; add steps/owners.");
+      record("fail", "Workflow length below 30 chars.");
+    } else {
+      record("pass", `Workflow length ${normalized.length} chars.`);
+    }
+
+    if (steps.length < 3) {
+      issues.push("Add at least three steps with clear handoffs (use ->).");
+      record("fail", "Fewer than 3 steps detected.");
+    } else {
+      record("pass", `${steps.length} steps detected via arrows.`);
+    }
+
+    const hasSubmit = /submit|request|intake/.test(lower);
+    if (!hasSubmit) {
+      issues.push("Include an intake/submit step to start the flow.");
+      record("warn", "Missing explicit submit/intake step.");
+    } else {
+      record("pass", "Submit/intake step found.");
+    }
+
+    const hasApproval = /approve|approval|sign|review/.test(lower);
+    if (!hasApproval) {
+      issues.push("Add at least one explicit approval/review step.");
+      record("fail", "No approval/review keywords detected.");
+    } else {
+      record("pass", "Approval/review step present.");
+    }
+
+    const hasNotification = /slack|notify|email|alert|teams/.test(lower);
+    if (!hasNotification) {
+      issues.push("Add notification channel (Slack/Email/Teams) for visibility.");
+      record("warn", "No notification channel mentioned.");
+    } else {
+      record("pass", "Notification channel mentioned.");
+    }
+
+    const hasSla = /\bSLA\b|\b\d+\s?(h|hr|hrs|hour|hours|d|day|days)/i.test(workflow);
+    if (!hasSla) {
+      record("warn", "No SLA/timing noted.");
+    } else {
+      record("pass", "SLA or timing found.");
+    }
+
+    const duplicates = steps
+      .map(s => s.toLowerCase())
+      .filter((s, idx, arr) => arr.indexOf(s) !== idx && s);
+    if (duplicates.length) {
+      const uniqueDupes = [...new Set(duplicates)];
+      issues.push(`Duplicate steps found: ${uniqueDupes.join(", ")}`);
+      record("fail", `Duplicate step labels: ${uniqueDupes.join(", ")}.`);
+    }
+
+    const ambiguousSteps = steps.filter(s => s.split(" ").length < 2);
+    if (ambiguousSteps.length) {
+      issues.push("Clarify step names with owners/actions (too terse).");
+      record("warn", `Ambiguous steps: ${ambiguousSteps.join(", ")}.`);
+    }
+
     setPreflightIssues(issues);
+    setPreflightTrace(trace);
     return issues;
   };
 
@@ -481,6 +561,23 @@ export default function CollaborationApprovalWorkflows() {
               <input value={confirmationNote} onChange={handleInputChange(setConfirmationNote)} disabled={isViewer} placeholder="Who approved? What changed?" style={{ width: "100%", background: "#0f172a", color: "#e5e7eb", border: "1px solid #2f2f36", borderRadius: 10, padding: "8px 10px", opacity: isViewer ? 0.7 : 1 }} />
             </div>
           )}
+        </div>
+      )}
+      {preflightTrace.length > 0 && (
+        <div style={{ marginBottom: 12, background: "#232336", border: "1px solid #2f2f36", borderRadius: 12, padding: 12 }}>
+          <div style={{ color: "#a5f3fc", fontWeight: 800 }}>Preflight Trace</div>
+          <ul style={{ margin: 6, paddingLeft: 12, color: "#e5e7eb", display: "flex", flexDirection: "column", gap: 6 }}>
+            {preflightTrace.map((item, idx) => {
+              const color = item.status === "pass" ? "#22c55e" : item.status === "warn" ? "#f59e0b" : "#f87171";
+              const symbol = item.status === "pass" ? "✓" : item.status === "warn" ? "!" : "✕";
+              return (
+                <li key={idx} style={{ listStyle: "none", display: "flex", gap: 8, alignItems: "center" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 18, height: 18, borderRadius: "50%", background: color }}>{symbol}</span>
+                  <span>{item.detail}</span>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>

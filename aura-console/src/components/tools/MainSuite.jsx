@@ -13,6 +13,15 @@ export default function MainSuite({ setActiveSection }) {
   const [collapsed, setCollapsed] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [sortKey, setSortKey] = useState("az");
+  const [preflightStatuses, setPreflightStatuses] = useState({});
+
+  const STATUS_KEYS = {
+    "visual-workflow-builder": "suite:status:visual-workflow-builder",
+    "workflow-orchestrator": "suite:status:workflow-orchestrator",
+    "workflow-automation-builder": "suite:status:workflow-automation-builder",
+    "conditional-logic-automation": "suite:status:conditional-logic-automation",
+    "webhook-api-triggers": "suite:status:webhook-api-triggers",
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -44,6 +53,23 @@ export default function MainSuite({ setActiveSection }) {
     return () => {
       mounted = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const hydrate = () => {
+      const next = {};
+      Object.entries(STATUS_KEYS).forEach(([id, key]) => {
+        try {
+          const val = JSON.parse(localStorage.getItem(key) || "null");
+          if (val) next[id] = val;
+        } catch (_) {}
+      });
+      setPreflightStatuses(next);
+    };
+    hydrate();
+    const handler = () => hydrate();
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
   }, []);
 
   const active = useMemo(
@@ -318,6 +344,13 @@ export default function MainSuite({ setActiveSection }) {
                     </span>
                   )}
                 </div>
+                {preflightStatuses[m.id] && (
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: 999, border: `1px solid ${palette.border}`, background: preflightStatuses[m.id].ok ? (darkMode ? "#0b1221" : "#e0f2fe") : "#332b17", color: preflightStatuses[m.id].ok ? "#22c55e" : preflightStatuses[m.id].issues ? "#f59e0b" : "#ef4444", fontWeight: 800, fontSize: 11 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: preflightStatuses[m.id].ok ? "#22c55e" : preflightStatuses[m.id].issues ? "#f59e0b" : "#ef4444" }} />
+                    <span>{preflightStatuses[m.id].ok ? "Pass" : `${preflightStatuses[m.id].issues} issue${preflightStatuses[m.id].issues === 1 ? "" : "s"}`}</span>
+                    {preflightStatuses[m.id].ts ? <span style={{ color: palette.muted, fontWeight: 600 }}>· {new Date(preflightStatuses[m.id].ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span> : null}
+                  </div>
+                )}
                 <div style={{ color: palette.muted, fontSize: 13 }}>{m.description}</div>
                 <div style={{ marginTop: "auto", color: palette.primary, fontSize: 12, fontWeight: 700 }}>
                   Tool ID: {m.id}

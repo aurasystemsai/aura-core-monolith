@@ -163,6 +163,107 @@ export default function ConditionalLogicAutomation() {
   const [draftStatus, setDraftStatus] = useState("idle");
   const [lastSavedAt, setLastSavedAt] = useState(null);
   const [preflightIssues, setPreflightIssues] = useState([]);
+  const [preflightTrace, setPreflightTrace] = useState([]);
+  const [preflightStatus, setPreflightStatus] = useState(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      return JSON.parse(window.localStorage.getItem("suite:status:conditional-logic-automation")) || null;
+    } catch {
+      return null;
+    }
+  });
+  const [showPreflightPopover, setShowPreflightPopover] = useState(false);
+  const [reviewerEmail, setReviewerEmail] = useState("");
+  const [disabled, setDisabled] = useState(false);
+  const applyQuickFix = (kind) => {
+    if (isViewer) return;
+    if (kind === "approver") {
+      setConfirmationNote(prev => prev || "Approval note: ops@shopify-brand.com signed off.");
+    }
+    if (kind === "prod-note") {
+      if (env === "prod") {
+        setConfirmationNote(prev => prev || "Prod rollout intent: safe to launch.");
+      } else {
+        setEnv("prod");
+        setConfirmationNote("Prod rollout intent: safe to launch.");
+      }
+    }
+    if (kind === "trigger-action") {
+      setFlowNodes(prev => {
+        if (!prev.length) {
+          return [
+            { type: "trigger", title: "Abandoned Cart", description: "Cart idle", config: { event: "abandoned_cart" } },
+            { type: "action", title: "Notify Slack", description: "Alert #ops", config: { channel: "slack", template: "ops-alert" } }
+          ];
+        }
+        const next = [...prev];
+        if (!next[0] || next[0].type !== "trigger") {
+          next.unshift({ type: "trigger", title: "Abandoned Cart", description: "Cart idle", config: { event: "abandoned_cart" } });
+        }
+        if (!next.find(n => n.type === "action")) {
+          next.push({ type: "action", title: "Notify Slack", description: "Alert #ops", config: { channel: "slack", template: "ops-alert" } });
+        }
+        return next;
+      });
+    }
+    if (kind === "dedupe-labels") {
+      setFlowNodes(prev => {
+        const seen = new Map();
+        return prev.map(node => {
+          const base = node.title || "Node";
+          const key = base.trim().toLowerCase();
+          const count = seen.get(key) || 0;
+          seen.set(key, count + 1);
+          return count === 0 ? node : { ...node, title: `${base} (${count + 1})` };
+        });
+      });
+      setBranchGroup(prev => {
+        const seenBranches = new Map();
+        const branches = (prev.branches || []).map(branch => {
+          const base = branch.label || "Branch";
+          const key = base.trim().toLowerCase();
+          const count = seenBranches.get(key) || 0;
+          seenBranches.set(key, count + 1);
+          return count === 0 ? branch : { ...branch, label: `${base} (${count + 1})` };
+        });
+        return { ...prev, branches };
+      });
+    }
+  };
+  const clearPreflightStatus = () => {
+    setPreflightStatus(null);
+    setPreflightIssues([]);
+    setPreflightTrace([]);
+    try { window.localStorage.removeItem("suite:status:conditional-logic-automation"); } catch (_) {}
+  };
+
+  const downloadPreflightReport = () => {
+    const payload = { status: preflightStatus, issues: preflightIssues, trace: preflightTrace, generatedAt: Date.now() };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "conditional-logic-preflight.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
+
+  const attachPreflightForReviewer = () => {
+    const payload = {
+      reviewer: reviewerEmail || "reviewer@shopify-brand.com",
+      status: preflightStatus,
+      issues: preflightIssues,
+      trace: preflightTrace,
+      generatedAt: Date.now()
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "conditional-logic-preflight-review.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
   const [selectedPayloadPreset, setSelectedPayloadPreset] = useState("abandoned-cart");
   const [lastSimulatedSnapshot, setLastSimulatedSnapshot] = useState(null);
   const [confirmationNote, setConfirmationNote] = useState("");
@@ -450,7 +551,8 @@ export default function ConditionalLogicAutomation() {
         flowNodes,
         branchGroup,
         simulatedAt: Date.now(),
-        payload
+        payload,
+        env
       };
       setSimulationResult({ payload, matchedBranch: matchedBranch || "Else", actions });
       setLastSimulatedSnapshot(snapshot);
@@ -462,16 +564,148 @@ export default function ConditionalLogicAutomation() {
     }
   };
 
+  const runDryRun = () => {
+    if (isViewer) return;
+    setEnv("dev");
+    runPreflight();
+  };
+
+  const rollbackToLastSimulation = () => {
+    if (isViewer) return;
+    if (!lastSimulatedSnapshot) return;
+    setFlowNodes(lastSimulatedSnapshot.flowNodes || []);
+    setBranchGroup(lastSimulatedSnapshot.branchGroup || { branches: [], elseActions: [] });
+    if (lastSimulatedSnapshot.payload) {
+      try {
+        setSimulationInput(JSON.stringify(lastSimulatedSnapshot.payload, null, 2));
+      } catch (_) {
+        /* ignore */
+      }
+    }
+    if (lastSimulatedSnapshot.env) setEnv(lastSimulatedSnapshot.env);
+  };
+
   const runPreflight = () => {
     const issues = [];
-    if (env === "prod" && !confirmationNote.trim()) issues.push("Add a ship note/intent before running in prod.");
-    if (!flowNodes.find(n => n.type === "trigger")) issues.push("Add at least one trigger to start the flow.");
-    if (flowNodes.filter(n => n.type === "action").length === 0) issues.push("No actions configured yet.");
-    if ((branchGroup.branches || []).length === 0) issues.push("Define at least one IF branch for routing.");
-    if (validationIssues.length) issues.push(...validationIssues);
+    const trace = [];
+    const record = (status, detail) => trace.push({ status, detail });
+    const triggersCount = flowNodes.filter(n => n.type === "trigger").length;
+    const actionsCount = flowNodes.filter(n => n.type === "action").length;
+    const branches = branchGroup.branches || [];
+
+    if (env === "prod") {
+      if (!confirmationNote.trim()) {
+        issues.push("Add a ship note/intent before running in prod.");
+        record("fail", "Prod mode requires a confirmation note.");
+      } else {
+        record("pass", "Prod note present.");
+      }
+    } else {
+      record("pass", `Env set to ${env.toUpperCase()}.`);
+    }
+
+    if (!flowNodes.length) {
+      issues.push("Add at least one node to start the flow.");
+      record("fail", "No nodes configured yet.");
+    } else {
+      record("pass", `Flow has ${flowNodes.length} node(s).`);
+    }
+
+    if (!flowNodes[0] || flowNodes[0].type !== "trigger") {
+      issues.push("First step must be a trigger.");
+      record("fail", "First node is not a trigger.");
+    } else {
+      record("pass", "Flow starts with a trigger.");
+    }
+
+    if (!triggersCount) {
+      issues.push("Add at least one trigger to start the flow.");
+      record("fail", "No triggers detected.");
+    } else {
+      record("pass", `${triggersCount} trigger(s) configured.`);
+    }
+
+    if (actionsCount === 0) {
+      issues.push("No actions configured yet.");
+      record("fail", "No actions present.");
+    } else {
+      record("pass", `${actionsCount} action(s) configured.`);
+    }
+
+    const allowedTypes = ["trigger", "condition", "action"];
+    flowNodes.forEach((node, idx) => {
+      if (!allowedTypes.includes(node.type)) {
+        issues.push(`Node ${idx + 1} has invalid type: ${node.type}`);
+        record("fail", `Node ${idx + 1} type ${node.type || "unknown"} is invalid.`);
+      }
+      if (node.type === "trigger" && !node.config?.event) {
+        issues.push(`Node ${idx + 1}: trigger missing event`);
+        record("fail", `Trigger ${idx + 1} missing event.`);
+      }
+      if (node.type === "condition") {
+        if (!node.config?.field) issues.push(`Node ${idx + 1}: condition missing field`);
+        if (!node.config?.operator) issues.push(`Node ${idx + 1}: condition missing operator`);
+        if (!node.config?.field || !node.config?.operator) record("fail", `Condition ${idx + 1} incomplete.`);
+      }
+      if (node.type === "action" && !node.config?.channel) {
+        issues.push(`Node ${idx + 1}: action missing channel`);
+        record("fail", `Action ${idx + 1} missing channel.`);
+      }
+    });
+
+    if (branches.length === 0) {
+      issues.push("Define at least one IF branch for routing.");
+      record("fail", "No branches configured.");
+    } else {
+      record("pass", `${branches.length} branch(es) configured.`);
+    }
+
+    const branchLabels = branches.map(b => (b.label || "").trim()).filter(Boolean);
+    const duplicateBranchLabels = branchLabels.filter((label, idx) => branchLabels.indexOf(label) !== idx);
+    if (duplicateBranchLabels.length) {
+      const unique = [...new Set(duplicateBranchLabels)];
+      issues.push(`Duplicate branch labels: ${unique.join(", ")}`);
+      record("fail", `Duplicate branch labels found: ${unique.join(", ")}.`);
+    }
+
+    branches.forEach((b, idx) => {
+      if (!b.condition?.field || !b.condition?.operator) {
+        issues.push(`Branch ${idx + 1}: condition incomplete`);
+        record("fail", `Branch ${idx + 1} condition missing field/operator.`);
+      }
+      if (!(b.actions || []).length) {
+        issues.push(`Branch ${idx + 1}: add at least one action`);
+        record("fail", `Branch ${idx + 1} has no actions.`);
+      }
+    });
+
+    if (!(branchGroup.elseActions || []).length) {
+      record("warn", "No ELSE fallback actions configured.");
+    } else {
+      record("pass", "Else path has actions.");
+    }
+
+    if (validationIssues.length) {
+      issues.push(...validationIssues);
+      record("warn", "Validation issues bubbled into preflight.");
+    } else {
+      record("pass", "Validation checks clear.");
+    }
+
     setPreflightIssues(issues);
+    setPreflightTrace(trace);
+    const status = { ok: issues.length === 0, ts: Date.now(), issues: issues.length };
+    setPreflightStatus(status);
+    try { window.localStorage.setItem("suite:status:conditional-logic-automation", JSON.stringify(status)); } catch (_) {}
     return issues;
   };
+
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    if (env === "prod" || (branchGroup.branches || []).length > 2) {
+      runPreflight();
+    }
+  }, [env, branchGroup.branches?.length]);
 
   const handleUndo = () => {
     if (!undoStack.length) return;
@@ -733,13 +967,66 @@ export default function ConditionalLogicAutomation() {
               {opt.toUpperCase()}
             </button>
           ))}
+          <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", fontWeight: 700 }}>
+            <input type="checkbox" checked={disabled} onChange={e => setDisabled(e.target.checked)} /> Disabled
+          </label>
           <span style={{ color: draftStatus === "saved" ? "#22c55e" : "#fbbf24", fontSize: 12 }}>{draftStatus === "saved" ? `Saved ${formatTime(lastSavedAt)}` : "Saving..."}</span>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           <button onClick={runPreflight} style={{ background: "#1e293b", color: "#fcd34d", border: "1px solid #334155", borderRadius: 12, padding: "10px 12px", fontWeight: 800, cursor: "pointer" }}>🔍 Preflight (Ctrl+S)</button>
+          <button onClick={runDryRun} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: "pointer" }}>Dry-run (dev)</button>
+          {preflightStatus && (
+            <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 999, border: "1px solid #1f2937", background: preflightStatus.ok ? "#0b1221" : "#1f2937", color: preflightStatus.ok ? "#22c55e" : preflightStatus.issues ? "#fcd34d" : "#f87171", fontWeight: 800, fontSize: 12 }}>
+              <span style={{ width: 10, height: 10, borderRadius: "50%", background: preflightStatus.ok ? "#22c55e" : preflightStatus.issues ? "#f59e0b" : "#ef4444" }} />
+              <span>{preflightStatus.ok ? "Preflight pass" : preflightStatus.issues ? `${preflightStatus.issues} issues` : "Preflight failed"}</span>
+              {preflightStatus.ts ? <span style={{ color: "#9ca3af", fontWeight: 600 }}>· {new Date(preflightStatus.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span> : null}
+              <button onClick={() => setShowPreflightPopover(v => !v)} style={{ background: "transparent", border: "none", color: "#e5e7eb", cursor: "pointer", fontWeight: 800 }}>Trace</button>
+              <button onClick={clearPreflightStatus} style={{ marginLeft: 2, background: "transparent", border: "none", color: "#9ca3af", cursor: "pointer", fontWeight: 800 }}>Clear</button>
+              <button onClick={downloadPreflightReport} style={{ background: "transparent", border: "none", color: "#67e8f9", cursor: "pointer", fontWeight: 800 }}>Save</button>
+              {showPreflightPopover && (
+                <div style={{ position: "absolute", top: "110%", right: 0, minWidth: 220, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10, boxShadow: "0 10px 30px rgba(0,0,0,0.4)", zIndex: 10 }}>
+                  <div style={{ fontWeight: 800, color: "#fcd34d", marginBottom: 6 }}>Preflight issues</div>
+                  <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: 6 }}>Why this matters: stops broken branches from impacting Shopify customers.</div>
+                  {preflightIssues.length === 0 ? <div style={{ color: "#22c55e" }}>Clear</div> : (
+                    <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", maxHeight: 160, overflow: "auto" }}>
+                      {preflightIssues.slice(0, 6).map((p, i) => <li key={i}>{p}</li>)}
+                      {preflightIssues.length > 6 && <li style={{ color: "#9ca3af" }}>…{preflightIssues.length - 6} more</li>}
+                    </ul>
+                  )}
+                  <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    <button onClick={() => applyQuickFix("approver")} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add approver note</button>
+                    <button onClick={() => applyQuickFix("prod-note")} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add prod note</button>
+                    <button onClick={() => applyQuickFix("trigger-action")} style={{ background: "#22c55e", color: "#0f172a", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add trigger/action</button>
+                    <button onClick={() => applyQuickFix("dedupe-labels")} style={{ background: "#6366f1", color: "#e5e7eb", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix duplicates</button>
+                  </div>
+                  {preflightTrace.length > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <div style={{ color: "#67e8f9", fontWeight: 700 }}>Trace</div>
+                      <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", maxHeight: 140, overflow: "auto" }}>
+                        {preflightTrace.slice(0, 5).map((t, i) => (
+                          <li key={i}>{t.label}: {t.issues?.join("; ")}</li>
+                        ))}
+                        {preflightTrace.length > 5 && <li style={{ color: "#9ca3af" }}>…{preflightTrace.length - 5} more</li>}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </span>
+          )}
           <button onClick={simulate} style={{ background: "#22c55e", color: "#0f172a", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: "pointer" }}>▶️ Run Simulation (Ctrl+Enter)</button>
+          <button onClick={rollbackToLastSimulation} disabled={!lastSimulatedSnapshot} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 12, padding: "10px 12px", fontWeight: 800, cursor: lastSimulatedSnapshot ? "pointer" : "not-allowed", opacity: lastSimulatedSnapshot ? 1 : 0.5 }}>Rollback to last sim</button>
           <button onClick={() => setSelectedPayloadPreset(p => p)} style={{ background: "#0ea5e91a", color: "#67e8f9", border: "1px solid #1f2937", borderRadius: 12, padding: "10px 12px", fontWeight: 800 }}>Dev Payload Presets</button>
         </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginLeft: "auto" }}>
+          <span style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: (flowNodes.filter(n => n.type === "action").length >= 4 || (branchGroup.branches || []).length >= 3) ? "#f97316" : "#22c55e", fontWeight: 700 }}>Perf guardrail: {(flowNodes.filter(n => n.type === "action").length >= 4 || (branchGroup.branches || []).length >= 3) ? "tighten" : "OK"}</span>
+          <span style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: disabled ? "#f97316" : "#22c55e", fontWeight: 700 }}>Disabled: {disabled ? "Yes" : "No"}</span>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+        <input value={reviewerEmail} onChange={e => setReviewerEmail(e.target.value)} placeholder="Reviewer email" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", minWidth: 220 }} />
+        <button onClick={attachPreflightForReviewer} style={{ background: "#8b5cf6", color: "#0b1221", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Attach preflight</button>
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", color: preflightIssues.length ? "#f97316" : "#22c55e", fontWeight: 700 }}>Guardrails: {preflightIssues.length ? `${preflightIssues.length} issues` : "clear"}</div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 18 }}>
         <div>
@@ -1149,6 +1436,22 @@ export default function ConditionalLogicAutomation() {
                   {preflightIssues.map((issue, idx) => (
                     <li key={idx}>{issue}</li>
                   ))}
+                </ul>
+              </div>
+            )}
+            {preflightTrace.length > 0 && (
+              <div style={{ marginTop: 10, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10 }}>
+                <div style={{ color: "#a5f3fc", fontWeight: 800 }}>Preflight Trace</div>
+                <ul style={{ margin: 6, paddingLeft: 18, color: "#e5e7eb", display: "flex", flexDirection: "column", gap: 6 }}>
+                  {preflightTrace.map((item, idx) => {
+                    const color = item.status === "pass" ? "#22c55e" : item.status === "warn" ? "#f59e0b" : "#f87171";
+                    return (
+                      <li key={idx} style={{ listStyle: "none", display: "flex", gap: 8, alignItems: "center" }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 18, height: 18, borderRadius: "50%", background: color }}>{item.status === "pass" ? "✓" : item.status === "warn" ? "!" : "✕"}</span>
+                        <span>{item.detail}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}

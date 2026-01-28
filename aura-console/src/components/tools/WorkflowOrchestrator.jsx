@@ -33,6 +33,8 @@ export default function WorkflowOrchestrator() {
   const [versions, setVersions] = useState([]);
   const [draftStatus, setDraftStatus] = useState("idle"); // idle | saving | saved
   const [lastSavedAt, setLastSavedAt] = useState(null);
+  const [disabled, setDisabled] = useState(false);
+  const [reviewerEmail, setReviewerEmail] = useState("");
   const [role] = useState(() => {
     if (typeof window === "undefined") return "admin";
     return window.__AURA_USER?.role || window.localStorage.getItem("aura-role") || "admin";
@@ -42,8 +44,100 @@ export default function WorkflowOrchestrator() {
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [preflightTrace, setPreflightTrace] = useState([]);
+  const [preflightStatus, setPreflightStatus] = useState(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      return JSON.parse(window.localStorage.getItem("suite:status:workflow-orchestrator")) || null;
+    } catch {
+      return null;
+    }
+  });
+  const [showPreflightPopover, setShowPreflightPopover] = useState(false);
+  const applyQuickFix = (kind) => {
+    if (isViewer) return;
+    if (kind === "approver") {
+      setApprovalRequired(true);
+      setApproverEmail(prev => prev || "ops@shopify-brand.com");
+    }
+    if (kind === "prod-note") {
+      if (env === "prod" || riskLevel === "high") {
+        setConfirmationNote(prev => prev || "Production rollout note: guardrails reviewed and approved.");
+      } else {
+        setEnv("prod");
+        setConfirmationNote("Production rollout note: guardrails reviewed and approved.");
+      }
+    }
+    if (kind === "trigger-action") {
+      setSteps(prev => {
+        if (!prev.length) {
+          return [
+            { id: 1, name: "Trigger", type: "trigger", config: "Order placed" },
+            { id: 2, name: "Action", type: "action", config: "Send Slack alert" }
+          ];
+        }
+        const next = [...prev];
+        if (!next[0] || next[0].type !== "trigger") {
+          const nextId = (Math.max(...next.map(s => s.id)) || 0) + 1;
+          next.unshift({ id: nextId, name: "Trigger", type: "trigger", config: "Order placed" });
+        }
+        if (!next.find(s => s.type === "action")) {
+          const nextId = (Math.max(...next.map(s => s.id)) || 0) + 1;
+          next.push({ id: nextId, name: "Action", type: "action", config: "Send Slack alert" });
+        }
+        return next;
+      });
+    }
+    if (kind === "dedupe-labels") {
+      setSteps(prev => {
+        const seen = new Map();
+        return prev.map(step => {
+          const base = step.name || "Step";
+          const key = base.trim().toLowerCase();
+          const count = seen.get(key) || 0;
+          seen.set(key, count + 1);
+          return count === 0 ? step : { ...step, name: `${base} (${count + 1})` };
+        });
+      });
+    }
+  };
   const hydratedRef = useRef(false);
   const dirtySkipRef = useRef(true);
+
+  const clearPreflightStatus = () => {
+    setPreflightStatus(null);
+    setPreflightIssues([]);
+    setPreflightTrace([]);
+    try { window.localStorage.removeItem("suite:status:workflow-orchestrator"); } catch (_) {}
+  };
+
+  const downloadPreflightReport = () => {
+    const payload = { status: preflightStatus, issues: preflightIssues, trace: preflightTrace, generatedAt: Date.now() };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "workflow-orchestrator-preflight.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
+
+  const attachPreflightForReviewer = () => {
+    const payload = {
+      reviewer: reviewerEmail || "reviewer@shopify-brand.com",
+      status: preflightStatus,
+      issues: preflightIssues,
+      trace: preflightTrace,
+      generatedAt: Date.now()
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "workflow-orchestrator-preflight-review.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
 
   const isViewer = role === "viewer";
 
@@ -178,18 +272,50 @@ export default function WorkflowOrchestrator() {
 
   const runPreflight = () => {
     const issues = [];
+    const trace = [];
+    const hasTrigger = steps.some(s => s.type === "trigger");
+    const hasAction = steps.some(s => s.type === "action");
+    const nameCounts = steps.reduce((acc, s) => {
+      const key = (s.name || "").trim().toLowerCase();
+      if (!key) return acc;
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
     if (!workflowName.trim()) issues.push("Workflow name required.");
-    if (!steps.some(s => s.type === "trigger")) issues.push("At least one trigger is required.");
+    if (!hasTrigger) issues.push("At least one trigger is required.");
     if (steps[0]?.type !== "trigger") issues.push("First step should be a trigger.");
+    if (!hasAction) issues.push("At least one action is required.");
+    if (steps.length && steps[steps.length - 1]?.type !== "action") issues.push("Consider ending with an action/terminal step.");
     if (approvalRequired && !approverEmail) issues.push("Approver email required for approvals.");
     if (env === "prod" && (riskLevel === "high" || approvalRequired) && !confirmationNote.trim()) issues.push("Prod/high risk requires confirmation note.");
+
     steps.forEach((s, idx) => {
-      if (!s.name.trim()) issues.push(`Step ${idx + 1} missing name.`);
-      if (!s.config.trim()) issues.push(`Step ${idx + 1} missing config.`);
+      const localIssues = [];
+      if (!s.name.trim()) localIssues.push("Name missing");
+      if (!s.config.trim()) localIssues.push("Config missing");
+      if (!["trigger", "action"].includes(s.type)) localIssues.push("Type must be trigger | action");
+      if (s.type === "action" && idx === 0) localIssues.push("Action should not be first");
+      if (s.type !== "trigger" && idx === 0) localIssues.push("Start with trigger");
+      const key = (s.name || "").trim().toLowerCase();
+      if (key && nameCounts[key] > 1) localIssues.push("Duplicate name");
+      if (localIssues.length) trace.push({ label: s.name || `Step ${idx + 1}`, idx, issues: localIssues });
     });
+
     setPreflightIssues(issues);
+    setPreflightTrace(trace);
+    const status = { ok: issues.length === 0, ts: Date.now(), issues: issues.length };
+    setPreflightStatus(status);
+    try { window.localStorage.setItem("suite:status:workflow-orchestrator", JSON.stringify(status)); } catch (_) {}
     return issues;
   };
+
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    if (env === "prod" || approvalRequired || riskLevel !== "low") {
+      runPreflight();
+    }
+  }, [env, approvalRequired, riskLevel, confirmationNote]);
 
   const handleAddStep = (template = null, type = "action") => {
     if (isViewer) return;
@@ -224,6 +350,18 @@ export default function WorkflowOrchestrator() {
     pushUndoSnapshot();
     setSteps(next);
     setSelectedStep(nextId);
+  };
+
+  const rollbackToLastRun = () => {
+    if (isViewer) return;
+    if (!lastRunSnapshot) return;
+    pushUndoSnapshot();
+    setSteps(lastRunSnapshot.steps || steps);
+    setEnv(lastRunSnapshot.env || env);
+    setVersionTag(lastRunSnapshot.versionTag || versionTag);
+    setApprovalRequired(lastRunSnapshot.approvalRequired ?? approvalRequired);
+    setRiskLevel(lastRunSnapshot.riskLevel || riskLevel);
+    setConfirmationNote(lastRunSnapshot.confirmationNote || "");
   };
 
   const handleReorder = (id, direction) => {
@@ -415,6 +553,12 @@ export default function WorkflowOrchestrator() {
     }, 700);
   };
 
+  const runDryRun = () => {
+    if (isViewer) return;
+    setEnv("dev");
+    runPreflight();
+  };
+
   const handleSnapshotVersion = () => {
     if (isViewer) return;
     const label = versionName || `v${versions.length + 1}`;
@@ -455,7 +599,7 @@ export default function WorkflowOrchestrator() {
               <div style={{ fontWeight: 800, color: "#a5f3fc" }}>Command Palette</div>
               <button onClick={() => setShowCommandPalette(false)} style={{ background: "transparent", color: "#9ca3af", border: "none", cursor: "pointer", fontWeight: 700 }}>Esc</button>
             </div>
-            {[{ label: "Save draft", action: handleManualSave, hotkey: "Ctrl+S", disabled: false }, { label: "Run preflight", action: () => setPreflightIssues(runPreflight()), hotkey: "Alt+P", disabled: false }, { label: "Orchestrate", action: handleOrchestrate, hotkey: "Ctrl+Enter", disabled: isViewer }, { label: "Undo", action: handleUndo, hotkey: "Ctrl+Z", disabled: !undoStack.length || isViewer }, { label: "Redo", action: handleRedo, hotkey: "Ctrl+Shift+Z", disabled: !redoStack.length || isViewer }].map(cmd => (
+            {[{ label: "Save draft", action: handleManualSave, hotkey: "Ctrl+S", disabled: false }, { label: "Run preflight", action: runPreflight, hotkey: "Alt+P", disabled: false }, { label: "Orchestrate", action: handleOrchestrate, hotkey: "Ctrl+Enter", disabled: isViewer }, { label: "Undo", action: handleUndo, hotkey: "Ctrl+Z", disabled: !undoStack.length || isViewer }, { label: "Redo", action: handleRedo, hotkey: "Ctrl+Shift+Z", disabled: !redoStack.length || isViewer }].map(cmd => (
               <button key={cmd.label} disabled={cmd.disabled} onClick={() => { cmd.action(); setShowCommandPalette(false); }} style={{ width: "100%", textAlign: "left", background: cmd.disabled ? "#1f2937" : "#111827", color: cmd.disabled ? "#6b7280" : "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", marginBottom: 8, cursor: cmd.disabled ? "not-allowed" : "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>{cmd.label}</span>
                 <span style={{ fontSize: 12, color: "#9ca3af" }}>{cmd.hotkey}</span>
@@ -474,6 +618,9 @@ export default function WorkflowOrchestrator() {
             <option value="dev">Dev</option><option value="stage">Stage</option><option value="prod">Prod</option>
           </select>
           <input value={versionTag} onChange={e => setVersionTag(e.target.value)} disabled={isViewer} placeholder="Version tag" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", minWidth: 120, opacity: isViewer ? 0.7 : 1 }} />
+          <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
+            <input type="checkbox" checked={disabled} onChange={e => setDisabled(e.target.checked)} disabled={isViewer} /> Disabled
+          </label>
           <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
             <input type="checkbox" checked={approvalRequired} onChange={e => setApprovalRequired(e.target.checked)} disabled={isViewer} /> Approvals
           </label>
@@ -514,6 +661,17 @@ export default function WorkflowOrchestrator() {
         </div>
       </div>
 
+        {preflightTrace.length > 0 && (
+          <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+            <div style={{ fontWeight: 800, marginBottom: 6, color: "#fcd34d" }}>Preflight trace</div>
+            <ul style={{ margin: 0, paddingLeft: 18, color: "#e5e7eb" }}>
+              {preflightTrace.map((t, i) => (
+                <li key={i}>{t.label}: {t.issues.join("; ")}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
       {(env === "prod" || riskLevel === "high") && (
         <div style={{ marginBottom: 8, background: "#1f2937", border: "1px solid #374151", borderRadius: 10, padding: 10, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ color: "#fbbf24", fontWeight: 700 }}>Prod / high-risk confirmation</div>
@@ -522,8 +680,48 @@ export default function WorkflowOrchestrator() {
       )}
 
       <div style={{ position: "sticky", top: 0, zIndex: 2, background: "#0f1115", paddingBottom: 6, marginBottom: 12 }}>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
-          <button onClick={() => setPreflightIssues(runPreflight())} disabled={isViewer} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Preflight</button>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6, alignItems: "center" }}>
+          <button onClick={runPreflight} disabled={isViewer} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Preflight</button>
+          <button onClick={runDryRun} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Dry-run (dev)</button>
+          {preflightStatus && (
+            <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 999, border: "1px solid #1f2937", background: preflightStatus.ok ? "#0b1221" : "#1f2937", color: preflightStatus.ok ? "#22c55e" : preflightStatus.issues ? "#fcd34d" : "#f87171", fontWeight: 800, fontSize: 12 }}>
+              <span style={{ width: 10, height: 10, borderRadius: "50%", background: preflightStatus.ok ? "#22c55e" : preflightStatus.issues ? "#f59e0b" : "#ef4444" }} />
+              <span>{preflightStatus.ok ? "Preflight pass" : preflightStatus.issues ? `${preflightStatus.issues} issues` : "Preflight failed"}</span>
+              {preflightStatus.ts ? <span style={{ color: "#9ca3af", fontWeight: 600 }}>· {new Date(preflightStatus.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span> : null}
+              <button onClick={() => setShowPreflightPopover(v => !v)} style={{ background: "transparent", border: "none", color: "#e5e7eb", cursor: "pointer", fontWeight: 800 }}>Trace</button>
+              <button onClick={clearPreflightStatus} style={{ marginLeft: 2, background: "transparent", border: "none", color: "#9ca3af", cursor: "pointer", fontWeight: 800 }}>Clear</button>
+              <button onClick={downloadPreflightReport} style={{ background: "transparent", border: "none", color: "#67e8f9", cursor: "pointer", fontWeight: 800 }}>Save</button>
+              {showPreflightPopover && (
+                <div style={{ position: "absolute", top: "110%", right: 0, minWidth: 220, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10, boxShadow: "0 10px 30px rgba(0,0,0,0.4)", zIndex: 10 }}>
+                  <div style={{ fontWeight: 800, color: "#fcd34d", marginBottom: 6 }}>Preflight issues</div>
+                  <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: 6 }}>Why this matters: prevents broken orchestration from hitting Shopify customers.</div>
+                  {preflightIssues.length === 0 ? <div style={{ color: "#22c55e" }}>Clear</div> : (
+                    <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", maxHeight: 160, overflow: "auto" }}>
+                      {preflightIssues.slice(0, 6).map((p, i) => <li key={i}>{p}</li>)}
+                      {preflightIssues.length > 6 && <li style={{ color: "#9ca3af" }}>…{preflightIssues.length - 6} more</li>}
+                    </ul>
+                  )}
+                  <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    <button onClick={() => applyQuickFix("approver")} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add approver</button>
+                    <button onClick={() => applyQuickFix("prod-note")} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add prod note</button>
+                    <button onClick={() => applyQuickFix("trigger-action")} style={{ background: "#22c55e", color: "#0f172a", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add trigger/action</button>
+                    <button onClick={() => applyQuickFix("dedupe-labels")} style={{ background: "#6366f1", color: "#e5e7eb", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix duplicates</button>
+                  </div>
+                  {preflightTrace.length > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <div style={{ color: "#67e8f9", fontWeight: 700 }}>Trace</div>
+                      <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", maxHeight: 140, overflow: "auto" }}>
+                        {preflightTrace.slice(0, 5).map((t, i) => (
+                          <li key={i}>{t.label}: {t.issues?.join("; ")}</li>
+                        ))}
+                        {preflightTrace.length > 5 && <li style={{ color: "#9ca3af" }}>…{preflightTrace.length - 5} more</li>}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </span>
+          )}
           <button onClick={handleCloneStep} disabled={isViewer} style={{ background: "#a855f7", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Clone step</button>
           <input value={versionName} onChange={e => setVersionName(e.target.value)} placeholder="Version name" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "8px 12px", minWidth: 140 }} />
           <button onClick={handleSnapshotVersion} disabled={isViewer} style={{ background: "#8b5cf6", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Snapshot</button>
@@ -532,6 +730,7 @@ export default function WorkflowOrchestrator() {
           </select>
           <button onClick={handleTestDev} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{testStatus === "running" ? "Testing..." : "Test in dev"}</button>
           <button onClick={handleOrchestrate} disabled={loading || isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 15, cursor: loading || isViewer ? "not-allowed" : "pointer", opacity: loading || isViewer ? 0.6 : 1 }}>{loading ? "Orchestrating..." : "Orchestrate"}</button>
+          <button onClick={rollbackToLastRun} disabled={isViewer || !lastRunSnapshot} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", fontWeight: 800, cursor: isViewer || !lastRunSnapshot ? "not-allowed" : "pointer", opacity: isViewer || !lastRunSnapshot ? 0.6 : 1 }}>Rollback to last run</button>
           <div style={{ color: "#9ca3af", fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ color: draftStatus === "saved" ? "#22c55e" : "#fbbf24" }}>{draftStatus === "saved" ? "Saved" : "Saving"}</span>
             {lastSavedAt && <span>· {formatTime(lastSavedAt)}</span>}
@@ -542,7 +741,14 @@ export default function WorkflowOrchestrator() {
           <span style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: steps.some(s => s.type === "trigger") ? "#22c55e" : "#f97316", fontWeight: 700 }}>Trigger {steps.some(s => s.type === "trigger") ? "OK" : "Missing"}</span>
           <span style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: approvalRequired && !approverEmail ? "#f97316" : "#22c55e", fontWeight: 700 }}>Approvals {approvalRequired ? (approverEmail ? "Ready" : "Need email") : "Off"}</span>
           <span style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: riskLevel === "high" ? "#f87171" : riskLevel === "medium" ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>Risk {riskLevel}</span>
+          <span style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: steps.length >= 6 ? "#f97316" : "#22c55e", fontWeight: 700 }}>Perf guardrail: {steps.length >= 6 ? "tighten" : "OK"}</span>
+          <span style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: disabled ? "#f97316" : "#22c55e", fontWeight: 700 }}>Disabled: {disabled ? "Yes" : "No"}</span>
           {env === "prod" && <span style={{ background: "#7c2d12", border: "1px solid #b45309", borderRadius: 999, padding: "6px 10px", color: confirmationNote ? "#facc15" : "#fca5a5", fontWeight: 700 }}>Prod note {confirmationNote ? "ready" : "required"}</span>}
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
+          <input value={reviewerEmail} onChange={e => setReviewerEmail(e.target.value)} placeholder="Reviewer email" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", minWidth: 200 }} />
+          <button onClick={attachPreflightForReviewer} disabled={isViewer} style={{ background: "#8b5cf6", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Attach preflight</button>
+          <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", color: disabled ? "#f97316" : "#22c55e", fontWeight: 700 }}>Disabled: {disabled ? "Yes" : "No"}</div>
         </div>
       </div>
 

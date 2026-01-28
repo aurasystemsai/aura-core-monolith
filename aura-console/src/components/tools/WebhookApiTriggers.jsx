@@ -19,6 +19,7 @@ export default function WebhookApiTriggers() {
   const [versionTag, setVersionTag] = React.useState("v1");
   const [approvalRequired, setApprovalRequired] = React.useState(true);
   const [approverEmail, setApproverEmail] = React.useState("");
+  const [reviewerEmail, setReviewerEmail] = React.useState("");
   const [rateLimit, setRateLimit] = React.useState(60);
   const [concurrencyLimit, setConcurrencyLimit] = React.useState(5);
   const [circuitBreakerEnabled, setCircuitBreakerEnabled] = React.useState(true);
@@ -44,6 +45,90 @@ export default function WebhookApiTriggers() {
   const [selectedWebhookRevision, setSelectedWebhookRevision] = React.useState(null);
   const [selectedApiId, setSelectedApiId] = React.useState(null);
   const [selectedApiRevision, setSelectedApiRevision] = React.useState(null);
+  const [preflightIssues, setPreflightIssues] = React.useState([]);
+  const [preflightTrace, setPreflightTrace] = React.useState([]);
+  const [preflightStatus, setPreflightStatus] = React.useState(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      return JSON.parse(window.localStorage.getItem("suite:status:webhook-api-triggers")) || null;
+    } catch {
+      return null;
+    }
+  });
+  const [showPreflightPopover, setShowPreflightPopover] = React.useState(false);
+  const [lastRunSnapshot, setLastRunSnapshot] = React.useState(null);
+  const applyQuickFix = (kind) => {
+    if (kind === "approver") {
+      setApprovalRequired(true);
+      setApproverEmail(prev => prev || "ops@shopify-brand.com");
+    }
+    if (kind === "prod-note") {
+      setEnv("prod");
+      setGuardrailPreset("strict");
+      setRateLimit(prev => prev > 0 ? prev : 60);
+      setConcurrencyLimit(prev => prev > 0 ? prev : 5);
+      setPerformanceBudgetMs(prev => prev > 0 ? prev : 500);
+      setCanaryPercent(prev => prev > 0 ? prev : 10);
+      setShadowMode(true);
+    }
+    if (kind === "trigger-action") {
+      setSchemaJson(prev => {
+        try {
+          JSON.parse(prev || "{}");
+          return prev;
+        } catch {
+          return '{\n  "type": "object",\n  "properties": { "event": { "type": "string" }, "id": { "type": "number" } },\n  "required": ["event"]\n}';
+        }
+      });
+      setTestPayload('{\n  "event": "order_created",\n  "payload": { "id": 123, "source": "shopify" }\n}');
+      setRateLimit(prev => prev > 0 ? prev : 60);
+      setConcurrencyLimit(prev => prev > 0 ? prev : 5);
+    }
+    if (kind === "dedupe-labels") {
+      const allowEntries = Array.from(new Set(ipAllow.split(',').map(s => s.trim()).filter(Boolean)));
+      const newAllow = allowEntries.join(', ');
+      setIpAllow(newAllow);
+      setIpDeny(prev => {
+        const allowSet = new Set(allowEntries);
+        const unique = Array.from(new Set(prev.split(',').map(s => s.trim()).filter(Boolean))).filter(ip => !allowSet.has(ip));
+        return unique.join(', ');
+      });
+    }
+  };
+  const clearPreflightStatus = () => {
+    setPreflightStatus(null);
+    setPreflightIssues([]);
+    setPreflightTrace([]);
+    try { window.localStorage.removeItem("suite:status:webhook-api-triggers"); } catch (_) {}
+  };
+
+  const downloadPreflightReport = () => {
+    const payload = { status: preflightStatus, issues: preflightIssues, trace: preflightTrace, generatedAt: Date.now() };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "webhook-api-preflight.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
+
+  const attachPreflightForReviewer = () => {
+    const payload = {
+      reviewer: reviewerEmail || "reviewer@shopify-brand.com",
+      status: preflightStatus,
+      issues: preflightIssues,
+      trace: preflightTrace,
+      generatedAt: Date.now()
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "webhook-api-preflight-review.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
   const [lastDeleted, setLastDeleted] = React.useState(null);
   const [trash, setTrash] = React.useState({ webhooks: [], apis: [] });
   const [history, setHistory] = React.useState([]);
@@ -180,6 +265,159 @@ export default function WebhookApiTriggers() {
     setValidationIssues(issues);
     return issues;
   };
+
+  const runPreflight = () => {
+    const issues = [];
+    const trace = [];
+    const record = (status, detail) => trace.push({ status, detail });
+
+    record("pass", `Env ${env.toUpperCase()} · Version ${versionTag || "v1"}`);
+
+    if (approvalRequired) {
+      if (!approverEmail) {
+        issues.push("Approver email required");
+        record("fail", "Approver email missing while approval is required.");
+      } else if (!approverEmail.includes("@")) {
+        issues.push("Approver email looks invalid");
+        record("warn", "Approver email missing '@'.");
+      } else {
+        record("pass", "Approver email provided.");
+      }
+    } else {
+      record("pass", "Approval not required for this config.");
+    }
+
+    if (!rateLimit || rateLimit <= 0) {
+      issues.push("Rate limit must be > 0");
+      record("fail", "Rate limit not set or invalid.");
+    } else {
+      record("pass", `Rate limit ${rateLimit} req/min.`);
+    }
+
+    if (!concurrencyLimit || concurrencyLimit <= 0) {
+      issues.push("Concurrency limit must be > 0");
+      record("fail", "Concurrency limit not set or invalid.");
+    } else {
+      record("pass", `Concurrency limit ${concurrencyLimit}.`);
+    }
+
+    if (performanceBudgetMs && performanceBudgetMs < 0) {
+      issues.push("Performance budget must be positive");
+      record("fail", "Performance budget is negative.");
+    } else if (performanceBudgetMs) {
+      record("pass", `Performance budget ${performanceBudgetMs}ms.`);
+    }
+
+    if (canaryPercent < 0 || canaryPercent > 100) {
+      issues.push("Canary percent must be between 0 and 100");
+      record("fail", "Canary percent outside 0-100 range.");
+    } else {
+      record("pass", `Canary ${canaryPercent}%`);
+    }
+
+    const allowList = ipAllow.split(',').map(s => s.trim()).filter(Boolean);
+    const denyList = ipDeny.split(',').map(s => s.trim()).filter(Boolean);
+    const overlap = allowList.filter(x => denyList.includes(x));
+    if (overlap.length) {
+      issues.push("IP allow/deny lists overlap");
+      record("fail", `IP overlap: ${overlap.join(', ')}`);
+    } else if (allowList.length || denyList.length) {
+      record("pass", "IP lists validated (no overlap).");
+    }
+
+    try {
+      const parsed = JSON.parse(schemaJson || "{}");
+      if (!parsed.type || !parsed.properties) {
+        record("warn", "Schema missing type/properties.");
+      } else {
+        record("pass", "Schema JSON parsed.");
+      }
+    } catch (err) {
+      issues.push("Schema JSON invalid");
+      record("fail", "Schema JSON failed to parse.");
+    }
+
+    try {
+      const payload = JSON.parse(testPayload || "{}");
+      if (!payload.event) {
+        record("warn", "Test payload missing event field.");
+      } else {
+        record("pass", "Test payload parsed with event.");
+      }
+    } catch (err) {
+      record("fail", "Test payload JSON invalid.");
+      issues.push("Test payload JSON invalid");
+    }
+
+    if (!webhooks.length && !apis.length) {
+      record("warn", "No webhooks or APIs configured yet.");
+    } else {
+      record("pass", `${webhooks.length} webhook(s), ${apis.length} API(s) configured.`);
+    }
+
+    if (shadowMode && canaryPercent === 0) {
+      record("warn", "Shadow mode enabled without canary traffic.");
+    }
+
+    setPreflightIssues(issues);
+    setPreflightTrace(trace);
+    const status = { ok: issues.length === 0, ts: Date.now(), issues: issues.length };
+    setPreflightStatus(status);
+    try { window.localStorage.setItem("suite:status:webhook-api-triggers", JSON.stringify(status)); } catch (_) {}
+    setLastRunSnapshot({
+      env,
+      versionTag,
+      approvalRequired,
+      approverEmail,
+      rateLimit,
+      concurrencyLimit,
+      circuitBreakerEnabled,
+      guardrailPreset,
+      enabled,
+      canaryPercent,
+      shadowMode,
+      performanceBudgetMs,
+      ipAllow,
+      ipDeny,
+      schemaJson,
+      testPayload,
+      webhooks,
+      apis,
+      ts: Date.now()
+    });
+    return issues;
+  };
+
+  const runDryRun = () => {
+    setEnv("dev");
+    runPreflight();
+  };
+
+  const rollbackToLastRun = () => {
+    if (!lastRunSnapshot) return;
+    setEnv(lastRunSnapshot.env || "dev");
+    setVersionTag(lastRunSnapshot.versionTag || "v1");
+    setApprovalRequired(!!lastRunSnapshot.approvalRequired);
+    setApproverEmail(lastRunSnapshot.approverEmail || "");
+    setRateLimit(lastRunSnapshot.rateLimit ?? rateLimit);
+    setConcurrencyLimit(lastRunSnapshot.concurrencyLimit ?? concurrencyLimit);
+    setCircuitBreakerEnabled(lastRunSnapshot.circuitBreakerEnabled ?? true);
+    setGuardrailPreset(lastRunSnapshot.guardrailPreset || guardrailPreset);
+    setEnabled(lastRunSnapshot.enabled ?? enabled);
+    setCanaryPercent(lastRunSnapshot.canaryPercent ?? 0);
+    setShadowMode(!!lastRunSnapshot.shadowMode);
+    setPerformanceBudgetMs(lastRunSnapshot.performanceBudgetMs || 0);
+    setIpAllow(lastRunSnapshot.ipAllow || "");
+    setIpDeny(lastRunSnapshot.ipDeny || "");
+    setSchemaJson(lastRunSnapshot.schemaJson || schemaJson);
+    setTestPayload(lastRunSnapshot.testPayload || testPayload);
+  };
+
+  React.useEffect(() => {
+    if (env === "prod" || guardrailPreset === "strict") {
+      runPreflight();
+    }
+  }, [env, guardrailPreset, approvalRequired, performanceBudgetMs, canaryPercent]);
 
   const handleAddWebhook = async () => {
     const issues = validate();
@@ -736,13 +974,90 @@ export default function WebhookApiTriggers() {
           )}
         </div>
         <div style={{ background: '#111827', border: '1px solid #1f2937', borderRadius: 12, padding: 12 }}>
-          <div style={{ fontWeight: 700, color: '#e5e7eb', marginBottom: 6 }}>Validation</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <div style={{ fontWeight: 700, color: '#e5e7eb' }}>Validation & Preflight</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              {preflightStatus && (
+                <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 999, border: '1px solid #1f2937', background: preflightStatus.ok ? '#0b1221' : '#1f2937', color: preflightStatus.ok ? '#22c55e' : preflightStatus.issues ? '#fcd34d' : '#f87171', fontWeight: 800, fontSize: 12 }}>
+                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: preflightStatus.ok ? '#22c55e' : preflightStatus.issues ? '#f59e0b' : '#ef4444' }} />
+                  <span>{preflightStatus.ok ? 'Preflight pass' : preflightStatus.issues ? `${preflightStatus.issues} issues` : 'Preflight failed'}</span>
+                  {preflightStatus.ts ? <span style={{ color: '#9ca3af', fontWeight: 600 }}>· {new Date(preflightStatus.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span> : null}
+                  <button onClick={() => setShowPreflightPopover(v => !v)} style={{ background: 'transparent', border: 'none', color: '#e5e7eb', cursor: 'pointer', fontWeight: 800 }}>Trace</button>
+                  <button onClick={clearPreflightStatus} style={{ marginLeft: 2, background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', fontWeight: 800 }}>Clear</button>
+                  <button onClick={downloadPreflightReport} style={{ background: 'transparent', border: 'none', color: '#67e8f9', cursor: 'pointer', fontWeight: 800 }}>Save</button>
+                  {showPreflightPopover && (
+                    <div style={{ position: 'absolute', top: '110%', right: 0, minWidth: 220, background: '#0b1221', border: '1px solid #1f2937', borderRadius: 10, padding: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.4)', zIndex: 10 }}>
+                      <div style={{ fontWeight: 800, color: '#fcd34d', marginBottom: 6 }}>Preflight issues</div>
+                      <div style={{ color: '#9ca3af', fontSize: 12, marginBottom: 6 }}>Why this matters: keeps webhook/API rollouts safe for Shopify traffic.</div>
+                      {preflightIssues.length === 0 ? <div style={{ color: '#22c55e' }}>Clear</div> : (
+                        <ul style={{ margin: 0, paddingLeft: 16, color: '#e5e7eb', maxHeight: 160, overflow: 'auto' }}>
+                          {preflightIssues.slice(0, 6).map((p, i) => <li key={i}>{p}</li>)}
+                          {preflightIssues.length > 6 && <li style={{ color: '#9ca3af' }}>…{preflightIssues.length - 6} more</li>}
+                        </ul>
+                      )}
+                      <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        <button onClick={() => applyQuickFix('approver')} style={{ background: '#0ea5e9', color: '#0b1221', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Add approver</button>
+                        <button onClick={() => applyQuickFix('prod-note')} style={{ background: '#f59e0b', color: '#0b1221', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Hardening defaults</button>
+                        <button onClick={() => applyQuickFix('trigger-action')} style={{ background: '#22c55e', color: '#0f172a', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Schema + payload</button>
+                        <button onClick={() => applyQuickFix('dedupe-labels')} style={{ background: '#6366f1', color: '#e5e7eb', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Clean IPs</button>
+                      </div>
+                      {preflightTrace.length > 0 && (
+                        <div style={{ marginTop: 8 }}>
+                          <div style={{ color: '#67e8f9', fontWeight: 700 }}>Trace</div>
+                          <ul style={{ margin: 0, paddingLeft: 16, color: '#e5e7eb', maxHeight: 140, overflow: 'auto' }}>
+                            {preflightTrace.slice(0, 5).map((t, i) => (
+                              <li key={i}>{t.label}: {t.issues?.join('; ')}</li>
+                            ))}
+                            {preflightTrace.length > 5 && <li style={{ color: '#9ca3af' }}>…{preflightTrace.length - 5} more</li>}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </span>
+              )}
+              <button onClick={runPreflight} style={{ background: '#1e293b', color: '#fcd34d', border: '1px solid #334155', borderRadius: 10, padding: '6px 10px', fontWeight: 700, cursor: 'pointer' }}>Run Preflight</button>
+              <button onClick={runDryRun} style={{ background: '#22c55e', color: '#0b1221', border: 'none', borderRadius: 10, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Dry-run (dev)</button>
+              <button onClick={rollbackToLastRun} disabled={!lastRunSnapshot} style={{ background: '#0b1221', color: '#e5e7eb', border: '1px solid #1f2937', borderRadius: 10, padding: '6px 10px', fontWeight: 800, cursor: lastRunSnapshot ? 'pointer' : 'not-allowed', opacity: lastRunSnapshot ? 1 : 0.5 }}>Rollback to last run</button>
+            </div>
+          </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+              <input value={reviewerEmail} onChange={e => setReviewerEmail(e.target.value)} placeholder="Reviewer email" style={{ background: '#111827', color: '#e5e7eb', border: '1px solid #1f2937', borderRadius: 10, padding: '6px 10px', minWidth: 200 }} />
+              <button onClick={attachPreflightForReviewer} style={{ background: '#8b5cf6', color: '#0b1221', border: 'none', borderRadius: 10, padding: '8px 12px', fontWeight: 800, cursor: 'pointer' }}>Attach preflight</button>
+              <span style={{ background: '#0b1221', border: '1px solid #1f2937', borderRadius: 999, padding: '6px 10px', color: (!enabled) ? '#f97316' : '#22c55e', fontWeight: 700 }}>Disabled: {!enabled ? 'Yes' : 'No'}</span>
+              <span style={{ background: '#0b1221', border: '1px solid #1f2937', borderRadius: 999, padding: '6px 10px', color: (rateLimit > 150 || concurrencyLimit > 8 || (performanceBudgetMs && performanceBudgetMs > 800)) ? '#f97316' : '#22c55e', fontWeight: 700 }}>Perf guardrail: {(rateLimit > 150 || concurrencyLimit > 8 || (performanceBudgetMs && performanceBudgetMs > 800)) ? 'tighten' : 'OK'}</span>
+            </div>
           {validationIssues.length === 0 ? <div style={{ color: '#22c55e' }}>No blocking issues.</div> : (
             <ul style={{ margin: 0, paddingLeft: 18, color: '#fca5a5' }}>{validationIssues.map((v, i) => <li key={i}>{v}</li>)}</ul>
           )}
           {schemaWarnings.length ? (
             <div style={{ marginTop: 8, color: '#fbbf24' }}>Schema warnings: {schemaWarnings.join(', ')}</div>
           ) : null}
+          {preflightIssues.length > 0 && (
+            <div style={{ marginTop: 10, background: '#0b1221', border: '1px solid #1f2937', borderRadius: 10, padding: 10 }}>
+              <div style={{ color: '#fcd34d', fontWeight: 800 }}>Preflight Issues</div>
+              <ul style={{ margin: 6, paddingLeft: 18, color: '#e5e7eb' }}>
+                {preflightIssues.map((issue, idx) => <li key={idx}>{issue}</li>)}
+              </ul>
+            </div>
+          )}
+          {preflightTrace.length > 0 && (
+            <div style={{ marginTop: 10, background: '#0b1221', border: '1px solid #1f2937', borderRadius: 10, padding: 10 }}>
+              <div style={{ color: '#a5f3fc', fontWeight: 800 }}>Preflight Trace</div>
+              <ul style={{ margin: 6, paddingLeft: 12, color: '#e5e7eb', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {preflightTrace.map((item, idx) => {
+                  const color = item.status === 'pass' ? '#22c55e' : item.status === 'warn' ? '#f59e0b' : '#f87171';
+                  const symbol = item.status === 'pass' ? '✓' : item.status === 'warn' ? '!' : '✕';
+                  return (
+                    <li key={idx} style={{ listStyle: 'none', display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: '50%', background: color }}>{symbol}</span>
+                      <span>{item.detail}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 
