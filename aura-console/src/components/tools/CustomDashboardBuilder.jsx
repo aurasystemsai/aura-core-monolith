@@ -10,10 +10,32 @@ export default function CustomDashboardBuilder() {
   const [imported, setImported] = useState(null);
   const [exported, setExported] = useState(null);
   const [feedback, setFeedback] = useState("");
+  const [history, setHistory] = useState([]);
+  const [env, setEnv] = useState("dev");
+  const devSandbox = env === "dev";
   const fileInputRef = useRef();
+
+  const restoreSnapshot = (snap) => {
+    if (!snap) return;
+    if (snap.dashboard) setDashboard(snap.dashboard);
+    if (snap.widgets) setWidgets(snap.widgets);
+    if (snap.dataSources) setDataSources(snap.dataSources);
+    if (snap.env) setEnv(snap.env);
+  };
+
+  const quickFixForIssue = (msg = "") => {
+    const lower = msg.toLowerCase();
+    if (lower.includes("network")) return "retry";
+    if (lower.includes("json")) return "reset";
+    return null;
+  };
 
   // Fetch widget library
   const fetchWidgets = async () => {
+    if (devSandbox) {
+      setError("Sandbox mode: switch to Stage/Prod to fetch widgets.");
+      return;
+    }
     try {
       const res = await apiFetch("/api/custom-dashboard-builder/widgets");
       const data = await res.json();
@@ -25,6 +47,10 @@ export default function CustomDashboardBuilder() {
   };
   // Fetch data sources
   const fetchDataSources = async () => {
+    if (devSandbox) {
+      setError("Sandbox mode: switch to Stage/Prod to load data sources.");
+      return;
+    }
     try {
       const res = await apiFetch("/api/custom-dashboard-builder/data-sources");
       const data = await res.json();
@@ -49,6 +75,7 @@ export default function CustomDashboardBuilder() {
     reader.onload = evt => {
       setDashboard(JSON.parse(evt.target.result));
       setImported(file.name);
+      setHistory(prev => [{ dashboard: JSON.parse(evt.target.result), env, at: Date.now(), summary: `Imported ${file.name}` }, ...prev].slice(0, 5));
     };
     reader.readAsText(file);
   };
@@ -56,6 +83,7 @@ export default function CustomDashboardBuilder() {
     const blob = new Blob([JSON.stringify(dashboard, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     setExported(url);
+    setHistory(prev => [{ dashboard, env, at: Date.now(), summary: `Exported ${dashboard.length} widgets` }, ...prev].slice(0, 5));
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
@@ -82,13 +110,30 @@ export default function CustomDashboardBuilder() {
 
   return (
     <div style={{ background: "#18181b", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#e5e7eb' }}>
+      {devSandbox && (
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+          <div>
+            <div style={{ fontWeight: 800, color: "#f59e0b" }}>Sandbox mode</div>
+            <div style={{ color: "#9ca3af", fontSize: 13 }}>API-backed fetches are blocked in dev. Switch to Stage/Prod to sync widgets and data sources.</div>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button onClick={() => setEnv("stage")} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Switch to Stage</button>
+            <button onClick={() => setEnv("prod")} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Go Prod</button>
+          </div>
+        </div>
+      )}
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Custom Dashboard Builder</h2>
       <div style={{ color: "#0ea5e9", fontWeight: 600, marginBottom: 18 }}>
         <span role="img" aria-label="dashboard">📊</span> Build custom dashboards for your reporting needs.
       </div>
-      <div style={{ marginBottom: 18 }}>
-        <button onClick={fetchWidgets} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Load Widget Library</button>
-        <button onClick={fetchDataSources} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginLeft: 12 }}>Load Data Sources</button>
+      <div style={{ marginBottom: 18, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: "#0b1221", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "10px 12px", fontWeight: 700 }}>
+          <option value="dev">Dev</option>
+          <option value="stage">Stage</option>
+          <option value="prod">Prod</option>
+        </select>
+        <button onClick={fetchWidgets} disabled={devSandbox} style={{ background: devSandbox ? "#1f2937" : "#6366f1", color: devSandbox ? "#9ca3af" : "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: devSandbox ? "not-allowed" : "pointer", opacity: devSandbox ? 0.7 : 1 }}>Load Widget Library</button>
+        <button onClick={fetchDataSources} disabled={devSandbox} style={{ background: devSandbox ? "#1f2937" : "#0ea5e9", color: devSandbox ? "#9ca3af" : "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: devSandbox ? "not-allowed" : "pointer", marginLeft: 0, opacity: devSandbox ? 0.7 : 1 }}>Load Data Sources</button>
       </div>
       <div style={{ display: "flex", gap: 18, marginBottom: 18 }}>
         <div style={{ flex: 1 }}>
@@ -124,7 +169,37 @@ export default function CustomDashboardBuilder() {
         {exported && <a href={exported} download="dashboard.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
-      {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
+      {error && (
+        <div style={{ color: "#ef4444", marginBottom: 10, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <span>{error}</span>
+          {quickFixForIssue(error) === "retry" && <button onClick={() => { setError(""); fetchWidgets(); }} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Retry fetch</button>}
+          {quickFixForIssue(error) === "reset" && <button onClick={() => setDashboard([])} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Reset dashboard</button>}
+        </div>
+      )}
+      {dashboard.length >= 10 && <div style={{ color: "#fbbf24", fontSize: 13, marginBottom: 8 }}>Perf detail: {dashboard.length} widgets — consider splitting dashboards.</div>}
+
+      {history.length > 0 && (
+        <div style={{ marginBottom: 18, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <div style={{ fontWeight: 800, color: "#e5e7eb" }}>Recent dashboards</div>
+            <div style={{ color: "#9ca3af", fontSize: 12 }}>Last {Math.min(3, history.length)} shown</div>
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {history.slice(0, 3).map((h, idx) => (
+              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px" }}>
+                <div>
+                  <div style={{ fontWeight: 700, color: "#e5e7eb" }}>{h.summary || "Snapshot"}</div>
+                  <div style={{ color: "#9ca3af", fontSize: 12 }}>{h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "recent"} · {h.env}</div>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <button onClick={() => restoreSnapshot(h)} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load</button>
+                  <button onClick={() => { restoreSnapshot(h); setTimeout(() => handleExport(), 0); }} disabled={devSandbox} style={{ background: devSandbox ? "#1f2937" : "#22c55e", color: devSandbox ? "#9ca3af" : "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: devSandbox ? "not-allowed" : "pointer", opacity: devSandbox ? 0.6 : 1 }}>{devSandbox ? "Sandbox" : "Re-export"}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#232336", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea

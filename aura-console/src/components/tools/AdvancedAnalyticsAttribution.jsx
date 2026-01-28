@@ -40,8 +40,32 @@ export default function AdvancedAnalyticsAttribution() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [env, setEnv] = useState("dev");
+
+  const devSandbox = env === "dev";
+
+  const restoreSnapshot = (snap) => {
+    if (!snap) return;
+    if (snap.payload) setPayload(JSON.stringify(snap.payload, null, 2));
+    if (snap.query) setQuery(snap.query);
+    if (snap.result) setResult(snap.result);
+    if (snap.env) setEnv(snap.env);
+  };
+
+  const quickFixForIssue = (msg = "") => {
+    const lower = msg.toLowerCase();
+    if (lower.includes("json")) return "reset-sample";
+    if (lower.includes("payload") || lower.includes("body")) return "trim-payload";
+    if (lower.includes("query")) return "rewrite-query";
+    return null;
+  };
 
   const run = async () => {
+    if (devSandbox) {
+      setError("Sandbox mode: switch to Stage/Prod to run full attribution.");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -54,6 +78,14 @@ export default function AdvancedAnalyticsAttribution() {
       const data = await res.json();
       if (!data.ok && data.error) throw new Error(data.error);
       setResult(data);
+      const snap = {
+        query,
+        payload: body,
+        result: data,
+        env,
+        at: Date.now(),
+      };
+      setHistory((prev) => [snap, ...prev].slice(0, 5));
     } catch (e) {
       setError(e.message || "Request failed");
     } finally {
@@ -63,6 +95,18 @@ export default function AdvancedAnalyticsAttribution() {
 
   return (
     <div style={{ padding: 24, display: "grid", gap: 16 }}>
+      {devSandbox && (
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontWeight: 800, color: "#f59e0b" }}>Sandbox mode</div>
+            <div style={{ color: "#9ca3af", fontSize: 13 }}>Attribution runs are blocked in dev. Switch to Stage/Prod to execute models.</div>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button onClick={() => setEnv("stage")} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Switch to Stage</button>
+            <button onClick={() => setEnv("prod")} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Go Prod</button>
+          </div>
+        </div>
+      )}
       <div style={{ display: "grid", gap: 4 }}>
         <h2 style={{ margin: 0 }}>Advanced Analytics Attribution</h2>
         <div style={{ color: "#b8c2d0" }}>
@@ -89,17 +133,58 @@ export default function AdvancedAnalyticsAttribution() {
           style={{ width: "100%", padding: 12, borderRadius: 8, border: "1px solid #2c3a4d", background: "#0d1420", color: "#e9efff", fontFamily: "monospace" }}
         />
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button onClick={run} disabled={loading} style={{ padding: "10px 14px", borderRadius: 8, border: "none", background: "#22d3ee", color: "#031018", fontWeight: 800, cursor: "pointer" }}>
-            {loading ? "Running..." : "Run Attribution"}
+          <select value={env} onChange={(e) => setEnv(e.target.value)} style={{ background: "#0b1221", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "10px 12px", fontWeight: 700 }}>
+            <option value="dev">Dev</option>
+            <option value="stage">Stage</option>
+            <option value="prod">Prod</option>
+          </select>
+          <button onClick={run} disabled={loading || devSandbox} style={{ padding: "10px 14px", borderRadius: 8, border: "none", background: devSandbox ? "#1f2937" : "#22d3ee", color: devSandbox ? "#9ca3af" : "#031018", fontWeight: 800, cursor: loading || devSandbox ? "not-allowed" : "pointer", opacity: loading || devSandbox ? 0.7 : 1 }}>
+            {devSandbox ? "Sandbox (set Stage)" : loading ? "Running..." : "Run Attribution"}
           </button>
           <button onClick={() => setPayload(JSON.stringify(samplePayload, null, 2))} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#131c2c", color: "#e9efff", fontWeight: 700, cursor: "pointer" }}>
             Reset Sample
           </button>
         </div>
-        {error && <div style={{ color: "#ff8a8a", fontWeight: 700 }}>{error}</div>}
+        {error && (
+          <div style={{ color: "#ff8a8a", fontWeight: 700, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span>{error}</span>
+            {quickFixForIssue(error) === "reset-sample" && (
+              <button onClick={() => setPayload(JSON.stringify(samplePayload, null, 2))} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix: Reset sample</button>
+            )}
+            {quickFixForIssue(error) === "trim-payload" && (
+              <button onClick={() => setPayload(prev => JSON.stringify(JSON.parse(prev), null, 2).slice(0, 4000))} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix: Trim payload</button>
+            )}
+            {quickFixForIssue(error) === "rewrite-query" && (
+              <button onClick={() => setQuery("Summarize top channels and biggest churn risk segments." )} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix: Use safer query</button>
+            )}
+          </div>
+        )}
+        {payload.length > 4000 && <div style={{ color: "#fbbf24", fontSize: 13 }}>Perf detail: large payload ({payload.length} chars) — consider trimming for faster runs.</div>}
       </div>
 
         <BackButton />
+      {history.length > 0 && (
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <div style={{ fontWeight: 800, color: "#e5e7eb" }}>Recent runs</div>
+            <div style={{ color: "#9ca3af", fontSize: 12 }}>Last {Math.min(3, history.length)} shown</div>
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {history.slice(0, 3).map((h, idx) => (
+              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px" }}>
+                <div>
+                  <div style={{ fontWeight: 700, color: "#e5e7eb" }}>{h.query?.slice(0, 40) || "Run"}{h.query?.length > 40 ? "…" : ""}</div>
+                  <div style={{ color: "#9ca3af", fontSize: 12 }}>{h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "recent"} · {h.env}</div>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <button onClick={() => restoreSnapshot(h)} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load</button>
+                  <button onClick={() => { restoreSnapshot(h); setTimeout(() => run(), 0); }} disabled={devSandbox} style={{ background: devSandbox ? "#1f2937" : "#22c55e", color: devSandbox ? "#9ca3af" : "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: devSandbox ? "not-allowed" : "pointer", opacity: devSandbox ? 0.6 : 1 }}>{devSandbox ? "Sandbox" : "Re-run"}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {result && (
         <div style={{ display: "grid", gap: 12, background: "#0d1420", border: "1px solid #24314a", borderRadius: 10, padding: 16 }}>
           {result.insights && (
