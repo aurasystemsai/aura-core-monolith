@@ -1273,19 +1273,9 @@ export default function ConditionalLogicAutomation() {
                         {OPERATORS.map(op => (
                           <option key={op} value={op}>{op}</option>
                         ))}
-                        env,
-                        confirmationNote
+                      </select>
                       <input
                         value={node.config?.value || ""}
-                      setHistory(prev => [{
-                        at: snapshot.simulatedAt,
-                        env,
-                        summary: `${flowNodes.length} nodes · ${branchGroup.branches?.length || 0} branches`,
-                        branchGroup,
-                        flowNodes,
-                        payload,
-                        confirmationNote
-                      }, ...prev].slice(0, 5));
                         onChange={e => updateNode(node.id, { config: { ...node.config, value: e.target.value } })}
                         placeholder="value"
                         style={{ background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", flex: 1, minWidth: 120 }}
