@@ -40,6 +40,7 @@ export default function VisualWorkflowBuilder() {
   const [imported, setImported] = useState(null);
   const [exported, setExported] = useState(null);
   const [analytics, setAnalytics] = useState([]);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
   const [env, setEnv] = useState("dev");
