@@ -158,6 +158,7 @@ export default function ConditionalLogicAutomation() {
   const [feedback, setFeedback] = useState("");
   const [validationIssues, setValidationIssues] = useState([]);
   const [issueHelp, setIssueHelp] = useState(null);
+  const [history, setHistory] = useState([]);
   const [activeTemplate, setActiveTemplate] = useState(null);
   const [queryLoading, setQueryLoading] = useState(false);
   const [env, setEnv] = useState("dev");
@@ -176,6 +177,7 @@ export default function ConditionalLogicAutomation() {
   const [showPreflightPopover, setShowPreflightPopover] = useState(false);
   const [reviewerEmail, setReviewerEmail] = useState("");
   const [disabled, setDisabled] = useState(false);
+  const devSandbox = env === "dev";
   const applyQuickFix = (kind) => {
     if (isViewer) return;
     if (kind === "approver") {
@@ -230,6 +232,25 @@ export default function ConditionalLogicAutomation() {
         return { ...prev, branches };
       });
     }
+  };
+
+  const quickFixForIssue = (issue = "") => {
+    const lower = issue.toLowerCase();
+    if (lower.includes("approver") || lower.includes("approval")) return "approver";
+    if (lower.includes("prod") || lower.includes("ship") || lower.includes("note")) return "prod-note";
+    if (lower.includes("trigger") || lower.includes("action")) return "trigger-action";
+    if (lower.includes("branch") || lower.includes("duplicate")) return "dedupe-labels";
+    return null;
+  };
+
+  const restoreSnapshot = (snap) => {
+    if (!snap) return;
+    if (snap.flowNodes) setFlowNodes(snap.flowNodes);
+    if (snap.branchGroup) setBranchGroup(snap.branchGroup);
+    if (snap.simulationInput) setSimulationInput(snap.simulationInput);
+    if (snap.env) setEnv(snap.env);
+    if (snap.confirmationNote !== undefined) setConfirmationNote(snap.confirmationNote);
+    setLastSimulatedSnapshot(snap);
   };
   const clearPreflightStatus = () => {
     setPreflightStatus(null);
@@ -534,6 +555,10 @@ export default function ConditionalLogicAutomation() {
 
   const simulate = () => {
     if (isViewer) return;
+    if (devSandbox) {
+      setError("Sandbox mode: switch to stage/prod to run a full simulation.");
+      return;
+    }
     try {
       const payload = JSON.parse(simulationInput || "{}");
       let matchedBranch = null;
@@ -942,6 +967,18 @@ export default function ConditionalLogicAutomation() {
           </button>
         </div>
       )}
+      {devSandbox && !isViewer && (
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontWeight: 800, color: "#f59e0b" }}>Sandbox only</div>
+            <div style={{ color: "#9ca3af", fontSize: 13 }}>Publishing is disabled in dev. Switch to Stage/Prod to run full simulations and attach preflight.</div>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button onClick={() => setEnv("stage")} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Switch to Stage</button>
+            <button onClick={() => setEnv("prod")} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Go Prod</button>
+          </div>
+        </div>
+      )}
       {issueHelp && (
         <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10, display: "grid", gap: 8, marginBottom: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
@@ -950,6 +987,29 @@ export default function ConditionalLogicAutomation() {
           </div>
           <div style={{ color: "#e5e7eb" }}>{issueHelp}</div>
           <div style={{ color: "#9ca3af", fontSize: 13 }}>Recommended fix: {issueHelp.toLowerCase().includes("branch") ? "Define branch conditions and ensure at least one action per branch." : issueHelp.toLowerCase().includes("trigger") ? "Add or enable a trigger node." : issueHelp.toLowerCase().includes("approval") ? "Capture an approver email or disable approvals." : "Review the trace, adjust conditions/actions, then rerun preflight."}</div>
+        </div>
+      )}
+
+      {history.length > 0 && (
+        <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 10, display: "grid", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <div style={{ fontWeight: 800 }}>Recent simulations</div>
+            <div style={{ color: "#9ca3af", fontSize: 12 }}>Last {Math.min(3, history.length)} shown</div>
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {history.slice(0, 3).map((h, idx) => (
+              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px" }}>
+                <div>
+                  <div style={{ fontWeight: 700, color: "#e5e7eb" }}>{h.summary || "Run"} · {h.env}</div>
+                  <div style={{ color: "#9ca3af", fontSize: 12 }}>Saved {h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "recent"}</div>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <button aria-label={`Load simulation ${idx + 1}`} onClick={() => restoreSnapshot(h)} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load</button>
+                  <button aria-label={`Re-run simulation ${idx + 1}`} onClick={() => { restoreSnapshot(h); setTimeout(() => simulate(), 0); }} disabled={devSandbox || isViewer} style={{ background: devSandbox ? "#1f2937" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: devSandbox || isViewer ? "not-allowed" : "pointer", opacity: devSandbox || isViewer ? 0.6 : 1 }}>{devSandbox ? "Sandbox" : "Re-run"}</button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -1025,7 +1085,7 @@ export default function ConditionalLogicAutomation() {
               )}
             </span>
           )}
-          <button onClick={simulate} style={{ background: "#22c55e", color: "#0f172a", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: "pointer" }}>▶️ Run Simulation (Ctrl+Enter)</button>
+          <button aria-label="Run simulation" onClick={simulate} disabled={devSandbox || isViewer} style={{ background: devSandbox ? "#1f2937" : "#22c55e", color: devSandbox ? "#9ca3af" : "#0f172a", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: devSandbox || isViewer ? "not-allowed" : "pointer", opacity: devSandbox || isViewer ? 0.65 : 1 }}>{devSandbox ? "Sandbox (set Stage)" : "▶️ Run Simulation (Ctrl+Enter)"}</button>
           <button onClick={rollbackToLastSimulation} disabled={!lastSimulatedSnapshot} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 12, padding: "10px 12px", fontWeight: 800, cursor: lastSimulatedSnapshot ? "pointer" : "not-allowed", opacity: lastSimulatedSnapshot ? 1 : 0.5 }}>Rollback to last sim</button>
           <button onClick={() => setSelectedPayloadPreset(p => p)} style={{ background: "#0ea5e91a", color: "#67e8f9", border: "1px solid #1f2937", borderRadius: 12, padding: "10px 12px", fontWeight: 800 }}>Dev Payload Presets</button>
         </div>
@@ -1080,12 +1140,20 @@ export default function ConditionalLogicAutomation() {
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Guardrails</div>
           <div style={{ color: healthSignals.guardrailsOk ? "#22c55e" : "#f59e0b", fontWeight: 700 }}>{healthSignals.guardrailsOk ? "Clear" : `${preflightIssues.length} issue${preflightIssues.length === 1 ? "" : "s"}`}</div>
           <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: preflightIssues.length ? 6 : 0 }}>Trigger ready: {healthSignals.triggerOk ? "Yes" : "No"}</div>
+          {(flowNodes.length >= 6 || (branchGroup.branches || []).length >= 3) && (
+            <div style={{ color: "#fbbf24", fontSize: 12, marginBottom: 6 }}>Perf detail: {flowNodes.length} nodes / {(branchGroup.branches || []).length} branches — consider splitting flows.</div>
+          )}
           {preflightIssues.length > 0 && (
             <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", fontSize: 12, display: "grid", gap: 4 }}>
               {preflightIssues.slice(0, 3).map((issue, idx) => (
                 <li key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                   <span>{issue}</span>
-                  <button onClick={() => setIssueHelp(issue)} style={{ background: "#1f2937", border: "1px solid #334155", color: "#a5f3fc", borderRadius: 8, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Explain</button>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button aria-label={`Explain ${issue}`} onClick={() => setIssueHelp(issue)} style={{ background: "#1f2937", border: "1px solid #334155", color: "#a5f3fc", borderRadius: 8, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Explain</button>
+                    {quickFixForIssue(issue) && (
+                      <button aria-label={`Fix ${issue}`} onClick={() => applyQuickFix(quickFixForIssue(issue))} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "2px 8px", fontWeight: 800, cursor: "pointer" }}>Fix</button>
+                    )}
+                  </div>
                 </li>
               ))}
               {preflightIssues.length > 3 && <li style={{ color: "#9ca3af" }}>+{preflightIssues.length - 3} more (open Trace)</li>}
@@ -1205,9 +1273,19 @@ export default function ConditionalLogicAutomation() {
                         {OPERATORS.map(op => (
                           <option key={op} value={op}>{op}</option>
                         ))}
-                      </select>
+                        env,
+                        confirmationNote
                       <input
                         value={node.config?.value || ""}
+                      setHistory(prev => [{
+                        at: snapshot.simulatedAt,
+                        env,
+                        summary: `${flowNodes.length} nodes · ${branchGroup.branches?.length || 0} branches`,
+                        branchGroup,
+                        flowNodes,
+                        payload,
+                        confirmationNote
+                      }, ...prev].slice(0, 5));
                         onChange={e => updateNode(node.id, { config: { ...node.config, value: e.target.value } })}
                         placeholder="value"
                         style={{ background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", flex: 1, minWidth: 120 }}

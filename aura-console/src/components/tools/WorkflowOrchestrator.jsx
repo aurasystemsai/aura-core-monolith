@@ -23,6 +23,27 @@ export default function WorkflowOrchestrator() {
   const [error, setError] = useState("");
   const [history, setHistory] = useState([]);
   const [issueHelp, setIssueHelp] = useState(null);
+    const devSandbox = env === "dev";
+
+    const quickFixForIssue = (issue = "") => {
+      const lower = issue.toLowerCase();
+      if (lower.includes("approver") || lower.includes("approval")) return "approver";
+      if (lower.includes("prod") || lower.includes("note")) return "prod-note";
+      if (lower.includes("trigger") || lower.includes("action")) return "trigger-action";
+      if (lower.includes("duplicate")) return "dedupe-labels";
+      return null;
+    };
+
+    const restoreSnapshot = (snap) => {
+      if (!snap) return;
+      setSteps(snap.steps || steps);
+      if (snap.env) setEnv(snap.env);
+      if (snap.versionTag) setVersionTag(snap.versionTag);
+      if (typeof snap.approvalRequired === "boolean") setApprovalRequired(snap.approvalRequired);
+      if (snap.workflowName) setWorkflowName(snap.workflowName);
+      if (snap.confirmationNote !== undefined) setConfirmationNote(snap.confirmationNote);
+      setLastRunSnapshot(snap);
+    };
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [preflightIssues, setPreflightIssues] = useState([]);
   const [confirmationNote, setConfirmationNote] = useState("");
@@ -447,6 +468,10 @@ export default function WorkflowOrchestrator() {
 
   const handleOrchestrate = async () => {
     if (isViewer) return;
+    if (devSandbox) {
+      setError("Switch to stage/prod to orchestrate.");
+      return;
+    }
     const issues = runPreflight();
     if (issues.length) {
       setError("Resolve guardrails before orchestrating.");
@@ -593,6 +618,15 @@ export default function WorkflowOrchestrator() {
           </button>
         </div>
       )}
+      {devSandbox && (
+        <div style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontWeight: 800, color: "#93c5fd" }}>Sandbox mode (dev)</div>
+            <div style={{ color: "#cbd5f5", fontSize: 13 }}>Prod-only actions like Orchestrate are blocked; switch env to stage/prod to ship.</div>
+          </div>
+          <button onClick={() => setEnv("stage")} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Switch to stage</button>
+        </div>
+      )}
       {showCommandPalette && (
         <div style={{ position: "fixed", inset: 0, background: "#0009", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20 }}>
           <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 14, padding: 16, width: "min(520px, 92vw)", boxShadow: "0 18px 60px #000" }}>
@@ -655,14 +689,21 @@ export default function WorkflowOrchestrator() {
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Guardrails</div>
           <div style={{ color: preflightIssues.length ? "#f59e0b" : "#22c55e", fontWeight: 700 }}>{preflightIssues.length ? `${preflightIssues.length} issue${preflightIssues.length > 1 ? "s" : ""}` : "Clear"}</div>
           <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: preflightIssues.length ? 6 : 0 }}>Triggers ok: {readinessSummary.triggerOk ? "Yes" : "No"} · Approvals: {readinessSummary.approvalsOk ? "Ready" : "Need email"}</div>
+          {steps.length >= 6 && <div style={{ color: "#fbbf24", fontSize: 12, marginBottom: 6 }}>Perf detail: {steps.length} steps on canvas — consider trimming.</div>}
           {preflightIssues.length > 0 && (
             <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", fontSize: 12, display: "grid", gap: 4 }}>
-              {preflightIssues.slice(0, 3).map((issue, idx) => (
-                <li key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                  <span>{issue}</span>
-                  <button onClick={() => setIssueHelp(issue)} style={{ background: "#1f2937", border: "1px solid #334155", color: "#a5f3fc", borderRadius: 8, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Explain</button>
-                </li>
-              ))}
+              {preflightIssues.slice(0, 3).map((issue, idx) => {
+                const fixKind = quickFixForIssue(issue);
+                return (
+                  <li key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <span>{issue}</span>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <button aria-label={`Explain ${issue}`} onClick={() => setIssueHelp(issue)} style={{ background: "#1f2937", border: "1px solid #334155", color: "#a5f3fc", borderRadius: 8, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Explain</button>
+                      {fixKind && <button aria-label={`Fix ${issue}`} onClick={() => applyQuickFix(fixKind)} style={{ background: "#10b981", border: "1px solid #065f46", color: "#0b1221", borderRadius: 8, padding: "2px 8px", fontWeight: 800, cursor: "pointer" }}>Fix</button>}
+                    </div>
+                  </li>
+                );
+              })}
               {preflightIssues.length > 3 && <li style={{ color: "#9ca3af" }}>+{preflightIssues.length - 3} more (open Trace)</li>}
             </ul>
           )}
@@ -757,7 +798,7 @@ export default function WorkflowOrchestrator() {
             {payloadPresets.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
           <button onClick={handleTestDev} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{testStatus === "running" ? "Testing..." : "Test in dev"}</button>
-          <button onClick={handleOrchestrate} disabled={loading || isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 15, cursor: loading || isViewer ? "not-allowed" : "pointer", opacity: loading || isViewer ? 0.6 : 1 }}>{loading ? "Orchestrating..." : "Orchestrate"}</button>
+          <button onClick={handleOrchestrate} disabled={loading || isViewer || devSandbox} style={{ background: devSandbox ? "#1f2937" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 15, cursor: loading || isViewer || devSandbox ? "not-allowed" : "pointer", opacity: loading || isViewer || devSandbox ? 0.6 : 1 }}>{devSandbox ? "Sandbox (switch env)" : loading ? "Orchestrating..." : "Orchestrate"}</button>
           <button onClick={rollbackToLastRun} disabled={isViewer || !lastRunSnapshot} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", fontWeight: 800, cursor: isViewer || !lastRunSnapshot ? "not-allowed" : "pointer", opacity: isViewer || !lastRunSnapshot ? 0.6 : 1 }}>Rollback to last run</button>
           <div style={{ color: "#9ca3af", fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ color: draftStatus === "saved" ? "#22c55e" : "#fbbf24" }}>{draftStatus === "saved" ? "Saved" : "Saving"}</span>
@@ -779,6 +820,29 @@ export default function WorkflowOrchestrator() {
           <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", color: disabled ? "#f97316" : "#22c55e", fontWeight: 700 }}>Disabled: {disabled ? "Yes" : "No"}</div>
         </div>
       </div>
+
+      {history.length > 0 && (
+        <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 10, display: "grid", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <div style={{ fontWeight: 800 }}>Recent runs</div>
+            <div style={{ color: "#9ca3af", fontSize: 12 }}>Last {Math.min(3, history.length)} shown</div>
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {history.slice(0, 3).map((h, idx) => (
+              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px" }}>
+                <div>
+                  <div style={{ fontWeight: 700, color: "#e5e7eb" }}>{h.workflowName || "Run"} · {h.env}/{h.versionTag || "v"}</div>
+                  <div style={{ color: "#9ca3af", fontSize: 12 }}>Saved {h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "recent"} · {h.steps?.length || 0} steps</div>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <button aria-label={`Load run ${idx + 1}`} onClick={() => restoreSnapshot(h)} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load</button>
+                  <button aria-label={`Re-run ${idx + 1}`} onClick={() => { restoreSnapshot(h); setTimeout(() => handleOrchestrate(), 0); }} disabled={devSandbox || isViewer} style={{ background: devSandbox ? "#1f2937" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: devSandbox || isViewer ? "not-allowed" : "pointer", opacity: devSandbox || isViewer ? 0.6 : 1 }}>{devSandbox ? "Sandbox" : "Re-run"}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 16, alignItems: "start", marginBottom: 14 }}>
         <div style={{ display: "grid", gap: 8 }}>

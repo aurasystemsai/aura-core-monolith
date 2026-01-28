@@ -71,6 +71,7 @@ export default function VisualWorkflowBuilder() {
   const [shadowMode, setShadowMode] = useState(false);
   const [performanceBudgetMs, setPerformanceBudgetMs] = useState(0);
   const [history, setHistory] = useState([]);
+  const [simulationHistory, setSimulationHistory] = useState([]);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [draftStatus, setDraftStatus] = useState("idle");
@@ -143,6 +144,16 @@ export default function VisualWorkflowBuilder() {
   const dirtySkipRef = useRef(true);
 
   const isViewer = role === "viewer";
+  const devSandbox = env === "dev";
+  const quickFixForIssue = (issue = "") => {
+    const lower = issue.toLowerCase();
+    if (lower.includes("approver") || lower.includes("approval")) return "approver";
+    if (lower.includes("prod") || lower.includes("note")) return "prod-note";
+    if (lower.includes("trigger") || lower.includes("action")) return "trigger-action";
+    if (lower.includes("duplicate")) return "dedupe-labels";
+    if (lower.includes("performance") || lower.includes("perf")) return "dedupe-labels";
+    return null;
+  };
 
   const clearPreflightStatus = () => {
     setPreflightStatus(null);
@@ -218,6 +229,29 @@ export default function VisualWorkflowBuilder() {
   const pushUndoSnapshot = () => {
     setUndoStack(prev => [...prev.slice(-9), JSON.parse(JSON.stringify(snapshotState()))]);
     setRedoStack([]);
+  };
+
+  const restoreSnapshot = (snap) => {
+    if (!snap) return;
+    pushUndoSnapshot();
+    if (snap.canvas) setCanvas(snap.canvas);
+    if (snap.workflowName) setWorkflowName(snap.workflowName);
+    if (snap.env) setEnv(snap.env);
+    if (snap.versionTag) setVersionTag(snap.versionTag);
+    if (typeof snap.approvalRequired === "boolean") setApprovalRequired(snap.approvalRequired);
+    if (snap.approverEmail !== undefined) setApproverEmail(snap.approverEmail);
+    if (snap.schemaJson) setSchemaJson(snap.schemaJson);
+    if (snap.testPayload) setTestPayload(snap.testPayload);
+    if (snap.status) setStatus(snap.status);
+    if (snap.canaryPercent !== undefined) setCanaryPercent(snap.canaryPercent);
+    if (snap.shadowMode !== undefined) setShadowMode(snap.shadowMode);
+    if (snap.performanceBudgetMs !== undefined) setPerformanceBudgetMs(snap.performanceBudgetMs);
+    if (snap.testName) setTestName(snap.testName);
+    if (snap.testCasePayload) setTestCasePayload(snap.testCasePayload);
+    if (snap.confirmationNote !== undefined) setConfirmationNote(snap.confirmationNote);
+    if (snap.selectedPayloadPreset) setSelectedPayloadPreset(snap.selectedPayloadPreset);
+    if (snap.lastSimulatedSnapshot) setLastSimulatedSnapshot(snap.lastSimulatedSnapshot);
+    if (snap.currentId) setCurrentId(snap.currentId);
   };
 
   const handleUndo = () => {
@@ -596,6 +630,12 @@ export default function VisualWorkflowBuilder() {
     };
   }, [preflightIssues.length, approvalRequired, approverEmail, canvas.length, canaryPercent, performanceBudgetMs, analyticsSummary, canvasStats]);
 
+  const perfDetail = useMemo(() => {
+    if (performanceBudgetMs && performanceBudgetMs > 800) return `Perf detail: budget ${performanceBudgetMs}ms — tighten to <600ms.`;
+    if (canvas.length >= 8 || canvasStats.actions >= 5) return `Perf detail: ${canvas.length} steps / ${canvasStats.actions} actions — consider splitting.`;
+    return null;
+  }, [performanceBudgetMs, canvas.length, canvasStats.actions]);
+
   const healthChecklist = useMemo(() => ([
     { label: "Preflight clear", ok: preflightIssues.length === 0 },
     { label: "Trigger starts the flow", ok: canvasStats.triggers > 0 && canvasStats.triggerFirst },
@@ -730,6 +770,10 @@ export default function VisualWorkflowBuilder() {
 
   const handleSimulate = () => {
     if (isViewer) return setError("View-only mode: request access to simulate.");
+    if (devSandbox) {
+      setError("Sandbox mode: switch to Stage or Prod to run full simulations.");
+      return;
+    }
     if (!currentId) {
       setError("Save the workflow before running a server simulation.");
       return;
@@ -744,7 +788,9 @@ export default function VisualWorkflowBuilder() {
         const data = await resp.json();
         if (!data.ok) throw new Error(data.error || "Simulation failed");
         setSimulation(data.simulation);
-        setLastSimulatedSnapshot({ canvas, env, versionTag, ts: Date.now() });
+        const snap = { canvas, env, versionTag, ts: Date.now(), approverEmail, approvalRequired, testPayload, confirmationNote, performanceBudgetMs, selectedPayloadPreset };
+        setLastSimulatedSnapshot(snap);
+        setSimulationHistory(prev => [snap, ...prev].slice(0, 5));
         setError("");
         setDirtySinceSave(false);
       }).catch(err => {
@@ -919,6 +965,10 @@ export default function VisualWorkflowBuilder() {
 
   const handlePromote = async () => {
     if (isViewer) return setError("View-only mode: request access to promote.");
+    if (devSandbox) {
+      setError("Sandbox mode: set env to Stage/Prod before promoting.");
+      return;
+    }
     if (!currentId) return setError("Save first");
     try {
       const resp = await apiFetch(`/api/visual-workflow-builder/workflows/${currentId}/promote`, { method: "POST" });
@@ -998,6 +1048,18 @@ export default function VisualWorkflowBuilder() {
   return (
     <div style={{ padding: 24, background: "#0f1115", color: "#e5e7eb", borderRadius: 16, border: "1px solid #1f2937", boxShadow: "0 12px 48px #0007" }}>
       <BackButton label="← Back to Suite" onClick={goBackToSuite} />
+      {devSandbox && !isViewer && (
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontWeight: 800, color: "#f59e0b" }}>Sandbox only</div>
+            <div style={{ color: "#9ca3af", fontSize: 13 }}>Simulations and promotion are disabled in dev. Switch to Stage/Prod to exercise the full path.</div>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button onClick={() => setEnv("stage")} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Switch to Stage</button>
+            <button onClick={() => setEnv("prod")} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Go Prod</button>
+          </div>
+        </div>
+      )}
       {isViewer && (
         <div style={{ background: "#1f2937", border: "1px solid #374151", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <div>
@@ -1009,6 +1071,28 @@ export default function VisualWorkflowBuilder() {
           </button>
         </div>
       )}
+      {simulationHistory.length > 0 && (
+        <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 10, display: "grid", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <div style={{ fontWeight: 800 }}>Recent simulations</div>
+            <div style={{ color: "#9ca3af", fontSize: 12 }}>Last {Math.min(3, simulationHistory.length)} shown</div>
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {simulationHistory.slice(0, 3).map((h, idx) => (
+              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px" }}>
+                <div>
+                  <div style={{ fontWeight: 700, color: "#e5e7eb" }}>{h.versionTag || "Sim"} · {h.env}</div>
+                  <div style={{ color: "#9ca3af", fontSize: 12 }}>{h.ts ? `Simulated ${new Date(h.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Recent"}</div>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <button aria-label={`Load simulation ${idx + 1}`} onClick={() => restoreSnapshot(h)} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load</button>
+                  <button aria-label={`Re-run simulation ${idx + 1}`} onClick={() => { restoreSnapshot(h); setTimeout(() => handleSimulate(), 0); }} disabled={devSandbox || isViewer} style={{ background: devSandbox ? "#1f2937" : "#22c55e", color: devSandbox ? "#9ca3af" : "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: devSandbox || isViewer ? "not-allowed" : "pointer", opacity: devSandbox || isViewer ? 0.6 : 1 }}>{devSandbox ? "Sandbox" : "Re-run"}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {showCommandPalette && (
         <div style={{ position: "fixed", inset: 0, background: "#0009", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20 }}>
           <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 14, padding: 16, width: "min(520px, 92vw)", boxShadow: "0 18px 60px #000" }}>
@@ -1016,7 +1100,7 @@ export default function VisualWorkflowBuilder() {
               <div style={{ fontWeight: 800, color: "#a5f3fc" }}>Command Palette</div>
               <button onClick={() => setShowCommandPalette(false)} style={{ background: "transparent", color: "#9ca3af", border: "none", cursor: "pointer", fontWeight: 700 }}>Esc</button>
             </div>
-            {[{ label: "Save draft", action: handleManualSave, hotkey: "Ctrl+S", disabled: false }, { label: "Run preflight", action: runPreflight, hotkey: "Alt+P", disabled: false }, { label: "Simulate", action: handleSimulate, hotkey: "Ctrl+Enter", disabled: isViewer }, { label: "Undo", action: handleUndo, hotkey: "Ctrl+Z", disabled: !undoStack.length || isViewer }, { label: "Redo", action: handleRedo, hotkey: "Ctrl+Shift+Z", disabled: !redoStack.length || isViewer }].map(cmd => (
+            {[{ label: "Save draft", action: handleManualSave, hotkey: "Ctrl+S", disabled: false }, { label: "Run preflight", action: runPreflight, hotkey: "Alt+P", disabled: false }, { label: "Simulate", action: handleSimulate, hotkey: "Ctrl+Enter", disabled: isViewer || devSandbox }, { label: "Undo", action: handleUndo, hotkey: "Ctrl+Z", disabled: !undoStack.length || isViewer }, { label: "Redo", action: handleRedo, hotkey: "Ctrl+Shift+Z", disabled: !redoStack.length || isViewer }].map(cmd => (
               <button key={cmd.label} disabled={cmd.disabled} onClick={() => { cmd.action(); setShowCommandPalette(false); }} style={{ width: "100%", textAlign: "left", background: cmd.disabled ? "#1f2937" : "#111827", color: cmd.disabled ? "#6b7280" : "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", marginBottom: 8, cursor: cmd.disabled ? "not-allowed" : "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>{cmd.label}</span>
                 <span style={{ fontSize: 12, color: "#9ca3af" }}>{cmd.hotkey}</span>
@@ -1075,7 +1159,7 @@ export default function VisualWorkflowBuilder() {
               )}
             </span>
           )}
-          <button onClick={handleSimulate} disabled={isViewer} style={{ background: "#22c55e", color: "#0f172a", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>▶️ Simulate (Ctrl+Enter)</button>
+          <button onClick={handleSimulate} disabled={isViewer || devSandbox} style={{ background: devSandbox ? "#1f2937" : "#22c55e", color: devSandbox ? "#9ca3af" : "#0f172a", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: isViewer || devSandbox ? "not-allowed" : "pointer", opacity: isViewer || devSandbox ? 0.7 : 1 }}>{devSandbox ? "Sandbox (set Stage)" : "▶️ Simulate (Ctrl+Enter)"}</button>
           <button onClick={handleSave} disabled={isViewer} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{saving ? "Saving…" : "Save Draft"}</button>
         </div>
       </div>
@@ -1103,12 +1187,18 @@ export default function VisualWorkflowBuilder() {
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Guardrails</div>
           <div style={{ color: launchHealth.guardrailsOk ? "#22c55e" : "#f59e0b", fontWeight: 700 }}>{launchHealth.guardrailsOk ? "Clear" : `${preflightIssues.length} issues`}</div>
           <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: preflightIssues.length ? 6 : 0 }}>Approvals: {launchHealth.approvalsOk ? "Ready" : "Need email"} · Analytics: {launchHealth.analytics}</div>
+          {perfDetail && <div style={{ color: "#fbbf24", fontSize: 12, marginBottom: preflightIssues.length ? 6 : 0 }}>{perfDetail}</div>}
           {preflightIssues.length > 0 && (
             <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", fontSize: 12, display: "grid", gap: 4 }}>
               {preflightIssues.slice(0, 3).map((issue, idx) => (
                 <li key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                   <span>{issue}</span>
-                  <button onClick={() => { setIssueHelp(issue); issue?.includes("node") && setSelectedStep(prev => prev); }} style={{ background: "#1f2937", border: "1px solid #334155", color: "#a5f3fc", borderRadius: 8, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Explain</button>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button aria-label={`Explain ${issue}`} onClick={() => { setIssueHelp(issue); issue?.includes("node") && setSelectedStep(prev => prev); }} style={{ background: "#1f2937", border: "1px solid #334155", color: "#a5f3fc", borderRadius: 8, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Explain</button>
+                    {quickFixForIssue(issue) && (
+                      <button aria-label={`Fix ${issue}`} onClick={() => applyQuickFix(quickFixForIssue(issue))} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "2px 8px", fontWeight: 800, cursor: "pointer" }}>Fix</button>
+                    )}
+                  </div>
                 </li>
               ))}
               {preflightIssues.length > 3 && <li style={{ color: "#9ca3af" }}>+{preflightIssues.length - 3} more (open Trace)</li>}
@@ -1174,7 +1264,7 @@ export default function VisualWorkflowBuilder() {
       <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
         <button onClick={handleSave} disabled={isViewer} style={{ background: '#22c55e', color: '#0b1221', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: isViewer ? 'not-allowed' : 'pointer', opacity: isViewer ? 0.7 : 1 }}>{saving ? 'Saving…' : (currentId ? 'Save Draft' : 'Create Draft')}</button>
         <button onClick={handleApprove} disabled={isViewer} style={{ background: '#f59e0b', color: '#0b1221', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: isViewer ? 'not-allowed' : 'pointer', opacity: isViewer ? 0.7 : 1 }}>Approve</button>
-        <button onClick={handlePromote} disabled={isViewer} style={{ background: '#3b82f6', color: '#e5e7eb', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: isViewer ? 'not-allowed' : 'pointer', opacity: isViewer ? 0.7 : 1 }}>Promote</button>
+        <button onClick={handlePromote} disabled={isViewer || devSandbox} style={{ background: devSandbox ? '#1f2937' : '#3b82f6', color: devSandbox ? '#9ca3af' : '#e5e7eb', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: isViewer || devSandbox ? 'not-allowed' : 'pointer', opacity: isViewer || devSandbox ? 0.7 : 1 }}>{devSandbox ? 'Sandbox (set Stage)' : 'Promote'}</button>
       </div>
       <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}
@@ -1367,7 +1457,7 @@ export default function VisualWorkflowBuilder() {
           </div>
           <textarea value={testPayload} onChange={handleInputChange(setTestPayload)} disabled={isViewer} rows={4} style={{ width: '100%', background: '#0f172a', color: '#e5e7eb', border: '1px solid #1f2937', borderRadius: 10, padding: 10, opacity: isViewer ? 0.7 : 1 }} />
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
-            <button onClick={handleSimulate} disabled={isViewer} style={{ background: '#22c55e', color: '#0b1221', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: isViewer ? 'not-allowed' : 'pointer', opacity: isViewer ? 0.7 : 1 }}>Run Simulation</button>
+            <button onClick={handleSimulate} disabled={isViewer || devSandbox} style={{ background: devSandbox ? '#1f2937' : '#22c55e', color: devSandbox ? '#9ca3af' : '#0b1221', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: isViewer || devSandbox ? 'not-allowed' : 'pointer', opacity: isViewer || devSandbox ? 0.7 : 1 }}>{devSandbox ? 'Sandbox (set Stage)' : 'Run Simulation'}</button>
             <button onClick={() => handleFormatJson('payload')} disabled={isViewer} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 12px', fontWeight: 700, cursor: isViewer ? 'not-allowed' : 'pointer', opacity: isViewer ? 0.7 : 1 }}>Format JSON</button>
           </div>
           <div style={{ marginTop: 10 }}>

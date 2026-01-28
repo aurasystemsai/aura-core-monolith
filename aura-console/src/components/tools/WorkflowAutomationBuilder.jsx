@@ -103,6 +103,27 @@ export default function WorkflowAutomationBuilder() {
   });
   const [showPreflightPopover, setShowPreflightPopover] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const devSandbox = env === "dev";
+  const quickFixForIssue = (issue = "") => {
+    const lower = issue.toLowerCase();
+    if (lower.includes("approver") || lower.includes("approval")) return "approver";
+    if (lower.includes("prod") || lower.includes("note")) return "prod-note";
+    if (lower.includes("trigger") || lower.includes("action")) return "trigger-action";
+    if (lower.includes("duplicate")) return "dedupe-labels";
+    return null;
+  };
+  const restoreSnapshot = (snap) => {
+    if (!snap) return;
+    pushUndoSnapshot();
+    if (snap.steps) setSteps(snap.steps);
+    if (snap.env) setEnv(snap.env);
+    if (snap.versionTag) setVersionTag(snap.versionTag);
+    if (typeof snap.approvalRequired === "boolean") setApprovalRequired(snap.approvalRequired);
+    if (snap.approverEmail !== undefined) setApproverEmail(snap.approverEmail);
+    if (snap.confirmationNote !== undefined) setConfirmationNote(snap.confirmationNote);
+    if (snap.selectedStep) setSelectedStep(snap.selectedStep);
+    setLastBuiltSnapshot(snap);
+  };
   const applyQuickFix = (kind) => {
     if (isViewer) return;
     if (kind === "approver") {
@@ -543,6 +564,9 @@ export default function WorkflowAutomationBuilder() {
 
   const handleTestInDev = () => {
     if (isViewer) return;
+    if (devSandbox) {
+      setError("Sandbox mode: switch to Stage/Prod to run full builds. Test-in-dev still allowed.");
+    }
     setTestStatus("running");
     const payload = PAYLOAD_PRESETS.find(p => p.id === selectedPayloadPreset)?.payload || {};
     const runningStatuses = {};
@@ -553,7 +577,7 @@ export default function WorkflowAutomationBuilder() {
       steps.forEach(s => { passedStatuses[s.id] = "passed"; });
       setStepStatuses(passedStatuses);
       setTestStatus("passed");
-      setHistory(prev => [{ steps, result: { test: "dev", payload }, env: "dev", versionTag, approvalRequired }, ...prev].slice(0, 10));
+      setHistory(prev => [{ steps, result: { test: "dev", payload }, env: "dev", versionTag, approvalRequired, confirmationNote, selectedStep }, ...prev].slice(0, 10));
     }, 800);
   };
 
@@ -589,6 +613,10 @@ export default function WorkflowAutomationBuilder() {
 
   const handleBuild = async () => {
     if (isViewer) return;
+    if (devSandbox) {
+      setError("Switch to Stage/Prod to build.");
+      return;
+    }
     setLoading(true);
     setError("");
     setResult(null);
@@ -609,8 +637,9 @@ export default function WorkflowAutomationBuilder() {
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setResult(data.result);
-      setHistory(prev => [{ steps, result: data.result, env, versionTag, approvalRequired }, ...prev].slice(0, 10));
-      setLastBuiltSnapshot({ steps, env, versionTag, approvalRequired, approverEmail, builtAt: Date.now() });
+      const snap = { steps, env, versionTag, approvalRequired, approverEmail, confirmationNote, builtAt: Date.now(), selectedStep };
+      setHistory(prev => [snap, ...prev].slice(0, 10));
+      setLastBuiltSnapshot(snap);
       setDraftStatus("saved");
       setDirtySinceSave(false);
     } catch (err) {
@@ -639,6 +668,18 @@ export default function WorkflowAutomationBuilder() {
         <BackButton label="← Back to Suite" onClick={goBackToSuite} />
         <div style={{ color: "#9ca3af", fontSize: 13 }}>Workflows Suite · Automation Builder</div>
       </div>
+      {devSandbox && !isViewer && (
+        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontWeight: 800, color: "#f59e0b" }}>Sandbox only</div>
+            <div style={{ color: "#9ca3af", fontSize: 13 }}>Publishing is disabled in dev. Switch to Stage/Prod to run builds and attach preflight.</div>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button onClick={() => setEnv("stage")} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Switch to Stage</button>
+            <button onClick={() => setEnv("prod")} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Go Prod</button>
+          </div>
+        </div>
+      )}
       {isViewer && (
         <div style={{ background: "#1f2937", border: "1px solid #374151", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <div>
@@ -658,6 +699,28 @@ export default function WorkflowAutomationBuilder() {
           </div>
           <div style={{ color: "#e5e7eb" }}>{issueHelp}</div>
           <div style={{ color: "#9ca3af", fontSize: 13 }}>Recommended fix: {issueHelp.toLowerCase().includes("approv") ? "Add an approver email or disable approvals." : issueHelp.toLowerCase().includes("trigger") ? "Add a trigger step to start the automation." : "Adjust steps, approvals, or prod note, then rerun preflight."}</div>
+        </div>
+      )}
+      {history.length > 0 && (
+        <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 10, display: "grid", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <div style={{ fontWeight: 800 }}>Recent builds/tests</div>
+            <div style={{ color: "#9ca3af", fontSize: 12 }}>Last {Math.min(3, history.length)} shown</div>
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {history.slice(0, 3).map((h, idx) => (
+              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px" }}>
+                <div>
+                  <div style={{ fontWeight: 700, color: "#e5e7eb" }}>{h.versionTag || "Build"} · {h.env}</div>
+                  <div style={{ color: "#9ca3af", fontSize: 12 }}>{h.builtAt ? `Saved ${new Date(h.builtAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Recent"}</div>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <button aria-label={`Load snapshot ${idx + 1}`} onClick={() => restoreSnapshot(h)} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load</button>
+                  <button aria-label={`Re-run build ${idx + 1}`} onClick={() => { restoreSnapshot(h); setTimeout(() => handleBuild(), 0); }} disabled={devSandbox || isViewer} style={{ background: devSandbox ? "#1f2937" : "#22c55e", color: devSandbox ? "#9ca3af" : "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: devSandbox || isViewer ? "not-allowed" : "pointer", opacity: devSandbox || isViewer ? 0.6 : 1 }}>{devSandbox ? "Sandbox" : "Re-run"}</button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
       {showCommandPalette && (
@@ -706,12 +769,20 @@ export default function WorkflowAutomationBuilder() {
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Guardrails</div>
           <div style={{ color: preflightIssues.length ? "#f59e0b" : "#22c55e", fontWeight: 700 }}>{preflightIssues.length ? `${preflightIssues.length} issue${preflightIssues.length > 1 ? "s" : ""}` : "Clear"}</div>
           <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: preflightIssues.length ? 6 : 0 }}>Trigger: {readinessSummary.triggerOk ? "OK" : "Missing"} · Approvals: {readinessSummary.approvalsOk ? "Ready" : "Need email"}</div>
+          {(steps.length >= 6 || stepSummary.actions >= 4) && (
+            <div style={{ color: "#fbbf24", fontSize: 12, marginBottom: 6 }}>Perf detail: {steps.length} steps / {stepSummary.actions} actions — consider splitting.</div>
+          )}
           {preflightIssues.length > 0 && (
             <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", fontSize: 12, display: "grid", gap: 4 }}>
               {preflightIssues.slice(0, 3).map((issue, idx) => (
                 <li key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                   <span>{issue}</span>
-                  <button onClick={() => setIssueHelp(issue)} style={{ background: "#1f2937", border: "1px solid #334155", color: "#a5f3fc", borderRadius: 8, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Explain</button>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button aria-label={`Explain ${issue}`} onClick={() => setIssueHelp(issue)} style={{ background: "#1f2937", border: "1px solid #334155", color: "#a5f3fc", borderRadius: 8, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Explain</button>
+                    {quickFixForIssue(issue) && (
+                      <button aria-label={`Fix ${issue}`} onClick={() => applyQuickFix(quickFixForIssue(issue))} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "2px 8px", fontWeight: 800, cursor: "pointer" }}>Fix</button>
+                    )}
+                  </div>
                 </li>
               ))}
               {preflightIssues.length > 3 && <li style={{ color: "#9ca3af" }}>+{preflightIssues.length - 3} more (open Trace)</li>}
@@ -813,7 +884,7 @@ export default function WorkflowAutomationBuilder() {
           <button onClick={handleExportJson} style={{ background: "#14b8a6", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Export JSON</button>
           <button onClick={handleCopySummary} style={{ background: "#8b5cf6", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Copy summary</button>
           <button onClick={handleSaveTemplate} style={{ background: "#22d3ee", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 800, cursor: "pointer" }}>Save as template</button>
-          <button onClick={() => handleBuild()} disabled={loading} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 15, cursor: loading ? "not-allowed" : "pointer" }}>{loading ? "Building..." : "Build"}</button>
+          <button aria-label="Build workflow" onClick={() => handleBuild()} disabled={loading || devSandbox || isViewer} style={{ background: devSandbox ? "#1f2937" : "#22c55e", color: devSandbox ? "#9ca3af" : "#0b1221", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 15, cursor: (loading || devSandbox || isViewer) ? "not-allowed" : "pointer", opacity: (loading || devSandbox || isViewer) ? 0.65 : 1 }}>{devSandbox ? "Sandbox (set Stage)" : loading ? "Building..." : "Build"}</button>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <span style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: preflightIssues.length ? "#f97316" : "#22c55e", fontWeight: 700 }}>Trigger: {steps.some(s => s.type === "trigger") ? "OK" : "Missing"}</span>
