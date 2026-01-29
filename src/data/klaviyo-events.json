@@ -166,5 +166,26 @@
         }
       ]
     }
+  },
+  {
+    "id": 9,
+    "ts": 1769715148492,
+    "type": "test_run",
+    "flowId": 9,
+    "result": {
+      "flowId": 9,
+      "steps": 1,
+      "sampleUser": {
+        "id": "sample",
+        "email": "sample@example.com"
+      },
+      "status": "simulated",
+      "preview": [
+        {
+          "label": "Send",
+          "type": "action"
+        }
+      ]
+    }
   }
 ]

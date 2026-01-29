@@ -2,6 +2,41 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import BackButton from "./BackButton";
 
 const STORAGE_KEY = "workflow-orchestrator:draft";
+const STORAGE_BACKUP_KEY = "workflow-orchestrator:backup";
+const DRAFT_VERSION = 2;
+
+const sanitizeSteps = (steps = []) => {
+  if (!Array.isArray(steps)) return [];
+  let maxId = steps.reduce((m, s) => typeof s.id === "number" ? Math.max(m, s.id) : m, 0) || 0;
+  const seen = new Set();
+  return steps.map((s, idx) => {
+    let id = typeof s.id === "number" ? s.id : ++maxId;
+    if (seen.has(id)) id = ++maxId;
+    seen.add(id);
+    return {
+      id,
+      name: s.name || `Step ${idx + 1}`,
+      type: ["trigger", "action", "condition"].includes(s.type) ? s.type : "action",
+      config: s.config || ""
+    };
+  });
+};
+
+const migrateDraft = (draft = {}) => {
+  const migrated = { ...draft };
+  migrated.version = DRAFT_VERSION;
+  migrated.steps = sanitizeSteps(draft.steps || []);
+  return migrated;
+};
+
+const hashString = (input) => {
+  let h = 0;
+  const str = typeof input === "string" ? input : JSON.stringify(input || {});
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(31, h) + str.charCodeAt(i) | 0;
+  }
+  return Math.abs(h).toString(16);
+};
 
 export default function WorkflowOrchestrator() {
   const [workflowName, setWorkflowName] = useState("SEO Autopilot Orchestration");
@@ -33,6 +68,23 @@ export default function WorkflowOrchestrator() {
   ]);
   const [testResults, setTestResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [rolloutPercent, setRolloutPercent] = useState(10);
+  const [autoRevert, setAutoRevert] = useState(true);
+  const [errorSpikeThreshold, setErrorSpikeThreshold] = useState(5);
+  const [perf, setPerf] = useState({ latencyMs: 320, successRate: 0.992 });
+  const [recentErrors, setRecentErrors] = useState([]);
+  const [auditLog, setAuditLog] = useState([]);
+  const [selectedStepIds, setSelectedStepIds] = useState([]);
+  const [clipboard, setClipboard] = useState([]);
+  const [webhookUrl, setWebhookUrl] = useState("");
+  const [slackChannel, setSlackChannel] = useState("");
+  const [queueEnabled, setQueueEnabled] = useState(false);
+  const [testReportUrl, setTestReportUrl] = useState(null);
+  const [lastPublish, setLastPublish] = useState(null);
+  const [fixtureEnv, setFixtureEnv] = useState("dev");
+  const [latencyBudgetMs, setLatencyBudgetMs] = useState(850);
+  const [errorBudgetPct, setErrorBudgetPct] = useState(3);
+  const [showTemplateGallery, setShowTemplateGallery] = useState(false);
 
     const quickFixForIssue = (issue = "") => {
       const lower = issue.toLowerCase();
@@ -171,6 +223,12 @@ export default function WorkflowOrchestrator() {
   };
 
   const isViewer = role === "viewer";
+  const isEnvLocked = env === "prod" && role !== "admin";
+  const traceByStep = useMemo(() => {
+    const map = new Map();
+    preflightTrace.forEach(t => map.set(t.idx, t.issues || []));
+    return map;
+  }, [preflightTrace]);
 
   const triggerTemplates = [
     { label: "Order Placed", config: "Trigger when an order is placed with value > $50" },
@@ -183,6 +241,12 @@ export default function WorkflowOrchestrator() {
     { label: "Re-run Crawl", config: "Trigger site crawl and refresh product feeds" }
   ];
 
+  const galleryTemplates = [
+    { id: "canary", title: "Canary rollout", description: "Gradual rollout with auto-revert and error budget guardrails.", playbook: "seoFix", rollout: 20, autoRevert: true, badges: ["rollout", "safety"] },
+    { id: "retention", title: "Churn save", description: "Detect churn risk and trigger retention offers with CX alerting.", playbook: "churnSave", rollout: 50, badges: ["retention", "cx"] },
+    { id: "catalog", title: "Product sync", description: "Keep catalog and marketing feeds in sync with alerts.", playbook: "productSync", rollout: 80, badges: ["catalog", "ops"] }
+  ];
+
   const payloadPresets = [
     { id: "abandoned-cart", name: "Abandoned Cart", payload: { customer: "jane@example.com", subtotal: 120 } },
     { id: "seo-issue", name: "SEO Issue", payload: { url: "/product/slug", issue: "404 detected" } },
@@ -193,28 +257,38 @@ export default function WorkflowOrchestrator() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.workflowName) setWorkflowName(parsed.workflowName);
-        if (parsed.objective) setObjective(parsed.objective);
-        if (parsed.env) setEnv(parsed.env);
-        if (parsed.versionTag) setVersionTag(parsed.versionTag);
-        if (parsed.tags) setTags(parsed.tags);
-        if (typeof parsed.approvalRequired === "boolean") setApprovalRequired(parsed.approvalRequired);
-        if (parsed.approverEmail) setApproverEmail(parsed.approverEmail);
-        if (parsed.riskLevel) setRiskLevel(parsed.riskLevel);
-        if (parsed.owner) setOwner(parsed.owner);
-        if (parsed.steps) setSteps(parsed.steps);
-        if (parsed.selectedStep) setSelectedStep(parsed.selectedStep);
-        if (parsed.confirmationNote) setConfirmationNote(parsed.confirmationNote);
-        if (parsed.payloadPreset) setPayloadPreset(parsed.payloadPreset);
-        if (parsed.versionName) setVersionName(parsed.versionName);
-        if (parsed.versions) setVersions(parsed.versions);
-        if (parsed.lastSavedAt) setLastSavedAt(parsed.lastSavedAt);
-      } catch (err) {
-        console.warn("Failed to parse orchestrator draft", err);
-      }
+    const backup = window.sessionStorage.getItem(STORAGE_BACKUP_KEY);
+    const source = saved || backup;
+    if (!source) return;
+    try {
+      const parsed = migrateDraft(JSON.parse(source));
+      if (parsed.workflowName) setWorkflowName(parsed.workflowName);
+      if (parsed.objective) setObjective(parsed.objective);
+      if (parsed.env) setEnv(parsed.env);
+      if (parsed.versionTag) setVersionTag(parsed.versionTag);
+      if (parsed.tags) setTags(parsed.tags);
+      if (typeof parsed.approvalRequired === "boolean") setApprovalRequired(parsed.approvalRequired);
+      if (parsed.approverEmail) setApproverEmail(parsed.approverEmail);
+      if (parsed.riskLevel) setRiskLevel(parsed.riskLevel);
+      if (parsed.owner) setOwner(parsed.owner);
+      if (parsed.steps) setSteps(parsed.steps);
+      if (parsed.selectedStep) setSelectedStep(parsed.selectedStep);
+      if (parsed.confirmationNote) setConfirmationNote(parsed.confirmationNote);
+      if (parsed.payloadPreset) setPayloadPreset(parsed.payloadPreset);
+      if (parsed.versionName) setVersionName(parsed.versionName);
+      if (parsed.versions) setVersions(parsed.versions);
+      if (parsed.lastSavedAt) setLastSavedAt(parsed.lastSavedAt);
+      if (typeof parsed.rolloutPercent === "number") setRolloutPercent(parsed.rolloutPercent);
+      if (parsed.autoRevert !== undefined) setAutoRevert(parsed.autoRevert);
+      if (typeof parsed.errorSpikeThreshold === "number") setErrorSpikeThreshold(parsed.errorSpikeThreshold);
+      if (typeof parsed.latencyBudgetMs === "number") setLatencyBudgetMs(parsed.latencyBudgetMs);
+      if (typeof parsed.errorBudgetPct === "number") setErrorBudgetPct(parsed.errorBudgetPct);
+      if (parsed.queueEnabled !== undefined) setQueueEnabled(parsed.queueEnabled);
+      if (parsed.slackChannel) setSlackChannel(parsed.slackChannel);
+      if (parsed.webhookUrl) setWebhookUrl(parsed.webhookUrl);
+      if (parsed.lastPublish) setLastPublish(parsed.lastPublish);
+    } catch (err) {
+      console.warn("Failed to parse orchestrator draft", err);
     }
   }, []);
 
@@ -252,14 +326,27 @@ export default function WorkflowOrchestrator() {
         payloadPreset,
         versionName,
         versions,
-        lastSavedAt: Date.now()
+        lastSavedAt: Date.now(),
+        rolloutPercent,
+        autoRevert,
+        errorSpikeThreshold,
+        latencyBudgetMs,
+        errorBudgetPct,
+        queueEnabled,
+        slackChannel,
+        webhookUrl,
+        lastPublish,
+        version: DRAFT_VERSION,
+        signature: stepSignature,
+        metrics: flowMetrics
       }));
+      try { window.sessionStorage.setItem(STORAGE_BACKUP_KEY, window.localStorage.getItem(STORAGE_KEY)); } catch (_) {}
       setDraftStatus("saved");
       setLastSavedAt(Date.now());
       setDirtySinceSave(false);
     }, 450);
     return () => clearTimeout(handle);
-  }, [workflowName, objective, env, versionTag, tags, approvalRequired, approverEmail, riskLevel, owner, steps, selectedStep, confirmationNote, payloadPreset, versionName, versions]);
+  }, [workflowName, objective, env, versionTag, tags, approvalRequired, approverEmail, riskLevel, owner, steps, selectedStep, confirmationNote, payloadPreset, versionName, versions, rolloutPercent, autoRevert, errorSpikeThreshold, latencyBudgetMs, errorBudgetPct, queueEnabled, slackChannel, webhookUrl, lastPublish]);
 
   // Exit warning for unsaved/guardrail issues
   useEffect(() => {
@@ -313,6 +400,13 @@ export default function WorkflowOrchestrator() {
         if (!s.config) errs.push(`steps[${idx}].config required`);
       });
     }
+    if (data.rolloutPercent !== undefined && (typeof data.rolloutPercent !== "number" || data.rolloutPercent < 1 || data.rolloutPercent > 100)) errs.push("rolloutPercent must be 1-100");
+    if (data.errorSpikeThreshold !== undefined && (typeof data.errorSpikeThreshold !== "number" || data.errorSpikeThreshold < 1)) errs.push("errorSpikeThreshold must be >=1");
+    if (data.latencyBudgetMs !== undefined && (typeof data.latencyBudgetMs !== "number" || data.latencyBudgetMs < 50)) errs.push("latencyBudgetMs must be >=50");
+    if (data.errorBudgetPct !== undefined && (typeof data.errorBudgetPct !== "number" || data.errorBudgetPct <= 0 || data.errorBudgetPct >= 50)) errs.push("errorBudgetPct must be between 0 and 50");
+    if (data.queueEnabled !== undefined && typeof data.queueEnabled !== "boolean") errs.push("queueEnabled must be boolean");
+    if (data.autoRevert !== undefined && typeof data.autoRevert !== "boolean") errs.push("autoRevert must be boolean");
+    if (data.webhookUrl && !/^https?:\/\//i.test(data.webhookUrl)) errs.push("webhookUrl must be http(s)");
     return errs;
   };
 
@@ -322,6 +416,7 @@ export default function WorkflowOrchestrator() {
     const hasTrigger = steps.some(s => s.type === "trigger");
     const hasAction = steps.some(s => s.type === "action");
     const tooManySteps = steps.length > 20;
+    const hardCapSteps = steps.length > 50;
     const duplicateIds = new Set();
     const dupIdHits = [];
     const nameCounts = steps.reduce((acc, s) => {
@@ -345,6 +440,15 @@ export default function WorkflowOrchestrator() {
     if (env === "prod" && (riskLevel === "high" || approvalRequired) && !confirmationNote.trim()) issues.push("Prod/high risk requires confirmation note.");
     if (dupIdHits.length) issues.push("Duplicate step IDs detected.");
     if (tooManySteps) issues.push("Flow too large: consider splitting (20+ steps).");
+    if (hardCapSteps) issues.push("Step cap exceeded (50). Trim before running.");
+    const payloadSize = JSON.stringify(previewPayload).length;
+    if (payloadSize > 12000) issues.push(`Payload ~${Math.round(payloadSize / 1024)}KB may exceed transport limits.`);
+    if (perf.latencyMs > latencyBudgetMs) issues.push(`Latency ${Math.round(perf.latencyMs)}ms exceeds budget ${latencyBudgetMs}ms.`);
+    if (perf.successRate < (1 - errorBudgetPct / 100)) issues.push(`Success ${(perf.successRate * 100).toFixed(1)}% below target ${(100 - errorBudgetPct).toFixed(1)}%.`);
+    if (webhookUrl && !/^https?:\/\//i.test(webhookUrl)) issues.push("Webhook URL must be http(s).");
+    if (env === "prod" && rolloutPercent > 50 && riskLevel === "high") issues.push("High-risk prod rollouts should start ≤50%.");
+    if (env === "prod" && !autoRevert) issues.push("Enable auto-revert for prod safety.");
+    if (flowMetrics.riskScore >= 12) issues.push(`Composite risk score ${flowMetrics.riskScore} too high — reduce rollout or actions.`);
 
     steps.forEach((s, idx) => {
       const localIssues = [];
@@ -394,6 +498,58 @@ export default function WorkflowOrchestrator() {
     const nextSteps = steps.filter(s => s.id !== id);
     setSteps(nextSteps);
     setSelectedStep(nextSteps[0]?.id || null);
+    setSelectedStepIds(prev => prev.filter(x => x !== id));
+  };
+
+  const handleToggleSelect = (id) => {
+    setSelectedStepIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const handleCopySelection = () => {
+    if (!selectedStepIds.length) return;
+    const items = steps.filter(s => selectedStepIds.includes(s.id));
+    setClipboard(items);
+  };
+
+  const handlePasteSelection = () => {
+    if (isViewer) return;
+    if (!clipboard.length) return;
+    const baseId = (Math.max(...steps.map(s => s.id)) || 0) + 1;
+    const cloned = clipboard.map((s, idx) => ({ ...s, id: baseId + idx, name: `${s.name} Copy` }));
+    pushUndoSnapshot();
+    setSteps([...steps, ...cloned]);
+    setSelectedStepIds(cloned.map(c => c.id));
+  };
+
+  const handleMultiDelete = () => {
+    if (isViewer) return;
+    if (!selectedStepIds.length) return;
+    pushUndoSnapshot();
+    const next = steps.filter(s => !selectedStepIds.includes(s.id));
+    setSteps(next);
+    setSelectedStep(next[0]?.id || null);
+    setSelectedStepIds([]);
+  };
+
+  const handleDuplicateBranch = () => {
+    if (isViewer) return;
+    if (!selectedStepIds.length) return handleCloneStep();
+    handleCopySelection();
+    handlePasteSelection();
+  };
+
+  const downloadTestReport = () => {
+    const payload = { results: testResults, at: Date.now(), env: fixtureEnv };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    setTestReportUrl(url);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  };
+
+  const sendWebhookEvent = () => {
+    const event = { type: "workflow.outcome", env, steps: steps.length, rollout: rolloutPercent, at: Date.now(), channel: slackChannel || "#ops" };
+    addAudit("webhook_emit", event);
+    setRecentErrors(prev => prev.slice(0, 9));
   };
 
   const handleCloneStep = () => {
@@ -449,6 +605,11 @@ export default function WorkflowOrchestrator() {
         { id: 1, name: "Trigger", type: "trigger", config: "Abandoned checkout with AOV > $100" },
         { id: 2, name: "Action", type: "action", config: "Send winback email + SMS" },
         { id: 3, name: "Action", type: "action", config: "Alert CX to follow up manually" }
+      ],
+      churnSave: [
+        { id: 1, name: "Trigger", type: "trigger", config: "Churn-risk subscriber detected" },
+        { id: 2, name: "Action", type: "action", config: "Offer retention incentive" },
+        { id: 3, name: "Action", type: "action", config: "Notify lifecycle marketing" }
       ]
     };
     const chosen = presets[playbook];
@@ -460,6 +621,34 @@ export default function WorkflowOrchestrator() {
     }
   };
 
+  const applyTemplate = (tpl) => {
+    if (isViewer) return;
+    if (tpl.playbook) applyPlaybook(tpl.playbook);
+    if (tpl.rollout) setRolloutPercent(tpl.rollout);
+    if (tpl.autoRevert !== undefined) setAutoRevert(tpl.autoRevert);
+    addAudit("template_apply", { id: tpl.id, playbook: tpl.playbook });
+    setShowTemplateGallery(false);
+  };
+
+  const stepSignature = useMemo(() => hashString(steps), [steps]);
+  const payloadSignature = useMemo(() => hashString(previewPayload), [previewPayload]);
+
+  const flowMetrics = useMemo(() => {
+    const triggerCount = steps.filter(s => s.type === "trigger").length;
+    const actionCount = steps.filter(s => s.type === "action").length;
+    const conditionCount = steps.filter(s => s.type === "condition").length;
+    const riskWeight = riskLevel === "high" ? 4 : riskLevel === "medium" ? 2 : 1;
+    const rolloutWeight = rolloutPercent / 25;
+    const autoRevertRelief = autoRevert ? -1 : 1;
+    const score = (steps.length * 0.6) + (actionCount * 0.4) + rolloutWeight + riskWeight + autoRevertRelief;
+    return { triggerCount, actionCount, conditionCount, riskScore: Math.max(0, Math.round(score * 10) / 10) };
+  }, [steps, riskLevel, rolloutPercent, autoRevert]);
+
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    addAudit("step_change", { signature: stepSignature, steps: steps.length });
+  }, [stepSignature]);
+
   const previewPayload = useMemo(() => ({
     workflowName,
     objective,
@@ -470,8 +659,18 @@ export default function WorkflowOrchestrator() {
     approverEmail,
     riskLevel,
     owner,
-    steps
-  }), [workflowName, objective, env, versionTag, tags, approvalRequired, approverEmail, riskLevel, owner, steps]);
+    steps,
+    rolloutPercent,
+    autoRevert,
+    errorSpikeThreshold,
+    latencyBudgetMs,
+    errorBudgetPct,
+    queueEnabled,
+    slackChannel,
+    webhookUrl,
+    signature: stepSignature,
+    metrics: flowMetrics
+  }), [workflowName, objective, env, versionTag, tags, approvalRequired, approverEmail, riskLevel, owner, steps, rolloutPercent, autoRevert, errorSpikeThreshold, latencyBudgetMs, errorBudgetPct, queueEnabled, slackChannel, webhookUrl, stepSignature, flowMetrics]);
 
   const readinessSummary = useMemo(() => {
     const triggerOk = steps.some(s => s.type === "trigger");
@@ -532,9 +731,13 @@ export default function WorkflowOrchestrator() {
         versionTag,
         approvalRequired,
         at: new Date().toISOString(),
-        workflowName
+        workflowName,
+        signature: stepSignature,
+        metrics: flowMetrics
       }, ...prev].slice(0, 10));
       setLastRunSnapshot({ steps, env, versionTag, approvalRequired, riskLevel, confirmationNote, at: Date.now() });
+      setLastPublish(Date.now());
+      addAudit("orchestrate", { env, versionTag, rolloutPercent });
       setDirtySinceSave(false);
       setDraftStatus("saved");
       setLastSavedAt(Date.now());
@@ -591,8 +794,21 @@ export default function WorkflowOrchestrator() {
       payloadPreset,
       versionName,
       versions,
-      lastSavedAt: Date.now()
+      lastSavedAt: Date.now(),
+      rolloutPercent,
+      autoRevert,
+      errorSpikeThreshold,
+      latencyBudgetMs,
+      errorBudgetPct,
+      queueEnabled,
+      slackChannel,
+      webhookUrl,
+      lastPublish,
+      signature: stepSignature,
+      metrics: flowMetrics,
+      lastRunSignature: lastRunSnapshot?.signature
     }));
+    try { window.sessionStorage.setItem(STORAGE_BACKUP_KEY, window.localStorage.getItem(STORAGE_KEY)); } catch (_) {}
     setDraftStatus("saved");
     setLastSavedAt(Date.now());
     setDirtySinceSave(false);
@@ -621,7 +837,50 @@ export default function WorkflowOrchestrator() {
   };
 
   const handleExport = () => {
-    const payload = { workflowName, objective, env, versionTag, steps, tags, approvalRequired, approverEmail, riskLevel, owner };
+    const payload = {
+      workflowName,
+      objective,
+      env,
+      versionTag,
+      steps,
+      tags,
+      approvalRequired,
+      approverEmail,
+      riskLevel,
+      owner,
+      rolloutPercent,
+      autoRevert,
+      errorSpikeThreshold,
+      latencyBudgetMs,
+      errorBudgetPct,
+      queueEnabled,
+      slackChannel,
+      webhookUrl,
+      signature: stepSignature,
+      metrics: flowMetrics,
+      checksum: hashString({
+        workflowName,
+        objective,
+        env,
+        versionTag,
+        steps,
+        tags,
+        approvalRequired,
+        approverEmail,
+        riskLevel,
+        owner,
+        rolloutPercent,
+        autoRevert,
+        errorSpikeThreshold,
+        latencyBudgetMs,
+        errorBudgetPct,
+        queueEnabled,
+        slackChannel,
+        webhookUrl,
+        signature: stepSignature,
+        metrics: flowMetrics
+      })
+    };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -641,6 +900,11 @@ export default function WorkflowOrchestrator() {
         const parsed = JSON.parse(reader.result);
         const errs = validateSchema(parsed);
         if (errs.length) throw new Error(errs.join("; "));
+        if (parsed.checksum) {
+          const { checksum, ...rest } = parsed;
+          const recomputed = hashString(rest);
+          if (checksum !== recomputed) throw new Error("Checksum mismatch: export may be tampered or outdated");
+        }
         pushUndoSnapshot();
         setWorkflowName(parsed.workflowName || workflowName);
         setObjective(parsed.objective || objective);
@@ -652,6 +916,15 @@ export default function WorkflowOrchestrator() {
         setRiskLevel(parsed.riskLevel || riskLevel);
         setOwner(parsed.owner || owner);
         setSteps(parsed.steps || steps);
+        if (typeof parsed.rolloutPercent === "number") setRolloutPercent(parsed.rolloutPercent);
+        if (parsed.autoRevert !== undefined) setAutoRevert(parsed.autoRevert);
+        if (typeof parsed.errorSpikeThreshold === "number") setErrorSpikeThreshold(parsed.errorSpikeThreshold);
+        if (typeof parsed.latencyBudgetMs === "number") setLatencyBudgetMs(parsed.latencyBudgetMs);
+        if (typeof parsed.errorBudgetPct === "number") setErrorBudgetPct(parsed.errorBudgetPct);
+        if (parsed.queueEnabled !== undefined) setQueueEnabled(parsed.queueEnabled);
+        if (parsed.slackChannel) setSlackChannel(parsed.slackChannel);
+        if (parsed.webhookUrl) setWebhookUrl(parsed.webhookUrl);
+        setSteps(sanitizeSteps(parsed.steps || steps));
       } catch (e) {
         setImportError(e?.message || "Import failed");
       }
@@ -674,6 +947,24 @@ export default function WorkflowOrchestrator() {
     });
     setTestResults(results);
     setTimeout(() => setTestStatus("idle"), 400);
+  };
+
+  useEffect(() => {
+    // simple perf estimation based on steps count
+    const latency = Math.min(1800, 220 + steps.length * 35);
+    const success = Math.max(0.9, 0.995 - steps.length * 0.002);
+    setPerf({ latencyMs: latency, successRate: success });
+  }, [steps]);
+
+  const slaCompliance = useMemo(() => {
+    const latencyOk = perf.latencyMs <= latencyBudgetMs;
+    const successOk = perf.successRate >= (1 - errorBudgetPct / 100);
+    const status = latencyOk && successOk ? "on-track" : successOk ? "watch" : "breach";
+    return { latencyOk, successOk, status, summary: `${Math.round(perf.latencyMs)}ms vs ${latencyBudgetMs}ms · ${(perf.successRate * 100).toFixed(1)}% vs ${(100 - errorBudgetPct).toFixed(1)}%` };
+  }, [perf, latencyBudgetMs, errorBudgetPct]);
+
+  const addAudit = (event, meta = {}) => {
+    setAuditLog(prev => [{ event, meta, at: Date.now(), env, user: role }, ...prev].slice(0, 20));
   };
 
   const handleSnapshotVersion = () => {
@@ -718,6 +1009,11 @@ export default function WorkflowOrchestrator() {
           <button onClick={() => setEnv("stage")} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Switch to stage</button>
         </div>
       )}
+      {isEnvLocked && (
+        <div style={{ background: "#7c2d12", border: "1px solid #b45309", borderRadius: 12, padding: 12, marginBottom: 12, color: "#fecdd3", fontWeight: 700 }}>
+          Prod is admin-only. Request elevation or switch to stage.
+        </div>
+      )}
       {showCommandPalette && (
         <div style={{ position: "fixed", inset: 0, background: "#0009", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20 }}>
           <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 14, padding: 16, width: "min(520px, 92vw)", boxShadow: "0 18px 60px #000" }}>
@@ -744,6 +1040,7 @@ export default function WorkflowOrchestrator() {
             <option value="dev">Dev</option><option value="stage">Stage</option><option value="prod">Prod</option>
           </select>
           <input value={versionTag} onChange={e => setVersionTag(e.target.value)} disabled={isViewer} placeholder="Version tag" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 12px", minWidth: 120, opacity: isViewer ? 0.7 : 1 }} />
+          <span style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: "#a5f3fc", fontWeight: 700 }}>Role: {role}</span>
           <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
             <input type="checkbox" checked={disabled} onChange={e => setDisabled(e.target.checked)} disabled={isViewer} /> Disabled
           </label>
@@ -890,7 +1187,7 @@ export default function WorkflowOrchestrator() {
             {payloadPresets.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
           <button onClick={handleTestDev} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{testStatus === "running" ? "Testing..." : "Test in dev"}</button>
-          <button onClick={handleOrchestrate} disabled={loading || isViewer || devSandbox} style={{ background: devSandbox ? "#1f2937" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 15, cursor: loading || isViewer || devSandbox ? "not-allowed" : "pointer", opacity: loading || isViewer || devSandbox ? 0.6 : 1 }}>{devSandbox ? "Sandbox (switch env)" : loading ? "Orchestrating..." : "Orchestrate"}</button>
+          <button onClick={handleOrchestrate} disabled={loading || isViewer || devSandbox || isEnvLocked} style={{ background: devSandbox || isEnvLocked ? "#1f2937" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 15, cursor: loading || isViewer || devSandbox || isEnvLocked ? "not-allowed" : "pointer", opacity: loading || isViewer || devSandbox || isEnvLocked ? 0.6 : 1 }}>{isEnvLocked ? "Prod requires admin" : devSandbox ? "Sandbox (switch env)" : loading ? "Orchestrating..." : "Orchestrate"}</button>
           <button onClick={rollbackToLastRun} disabled={isViewer || !lastRunSnapshot} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", fontWeight: 800, cursor: isViewer || !lastRunSnapshot ? "not-allowed" : "pointer", opacity: isViewer || !lastRunSnapshot ? 0.6 : 1 }}>Rollback to last run</button>
           <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Export JSON</button>
           <button onClick={() => importRef.current?.click()} style={{ background: "#a855f7", color: "#0b1221", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Import JSON</button>
@@ -908,6 +1205,9 @@ export default function WorkflowOrchestrator() {
           <span style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: steps.length >= 6 ? "#f97316" : "#22c55e", fontWeight: 700 }}>Perf guardrail: {steps.length >= 6 ? "tighten" : "OK"}</span>
           <span style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: disabled ? "#f97316" : "#22c55e", fontWeight: 700 }}>Disabled: {disabled ? "Yes" : "No"}</span>
           {env === "prod" && <span style={{ background: "#7c2d12", border: "1px solid #b45309", borderRadius: 999, padding: "6px 10px", color: confirmationNote ? "#facc15" : "#fca5a5", fontWeight: 700 }}>Prod note {confirmationNote ? "ready" : "required"}</span>}
+          <span style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: perf.latencyMs > 900 ? "#f97316" : perf.latencyMs > 600 ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>Latency {Math.round(perf.latencyMs)}ms</span>
+          <span style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: perf.successRate < 0.95 ? "#f97316" : "#22c55e", fontWeight: 700 }}>Success {(perf.successRate * 100).toFixed(1)}%</span>
+          <span style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: slaCompliance.status === "on-track" ? "#22c55e" : slaCompliance.status === "watch" ? "#fbbf24" : "#f97316", fontWeight: 700 }}>SLA {slaCompliance.status}</span>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
           <input value={reviewerEmail} onChange={e => setReviewerEmail(e.target.value)} placeholder="Reviewer email" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", minWidth: 200 }} />
@@ -971,6 +1271,15 @@ export default function WorkflowOrchestrator() {
               </div>
             ))}
           </div>
+          <div style={{ marginTop: 8, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+            <select value={fixtureEnv} onChange={e => setFixtureEnv(e.target.value)} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 10px" }}>
+              <option value="dev">Dev fixture</option>
+              <option value="stage">Stage fixture</option>
+              <option value="prod">Prod fixture</option>
+            </select>
+            <button onClick={downloadTestReport} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Download report</button>
+            {testReportUrl && <a href={testReportUrl} download="workflow-tests.json" style={{ color: "#67e8f9", fontWeight: 700 }}>Save now</a>}
+          </div>
         </div>
       )}
 
@@ -987,8 +1296,15 @@ export default function WorkflowOrchestrator() {
             {steps.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.config.toLowerCase().includes(searchTerm.toLowerCase())).map(step => (
               <li key={step.id} style={{ marginBottom: 8, background: selectedStep === step.id ? "#23263a" : "#18181b", borderRadius: 8, padding: 10, cursor: "pointer", border: selectedStep === step.id ? "2px solid #6366f1" : "1px solid #23263a", display: "flex", alignItems: "center", gap: 8 }} onClick={() => setSelectedStep(step.id)}>
                 <div style={{ flex: 1 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#9ca3af", fontSize: 12 }} onClick={e => e.stopPropagation()}>
+                    <input type="checkbox" checked={selectedStepIds.includes(step.id)} onChange={() => handleToggleSelect(step.id)} />
+                    Select
+                  </label>
                   <div style={{ fontWeight: 700 }}>{step.name}</div>
                   <div style={{ color: "#a5f3fc", fontSize: 12 }}>({step.type})</div>
+                  {traceByStep.get(steps.indexOf(step))?.length ? (
+                    <div style={{ color: "#fbbf24", fontSize: 12 }}>Issues: {traceByStep.get(steps.indexOf(step)).join(", ")}</div>
+                  ) : null}
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
                   <button onClick={e => { e.stopPropagation(); handleReorder(step.id, "up"); }} disabled={isViewer} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>↑</button>
@@ -1011,13 +1327,19 @@ export default function WorkflowOrchestrator() {
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button onClick={() => handleAddStep(null, "trigger")} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>+ Add Trigger</button>
             <button onClick={() => handleAddStep()} disabled={isViewer} style={{ background: "#10b981", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>+ Add Action</button>
+            <button onClick={handleDuplicateBranch} disabled={isViewer} style={{ background: "#a855f7", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>Duplicate branch</button>
+            <button onClick={handleCopySelection} disabled={isViewer || !selectedStepIds.length} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 14px", fontWeight: 700, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>Copy</button>
+            <button onClick={handlePasteSelection} disabled={isViewer || !clipboard.length} style={{ background: "#111827", color: "#67e8f9", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 14px", fontWeight: 700, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>Paste</button>
+            <button onClick={handleMultiDelete} disabled={isViewer || !selectedStepIds.length} style={{ background: "#111827", color: "#fca5a5", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 14px", fontWeight: 700, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>Delete selected</button>
           </div>
           <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
             <div style={{ color: "#9ca3af", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 }}>Playbooks</div>
+            <button onClick={() => setShowTemplateGallery(true)} disabled={isViewer} style={{ alignSelf: "flex-start", background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Open template gallery</button>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               <button onClick={() => applyPlaybook("seoFix")} disabled={isViewer} style={{ background: "#1f2937", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>SEO Fix Queue</button>
               <button onClick={() => applyPlaybook("productSync")} disabled={isViewer} style={{ background: "#1f2937", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Product Sync</button>
               <button onClick={() => applyPlaybook("winback")} disabled={isViewer} style={{ background: "#1f2937", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Winback</button>
+              <button onClick={() => applyPlaybook("churnSave")} disabled={isViewer} style={{ background: "#1f2937", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Churn Save</button>
             </div>
           </div>
         </div>
@@ -1088,6 +1410,42 @@ export default function WorkflowOrchestrator() {
         <div style={{ background: "#0b0f16", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Preview Payload</div>
           <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", color: "#cbd5f5", margin: 0, maxHeight: 260, overflow: "auto" }}>{JSON.stringify(previewPayload, null, 2)}</pre>
+          <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
+            <div style={{ fontWeight: 700 }}>Rollout & safety</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <input type="range" min={1} max={100} value={rolloutPercent} onChange={e => setRolloutPercent(Number(e.target.value))} />
+              <span style={{ color: "#e5e7eb", fontWeight: 700 }}>{rolloutPercent}% rollout</span>
+              <button onClick={() => setRolloutPercent(100)} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Promote to 100%</button>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#e5e7eb" }}>
+                <input type="checkbox" checked={autoRevert} onChange={e => setAutoRevert(e.target.checked)} /> Auto-revert on errors
+              </label>
+              <input type="number" min={1} max={50} value={errorSpikeThreshold} onChange={e => setErrorSpikeThreshold(Number(e.target.value))} style={{ width: 80, background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px" }} />
+              <span style={{ color: "#9ca3af", fontSize: 12 }}>Spike threshold</span>
+            </div>
+          </div>
+          <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+            <div style={{ fontWeight: 700 }}>Sinks & webhooks</div>
+            <input value={slackChannel} onChange={e => setSlackChannel(e.target.value)} placeholder="Slack channel (e.g. #ops)" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "8px" }} />
+            <input value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} placeholder="Webhook URL" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "8px" }} />
+            <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#e5e7eb" }}>
+              <input type="checkbox" checked={queueEnabled} onChange={e => setQueueEnabled(e.target.checked)} /> Queue stub enabled
+            </label>
+            <button onClick={sendWebhookEvent} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Send sample event</button>
+          </div>
+          <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+            <div style={{ fontWeight: 700 }}>SLA budgets</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <label style={{ color: "#e5e7eb", display: "flex", alignItems: "center", gap: 6 }}>
+                Latency budget (ms)
+                <input type="number" min={100} max={3000} value={latencyBudgetMs} onChange={e => setLatencyBudgetMs(Number(e.target.value))} style={{ width: 90, background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px" }} />
+              </label>
+              <label style={{ color: "#e5e7eb", display: "flex", alignItems: "center", gap: 6 }}>
+                Error budget (% allowed)
+                <input type="number" min={0.5} max={10} step={0.5} value={errorBudgetPct} onChange={e => setErrorBudgetPct(Number(e.target.value))} style={{ width: 90, background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px" }} />
+              </label>
+              <span style={{ color: "#9ca3af", fontSize: 12 }}>{slaCompliance.summary}</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1104,6 +1462,56 @@ export default function WorkflowOrchestrator() {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      <div style={{ marginTop: 18, display: "grid", gap: 10, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+          <div style={{ fontWeight: 800 }}>Observability</div>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>Last publish {lastPublish ? new Date(lastPublish).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</div>
+        </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <div style={{ fontWeight: 700, color: "#e5e7eb" }}>Recent errors</div>
+          {recentErrors.length === 0 ? <div style={{ color: "#22c55e" }}>Clean</div> : recentErrors.map((e, i) => <div key={i} style={{ color: "#fca5a5", fontSize: 12 }}>{e}</div>)}
+        </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <div style={{ fontWeight: 700, color: "#e5e7eb" }}>Audit log</div>
+          {auditLog.length === 0 ? <div style={{ color: "#9ca3af", fontSize: 12 }}>No events yet</div> : auditLog.map((a, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 8, background: "#111827", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", color: "#e5e7eb", fontSize: 12 }}>
+              <span>{a.event}</span>
+              <span style={{ color: "#9ca3af" }}>{a.env}</span>
+              <span style={{ color: "#9ca3af" }}>{new Date(a.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {showTemplateGallery && (
+        <div style={{ position: "fixed", inset: 0, background: "#000b", zIndex: 30, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 14, padding: 16, width: "min(760px, 94vw)", boxShadow: "0 18px 60px #000" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div>
+                <div style={{ fontWeight: 800, color: "#a5f3fc" }}>Template gallery</div>
+                <div style={{ color: "#9ca3af", fontSize: 12 }}>Pick a ready-made flow with rollout defaults.</div>
+              </div>
+              <button onClick={() => setShowTemplateGallery(false)} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Close</button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
+              {galleryTemplates.map(tpl => (
+                <div key={tpl.id} style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: 10, display: "grid", gap: 8 }}>
+                  <div style={{ fontWeight: 800 }}>{tpl.title}</div>
+                  <div style={{ color: "#9ca3af", fontSize: 12 }}>{tpl.description}</div>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {tpl.badges?.map(b => (
+                      <span key={b} style={{ background: "#1f2937", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "4px 8px", fontSize: 12 }}>{b}</span>
+                    ))}
+                  </div>
+                  <div style={{ color: "#67e8f9", fontSize: 12 }}>Rollout: {tpl.rollout || 100}%</div>
+                  <button onClick={() => applyTemplate(tpl)} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 10px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Use template</button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
