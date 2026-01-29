@@ -9,7 +9,7 @@ import MainSuite from "./tools/MainSuite";
 import AbandonedCheckoutWinback from "./tools/AbandonedCheckoutWinback";
 import ProductSeoEngine from "./ProductSeoEngine";
 import AiAltTextEngine from "./AiAltTextEngine";
-import ContentHealthAuditor from "./ContentHealthAuditor";
+import ContentHealthAuditor from "./tools/ContentHealthAuditor.jsx";
 import InternalLinkOptimizer from "./InternalLinkOptimizer";
 import AdvancedAnalyticsAttribution from "./tools/AdvancedAnalyticsAttribution.jsx";
 import Toast from "./Toast";
