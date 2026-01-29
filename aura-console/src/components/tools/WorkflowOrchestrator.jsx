@@ -24,6 +24,15 @@ export default function WorkflowOrchestrator() {
   const [history, setHistory] = useState([]);
   const [issueHelp, setIssueHelp] = useState(null);
     const devSandbox = env === "dev";
+  const [importError, setImportError] = useState("");
+  const importRef = useRef(null);
+  const [testCases, setTestCases] = useState([
+    { id: "payload-small", name: "Small payload happy path", payload: { total: 50 }, expect: "ok" },
+    { id: "payload-large", name: "Large payload guardrail", payload: { total: 9999 }, expect: "warn" },
+    { id: "missing-trigger", name: "Missing trigger should fail", payload: { total: 25 }, expect: "fail" }
+  ]);
+  const [testResults, setTestResults] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
     const quickFixForIssue = (issue = "") => {
       const lower = issue.toLowerCase();
@@ -292,17 +301,40 @@ export default function WorkflowOrchestrator() {
     setSteps(steps.map(s => s.id === id ? { ...s, ...changes } : s));
   };
 
+  const validateSchema = (data) => {
+    const errs = [];
+    if (!data || typeof data !== "object") errs.push("Payload must be an object");
+    if (!Array.isArray(data.steps)) errs.push("steps must be an array");
+    if (Array.isArray(data.steps)) {
+      data.steps.forEach((s, idx) => {
+        if (typeof s.id !== "number") errs.push(`steps[${idx}].id must be a number`);
+        if (!s.name) errs.push(`steps[${idx}].name required`);
+        if (!s.type || !["trigger", "action", "condition"].includes(s.type)) errs.push(`steps[${idx}].type invalid`);
+        if (!s.config) errs.push(`steps[${idx}].config required`);
+      });
+    }
+    return errs;
+  };
+
   const runPreflight = () => {
     const issues = [];
     const trace = [];
     const hasTrigger = steps.some(s => s.type === "trigger");
     const hasAction = steps.some(s => s.type === "action");
+    const tooManySteps = steps.length > 20;
+    const duplicateIds = new Set();
+    const dupIdHits = [];
     const nameCounts = steps.reduce((acc, s) => {
       const key = (s.name || "").trim().toLowerCase();
       if (!key) return acc;
       acc[key] = (acc[key] || 0) + 1;
       return acc;
     }, {});
+
+    steps.forEach(s => {
+      if (duplicateIds.has(s.id)) dupIdHits.push(s.id);
+      duplicateIds.add(s.id);
+    });
 
     if (!workflowName.trim()) issues.push("Workflow name required.");
     if (!hasTrigger) issues.push("At least one trigger is required.");
@@ -311,6 +343,8 @@ export default function WorkflowOrchestrator() {
     if (steps.length && steps[steps.length - 1]?.type !== "action") issues.push("Consider ending with an action/terminal step.");
     if (approvalRequired && !approverEmail) issues.push("Approver email required for approvals.");
     if (env === "prod" && (riskLevel === "high" || approvalRequired) && !confirmationNote.trim()) issues.push("Prod/high risk requires confirmation note.");
+    if (dupIdHits.length) issues.push("Duplicate step IDs detected.");
+    if (tooManySteps) issues.push("Flow too large: consider splitting (20+ steps).");
 
     steps.forEach((s, idx) => {
       const localIssues = [];
@@ -321,6 +355,7 @@ export default function WorkflowOrchestrator() {
       if (s.type !== "trigger" && idx === 0) localIssues.push("Start with trigger");
       const key = (s.name || "").trim().toLowerCase();
       if (key && nameCounts[key] > 1) localIssues.push("Duplicate name");
+      if (s.type === "condition" && !/if|when/i.test(s.config)) localIssues.push("Condition lacks clear rule");
       if (localIssues.length) trace.push({ label: s.name || `Step ${idx + 1}`, idx, issues: localIssues });
     });
 
@@ -585,6 +620,62 @@ export default function WorkflowOrchestrator() {
     runPreflight();
   };
 
+  const handleExport = () => {
+    const payload = { workflowName, objective, env, versionTag, steps, tags, approvalRequired, approverEmail, riskLevel, owner };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${workflowName || "workflow"}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  };
+
+  const handleImport = (evt) => {
+    const file = evt.target.files?.[0];
+    if (!file) return;
+    setImportError("");
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result);
+        const errs = validateSchema(parsed);
+        if (errs.length) throw new Error(errs.join("; "));
+        pushUndoSnapshot();
+        setWorkflowName(parsed.workflowName || workflowName);
+        setObjective(parsed.objective || objective);
+        setEnv(parsed.env || env);
+        setVersionTag(parsed.versionTag || versionTag);
+        setTags(parsed.tags || tags);
+        setApprovalRequired(!!parsed.approvalRequired);
+        setApproverEmail(parsed.approverEmail || approverEmail);
+        setRiskLevel(parsed.riskLevel || riskLevel);
+        setOwner(parsed.owner || owner);
+        setSteps(parsed.steps || steps);
+      } catch (e) {
+        setImportError(e?.message || "Import failed");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleRunTests = () => {
+    if (isViewer) return;
+    setTestStatus("running");
+    const issues = runPreflight();
+    const results = testCases.map(tc => {
+      const payloadTooBig = JSON.stringify(tc.payload || {}).length > 6000;
+      const hasTrigger = steps.some(s => s.type === "trigger");
+      const ok = !payloadTooBig && hasTrigger && issues.length === 0;
+      const status = payloadTooBig ? "warn" : issues.length ? "fail" : "pass";
+      const expected = tc.expect;
+      const pass = (expected === "ok" && ok) || (expected === "warn" && status === "warn") || (expected === "fail" && status === "fail");
+      return { ...tc, status, pass };
+    });
+    setTestResults(results);
+    setTimeout(() => setTestStatus("idle"), 400);
+  };
+
   const handleSnapshotVersion = () => {
     if (isViewer) return;
     const label = versionName || `v${versions.length + 1}`;
@@ -752,6 +843,7 @@ export default function WorkflowOrchestrator() {
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6, alignItems: "center" }}>
           <button onClick={runPreflight} disabled={isViewer} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Preflight</button>
           <button onClick={runDryRun} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Dry-run (dev)</button>
+          <button onClick={handleRunTests} disabled={isViewer || testStatus === "running"} style={{ background: "#67e8f9", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{testStatus === "running" ? "Running tests…" : "Run test suite"}</button>
           {preflightStatus && (
             <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 999, border: "1px solid #1f2937", background: preflightStatus.ok ? "#0b1221" : "#1f2937", color: preflightStatus.ok ? "#22c55e" : preflightStatus.issues ? "#fcd34d" : "#f87171", fontWeight: 800, fontSize: 12 }}>
               <span style={{ width: 10, height: 10, borderRadius: "50%", background: preflightStatus.ok ? "#22c55e" : preflightStatus.issues ? "#f59e0b" : "#ef4444" }} />
@@ -800,6 +892,9 @@ export default function WorkflowOrchestrator() {
           <button onClick={handleTestDev} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{testStatus === "running" ? "Testing..." : "Test in dev"}</button>
           <button onClick={handleOrchestrate} disabled={loading || isViewer || devSandbox} style={{ background: devSandbox ? "#1f2937" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 15, cursor: loading || isViewer || devSandbox ? "not-allowed" : "pointer", opacity: loading || isViewer || devSandbox ? 0.6 : 1 }}>{devSandbox ? "Sandbox (switch env)" : loading ? "Orchestrating..." : "Orchestrate"}</button>
           <button onClick={rollbackToLastRun} disabled={isViewer || !lastRunSnapshot} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", fontWeight: 800, cursor: isViewer || !lastRunSnapshot ? "not-allowed" : "pointer", opacity: isViewer || !lastRunSnapshot ? 0.6 : 1 }}>Rollback to last run</button>
+          <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Export JSON</button>
+          <button onClick={() => importRef.current?.click()} style={{ background: "#a855f7", color: "#0b1221", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Import JSON</button>
+          <input type="file" accept="application/json" ref={importRef} onChange={handleImport} style={{ display: "none" }} />
           <div style={{ color: "#9ca3af", fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ color: draftStatus === "saved" ? "#22c55e" : "#fbbf24" }}>{draftStatus === "saved" ? "Saved" : "Saving"}</span>
             {lastSavedAt && <span>· {formatTime(lastSavedAt)}</span>}
@@ -819,6 +914,7 @@ export default function WorkflowOrchestrator() {
           <button onClick={attachPreflightForReviewer} disabled={isViewer} style={{ background: "#8b5cf6", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Attach preflight</button>
           <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", color: disabled ? "#f97316" : "#22c55e", fontWeight: 700 }}>Disabled: {disabled ? "Yes" : "No"}</div>
         </div>
+        {importError && <div style={{ color: "#fca5a5", fontSize: 12, marginTop: 6 }}>Import error: {importError}</div>}
       </div>
 
       {history.length > 0 && (
@@ -860,14 +956,35 @@ export default function WorkflowOrchestrator() {
         </div>
       </div>
 
+      {testResults.length > 0 && (
+        <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+          <div style={{ fontWeight: 800, marginBottom: 6 }}>Test harness</div>
+          <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: 6 }}>Validates payload size, trigger presence, and preflight cleanliness.</div>
+          <div style={{ display: "grid", gap: 6 }}>
+            {testResults.map(tr => (
+              <div key={tr.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, background: "#111827", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 10px" }}>
+                <div>
+                  <div style={{ fontWeight: 700, color: "#e5e7eb" }}>{tr.name}</div>
+                  <div style={{ color: "#9ca3af", fontSize: 12 }}>Expect: {tr.expect} · Got: {tr.status}</div>
+                </div>
+                <span style={{ fontWeight: 800, color: tr.pass ? "#22c55e" : "#f97316" }}>{tr.pass ? "Pass" : "Mismatch"}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <button onClick={() => setShowOnboarding(v => !v)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Quick Guide</button>
       {showOnboarding && onboardingContent}
 
       <div style={{ display: "flex", gap: 18, marginBottom: 18, flexWrap: "wrap" }}>
         <div style={{ minWidth: 240 }}>
-          <div style={{ fontWeight: 700, marginBottom: 8 }}>Workflow Steps</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6 }}>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}>Workflow Steps</div>
+            <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", fontSize: 12 }} />
+          </div>
           <ul style={{ listStyle: "none", padding: 0 }}>
-            {steps.map(step => (
+            {steps.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.config.toLowerCase().includes(searchTerm.toLowerCase())).map(step => (
               <li key={step.id} style={{ marginBottom: 8, background: selectedStep === step.id ? "#23263a" : "#18181b", borderRadius: 8, padding: 10, cursor: "pointer", border: selectedStep === step.id ? "2px solid #6366f1" : "1px solid #23263a", display: "flex", alignItems: "center", gap: 8 }} onClick={() => setSelectedStep(step.id)}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700 }}>{step.name}</div>
@@ -881,6 +998,16 @@ export default function WorkflowOrchestrator() {
               </li>
             ))}
           </ul>
+          <div style={{ margin: "8px 0", background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 8 }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Minimap</div>
+            <div style={{ display: "grid", gap: 4 }}>
+              {steps.map(s => (
+                <button key={s.id} onClick={() => setSelectedStep(s.id)} style={{ textAlign: "left", background: selectedStep === s.id ? "#1e293b" : "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", fontSize: 12, cursor: "pointer" }}>
+                  #{s.id} · {s.name} ({s.type})
+                </button>
+              ))}
+            </div>
+          </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button onClick={() => handleAddStep(null, "trigger")} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>+ Add Trigger</button>
             <button onClick={() => handleAddStep()} disabled={isViewer} style={{ background: "#10b981", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>+ Add Action</button>
@@ -935,6 +1062,25 @@ export default function WorkflowOrchestrator() {
                 {diffSummary.added.length > 0 && <span style={{ color: "#22c55e", fontSize: 13 }}>+ {diffSummary.added.map(a => a.name).join(", ")}</span>}
                 {diffSummary.removed.length > 0 && <span style={{ color: "#fca5a5", fontSize: 13 }}>- {diffSummary.removed.map(r => r.name).join(", ")}</span>}
                 {diffSummary.changed.length > 0 && <span style={{ color: "#fbbf24", fontSize: 13 }}>~ {diffSummary.changed.map(c => c.name).join(", ")}</span>}
+              </div>
+            </div>
+          )}
+          {versions.length > 0 && (
+            <div style={{ marginTop: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+              <div style={{ fontWeight: 700, marginBottom: 6 }}>Version history</div>
+              <div style={{ display: "grid", gap: 8 }}>
+                {versions.map((v, idx) => (
+                  <div key={idx} style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: 8, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ fontWeight: 700, color: "#e5e7eb" }}>{v.label}</div>
+                      <div style={{ color: "#9ca3af", fontSize: 12 }}>Steps: {v.steps?.length || 0} · Env: {v.env}</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      <button onClick={() => { setSteps(v.steps || []); setEnv(v.env || env); setApprovalRequired(!!v.approvalRequired); }} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Load</button>
+                      <button onClick={() => setLastRunSnapshot(v)} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Baseline</button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
