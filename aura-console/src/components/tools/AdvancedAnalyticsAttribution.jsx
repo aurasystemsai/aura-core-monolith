@@ -93,6 +93,12 @@ export default function AdvancedAnalyticsAttribution() {
   const [payloadImportText, setPayloadImportText] = useState("");
   const draftKey = "advanced-attribution-draft";
 
+  // Derived values (declare before hooks that consume them)
+  const devSandbox = env === "dev";
+  const payloadSize = payload.length;
+  const estimatedRuntime = Math.min(18, 3 + Math.round(payloadSize / 900));
+  const guardrailBlock = payloadSize > 7500;
+
   useEffect(() => {
     setUnsaved(true);
   }, [payload, query, model, cohortKey, env, owner, sla, journeyDepth]);
@@ -116,11 +122,6 @@ export default function AdvancedAnalyticsAttribution() {
     setPresence([{ name: "You", role: rbacRole }, { name: "Alex", role: "reviewer" }]);
     setOnboarding(o => ({ ...o, done: [] }));
   }, []);
-
-  const devSandbox = env === "dev";
-  const payloadSize = payload.length;
-  const estimatedRuntime = Math.min(18, 3 + Math.round(payloadSize / 900));
-  const guardrailBlock = payloadSize > 7500;
 
   const logAudit = (event, meta = {}) => {
     setAuditLog(prev => [{ event, meta, at: Date.now(), env }, ...prev].slice(0, 50));
