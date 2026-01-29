@@ -631,7 +631,6 @@ export default function WorkflowOrchestrator() {
   };
 
   const stepSignature = useMemo(() => hashString(steps), [steps]);
-  const payloadSignature = useMemo(() => hashString(previewPayload), [previewPayload]);
 
   const flowMetrics = useMemo(() => {
     const triggerCount = steps.filter(s => s.type === "trigger").length;
@@ -671,6 +670,8 @@ export default function WorkflowOrchestrator() {
     signature: stepSignature,
     metrics: flowMetrics
   }), [workflowName, objective, env, versionTag, tags, approvalRequired, approverEmail, riskLevel, owner, steps, rolloutPercent, autoRevert, errorSpikeThreshold, latencyBudgetMs, errorBudgetPct, queueEnabled, slackChannel, webhookUrl, stepSignature, flowMetrics]);
+
+  const payloadSignature = useMemo(() => hashString(previewPayload), [previewPayload]);
 
   const readinessSummary = useMemo(() => {
     const triggerOk = steps.some(s => s.type === "trigger");
