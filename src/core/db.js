@@ -23,10 +23,57 @@ if (DB_TYPE === 'postgres') {
   };
   pgPool = new Pool(pgConfig);
   console.log('[Core] Using Postgres at', pgConfig.connectionString);
+
+  function normalizeSql(text) {
+    let idx = 0;
+    return text.replace(/\?/g, () => `$${++idx}`);
+  }
+
+  async function query(text, params = []) {
+    const sql = normalizeSql(text);
+    return pgPool.query(sql, params);
+  }
+
+  async function queryAll(text, params = []) {
+    const res = await query(text, params);
+    return res.rows;
+  }
+
+  async function queryOne(text, params = []) {
+    const res = await query(text, params);
+    return res.rows[0] || null;
+  }
+
+  async function exec(text) {
+    // Allow multiple statements separated by semicolons while preserving order
+    const statements = text
+      .split(/;\s*/)
+      .map(s => s.trim())
+      .filter(Boolean);
+    const results = [];
+    for (const stmt of statements) {
+      results.push(await query(stmt));
+    }
+    return results;
+  }
+
+  function prepare(text) {
+    const normalized = normalizeSql(text);
+    return {
+      run: async (...params) => query(normalized, params),
+      all: async (...params) => queryAll(normalized, params),
+      get: async (...params) => queryOne(normalized, params),
+    };
+  }
+
   module.exports = {
     type: 'postgres',
     pool: pgPool,
-    query: (text, params) => pgPool.query(text, params),
+    query,
+    queryAll,
+    queryOne,
+    exec,
+    prepare,
     close: () => pgPool.end(),
   };
 } else {
@@ -42,24 +89,32 @@ if (DB_TYPE === 'postgres') {
   db = new Database(dbPath);
   db.pragma("journal_mode = WAL");
   console.log(`[Core] SQLite DB path: ${dbPath}`);
+
+  const query = (sql, params = []) => {
+    const stmt = db.prepare(sql);
+    return stmt.run(...params);
+  };
+
+  const queryAll = (sql, params = []) => {
+    const stmt = db.prepare(sql);
+    return stmt.all(...params);
+  };
+
+  const queryOne = (sql, params = []) => {
+    const stmt = db.prepare(sql);
+    return stmt.get(...params);
+  };
+
+  const exec = (...args) => db.exec(...args);
+
   module.exports = {
     type: 'sqlite',
     db,
     prepare: (...args) => db.prepare(...args),
-    exec: (...args) => db.exec(...args),
+    exec,
     close: () => db.close(),
-    // Added for compatibility with model.js
-    query: (sql, params=[]) => {
-      const stmt = db.prepare(sql);
-      return stmt.run(...params);
-    },
-    queryAll: (sql, params=[]) => {
-      const stmt = db.prepare(sql);
-      return stmt.all(...params);
-    },
-    queryOne: (sql, params=[]) => {
-      const stmt = db.prepare(sql);
-      return stmt.get(...params);
-    },
+    query,
+    queryAll,
+    queryOne,
   };
 }

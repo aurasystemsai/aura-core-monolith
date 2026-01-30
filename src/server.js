@@ -119,6 +119,8 @@ app.use('/api/abandoned-checkout-winback', require('./routes/abandoned-checkout-
 app.use('/api/notifications', require('./routes/notifications'));
 // --- Register analytics API route ---
 app.use('/api/analytics', require('./routes/analytics'));
+// --- Register advanced AI suite (copilot, realtime, attribution, compliance, HITL, webhooks) ---
+app.use('/api/advanced-ai', require('./routes/advanced-ai'));
 // --- Register all tool routers (auto-generated, advanced features) ---
 const toolRouters = [
   { path: '/api/product-seo', router: require('./tools/product-seo/router') },
@@ -179,7 +181,7 @@ toolRouters.forEach(({ path, router }) => {
 
 // --- Session context endpoint for frontend ---
 // Returns current shop/project context for frontend dashboard
-app.get('/api/session', (req, res) => {
+app.get('/api/session', async (req, res) => {
   // Debug log for session and env
   console.log('[DEBUG /api/session] req.session:', req.session);
   console.log('[DEBUG /api/session] process.env.SHOPIFY_STORE_URL:', process.env.SHOPIFY_STORE_URL);
@@ -206,7 +208,7 @@ app.get('/api/session', (req, res) => {
   let project = null;
   if (shop) {
     try {
-      project = projectsCore.getProjectByDomain(shop);
+      project = await projectsCore.getProjectByDomain(shop);
     } catch (err) {
       console.warn('[Session] Failed to get project for shop', shop, err);
     }
@@ -565,10 +567,10 @@ app.get("/shopify/auth/callback", async (req, res) => {
 
       // ensure a project exists for this shop (auto-create)
       const normalized = String(shop).trim();
-      let project = projectsCore.getProjectByDomain(normalized);
+      let project = await projectsCore.getProjectByDomain(normalized);
       if (!project) {
         console.log(`[Shopify OAuth] Creating project for shop: ${normalized}`);
-        project = projectsCore.createProject({
+        project = await projectsCore.createProject({
           name: normalized,
           domain: normalized,
           platform: "shopify",
@@ -964,14 +966,14 @@ function validateContentBatchInput(input) {
 
 function registerProjectsAndContentRoutes(prefix = "") {
   // Create a new project from the Connect Store screen
-  app.post(`${prefix}/projects`, (req, res) => {
+  app.post(`${prefix}/projects`, async (req, res) => {
     const errors = validateProjectInput(req.body);
     if (errors.length) {
       return res.status(400).json({ ok: false, error: errors.join('; ') });
     }
     try {
       const { name, domain, platform } = req.body || {};
-      const project = projectsCore.createProject({
+      const project = await projectsCore.createProject({
         name: String(name).trim(),
         domain: String(domain).trim(),
         platform: (platform || "other").trim(),
@@ -990,9 +992,9 @@ function registerProjectsAndContentRoutes(prefix = "") {
   });
 
   // List all projects (used by console project switcher)
-  app.get(`${prefix}/projects`, (_req, res) => {
+  app.get(`${prefix}/projects`, async (_req, res) => {
     try {
-      const projects = projectsCore.listProjects();
+      const projects = await projectsCore.listProjects();
       return res.json({
         ok: true,
         projects,
