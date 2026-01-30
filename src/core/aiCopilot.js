@@ -1,4 +1,4 @@
-anymot// Proactive, personalized AI Copilot/Agent for Aura Systems
+// Proactive, personalized AI Copilot/Agent for Aura Systems
 // Provides next-best-actions, proactive pings, and conversational assistance leveraging OpenAI
 
 const EventEmitter = require('events');
