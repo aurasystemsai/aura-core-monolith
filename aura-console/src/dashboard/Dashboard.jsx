@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch } from "../api";
+import { sendCopilotMessage, submitIdea, topIdeas } from "../core/advancedAiClient";
 import IntegrationHealthPanel from "../components/IntegrationHealthPanel";
 import NotificationsPanel from "../components/NotificationsPanel";
 import AnalyticsPanel from "../components/AnalyticsPanel";
@@ -37,6 +38,11 @@ const Dashboard = ({ setActiveSection }) => {
   });
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
+  const [copilotInput, setCopilotInput] = useState("");
+  const [copilotReply, setCopilotReply] = useState("");
+  const [copilotLoading, setCopilotLoading] = useState(false);
+  const [ideas, setIdeas] = useState([]);
+  const [newIdea, setNewIdea] = useState("");
 
   useEffect(() => {
     let intervalId;
@@ -82,6 +88,17 @@ const Dashboard = ({ setActiveSection }) => {
       setAutomationLogs((logs) => [
         { time: new Date().toLocaleString(), status: data.ok ? 'Success' : 'Error', message: data.message || (data.ok ? 'Automations triggered.' : 'Failed to run automations.') },
         ...logs
+    useEffect(() => {
+      async function hydrateIdeas() {
+        try {
+          const res = await topIdeas(5);
+          setIdeas(res.ideas || []);
+        } catch (err) {
+          console.error("[dashboard] top ideas error", err);
+        }
+      }
+      hydrateIdeas();
+    }, []);
       ].slice(0, 10));
     } catch (e) {
       setAutomationLogs((logs) => [
@@ -138,6 +155,34 @@ const Dashboard = ({ setActiveSection }) => {
       </div>
     );
   }
+
+  const copilotUserId = shop.id || shop.projectId || shop.domain || "dashboard-user";
+
+  const handleCopilotAsk = async () => {
+    if (!copilotInput.trim()) return;
+    setCopilotLoading(true);
+    try {
+      const res = await sendCopilotMessage(copilotUserId, copilotInput.trim());
+      setCopilotReply(res.reply || "");
+      setCopilotInput("");
+    } catch (err) {
+      setCopilotReply(err.message || "Failed to fetch copilot reply");
+    } finally {
+      setCopilotLoading(false);
+    }
+  };
+
+  const handleIdeaSubmit = async () => {
+    if (!newIdea.trim()) return;
+    try {
+      const res = await submitIdea(newIdea.trim());
+      setNewIdea("");
+      setIdeas((prev) => [{ ...res.idea, votes: 0 }, ...prev].slice(0, 5));
+    } catch (err) {
+      console.error("[dashboard] submit idea error", err);
+    }
+  };
+
   return (
     <div className="aura-dashboard-shell">
       {/* Hero/overview section - visually impactful */}
@@ -193,6 +238,54 @@ const Dashboard = ({ setActiveSection }) => {
           <div style={{ fontWeight: 900, fontSize: 26, color: '#7fffd4', marginBottom: 6, textAlign: 'center' }}>{shop.name || 'My Project'}</div>
           <div style={{ color: '#b3c2e0', fontSize: 16, marginBottom: 8, textAlign: 'center' }}>{shop.domain || shop.url || '—'}</div>
           <div style={{ color: '#b3c2e0', fontSize: 15, marginBottom: 18, textAlign: 'center' }}>Platform: <b style={{ color: '#7fffd4' }}>Shopify</b></div>
+          <div style={{
+            background: '#1f2436',
+            borderRadius: 14,
+            padding: '14px 16px',
+            width: '100%',
+            border: '1px solid #2f3650',
+            boxShadow: '0 6px 18px #0004',
+            marginBottom: 12,
+          }}>
+            <div style={{ fontWeight: 800, color: '#7fffd4', marginBottom: 8, fontSize: 15 }}>Copilot quick ask</div>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <input
+                value={copilotInput}
+                onChange={(e) => setCopilotInput(e.target.value)}
+                placeholder="Ask Aura Copilot about next best actions"
+                style={{
+                  flex: 1,
+                  borderRadius: 10,
+                  padding: '10px 12px',
+                  border: '1px solid #2f3650',
+                  background: '#0f1324',
+                  color: '#e8f2ff',
+                  fontSize: 14,
+                }}
+              />
+              <button
+                onClick={handleCopilotAsk}
+                disabled={copilotLoading}
+                style={{
+                  background: copilotLoading ? '#3a3f55' : '#7fffd4',
+                  color: '#0f1324',
+                  border: 'none',
+                  borderRadius: 10,
+                  fontWeight: 800,
+                  padding: '10px 14px',
+                  cursor: copilotLoading ? 'wait' : 'pointer',
+                  minWidth: 92,
+                }}
+              >
+                {copilotLoading ? 'Thinking…' : 'Ask'}
+              </button>
+            </div>
+            {copilotReply && (
+              <div style={{ marginTop: 10, color: '#dce8ff', fontSize: 14, lineHeight: 1.5 }}>
+                {copilotReply}
+              </div>
+            )}
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
             <span style={{ background: '#7fffd4', color: '#23263a', fontWeight: 900, fontSize: 17, borderRadius: 12, padding: '4px 18px', letterSpacing: '0.01em', boxShadow: '0 2px 8px #22d3ee33' }}>Shopify</span>
             <span style={{ background: '#22d37f', color: '#fff', fontWeight: 800, fontSize: 15, borderRadius: 10, padding: '4px 14px', marginLeft: 6, boxShadow: '0 2px 8px #22d37f33' }}>Active</span>
@@ -238,6 +331,62 @@ const Dashboard = ({ setActiveSection }) => {
               </li>
             ))}
           </ul>
+        )}
+      </div>
+
+      <div className="aura-card" style={{ padding: 20, borderRadius: 18, background: '#0f1324', border: '1px solid #1f2436', boxShadow: '0 12px 32px #0006', marginBottom: 22 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <div style={{ fontWeight: 800, fontSize: 18, color: '#e8f2ff' }}>HITL ideas</div>
+          <div style={{ color: '#7fffd4', fontWeight: 700, fontSize: 13 }}>Crowd-sourced improvements</div>
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+          <input
+            value={newIdea}
+            onChange={(e) => setNewIdea(e.target.value)}
+            placeholder="Propose a workflow or automation idea"
+            style={{
+              flex: 1,
+              borderRadius: 10,
+              padding: '10px 12px',
+              border: '1px solid #2f3650',
+              background: '#0f1324',
+              color: '#e8f2ff',
+              fontSize: 14,
+            }}
+          />
+          <button
+            onClick={handleIdeaSubmit}
+            style={{
+              background: '#7fffd4',
+              color: '#0f1324',
+              border: 'none',
+              borderRadius: 10,
+              fontWeight: 800,
+              padding: '10px 14px',
+              cursor: 'pointer',
+              minWidth: 92,
+            }}
+          >Submit</button>
+        </div>
+        {ideas.length === 0 ? (
+          <div style={{ color: '#9fb1d6', fontSize: 14 }}>No ideas yet. Be the first to suggest one.</div>
+        ) : (
+          <div style={{ display: 'grid', gap: 10 }}>
+            {ideas.map((idea) => (
+              <div key={idea.id} style={{
+                background: '#11162a',
+                border: '1px solid #1f2436',
+                borderRadius: 12,
+                padding: '10px 12px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+                <div style={{ color: '#e8f2ff', fontSize: 14, marginRight: 8 }}>{idea.text}</div>
+                <div style={{ color: '#7fffd4', fontWeight: 800, fontSize: 13 }}>▲ {idea.votes ?? 0}</div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
       <div className="aura-dashboard-stats" style={{

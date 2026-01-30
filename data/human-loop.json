@@ -1,0 +1,24 @@
+{
+  "tasks": [
+    {
+      "id": "bc00b16b-5f44-494a-9e37-6d8ea960f883",
+      "type": "review",
+      "payload": {
+        "doc": "x"
+      },
+      "status": "approved",
+      "createdAt": 1769722445959
+    }
+  ],
+  "feedback": {
+    "bc00b16b-5f44-494a-9e37-6d8ea960f883": [
+      {
+        "reviewer": "r1",
+        "decision": "approve",
+        "notes": "ok",
+        "ts": 1769722445978
+      }
+    ]
+  },
+  "ideas": []
+}
