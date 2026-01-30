@@ -88,17 +88,6 @@ const Dashboard = ({ setActiveSection }) => {
       setAutomationLogs((logs) => [
         { time: new Date().toLocaleString(), status: data.ok ? 'Success' : 'Error', message: data.message || (data.ok ? 'Automations triggered.' : 'Failed to run automations.') },
         ...logs
-    useEffect(() => {
-      async function hydrateIdeas() {
-        try {
-          const res = await topIdeas(5);
-          setIdeas(res.ideas || []);
-        } catch (err) {
-          console.error("[dashboard] top ideas error", err);
-        }
-      }
-      hydrateIdeas();
-    }, []);
       ].slice(0, 10));
     } catch (e) {
       setAutomationLogs((logs) => [
@@ -108,6 +97,18 @@ const Dashboard = ({ setActiveSection }) => {
     }
     setRunning(false);
   };
+
+  useEffect(() => {
+    async function hydrateIdeas() {
+      try {
+        const res = await topIdeas(5);
+        setIdeas(res.ideas || []);
+      } catch (err) {
+        console.error("[dashboard] top ideas error", err);
+      }
+    }
+    hydrateIdeas();
+  }, []);
 
 
   // Live shop/project data only
