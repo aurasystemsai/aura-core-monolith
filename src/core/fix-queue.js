@@ -8,6 +8,7 @@
 
 const crypto = require("crypto");
 const db = require("./db");
+const isPg = db.type === 'postgres';
 const { fetchPageMeta } = require("./fetchPageMeta");
 
 // ---------------------------
@@ -94,6 +95,7 @@ function safeJsonParse(s) {
 }
 
 function tableExists(name) {
+  if (isPg) return false;
   const row = db
     .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`)
     .get(name);
@@ -101,6 +103,7 @@ function tableExists(name) {
 }
 
 function getTableColumns(name) {
+  if (isPg) return new Set();
   try {
     const cols = db.prepare(`PRAGMA table_info(${name})`).all();
     return new Set(cols.map((c) => c.name));
@@ -167,24 +170,8 @@ function ensureFixQueueSchema() {
   `);
 
   // ---- fix_queue_audit ----
-  if (!tableExists("fix_queue_audit")) {
-    safeExec(`
-      CREATE TABLE IF NOT EXISTS fix_queue_audit (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        projectId TEXT NOT NULL,
-        itemId INTEGER,
-        actionType TEXT NOT NULL,
-        updatedBy TEXT,
-        meta TEXT, -- JSON
-        createdAt TEXT NOT NULL
-      );
-    `);
-  } else {
-    const cols = getTableColumns("fix_queue_audit");
-    if (!cols.has("itemId")) {
-      const tmp = `fix_queue_audit_legacy_${Date.now()}`;
-      safeExec(`ALTER TABLE fix_queue_audit RENAME TO ${tmp};`);
-
+  if (!isPg) {
+    if (!tableExists("fix_queue_audit")) {
       safeExec(`
         CREATE TABLE IF NOT EXISTS fix_queue_audit (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -196,36 +183,54 @@ function ensureFixQueueSchema() {
           createdAt TEXT NOT NULL
         );
       `);
+    } else {
+      const cols = getTableColumns("fix_queue_audit");
+      if (!cols.has("itemId")) {
+        const tmp = `fix_queue_audit_legacy_${Date.now()}`;
+        safeExec(`ALTER TABLE fix_queue_audit RENAME TO ${tmp};`);
 
-      const legacyCols = getTableColumns(tmp);
-      const itemExpr = legacyCols.has("fixQueueId")
-        ? "fixQueueId"
-        : legacyCols.has("queueId")
-        ? "queueId"
-        : legacyCols.has("fix_queue_id")
-        ? "fix_queue_id"
-        : "NULL";
+        safeExec(`
+          CREATE TABLE IF NOT EXISTS fix_queue_audit (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            projectId TEXT NOT NULL,
+            itemId INTEGER,
+            actionType TEXT NOT NULL,
+            updatedBy TEXT,
+            meta TEXT, -- JSON
+            createdAt TEXT NOT NULL
+          );
+        `);
 
-      const actionExpr = legacyCols.has("actionType") ? "actionType" : "'legacy'";
-      const byExpr = legacyCols.has("updatedBy") ? "updatedBy" : "NULL";
-      const metaExpr = legacyCols.has("meta") ? "meta" : "NULL";
-      const createdExpr = legacyCols.has("createdAt")
-        ? "createdAt"
-        : `'${nowIso()}'`;
+        const legacyCols = getTableColumns(tmp);
+        const itemExpr = legacyCols.has("fixQueueId")
+          ? "fixQueueId"
+          : legacyCols.has("queueId")
+          ? "queueId"
+          : legacyCols.has("fix_queue_id")
+          ? "fix_queue_id"
+          : "NULL";
 
-      safeExec(`
-        INSERT INTO fix_queue_audit (projectId, itemId, actionType, updatedBy, meta, createdAt)
-        SELECT
-          projectId,
-          ${itemExpr},
-          ${actionExpr},
-          ${byExpr},
-          ${metaExpr},
-          ${createdExpr}
-        FROM ${tmp};
-      `);
+        const actionExpr = legacyCols.has("actionType") ? "actionType" : "'legacy'";
+        const byExpr = legacyCols.has("updatedBy") ? "updatedBy" : "NULL";
+        const metaExpr = legacyCols.has("meta") ? "meta" : "NULL";
+        const createdExpr = legacyCols.has("createdAt")
+          ? "createdAt"
+          : `'${nowIso()}'`;
 
-      safeExec(`DROP TABLE IF EXISTS ${tmp};`);
+        safeExec(`
+          INSERT INTO fix_queue_audit (projectId, itemId, actionType, updatedBy, meta, createdAt)
+          SELECT
+            projectId,
+            ${itemExpr},
+            ${actionExpr},
+            ${byExpr},
+            ${metaExpr},
+            ${createdExpr}
+          FROM ${tmp};
+        `);
+
+        safeExec(`DROP TABLE IF EXISTS ${tmp};`);
+      }
     }
   }
 
@@ -289,6 +294,11 @@ function ensureFixQueueSchema() {
     CREATE INDEX IF NOT EXISTS idx_fix_queue_job_items_status
       ON fix_queue_job_items(jobId, status);
   `);
+
+  // Postgres: skip legacy SQLite migrations (PRAGMA, ALTER TABLE rename)
+  if (isPg) {
+    return;
+  }
 
   // ---- Legacy migration safety for fix_queue ----
   try {
