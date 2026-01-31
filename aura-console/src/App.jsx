@@ -32,6 +32,7 @@ import CustomDashboardBuilder from "./components/tools/CustomDashboardBuilder.js
 import MainSuite from "./components/tools/MainSuite.jsx";
 import WorkflowAutomationBuilder from "./components/tools/WorkflowAutomationBuilder.jsx";
 import ScheduledExport from "./components/tools/ScheduledExport.jsx";
+import SelfServiceAnalytics from "./components/tools/SelfServiceAnalytics.jsx";
 import ChurnPredictionPlaybooks from "./components/tools/ChurnPredictionPlaybooks.jsx";
 import UpsellCrossSellEngine from "./components/tools/UpsellCrossSellEngine.jsx";
 import InventoryForecasting from "./components/tools/InventoryForecasting.jsx";
@@ -688,18 +689,7 @@ function App() {
                           />
                         );
                       case "self-service-analytics":
-                        return (
-                          <ToolScaffold
-                            key={tool.id}
-                            toolId={tool.id}
-                            toolName={tool.name}
-                            fields={[
-                              { name: "dashboards", label: "Dashboards to create", type: "text", required: true },
-                              { name: "sources", label: "Data Sources", type: "text" },
-                              { name: "schedule", label: "Schedule (daily/weekly)", type: "text" },
-                            ]}
-                          />
-                        );
+                          return <SelfServiceAnalytics key={tool.id} />;
                       case "compliance-privacy-suite":
                         return (
                           <ToolScaffold
