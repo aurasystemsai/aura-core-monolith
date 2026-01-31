@@ -119,6 +119,8 @@ app.use('/api/abandoned-checkout-winback', require('./routes/abandoned-checkout-
 app.use('/api/notifications', require('./routes/notifications'));
 // --- Register analytics API route ---
 app.use('/api/analytics', require('./routes/analytics'));
+// --- Predictive analytics telemetry (local storage backed) ---
+app.use('/api/paw-telemetry', require('./routes/paw-telemetry'));
 // --- Register advanced AI suite (copilot, realtime, attribution, compliance, HITL, webhooks) ---
 app.use('/api/advanced-ai', require('./routes/advanced-ai'));
 // --- Register all tool routers (auto-generated, advanced features) ---
@@ -1147,6 +1149,7 @@ registerProjectsAndContentRoutes("/api");
 async function toolRunHandler(req, res) {
   const toolId = req.params.toolId;
   const projectId = req.headers["x-aura-project-id"];
+  const start = Date.now();
 
   try {
     const tool = getTool(toolId);
@@ -1159,6 +1162,21 @@ async function toolRunHandler(req, res) {
 
     const result = await tool.run(input, ctx);
 
+    // Record simple metrics for predictive analytics tool
+    if (toolId === "predictive-analytics-widgets") {
+      try {
+        const { recordHttp } = require("./core/metrics");
+        const latency = Date.now() - start;
+        recordHttp(`/api/run/${toolId}`, latency, true);
+        if (result?.anomalies?.length !== undefined) {
+          result.meta = result.meta || {};
+          result.meta.anomalyCount = result.anomalies.length;
+        }
+      } catch (err) {
+        console.warn("[metrics] failed to record predictive analytics metrics", err.message);
+      }
+    }
+
     return res.json({
       ok: true,
       toolId,
@@ -1166,6 +1184,16 @@ async function toolRunHandler(req, res) {
     });
   } catch (err) {
     console.error(`[Core] Tool error: ${toolId}`, err);
+
+    if (toolId === "predictive-analytics-widgets") {
+      try {
+        const { recordHttp } = require("./core/metrics");
+        const latency = Date.now() - start;
+        recordHttp(`/api/run/${toolId}`, latency, false);
+      } catch (err2) {
+        console.warn("[metrics] failed to record predictive analytics error metric", err2.message);
+      }
+    }
 
     return res.status(500).json({
       ok: false,

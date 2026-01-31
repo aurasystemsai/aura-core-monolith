@@ -2081,5 +2081,431 @@
     "flowId": "8",
     "name": "ctr",
     "target": 0.15
+  },
+  {
+    "id": 252,
+    "ts": 1769862258213,
+    "type": "publish",
+    "flowId": "1",
+    "approval": 1
+  },
+  {
+    "id": 253,
+    "ts": 1769862258280,
+    "type": "rollback",
+    "flowId": "3",
+    "version": 1
+  },
+  {
+    "id": 254,
+    "ts": 1769862258305,
+    "type": "approval_requested",
+    "flowId": "4",
+    "requestedBy": "alice",
+    "reason": "Need review",
+    "approvalId": 1
+  },
+  {
+    "id": 255,
+    "ts": 1769862258313,
+    "type": "approval_status",
+    "flowId": "4",
+    "approvalId": "1",
+    "status": "approved",
+    "actor": "bob"
+  },
+  {
+    "id": 256,
+    "ts": 1769862258354,
+    "type": "approval_requested",
+    "flowId": "5",
+    "requestedBy": "alice",
+    "reason": "first review",
+    "approvalId": 1
+  },
+  {
+    "id": 257,
+    "ts": 1769862258361,
+    "type": "approval_status",
+    "flowId": "5",
+    "approvalId": "1",
+    "status": "rejected",
+    "actor": "bob"
+  },
+  {
+    "id": 258,
+    "ts": 1769862258383,
+    "type": "approval_status",
+    "flowId": "5",
+    "approvalId": "1",
+    "status": "approved",
+    "actor": "carol"
+  },
+  {
+    "id": 259,
+    "ts": 1769862258392,
+    "type": "publish",
+    "flowId": "5",
+    "approval": 1
+  },
+  {
+    "id": 260,
+    "ts": 1769862258410,
+    "type": "approval_requested",
+    "flowId": "6",
+    "requestedBy": "alice",
+    "reason": "Initial review",
+    "approvalId": 1
+  },
+  {
+    "id": 261,
+    "ts": 1769862258416,
+    "type": "approval_status",
+    "flowId": "6",
+    "approvalId": "1",
+    "status": "approved",
+    "actor": "bob"
+  },
+  {
+    "id": 262,
+    "ts": 1769862258425,
+    "type": "publish",
+    "flowId": "6",
+    "approval": 1
+  },
+  {
+    "id": 263,
+    "ts": 1769862258430,
+    "type": "approval_requested",
+    "flowId": "6",
+    "requestedBy": "carol",
+    "reason": "Second review pass",
+    "approvalId": 2
+  },
+  {
+    "id": 264,
+    "ts": 1769862258440,
+    "type": "approval_status",
+    "flowId": "6",
+    "approvalId": "2",
+    "status": "approved",
+    "actor": "dave"
+  },
+  {
+    "id": 265,
+    "ts": 1769862258445,
+    "type": "publish",
+    "flowId": "6",
+    "approval": 2
+  },
+  {
+    "id": 266,
+    "ts": 1769862258465,
+    "type": "approval_requested",
+    "flowId": "7",
+    "requestedBy": "alice",
+    "reason": "first",
+    "approvalId": 1
+  },
+  {
+    "id": 267,
+    "ts": 1769862258472,
+    "type": "approval_requested",
+    "flowId": "7",
+    "requestedBy": "bob",
+    "reason": "second",
+    "approvalId": 1
+  },
+  {
+    "id": 268,
+    "ts": 1769862258492,
+    "type": "metric_target",
+    "flowId": "8",
+    "name": "ctr",
+    "target": 0.15
+  },
+  {
+    "id": 269,
+    "ts": 1769862927492,
+    "type": "publish",
+    "flowId": "1",
+    "approval": 1
+  },
+  {
+    "id": 270,
+    "ts": 1769862927522,
+    "type": "rollback",
+    "flowId": "3",
+    "version": 1
+  },
+  {
+    "id": 271,
+    "ts": 1769862927535,
+    "type": "approval_requested",
+    "flowId": "4",
+    "requestedBy": "alice",
+    "reason": "Need review",
+    "approvalId": 1
+  },
+  {
+    "id": 272,
+    "ts": 1769862927540,
+    "type": "approval_status",
+    "flowId": "4",
+    "approvalId": "1",
+    "status": "approved",
+    "actor": "bob"
+  },
+  {
+    "id": 273,
+    "ts": 1769862927556,
+    "type": "approval_requested",
+    "flowId": "5",
+    "requestedBy": "alice",
+    "reason": "first review",
+    "approvalId": 1
+  },
+  {
+    "id": 274,
+    "ts": 1769862927560,
+    "type": "approval_status",
+    "flowId": "5",
+    "approvalId": "1",
+    "status": "rejected",
+    "actor": "bob"
+  },
+  {
+    "id": 275,
+    "ts": 1769862927565,
+    "type": "approval_status",
+    "flowId": "5",
+    "approvalId": "1",
+    "status": "approved",
+    "actor": "carol"
+  },
+  {
+    "id": 276,
+    "ts": 1769862927568,
+    "type": "publish",
+    "flowId": "5",
+    "approval": 1
+  },
+  {
+    "id": 277,
+    "ts": 1769862927578,
+    "type": "approval_requested",
+    "flowId": "6",
+    "requestedBy": "alice",
+    "reason": "Initial review",
+    "approvalId": 1
+  },
+  {
+    "id": 278,
+    "ts": 1769862927581,
+    "type": "approval_status",
+    "flowId": "6",
+    "approvalId": "1",
+    "status": "approved",
+    "actor": "bob"
+  },
+  {
+    "id": 279,
+    "ts": 1769862927584,
+    "type": "publish",
+    "flowId": "6",
+    "approval": 1
+  },
+  {
+    "id": 280,
+    "ts": 1769862927588,
+    "type": "approval_requested",
+    "flowId": "6",
+    "requestedBy": "carol",
+    "reason": "Second review pass",
+    "approvalId": 2
+  },
+  {
+    "id": 281,
+    "ts": 1769862927594,
+    "type": "approval_status",
+    "flowId": "6",
+    "approvalId": "2",
+    "status": "approved",
+    "actor": "dave"
+  },
+  {
+    "id": 282,
+    "ts": 1769862927598,
+    "type": "publish",
+    "flowId": "6",
+    "approval": 2
+  },
+  {
+    "id": 283,
+    "ts": 1769862927613,
+    "type": "approval_requested",
+    "flowId": "7",
+    "requestedBy": "alice",
+    "reason": "first",
+    "approvalId": 1
+  },
+  {
+    "id": 284,
+    "ts": 1769862927618,
+    "type": "approval_requested",
+    "flowId": "7",
+    "requestedBy": "bob",
+    "reason": "second",
+    "approvalId": 1
+  },
+  {
+    "id": 285,
+    "ts": 1769862927628,
+    "type": "metric_target",
+    "flowId": "8",
+    "name": "ctr",
+    "target": 0.15
+  },
+  {
+    "id": 286,
+    "ts": 1769863145221,
+    "type": "publish",
+    "flowId": "1",
+    "approval": 1
+  },
+  {
+    "id": 287,
+    "ts": 1769863145308,
+    "type": "rollback",
+    "flowId": "3",
+    "version": 1
+  },
+  {
+    "id": 288,
+    "ts": 1769863145331,
+    "type": "approval_requested",
+    "flowId": "4",
+    "requestedBy": "alice",
+    "reason": "Need review",
+    "approvalId": 1
+  },
+  {
+    "id": 289,
+    "ts": 1769863145343,
+    "type": "approval_status",
+    "flowId": "4",
+    "approvalId": "1",
+    "status": "approved",
+    "actor": "bob"
+  },
+  {
+    "id": 290,
+    "ts": 1769863145378,
+    "type": "approval_requested",
+    "flowId": "5",
+    "requestedBy": "alice",
+    "reason": "first review",
+    "approvalId": 1
+  },
+  {
+    "id": 291,
+    "ts": 1769863145389,
+    "type": "approval_status",
+    "flowId": "5",
+    "approvalId": "1",
+    "status": "rejected",
+    "actor": "bob"
+  },
+  {
+    "id": 292,
+    "ts": 1769863145405,
+    "type": "approval_status",
+    "flowId": "5",
+    "approvalId": "1",
+    "status": "approved",
+    "actor": "carol"
+  },
+  {
+    "id": 293,
+    "ts": 1769863145413,
+    "type": "publish",
+    "flowId": "5",
+    "approval": 1
+  },
+  {
+    "id": 294,
+    "ts": 1769863145446,
+    "type": "approval_requested",
+    "flowId": "6",
+    "requestedBy": "alice",
+    "reason": "Initial review",
+    "approvalId": 1
+  },
+  {
+    "id": 295,
+    "ts": 1769863145456,
+    "type": "approval_status",
+    "flowId": "6",
+    "approvalId": "1",
+    "status": "approved",
+    "actor": "bob"
+  },
+  {
+    "id": 296,
+    "ts": 1769863145463,
+    "type": "publish",
+    "flowId": "6",
+    "approval": 1
+  },
+  {
+    "id": 297,
+    "ts": 1769863145474,
+    "type": "approval_requested",
+    "flowId": "6",
+    "requestedBy": "carol",
+    "reason": "Second review pass",
+    "approvalId": 2
+  },
+  {
+    "id": 298,
+    "ts": 1769863145491,
+    "type": "approval_status",
+    "flowId": "6",
+    "approvalId": "2",
+    "status": "approved",
+    "actor": "dave"
+  },
+  {
+    "id": 299,
+    "ts": 1769863145498,
+    "type": "publish",
+    "flowId": "6",
+    "approval": 2
+  },
+  {
+    "id": 300,
+    "ts": 1769863145529,
+    "type": "approval_requested",
+    "flowId": "7",
+    "requestedBy": "alice",
+    "reason": "first",
+    "approvalId": 1
+  },
+  {
+    "id": 301,
+    "ts": 1769863145542,
+    "type": "approval_requested",
+    "flowId": "7",
+    "requestedBy": "bob",
+    "reason": "second",
+    "approvalId": 1
+  },
+  {
+    "id": 302,
+    "ts": 1769863145575,
+    "type": "metric_target",
+    "flowId": "8",
+    "name": "ctr",
+    "target": 0.15
   }
 ]
