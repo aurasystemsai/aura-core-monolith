@@ -1,12 +1,18 @@
 import { apiFetch } from '../api';
 
 async function parseJson(resp) {
-  const data = await resp.json();
+  const text = await resp.text();
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    // fall through to handle non-JSON bodies (e.g., 401 plain text)
+  }
   if (!resp.ok || data?.ok === false) {
-    const error = data?.error || `HTTP ${resp.status}`;
+    const error = (data && data.error) || text || `HTTP ${resp.status}`;
     throw new Error(error);
   }
-  return data;
+  return data || {};
 }
 
 export async function updateCopilotProfile(userId, profile) {
