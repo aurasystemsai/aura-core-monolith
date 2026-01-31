@@ -209,8 +209,16 @@ app.get('/api/session', async (req, res) => {
   if (shop) {
     try {
       project = await projectsCore.getProjectByDomain(shop);
+      if (!project && token) {
+        console.log('[Session] Auto-creating project for shop (from token fallback):', shop);
+        project = await projectsCore.createProject({
+          name: shop,
+          domain: shop,
+          platform: 'shopify',
+        });
+      }
     } catch (err) {
-      console.warn('[Session] Failed to get project for shop', shop, err);
+      console.warn('[Session] Failed to get/create project for shop', shop, err);
     }
   }
   console.log('[DEBUG /api/session] resolved shop:', shop, 'token:', token ? token.slice(0,6)+'...' : null, 'project:', project);
