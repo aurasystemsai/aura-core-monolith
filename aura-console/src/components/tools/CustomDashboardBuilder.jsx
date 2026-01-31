@@ -63,6 +63,15 @@ export default function CustomDashboardBuilder() {
   const devSandbox = env === "dev";
   const fileInputRef = useRef();
   const mainRef = useRef();
+  const isReadOnly = editLocked || role === "viewer";
+
+  const ensureWritable = () => {
+    if (isReadOnly) {
+      setError("View-only: unlock or switch to editor to change dashboards.");
+      return false;
+    }
+    return true;
+  };
 
   const restoreSnapshot = (snap) => {
     if (!snap) return;
@@ -104,6 +113,7 @@ export default function CustomDashboardBuilder() {
   };
 
   const cleanupDashboard = () => {
+    if (!ensureWritable()) return;
     const seenSources = new Set();
     const dedupedSources = dataSources.filter(ds => {
       const key = (ds.name || ds.id || "").toLowerCase();
@@ -119,6 +129,7 @@ export default function CustomDashboardBuilder() {
   };
 
   const simulateLoadTest = () => {
+    if (!ensureWritable()) return;
     setSimulatedLoad(true);
     const jittered = {};
     Object.entries(latencyMap || {}).forEach(([k, v]) => { jittered[k] = Math.round(v * 1.25 + Math.random() * 60); });
@@ -128,6 +139,7 @@ export default function CustomDashboardBuilder() {
   };
 
   const measureLatency = () => {
+    if (!ensureWritable()) return;
     if (dataSources.length === 0) {
       setError("No data sources to measure.");
       return;
@@ -139,6 +151,7 @@ export default function CustomDashboardBuilder() {
   };
 
   const healStaleSources = () => {
+    if (!ensureWritable()) return;
     const now = Date.now();
     const healed = { ...freshness };
     Object.keys(healed).forEach(k => { healed[k] = now; });
@@ -162,6 +175,7 @@ export default function CustomDashboardBuilder() {
   };
 
   const applyTemplate = (name) => {
+    if (!ensureWritable()) return;
     const tpl = templates[name];
     if (!tpl) return;
     const now = Date.now();
@@ -659,12 +673,14 @@ export default function CustomDashboardBuilder() {
   };
 
   const schedulePublish = () => {
+    if (!ensureWritable()) return;
     const now = Date.now();
     setHistory(prev => [{ dashboard, env, at: now, summary: `Scheduled publish: ${schedule}` }, ...prev].slice(0, 5));
     setAuditLog(prev => [{ at: now, message: `Scheduled publish (${schedule})` }, ...prev].slice(0, 8));
   };
 
   const addComment = (widgetId, text) => {
+    if (!ensureWritable()) return;
     if (!text) return;
     setComments(prev => ({ ...prev, [widgetId]: [...(prev[widgetId] || []), { at: Date.now(), text }] }));
     setUnsaved(true);
@@ -691,6 +707,26 @@ export default function CustomDashboardBuilder() {
     }, 60000);
     return () => clearInterval(interval);
   }, [publishedAt, versions.length]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("cdb-versions");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setVersions(parsed);
+      }
+    } catch (e) {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("cdb-versions", JSON.stringify(versions.slice(0, 5)));
+    } catch (e) {
+      /* ignore */
+    }
+  }, [versions]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -850,14 +886,14 @@ export default function CustomDashboardBuilder() {
             )}
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button onClick={runLint} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>Run lint</button>
-            <button onClick={handlePublish} style={{ background: published ? "#0ea5e9" : "#22c55e", color: published ? "#e0f2fe" : "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>{published ? "Published" : "Publish"}</button>
+            <button onClick={() => { if (!ensureWritable()) return; runLint(); }} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>Run lint</button>
+            <button onClick={() => { if (!ensureWritable()) return; handlePublish(); }} style={{ background: published ? "#0ea5e9" : "#22c55e", color: published ? "#e0f2fe" : "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>{published ? "Published" : "Publish"}</button>
             <button onClick={handleShare} disabled={devSandbox} style={{ background: devSandbox ? "#1f2937" : "#6366f1", color: devSandbox ? "#9ca3af" : "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: devSandbox ? "not-allowed" : "pointer", opacity: devSandbox ? 0.6 : 1 }}>Share JSON</button>
-            <button onClick={duplicateDashboard} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>Duplicate</button>
-            <button onClick={schedulePublish} style={{ background: "#0b1221", color: "#bae6fd", border: "1px solid #1f2937", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>Schedule</button>
-            <button onClick={() => setWebhookEnabled(!webhookEnabled)} style={{ background: webhookEnabled ? "#0ea5e9" : "#1f2937", color: webhookEnabled ? "#e0f2fe" : "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>{webhookEnabled ? "Webhook On" : "Webhook Off"}</button>
+            <button onClick={() => { if (!ensureWritable()) return; duplicateDashboard(); }} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>Duplicate</button>
+            <button onClick={() => { if (!ensureWritable()) return; schedulePublish(); }} style={{ background: "#0b1221", color: "#bae6fd", border: "1px solid #1f2937", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>Schedule</button>
+            <button onClick={() => { if (!ensureWritable()) return; setWebhookEnabled(!webhookEnabled); }} style={{ background: webhookEnabled ? "#0ea5e9" : "#1f2937", color: webhookEnabled ? "#e0f2fe" : "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>{webhookEnabled ? "Webhook On" : "Webhook Off"}</button>
             <button onClick={generatePreviewToken} disabled={devSandbox} style={{ background: devSandbox ? "#1f2937" : "#1d4ed8", color: devSandbox ? "#9ca3af" : "#e0f2fe", border: "1px solid #1e3a8a", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: devSandbox ? "not-allowed" : "pointer", opacity: devSandbox ? 0.6 : 1 }}>Share Preview</button>
-            <button onClick={measureLatency} style={{ background: "#1f2937", color: "#7dd3fc", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>Measure latency</button>
+            <button onClick={measureLatency} style={{ background: "#1f2937", color: "#7dd3fc", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>Measure latency</button>
             <button onClick={simulateLoadTest} style={{ background: simulatedLoad ? "#4b5563" : "#f97316", color: simulatedLoad ? "#e5e7eb" : "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>{simulatedLoad ? "Load active" : "Simulate load"}</button>
             <button onClick={cleanupDashboard} style={{ background: "#0b1221", color: "#a5f3fc", border: "1px solid #1f2937", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>Cleanup</button>
             <button onClick={healStaleSources} style={{ background: "#14532d", color: "#bbf7d0", border: "1px solid #166534", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>Heal stale</button>

@@ -34,6 +34,50 @@ const samplePayload = {
   cohortKey: "channel",
 };
 
+const offlineMmmTemplate = {
+  shopifyOrders: [
+    {
+      id: "order-offline-001",
+      name: "#4001",
+      customer: { email: "store@example.com" },
+      total_price: 420,
+      subtotal_price: 400,
+      currency: "USD",
+      created_at: new Date().toISOString(),
+      referring_site: "https://brand.com/in-store",
+      landing_site: "/retail",
+      source_name: "retail-pos",
+    },
+  ],
+  adEvents: [
+    {
+      id: "mm-click-1",
+      type: "impression",
+      channel: "tv",
+      campaign: "Spring OTT",
+      value: 0,
+      cost: 180,
+      currency: "USD",
+      user_id: "household-123",
+      timestamp: new Date().toISOString(),
+    },
+  ],
+  offlineEvents: [
+    {
+      id: "pos-visit-1",
+      type: "visit",
+      location: "NYC Flagship",
+      value: 1,
+      currency: "USD",
+      user_id: "store@example.com",
+      timestamp: new Date().toISOString(),
+    },
+  ],
+  model: "data-driven",
+  includeJourneys: true,
+  cohortKey: "channel",
+};
+
 export default function AdvancedAnalyticsAttribution() {
   const [payload, setPayload] = useState(JSON.stringify(samplePayload, null, 2));
   const [query, setQuery] = useState("How is performance by channel and where should we shift budget?");
@@ -98,6 +142,36 @@ export default function AdvancedAnalyticsAttribution() {
   const payloadSize = payload.length;
   const estimatedRuntime = Math.min(18, 3 + Math.round(payloadSize / 900));
   const guardrailBlock = payloadSize > 7500;
+
+  const hashSnapshot = (body, res) => {
+    try {
+      const raw = JSON.stringify({ body, res, query });
+      let hash = 0;
+      for (let i = 0; i < raw.length; i++) {
+        hash = ((hash << 5) - hash + raw.charCodeAt(i)) | 0;
+      }
+      return `h-${Math.abs(hash)}`;
+    } catch (e) {
+      return "h-na";
+    }
+  };
+
+  const summarizeBudget = (body, data) => {
+    try {
+      const revenueFromResult = data?.performance
+        ? Object.values(data.performance).reduce((acc, stat) => acc + (stat.revenue || 0), 0)
+        : 0;
+      const revenueFromPayload = (body?.shopifyOrders || []).reduce((acc, order) => acc + Number(order.total_price || 0), 0);
+      const revenue = revenueFromResult || revenueFromPayload;
+      const spend = (body?.adEvents || []).reduce((acc, ev) => acc + Number(ev.cost || ev.value || 0), 0) || Math.max(10, (body?.adEvents || []).length * 5);
+      const orders = (body?.shopifyOrders || []).length;
+      const cac = orders > 0 ? spend / orders : null;
+      const roas = spend > 0 ? revenue / spend : null;
+      return { revenue: Number(revenue.toFixed(2)), spend: Number(spend.toFixed(2)), cac: cac ? Number(cac.toFixed(2)) : null, roas: roas ? Number(roas.toFixed(2)) : null };
+    } catch (e) {
+      return { revenue: null, spend: null, cac: null, roas: null };
+    }
+  };
 
   useEffect(() => {
     setUnsaved(true);
@@ -442,12 +516,15 @@ export default function AdvancedAnalyticsAttribution() {
       const data = await res.json();
       if (!data.ok && data.error) throw new Error(data.error);
       setResult(data);
+      const metrics = summarizeBudget(body, data);
       const snap = {
         query,
         payload: body,
         result: data,
         env,
         at: Date.now(),
+        hash: hashSnapshot(body, data),
+        metrics,
       };
       setHistory((prev) => [snap, ...prev].slice(0, 5));
       logAudit("run_success", { env, model, cohortKey });
@@ -639,6 +716,9 @@ export default function AdvancedAnalyticsAttribution() {
           </button>
           <button onClick={() => { setPayload(JSON.stringify(samplePayload, null, 2)); setModel(samplePayload.model); setCohortKey(samplePayload.cohortKey); setJourneyDepth(3); }} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#131c2c", color: "#e9efff", fontWeight: 700, cursor: "pointer" }}>
             Reset Sample
+          </button>
+          <button onClick={() => { setPayload(JSON.stringify(offlineMmmTemplate, null, 2)); setModel(offlineMmmTemplate.model); setCohortKey(offlineMmmTemplate.cohortKey); setJourneyDepth(2); setQuery("Blend offline POS + MMM channels and show ROAS/CAC."); }} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#0b1221", color: "#e5e7eb", fontWeight: 700, cursor: "pointer" }}>
+            Load offline/MMM template
           </button>
           <button onClick={validatePayload} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#0b1221", color: "#e5e7eb", fontWeight: 700, cursor: "pointer" }}>
             Validate payload
@@ -916,7 +996,10 @@ export default function AdvancedAnalyticsAttribution() {
               <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px" }}>
                 <div>
                   <div style={{ fontWeight: 700, color: "#e5e7eb" }}>{h.query?.slice(0, 40) || "Run"}{h.query?.length > 40 ? "…" : ""}</div>
-                  <div style={{ color: "#9ca3af", fontSize: 12 }}>{h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "recent"} · {h.env}</div>
+                  <div style={{ color: "#9ca3af", fontSize: 12 }}>{h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "recent"} · {h.env} · {h.hash || "h-na"}</div>
+                  {h.metrics && (
+                    <div style={{ color: "#9ca3af", fontSize: 12 }}>ROAS {h.metrics.roas ?? "-"} · CAC {h.metrics.cac ?? "-"} · Spend {h.metrics.spend ?? "-"}</div>
+                  )}
                 </div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   <button onClick={() => restoreSnapshot(h)} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load</button>

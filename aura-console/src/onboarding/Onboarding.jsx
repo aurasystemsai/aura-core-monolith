@@ -24,7 +24,7 @@ const Onboarding = () => {
     // Remove trailing slash
     domain = domain.replace(/\/$/, '');
     // Validate domain
-    if (!domain || !domain.match(/^[a-zA-Z0-9\-\.]+\.myshopify\.com$/)) {
+    if (!domain || !domain.match(/^[a-zA-Z0-9.-]+\.myshopify\.com$/)) {
       setError('Please enter a valid shop domain.');
       setLoading(false);
       return;

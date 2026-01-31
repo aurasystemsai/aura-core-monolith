@@ -1,16 +1,25 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-// Global error state for API errors
+// Simple pub/sub for global API errors without mutating during render
 let globalApiError = '';
-let setGlobalApiError = () => {};
+let listeners = [];
+
+const subscribe = (fn) => {
+  listeners.push(fn);
+  return () => {
+    listeners = listeners.filter((l) => l !== fn);
+  };
+};
 
 export function useGlobalApiError() {
   const [error, setError] = useState(globalApiError);
-  setGlobalApiError = setError;
+
+  useEffect(() => subscribe(setError), []);
+
   return [error, setError];
 }
 
 export function setApiError(err) {
   globalApiError = err;
-  setGlobalApiError(err);
+  listeners.forEach((fn) => fn(err));
 }

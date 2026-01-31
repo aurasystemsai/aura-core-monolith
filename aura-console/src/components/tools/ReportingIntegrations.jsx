@@ -98,6 +98,8 @@ export default function ReportingIntegrations() {
   ]);
   const [perfBudget] = React.useState({ applyMs: 480, syncMs: 620 });
   const [mockServer, setMockServer] = React.useState({ status: 202, body: '{"ok":true}', result: null });
+  const [channelBreakers, setChannelBreakers] = React.useState({ email: false, sms: false, webhook: false });
+  const [channelCosts, setChannelCosts] = React.useState({ email: { cost: 6, errors: 0 }, sms: { cost: 4, errors: 1 }, webhook: { cost: 8, errors: 2 } });
   const fileInputRef = React.useRef();
   const isReadOnly = role === "viewer";
 
@@ -261,6 +263,15 @@ export default function ReportingIntegrations() {
     }
   };
 
+  const computeSignature = (text, secret = "demo-secret") => {
+    const material = `${secret}:${text}`;
+    let hash = 0;
+    for (let i = 0; i < material.length; i++) {
+      hash = ((hash << 5) - hash + material.charCodeAt(i)) | 0;
+    }
+    return `sig-${Math.abs(hash)}`;
+  };
+
   const simulateSend = async () => {
     let issues = [];
     try {
@@ -271,13 +282,31 @@ export default function ReportingIntegrations() {
     }
     setInlineIssues(issues);
     if (issues.length) return;
+    const parsed = JSON.parse(inlinePayload);
+    const channel = Array.isArray(parsed) ? (parsed[0]?.channel || "email") : (parsed.channel || "email");
+    if (channelBreakers[channel]) {
+      setSimulateResult({ status: 'blocked', endpoint: mockEndpoint, code: 503, reason: `Circuit open for ${channel}` });
+      recordTrace('simulate_blocked', { channel });
+      return;
+    }
+    const providedSig = parsed.signature || parsed.headers?.signature;
+    const expectedSig = computeSignature(inlinePayload);
+    if (providedSig && providedSig !== expectedSig) {
+      setSimulateResult({ status: 'blocked', endpoint: mockEndpoint, code: 401, reason: 'HMAC signature mismatch' });
+      recordTrace('simulate_hmac_fail', { channel });
+      return;
+    }
     setSimulateResult({ status: 'running', endpoint: mockEndpoint });
     recordTrace('simulate_start', { endpoint: mockEndpoint });
     await new Promise(res => setTimeout(res, 400));
-    setSimulateResult({ status: devSandbox ? 'blocked' : 'ok', endpoint: mockEndpoint, code: devSandbox ? 403 : 202, latency: 180 });
+    setSimulateResult({ status: devSandbox ? 'blocked' : 'ok', endpoint: mockEndpoint, code: devSandbox ? 403 : 202, latency: 180, channel });
     if (!devSandbox) {
       setRateLimit(r => ({ ...r, used: Math.min(r.total, r.used + 1) }));
       setApiCost(c => ({ ...c, current: Math.min(c.limit, c.current + 1) }));
+      setChannelCosts(prev => ({
+        ...prev,
+        [channel]: { cost: Math.min(50, (prev[channel]?.cost || 0) + 1), errors: prev[channel]?.errors || 0 }
+      }));
     }
   };
 
@@ -327,6 +356,16 @@ export default function ReportingIntegrations() {
     });
     setContractTests(next);
     recordTrace('contract_tests_run', { pass: passCount, total: next.length });
+  };
+
+  const ackDlq = (id) => {
+    setDlq(prev => prev.filter(d => d.id !== id));
+    recordTrace('dlq_ack', { id });
+  };
+
+  const drainDlq = () => {
+    setDlq([]);
+    recordTrace('dlq_drain', {});
   };
 
   const calculateDrift = () => {
@@ -761,6 +800,16 @@ export default function ReportingIntegrations() {
           <div style={{ color: '#9ca3af', fontSize: 12 }}>Endpoint: {mockEndpoint}</div>
           {simulateResult && <div style={{ color: simulateResult.status === 'ok' ? '#22c55e' : simulateResult.status === 'blocked' ? '#fbbf24' : '#e5e7eb', fontWeight: 700 }}>Result: {simulateResult.status} {simulateResult.code ? `· ${simulateResult.code}` : ''}</div>}
         </div>
+        <div style={{ marginTop: 6, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', color: '#9ca3af', fontSize: 12 }}>
+          <span>Channel breakers</span>
+          {['email','sms','webhook'].map(ch => (
+            <label key={ch} style={{ display: 'flex', gap: 6, alignItems: 'center', background: '#111827', border: '1px solid #1f2937', borderRadius: 8, padding: '4px 8px' }}>
+              <input type="checkbox" checked={channelBreakers[ch]} onChange={e => { setChannelBreakers(prev => ({ ...prev, [ch]: e.target.checked })); recordTrace('circuit_toggle', { channel: ch, on: e.target.checked }); }} />
+              <span>{ch} {channelBreakers[ch] ? 'open' : 'closed'}</span>
+            </label>
+          ))}
+          <span style={{ color: '#fbbf24' }}>HMAC expected: {computeSignature(inlinePayload)}</span>
+        </div>
         {inlineIssues.length > 0 && (
           <ul style={{ marginTop: 8, color: '#fbbf24', paddingLeft: 16 }}>
             {inlineIssues.map((iss, idx) => <li key={idx}>{iss}</li>)}
@@ -795,11 +844,15 @@ export default function ReportingIntegrations() {
                 <div style={{ color: '#9ca3af', fontSize: 12 }}>Reason {item.reason} · Attempts {item.attempts}</div>
                 <div style={{ color: '#9ca3af', fontSize: 12 }}>Payload: {item.payload}</div>
               </div>
-              <button onClick={() => moveDlqToQueue(item.id)} style={{ background: '#22c55e', color: '#0b1221', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Requeue</button>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <button onClick={() => moveDlqToQueue(item.id)} style={{ background: '#22c55e', color: '#0b1221', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Requeue</button>
+                  <button onClick={() => ackDlq(item.id)} style={{ background: '#1f2937', color: '#e5e7eb', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', fontWeight: 700, cursor: 'pointer' }}>Ack</button>
+                </div>
             </div>
           ))}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
             <button onClick={runMockCheck} style={{ background: '#0b1221', color: '#fbbf24', border: '1px dashed #f59e0b', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>Check mock server</button>
+              <button onClick={drainDlq} style={{ background: '#1f2937', color: '#e5e7eb', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>Drain DLQ</button>
             <div style={{ color: '#9ca3af', fontSize: 12 }}>Status: {mockServer.status} · Body: {mockServer.body}</div>
             {mockServer.result && <div style={{ color: mockServer.result.ok ? '#22c55e' : '#f87171', fontWeight: 700 }}>Latency {mockServer.result.latency}ms · {mockServer.result.ok ? 'OK' : 'Fail'}</div>}
           </div>
@@ -863,6 +916,18 @@ export default function ReportingIntegrations() {
           </div>
         </div>
       )}
+      <div style={{ marginBottom: 18, background: '#0b1221', border: '1px solid #1f2937', borderRadius: 12, padding: 12 }}>
+        <div style={{ fontWeight: 800, color: '#e5e7eb', marginBottom: 6 }}>Channel cost & error budget</div>
+        <div style={{ display: 'grid', gap: 8 }}>
+          {Object.entries(channelCosts).map(([ch, stats]) => (
+            <div key={ch} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#111827', borderRadius: 8, padding: '8px 10px', border: '1px solid #1f2937' }}>
+              <div style={{ color: '#e5e7eb', fontWeight: 700 }}>{ch.toUpperCase()}</div>
+              <div style={{ color: '#9ca3af', fontSize: 12 }}>Cost {stats.cost} · Errors {stats.errors}</div>
+              <button onClick={() => setChannelCosts(prev => ({ ...prev, [ch]: { ...stats, errors: Math.max(0, stats.errors - 1) } }))} style={{ background: '#1f2937', color: '#e5e7eb', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', fontWeight: 700, cursor: 'pointer' }}>Ack error</button>
+            </div>
+          ))}
+        </div>
+      </div>
       {/* Analytics Dashboard */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>

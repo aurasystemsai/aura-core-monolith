@@ -33,6 +33,8 @@ export default function AutoInsights() {
   const [showDebug, setShowDebug] = React.useState(false);
   const [pinboard, setPinboard] = React.useState([]);
   const [commentDraft, setCommentDraft] = React.useState("");
+  const [sourceFreshness, setSourceFreshness] = React.useState({ orders: Date.now(), events: Date.now() - 8 * 60 * 1000, attribution: Date.now() - 25 * 60 * 1000 });
+  const [compatibilityIssue, setCompatibilityIssue] = React.useState("");
 
   const recordHistory = (summary) => setHistory(h => [{ summary, at: Date.now(), env }, ...h].slice(0, 6));
 
@@ -55,6 +57,22 @@ export default function AutoInsights() {
     setSyncHealth({ status, lastSuccess: syncHealth.lastSuccess, lastError: status === "degraded" ? "Freshness SLA breach" : null });
     recordTrace('freshness_check', { drift, status });
     recordHistory(`Freshness ${drift}m (${status})`);
+  };
+
+  const refreshSources = () => {
+    const now = Date.now();
+    const next = {
+      orders: now - Math.round(Math.random() * 10) * 60 * 1000,
+      events: now - Math.round(Math.random() * 18) * 60 * 1000,
+      attribution: now - Math.round(Math.random() * 30) * 60 * 1000,
+    };
+    setSourceFreshness(next);
+    const worstLag = Math.max(...Object.values(next).map(ts => (now - ts) / 60000));
+    const status = worstLag > freshness.sla ? "degraded" : "healthy";
+    setFreshness(f => ({ ...f, status }));
+    setIncidentMode(status === "degraded");
+    recordTrace('source_refresh', { status, worstLag: Math.round(worstLag) });
+    recordHistory(`Sources refreshed (worst ${Math.round(worstLag)}m)`);
   };
 
   const snapshotSegment = () => {
@@ -117,6 +135,14 @@ export default function AutoInsights() {
   }, [metricPreset, dimension]);
 
   const handleFilter = () => {
+    const incompatible = metricPreset === "Repeat rate" && dimension === "Campaign";
+    if (incompatible) {
+      setCompatibilityIssue("Campaign dimension is not scoped for repeat rate. Use Channel/Geo instead.");
+      setError("Incompatible metric/dimension combination");
+      recordTrace('filter_blocked', { metricPreset, dimension });
+      return;
+    }
+    setCompatibilityIssue("");
     recordHistory(`Filtered insights (${segment}${search ? ` • ${search}` : ""})`);
     setSyncHealth({ status: "healthy", lastSuccess: Date.now(), lastError: null });
     recordTrace('filter', { segment, search });
@@ -143,6 +169,30 @@ export default function AutoInsights() {
     recordTrace('pin_added', { title });
     recordHistory(`Pinned insight: ${title}`);
   };
+
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem("autoinsights-state");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.pinboard) setPinboard(parsed.pinboard);
+        if (parsed.history) setHistory(parsed.history);
+        if (parsed.suppressedAnomalies) setSuppressedAnomalies(parsed.suppressedAnomalies);
+        if (parsed.sourceFreshness) setSourceFreshness(parsed.sourceFreshness);
+      }
+    } catch (e) {
+      /* ignore */
+    }
+  }, []);
+
+  React.useEffect(() => {
+    const payload = { pinboard, history, suppressedAnomalies, sourceFreshness };
+    try {
+      localStorage.setItem("autoinsights-state", JSON.stringify(payload));
+    } catch (e) {
+      /* ignore */
+    }
+  }, [pinboard, history, suppressedAnomalies, sourceFreshness]);
 
   // Full flagship dashboard, no legacy onboarding, toggles, or white backgrounds
   return (
@@ -187,6 +237,15 @@ export default function AutoInsights() {
               <button className="aura-btn" style={{ background: '#0ea5e9', color: '#fff' }} onClick={() => setFreshness(f => ({ ...f, sla: Math.max(5, f.sla - 2) }))}>Tighten SLA</button>
             </div>
           </div>
+          <div style={{ background: '#181f2a', borderRadius: 12, padding: '10px 14px', minWidth: 220 }}>
+            <div style={{ color: '#9ca3af', fontSize: 12 }}>Source freshness map</div>
+            <div style={{ color: '#e5e7eb', fontWeight: 700 }}>Orders {Math.round((Date.now() - sourceFreshness.orders) / 60000)}m · Events {Math.round((Date.now() - sourceFreshness.events) / 60000)}m</div>
+            <div style={{ color: '#9ca3af', fontSize: 12 }}>Attribution {(Math.round((Date.now() - sourceFreshness.attribution) / 60000))}m</div>
+            <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+              <button className="aura-btn" style={{ background: '#1f2937', color: '#e5e7eb', border: '1px solid #334155' }} onClick={refreshSources}>Refresh sources</button>
+              <button className="aura-btn" style={{ background: '#0b1221', color: '#fbbf24', border: '1px solid #334155' }} onClick={() => setIncidentMode(true)}>Open incident</button>
+            </div>
+          </div>
           <button className="aura-btn" style={{ background: '#7fffd4', color: '#23263a', fontWeight: 800 }} onClick={simulateIngest}>Refresh data</button>
         </div>
       </div>
@@ -213,6 +272,7 @@ export default function AutoInsights() {
             </select>
             <button className="aura-btn" style={{ background: "#7fffd4", color: "#23263a", fontWeight: 700 }} onClick={handleFilter}>Filter</button>
           </div>
+          {compatibilityIssue && <div style={{ color: '#fbbf24', fontSize: 13, marginBottom: 10 }}>Guardrail: {compatibilityIssue}</div>}
           {/* Analytics Chart Placeholder */}
           <div style={{ background: "#23263a", borderRadius: 18, padding: 24, minHeight: 180, marginBottom: 18 }}>
             <div style={{ fontWeight: 700, color: "#7fffd4", fontSize: 18 }}>Analytics & Trends</div>

@@ -69,6 +69,7 @@ import AuraAPISDK from "./components/tools/AuraAPISDK.jsx";
 import AiSupportAssistant from "./components/tools/AISupportAssistant.jsx";
 import AiLaunchPlanner from "./components/tools/AILaunchPlanner.jsx";
 import AdvancedAnalyticsAttribution from "./components/tools/AdvancedAnalyticsAttribution.jsx";
+import PredictiveAnalyticsWidgets from "./components/tools/PredictiveAnalyticsWidgets.jsx";
 // import AiAltTextEngine from "./components/tools/AiAltTextEngine.jsx";
 import ChangelogModal from "./components/ChangelogModal.jsx";
 import Toast from "./components/Toast.jsx";
@@ -670,16 +671,7 @@ function App() {
                         );
                       case "predictive-analytics-widgets":
                         return (
-                          <ToolScaffold
-                            key={tool.id}
-                            toolId={tool.id}
-                            toolName={tool.name}
-                            fields={[
-                              { name: "metrics", label: "Metrics (Churn, LTV, Demand)", type: "text", required: true },
-                              { name: "frequency", label: "Refresh Frequency", type: "text" },
-                              { name: "alertEmails", label: "Alert Emails", type: "text" },
-                            ]}
-                          />
+                          <PredictiveAnalyticsWidgets key={tool.id} />
                         );
                       case "ai-content-image-gen":
                         return (
