@@ -1,4 +1,7 @@
+
 import React, { useState, useEffect } from "react";
+import { Line } from "react-chartjs-2";
+import Chart from "chart.js/auto";
 
 export default function SelfServiceAnalytics() {
   const [env, setEnv] = useState("dev");
@@ -11,6 +14,7 @@ export default function SelfServiceAnalytics() {
   const [shareUrl, setShareUrl] = useState(null);
   const [metricGuardrail, setMetricGuardrail] = useState({ status: "ok", msg: "" });
   const [draftSavedAt, setDraftSavedAt] = useState(null);
+  const [chartPreview, setChartPreview] = useState(null);
   const devSandbox = env === "dev";
   const storageKey = "self-service-analytics";
 
@@ -23,17 +27,49 @@ export default function SelfServiceAnalytics() {
   const validateQuery = () => {
     if (!query.trim()) {
       setValidation({ status: "error", issues: ["Query cannot be empty"] });
-      return false;
+      return (
+        <div className="aura-card" style={{ padding: 24, background: "#0b1221", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <div>
+              <h2 style={{ margin: 0 }}>Self-Service Analytics</h2>
+              <div style={{ color: "#9ca3af", fontSize: 13 }}>Build quick queries, validate metrics, and share lightweight charts.</div>
+            </div>
+            <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px", fontWeight: 700 }}>
+              <option value="dev">Dev</option>
+              <option value="stage">Stage</option>
+              <option value="prod">Prod</option>
+            </select>
+          </div>
+          {/* ...existing code... */}
+          <div style={{ marginTop: 12, color: "#9ca3af", fontSize: 12 }}>
+            Draft autosaved {draftSavedAt ? new Date(draftSavedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}. {shareUrl && <a href={shareUrl} download="self-service-analytics.json" style={{ color: "#0ea5e9", marginLeft: 8 }}>Download share</a>}
+          </div>
+        </div>
+      );
     }
-    const incompatible = query.toLowerCase().includes("ctr") && dataset !== "email";
-    if (incompatible) {
-      setValidation({ status: "warn", issues: ["CTR metric only available for email dataset"] });
-      setMetricGuardrail({ status: "warn", msg: "CTR unsupported for selected dataset" });
-    } else {
-      setValidation({ status: "ok", issues: [] });
-      setMetricGuardrail({ status: "ok", msg: "" });
+    let dimension = "channel";
+    let n = 7;
+    const m = query.match(/sum\((\w+)\) by (\w+) last (\d+)/);
+    if (m) {
+      metric = m[1];
+      dimension = m[2];
+      n = parseInt(m[3], 10) || 7;
     }
-    return true;
+    for (let i = 0; i < n; i++) {
+      labels.push(`${dimension}-${i + 1}`);
+      data.push(Math.round(100 + Math.random() * 900));
+    }
+    return {
+      labels,
+      datasets: [
+        {
+          label: `${metric} by ${dimension}`,
+          data,
+          borderColor: "#0ea5e9",
+          backgroundColor: "rgba(14,165,233,0.2)",
+        },
+      ],
+    };
   };
 
   const runQuery = () => {
@@ -51,6 +87,7 @@ export default function SelfServiceAnalytics() {
     };
     setCharts(prev => [result, ...prev].slice(0, 5));
     setHistory(h => [{ summary: `Ran query on ${dataset}`, at: Date.now(), env }, ...h].slice(0, 6));
+    setChartPreview(generateChartData(query, dataset));
   };
 
   const saveView = () => {
@@ -128,24 +165,32 @@ export default function SelfServiceAnalytics() {
                 {validation.issues.map((iss, idx) => <li key={idx}>{iss}</li>)}
               </ul>
             )}
+            <button
+              onClick={() => {
+                let labels = [];
+                let datasets = [];
+                if (chartPreview && Array.isArray(chartPreview.labels)) labels = chartPreview.labels;
+                if (chartPreview && Array.isArray(chartPreview.datasets)) datasets = chartPreview.datasets;
+                const csvRows = [];
+                csvRows.push(["Label", ...labels]);
+                datasets.forEach(ds => {
+                  csvRows.push([ds.label, ...(Array.isArray(ds.data) ? ds.data : [])]);
+                });
+                const csv = csvRows.map(row => row.join(",")).join("\n");
+                const blob = new Blob([csv], { type: "text/csv" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "analytics-export.csv";
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 20000);
+              }}
+              disabled={!chartPreview || !chartPreview.labels || !chartPreview.datasets}
+              style={{ marginTop: 8 }}
+            >Export CSV</button>
           </div>
         )}
-        {metricGuardrail.status !== "ok" && <div style={{ color: "#fbbf24", fontSize: 13 }}>Guardrail: {metricGuardrail.msg}</div>}
       </div>
-
-      {charts.length > 0 && (
-        <div style={{ marginTop: 16, background: "#0d1420", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
-          <div style={{ fontWeight: 800, marginBottom: 8 }}>Latest results</div>
-          <div style={{ display: "grid", gap: 8 }}>
-            {charts.map(chart => (
-              <div key={chart.id} style={{ background: "#111827", borderRadius: 8, padding: 10, border: "1px solid #1f2937" }}>
-                <div style={{ color: "#e5e7eb", fontWeight: 700 }}>{chart.query}</div>
-                <div style={{ color: "#9ca3af", fontSize: 12 }}>Dataset {chart.dataset} · Rows {chart.rows} · {new Date(chart.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {savedViews.length > 0 && (
         <div style={{ marginTop: 16, background: "#0d1420", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
