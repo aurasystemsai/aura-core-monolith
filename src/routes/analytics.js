@@ -149,4 +149,79 @@ router.get('/traffic', async (req, res) => {
   }
 });
 
+// Self-Service Analytics mock query endpoint
+router.post('/query', async (req, res) => {
+  try {
+    const {
+      dataset = 'orders',
+      metric = 'gmv',
+      dimension = 'channel',
+      query = 'sum(gmv) by channel last 30',
+      dateRange = '30d',
+      comparePrev = true,
+      segment = '',
+      channel = '',
+      campaign = '',
+      topN = 5,
+    } = req.body || {};
+
+    const rangeMap = { '7d': 7, '14d': 14, '30d': 30 };
+    let n = rangeMap[dateRange] || 10;
+    const match = typeof query === 'string' ? query.match(/last\s+(\d+)/i) : null;
+    if (match) n = Math.min(Math.max(parseInt(match[1], 10) || n, 3), 60);
+    const labels = [];
+    const data = [];
+    for (let i = 0; i < n; i++) {
+      labels.push(`${dimension}-${i + 1}`);
+      data.push(Math.round(100 + Math.random() * 900));
+    }
+
+    const limitedN = Number(topN) > 0 ? Math.min(Number(topN), labels.length) : labels.length;
+    const limitedLabels = labels.slice(0, limitedN);
+    const limitedData = data.slice(0, limitedN);
+
+    const total = limitedData.reduce((a, b) => a + b, 0);
+    const avg = Math.round(total / limitedData.length);
+    const max = Math.max(...limitedData);
+    let prevTotal = null;
+    let delta = null;
+    if (comparePrev) {
+      const prev = limitedData.map(v => Math.round(v * (0.75 + Math.random() * 0.2)));
+      prevTotal = prev.reduce((a, b) => a + b, 0);
+      delta = prevTotal === 0 ? null : Math.round(((total - prevTotal) / prevTotal) * 100);
+    }
+
+    const chart = {
+      labels: limitedLabels,
+      datasets: [
+        {
+          label: `${metric} by ${dimension}`,
+          data: limitedData,
+          borderColor: '#0ea5e9',
+          backgroundColor: 'rgba(14,165,233,0.2)',
+        },
+      ],
+    };
+
+    const table = limitedLabels.map((label, idx) => ({ label, value: limitedData[idx], metric, dimension }));
+
+    res.json({
+      ok: true,
+      chart,
+      kpis: { total, avg, max, prevTotal, delta },
+      table,
+      rows: limitedData.length,
+      dataset,
+      dimension,
+      metric,
+      segment,
+      channel,
+      campaign,
+      dateRange,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
