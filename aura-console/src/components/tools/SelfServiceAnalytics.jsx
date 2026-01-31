@@ -16,6 +16,9 @@ export default function SelfServiceAnalytics() {
   const [segment, setSegment] = useState("");
   const [alertEnabled, setAlertEnabled] = useState(false);
   const [alertThreshold, setAlertThreshold] = useState("");
+  const [channelFilter, setChannelFilter] = useState("");
+  const [campaignFilter, setCampaignFilter] = useState("");
+  const [topN, setTopN] = useState("5");
   const [charts, setCharts] = useState([]);
   const [savedViews, setSavedViews] = useState([]);
   const [validation, setValidation] = useState(null);
@@ -26,6 +29,7 @@ export default function SelfServiceAnalytics() {
   const [chartPreview, setChartPreview] = useState(null);
   const [runStatus, setRunStatus] = useState(null);
   const [insights, setInsights] = useState([]);
+  const [backendError, setBackendError] = useState(null);
   const devSandbox = env === "dev";
   const storageKey = "self-service-analytics";
 
@@ -89,9 +93,11 @@ export default function SelfServiceAnalytics() {
       labels.push(`${dimensionUsed}-${i + 1}`);
       data.push(Math.round(100 + Math.random() * 900));
     }
-    const total = data.reduce((a, b) => a + b, 0);
+    const limited = Number(topN) > 0 ? data.slice(0, Math.min(Number(topN), data.length)) : data;
+    const limitedLabels = Number(topN) > 0 ? labels.slice(0, limited.length) : labels;
+    const total = limited.reduce((a, b) => a + b, 0);
     const avg = Math.round(total / data.length);
-    const max = Math.max(...data);
+    const max = Math.max(...limited);
     let prevTotal = null;
     let delta = null;
     if (compare) {
@@ -99,7 +105,7 @@ export default function SelfServiceAnalytics() {
       prevTotal = prev.reduce((a, b) => a + b, 0);
       delta = prevTotal === 0 ? null : Math.round(((total - prevTotal) / prevTotal) * 100);
     }
-    const table = labels.map((label, idx) => ({ label, value: data[idx], metric: metricUsed, dimension: dimensionUsed }));
+    const table = limitedLabels.map((label, idx) => ({ label, value: limited[idx], metric: metricUsed, dimension: dimensionUsed }));
     return {
       chart: {
         labels,
@@ -124,25 +130,62 @@ export default function SelfServiceAnalytics() {
     };
   };
 
-  const runQuery = () => {
+  const runQuery = async () => {
     if (devSandbox) {
       setValidation({ status: "error", issues: ["Dev sandbox blocks live queries. Switch to Stage/Prod."] });
       return;
     }
     if (!validateQuery()) return;
     setRunStatus("running");
-    const sim = generateChartData(metric, dimension, query, dataset, dateRange, comparePrev);
+    setBackendError(null);
+    const payload = {
+      dataset,
+      metric,
+      dimension,
+      query,
+      dateRange,
+      comparePrev,
+      segment,
+      channel: channelFilter,
+      campaign: campaignFilter,
+      topN,
+      schedule,
+      sources,
+    };
+    let sim = null;
+    let usedRows = Math.round(100 + Math.random() * 900);
+    try {
+      const res = await fetch("/api/analytics/query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`Backend returned ${res.status}`);
+      const data = await res.json();
+      if (data?.chart && data?.kpis) {
+        sim = data;
+        usedRows = data.rows ?? usedRows;
+      }
+    } catch (err) {
+      setBackendError("Backend unavailable, using simulated data.");
+    }
+    if (!sim) {
+      sim = generateChartData(metric, dimension, query, dataset, dateRange, comparePrev);
+    }
     const result = {
       id: Date.now(),
       query,
       dataset,
-      rows: Math.round(100 + Math.random() * 900),
+      rows: usedRows,
       generatedAt: Date.now(),
       metric,
       dimension,
       dateRange,
       comparePrev,
       segment,
+      channel: channelFilter,
+      campaign: campaignFilter,
+      topN,
     };
     setCharts(prev => [result, ...prev].slice(0, 5));
     setHistory(h => [{ summary: `Ran ${metric} by ${dimension} on ${dataset}`, at: Date.now(), env, query, dateRange, comparePrev }, ...h].slice(0, 8));
@@ -151,6 +194,8 @@ export default function SelfServiceAnalytics() {
       `Top ${dimension}: ${sim.table?.[0]?.label ?? "n/a"}`,
       sim.kpis?.delta !== null && sim.kpis?.delta !== undefined ? `WoW change: ${sim.kpis.delta}%` : "WoW change: n/a",
       `Segment filter: ${segment || "none"}`,
+      channelFilter ? `Channel filter: ${channelFilter}` : null,
+      campaignFilter ? `Campaign filter: ${campaignFilter}` : null,
     ].filter(Boolean));
     setRunStatus("success");
     setTimeout(() => setRunStatus(null), 2500);
@@ -195,14 +240,14 @@ export default function SelfServiceAnalytics() {
   }, []);
 
   useEffect(() => {
-    const payload = { charts, savedViews, history, env, query, dataset, metric, dimension, schedule, sources, dateRange, comparePrev, segment, alertEnabled, alertThreshold };
+    const payload = { charts, savedViews, history, env, query, dataset, metric, dimension, schedule, sources, dateRange, comparePrev, segment, alertEnabled, alertThreshold, channelFilter, campaignFilter, topN };
     try {
       localStorage.setItem(storageKey, JSON.stringify(payload));
       setDraftSavedAt(Date.now());
     } catch (e) {
       /* ignore */
     }
-  }, [charts, savedViews, history, env, query, dataset, metric, dimension, schedule, sources, dateRange, comparePrev, segment, alertEnabled, alertThreshold]);
+  }, [charts, savedViews, history, env, query, dataset, metric, dimension, schedule, sources, dateRange, comparePrev, segment, alertEnabled, alertThreshold, channelFilter, campaignFilter, topN]);
 
   const currentFields = datasets.find(d => d.key === dataset)?.fields || [];
 
@@ -292,6 +337,9 @@ export default function SelfServiceAnalytics() {
             disabled={!alertEnabled}
           />
         </div>
+        <div style={{ fontSize: 12, color: "#64748b" }}>Channel: <input value={channelFilter} onChange={e => setChannelFilter(e.target.value)} style={{ width: 110 }} placeholder="e.g. Paid" /></div>
+        <div style={{ fontSize: 12, color: "#64748b" }}>Campaign: <input value={campaignFilter} onChange={e => setCampaignFilter(e.target.value)} style={{ width: 130 }} placeholder="e.g. BF2025" /></div>
+        <div style={{ fontSize: 12, color: "#64748b" }}>Top N: <input value={topN} onChange={e => setTopN(e.target.value)} style={{ width: 60 }} placeholder="5" /></div>
       </div>
 
       {validation && validation.status !== "ok" && (
@@ -299,6 +347,9 @@ export default function SelfServiceAnalytics() {
       )}
       {metricGuardrail.status !== "ok" && (
         <div className="guardrail warn" style={{ color: "#eab308", marginBottom: 8 }}>{metricGuardrail.msg}</div>
+      )}
+      {backendError && (
+        <div style={{ color: "#dc2626", marginBottom: 8, fontSize: 13 }}>{backendError}</div>
       )}
       {runStatus === "running" && <div style={{ color: "#0ea5e9", marginBottom: 6 }}>Running query…</div>}
       {runStatus === "success" && <div style={{ color: "#22c55e", marginBottom: 6 }}>Query complete.</div>}
