@@ -130,101 +130,144 @@ export default function SelfServiceAnalytics() {
   }, [charts, savedViews, history, env, query, dataset]);
 
   return (
-    <div className="aura-card" style={{ padding: 24, background: "#0b1221", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+    <div className="tool self-service-analytics" style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
+      <h2 style={{ marginBottom: 8 }}>Self-Service Analytics</h2>
+      <div style={{ display: "flex", gap: 24, alignItems: "center", marginBottom: 16 }}>
         <div>
-          <h2 style={{ margin: 0 }}>Self-Service Analytics</h2>
-          <div style={{ color: "#9ca3af", fontSize: 13 }}>Build quick queries, validate metrics, and share lightweight charts.</div>
+          <label>Environment: </label>
+          <select value={env} onChange={e => setEnv(e.target.value)}>
+            <option value="dev">Dev</option>
+            <option value="stage">Stage</option>
+            <option value="prod">Prod</option>
+          </select>
         </div>
-        <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px", fontWeight: 700 }}>
-          <option value="dev">Dev</option>
-          <option value="stage">Stage</option>
-          <option value="prod">Prod</option>
-        </select>
+        <div>
+          <label>Dataset: </label>
+          <select value={dataset} onChange={e => setDataset(e.target.value)}>
+            {datasets.map(ds => (
+              <option key={ds.key} value={ds.key}>{ds.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>Query: </label>
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            style={{ width: 320 }}
+            placeholder="e.g. sum(gmv) by channel last 30d"
+          />
+        </div>
+        <button onClick={runQuery} style={{ background: "#0ea5e9", color: "white", border: 0, padding: "6px 16px", borderRadius: 4 }}>Run</button>
+        <button onClick={saveView} style={{ marginLeft: 4 }}>Save View</button>
+        <button onClick={share} style={{ marginLeft: 4 }}>Share</button>
       </div>
 
-      {devSandbox && <div style={{ background: "#1f2937", border: "1px solid #334155", color: "#fbbf24", padding: 10, borderRadius: 10, marginTop: 10 }}>Sandbox mode: executions are blocked.</div>}
-
-      <div style={{ display: "grid", gap: 12, marginTop: 14 }}>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-          <select value={dataset} onChange={e => { setDataset(e.target.value); validateQuery(); }} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px", fontWeight: 700 }}>
-            {datasets.map(ds => <option key={ds.key} value={ds.key}>{ds.label}</option>)}
-          </select>
-          <input value={query} onChange={e => setQuery(e.target.value)} style={{ flex: 1, minWidth: 240, background: "#0d1420", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", fontFamily: "monospace" }} />
-          <button className="aura-btn" onClick={runQuery}>Run</button>
-          <button className="aura-btn" style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155" }} onClick={saveView}>Save view</button>
-          <button className="aura-btn" style={{ background: "#0ea5e9", color: "#fff" }} onClick={share}>Share</button>
+      {validation && validation.status !== "ok" && (
+        <div className={`validation ${validation.status}`} style={{ color: validation.status === "error" ? "#dc2626" : "#eab308", marginBottom: 8 }}>{validation.issues.join(", ")}</div>
+      )}
+      {metricGuardrail.status !== "ok" && (
+        <div className="guardrail warn" style={{ color: "#eab308", marginBottom: 8 }}>{metricGuardrail.msg}</div>
+      )}
+      {shareUrl && (
+        <div className="share-link" style={{ marginBottom: 8 }}>
+          <a href={shareUrl} download="analytics-query.json">Download Query</a>
         </div>
-        {validation && (
-          <div style={{ background: validation.status === "ok" ? "#0d172a" : validation.status === "warn" ? "#1f2937" : "#3b1d1d", border: "1px solid #1f2937", borderRadius: 10, padding: 10 }}>
-            <div style={{ fontWeight: 700, color: validation.status === "ok" ? "#22c55e" : validation.status === "warn" ? "#fbbf24" : "#fca5a5" }}>
-              {validation.status === "ok" ? "Valid" : validation.status === "warn" ? "Warnings" : "Errors"}
-            </div>
-            {validation.issues && validation.issues.length > 0 && (
-              <ul style={{ margin: 6, paddingLeft: 16, color: validation.status === "warn" ? "#fbbf24" : "#fca5a5", fontSize: 13 }}>
-                {validation.issues.map((iss, idx) => <li key={idx}>{iss}</li>)}
-              </ul>
-            )}
-            <button
-              onClick={() => {
-                let labels = [];
-                let datasets = [];
-                if (chartPreview && Array.isArray(chartPreview.labels)) labels = chartPreview.labels;
-                if (chartPreview && Array.isArray(chartPreview.datasets)) datasets = chartPreview.datasets;
-                const csvRows = [];
-                csvRows.push(["Label", ...labels]);
-                datasets.forEach(ds => {
-                  csvRows.push([ds.label, ...(Array.isArray(ds.data) ? ds.data : [])]);
-                });
-                const csv = csvRows.map(row => row.join(",")).join("\n");
-                const blob = new Blob([csv], { type: "text/csv" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "analytics-export.csv";
-                a.click();
-                setTimeout(() => URL.revokeObjectURL(url), 20000);
-              }}
-              disabled={!chartPreview || !chartPreview.labels || !chartPreview.datasets}
-              style={{ marginTop: 8 }}
-            >Export CSV</button>
+      )}
+
+      {/* Chart/Table Preview */}
+      <div style={{ marginBottom: 24 }}>
+        <h4 style={{ marginBottom: 4 }}>Preview</h4>
+        {chartPreview ? (
+          <div style={{ background: "#f8fafc", borderRadius: 8, padding: 16, maxWidth: 600 }}>
+            <Line data={chartPreview} />
           </div>
+        ) : (
+          <div style={{ color: "#64748b" }}>No preview yet. Run a query to see results.</div>
         )}
       </div>
 
-      {savedViews.length > 0 && (
-        <div style={{ marginTop: 16, background: "#0d1420", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
-          <div style={{ fontWeight: 800, marginBottom: 8 }}>Saved views</div>
-          <ul style={{ margin: 0, paddingLeft: 16, color: "#9ca3af" }}>
-            {savedViews.map(view => (
-              <li key={view.id}>
-                {view.query} ({view.dataset}) — {new Date(view.savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </li>
-            ))}
+      {/* Dashboard Management */}
+      <div style={{ display: "flex", gap: 32, alignItems: "flex-start" }}>
+        <div style={{ flex: 1 }}>
+          <h4>Recent Results</h4>
+          {charts.length === 0 && <div style={{ color: "#64748b" }}>No results yet.</div>}
+          {charts.map(c => (
+            <div key={c.id} className="chart-result" style={{ background: "#f1f5f9", borderRadius: 6, padding: 10, marginBottom: 8 }}>
+              <div><b>Query:</b> {c.query}</div>
+              <div><b>Dataset:</b> {c.dataset}</div>
+              <div><b>Rows:</b> {c.rows}</div>
+              <div><b>Generated:</b> {new Date(c.generatedAt).toLocaleString()}</div>
+              <button style={{ marginTop: 4, fontSize: 12 }} onClick={() => setChartPreview(generateChartData(c.query, c.dataset))}>Preview</button>
+            </div>
+          ))}
+        </div>
+        <div style={{ flex: 1 }}>
+          <h4>Saved Views</h4>
+          {savedViews.length === 0 && <div style={{ color: "#64748b" }}>No saved views.</div>}
+          {savedViews.map(v => (
+            <div key={v.id} className="saved-view" style={{ background: "#f1f5f9", borderRadius: 6, padding: 10, marginBottom: 8 }}>
+              <div><b>Query:</b> {v.query}</div>
+              <div><b>Dataset:</b> {v.dataset}</div>
+              <div><b>Saved:</b> {new Date(v.savedAt).toLocaleString()}</div>
+              <button style={{ marginTop: 4, fontSize: 12 }} onClick={() => { setQuery(v.query); setDataset(v.dataset); setChartPreview(generateChartData(v.query, v.dataset)); }}>Load</button>
+            </div>
+          ))}
+        </div>
+        <div style={{ flex: 1 }}>
+          <h4>History</h4>
+          {history.length === 0 && <div style={{ color: "#64748b" }}>No history yet.</div>}
+          {history.map((h, i) => (
+            <div key={i} className="history-item" style={{ background: "#f1f5f9", borderRadius: 6, padding: 10, marginBottom: 8 }}>
+              <span>{h.summary}</span> <span className="at">{new Date(h.at).toLocaleString()}</span> <span className="env">[{h.env}]</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Export and Help */}
+      <div style={{ marginTop: 32, display: "flex", gap: 32 }}>
+        <div style={{ flex: 1 }}>
+          <h4>Export</h4>
+          <button
+            onClick={() => {
+              let labels = [];
+              let datasets = [];
+              if (chartPreview && Array.isArray(chartPreview.labels)) labels = chartPreview.labels;
+              if (chartPreview && Array.isArray(chartPreview.datasets)) datasets = chartPreview.datasets;
+              const csvRows = [];
+              csvRows.push(["Label", ...labels]);
+              datasets.forEach(ds => {
+                csvRows.push([ds.label, ...(Array.isArray(ds.data) ? ds.data : [])]);
+              });
+              const csv = csvRows.map(row => row.join(",")).join("\n");
+              const blob = new Blob([csv], { type: "text/csv" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "analytics-export.csv";
+              a.click();
+              setTimeout(() => URL.revokeObjectURL(url), 20000);
+            }}
+            disabled={!chartPreview || !chartPreview.labels || !chartPreview.datasets}
+          >Export CSV</button>
+        </div>
+        <div style={{ flex: 2 }}>
+          <h4>How to Use</h4>
+          <ul style={{ color: "#64748b", fontSize: 15 }}>
+            <li>Choose a dataset and environment.</li>
+            <li>Write a query (e.g. <code>sum(gmv) by channel last 30d</code>).</li>
+            <li>Click <b>Run</b> to preview results as a chart.</li>
+            <li>Save views for later, or export results as CSV.</li>
+            <li>Switch between recent results and saved views.</li>
+            <li>Share queries with teammates using the Share button.</li>
           </ul>
         </div>
-      )}
-
-      {history.length > 0 && (
-        <div style={{ marginTop: 16, background: "#0d1420", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Activity</div>
-          <div style={{ display: "grid", gap: 6 }}>
-            {history.slice(0, 5).map((h, idx) => (
-              <div key={idx} style={{ background: "#111827", borderRadius: 8, padding: 10, border: "1px solid #1f2937", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <div style={{ color: "#e5e7eb", fontWeight: 700 }}>{h.summary}</div>
-                  <div style={{ color: "#9ca3af", fontSize: 12 }}>{new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {h.env}</div>
-                </div>
-                <button className="aura-btn" style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155" }} onClick={() => setQuery(h.summary)}>Reuse query</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div style={{ marginTop: 12, color: "#9ca3af", fontSize: 12 }}>
-        Draft autosaved {draftSavedAt ? new Date(draftSavedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}. {shareUrl && <a href={shareUrl} download="self-service-analytics.json" style={{ color: "#0ea5e9", marginLeft: 8 }}>Download share</a>}
       </div>
+
+      {draftSavedAt && (
+        <div className="draft-status" style={{ marginTop: 16, color: "#64748b" }}>Draft auto-saved at {new Date(draftSavedAt).toLocaleTimeString()}</div>
+      )}
     </div>
   );
 }
