@@ -11,6 +11,11 @@ export default function SelfServiceAnalytics() {
   const [query, setQuery] = useState("sum(gmv) by channel last 30d");
   const [schedule, setSchedule] = useState("manual");
   const [sources, setSources] = useState("Shopify + GA4");
+  const [dateRange, setDateRange] = useState("30d");
+  const [comparePrev, setComparePrev] = useState(true);
+  const [segment, setSegment] = useState("");
+  const [alertEnabled, setAlertEnabled] = useState(false);
+  const [alertThreshold, setAlertThreshold] = useState("");
   const [charts, setCharts] = useState([]);
   const [savedViews, setSavedViews] = useState([]);
   const [validation, setValidation] = useState(null);
@@ -20,6 +25,7 @@ export default function SelfServiceAnalytics() {
   const [draftSavedAt, setDraftSavedAt] = useState(null);
   const [chartPreview, setChartPreview] = useState(null);
   const [runStatus, setRunStatus] = useState(null);
+  const [insights, setInsights] = useState([]);
   const devSandbox = env === "dev";
   const storageKey = "self-service-analytics";
 
@@ -64,7 +70,7 @@ export default function SelfServiceAnalytics() {
   };
 
   // Simulate chart + KPIs + table data
-  const generateChartData = (metricName, dimensionName, qText, selectedDataset) => {
+  const generateChartData = (metricName, dimensionName, qText, selectedDataset, rangeKey, compare) => {
     let labels = [];
     let data = [];
     let metricUsed = metricName || "gmv";
@@ -76,6 +82,9 @@ export default function SelfServiceAnalytics() {
       dimensionUsed = m[2];
       n = parseInt(m[3], 10) || 7;
     }
+    if (rangeKey === "7d") n = Math.min(n, 7);
+    if (rangeKey === "14d") n = Math.min(Math.max(n, 7), 14);
+    if (rangeKey === "30d") n = Math.min(Math.max(n, 10), 30);
     for (let i = 0; i < n; i++) {
       labels.push(`${dimensionUsed}-${i + 1}`);
       data.push(Math.round(100 + Math.random() * 900));
@@ -83,6 +92,13 @@ export default function SelfServiceAnalytics() {
     const total = data.reduce((a, b) => a + b, 0);
     const avg = Math.round(total / data.length);
     const max = Math.max(...data);
+    let prevTotal = null;
+    let delta = null;
+    if (compare) {
+      const prev = data.map(v => Math.round(v * (0.75 + Math.random() * 0.2)));
+      prevTotal = prev.reduce((a, b) => a + b, 0);
+      delta = prevTotal === 0 ? null : Math.round(((total - prevTotal) / prevTotal) * 100);
+    }
     const table = labels.map((label, idx) => ({ label, value: data[idx], metric: metricUsed, dimension: dimensionUsed }));
     return {
       chart: {
@@ -100,9 +116,11 @@ export default function SelfServiceAnalytics() {
         total,
         avg,
         max,
+        prevTotal,
+        delta,
       },
       table,
-      meta: { metricUsed, dimensionUsed, dataset: selectedDataset }
+      meta: { metricUsed, dimensionUsed, dataset: selectedDataset, rangeKey }
     };
   };
 
@@ -113,7 +131,7 @@ export default function SelfServiceAnalytics() {
     }
     if (!validateQuery()) return;
     setRunStatus("running");
-    const sim = generateChartData(metric, dimension, query, dataset);
+    const sim = generateChartData(metric, dimension, query, dataset, dateRange, comparePrev);
     const result = {
       id: Date.now(),
       query,
@@ -122,16 +140,24 @@ export default function SelfServiceAnalytics() {
       generatedAt: Date.now(),
       metric,
       dimension,
+      dateRange,
+      comparePrev,
+      segment,
     };
     setCharts(prev => [result, ...prev].slice(0, 5));
-    setHistory(h => [{ summary: `Ran ${metric} by ${dimension} on ${dataset}`, at: Date.now(), env, query }, ...h].slice(0, 8));
-    setChartPreview(sim.chart);
+    setHistory(h => [{ summary: `Ran ${metric} by ${dimension} on ${dataset}`, at: Date.now(), env, query, dateRange, comparePrev }, ...h].slice(0, 8));
+    setChartPreview(sim);
+    setInsights([
+      `Top ${dimension}: ${sim.table?.[0]?.label ?? "n/a"}`,
+      sim.kpis?.delta !== null && sim.kpis?.delta !== undefined ? `WoW change: ${sim.kpis.delta}%` : "WoW change: n/a",
+      `Segment filter: ${segment || "none"}`,
+    ].filter(Boolean));
     setRunStatus("success");
     setTimeout(() => setRunStatus(null), 2500);
   };
 
   const saveView = () => {
-    const view = { id: Date.now(), query, dataset, metric, dimension, schedule, savedAt: Date.now() };
+    const view = { id: Date.now(), query, dataset, metric, dimension, schedule, dateRange, comparePrev, segment, alertEnabled, alertThreshold, savedAt: Date.now() };
     setSavedViews(v => [view, ...v].slice(0, 6));
   };
 
@@ -157,6 +183,11 @@ export default function SelfServiceAnalytics() {
         setDimension(parsed.dimension || "channel");
         setSchedule(parsed.schedule || "manual");
         setSources(parsed.sources || "Shopify + GA4");
+        setDateRange(parsed.dateRange || "30d");
+        setComparePrev(parsed.comparePrev ?? true);
+        setSegment(parsed.segment || "");
+        setAlertEnabled(parsed.alertEnabled || false);
+        setAlertThreshold(parsed.alertThreshold || "");
       }
     } catch (e) {
       /* ignore */
@@ -164,14 +195,14 @@ export default function SelfServiceAnalytics() {
   }, []);
 
   useEffect(() => {
-    const payload = { charts, savedViews, history, env, query, dataset, metric, dimension, schedule, sources };
+    const payload = { charts, savedViews, history, env, query, dataset, metric, dimension, schedule, sources, dateRange, comparePrev, segment, alertEnabled, alertThreshold };
     try {
       localStorage.setItem(storageKey, JSON.stringify(payload));
       setDraftSavedAt(Date.now());
     } catch (e) {
       /* ignore */
     }
-  }, [charts, savedViews, history, env, query, dataset, metric, dimension, schedule, sources]);
+  }, [charts, savedViews, history, env, query, dataset, metric, dimension, schedule, sources, dateRange, comparePrev, segment, alertEnabled, alertThreshold]);
 
   const currentFields = datasets.find(d => d.key === dataset)?.fields || [];
 
@@ -210,6 +241,20 @@ export default function SelfServiceAnalytics() {
           </select>
         </div>
         <div>
+          <label>Date Range</label><br />
+          <select value={dateRange} onChange={e => setDateRange(e.target.value)}>
+            <option value="7d">Last 7d</option>
+            <option value="14d">Last 14d</option>
+            <option value="30d">Last 30d</option>
+          </select>
+        </div>
+        <div>
+          <label>Compare</label><br />
+          <label style={{ fontSize: 12 }}>
+            <input type="checkbox" checked={comparePrev} onChange={e => setComparePrev(e.target.checked)} /> WoW/prev period
+          </label>
+        </div>
+        <div>
           <label>Schedule</label><br />
           <select value={schedule} onChange={e => setSchedule(e.target.value)}>
             {schedules.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
@@ -236,6 +281,17 @@ export default function SelfServiceAnalytics() {
           </button>
         ))}
         <div style={{ fontSize: 12, color: "#64748b" }}>Sources: <input value={sources} onChange={e => setSources(e.target.value)} style={{ width: 160 }} /></div>
+        <div style={{ fontSize: 12, color: "#64748b" }}>Segment: <input value={segment} onChange={e => setSegment(e.target.value)} style={{ width: 140 }} placeholder="e.g. US, Paid" /></div>
+        <div style={{ fontSize: 12, color: "#64748b" }}>
+          Alerts: <input type="checkbox" checked={alertEnabled} onChange={e => setAlertEnabled(e.target.checked)} />
+          <input
+            value={alertThreshold}
+            onChange={e => setAlertThreshold(e.target.value)}
+            style={{ width: 90, marginLeft: 6 }}
+            placeholder="> 5000"
+            disabled={!alertEnabled}
+          />
+        </div>
       </div>
 
       {validation && validation.status !== "ok" && (
@@ -267,6 +323,13 @@ export default function SelfServiceAnalytics() {
             <div style={{ fontSize: 12, color: "#fb923c" }}>Max</div>
             <div style={{ fontWeight: 800, fontSize: 20 }}>{chartPreview.kpis?.max ?? "—"}</div>
           </div>
+          {comparePrev && chartPreview.kpis?.delta !== null && chartPreview.kpis?.delta !== undefined && (
+            <div style={{ background: "#eef2ff", border: "1px solid #e0e7ff", borderRadius: 8, padding: 12, minWidth: 140 }}>
+              <div style={{ fontSize: 12, color: "#6366f1" }}>Δ vs prev</div>
+              <div style={{ fontWeight: 800, fontSize: 20 }}>{chartPreview.kpis.delta}%</div>
+              <div style={{ fontSize: 12, color: "#94a3b8" }}>Prev: {chartPreview.kpis.prevTotal ?? "n/a"}</div>
+            </div>
+          )}
         </div>
       )}
 
@@ -275,7 +338,7 @@ export default function SelfServiceAnalytics() {
         <h4 style={{ marginBottom: 4 }}>Preview</h4>
         {chartPreview ? (
           <div style={{ background: "#f8fafc", borderRadius: 8, padding: 16, maxWidth: 700 }}>
-            <Line data={chartPreview} />
+            <Line data={chartPreview.chart} />
             {chartPreview.table && (
               <div style={{ marginTop: 12 }}>
                 <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
@@ -312,9 +375,11 @@ export default function SelfServiceAnalytics() {
               <div><b>Query:</b> {c.query}</div>
               <div><b>Dataset:</b> {c.dataset}</div>
               <div><b>Metric/Dim:</b> {c.metric} / {c.dimension}</div>
+              <div><b>Date Range:</b> {c.dateRange || ""} {c.comparePrev ? "(compare prev)" : ""}</div>
+              {c.segment && <div><b>Segment:</b> {c.segment}</div>}
               <div><b>Rows:</b> {c.rows}</div>
               <div><b>Generated:</b> {new Date(c.generatedAt).toLocaleString()}</div>
-              <button style={{ marginTop: 4, fontSize: 12 }} onClick={() => setChartPreview(generateChartData(c.metric, c.dimension, c.query, c.dataset).chart)}>Preview</button>
+              <button style={{ marginTop: 4, fontSize: 12 }} onClick={() => setChartPreview(generateChartData(c.metric, c.dimension, c.query, c.dataset, c.dateRange, c.comparePrev))}>Preview</button>
             </div>
           ))}
         </div>
@@ -326,7 +391,10 @@ export default function SelfServiceAnalytics() {
               <div><b>Query:</b> {v.query}</div>
               <div><b>Dataset:</b> {v.dataset}</div>
               <div><b>Metric/Dim:</b> {v.metric} / {v.dimension}</div>
+              <div><b>Date Range:</b> {v.dateRange || ""} {v.comparePrev ? "(compare prev)" : ""}</div>
+              {v.segment && <div><b>Segment:</b> {v.segment}</div>}
               <div><b>Schedule:</b> {v.schedule}</div>
+              {v.alertEnabled && <div><b>Alert:</b> {v.alertThreshold || "set threshold"}</div>}
               <div><b>Saved:</b> {new Date(v.savedAt).toLocaleString()}</div>
               <button
                 style={{ marginTop: 4, fontSize: 12 }}
@@ -336,8 +404,13 @@ export default function SelfServiceAnalytics() {
                   setMetric(v.metric);
                   setDimension(v.dimension);
                   setSchedule(v.schedule || "manual");
-                  const sim = generateChartData(v.metric, v.dimension, v.query, v.dataset);
-                  setChartPreview(sim.chart);
+                  setDateRange(v.dateRange || "30d");
+                  setComparePrev(v.comparePrev ?? true);
+                  setSegment(v.segment || "");
+                  setAlertEnabled(v.alertEnabled || false);
+                  setAlertThreshold(v.alertThreshold || "");
+                  const sim = generateChartData(v.metric, v.dimension, v.query, v.dataset, v.dateRange, v.comparePrev);
+                  setChartPreview(sim);
                 }}
               >Load</button>
             </div>
@@ -351,6 +424,7 @@ export default function SelfServiceAnalytics() {
               <div style={{ fontWeight: 700 }}>{h.summary}</div>
               <div style={{ fontSize: 12, color: "#64748b" }}>{new Date(h.at).toLocaleString()} [{h.env}]</div>
               <div style={{ fontSize: 12, color: "#94a3b8" }}>{h.query}</div>
+              <div style={{ fontSize: 12, color: "#94a3b8" }}>{h.dateRange || ""} {h.comparePrev ? "(compare prev)" : ""}</div>
             </div>
           ))}
         </div>
@@ -364,8 +438,8 @@ export default function SelfServiceAnalytics() {
             onClick={() => {
               let labels = [];
               let datasets = [];
-              if (chartPreview && Array.isArray(chartPreview.labels)) labels = chartPreview.labels;
-              if (chartPreview && Array.isArray(chartPreview.datasets)) datasets = chartPreview.datasets;
+              if (chartPreview && Array.isArray(chartPreview.chart?.labels)) labels = chartPreview.chart.labels;
+              if (chartPreview && Array.isArray(chartPreview.chart?.datasets)) datasets = chartPreview.chart.datasets;
               const csvRows = [];
               csvRows.push(["Label", ...labels]);
               datasets.forEach(ds => {
@@ -397,6 +471,15 @@ export default function SelfServiceAnalytics() {
 
       {draftSavedAt && (
         <div className="draft-status" style={{ marginTop: 16, color: "#64748b" }}>Draft auto-saved at {new Date(draftSavedAt).toLocaleTimeString()}</div>
+      )}
+
+      {insights && insights.length > 0 && (
+        <div style={{ marginTop: 16, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: 12 }}>
+          <div style={{ fontWeight: 700, marginBottom: 6 }}>Insights</div>
+          <ul style={{ margin: 0, paddingLeft: 16, color: "#475569", fontSize: 14 }}>
+            {insights.map((ins, idx) => <li key={idx}>{ins}</li>)}
+          </ul>
+        </div>
       )}
     </div>
   );
