@@ -58,7 +58,6 @@ async function saveAlertHistory(next) {
 
 // Live analytics endpoints using Shopify API
 const { shopifyFetch, shopifyFetchPaginated } = require('../core/shopifyApi');
-const storageJson = require('../core/storageJson');
 
 // Helper: get shop from query/header/session/env or persisted tokens
 function getShop(req) {
