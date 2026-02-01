@@ -34,6 +34,7 @@ const fs = require('fs');
 const productSeoRouter = require('./tools/product-seo/router');
 const verifyShopifySession = require('./middleware/verifyShopifySession');
 const shopTokens = require('./core/shopTokens');
+const analyticsScheduler = require('./core/analyticsScheduler');
 // Log which Shopify env vars are loaded (no secrets)
 console.log('[Shopify ENV] SHOPIFY_CLIENT_ID:', !!process.env.SHOPIFY_CLIENT_ID);
 console.log('[Shopify ENV] SHOPIFY_CLIENT_SECRET:', !!process.env.SHOPIFY_CLIENT_SECRET);
@@ -180,6 +181,9 @@ toolRouters.forEach(({ path, router }) => {
     throw err;
   }
 });
+
+// Start analytics scheduler (saved views/schedules execution)
+analyticsScheduler.start();
 
 // --- Session context endpoint for frontend ---
 // Returns current shop/project context for frontend dashboard

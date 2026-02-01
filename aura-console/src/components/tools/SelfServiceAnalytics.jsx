@@ -16,11 +16,16 @@ export default function SelfServiceAnalytics() {
   const [segment, setSegment] = useState("");
   const [alertEnabled, setAlertEnabled] = useState(false);
   const [alertThreshold, setAlertThreshold] = useState("");
+  const [alertChannel, setAlertChannel] = useState("inapp");
+  const [alertTarget, setAlertTarget] = useState("");
   const [channelFilter, setChannelFilter] = useState("");
   const [campaignFilter, setCampaignFilter] = useState("");
   const [topN, setTopN] = useState("5");
   const [charts, setCharts] = useState([]);
   const [savedViews, setSavedViews] = useState([]);
+  const [serverSchedules, setServerSchedules] = useState([]);
+  const [serverViewsStatus, setServerViewsStatus] = useState(null);
+  const [serverSchedStatus, setServerSchedStatus] = useState(null);
   const [validation, setValidation] = useState(null);
   const [history, setHistory] = useState([]);
   const [shareUrl, setShareUrl] = useState(null);
@@ -30,13 +35,25 @@ export default function SelfServiceAnalytics() {
   const [runStatus, setRunStatus] = useState(null);
   const [insights, setInsights] = useState([]);
   const [backendError, setBackendError] = useState(null);
+  const [backendMeta, setBackendMeta] = useState(null);
+  const [exportJobId, setExportJobId] = useState(null);
+  const [exportStatus, setExportStatus] = useState(null);
+  const [exportDownloadUrl, setExportDownloadUrl] = useState(null);
+  const [alertHistory, setAlertHistory] = useState([]);
   const devSandbox = env === "dev";
   const storageKey = "self-service-analytics";
 
   const datasets = [
-    { key: "orders", label: "Orders", fields: ["gmv", "aov", "channel", "geo"] },
+    { key: "orders", label: "Orders", fields: ["gmv", "aov", "channel", "geo", "referrer_domain", "landing_path", "customer_type", "payment_gateway", "discount_code", "repeat_rate", "gross_to_net"] },
     { key: "traffic", label: "Traffic", fields: ["sessions", "device", "campaign"] },
     { key: "email", label: "Email", fields: ["sends", "opens", "ctr", "template"] },
+  ];
+
+  const presets = [
+    { label: "GMV by referrer (30d)", metric: "gmv", dimension: "referrer_domain", range: "30d" },
+    { label: "Refund rate by country (30d)", metric: "refunds", dimension: "country", range: "30d" },
+    { label: "Repeat rate by channel (30d)", metric: "repeat_rate", dimension: "channel", range: "30d" },
+    { label: "Gross→Net by payment (30d)", metric: "gross_to_net", dimension: "payment_gateway", range: "30d" },
   ];
 
   const freshness = {
@@ -138,6 +155,7 @@ export default function SelfServiceAnalytics() {
     if (!validateQuery()) return;
     setRunStatus("running");
     setBackendError(null);
+    setBackendMeta(null);
     const payload = {
       dataset,
       metric,
@@ -151,6 +169,8 @@ export default function SelfServiceAnalytics() {
       topN,
       schedule,
       sources,
+      alertChannel,
+      alertTarget,
     };
     let sim = null;
     let usedRows = Math.round(100 + Math.random() * 900);
@@ -165,6 +185,9 @@ export default function SelfServiceAnalytics() {
       if (data?.chart && data?.kpis) {
         sim = data;
         usedRows = data.rows ?? usedRows;
+        setBackendMeta({ cached: !!data.cached, meta: data.meta, tokenSource: data.tokenSource, code: data.code, error: data.error, status: data.status });
+        if (data.error) setBackendError(data.error);
+        if (data.code === 'range_too_large') setBackendError(`Date range too large. Max 180 days.`);
       }
     } catch (err) {
       setBackendError("Backend unavailable, using simulated data.");
@@ -202,8 +225,56 @@ export default function SelfServiceAnalytics() {
   };
 
   const saveView = () => {
-    const view = { id: Date.now(), query, dataset, metric, dimension, schedule, dateRange, comparePrev, segment, alertEnabled, alertThreshold, savedAt: Date.now() };
+    const view = { id: Date.now(), query, dataset, metric, dimension, schedule, dateRange, comparePrev, segment, alertEnabled, alertThreshold, alertChannel, alertTarget, savedAt: Date.now() };
     setSavedViews(v => [view, ...v].slice(0, 6));
+    fetch('/api/analytics/views', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: query.slice(0, 64) || 'Saved view', payload: view, visibility: 'private' })
+    }).catch(() => {});
+  };
+
+  const deleteView = (id) => {
+    setSavedViews(v => v.filter(x => x.id !== id));
+    fetch(`/api/analytics/views/${id}`, { method: 'DELETE' }).catch(() => {});
+  };
+
+  const saveSchedule = () => {
+    if ((alertChannel === 'email' || alertChannel === 'webhook') && !alertTarget.trim()) {
+      setValidation({ status: 'error', issues: [`Target required for ${alertChannel} alerts`] });
+      return;
+    }
+    const payload = { dataset, metric, dimension, query, dateRange, comparePrev, segment, channel: channelFilter, campaign: campaignFilter, topN, alertEnabled, alertThreshold };
+    fetch('/api/analytics/schedules', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: query.slice(0, 64) || 'Schedule', payload, cadence: schedule === 'weekly' ? 'weekly' : schedule === 'daily' ? 'daily' : 'daily', channel: alertChannel, target: alertTarget.trim() || null })
+    }).then(async res => {
+      if (!res.ok) throw new Error(res.statusText);
+      const data = await res.json();
+      if (data?.ok && data.schedule) setServerSchedules(s => [data.schedule, ...s]);
+      setServerSchedStatus('live');
+    }).catch(err => setServerSchedStatus(`save failed: ${err.message}`));
+  };
+
+  const deleteSchedule = (id) => {
+    setServerSchedules(s => s.filter(x => x.id !== id));
+    fetch(`/api/analytics/schedules/${id}`, { method: 'DELETE' }).catch(() => {});
+  };
+
+  const runScheduleNow = async (sched) => {
+    const res = await fetch('/api/analytics/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sched.payload || {})
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.chart && data?.kpis) {
+        setChartPreview(data);
+        setBackendMeta({ cached: !!data.cached, meta: data.meta, tokenSource: data.tokenSource, code: data.code, error: data.error, status: data.status });
+      }
+    }
   };
 
   const share = () => {
@@ -233,14 +304,56 @@ export default function SelfServiceAnalytics() {
         setSegment(parsed.segment || "");
         setAlertEnabled(parsed.alertEnabled || false);
         setAlertThreshold(parsed.alertThreshold || "");
+        setAlertChannel(parsed.alertChannel || "inapp");
+        setAlertTarget(parsed.alertTarget || "");
       }
     } catch (e) {
       /* ignore */
     }
+      // fetch persisted views/schedules from backend
+      const fetchViews = async () => {
+        try {
+          const res = await fetch('/api/analytics/views');
+          if (!res.ok) throw new Error(`views ${res.status}`);
+          const data = await res.json();
+          if (data?.ok && Array.isArray(data.views)) {
+            setSavedViews(data.views.map(v => ({ ...v.payload, id: v.id, savedAt: v.savedAt, name: v.name })));
+            setServerViewsStatus('live');
+          }
+        } catch (err) {
+          setServerViewsStatus(`fallback: ${err.message}`);
+        }
+      };
+      const fetchSchedules = async () => {
+        try {
+          const res = await fetch('/api/analytics/schedules');
+          if (!res.ok) throw new Error(`schedules ${res.status}`);
+          const data = await res.json();
+          if (data?.ok && Array.isArray(data.schedules)) {
+            setServerSchedules(data.schedules);
+            setServerSchedStatus('live');
+          }
+        } catch (err) {
+          setServerSchedStatus(`fallback: ${err.message}`);
+        }
+      };
+      const fetchAlerts = async () => {
+        try {
+          const res = await fetch('/api/analytics/alerts/history');
+          if (!res.ok) throw new Error(`alerts ${res.status}`);
+          const data = await res.json();
+          if (data?.ok && Array.isArray(data.history)) setAlertHistory(data.history.slice(0, 5));
+        } catch (_err) {
+          /* ignore */
+        }
+      };
+      fetchViews();
+      fetchSchedules();
+      fetchAlerts();
   }, []);
 
   useEffect(() => {
-    const payload = { charts, savedViews, history, env, query, dataset, metric, dimension, schedule, sources, dateRange, comparePrev, segment, alertEnabled, alertThreshold, channelFilter, campaignFilter, topN };
+    const payload = { charts, savedViews, history, env, query, dataset, metric, dimension, schedule, sources, dateRange, comparePrev, segment, alertEnabled, alertThreshold, alertChannel, alertTarget, channelFilter, campaignFilter, topN };
     try {
       localStorage.setItem(storageKey, JSON.stringify(payload));
       setDraftSavedAt(Date.now());
@@ -250,6 +363,49 @@ export default function SelfServiceAnalytics() {
   }, [charts, savedViews, history, env, query, dataset, metric, dimension, schedule, sources, dateRange, comparePrev, segment, alertEnabled, alertThreshold, channelFilter, campaignFilter, topN]);
 
   const currentFields = datasets.find(d => d.key === dataset)?.fields || [];
+
+  const startAsyncExport = async () => {
+    setExportStatus('starting');
+    setExportDownloadUrl(null);
+    try {
+      const payload = { dataset, metric, dimension, query, dateRange, comparePrev, segment, channel: channelFilter, campaign: campaignFilter, topN, alertEnabled, alertThreshold };
+      const res = await fetch('/api/analytics/export/jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error(`export ${res.status}`);
+      const data = await res.json();
+      if (data?.ok && data.job?.id) {
+        setExportJobId(data.job.id);
+        setExportStatus('queued');
+        pollExportJob(data.job.id, 0);
+      } else {
+        throw new Error('invalid export response');
+      }
+    } catch (err) {
+      setExportStatus(`error: ${err.message}`);
+    }
+  };
+
+  const pollExportJob = async (jobId, attempt = 0) => {
+    if (!jobId) return;
+    try {
+      const res = await fetch(`/api/analytics/export/jobs/${jobId}`);
+      if (!res.ok) throw new Error(`status ${res.status}`);
+      const data = await res.json();
+      const status = data?.job?.status || 'unknown';
+      setExportStatus(status);
+      if (status === 'done') {
+        setExportDownloadUrl(`/api/analytics/export/jobs/${jobId}/download`);
+        return;
+      }
+      if (status === 'error') return;
+      setTimeout(() => pollExportJob(jobId, attempt + 1), Math.min(4000, 500 + attempt * 250));
+    } catch (err) {
+      setExportStatus(`error: ${err.message}`);
+    }
+  };
 
   return (
     <div className="tool self-service-analytics" style={{ maxWidth: 980, margin: "0 auto", padding: 24 }}>
@@ -316,6 +472,7 @@ export default function SelfServiceAnalytics() {
         </div>
         <button onClick={runQuery} style={{ background: "#0ea5e9", color: "white", border: 0, padding: "8px 16px", borderRadius: 4, fontWeight: 700 }}>Run</button>
         <button onClick={saveView} style={{ marginLeft: 4 }}>Save View</button>
+        <button onClick={saveSchedule} style={{ marginLeft: 4 }}>Save Schedule</button>
         <button onClick={share} style={{ marginLeft: 4 }}>Share</button>
       </div>
 
@@ -323,6 +480,11 @@ export default function SelfServiceAnalytics() {
         {templates.map(t => (
           <button key={t.label} style={{ fontSize: 12 }} onClick={() => { setMetric(t.metric); setDimension(t.dimension); setQuery(t.query); setDataset(t.metric === "ctr" ? "email" : dataset); }}>
             {t.label}
+          </button>
+        ))}
+        {presets.map(p => (
+          <button key={p.label} style={{ fontSize: 12 }} onClick={() => { setMetric(p.metric); setDimension(p.dimension); setDateRange(p.range); setDataset("orders"); setQuery(`sum(${p.metric}) by ${p.dimension} last ${p.range.replace('d','')}`); }}>
+            {p.label}
           </button>
         ))}
         <div style={{ fontSize: 12, color: "#64748b" }}>Sources: <input value={sources} onChange={e => setSources(e.target.value)} style={{ width: 160 }} /></div>
@@ -335,6 +497,23 @@ export default function SelfServiceAnalytics() {
             style={{ width: 90, marginLeft: 6 }}
             placeholder="> 5000"
             disabled={!alertEnabled}
+          />
+          <select
+            value={alertChannel}
+            onChange={e => setAlertChannel(e.target.value)}
+            style={{ marginLeft: 6 }}
+            disabled={!alertEnabled}
+          >
+            <option value="inapp">In-app</option>
+            <option value="email">Email</option>
+            <option value="webhook">Webhook</option>
+          </select>
+          <input
+            value={alertTarget}
+            onChange={e => setAlertTarget(e.target.value)}
+            style={{ width: 160, marginLeft: 6 }}
+            placeholder={alertChannel === 'webhook' ? 'https://example.com/hook' : 'alerts@example.com'}
+            disabled={!alertEnabled || alertChannel === 'inapp'}
           />
         </div>
         <div style={{ fontSize: 12, color: "#64748b" }}>Channel: <input value={channelFilter} onChange={e => setChannelFilter(e.target.value)} style={{ width: 110 }} placeholder="e.g. Paid" /></div>
@@ -350,6 +529,14 @@ export default function SelfServiceAnalytics() {
       )}
       {backendError && (
         <div style={{ color: "#dc2626", marginBottom: 8, fontSize: 13 }}>{backendError}</div>
+      )}
+      {backendMeta && (
+        <div style={{ color: "#0ea5e9", marginBottom: 8, fontSize: 12, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <span>Backend: {backendMeta.code ? backendMeta.code : 'ok'}{backendMeta.status ? ` (${backendMeta.status})` : ''}</span>
+          {backendMeta.tokenSource && <span>Token: {backendMeta.tokenSource}</span>}
+          {backendMeta.cached && <span style={{ color: '#22c55e' }}>cached</span>}
+          {backendMeta.meta?.callLimit && <span>rate: {backendMeta.meta.callLimit}</span>}
+        </div>
       )}
       {runStatus === "running" && <div style={{ color: "#0ea5e9", marginBottom: 6 }}>Running query…</div>}
       {runStatus === "success" && <div style={{ color: "#22c55e", marginBottom: 6 }}>Query complete.</div>}
@@ -436,6 +623,7 @@ export default function SelfServiceAnalytics() {
         </div>
         <div style={{ flex: 1 }}>
           <h4>Saved Views</h4>
+          {serverViewsStatus && <div style={{ fontSize: 12, color: "#94a3b8" }}>Views: {serverViewsStatus}</div>}
           {savedViews.length === 0 && <div style={{ color: "#64748b" }}>No saved views.</div>}
           {savedViews.map(v => (
             <div key={v.id} className="saved-view" style={{ background: "#f1f5f9", borderRadius: 6, padding: 10, marginBottom: 8 }}>
@@ -445,7 +633,9 @@ export default function SelfServiceAnalytics() {
               <div><b>Date Range:</b> {v.dateRange || ""} {v.comparePrev ? "(compare prev)" : ""}</div>
               {v.segment && <div><b>Segment:</b> {v.segment}</div>}
               <div><b>Schedule:</b> {v.schedule}</div>
-              {v.alertEnabled && <div><b>Alert:</b> {v.alertThreshold || "set threshold"}</div>}
+              {v.alertEnabled && (
+                <div><b>Alert:</b> {v.alertThreshold || "set threshold"} • {v.alertChannel || 'inapp'} {v.alertTarget ? `→ ${v.alertTarget}` : ''}</div>
+              )}
               <div><b>Saved:</b> {new Date(v.savedAt).toLocaleString()}</div>
               <button
                 style={{ marginTop: 4, fontSize: 12 }}
@@ -460,22 +650,64 @@ export default function SelfServiceAnalytics() {
                   setSegment(v.segment || "");
                   setAlertEnabled(v.alertEnabled || false);
                   setAlertThreshold(v.alertThreshold || "");
+                  setAlertChannel(v.alertChannel || "inapp");
+                  setAlertTarget(v.alertTarget || "");
                   const sim = generateChartData(v.metric, v.dimension, v.query, v.dataset, v.dateRange, v.comparePrev);
                   setChartPreview(sim);
                 }}
               >Load</button>
+              <button style={{ marginLeft: 6, fontSize: 12 }} onClick={() => deleteView(v.id)}>Delete</button>
+            </div>
+          ))}
+        </div>
+        <div style={{ flex: 1 }}>
+          <h4>Schedules</h4>
+          {serverSchedStatus && <div style={{ fontSize: 12, color: "#94a3b8" }}>Schedules: {serverSchedStatus}</div>}
+          {serverSchedules.length === 0 && <div style={{ color: "#64748b" }}>No schedules.</div>}
+          {serverSchedules.map(s => (
+            <div key={s.id} className="schedule" style={{ background: "#f1f5f9", borderRadius: 6, padding: 10, marginBottom: 8 }}>
+              <div><b>Name:</b> {s.name}</div>
+              <div><b>Cadence:</b> {s.cadence}</div>
+              <div><b>Status:</b> {s.paused ? 'paused' : (s.lastStatus || 'pending')}</div>
+              <div><b>Channel:</b> {s.channel || 'inapp'} {s.target ? `→ ${s.target}` : ''}</div>
+              {s.lastDeliveryStatus && <div style={{ fontSize: 12, color: s.lastDeliveryStatus === 'sent' ? '#16a34a' : '#dc2626' }}>Alert delivery: {s.lastDeliveryStatus}{s.lastDeliveryAt ? ` (${new Date(s.lastDeliveryAt).toLocaleString()})` : ''}{s.lastDeliveryError ? ` — ${s.lastDeliveryError}` : ''}</div>}
+              <div><b>Last Run:</b> {s.lastRunAt ? new Date(s.lastRunAt).toLocaleString() : '—'}</div>
+              {s.lastError && <div style={{ color: '#dc2626', fontSize: 12 }}>{s.lastError}</div>}
+              <div style={{ marginTop: 6, display: 'flex', gap: 6 }}>
+                <button style={{ fontSize: 12 }} onClick={() => runScheduleNow(s)}>Run now</button>
+                {s.paused
+                  ? <button style={{ fontSize: 12 }} onClick={() => {
+                      fetch(`/api/analytics/schedules/${s.id}/resume`, { method: 'POST' }).then(() => setServerSchedules(arr => arr.map(x => x.id === s.id ? { ...x, paused: false } : x))).catch(() => {});
+                    }}>Resume</button>
+                  : <button style={{ fontSize: 12 }} onClick={() => {
+                      fetch(`/api/analytics/schedules/${s.id}/pause`, { method: 'POST' }).then(() => setServerSchedules(arr => arr.map(x => x.id === s.id ? { ...x, paused: true } : x))).catch(() => {});
+                    }}>Pause</button>
+                }
+                <button style={{ fontSize: 12 }} onClick={() => deleteSchedule(s.id)}>Delete</button>
+              </div>
             </div>
           ))}
         </div>
         <div style={{ flex: 1 }}>
           <h4>History</h4>
           {history.length === 0 && <div style={{ color: "#64748b" }}>No history yet.</div>}
-          {history.map((h, i) => (
-            <div key={i} className="history-item" style={{ background: "#f1f5f9", borderRadius: 6, padding: 10, marginBottom: 8 }}>
-              <div style={{ fontWeight: 700 }}>{h.summary}</div>
+            {history.map((h, i) => (
+                <div key={i} className="history-item" style={{ background: "#f1f5f9", borderRadius: 6, padding: 10, marginBottom: 8 }}>
+                  <div style={{ fontWeight: 700 }}>{h.summary}</div>
               <div style={{ fontSize: 12, color: "#64748b" }}>{new Date(h.at).toLocaleString()} [{h.env}]</div>
               <div style={{ fontSize: 12, color: "#94a3b8" }}>{h.query}</div>
               <div style={{ fontSize: 12, color: "#94a3b8" }}>{h.dateRange || ""} {h.comparePrev ? "(compare prev)" : ""}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ flex: 1 }}>
+          <h4>Alert History</h4>
+          {alertHistory.length === 0 && <div style={{ color: '#64748b' }}>No alerts yet.</div>}
+          {alertHistory.map((h, i) => (
+            <div key={i} className="alert-item" style={{ background: '#fef9c3', borderRadius: 6, padding: 10, marginBottom: 8 }}>
+              <div style={{ fontWeight: 700 }}>{h.message}</div>
+              <div style={{ fontSize: 12, color: '#854d0e' }}>{new Date(h.triggeredAt).toLocaleString()} • {h.channel || 'inapp'} {h.target ? `→ ${h.target}` : ''}</div>
+              <div style={{ fontSize: 12, color: '#92400e' }}>Value: {h.value} Threshold: {h.threshold}</div>
             </div>
           ))}
         </div>
@@ -507,6 +739,9 @@ export default function SelfServiceAnalytics() {
             }}
             disabled={!chartPreview || !chartPreview.labels || !chartPreview.datasets}
           >Export CSV</button>
+          <button style={{ marginLeft: 8 }} onClick={startAsyncExport}>Export (async)</button>
+          {exportStatus && <div style={{ marginTop: 6, fontSize: 12, color: '#475569' }}>Export status: {exportStatus}</div>}
+          {exportDownloadUrl && <div style={{ marginTop: 6 }}><a href={exportDownloadUrl}>Download async CSV</a></div>}
         </div>
         <div style={{ flex: 2 }}>
           <h4>How to Use</h4>
