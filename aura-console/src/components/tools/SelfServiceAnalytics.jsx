@@ -609,7 +609,19 @@ export default function SelfServiceAnalytics() {
           <h4>Recent Results</h4>
           {charts.length === 0 && <div style={{ color: "#64748b" }}>No results yet.</div>}
           {charts.map(c => (
-            <div key={c.id} className="chart-result" style={{ background: "#f1f5f9", borderRadius: 6, padding: 10, marginBottom: 8 }}>
+            <div
+              key={c.id}
+              className="chart-result"
+              style={{
+                background: "#0f172a",
+                border: "1px solid #1f2937",
+                color: "#e5e7eb",
+                borderRadius: 6,
+                padding: 10,
+                marginBottom: 8,
+                boxShadow: "0 6px 18px rgba(0,0,0,0.35)",
+              }}
+            >
               <div><b>Query:</b> {c.query}</div>
               <div><b>Dataset:</b> {c.dataset}</div>
               <div><b>Metric/Dim:</b> {c.metric} / {c.dimension}</div>
@@ -626,7 +638,19 @@ export default function SelfServiceAnalytics() {
           {serverViewsStatus && <div style={{ fontSize: 12, color: "#94a3b8" }}>Views: {serverViewsStatus}</div>}
           {savedViews.length === 0 && <div style={{ color: "#64748b" }}>No saved views.</div>}
           {savedViews.map(v => (
-            <div key={v.id} className="saved-view" style={{ background: "#f1f5f9", borderRadius: 6, padding: 10, marginBottom: 8 }}>
+            <div
+              key={v.id}
+              className="saved-view"
+              style={{
+                background: "#0f172a",
+                border: "1px solid #1f2937",
+                color: "#e5e7eb",
+                borderRadius: 6,
+                padding: 10,
+                marginBottom: 8,
+                boxShadow: "0 6px 18px rgba(0,0,0,0.35)",
+              }}
+            >
               <div><b>Query:</b> {v.query}</div>
               <div><b>Dataset:</b> {v.dataset}</div>
               <div><b>Metric/Dim:</b> {v.metric} / {v.dimension}</div>
@@ -665,7 +689,19 @@ export default function SelfServiceAnalytics() {
           {serverSchedStatus && <div style={{ fontSize: 12, color: "#94a3b8" }}>Schedules: {serverSchedStatus}</div>}
           {serverSchedules.length === 0 && <div style={{ color: "#64748b" }}>No schedules.</div>}
           {serverSchedules.map(s => (
-            <div key={s.id} className="schedule" style={{ background: "#f1f5f9", borderRadius: 6, padding: 10, marginBottom: 8 }}>
+            <div
+              key={s.id}
+              className="schedule"
+              style={{
+                background: "#0f172a",
+                border: "1px solid #1f2937",
+                color: "#e5e7eb",
+                borderRadius: 6,
+                padding: 10,
+                marginBottom: 8,
+                boxShadow: "0 6px 18px rgba(0,0,0,0.35)",
+              }}
+            >
               <div><b>Name:</b> {s.name}</div>
               <div><b>Cadence:</b> {s.cadence}</div>
               <div><b>Status:</b> {s.paused ? 'paused' : (s.lastStatus || 'pending')}</div>
@@ -692,7 +728,19 @@ export default function SelfServiceAnalytics() {
           <h4>History</h4>
           {history.length === 0 && <div style={{ color: "#64748b" }}>No history yet.</div>}
             {history.map((h, i) => (
-                <div key={i} className="history-item" style={{ background: "#f1f5f9", borderRadius: 6, padding: 10, marginBottom: 8 }}>
+                <div
+                  key={i}
+                  className="history-item"
+                  style={{
+                    background: "#0f172a",
+                    border: "1px solid #1f2937",
+                    color: "#e5e7eb",
+                    borderRadius: 6,
+                    padding: 10,
+                    marginBottom: 8,
+                    boxShadow: "0 6px 18px rgba(0,0,0,0.35)",
+                  }}
+                >
                   <div style={{ fontWeight: 700 }}>{h.summary}</div>
               <div style={{ fontSize: 12, color: "#64748b" }}>{new Date(h.at).toLocaleString()} [{h.env}]</div>
               <div style={{ fontSize: 12, color: "#94a3b8" }}>{h.query}</div>
@@ -704,7 +752,19 @@ export default function SelfServiceAnalytics() {
           <h4>Alert History</h4>
           {alertHistory.length === 0 && <div style={{ color: '#64748b' }}>No alerts yet.</div>}
           {alertHistory.map((h, i) => (
-            <div key={i} className="alert-item" style={{ background: '#fef9c3', borderRadius: 6, padding: 10, marginBottom: 8 }}>
+            <div
+              key={i}
+              className="alert-item"
+              style={{
+                background: "#1f2937",
+                border: "1px solid #eab308",
+                color: "#fef08a",
+                borderRadius: 6,
+                padding: 10,
+                marginBottom: 8,
+                boxShadow: "0 6px 18px rgba(0,0,0,0.35)",
+              }}
+            >
               <div style={{ fontWeight: 700 }}>{h.message}</div>
               <div style={{ fontSize: 12, color: '#854d0e' }}>{new Date(h.triggeredAt).toLocaleString()} • {h.channel || 'inapp'} {h.target ? `→ ${h.target}` : ''}</div>
               <div style={{ fontSize: 12, color: '#92400e' }}>Value: {h.value} Threshold: {h.threshold}</div>
