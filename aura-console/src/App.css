@@ -178,6 +178,46 @@
   min-height: 100vh;
   background: #101223;
 }
+
+/* Self-Service Analytics theming to match suite */
+.self-service-analytics {
+  background: #0f172a;
+  color: #e5e7eb;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+.self-service-analytics h2,
+.self-service-analytics h4 {
+  color: #e5e7eb;
+}
+.self-service-analytics label {
+  color: #cbd5e1;
+  font-weight: 600;
+}
+.self-service-analytics input,
+.self-service-analytics select,
+.self-service-analytics textarea {
+  background: #0b1220;
+  color: #e5e7eb;
+  border: 1px solid #1f2937;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+.self-service-analytics input::placeholder,
+.self-service-analytics textarea::placeholder {
+  color: #94a3b8;
+}
+.self-service-analytics .chart-result,
+.self-service-analytics .saved-view,
+.self-service-analytics .schedule,
+.self-service-analytics .history-item,
+.self-service-analytics .alert-item {
+  background: #111827;
+  border: 1px solid #1f2937;
+}
+.self-service-analytics .validation.error { color: #f87171; }
+.self-service-analytics .validation.warn { color: #fbbf24; }
 .app-main {
   flex: 1 1 auto;
   display: flex;
@@ -871,19 +911,36 @@ app-loading {
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter",
-    "SF Pro Text", sans-serif;
-  background-color: var(--bg-page);
-  color: var(--text-primary);
+:root {
+  --bg: #0b1120;
+  --bg-alt: #0e1224;
+  --card: #0f172a;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --border: #1f2937;
+  --accent: #22d3ee;
+  --accent-2: #6366f1;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warn: #eab308;
 }
 
-/* ================== APP LAYOUT ================== */
+body, .app-shell, .app-main {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
 
-.app-shell {
-  display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
+input, select, textarea, button {
+  background-color: #0b1220 !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+.tool, .card, .panel, .modal-content {
+  background: var(--card) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
   min-height: 100vh;
   background:
     radial-gradient(circle at top left, #0b1120 0, rgba(15, 23, 42, 0.8) 45%, #020617 100%);
