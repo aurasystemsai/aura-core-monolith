@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const OpenAI = require('openai');
 const db = require('./db');
+const runs = require('./runs');
 
 // Lazily instantiate OpenAI so we can return graceful errors when not configured
 const getOpenAI = () => {
@@ -177,10 +178,12 @@ router.post(['/ai/generate', '/ai/generate-alt'], async (req, res) => {
 // Batch generate (sequential to respect rate limits)
 router.post('/ai/batch-generate', async (req, res) => {
   try {
-    const { items = [], locale = 'default', safeMode = false, keywords = '' } = req.body || {};
+    const { items = [], locale = 'default', safeMode = false, keywords = '', chunkSize = 50 } = req.body || {};
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ ok: false, error: 'items[] required' });
+    if (items.length > 200) return res.status(400).json({ ok: false, error: 'Max 200 items per batch' });
     const openai = getOpenAI();
     const results = [];
+    const startedAt = Date.now();
     for (const item of items) {
       const { input, imageDescription, url, productTitle = '', attributes = '', shotType = '', focus = '', variant = '', scene = '' } = item || {};
       const description = input || imageDescription || '';
@@ -215,10 +218,29 @@ router.post('/ai/batch-generate', async (req, res) => {
       }
       results.push({ ok: true, result: finalAlt, lint, grade, raw: reply, sanitized, meta: { productTitle, url, shotType, focus, variant } });
     }
-    res.json({ ok: true, results });
+    const endedAt = Date.now();
+    const summary = {
+      id: `run-${startedAt}`,
+      startedAt,
+      durationMs: endedAt - startedAt,
+      total: results.length,
+      ok: results.filter(r => r.ok).length,
+      errors: results.filter(r => !r.ok).length,
+      chunkSize,
+      locale,
+      safeMode,
+      keywords: keywords || undefined,
+    };
+    runs.add(summary);
+    res.json({ ok: true, results, summary });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message || 'AI error' });
   }
+});
+
+// Batch runs log
+router.get('/runs', (req, res) => {
+  res.json({ ok: true, runs: runs.list() });
 });
 
 

@@ -17,6 +17,7 @@ export default function ImageAltMediaSEO() {
   const [sanitized, setSanitized] = useState("");
   const [batchInput, setBatchInput] = useState("[]");
   const [batchResults, setBatchResults] = useState([]);
+  const [runs, setRuns] = useState([]);
   const [images, setImages] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -209,6 +210,7 @@ export default function ImageAltMediaSEO() {
   React.useEffect(() => {
     fetchImages();
     fetchAnalytics();
+    fetch("/api/image-alt-media-seo/runs").then(r => r.json()).then(d => { if (d.ok) setRuns(d.runs || []); }).catch(() => {});
   }, []);
 
   return (
@@ -400,6 +402,19 @@ export default function ImageAltMediaSEO() {
           </ul>
         ) : null}
       </div>
+
+      {runs?.length ? (
+        <div style={{ marginTop: 18, background: darkMode ? "#111827" : "#e0f2fe", borderRadius: 12, padding: 14 }}>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Recent Batch Runs</div>
+          <ul style={{ paddingLeft: 18, margin: 0 }}>
+            {runs.slice(-5).reverse().map(run => (
+              <li key={run.id} style={{ marginBottom: 6, fontSize: 13 }}>
+                <b>{run.total} items</b> · ok {run.ok} / err {run.errors} · {run.durationMs}ms · locale {run.locale} · safe {String(run.safeMode)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Images</div>
