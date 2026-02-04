@@ -15,6 +15,8 @@ export default function ImageAltMediaSEO() {
   const [lint, setLint] = useState(null);
   const [grade, setGrade] = useState(null);
   const [sanitized, setSanitized] = useState("");
+  const [batchInput, setBatchInput] = useState("[]");
+  const [batchResults, setBatchResults] = useState([]);
   const [images, setImages] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -51,6 +53,53 @@ export default function ImageAltMediaSEO() {
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setAnalytics(data.analytics || null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBatchGenerate = async () => {
+    setLoading(true);
+    setError("");
+    setBatchResults([]);
+    try {
+      let items;
+      try {
+        items = JSON.parse(batchInput);
+      } catch (parseErr) {
+        throw new Error("Batch input must be valid JSON array");
+      }
+      if (!Array.isArray(items) || !items.length) throw new Error("Provide at least one item");
+      const res = await fetch("/api/image-alt-media-seo/ai/batch-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items, locale, safeMode })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Batch failed");
+      setBatchResults(data.results || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveBatchItem = async item => {
+    if (!item?.result) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/image-alt-media-seo/images", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: item.meta?.url, altText: item.result })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Save failed");
+      fetchImages();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -318,6 +367,40 @@ export default function ImageAltMediaSEO() {
         </div>
       )}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
+
+      <div style={{ marginTop: 24, background: darkMode ? "#1f2937" : "#eef2ff", borderRadius: 12, padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Batch Generate (JSON array)</div>
+        <textarea
+          value={batchInput}
+          onChange={e => setBatchInput(e.target.value)}
+          rows={6}
+          style={{ width: "100%", fontSize: 14, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a", fontFamily: 'Menlo, Consolas, monospace' }}
+          aria-label="Batch JSON"
+          placeholder='[
+  { "input": "red leather tote on white", "url": "https://...", "keywords": "leather tote" }
+]'
+        />
+        <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
+          <button onClick={handleBatchGenerate} disabled={loading} style={{ background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "10px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>{loading ? "Working..." : "Run Batch"}</button>
+          <span style={{ fontSize: 13, color: darkMode ? "#a3e635" : "#475569" }}>Sends to /ai/batch-generate; locale and safe mode are applied.</span>
+        </div>
+        {batchResults?.length ? (
+          <ul style={{ marginTop: 12, paddingLeft: 18 }}>
+            {batchResults.map((r, idx) => (
+              <li key={idx} style={{ marginBottom: 12 }}>
+                <div style={{ fontWeight: 600 }}>Item {idx + 1}: {r.ok ? "OK" : "Error"}</div>
+                {r.error && <div style={{ color: "#ef4444" }}>{r.error}</div>}
+                {r.result && <div><b>Alt:</b> {r.result}</div>}
+                {r.meta?.url && <div><b>URL:</b> {r.meta.url}</div>}
+                {r.grade && <div><b>Grade:</b> {r.grade.grade} ({r.grade.score})</div>}
+                {r.lint?.issues?.length ? <div><b>Issues:</b> {r.lint.issues.join('; ')}</div> : null}
+                {r.result && <button onClick={() => handleSaveBatchItem(r)} style={{ marginTop: 6, background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 6, padding: "6px 12px", cursor: "pointer", fontSize: 13 }}>Save to library</button>}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+
       <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Images</div>
         <ul style={{ paddingLeft: 18 }}>
