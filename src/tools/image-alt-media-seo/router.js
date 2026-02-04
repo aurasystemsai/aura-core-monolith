@@ -11,11 +11,26 @@ const getOpenAI = () => {
   return new OpenAI({ apiKey: key });
 };
 
-const buildFallbackAlt = ({ imageDescription = '', url = '', keywords = '' }) => {
-  const base = imageDescription || url.split('/').pop() || 'Product image';
+const buildFallbackAlt = ({ imageDescription = '', url = '', keywords = '', productTitle = '', shotType = '' }) => {
+  const base = imageDescription || productTitle || url.split('/').pop() || 'Product image';
   const trimmed = base.trim().replace(/[_-]+/g, ' ');
+  const shot = shotType ? `${shotType} view` : '';
   const kw = (keywords || '').trim();
-  return [trimmed, kw].filter(Boolean).join(' — ').slice(0, 180) || 'Descriptive product image';
+  return [trimmed, shot, kw].filter(Boolean).join(' — ').slice(0, 180) || 'Descriptive product image';
+};
+
+const toContextString = ({ productTitle, attributes, shotType, focus, variant, scene }) => {
+  const parts = [];
+  if (productTitle) parts.push(`Title: ${productTitle}`);
+  if (variant) parts.push(`Variant: ${variant}`);
+  if (shotType) parts.push(`Shot: ${shotType}`);
+  if (focus) parts.push(`Focus: ${focus}`);
+  if (scene) parts.push(`Scene: ${scene}`);
+  if (attributes) {
+    if (typeof attributes === 'string') parts.push(`Attributes: ${attributes}`);
+    else if (typeof attributes === 'object') parts.push(`Attributes: ${JSON.stringify(attributes)}`);
+  }
+  return parts.join(' | ');
 };
 
 const lengthBands = {
@@ -116,7 +131,7 @@ router.delete('/images/:id', (req, res) => {
 // AI endpoint: generate alt text (accepts both legacy and new payloads)
 router.post(['/ai/generate', '/ai/generate-alt'], async (req, res) => {
   try {
-    const { input, imageDescription, url, keywords, locale = 'default', safeMode = false } = req.body || {};
+    const { input, imageDescription, url, keywords, locale = 'default', safeMode = false, productTitle = '', attributes = '', shotType = '', focus = '', variant = '', scene = '' } = req.body || {};
     const description = input || imageDescription || '';
     if (!description && !url) {
       return res.status(400).json({ ok: false, error: 'Provide input or url' });
@@ -126,11 +141,12 @@ router.post(['/ai/generate', '/ai/generate-alt'], async (req, res) => {
     let reply = '';
 
     if (openai) {
+      const contextStr = toContextString({ productTitle, attributes, shotType, focus, variant, scene });
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: 'You are an image SEO expert who writes concise, specific, ADA-friendly alt text without fluff.' },
-          { role: 'user', content: `Image description: ${description || '(none)'}; URL: ${url || '(none)'}; Keywords: ${keywords || '(none)'}` },
+          { role: 'user', content: `Image description: ${description || '(none)'}; URL: ${url || '(none)'}; Keywords: ${keywords || '(none)'}; Context: ${contextStr || '(none)'}; Constraints: no promo language, no PII, keep concise.` },
         ],
         max_tokens: 120,
         temperature: 0.4,
@@ -139,7 +155,7 @@ router.post(['/ai/generate', '/ai/generate-alt'], async (req, res) => {
     }
 
     if (!reply) {
-      reply = buildFallbackAlt({ imageDescription: description, url, keywords });
+      reply = buildFallbackAlt({ imageDescription: description, url, keywords, productTitle, shotType });
     }
 
     const lint = lintAlt(reply, keywords, locale);
@@ -153,6 +169,53 @@ router.post(['/ai/generate', '/ai/generate-alt'], async (req, res) => {
     }
 
     res.json({ ok: true, result: finalAlt, lint, grade, raw: reply, sanitized });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'AI error' });
+  }
+});
+
+// Batch generate (sequential to respect rate limits)
+router.post('/ai/batch-generate', async (req, res) => {
+  try {
+    const { items = [], locale = 'default', safeMode = false, keywords = '' } = req.body || {};
+    if (!Array.isArray(items) || !items.length) return res.status(400).json({ ok: false, error: 'items[] required' });
+    const openai = getOpenAI();
+    const results = [];
+    for (const item of items) {
+      const { input, imageDescription, url, productTitle = '', attributes = '', shotType = '', focus = '', variant = '', scene = '' } = item || {};
+      const description = input || imageDescription || '';
+      if (!description && !url) {
+        results.push({ ok: false, error: 'Provide input or url', item });
+        continue;
+      }
+      let reply = '';
+      if (openai) {
+        const contextStr = toContextString({ productTitle, attributes, shotType, focus, variant, scene });
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: 'You are an image SEO expert who writes concise, specific, ADA-friendly alt text without fluff.' },
+            { role: 'user', content: `Image description: ${description || '(none)'}; URL: ${url || '(none)'}; Keywords: ${item.keywords || keywords || '(none)'}; Context: ${contextStr || '(none)'}; Constraints: no promo language, no PII, keep concise.` },
+          ],
+          max_tokens: 120,
+          temperature: 0.4,
+        });
+        reply = completion.choices?.[0]?.message?.content?.trim() || '';
+      }
+      if (!reply) {
+        reply = buildFallbackAlt({ imageDescription: description, url, keywords: item.keywords || keywords, productTitle, shotType });
+      }
+      const lint = lintAlt(reply, item.keywords || keywords, locale);
+      const grade = gradeAlt({ altText: reply, keywords: item.keywords || keywords, lint, locale });
+      const sanitized = lint.sanitizedAlt && lint.sanitizedAlt !== reply ? lint.sanitizedAlt : null;
+      let finalAlt = reply;
+      if (safeMode) {
+        if (lint.redactedAlt) finalAlt = lint.redactedAlt;
+        else if (sanitized) finalAlt = sanitized;
+      }
+      results.push({ ok: true, result: finalAlt, lint, grade, raw: reply, sanitized, meta: { productTitle, url, shotType, focus, variant } });
+    }
+    res.json({ ok: true, results });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message || 'AI error' });
   }

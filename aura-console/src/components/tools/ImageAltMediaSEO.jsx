@@ -4,6 +4,12 @@ export default function ImageAltMediaSEO() {
   const [input, setInput] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [keywords, setKeywords] = useState("");
+  const [productTitle, setProductTitle] = useState("");
+  const [attributes, setAttributes] = useState("");
+  const [shotType, setShotType] = useState("front");
+  const [variant, setVariant] = useState("");
+  const [focus, setFocus] = useState("product");
+  const [scene, setScene] = useState("");
   const [locale, setLocale] = useState("en-US");
   const [result, setResult] = useState("");
   const [lint, setLint] = useState(null);
@@ -64,7 +70,7 @@ export default function ImageAltMediaSEO() {
       const res = await fetch("/api/image-alt-media-seo/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input, url: imageUrl, keywords, locale, safeMode })
+        body: JSON.stringify({ input, url: imageUrl, keywords, locale, safeMode, productTitle, attributes, shotType, variant, focus, scene })
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Unknown error");
@@ -193,6 +199,58 @@ export default function ImageAltMediaSEO() {
           style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
         />
       </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+        <input
+          value={productTitle}
+          onChange={e => setProductTitle(e.target.value)}
+          placeholder="Product title"
+          aria-label="Product title"
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+        />
+        <input
+          value={variant}
+          onChange={e => setVariant(e.target.value)}
+          placeholder="Variant (e.g., red / size M)"
+          aria-label="Variant"
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+        />
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+        <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontWeight: 600 }}>Shot type</span>
+          <select value={shotType} onChange={e => setShotType(e.target.value)} aria-label="Shot type" style={{ padding: "8px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}>
+            <option value="front">front</option>
+            <option value="back">back</option>
+            <option value="side">side</option>
+            <option value="detail">detail close-up</option>
+            <option value="lifestyle">lifestyle scene</option>
+            <option value="packaging">packaging</option>
+          </select>
+        </label>
+        <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontWeight: 600 }}>Focus</span>
+          <select value={focus} onChange={e => setFocus(e.target.value)} aria-label="Focus" style={{ padding: "8px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}>
+            <option value="product">product</option>
+            <option value="scene">scene</option>
+            <option value="detail">detail</option>
+          </select>
+        </label>
+      </div>
+      <textarea
+        value={attributes}
+        onChange={e => setAttributes(e.target.value)}
+        rows={3}
+        style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 12, background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+        placeholder="Attributes (comma or JSON: color, material, style, use-case)"
+        aria-label="Attributes"
+      />
+      <input
+        value={scene}
+        onChange={e => setScene(e.target.value)}
+        placeholder="Scene (e.g., studio on white, outdoor cafe)"
+        aria-label="Scene"
+        style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 12, background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+      />
       <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Locale</span>
