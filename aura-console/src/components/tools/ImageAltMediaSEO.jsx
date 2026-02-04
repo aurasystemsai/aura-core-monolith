@@ -2,11 +2,18 @@ import React, { useState, useRef } from "react";
 
 export default function ImageAltMediaSEO() {
   const [input, setInput] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [keywords, setKeywords] = useState("");
+  const [locale, setLocale] = useState("en-US");
   const [result, setResult] = useState("");
+  const [lint, setLint] = useState(null);
+  const [grade, setGrade] = useState(null);
+  const [sanitized, setSanitized] = useState("");
   const [images, setImages] = useState([]);
-  const [analytics, setAnalytics] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [safeMode, setSafeMode] = useState(true);
   const [imported, setImported] = useState(null);
   const [exported, setExported] = useState(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -37,7 +44,7 @@ export default function ImageAltMediaSEO() {
       const res = await fetch("/api/image-alt-media-seo/analytics");
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Unknown error");
-      setAnalytics(data.analytics || []);
+      setAnalytics(data.analytics || null);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -50,15 +57,21 @@ export default function ImageAltMediaSEO() {
     setLoading(true);
     setError("");
     setResult("");
+    setLint(null);
+    setGrade(null);
+    setSanitized("");
     try {
       const res = await fetch("/api/image-alt-media-seo/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input })
+        body: JSON.stringify({ input, url: imageUrl, keywords, locale, safeMode })
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setResult(data.result || "No alt text generated");
+      setLint(data.lint || null);
+      setGrade(data.grade || null);
+      setSanitized(data.sanitized || "");
       fetchImages();
     } catch (err) {
       setError(err.message);
@@ -75,7 +88,7 @@ export default function ImageAltMediaSEO() {
       const res = await fetch("/api/image-alt-media-seo/images", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: result })
+        body: JSON.stringify({ url: imageUrl, altText: result })
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Unknown error");
@@ -97,10 +110,18 @@ export default function ImageAltMediaSEO() {
         const res = await fetch("/api/image-alt-media-seo/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: JSON.parse(evt.target.result) })
+          body: JSON.stringify({ data: JSON.parse(evt.target.result), dryRun: true })
         });
         const data = await res.json();
-        if (!data.ok) throw new Error(data.error || "Unknown error");
+        if (!data.ok) throw new Error(data.error || (data.errors && data.errors.map(e => `Row ${e.index}: ${e.error}`).join(', ')) || "Unknown error");
+        // apply for real after dry-run passes
+        const resApply = await fetch("/api/image-alt-media-seo/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: JSON.parse(evt.target.result) })
+        });
+        const dataApply = await resApply.json();
+        if (!dataApply.ok) throw new Error(dataApply.error || "Unknown error");
         setImported(file.name);
         fetchImages();
       } catch (err) {
@@ -156,6 +177,41 @@ export default function ImageAltMediaSEO() {
       </div>
       <button onClick={() => setShowOnboarding(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+        <input
+          value={imageUrl}
+          onChange={e => setImageUrl(e.target.value)}
+          placeholder="Image URL (optional but recommended)"
+          aria-label="Image URL"
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+        />
+        <input
+          value={keywords}
+          onChange={e => setKeywords(e.target.value)}
+          placeholder="Target keywords (comma separated)"
+          aria-label="Target keywords"
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+        />
+      </div>
+      <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+        <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontWeight: 600 }}>Locale</span>
+          <select value={locale} onChange={e => setLocale(e.target.value)} aria-label="Locale" style={{ padding: "8px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}>
+            <option value="en-US">en-US</option>
+            <option value="en-GB">en-GB</option>
+            <option value="de">de</option>
+            <option value="fr">fr</option>
+            <option value="es">es</option>
+            <option value="ja">ja</option>
+            <option value="ko">ko</option>
+            <option value="zh">zh</option>
+          </select>
+        </label>
+        <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
+          <input type="checkbox" checked={safeMode} onChange={e => setSafeMode(e.target.checked)} />
+          <span>Safe mode (PII/promo sanitization)</span>
+        </label>
+      </div>
       <textarea
         value={input}
         onChange={e => setInput(e.target.value)}
@@ -165,7 +221,7 @@ export default function ImageAltMediaSEO() {
         aria-label="Image alt text input"
       />
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={handleGenerate} disabled={loading || !input} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Generating..." : "AI Generate"}</button>
+        <button onClick={handleGenerate} disabled={loading || (!input && !imageUrl)} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Generating..." : "AI Generate"}</button>
         <button onClick={handleAddImage} disabled={!result} style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Save Alt Text</button>
         <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import images" />
@@ -177,6 +233,30 @@ export default function ImageAltMediaSEO() {
         <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635" : "#23263a" }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Alt Text:</div>
           <div>{result}</div>
+          {lint && (
+            <div style={{ marginTop: 8, fontSize: 14 }}>
+              <span style={{ fontWeight: 600 }}>Lint:</span> {lint.withinRange ? "Length OK" : `Length ${lint.length}`}
+              {lint.issues?.length ? <ul style={{ margin: "6px 0 0 18px" }}>{lint.issues.map(issue => <li key={issue}>{issue}</li>)}</ul> : <span style={{ marginLeft: 8 }}>No issues detected</span>}
+              {lint.redactedAlt && (
+                <div style={{ marginTop: 6 }}>
+                  <span style={{ fontWeight: 600 }}>Redacted suggestion:</span> {lint.redactedAlt}
+                  <button onClick={() => setResult(lint.redactedAlt)} style={{ marginLeft: 8, background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 13 }}>Apply</button>
+                </div>
+              )}
+              {sanitized && sanitized !== result && (
+                <div style={{ marginTop: 6 }}>
+                  <span style={{ fontWeight: 600 }}>Sanitized:</span> {sanitized}
+                  <button onClick={() => setResult(sanitized)} style={{ marginLeft: 8, background: "#a3e635", color: "#23263a", border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 13 }}>Use sanitized</button>
+                </div>
+              )}
+            </div>
+          )}
+          {grade && (
+            <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontWeight: 700 }}>Grade:</span>
+              <span style={{ padding: "4px 10px", borderRadius: 8, background: grade.grade === 'A' ? '#22c55e' : grade.grade === 'B' ? '#84cc16' : grade.grade === 'C' ? '#fbbf24' : '#ef4444', color: '#0b0b0b', fontWeight: 800 }}>{grade.grade} ({grade.score})</span>
+            </div>
+          )}
         </div>
       )}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
@@ -186,7 +266,8 @@ export default function ImageAltMediaSEO() {
           {images.map(img => (
             <li key={img.id} style={{ marginBottom: 10 }}>
               <div><b>ID:</b> {img.id}</div>
-              <div><b>Content:</b> {img.content || JSON.stringify(img)}</div>
+              <div><b>URL:</b> {img.url || "(none)"}</div>
+              <div><b>Alt:</b> {img.altText || img.content || JSON.stringify(img)}</div>
             </li>
           ))}
         </ul>
@@ -194,11 +275,17 @@ export default function ImageAltMediaSEO() {
       <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
         <div style={{ fontSize: 15, color: darkMode ? "#a3e635" : "#23263a" }}>
-          {analytics.length ? (
-            <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "none", padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
-          ) : (
-            <span>No analytics yet. Generate or import images to see results.</span>
-          )}
+          {analytics ? (
+            <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
+              <div><b>Total:</b> {analytics.totalImages ?? 0}</div>
+              <div><b>Avg length:</b> {analytics.avgLength ?? 0}</div>
+              <div><b>Missing URL:</b> {analytics.missingUrl ?? 0}</div>
+              <div><b>Missing alt:</b> {analytics.missingAlt ?? 0}</div>
+              <div><b>Duplicate alts:</b> {analytics.duplicateAlts ?? 0}</div>
+              <div><b>Unique alts:</b> {analytics.uniqueAlts ?? 0}</div>
+              <div><b>Coverage %:</b> {analytics.coveragePct ?? 0}%</div>
+            </div>
+          ) : <span>No analytics yet. Generate or import images to see results.</span>}
         </div>
       </div>
       <div style={{ marginTop: 32, fontSize: 13, color: darkMode ? "#a3e635" : "#64748b", textAlign: "center" }}>

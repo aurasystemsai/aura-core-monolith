@@ -13,11 +13,15 @@ module.exports = {
   list: () => db.prepare('SELECT * FROM images').all(),
   get: id => db.prepare('SELECT * FROM images WHERE id = ?').get(id),
   create: data => {
-    const info = db.prepare('INSERT INTO images (url, altText, createdAt) VALUES (?, ?, ?)').run(data.url, data.altText, Date.now());
+    const url = data.url || data.imageUrl || null;
+    const altText = data.altText || data.content || '';
+    const info = db.prepare('INSERT INTO images (url, altText, createdAt) VALUES (?, ?, ?)').run(url, altText, Date.now());
     return module.exports.get(info.lastInsertRowid);
   },
   update: (id, data) => {
-    db.prepare('UPDATE images SET url = ?, altText = ? WHERE id = ?').run(data.url, data.altText, id);
+    const url = data.url || data.imageUrl || null;
+    const altText = data.altText || data.content || '';
+    db.prepare('UPDATE images SET url = ?, altText = ? WHERE id = ?').run(url, altText, id);
     return module.exports.get(id);
   },
   delete: id => db.prepare('DELETE FROM images WHERE id = ?').run(id).changes > 0,
