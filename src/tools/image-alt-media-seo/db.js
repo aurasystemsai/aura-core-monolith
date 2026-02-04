@@ -1,7 +1,8 @@
 const { Pool } = require('pg');
 
+const connectionString = process.env.DATABASE_URL || process.env.AURA_PG_URL;
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString,
   ssl: process.env.PGSSL === 'false' ? false : { rejectUnauthorized: false },
 });
 
@@ -106,5 +107,9 @@ module.exports = {
     await ready;
     const { rows } = await pool.query('SELECT id, run_id AS runId, started_at AS startedAt, duration_ms AS durationMs, total, ok, errors, chunk_size AS chunkSize, locale, safe_mode AS safeMode, keywords FROM image_alt_media_runs ORDER BY started_at DESC LIMIT 100');
     return rows;
+  },
+  health: async () => {
+    await pool.query('SELECT 1');
+    return { ok: true };
   }
 };

@@ -329,4 +329,14 @@ router.get('/export', (req, res) => {
   db.list().then(items => res.json({ ok: true, items })).catch(err => res.status(500).json({ ok: false, error: err.message || 'DB error' }));
 });
 
+// Health check for DB connectivity
+router.get('/health/db', async (req, res) => {
+  try {
+    const result = await db.health();
+    res.json({ ok: true, result });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'DB error' });
+  }
+});
+
 module.exports = router;
