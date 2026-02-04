@@ -105,28 +105,49 @@ const lintAlt = (altText = '', keywords = '', locale = 'default') => {
   };
 };
 
-// CRUD endpoints (persistent)
-router.get('/images', (req, res) => {
-  res.json({ ok: true, images: db.list() });
+// CRUD endpoints (persistent, Postgres)
+router.get('/images', async (req, res) => {
+  try {
+    const images = await db.list();
+    res.json({ ok: true, images });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'DB error' });
+  }
 });
-router.get('/images/:id', (req, res) => {
-  const image = db.get(req.params.id);
-  if (!image) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, image });
+router.get('/images/:id', async (req, res) => {
+  try {
+    const image = await db.get(req.params.id);
+    if (!image) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true, image });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'DB error' });
+  }
 });
-router.post('/images', (req, res) => {
-  const image = db.create(req.body || {});
-  res.json({ ok: true, image });
+router.post('/images', async (req, res) => {
+  try {
+    const image = await db.create(req.body || {});
+    res.json({ ok: true, image });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'DB error' });
+  }
 });
-router.put('/images/:id', (req, res) => {
-  const image = db.update(req.params.id, req.body || {});
-  if (!image) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, image });
+router.put('/images/:id', async (req, res) => {
+  try {
+    const image = await db.update(req.params.id, req.body || {});
+    if (!image) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true, image });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'DB error' });
+  }
 });
-router.delete('/images/:id', (req, res) => {
-  const ok = db.delete(req.params.id);
-  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true });
+router.delete('/images/:id', async (req, res) => {
+  try {
+    const ok = await db.delete(req.params.id);
+    if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'DB error' });
+  }
 });
 
 // AI endpoint: generate alt text (accepts both legacy and new payloads)
@@ -231,7 +252,7 @@ router.post('/ai/batch-generate', async (req, res) => {
       safeMode,
       keywords: keywords || undefined,
     };
-    runs.add(summary);
+    await runs.add(summary);
     res.json({ ok: true, results, summary });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message || 'AI error' });
@@ -239,48 +260,62 @@ router.post('/ai/batch-generate', async (req, res) => {
 });
 
 // Batch runs log
-router.get('/runs', (req, res) => {
-  res.json({ ok: true, runs: runs.list() });
+router.get('/runs', async (req, res) => {
+  try {
+    const all = await runs.list();
+    res.json({ ok: true, runs: all });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'DB error' });
+  }
 });
 
 
 // Analytics endpoint (live)
-router.get('/analytics', (req, res) => {
-  const all = db.list();
-  const lengths = all.map(i => (i.altText || '').length);
-  const avgLength = lengths.length ? Math.round(lengths.reduce((a, b) => a + b, 0) / lengths.length) : 0;
-  const missingUrl = all.filter(i => !i.url).length;
-  const missingAlt = all.filter(i => !i.altText).length;
-  const counts = all.reduce((acc, item) => {
-    const alt = (item.altText || '').trim();
-    if (!alt) return acc;
-    acc[alt] = (acc[alt] || 0) + 1;
-    return acc;
-  }, {});
-  const duplicateAlts = Object.values(counts).filter(c => c > 1).length;
-  const uniqueAlts = Object.keys(counts).length;
-  const coveragePct = all.length ? Math.round(((all.length - missingAlt) / all.length) * 100) : 0;
-  res.json({ ok: true, analytics: { totalImages: all.length, avgLength, missingUrl, missingAlt, duplicateAlts, uniqueAlts, coveragePct } });
+router.get('/analytics', async (req, res) => {
+  try {
+    const all = await db.list();
+    const lengths = all.map(i => (i.altText || '').length);
+    const avgLength = lengths.length ? Math.round(lengths.reduce((a, b) => a + b, 0) / lengths.length) : 0;
+    const missingUrl = all.filter(i => !i.url).length;
+    const missingAlt = all.filter(i => !i.altText).length;
+    const counts = all.reduce((acc, item) => {
+      const alt = (item.altText || '').trim();
+      if (!alt) return acc;
+      acc[alt] = (acc[alt] || 0) + 1;
+      return acc;
+    }, {});
+    const duplicateAlts = Object.values(counts).filter(c => c > 1).length;
+    const uniqueAlts = Object.keys(counts).length;
+    const coveragePct = all.length ? Math.round(((all.length - missingAlt) / all.length) * 100) : 0;
+    res.json({ ok: true, analytics: { totalImages: all.length, avgLength, missingUrl, missingAlt, duplicateAlts, uniqueAlts, coveragePct } });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'DB error' });
+  }
 });
 
 // Import/export endpoints (live)
-router.post('/import', (req, res) => {
-  const { items, data, dryRun } = req.body || {};
-  const payload = Array.isArray(items) ? items : Array.isArray(data) ? data : null;
-  if (!payload) return res.status(400).json({ ok: false, error: 'items[] required' });
-  const errors = [];
-  payload.forEach((item, idx) => {
-    const alt = item?.altText || item?.content;
-    if (!alt || typeof alt !== 'string' || !alt.trim()) {
-      errors.push({ index: idx, error: 'altText required' });
+router.post('/import', async (req, res) => {
+  try {
+    const { items, data, dryRun } = req.body || {};
+    const payload = Array.isArray(items) ? items : Array.isArray(data) ? data : null;
+    if (!payload) return res.status(400).json({ ok: false, error: 'items[] required' });
+    const errors = [];
+    payload.forEach((item, idx) => {
+      const alt = item?.altText || item?.content;
+      if (!alt || typeof alt !== 'string' || !alt.trim()) {
+        errors.push({ index: idx, error: 'altText required' });
+      }
+    });
+    if (dryRun) {
+      return res.json({ ok: !errors.length, dryRun: true, count: payload.length, errors });
     }
-  });
-  if (dryRun) {
-    return res.json({ ok: !errors.length, dryRun: true, count: payload.length, errors });
+    if (errors.length) return res.status(400).json({ ok: false, errors });
+    await db.import(payload);
+    const count = (await db.list()).length;
+    res.json({ ok: true, count });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'DB error' });
   }
-  if (errors.length) return res.status(400).json({ ok: false, errors });
-  db.import(payload);
-  res.json({ ok: true, count: db.list().length });
 });
 
 // Lint-only endpoint for existing alt text
@@ -291,7 +326,7 @@ router.post('/lint', (req, res) => {
   res.json({ ok: true, lint, grade, sanitized: lint.sanitizedAlt, redacted: lint.redactedAlt });
 });
 router.get('/export', (req, res) => {
-  res.json({ ok: true, items: db.list() });
+  db.list().then(items => res.json({ ok: true, items })).catch(err => res.status(500).json({ ok: false, error: err.message || 'DB error' }));
 });
 
 module.exports = router;
