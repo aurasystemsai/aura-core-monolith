@@ -847,6 +847,9 @@ export default function ImageAltMediaSEO() {
   const totalImagePages = imageLimit ? Math.max(1, Math.ceil(imageTotal / imageLimit)) : 1;
   const currentImagePage = imageLimit ? Math.floor(imageOffset / imageLimit) + 1 : 1;
 
+  return (
+    <div style={{ padding: 18 }}>
+
       {(result || captionResult) && (
         <div style={{ display: "grid", gridTemplateColumns: captionResult ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 12 }}>
           {result ? (
