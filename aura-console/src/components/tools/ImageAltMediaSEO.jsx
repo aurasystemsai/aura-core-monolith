@@ -1474,7 +1474,7 @@ export default function ImageAltMediaSEO() {
           <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Recent Batch Runs</div>
           <div style={{ marginBottom: 8, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             <button onClick={handleDownloadRuns} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "6px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Download runs JSON</button>
-            {runsDownloadUrl && <a href={runsDownloadUrl} download="runs.json" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>Save runs</a>}
+            {runsDownloadUrl && <a href={runsDownloadUrl} download="runs.json" style={{ color: "#a3e635", fontWeight: 600 }}>Save runs</a>}
           </div>
           <ul style={{ paddingLeft: 18, margin: 0 }}>
             {runs.slice(-5).reverse().map(run => (
@@ -1490,7 +1490,7 @@ export default function ImageAltMediaSEO() {
         </div>
       ) : null}
 
-      <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
+      <div style={{ marginTop: 24, background: "#334155", borderRadius: 12, padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Images</div>
         <ul style={{ paddingLeft: 18 }}>
           {images.map(img => (
@@ -1502,7 +1502,7 @@ export default function ImageAltMediaSEO() {
           ))}
         </ul>
       </div>
-      <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
+      <div style={{ marginTop: 24, background: "#334155", borderRadius: 12, padding: 18 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
           <div style={{ fontWeight: 700, fontSize: 18 }}>Analytics</div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -1511,14 +1511,14 @@ export default function ImageAltMediaSEO() {
               onChange={e => setCollectionFilter(e.target.value)}
               placeholder="Filter by collection (substring)"
               aria-label="Collection filter"
-              style={{ padding: "6px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a", minWidth: 180 }}
+              style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 180 }}
             />
             <input
               value={vendorFilter}
               onChange={e => setVendorFilter(e.target.value)}
               placeholder="Filter by vendor (substring)"
               aria-label="Vendor filter"
-              style={{ padding: "6px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a", minWidth: 180 }}
+              style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 180 }}
             />
             <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
               <input type="checkbox" checked={includeHeaders} onChange={e => setIncludeHeaders(e.target.checked)} />
@@ -1532,7 +1532,7 @@ export default function ImageAltMediaSEO() {
             <button onClick={async () => { await fetchJson("/api/image-alt-media-seo/analytics/cache/clear", { method: "POST" }); showToast("Analytics cache cleared"); }} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Clear cache</button>
           </div>
         </div>
-        <div style={{ fontSize: 15, color: darkMode ? "#a3e635" : "#23263a" }}>
+        <div style={{ fontSize: 15, color: "#a3e635" }}>
           {analytics ? (
             <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
               <div><b>Total:</b> {analytics.totalImages ?? 0}</div>
@@ -1547,7 +1547,7 @@ export default function ImageAltMediaSEO() {
           ) : <span>No analytics yet. Generate or import images to see results.</span>}
         </div>
         <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <div style={{ background: darkMode ? "#1f2937" : "#fff", borderRadius: 10, padding: 12, border: "1px solid #e2e8f0" }}>
+          <div style={{ background: "#1f2937", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Missing</div>
             {missingReport ? (
               <div style={{ fontSize: 14 }}>
@@ -1557,19 +1557,19 @@ export default function ImageAltMediaSEO() {
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 6 }}>
                   <button onClick={() => handleCopyText((missingReport.missingAlt || []).join(', '), "Alt IDs copied")} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 6, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy alt IDs</button>
                   <button onClick={() => handleCopyText((missingReport.missingUrl || []).join(', '), "URL IDs copied")} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 6, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy URL IDs</button>
-                  {missingDownloadUrl && <a href={missingDownloadUrl} download="missing.json" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>Download JSON</a>}
+                  {missingDownloadUrl && <a href={missingDownloadUrl} download="missing.json" style={{ color: "#a3e635", fontWeight: 600 }}>Download JSON</a>}
                 </div>
                 {(missingReport.missingAlt?.length || missingReport.missingUrl?.length) ? (
                   <div style={{ marginTop: 6 }}>
                     <div style={{ fontWeight: 600 }}>IDs</div>
-                    <div style={{ fontSize: 12, color: darkMode ? "#a3e635" : "#475569" }}>Alt: {(missingReport.missingAlt || []).slice(0, 50).join(', ') || 'none'}</div>
-                    <div style={{ fontSize: 12, color: darkMode ? "#a3e635" : "#475569" }}>URL: {(missingReport.missingUrl || []).slice(0, 50).join(', ') || 'none'}</div>
+                    <div style={{ fontSize: 12, color: "#a3e635" }}>Alt: {(missingReport.missingAlt || []).slice(0, 50).join(', ') || 'none'}</div>
+                    <div style={{ fontSize: 12, color: "#a3e635" }}>URL: {(missingReport.missingUrl || []).slice(0, 50).join(', ') || 'none'}</div>
                   </div>
                 ) : null}
               </div>
             ) : <div style={{ fontSize: 14 }}>Load missing report to view.</div>}
           </div>
-          <div style={{ background: darkMode ? "#1f2937" : "#fff", borderRadius: 10, padding: 12, border: "1px solid #e2e8f0" }}>
+          <div style={{ background: "#1f2937", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Length bands</div>
             {lengthBands ? (
               <div style={{ fontSize: 14 }}>
@@ -1581,13 +1581,13 @@ export default function ImageAltMediaSEO() {
                 </ul>
                 <div style={{ marginTop: 6, display: "flex", gap: 10, flexWrap: "wrap" }}>
                   <button onClick={() => handleCopyText(JSON.stringify(lengthBands.bands || []), "Bands copied")} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 6, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy bands</button>
-                  {lengthDownloadUrl && <a href={lengthDownloadUrl} download="length-bands.json" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>Download JSON</a>}
+                  {lengthDownloadUrl && <a href={lengthDownloadUrl} download="length-bands.json" style={{ color: "#a3e635", fontWeight: 600 }}>Download JSON</a>}
                 </div>
               </div>
             ) : <div style={{ fontSize: 14 }}>Load length bands to view.</div>}
           </div>
         </div>
-        <div style={{ marginTop: 12, background: darkMode ? "#1f2937" : "#fff", borderRadius: 10, padding: 12, border: "1px solid #e2e8f0" }}>
+        <div style={{ marginTop: 12, background: "#1f2937", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
           <div style={{ fontWeight: 700, marginBottom: 6 }}>Duplicates</div>
           {duplicates ? (
             <div style={{ fontSize: 14 }}>
@@ -1604,14 +1604,14 @@ export default function ImageAltMediaSEO() {
               ) : <div>No duplicates found.</div>}
               <div style={{ marginTop: 6, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button onClick={() => handleCopyText(JSON.stringify(duplicates.duplicates || []), "Duplicates copied")} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 6, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy list</button>
-                {duplicatesDownloadUrl && <a href={duplicatesDownloadUrl} download="duplicates.json" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>Download JSON</a>}
+                {duplicatesDownloadUrl && <a href={duplicatesDownloadUrl} download="duplicates.json" style={{ color: "#a3e635", fontWeight: 600 }}>Download JSON</a>}
               </div>
             </div>
           ) : <div style={{ fontSize: 14 }}>Load duplicates to view.</div>}
         </div>
       </div>
-      <div style={{ marginTop: 32, fontSize: 13, color: darkMode ? "#a3e635" : "#64748b", textAlign: "center" }}>
-        <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", textDecoration: "underline" }}>Contact Support</a></span>
+      <div style={{ marginTop: 32, fontSize: 13, color: "#a3e635", textAlign: "center" }}>
+        <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: "#a3e635", textDecoration: "underline" }}>Contact Support</a></span>
       </div>
     </div>
   );
