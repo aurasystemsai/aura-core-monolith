@@ -4,6 +4,9 @@ const fs = require('fs/promises');
 const path = require('path');
 const app = require('../server');
 
+// Ensure server close is available for cleanup
+const serverRef = app && app.close ? app : null;
+
 describe('API /api/automation', () => {
   const dataFile = path.join(__dirname, '../../data/automation-schedules.json');
 
@@ -39,5 +42,15 @@ describe('API /api/automation', () => {
     // Confirm it's deleted
     const getRes = await request(app).get('/api/automation');
     expect(getRes.body.schedules.find(s => s.id === id)).toBeUndefined();
+  });
+  
+  afterAll(done => {
+    if (!serverRef || !serverRef.close) return done();
+    const maybePromise = serverRef.close();
+    if (maybePromise && typeof maybePromise.then === 'function') {
+      maybePromise.then(() => done()).catch(() => done());
+    } else {
+      done();
+    }
   });
 });

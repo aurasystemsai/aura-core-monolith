@@ -6,17 +6,16 @@ function getOpenAIClient() {
   if (cachedClient) return cachedClient;
 
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    console.warn("[OpenAI] OPENAI_API_KEY not set; using stubbed client");
+  const isTest = process.env.NODE_ENV === 'test';
+
+  if (isTest) {
     cachedClient = {
       chat: {
         completions: {
           create: async () => ({
             choices: [
               {
-                message: {
-                  content: "OpenAI is not configured. Set OPENAI_API_KEY to enable AI responses.",
-                },
+                message: { content: 'test-mode stub' },
               },
             ],
           }),
@@ -27,9 +26,7 @@ function getOpenAIClient() {
           data: {
             choices: [
               {
-                message: {
-                  content: "OpenAI is not configured. Set OPENAI_API_KEY to enable AI responses.",
-                },
+                message: { content: 'test-mode stub' },
               },
             ],
           },
@@ -37,6 +34,10 @@ function getOpenAIClient() {
       },
     };
     return cachedClient;
+  }
+
+  if (!apiKey) {
+    throw new Error('[OpenAI] OPENAI_API_KEY is required in production');
   }
 
   const client = new OpenAI({ apiKey });

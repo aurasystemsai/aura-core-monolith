@@ -2,44 +2,39 @@
 // ----------------------------------------
 // Product SEO Engine tool for AURA Core
 // Auto-retry with graceful fallback (no user-visible errors)
-// ----------------------------------------
 
 const OpenAI = require("openai");
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error('[product-seo] OPENAI_API_KEY is required in production');
+}
+
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 exports.meta = {
   id: "product-seo",
   name: "Product SEO Engine",
   category: "SEO",
-  description:
-    "Generate SEO titles, meta descriptions, slugs and keyword sets for products.",
+  description: "Generate SEO titles, meta descriptions, slugs and keyword sets for products.",
   version: "1.3.1",
 };
 
-/**
- * Helper: how far are we from the ideal range?
- * Returns 0 when inside range, otherwise the distance in characters.
- */
 function rangePenalty(len, min, max) {
   if (len < min) return min - len;
   if (len > max) return len - max;
   return 0;
 }
 
-/**
- * Call OpenAI once and parse JSON.
- */
+const slugify = value =>
+  (value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'product';
+
+const clamp = (str = '', max = 155) => (str.length > max ? str.slice(0, max) : str);
+
 async function generateSEOOnce(payload) {
-  const {
-    productTitle,
-    productDescription,
-    brand,
-    tone,
-    useCasesText,
-  } = payload;
+  const { productTitle, productDescription, brand, tone, useCasesText } = payload;
 
   const prompt = `
 You are an ecommerce SEO specialist for a jewellery brand.
@@ -82,18 +77,24 @@ Rules:
 - No explanation, only valid JSON.
   `.trim();
 
-  const response = await client.responses.create({
-    model: "gpt-4.1-mini",
-    input: prompt,
-    temperature: 0.15,
+  const completion = await client.chat.completions.create({
+    model: "gpt-4o-mini",
+    temperature: 0.2,
+    max_tokens: 400,
+    messages: [
+      {
+        role: "system",
+        content: "You are an ecommerce SEO specialist returning strictly valid JSON.",
+      },
+      { role: "user", content: prompt },
+    ],
   });
 
-  const text = response.output_text && response.output_text.trim();
+  const text = completion?.choices?.[0]?.message?.content?.trim();
   if (!text) {
     throw new Error("OpenAI response missing text payload");
   }
 
-  // In case the model wraps JSON in explanation text, strip to { ... }.
   let jsonText = text;
   if (!jsonText.startsWith("{")) {
     const first = jsonText.indexOf("{");
@@ -111,7 +112,6 @@ Rules:
     throw new Error("Failed to parse JSON from OpenAI response");
   }
 
-  // Stricter validation: check for forbidden words and keyword presence
   const forbidden = ["free", "cheap", "best", "guarantee", "100%"];
   const primaryKeyword = Array.isArray(parsed.keywords) && parsed.keywords[0] ? parsed.keywords[0].toLowerCase() : null;
   const fieldsToCheck = [parsed.title, parsed.metaDescription, parsed.h1];
@@ -134,34 +134,18 @@ Rules:
 
 exports.run = async function run(input, ctx = {}) {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error(
-      "OPENAI_API_KEY is not set. Add it in your Render environment."
-    );
+    throw new Error("OPENAI_API_KEY is not set. Add it in your Render environment.");
   }
 
-  const {
-    productTitle = "",
-    productDescription = "",
-    brand = "",
-    tone = "",
-    useCases = [],
-  } = input || {};
+  const { productTitle = "", productDescription = "", brand = "", tone = "", useCases = [] } = input || {};
 
   if (!productTitle || !productDescription) {
     throw new Error("productTitle and productDescription are required");
   }
 
-  const useCasesText = Array.isArray(useCases)
-    ? useCases.join(", ")
-    : String(useCases || "");
+  const useCasesText = Array.isArray(useCases) ? useCases.join(", ") : String(useCases || "");
 
-  const payload = {
-    productTitle,
-    productDescription,
-    brand,
-    tone,
-    useCasesText,
-  };
+  const payload = { productTitle, productDescription, brand, tone, useCasesText };
 
   const maxAttempts = 4;
   let best = null; // { data, titleLen, metaLen, penalty }
@@ -171,12 +155,10 @@ exports.run = async function run(input, ctx = {}) {
     try {
       data = await generateSEOOnce(payload);
     } catch (err) {
-      // If OpenAI itself breaks (rate limit etc.), bail out early.
       console.error(`Product SEO attempt ${attempt} failed:`, err.message);
       if (!best) {
         throw err;
       }
-      // We already have a usable best attempt – break and return it.
       break;
     }
 
@@ -190,14 +172,8 @@ exports.run = async function run(input, ctx = {}) {
     const metaPenalty = rangePenalty(mLen, 130, 155);
     const totalPenalty = titlePenalty + metaPenalty;
 
-    const snapshot = {
-      data,
-      titleLen: tLen,
-      metaLen: mLen,
-      penalty: totalPenalty,
-    };
+    const snapshot = { data, titleLen: tLen, metaLen: mLen, penalty: totalPenalty };
 
-    // First attempt or better than previous best
     if (!best || totalPenalty < best.penalty) {
       best = snapshot;
     }
@@ -206,7 +182,6 @@ exports.run = async function run(input, ctx = {}) {
       `[Product SEO] Attempt ${attempt}: titleLen=${tLen}, metaLen=${mLen}, penalty=${totalPenalty}`
     );
 
-    // Perfect range hit – stop retrying.
     if (totalPenalty === 0) {
       break;
     }
@@ -230,14 +205,13 @@ exports.run = async function run(input, ctx = {}) {
       bullets: Array.isArray(final.bullets) ? final.bullets : [],
       canonicalUrl: final.canonicalUrl || "",
       tags: Array.isArray(final.tags) ? final.tags : [],
-      // optional debug so *you* can see if it hit perfect; users never see this.
       _debug: {
         titleChars: best.titleLen,
         metaChars: best.metaLen,
         penalty: best.penalty,
       },
     },
-    model: "gpt-4.1-mini",
+    model: "gpt-4o-mini",
     environment: ctx.environment || "unknown",
   };
 };

@@ -3,7 +3,7 @@
 Welcome to Aura Core Monolith! This guide will help you get started as a developer.
 
 ## Prerequisites
-- Node.js 18+
+- Node.js 22.x (recommended). A portable 22.22.0 runtime lives in `.tools/node22` for Windows users.
 - npm
 - (Optional) Docker for containerized development
 
@@ -18,6 +18,7 @@ Welcome to Aura Core Monolith! This guide will help you get started as a develop
 
 ## Running Tests
 - `npm test` (backend and frontend)
+- If Node 24+ causes Jest resolver issues, run `npm run test:node22` to use the bundled Node 22.22.0 path.
 
 ## Linting & Formatting
 - `npm run lint`
