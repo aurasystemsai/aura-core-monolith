@@ -73,6 +73,15 @@ export default function ImageAltMediaSEO() {
   const [exportFilename, setExportFilename] = useState("images.json");
   const batchProgressTimer = useRef(null);
 
+    const getShopFromQuery = () => {
+      try {
+        const params = new URLSearchParams(window.location.search || "");
+        return (params.get("shop") || "").trim();
+      } catch (_) {
+        return "";
+      }
+    };
+
   const resetBatchState = () => {
     setBatchResults([]);
     setBatchSummary(null);
@@ -244,11 +253,14 @@ export default function ImageAltMediaSEO() {
   };
 
   const handleImportShopify = async () => {
-    const shop = shopDomain.trim().toLowerCase();
+    const derivedShop = shopDomain.trim() || getShopFromQuery();
+    const shop = derivedShop.toLowerCase();
     if (!shop) {
-      setError("Shop domain is required for Shopify import");
+      setError("Shop domain is required for Shopify import (e.g. yourstore.myshopify.com)");
+      showToast("Add your shop domain (yourstore.myshopify.com)");
       return;
     }
+    if (!shopDomain.trim()) setShopDomain(shop);
     setShopifyImporting(true);
     setError("");
     try {
@@ -843,6 +855,13 @@ export default function ImageAltMediaSEO() {
       }
     };
   }, []);
+
+  React.useEffect(() => {
+    if (!shopDomain.trim()) {
+      const fromUrl = getShopFromQuery();
+      if (fromUrl) setShopDomain(fromUrl.toLowerCase());
+    }
+  }, [shopDomain]);
 
   const totalImagePages = imageLimit ? Math.max(1, Math.ceil(imageTotal / imageLimit)) : 1;
   const currentImagePage = imageLimit ? Math.floor(imageOffset / imageLimit) + 1 : 1;
