@@ -1082,7 +1082,7 @@ export default function ImageAltMediaSEO() {
           ) : null}
           <ul style={{ paddingLeft: 18 }}>
             {images.map(img => (
-              <li key={img.id} style={{ marginBottom: 10, background: selectedImageIds.includes(img.id) ? (darkMode ? "#0f172a" : "#e0f2fe") : "transparent", borderRadius: 10, padding: 10, border: "1px solid #cbd5e1" }}>
+              <li key={img.id} style={{ marginBottom: 10, background: selectedImageIds.includes(img.id) ? "#0f172a" : "transparent", borderRadius: 10, padding: 10, border: "1px solid #555", color: "#a3e635" }}>
                 <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                   <input type="checkbox" checked={selectedImageIds.includes(img.id)} onChange={() => toggleSelectImage(img.id)} aria-label={`Select image ${img.id}`} />
                   <div>
@@ -1096,13 +1096,13 @@ export default function ImageAltMediaSEO() {
                 </div>
               </li>
             ))}
-            {!images.length ? <li style={{ color: darkMode ? "#a3e635" : "#475569" }}>No images yet.</li> : null}
+            {!images.length ? <li style={{ color: "#a3e635" }}>No images yet.</li> : null}
           </ul>
         </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Tone</span>
-          <select value={tone} onChange={e => setTone(e.target.value)} aria-label="Tone" style={{ padding: "8px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}>
+          <select value={tone} onChange={e => setTone(e.target.value)} aria-label="Tone" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
             {(meta?.presets?.tone || ["minimalist", "balanced", "expressive"]).map(opt => (
               <option key={opt} value={opt}>{opt}</option>
             ))}
@@ -1110,7 +1110,7 @@ export default function ImageAltMediaSEO() {
         </label>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Verbosity</span>
-          <select value={verbosity} onChange={e => setVerbosity(e.target.value)} aria-label="Verbosity" style={{ padding: "8px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}>
+          <select value={verbosity} onChange={e => setVerbosity(e.target.value)} aria-label="Verbosity" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
             {(meta?.presets?.verbosity || ["terse", "balanced", "detailed"]).map(opt => (
               <option key={opt} value={opt}>{opt}</option>
             ))}
@@ -1120,19 +1120,19 @@ export default function ImageAltMediaSEO() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
           <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontWeight: 600 }}>Variants</span>
-            <input type="number" min={1} max={5} value={variantCount} onChange={e => setVariantCount(Math.min(5, Math.max(1, Number(e.target.value) || 1)))} aria-label="Variant count" style={{ width: 80, padding: "8px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }} />
-            <span style={{ fontSize: 12, color: darkMode ? "#a3e635" : "#475569" }}>1-5 suggestions</span>
+            <input type="number" min={1} max={5} value={variantCount} onChange={e => setVariantCount(Math.min(5, Math.max(1, Number(e.target.value) || 1)))} aria-label="Variant count" style={{ width: 80, padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }} />
+            <span style={{ fontSize: 12, color: "#a3e635" }}>1-5 suggestions</span>
           </label>
           <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontWeight: 600 }}>Preset bundle</span>
-            <select value={selectedBundle} onChange={e => applyBundle(e.target.value)} aria-label="Preset bundle" style={{ padding: "8px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}>
+            <select value={selectedBundle} onChange={e => applyBundle(e.target.value)} aria-label="Preset bundle" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
               <option value="custom">Custom</option>
               {(meta?.presets?.bundles || []).map(b => (
                 <option key={b.key} value={b.key}>{b.key}</option>
               ))}
             </select>
             {selectedBundle !== "custom" && (
-              <span style={{ fontSize: 12, color: darkMode ? "#a3e635" : "#475569" }}>{(meta?.presets?.bundles || []).find(b => b.key === selectedBundle)?.description || ""}</span>
+              <span style={{ fontSize: 12, color: "#a3e635" }}>{(meta?.presets?.bundles || []).find(b => b.key === selectedBundle)?.description || ""}</span>
             )}
           </label>
         </div>
@@ -1142,20 +1142,20 @@ export default function ImageAltMediaSEO() {
           onChange={e => setProductTitle(e.target.value)}
           placeholder="Product title"
           aria-label="Product title"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
         />
         <input
           value={variant}
           onChange={e => setVariant(e.target.value)}
           placeholder="Variant (e.g., red / size M)"
           aria-label="Variant"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
         />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Shot type</span>
-          <select value={shotType} onChange={e => setShotType(e.target.value)} aria-label="Shot type" style={{ padding: "8px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}>
+          <select value={shotType} onChange={e => setShotType(e.target.value)} aria-label="Shot type" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
             <option value="front">front</option>
             <option value="back">back</option>
             <option value="side">side</option>
@@ -1166,14 +1166,14 @@ export default function ImageAltMediaSEO() {
         </label>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Focus</span>
-          <select value={focus} onChange={e => setFocus(e.target.value)} aria-label="Focus" style={{ padding: "8px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}>
+          <select value={focus} onChange={e => setFocus(e.target.value)} aria-label="Focus" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
             <option value="product">product</option>
             <option value="scene">scene</option>
             <option value="detail">detail</option>
           </select>
         </label>
       </div>
-      <div style={{ marginBottom: 16, background: darkMode ? "#1f2937" : "#f8fafc", borderRadius: 12, padding: 14, border: "1px solid #e2e8f0" }}>
+      <div style={{ marginBottom: 16, background: "#1f2937", borderRadius: 12, padding: 14, border: "1px solid #555" }}>
         <div style={{ fontWeight: 700, marginBottom: 8 }}>Lint existing alt text</div>
         <textarea
           value={lintOnlyText}
