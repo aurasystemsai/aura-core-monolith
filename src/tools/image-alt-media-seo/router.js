@@ -62,7 +62,7 @@ router.use((req, res, next) => {
   // Skip health endpoints
   if (req.path.startsWith('/health')) return next();
 
-  const shop = (req.query.shop || req.headers['x-shopify-shop-domain'] || req.session?.shop || '').toLowerCase();
+  const shop = (req.query.shop || req.headers['x-shopify-shop-domain'] || req.session?.shop || req.body?.shop || '').toLowerCase();
   const hmac = req.query.hmac;
 
   if (SHOPIFY_STORE_URL && shop && shop !== SHOPIFY_STORE_URL) {
