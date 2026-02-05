@@ -853,7 +853,7 @@ export default function ImageAltMediaSEO() {
       {(result || captionResult) && (
         <div style={{ display: "grid", gridTemplateColumns: captionResult ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 12 }}>
           {result ? (
-            <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 10, padding: 16, color: darkMode ? "#a3e635" : "#23263a" }} aria-live="polite">
+            <div style={{ background: "#23263a", borderRadius: 10, padding: 16, color: "#a3e635" }} aria-live="polite">
               <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Alt Text</div>
               <div>{result}</div>
               {lint && (
@@ -893,13 +893,13 @@ export default function ImageAltMediaSEO() {
                       const issues = v.lint?.issueCount ?? v.lint?.issues?.length ?? 0;
                       const warnings = v.lint?.warningCount ?? v.lint?.warnings?.length ?? 0;
                       return (
-                        <div key={`${v.label || 'v'}-${idx}`} style={{ border: selectedVariantIdx === idx ? `2px solid ${darkMode ? '#0ea5e9' : '#2563eb'}` : "1px solid #cbd5e1", borderRadius: 10, padding: 10, background: darkMode ? "#1f2937" : "#fff" }}>
+                        <div key={`${v.label || 'v'}-${idx}`} style={{ border: selectedVariantIdx === idx ? "2px solid #0ea5e9" : "1px solid #555", borderRadius: 10, padding: 10, background: "#1f2937" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                             <span style={{ fontWeight: 700 }}>{v.label || `Variant ${idx + 1}`}</span>
                             {v.grade ? <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 8, background: v.grade.grade === 'A' ? '#22c55e' : v.grade.grade === 'B' ? '#84cc16' : v.grade.grade === 'C' ? '#fbbf24' : '#ef4444', color: '#0b0b0b', fontWeight: 800 }}>{v.grade.grade} ({v.grade.score})</span> : null}
                           </div>
                           <div style={{ fontSize: 14, marginBottom: 6 }}>{v.altText}</div>
-                          <div style={{ fontSize: 12, color: darkMode ? "#a3e635" : "#475569", marginBottom: 8 }}>Issues {issues}; Warnings {warnings}</div>
+                          <div style={{ fontSize: 12, color: "#a3e635", marginBottom: 8 }}>Issues {issues}; Warnings {warnings}</div>
                           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                             <button onClick={() => applyVariant(idx)} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Use</button>
                             <button onClick={() => handleCopyText(v.altText, "Variant copied") } style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Copy</button>
@@ -919,7 +919,7 @@ export default function ImageAltMediaSEO() {
           ) : null}
 
           {captionResult ? (
-            <div style={{ background: darkMode ? "#1f2937" : "#eef2ff", borderRadius: 10, padding: 16, color: darkMode ? "#a3e635" : "#23263a" }} aria-live="polite">
+            <div style={{ background: "#1f2937", borderRadius: 10, padding: 16, color: "#a3e635" }} aria-live="polite">
               <div style={{ fontWeight: 700, marginBottom: 6 }}>AI Caption</div>
               <div style={{ marginBottom: 6 }}>{captionResult}</div>
               {captionLint && (
@@ -943,21 +943,21 @@ export default function ImageAltMediaSEO() {
           onChange={e => setImageUrl(e.target.value)}
           placeholder="Image URL (optional but recommended)"
           aria-label="Image URL"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
         />
         <input
           value={keywords}
           onChange={e => setKeywords(e.target.value)}
           placeholder="Keywords (comma separated)"
           aria-label="Keywords"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a", marginTop: 10 }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", marginTop: 10 }}
         />
         <input
           value={brandTerms}
           onChange={e => setBrandTerms(e.target.value)}
           placeholder="Brand vocabulary (comma separated)"
           aria-label="Brand terms"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a", marginTop: 10, marginBottom: 14 }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", marginTop: 10, marginBottom: 14 }}
         />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
             <div style={{ fontWeight: 700, fontSize: 18 }}>Images</div>
@@ -968,13 +968,13 @@ export default function ImageAltMediaSEO() {
                 onKeyDown={handleImageSearchKeyDown}
                 placeholder="Search URL or alt text"
                 aria-label="Search images"
-                style={{ padding: "8px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a", minWidth: 180 }}
+                style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 180 }}
               />
               <button onClick={handleImageSearchSubmit} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Search</button>
               <button onClick={handleClearImageSearch} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Clear</button>
               <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                 Page size
-                <select value={imageLimit} onChange={e => handleImageLimitChange(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}>
+                <select value={imageLimit} onChange={e => handleImageLimitChange(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
                   {[10, 20, 50, 100, 200].map(opt => <option key={opt} value={opt}>{opt}</option>)}
                 </select>
               </label>
