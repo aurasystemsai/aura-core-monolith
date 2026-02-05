@@ -985,15 +985,15 @@ export default function ImageAltMediaSEO() {
                   onChange={e => setShopDomain(e.target.value)}
                   placeholder="shop.myshopify.com"
                   aria-label="Shopify shop domain"
-                  style={{ padding: "8px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a", minWidth: 180 }}
+                  style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 180 }}
                 />
                 <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                   Max images
-                  <input type="number" min={1} max={5000} value={shopifyMaxImages} onChange={e => setShopifyMaxImages(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1" }} />
+                  <input type="number" min={1} max={5000} value={shopifyMaxImages} onChange={e => setShopifyMaxImages(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: "1px solid #555" }} />
                 </label>
                 <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                   Products
-                  <input type="number" min={1} max={5000} value={shopifyProductLimit} onChange={e => setShopifyProductLimit(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1" }} />
+                  <input type="number" min={1} max={5000} value={shopifyProductLimit} onChange={e => setShopifyProductLimit(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: "1px solid #555" }} />
                 </label>
                 <button onClick={handleImportShopify} disabled={shopifyImporting} style={{ background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: shopifyImporting ? "wait" : "pointer" }}>{shopifyImporting ? "Importing..." : "Pull from Shopify"}</button>
               </div>
@@ -1004,11 +1004,11 @@ export default function ImageAltMediaSEO() {
                   onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleSimilaritySearch(); } }}
                   placeholder="Find similar alt text"
                   aria-label="Similarity search text"
-                  style={{ padding: "8px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a", minWidth: 200 }}
+                  style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 200 }}
                 />
                 <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                   Top
-                  <select value={similarityLimit} onChange={e => setSimilarityLimit(Math.min(Math.max(Number(e.target.value) || 5, 1), 50))} style={{ padding: "6px 8px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}>
+                  <select value={similarityLimit} onChange={e => setSimilarityLimit(Math.min(Math.max(Number(e.target.value) || 5, 1), 50))} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
                     {[3, 5, 10, 20, 50].map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
                   <span>results</span>
@@ -1018,14 +1018,14 @@ export default function ImageAltMediaSEO() {
             </div>
           </div>
           {shopifyImportSummary ? (
-            <div style={{ marginBottom: 10, fontSize: 13, color: darkMode ? "#a3e635" : "#0f172a" }}>
+            <div style={{ marginBottom: 10, fontSize: 13, color: "#a3e635" }}>
               <span>Shopify import:</span>
               <span style={{ marginLeft: 8 }}>Imported {shopifyImportSummary.imported}</span>
               <span style={{ marginLeft: 8 }}>Skipped {shopifyImportSummary.skipped}</span>
               <span style={{ marginLeft: 8 }}>Products scanned {shopifyImportSummary.productCount}</span>
             </div>
           ) : null}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10, fontSize: 13, color: darkMode ? "#a3e635" : "#475569" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10, fontSize: 13, color: "#a3e635" }}>
             <span>Showing {images.length} of {imageTotal} images</span>
             <span>Page {currentImagePage} / {totalImagePages}</span>
             <div style={{ display: "flex", gap: 8 }}>
@@ -1033,12 +1033,12 @@ export default function ImageAltMediaSEO() {
               <button onClick={() => handleImagePageChange(1)} disabled={currentImagePage >= totalImagePages} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: currentImagePage >= totalImagePages ? "not-allowed" : "pointer" }}>Next</button>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10, fontSize: 13, color: darkMode ? "#a3e635" : "#475569" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10, fontSize: 13, color: "#a3e635" }}>
             <span role="status" aria-live="polite">Selected {selectedImageIds.length}</span>
             <button onClick={selectPageImages} aria-label="Select all images on this page" style={{ background: "#e0f2fe", color: "#0f172a", border: "1px solid #bae6fd", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: "pointer" }}>Select page</button>
             <button onClick={clearSelectedImages} aria-label="Clear selected images" disabled={!selectedImageIds.length} style={{ background: "#f8fafc", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: !selectedImageIds.length ? "not-allowed" : "pointer" }}>Clear selection</button>
           </div>
-          <div style={{ marginBottom: 12, background: darkMode ? "#1f2937" : "#f8fafc", borderRadius: 10, padding: 12, border: "1px solid #e2e8f0" }}>
+          <div style={{ marginBottom: 12, background: "#1f2937", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Bulk update selected alts</div>
             <textarea
               value={bulkAltText}
@@ -1046,7 +1046,7 @@ export default function ImageAltMediaSEO() {
               rows={2}
               aria-label="Bulk alt text"
               placeholder="Enter alt text to apply to selected images"
-              style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a", marginBottom: 8 }}
+              style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", marginBottom: 8 }}
             />
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <button onClick={handleBulkApply} aria-label={`Apply alt text to ${selectedImageIds.length} selected images`} disabled={!selectedImageIds.length || !bulkAltText.trim() || loading} style={{ background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || !bulkAltText.trim() || loading) ? "not-allowed" : "pointer" }}>Apply to selected</button>
@@ -1054,13 +1054,13 @@ export default function ImageAltMediaSEO() {
             </div>
           </div>
           {similarityResults?.length ? (
-            <div style={{ marginBottom: 12, background: darkMode ? "#111827" : "#eef2ff", borderRadius: 10, padding: 12, border: "1px solid #cbd5e1" }}>
+            <div style={{ marginBottom: 12, background: "#111827", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 6 }}>
                 <div style={{ fontWeight: 700 }}>Similar results for “{similarityQuery.trim()}” (top {similarityLimit})</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 12, color: darkMode ? "#a3e635" : "#475569" }}>Scores show token overlap</span>
+                  <span style={{ fontSize: 12, color: "#a3e635" }}>Scores show token overlap</span>
                   <button onClick={handleDownloadSimilarCsv} aria-label="Download similar results as CSV" style={{ background: "#334155", color: "#fff", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Download CSV</button>
-                  {similarityDownloadUrl && <a href={similarityDownloadUrl} download="images-similar.csv" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>Save CSV</a>}
+                  {similarityDownloadUrl && <a href={similarityDownloadUrl} download="images-similar.csv" style={{ color: "#a3e635", fontWeight: 600 }}>Save CSV</a>}
                   <button onClick={() => setSimilarityResults([])} aria-label="Clear similar results" style={{ background: "#f8fafc", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Clear</button>
                 </div>
               </div>
@@ -1074,7 +1074,7 @@ export default function ImageAltMediaSEO() {
                     </div>
                     <div style={{ fontSize: 13, marginTop: 4 }}><b>ID:</b> {item.id}</div>
                     <div style={{ fontSize: 13 }}><b>Alt:</b> {item.altText || '(none)'}</div>
-                    <div style={{ fontSize: 12, color: darkMode ? "#a3e635" : "#475569" }}><b>URL:</b> {item.url || '(none)'}</div>
+                    <div style={{ fontSize: 12, color: "#a3e635" }}><b>URL:</b> {item.url || '(none)'}</div>
                   </li>
                 ))}
               </ul>
