@@ -1179,7 +1179,7 @@ export default function ImageAltMediaSEO() {
           value={lintOnlyText}
           onChange={e => setLintOnlyText(e.target.value)}
           rows={3}
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1", marginBottom: 10, background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 10, background: "#23263a", color: "#a3e635" }}
           placeholder="Paste alt text to lint"
           aria-label="Alt text to lint"
         />
@@ -1189,14 +1189,14 @@ export default function ImageAltMediaSEO() {
             onChange={e => setLintOnlyKeywords(e.target.value)}
             placeholder="Keywords (comma separated)"
             aria-label="Lint keywords"
-            style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+            style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
           />
           <input
             value={lintOnlyBrandTerms}
             onChange={e => setLintOnlyBrandTerms(e.target.value)}
             placeholder={meta?.presets?.brandVocabHint || "Brand vocabulary (comma separated)"}
             aria-label="Lint brand vocabulary"
-            style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+            style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
           />
         </div>
         <button onClick={handleLintOnly} disabled={loading || !lintOnlyText.trim()} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontWeight: 700, cursor: "pointer" }}>Lint Now</button>
@@ -1221,7 +1221,7 @@ export default function ImageAltMediaSEO() {
         value={attributes}
         onChange={e => setAttributes(e.target.value)}
         rows={3}
-        style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 12, background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+        style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#23263a", color: "#a3e635" }}
         placeholder="Attributes (comma or JSON: color, material, style, use-case)"
         aria-label="Attributes"
       />
@@ -1230,12 +1230,12 @@ export default function ImageAltMediaSEO() {
         onChange={e => setScene(e.target.value)}
         placeholder="Scene (e.g., studio on white, outdoor cafe)"
         aria-label="Scene"
-        style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 12, background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+        style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#23263a", color: "#a3e635" }}
       />
       <div style={{ display: "flex", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Locale</span>
-          <select value={locale} onChange={e => setLocale(e.target.value)} aria-label="Locale" style={{ padding: "8px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}>
+          <select value={locale} onChange={e => setLocale(e.target.value)} aria-label="Locale" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
             <option value="en-US">en-US</option>
             <option value="en-GB">en-GB</option>
             <option value="de">de</option>
@@ -1261,7 +1261,7 @@ export default function ImageAltMediaSEO() {
         value={input}
         onChange={e => setInput(e.target.value)}
         rows={4}
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#23263a", color: "#a3e635" }}
         placeholder="Describe your image or alt text needs here..."
         aria-label="Image alt text input"
       />
