@@ -34,7 +34,8 @@ module.exports = async function verifyShopifySession(req, res, next) {
     req.path.startsWith('/main-suite') ||
     req.path.startsWith('/conditional-logic-automation') ||
     req.path.startsWith('/shopify/products') ||
-    req.path.startsWith('/product-seo')
+    req.path.startsWith('/product-seo') ||
+    req.path.startsWith('/image-alt-media-seo')
   )) {
     return next();
   }
