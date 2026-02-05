@@ -943,7 +943,19 @@ export default function ImageAltMediaSEO() {
         />
         <input
           value={keywords}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+          onChange={e => setKeywords(e.target.value)}
+          placeholder="Keywords (comma separated)"
+          aria-label="Keywords"
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a", marginTop: 10 }}
+        />
+        <input
+          value={brandTerms}
+          onChange={e => setBrandTerms(e.target.value)}
+          placeholder="Brand vocabulary (comma separated)"
+          aria-label="Brand terms"
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a", marginTop: 10, marginBottom: 14 }}
+        />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
             <div style={{ fontWeight: 700, fontSize: 18 }}>Images</div>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <input
