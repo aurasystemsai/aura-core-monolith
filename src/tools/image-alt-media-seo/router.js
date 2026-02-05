@@ -5,6 +5,7 @@ const router = express.Router();
 const OpenAI = require('openai');
 const db = require('./db');
 const runs = require('./runs');
+const { shopifyFetchPaginated } = require('../../core/shopifyApi');
 
 // Shopify embedding guard: optional HMAC + shop validation for embedded requests
 const SHOPIFY_SECRET = process.env.SHOPIFY_API_SECRET || process.env.SHOPIFY_CLIENT_SECRET;
@@ -480,6 +481,77 @@ router.get('/images', async (req, res) => {
     res.json({ ok: true, images: items, total, limit, offset, search });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message || 'DB error' });
+  }
+});
+
+// Import images directly from Shopify products (uses Admin API token)
+router.post('/images/import-shopify', async (req, res) => {
+  try {
+    const shop = (req.body?.shop || req.query?.shop || req.headers['x-shopify-shop-domain'] || '').toLowerCase();
+    if (!shop) return res.status(400).json({ ok: false, error: 'shop required (e.g., mystore.myshopify.com)' });
+    if (!isValidShopDomain(shop)) return res.status(400).json({ ok: false, error: 'Invalid shop domain' });
+
+    const maxImages = clampInt(req.body?.maxImages || req.query?.maxImages || 500, 1, 5000);
+    const productLimit = clampInt(req.body?.productLimit || req.query?.productLimit || maxImages, 1, 5000);
+
+    const { items: products } = await shopifyFetchPaginated(
+      shop,
+      'products.json',
+      { limit: 250, fields: 'id,title,handle,images' },
+      null,
+      {
+        maxPages: Math.ceil(productLimit / 250),
+        rateLimitThreshold: 0.7,
+        rateLimitSleepMs: 900,
+      }
+    );
+
+    const trimmedProducts = products.slice(0, productLimit);
+    const existing = await db.list();
+    const seen = new Set((existing || []).map(i => (i.url || '').toLowerCase()).filter(Boolean));
+
+    const toCreate = [];
+    let skipped = 0;
+
+    for (const product of trimmedProducts) {
+      for (const image of product.images || []) {
+        if (toCreate.length >= maxImages) break;
+        const url = normalizeStr(image.src || image.original_src || '', MAX_URL_LEN);
+        if (!url) {
+          skipped += 1;
+          continue;
+        }
+        const key = url.toLowerCase();
+        if (seen.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        seen.add(key);
+        const altText = normalizeStr(image.alt || image.alt_text || '', MAX_ALT_LEN);
+        toCreate.push({ url, altText });
+      }
+      if (toCreate.length >= maxImages) break;
+    }
+
+    const created = [];
+    for (const item of toCreate) {
+      const row = await db.create(item);
+      created.push(row);
+    }
+
+    clearAnalyticsCache();
+
+    res.json({
+      ok: true,
+      imported: created.length,
+      skipped,
+      total: toCreate.length + skipped,
+      productCount: trimmedProducts.length,
+      shop,
+    });
+  } catch (err) {
+    const status = err.status || 500;
+    res.status(status).json({ ok: false, error: err.message || 'Shopify import failed' });
   }
 });
 

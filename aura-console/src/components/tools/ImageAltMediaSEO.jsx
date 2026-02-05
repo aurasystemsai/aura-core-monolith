@@ -33,6 +33,11 @@ export default function ImageAltMediaSEO() {
   const [imageTotal, setImageTotal] = useState(0);
   const [imageSearch, setImageSearch] = useState("");
   const [selectedImageIds, setSelectedImageIds] = useState([]);
+  const [shopDomain, setShopDomain] = useState("");
+  const [shopifyMaxImages, setShopifyMaxImages] = useState(250);
+  const [shopifyProductLimit, setShopifyProductLimit] = useState(400);
+  const [shopifyImporting, setShopifyImporting] = useState(false);
+  const [shopifyImportSummary, setShopifyImportSummary] = useState(null);
   const [bulkAltText, setBulkAltText] = useState("");
   const [similarityQuery, setSimilarityQuery] = useState("");
   const [similarityLimit, setSimilarityLimit] = useState(5);
@@ -236,6 +241,42 @@ export default function ImageAltMediaSEO() {
     const nextOffset = Math.min(maxOffset, Math.max(0, imageOffset + delta * imageLimit));
     if (nextOffset === imageOffset) return;
     fetchImages(nextOffset, imageLimit, imageSearch);
+  };
+
+  const handleImportShopify = async () => {
+    const shop = shopDomain.trim().toLowerCase();
+    if (!shop) {
+      setError("Shop domain is required for Shopify import");
+      return;
+    }
+    setShopifyImporting(true);
+    setError("");
+    try {
+      const payload = {
+        shop,
+        maxImages: shopifyMaxImages,
+        productLimit: shopifyProductLimit,
+        search: imageSearch.trim() || undefined,
+      };
+      const { data } = await fetchJson("/api/image-alt-media-seo/images/import-shopify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      setShopifyImportSummary({
+        imported: data.imported || 0,
+        skipped: data.skipped || 0,
+        total: data.total || 0,
+        productCount: data.productCount || 0,
+      });
+      showToast(`Imported ${data.imported || 0} Shopify images`);
+      await fetchImages(0, imageLimit, imageSearch);
+    } catch (err) {
+      if (err?.status === 429) setError(rateLimitMessage(err.retryAfter));
+      else setError(err.message);
+    } finally {
+      setShopifyImporting(false);
+    }
   };
 
   const handleImageSearchKeyDown = e => {
@@ -922,6 +963,24 @@ export default function ImageAltMediaSEO() {
                 </select>
               </label>
               <button onClick={() => fetchImages(imageOffset, imageLimit, imageSearch)} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Refresh</button>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <input
+                  value={shopDomain}
+                  onChange={e => setShopDomain(e.target.value)}
+                  placeholder="shop.myshopify.com"
+                  aria-label="Shopify shop domain"
+                  style={{ padding: "8px 10px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a", minWidth: 180 }}
+                />
+                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+                  Max images
+                  <input type="number" min={1} max={5000} value={shopifyMaxImages} onChange={e => setShopifyMaxImages(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1" }} />
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+                  Products
+                  <input type="number" min={1} max={5000} value={shopifyProductLimit} onChange={e => setShopifyProductLimit(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #cbd5e1" }} />
+                </label>
+                <button onClick={handleImportShopify} disabled={shopifyImporting} style={{ background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: shopifyImporting ? "wait" : "pointer" }}>{shopifyImporting ? "Importing..." : "Pull from Shopify"}</button>
+              </div>
               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                 <input
                   value={similarityQuery}
@@ -942,6 +1001,14 @@ export default function ImageAltMediaSEO() {
               </div>
             </div>
           </div>
+          {shopifyImportSummary ? (
+            <div style={{ marginBottom: 10, fontSize: 13, color: darkMode ? "#a3e635" : "#0f172a" }}>
+              <span>Shopify import:</span>
+              <span style={{ marginLeft: 8 }}>Imported {shopifyImportSummary.imported}</span>
+              <span style={{ marginLeft: 8 }}>Skipped {shopifyImportSummary.skipped}</span>
+              <span style={{ marginLeft: 8 }}>Products scanned {shopifyImportSummary.productCount}</span>
+            </div>
+          ) : null}
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10, fontSize: 13, color: darkMode ? "#a3e635" : "#475569" }}>
             <span>Showing {images.length} of {imageTotal} images</span>
             <span>Page {currentImagePage} / {totalImagePages}</span>
