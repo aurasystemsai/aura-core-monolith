@@ -1280,11 +1280,11 @@ export default function ImageAltMediaSEO() {
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {importErrorDownloadUrl && (
         <div style={{ color: "#ef4444", marginBottom: 8 }}>
-          Validation errors detected{importErrorCount ? ` (${importErrorCount})` : ''}. <a href={importErrorDownloadUrl} download="import-errors.json" style={{ color: darkMode ? "#f87171" : "#dc2626", fontWeight: 700 }}>Download errors JSON</a>
+          Validation errors detected{importErrorCount ? ` (${importErrorCount})` : ''}. <a href={importErrorDownloadUrl} download="import-errors.json" style={{ color: "#f87171", fontWeight: 700 }}>Download errors JSON</a>
         </div>
       )}
       {result && (
-        <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635" : "#23263a" }} aria-live="polite">
+        <div style={{ background: "#23263a", borderRadius: 10, padding: 16, marginBottom: 12, color: "#a3e635" }} aria-live="polite">
           <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Alt Text:</div>
           <div>{result}</div>
           {lint && (
@@ -1324,13 +1324,13 @@ export default function ImageAltMediaSEO() {
                   const issues = v.lint?.issueCount ?? v.lint?.issues?.length ?? 0;
                   const warnings = v.lint?.warningCount ?? v.lint?.warnings?.length ?? 0;
                   return (
-                    <div key={`${v.label || 'v'}-${idx}`} style={{ border: selectedVariantIdx === idx ? `2px solid ${darkMode ? '#0ea5e9' : '#2563eb'}` : "1px solid #cbd5e1", borderRadius: 10, padding: 10, background: darkMode ? "#1f2937" : "#fff" }}>
+                    <div key={`${v.label || 'v'}-${idx}`} style={{ border: selectedVariantIdx === idx ? "2px solid #0ea5e9" : "1px solid #555", borderRadius: 10, padding: 10, background: "#1f2937" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                         <span style={{ fontWeight: 700 }}>{v.label || `Variant ${idx + 1}`}</span>
                         {v.grade ? <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 8, background: v.grade.grade === 'A' ? '#22c55e' : v.grade.grade === 'B' ? '#84cc16' : v.grade.grade === 'C' ? '#fbbf24' : '#ef4444', color: '#0b0b0b', fontWeight: 800 }}>{v.grade.grade} ({v.grade.score})</span> : null}
                       </div>
                       <div style={{ fontSize: 14, marginBottom: 6 }}>{v.altText}</div>
-                      <div style={{ fontSize: 12, color: darkMode ? "#a3e635" : "#475569", marginBottom: 8 }}>Issues {issues}; Warnings {warnings}</div>
+                      <div style={{ fontSize: 12, color: "#a3e635", marginBottom: 8 }}>Issues {issues}; Warnings {warnings}</div>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                         <button onClick={() => applyVariant(idx)} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Use</button>
                         <button onClick={() => handleCopyText(v.altText, "Variant copied") } style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Copy</button>
@@ -1349,7 +1349,7 @@ export default function ImageAltMediaSEO() {
         </div>
       )}
         {captionResult && (
-          <div style={{ background: darkMode ? "#1f2937" : "#eef2ff", borderRadius: 10, padding: 14, marginBottom: 12, color: darkMode ? "#a3e635" : "#23263a" }} aria-live="polite">
+          <div style={{ background: "#1f2937", borderRadius: 10, padding: 14, marginBottom: 12, color: "#a3e635" }} aria-live="polite">
             <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Caption:</div>
             <div>{captionResult}</div>
             {captionLint && (
@@ -1368,13 +1368,13 @@ export default function ImageAltMediaSEO() {
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }} role="alert" aria-live="assertive">{error}</div>}
       {toast && <div style={{ color: "#16a34a", marginBottom: 10 }} role="status" aria-live="polite">{toast}</div>}
 
-      <div style={{ marginTop: 24, background: darkMode ? "#1f2937" : "#eef2ff", borderRadius: 12, padding: 18 }}>
+      <div style={{ marginTop: 24, background: "#1f2937", borderRadius: 12, padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Batch Generate (JSON array)</div>
         <textarea
           value={batchInput}
           onChange={e => setBatchInput(e.target.value)}
           rows={6}
-          style={{ width: "100%", fontSize: 14, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a", fontFamily: 'Menlo, Consolas, monospace' }}
+          style={{ width: "100%", fontSize: 14, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", fontFamily: 'Menlo, Consolas, monospace' }}
           aria-label="Batch JSON"
           placeholder='[
   { "input": "red leather tote on white", "url": "https://...", "keywords": "leather tote" }
@@ -1383,33 +1383,33 @@ export default function ImageAltMediaSEO() {
         <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
           <button onClick={handleBatchGenerate} disabled={loading} style={{ background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "10px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>{loading ? "Working..." : "Run Batch"}</button>
           <button onClick={loadSampleBatch} disabled={loading} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "10px 16px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Load sample batch</button>
-          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: darkMode ? "#a3e635" : "#475569" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#a3e635" }}>
             Chunk size
             <input type="number" min={1} max={100} value={chunkSize} onChange={e => setChunkSize(Number(e.target.value) || 1)} style={{ width: 70, padding: "6px 8px", borderRadius: 6, border: "1px solid #cbd5e1" }} />
           </label>
-          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: darkMode ? "#a3e635" : "#475569" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#a3e635" }}>
             Variants
             <input type="number" min={1} max={5} value={batchVariantCount} onChange={e => setBatchVariantCount(Math.min(5, Math.max(1, Number(e.target.value) || 1)))} style={{ width: 70, padding: "6px 8px", borderRadius: 6, border: "1px solid #cbd5e1" }} />
           </label>
-          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: darkMode ? "#a3e635" : "#475569" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#a3e635" }}>
             Pause ms
             <input type="number" min={0} max={2000} value={paceMs} onChange={e => setPaceMs(Math.max(0, Number(e.target.value) || 0))} style={{ width: 80, padding: "6px 8px", borderRadius: 6, border: "1px solid #cbd5e1" }} />
           </label>
-          <span style={{ fontSize: 13, color: darkMode ? "#a3e635" : "#475569" }}>Sends to /ai/batch-generate; locale, safe mode, tone, verbosity, keywords, brand vocab, chunking, and pacing are applied.</span>
-          {batchDownloadUrl && <a href={batchDownloadUrl} download="batch-results.json" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>Download results JSON</a>}
+          <span style={{ fontSize: 13, color: "#a3e635" }}>Sends to /ai/batch-generate; locale, safe mode, tone, verbosity, keywords, brand vocab, chunking, and pacing are applied.</span>
+          {batchDownloadUrl && <a href={batchDownloadUrl} download="batch-results.json" style={{ color: "#a3e635", fontWeight: 600 }}>Download results JSON</a>}
           {batchResults?.length ? <button onClick={handleCopyBatchResults} disabled={batchCopying} style={{ background: "#c084fc", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>{batchCopying ? "Copying..." : "Copy results"}</button> : null}
           {batchResults?.length ? <button onClick={resetBatchState} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "8px 12px", fontWeight: 600, cursor: "pointer", fontSize: 13 }}>Clear batch state</button> : null}
         </div>
         {batchProgress > 0 && (
           <div style={{ marginTop: 10 }} aria-label="Batch progress" aria-live="polite">
-            <div style={{ height: 10, background: darkMode ? "#0f172a" : "#e2e8f0", borderRadius: 8, overflow: "hidden" }}>
+            <div style={{ height: 10, background: "#0f172a", borderRadius: 8, overflow: "hidden" }}>
               <div style={{ width: `${Math.min(100, Math.round(batchProgress))}%`, height: "100%", background: "#10b981", transition: "width 0.2s ease" }} />
             </div>
-            <div style={{ fontSize: 12, marginTop: 4, color: darkMode ? "#a3e635" : "#475569" }}>{Math.min(100, Math.round(batchProgress))}%</div>
+            <div style={{ fontSize: 12, marginTop: 4, color: "#a3e635" }}>{Math.min(100, Math.round(batchProgress))}%</div>
           </div>
         )}
         {batchSummary && (
-          <div style={{ marginTop: 12, padding: 12, background: darkMode ? "#111827" : "#e0f2fe", borderRadius: 10, fontSize: 14 }}>
+          <div style={{ marginTop: 12, padding: 12, background: "#111827", borderRadius: 10, fontSize: 14 }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Batch summary</div>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
               <span>Total {batchSummary.total}</span>
@@ -1470,7 +1470,7 @@ export default function ImageAltMediaSEO() {
       </div>
 
       {runs?.length ? (
-        <div style={{ marginTop: 18, background: darkMode ? "#111827" : "#e0f2fe", borderRadius: 12, padding: 14 }}>
+        <div style={{ marginTop: 18, background: "#111827", borderRadius: 12, padding: 14 }}>
           <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Recent Batch Runs</div>
           <div style={{ marginBottom: 8, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             <button onClick={handleDownloadRuns} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "6px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Download runs JSON</button>
