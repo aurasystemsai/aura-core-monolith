@@ -937,6 +937,7 @@ export default function ImageAltMediaSEO() {
           ) : null}
         </div>
       )}
+      <div>
         <input
           value={imageUrl}
           onChange={e => setImageUrl(e.target.value)}
@@ -1097,9 +1098,7 @@ export default function ImageAltMediaSEO() {
             ))}
             {!images.length ? <li style={{ color: darkMode ? "#a3e635" : "#475569" }}>No images yet.</li> : null}
           </ul>
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
-        />
-      </div>
+        </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Tone</span>

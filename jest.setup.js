@@ -2,6 +2,8 @@
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 process.env.SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION || '2024-10';
 process.env.OPENAI_API_KEY = process.env.OPENAI_API_KEY || 'test-key';
+// Disable background schedulers that set intervals during tests
+process.env.DISABLE_ANALYTICS_SCHEDULER = 'true';
 
 // Mock OpenAI client in tests to avoid network calls while keeping production strict
 jest.mock('openai', () => {
