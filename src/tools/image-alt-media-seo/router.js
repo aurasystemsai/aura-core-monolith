@@ -495,8 +495,16 @@ router.post('/images/import-shopify', async (req, res) => {
     const maxImages = clampInt(req.body?.maxImages || req.query?.maxImages || 500, 1, 5000);
     const productLimit = clampInt(req.body?.productLimit || req.query?.productLimit || maxImages, 1, 5000);
 
-    // Prefer env tokens first (valid for other tools), then fall back to persisted shop token
+    // Prefer request-scoped tokens, then env, then persisted token
+    const authHeader = req.headers.authorization;
+    const bearerToken = authHeader && authHeader.startsWith('Bearer ')
+      ? authHeader.substring(7)
+      : null;
+    const sessionToken = req.session?.shopifyToken || null;
+
     const tokenSourceMap = {
+      bearer: bearerToken,
+      session: sessionToken,
       SHOPIFY_ACCESS_TOKEN: process.env.SHOPIFY_ACCESS_TOKEN,
       SHOPIFY_ADMIN_API_TOKEN: process.env.SHOPIFY_ADMIN_API_TOKEN,
       SHOPIFY_API_TOKEN: process.env.SHOPIFY_API_TOKEN,
