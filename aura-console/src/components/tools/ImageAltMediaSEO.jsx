@@ -318,6 +318,24 @@ export default function ImageAltMediaSEO() {
     setSelectedImageIds(prev => Array.from(new Set([...prev, ...ids])));
   };
 
+  const resolveAlt = img => {
+    const raw = img?.altText || img?.alttext || img?.alt || img?.content || '';
+    if (typeof raw === 'string') return raw;
+    if (raw && typeof raw === 'object') return raw.altText || raw.alttext || raw.alt || JSON.stringify(raw);
+    return '';
+  };
+
+  const truncate = (text, max = 160) => {
+    if (!text) return '';
+    return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+  };
+
+  const formatDate = val => {
+    if (!val) return '';
+    const d = new Date(val);
+    return Number.isNaN(d.getTime()) ? '' : d.toLocaleString();
+  };
+
   const clearSelectedImages = () => setSelectedImageIds([]);
 
   const handleBulkApply = async () => {
@@ -1133,8 +1151,17 @@ export default function ImageAltMediaSEO() {
                       {selectedImageIds.includes(img.id) ? <span style={{ fontSize: 11, background: "#0ea5e9", color: "#fff", padding: "2px 6px", borderRadius: 999 }}>Selected</span> : null}
                       {img.url ? <a href={img.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#38bdf8", textDecoration: "underline" }}>Open</a> : null}
                     </div>
-                    <div><b>URL:</b> {img.url || "(none)"}</div>
-                    <div><b>Alt:</b> {img.altText || img.content || JSON.stringify(img)}</div>
+                    <div style={{ fontSize: 12, color: "#cbd5e1", wordBreak: "break-all" }}>
+                      <b>URL:</b> {img.url || "(none)"}
+                    </div>
+                    <div style={{ marginTop: 6 }}>
+                      <div style={{ fontWeight: 700, color: "#e5e7eb" }}>Alt</div>
+                      <div style={{ fontSize: 13, color: "#e2e8f0" }}>{truncate(resolveAlt(img), 220) || "(none)"}</div>
+                    </div>
+                    <div style={{ marginTop: 6, fontSize: 12, color: "#94a3b8", display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      {img.createdAt || img.created_at || img.createdat ? <span>Created: {formatDate(img.createdAt || img.created_at || img.createdat)}</span> : null}
+                      {img.score ? <span>Score: {img.score}</span> : null}
+                    </div>
                   </div>
                 </div>
               </li>
