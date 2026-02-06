@@ -12,7 +12,6 @@ function resolveToken(shop, tokenOverride = null) {
     || process.env.SHOPIFY_ADMIN_API_TOKEN
     || process.env.SHOPIFY_API_TOKEN
     || process.env.SHOPIFY_ADMIN_TOKEN
-    || process.env.SHOPIFY_CLIENT_SECRET
     || null;
 }
 
