@@ -49,23 +49,24 @@ export default function ProductSeoEngine() {
       const msg = err.response?.data?.error || err.message || 'Failed to load Shopify products.';
       setError(msg);
       setShopifyProducts([]);
-      // If error is missing shop domain or admin token, auto-redirect to Shopify OAuth
-      if (msg && msg.toLowerCase().includes('missing shop domain')) {
-        // Try to get shop from URL param or prompt user
-        const url = new URL(window.location.href);
-        const shop = url.searchParams.get('shop');
-        if (shop) {
-          window.location.href = `/shopify/auth?shop=${encodeURIComponent(shop)}`;
-        } else {
-          window.location.href = '/connect-shopify';
-        }
-      }
     }
   }
+
+  const reconnectShopify = () => {
+    const url = new URL(window.location.href);
+    const shop = url.searchParams.get('shop') || '';
+    const target = shop ? `/shopify/auth?shop=${encodeURIComponent(shop)}` : '/connect-shopify';
+    if (window.top) window.top.location.href = target; else window.location.href = target;
+  };
       <section>
         <h3>Shopify Products</h3>
         {error && shopifyProducts.length === 0 ? (
-          <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>
+          <div style={{ color: 'red', marginBottom: 8 }}>
+            {error}
+            <div style={{ marginTop: 8 }}>
+              <button onClick={reconnectShopify}>Reconnect Shopify</button>
+            </div>
+          </div>
         ) : null}
         {shopifyProducts.length === 0 && !error ? <div>No Shopify products found.</div> : null}
         {shopifyProducts.length > 0 && (
