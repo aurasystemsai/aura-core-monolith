@@ -33,6 +33,10 @@ export default function ImageAltMediaSEO() {
   const [imageTotal, setImageTotal] = useState(0);
   const [imageSearch, setImageSearch] = useState("");
   const [selectedImageIds, setSelectedImageIds] = useState([]);
+  const [filteredImages, setFilteredImages] = useState([]);
+  const [filterMode, setFilterMode] = useState("all");
+  const [duplicateAltIds, setDuplicateAltIds] = useState(new Set());
+  const [rewritingId, setRewritingId] = useState(null);
   const [shopDomain, setShopDomain] = useState("");
   const [shopifyMaxImages, setShopifyMaxImages] = useState(250);
   const [shopifyProductLimit, setShopifyProductLimit] = useState(400);
@@ -245,6 +249,14 @@ export default function ImageAltMediaSEO() {
     fetchImages(0, next, imageSearch);
   };
 
+  const lintAltText = alt => {
+    const text = (alt || "").trim();
+    if (!text) return { status: "missing", label: "Missing" };
+    if (text.length < 15) return { status: "short", label: "Short" };
+    if (text.length > 180) return { status: "long", label: "Long" };
+    return { status: "ok", label: "OK" };
+  };
+
   const handleImagePageChange = delta => {
     const maxOffset = Math.max(0, imageTotal - imageLimit);
     const nextOffset = Math.min(maxOffset, Math.max(0, imageOffset + delta * imageLimit));
@@ -367,6 +379,33 @@ export default function ImageAltMediaSEO() {
     }
   };
 
+  useEffect(() => {
+    // Recompute duplicates and filtered list when images or filter change
+    const altCounts = new Map();
+    images.forEach(img => {
+      const alt = (resolveAlt(img) || "").trim().toLowerCase();
+      if (!alt) return;
+      altCounts.set(alt, (altCounts.get(alt) || 0) + 1);
+    });
+    const dupIds = new Set();
+    images.forEach(img => {
+      const alt = (resolveAlt(img) || "").trim().toLowerCase();
+      if (alt && (altCounts.get(alt) || 0) > 1) dupIds.add(img.id);
+    });
+    setDuplicateAltIds(dupIds);
+
+    const next = images.filter(img => {
+      const altInfo = lintAltText(resolveAlt(img));
+      if (filterMode === "all") return true;
+      if (filterMode === "missing") return altInfo.status === "missing";
+      if (filterMode === "short") return altInfo.status === "short";
+      if (filterMode === "long") return altInfo.status === "long";
+      if (filterMode === "duplicates") return dupIds.has(img.id);
+      return true;
+    });
+    setFilteredImages(next);
+  }, [images, filterMode]);
+
   const handleAiImproveSelected = async () => {
     if (!selectedImageIds.length) {
       setError("Select at least one image to improve");
@@ -420,6 +459,44 @@ export default function ImageAltMediaSEO() {
       else setError(err.message || "AI improve failed");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAiRewriteSingle = async img => {
+    if (!img?.id) return;
+    setRewritingId(img.id);
+    setError("");
+    try {
+      const payload = {
+        input: resolveAlt(img) || "Product image",
+        url: img.url,
+        locale,
+        tone,
+        verbosity,
+        keywords: keywords || undefined,
+        brandTerms: brandTerms || undefined,
+        safeMode,
+        variantCount: 1,
+      };
+      const { data } = await fetchJson("/api/image-alt-media-seo/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const altText = data.altText || data.output || data.text || resolveAlt(data);
+      if (!altText) throw new Error("AI did not return alt text");
+      await fetchJson("/api/image-alt-media-seo/images/bulk-update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: [{ id: img.id, altText }] })
+      });
+      showToast("AI rewrite applied");
+      await fetchImages();
+    } catch (err) {
+      if (err?.status === 429) setError(rateLimitMessage(err.retryAfter));
+      else setError(err.message || "AI rewrite failed");
+    } finally {
+      setRewritingId(null);
     }
   };
 
@@ -1183,8 +1260,29 @@ export default function ImageAltMediaSEO() {
               </ul>
             </div>
           ) : null}
+          <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <span style={{ fontSize: 13, color: "#cbd5e1" }}>Filter</span>
+              <select value={filterMode} onChange={e => setFilterMode(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#111827", color: "#e2e8f0" }}>
+                <option value="all">All</option>
+                <option value="missing">Missing</option>
+                <option value="short">Short</option>
+                <option value="long">Long</option>
+                <option value="duplicates">Duplicates</option>
+              </select>
+            </div>
+            <button onClick={() => {
+              const ids = filteredImages.map(img => img.id).filter(Boolean);
+              setSelectedImageIds(ids);
+            }} style={{ background: "#0ea5e9", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+              Select all filtered ({filteredImages.length})
+            </button>
+            <button onClick={clearSelectedImages} style={{ background: "#1f2937", color: "#e2e8f0", border: "1px solid #334155", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
+              Clear selection
+            </button>
+          </div>
           <ul style={{ paddingLeft: 18 }}>
-            {images.map(img => (
+            {filteredImages.map(img => (
               <li key={img.id} style={{ marginBottom: 10, background: selectedImageIds.includes(img.id) ? "#0f172a" : "transparent", borderRadius: 10, padding: 10, border: "1px solid #555", color: "#a3e635" }}>
                 <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                   <input type="checkbox" checked={selectedImageIds.includes(img.id)} onChange={() => toggleSelectImage(img.id)} aria-label={`Select image ${img.id}`} />
@@ -1202,11 +1300,17 @@ export default function ImageAltMediaSEO() {
                       </div>
                     )}
                   </div>
-                  <div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                       <div><b>ID:</b> {img.id}</div>
                       {selectedImageIds.includes(img.id) ? <span style={{ fontSize: 11, background: "#0ea5e9", color: "#fff", padding: "2px 6px", borderRadius: 999 }}>Selected</span> : null}
                       {img.url ? <a href={img.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#38bdf8", textDecoration: "underline" }}>Open</a> : null}
+                      {(() => {
+                        const lint = lintAltText(resolveAlt(img));
+                        const colors = { ok: "#22c55e", missing: "#ef4444", short: "#f59e0b", long: "#0ea5e9" };
+                        return <span style={{ fontSize: 11, background: colors[lint.status] || "#334155", color: "#0b0b0b", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>{lint.label}</span>;
+                      })()}
+                      {duplicateAltIds.has(img.id) ? <span style={{ fontSize: 11, background: "#e11d48", color: "#f8fafc", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>Duplicate</span> : null}
                     </div>
                     <div style={{ fontSize: 12, color: "#cbd5e1", wordBreak: "break-all" }}>
                       <b>URL:</b> {img.url || "(none)"}
@@ -1218,12 +1322,15 @@ export default function ImageAltMediaSEO() {
                     <div style={{ marginTop: 6, fontSize: 12, color: "#94a3b8", display: "flex", gap: 10, flexWrap: "wrap" }}>
                       {img.createdAt || img.created_at || img.createdat ? <span>Created: {formatDate(img.createdAt || img.created_at || img.createdat)}</span> : null}
                       {img.score ? <span>Score: {img.score}</span> : null}
+                      <button onClick={() => handleAiRewriteSingle(img)} disabled={rewritingId === img.id || loading} style={{ background: rewritingId === img.id ? "#475569" : "#7c3aed", color: "#f8fafc", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: rewritingId === img.id || loading ? "wait" : "pointer" }}>
+                        {rewritingId === img.id ? "Rewriting…" : "AI rewrite"}
+                      </button>
                     </div>
                   </div>
                 </div>
               </li>
             ))}
-            {!images.length ? <li style={{ color: "#a3e635" }}>No images yet.</li> : null}
+            {!filteredImages.length ? <li style={{ color: "#a3e635" }}>No images yet.</li> : null}
           </ul>
         </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
