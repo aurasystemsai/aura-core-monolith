@@ -367,6 +367,62 @@ export default function ImageAltMediaSEO() {
     }
   };
 
+  const handleAiImproveSelected = async () => {
+    if (!selectedImageIds.length) {
+      setError("Select at least one image to improve");
+      return;
+    }
+    const selected = images.filter(img => selectedImageIds.includes(img.id));
+    if (!selected.length) {
+      setError("No matching images found for selection");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const items = selected.map(img => ({
+        input: resolveAlt(img) || "Product image",
+        url: img.url,
+        locale,
+        tone,
+        verbosity,
+        keywords: keywords || undefined,
+        brandTerms: brandTerms || undefined,
+        safeMode,
+        variantCount: 1,
+      }));
+
+      const { data } = await fetchJson("/api/image-alt-media-seo/ai/batch-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items, locale, safeMode, keywords, brandTerms, tone, verbosity, variantCount: 1 })
+      });
+
+      const updates = (data.results || []).map((r, idx) => {
+        const id = selected[idx]?.id || r.id;
+        const altText = r.altText || r.output || r.text || resolveAlt(r);
+        return id && altText ? { id, altText } : null;
+      }).filter(Boolean);
+
+      if (updates.length) {
+        await fetchJson("/api/image-alt-media-seo/images/bulk-update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items: updates })
+        });
+        showToast(`AI improved ${updates.length} images`);
+        await fetchImages();
+      } else {
+        setError("AI did not return any alt text");
+      }
+    } catch (err) {
+      if (err?.status === 429) setError(rateLimitMessage(err.retryAfter));
+      else setError(err.message || "AI improve failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSimilaritySearch = async () => {
     const q = similarityQuery.trim();
     if (!q) {
@@ -1096,6 +1152,7 @@ export default function ImageAltMediaSEO() {
             />
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <button onClick={handleBulkApply} aria-label={`Apply alt text to ${selectedImageIds.length} selected images`} disabled={!selectedImageIds.length || !bulkAltText.trim() || loading} style={{ background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || !bulkAltText.trim() || loading) ? "not-allowed" : "pointer" }}>Apply to selected</button>
+              <button onClick={handleAiImproveSelected} aria-label="Use AI to rewrite alt text for selected images" disabled={!selectedImageIds.length || loading} style={{ background: "#7c3aed", color: "#f8fafc", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>AI improve selected</button>
               {selectedImageIds.length ? <span style={{ fontSize: 12 }}>IDs: {selectedImageIds.slice(0, 6).join(', ')}{selectedImageIds.length > 6 ? '…' : ''}</span> : <span style={{ fontSize: 12 }}>Pick rows to enable bulk update</span>}
             </div>
           </div>
