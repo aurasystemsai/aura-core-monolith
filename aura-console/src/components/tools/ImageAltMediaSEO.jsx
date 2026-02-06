@@ -1111,12 +1111,27 @@ export default function ImageAltMediaSEO() {
           <ul style={{ paddingLeft: 18 }}>
             {images.map(img => (
               <li key={img.id} style={{ marginBottom: 10, background: selectedImageIds.includes(img.id) ? "#0f172a" : "transparent", borderRadius: 10, padding: 10, border: "1px solid #555", color: "#a3e635" }}>
-                <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                   <input type="checkbox" checked={selectedImageIds.includes(img.id)} onChange={() => toggleSelectImage(img.id)} aria-label={`Select image ${img.id}`} />
+                  <div style={{ flex: "0 0 140px", maxWidth: 160 }}>
+                    {img.url ? (
+                      <img
+                        src={img.url}
+                        alt={img.altText || "Shopify image"}
+                        loading="lazy"
+                        style={{ width: "100%", maxWidth: 150, maxHeight: 150, objectFit: "contain", borderRadius: 8, background: "#0b0b0b" }}
+                      />
+                    ) : (
+                      <div style={{ width: 140, height: 120, borderRadius: 8, background: "#111827", border: "1px dashed #555", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 12 }}>
+                        No image
+                      </div>
+                    )}
+                  </div>
                   <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                       <div><b>ID:</b> {img.id}</div>
                       {selectedImageIds.includes(img.id) ? <span style={{ fontSize: 11, background: "#0ea5e9", color: "#fff", padding: "2px 6px", borderRadius: 999 }}>Selected</span> : null}
+                      {img.url ? <a href={img.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#38bdf8", textDecoration: "underline" }}>Open</a> : null}
                     </div>
                     <div><b>URL:</b> {img.url || "(none)"}</div>
                     <div><b>Alt:</b> {img.altText || img.content || JSON.stringify(img)}</div>
