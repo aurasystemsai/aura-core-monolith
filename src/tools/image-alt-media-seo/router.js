@@ -6,6 +6,7 @@ const OpenAI = require('openai');
 const db = require('./db');
 const runs = require('./runs');
 const { shopifyFetchPaginated } = require('../../core/shopifyApi');
+const { getToken: getShopToken } = require('../../core/shopTokens');
 
 // Shopify embedding guard: optional HMAC + shop validation for embedded requests
 const SHOPIFY_SECRET = process.env.SHOPIFY_API_SECRET || process.env.SHOPIFY_CLIENT_SECRET;
@@ -493,11 +494,24 @@ router.post('/images/import-shopify', async (req, res) => {
     const maxImages = clampInt(req.body?.maxImages || req.query?.maxImages || 500, 1, 5000);
     const productLimit = clampInt(req.body?.productLimit || req.query?.productLimit || maxImages, 1, 5000);
 
+    const resolvedToken =
+      getShopToken(shop)
+      || process.env.SHOPIFY_ACCESS_TOKEN
+      || process.env.SHOPIFY_ADMIN_API_TOKEN
+      || process.env.SHOPIFY_API_TOKEN
+      || process.env.SHOPIFY_ADMIN_TOKEN
+      || process.env.SHOPIFY_CLIENT_SECRET
+      || null;
+
+    if (!resolvedToken) {
+      return res.status(401).json({ ok: false, error: 'No Shopify admin token available for this shop. Reinstall the app or set SHOPIFY_ACCESS_TOKEN.' });
+    }
+
     const { items: products } = await shopifyFetchPaginated(
       shop,
       'products.json',
       { limit: 250, fields: 'id,title,handle,images' },
-      null,
+      resolvedToken,
       {
         maxPages: Math.ceil(productLimit / 250),
         rateLimitThreshold: 0.7,
@@ -550,7 +564,7 @@ router.post('/images/import-shopify', async (req, res) => {
     });
   } catch (err) {
     const status = err.status || 500;
-    res.status(status).json({ ok: false, error: err.message || 'Shopify import failed' });
+    res.status(status).json({ ok: false, error: err.message || 'Shopify import failed', detail: err.body || undefined, endpoint: err.endpoint || undefined });
   }
 });
 
