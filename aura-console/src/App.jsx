@@ -82,6 +82,7 @@ import OnboardingModal from "./components/OnboardingModal.jsx";
 // import OnboardingChecklist from "./onboarding/OnboardingChecklist.jsx";
 import Credits from "./credits/Credits.jsx";
 import Dashboard from "./dashboard/Dashboard.jsx";
+import ShopifyReconnectButton from "./components/ShopifyReconnectButton.jsx";
 
 // Lazy-load only large or rarely-used tool components
 const ContentHealthAuditor = lazy(() => import("./components/ContentHealthAuditor"));
@@ -218,7 +219,11 @@ function App() {
             if (res.ok) {
               const data = await res.json();
               if (data && data.project) {
-                setProject(data.project);
+                const sanitizedDomain = (data.project.domain || data.project.shopDomain || "").replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+                if (sanitizedDomain) {
+                  localStorage.setItem('auraShopDomain', sanitizedDomain);
+                }
+                setProject({ ...data.project, domain: sanitizedDomain || data.project.domain });
               } else if (data && data.shop) {
                 setProject({ id: data.shop.id, name: data.shop.name });
               }
@@ -763,6 +768,7 @@ function App() {
             </div>
           )}
         </div>
+        <ShopifyReconnectButton shopDomain={project?.domain} />
       </div>
     </ErrorBoundary>
   );

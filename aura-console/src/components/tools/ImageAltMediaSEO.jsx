@@ -291,6 +291,15 @@ export default function ImageAltMediaSEO() {
     }
   };
 
+  const reconnectShopify = () => {
+    const shop = shopDomain.trim() || getShopFromQuery() || '';
+    const target = shop ? `/shopify/auth?shop=${encodeURIComponent(shop)}` : '/connect-shopify';
+    if (typeof window !== 'undefined') {
+      if (window.top) window.top.location.href = target;
+      else window.location.href = target;
+    }
+  };
+
   const handleImageSearchKeyDown = e => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -1384,7 +1393,16 @@ export default function ImageAltMediaSEO() {
             </div>
           </div>
         )}
-      {error && <div style={{ color: "#ef4444", marginBottom: 10 }} role="alert" aria-live="assertive">{error}</div>}
+      {error && (
+        <div style={{ color: "#ef4444", marginBottom: 10 }} role="alert" aria-live="assertive">
+          {error}
+          <div style={{ marginTop: 8 }}>
+            <button onClick={reconnectShopify} style={{ background: "#0ea5e9", color: "#0b0b0b", border: "none", borderRadius: 6, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>
+              Reconnect Shopify
+            </button>
+          </div>
+        </div>
+      )}
       {toast && <div style={{ color: "#16a34a", marginBottom: 10 }} role="status" aria-live="polite">{toast}</div>}
 
       <div style={{ marginTop: 24, background: "#1f2937", borderRadius: 12, padding: 18 }}>
