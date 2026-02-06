@@ -158,10 +158,14 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
     setError(null);
     // Do not send a potentially stale client token; let the backend resolve the persisted/session token.
     fetch(`/api/shopify/products?shop=${encodeURIComponent(shopDomain)}`)
-      .then((res) => {
+      .then(async (res) => {
         debugLog('Fetch response', res);
-        if (!res.ok) throw new Error('Failed to fetch products');
-        return res.json();
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const msg = data?.error || `Failed to fetch products (${res.status})`;
+          throw new Error(msg);
+        }
+        return data;
       })
       .then((data) => {
         debugLog('Fetched products data', data);
@@ -174,6 +178,16 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
         setLoading(false);
       });
   }, [shopDomain, shopToken]);
+
+  const reconnectShopify = useCallback(() => {
+    const url = typeof window !== 'undefined' ? new URL(window.location.href) : null;
+    const shopParam = shopDomain || (url ? url.searchParams.get('shop') : '') || '';
+    const target = shopParam ? `/shopify/auth?shop=${encodeURIComponent(shopParam)}` : '/connect-shopify';
+    if (typeof window !== 'undefined') {
+      if (window.top) window.top.location.href = target;
+      else window.location.href = target;
+    }
+  }, [shopDomain]);
   useEffect(() => {
       try {
         fetchProducts();
@@ -334,6 +348,9 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
           {error && (
             <div className="pl-error">
               {error}
+              <div className="pl-error-actions">
+                <button className="pl-btn pl-btn--accent" onClick={reconnectShopify}>Reconnect Shopify</button>
+              </div>
               {showDebug && <DebugPanel />}
             </div>
           )}
