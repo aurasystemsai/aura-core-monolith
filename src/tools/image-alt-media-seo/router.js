@@ -495,25 +495,19 @@ router.post('/images/import-shopify', async (req, res) => {
     const maxImages = clampInt(req.body?.maxImages || req.query?.maxImages || 500, 1, 5000);
     const productLimit = clampInt(req.body?.productLimit || req.query?.productLimit || maxImages, 1, 5000);
 
-    // Prefer request-scoped tokens, then env, then persisted token
-    const authHeader = req.headers.authorization;
-    const bearerToken = authHeader && authHeader.startsWith('Bearer ')
-      ? authHeader.substring(7)
-      : null;
-    const sessionToken = req.session?.shopifyToken || null;
-
+    // Use admin-capable tokens only: request body/session first, then env, then persisted shop token
     const tokenSourceMap = {
-      bearer: bearerToken,
-      session: sessionToken,
+      body: req.body?.token,
+      session: req.session?.shopifyToken,
       SHOPIFY_ACCESS_TOKEN: process.env.SHOPIFY_ACCESS_TOKEN,
       SHOPIFY_ADMIN_API_TOKEN: process.env.SHOPIFY_ADMIN_API_TOKEN,
       SHOPIFY_API_TOKEN: process.env.SHOPIFY_API_TOKEN,
       SHOPIFY_ADMIN_TOKEN: process.env.SHOPIFY_ADMIN_TOKEN,
-      SHOPIFY_CLIENT_SECRET: process.env.SHOPIFY_CLIENT_SECRET,
       shopTokens: getShopToken(shop),
     };
-    const resolvedToken = Object.entries(tokenSourceMap).find(([, val]) => !!val)?.[1] || null;
-    tokenSource = Object.entries(tokenSourceMap).find(([, val]) => !!val)?.[0] || 'none';
+    const tokenEntry = Object.entries(tokenSourceMap).find(([, val]) => !!val);
+    const resolvedToken = tokenEntry ? tokenEntry[1] : null;
+    tokenSource = tokenEntry ? tokenEntry[0] : 'none';
 
     console.log('[image-alt import-shopify] shop:', shop, 'tokenSource:', tokenSource, 'maxImages:', maxImages, 'productLimit:', productLimit);
 
