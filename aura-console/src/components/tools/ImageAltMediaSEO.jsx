@@ -38,6 +38,7 @@ export default function ImageAltMediaSEO() {
   const [duplicateAltIds, setDuplicateAltIds] = useState(new Set());
   const [rewritingId, setRewritingId] = useState(null);
   const [sortMode, setSortMode] = useState("newest");
+  const [undoBuffer, setUndoBuffer] = useState([]);
   const [shopDomain, setShopDomain] = useState("");
   const [shopifyMaxImages, setShopifyMaxImages] = useState(250);
   const [shopifyProductLimit, setShopifyProductLimit] = useState(400);
@@ -360,6 +361,52 @@ export default function ImageAltMediaSEO() {
     }
   };
 
+  const saveUndo = (type, items) => {
+    const timestamp = Date.now();
+    setUndoBuffer(prev => [...prev.slice(-4), { type, items, timestamp }].slice(-5));
+  };
+
+  const handleUndo = async () => {
+    if (!undoBuffer.length) return;
+    const last = undoBuffer[undoBuffer.length - 1];
+    setLoading(true);
+    setError("");
+    try {
+      if (last.type === "bulk" || last.type === "ai") {
+        await fetchJson("/api/image-alt-media-seo/images/bulk-update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items: last.items })
+        });
+        showToast("Undone");
+        await fetchImages();
+        setUndoBuffer(prev => prev.slice(0, -1));
+      }
+    } catch (err) {
+      setError(err.message || "Undo failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleKey = e => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'a' && e.shiftKey) {
+          e.preventDefault();
+          const ids = filteredImages.map(img => img.id).filter(Boolean);
+          setSelectedImageIds(ids);
+        }
+        if (e.key === 'z' && undoBuffer.length && !loading) {
+          e.preventDefault();
+          handleUndo();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [filteredImages, undoBuffer, loading]);
+
   const clearSelectedImages = () => setSelectedImageIds([]);
 
   const handleBulkApply = async () => {
@@ -374,6 +421,7 @@ export default function ImageAltMediaSEO() {
     setLoading(true);
     setError("");
     try {
+      const oldValues = images.filter(img => selectedImageIds.includes(img.id)).map(img => ({ id: img.id, altText: resolveAlt(img) }));
       const items = selectedImageIds.map(id => ({ id, altText: bulkAltText.trim() }));
       const { data } = await fetchJson("/api/image-alt-media-seo/images/bulk-update", {
         method: "POST",
@@ -381,6 +429,7 @@ export default function ImageAltMediaSEO() {
         body: JSON.stringify({ items })
       });
       const updatedCount = (data.updated || []).filter(u => u.ok).length;
+      saveUndo("bulk", oldValues);
       showToast(`Updated ${updatedCount} images`);
       fetchImages();
     } catch (err) {
@@ -446,6 +495,7 @@ export default function ImageAltMediaSEO() {
     setLoading(true);
     setError("");
     try {
+      const oldValues = selected.map(img => ({ id: img.id, altText: resolveAlt(img) }));
       const items = selected.map(img => ({
         input: resolveAlt(img) || "Product image",
         url: img.url,
@@ -476,6 +526,7 @@ export default function ImageAltMediaSEO() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ items: updates })
         });
+        saveUndo("ai", oldValues);
         showToast(`AI improved ${updates.length} images`);
         await fetchImages();
       } else {
@@ -491,6 +542,7 @@ export default function ImageAltMediaSEO() {
 
   const handleAiRewriteSingle = async img => {
     if (!img?.id) return;
+    const oldValue = { id: img.id, altText: resolveAlt(img) };
     setRewritingId(img.id);
     setError("");
     try {
@@ -517,6 +569,7 @@ export default function ImageAltMediaSEO() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ items: [{ id: img.id, altText }] })
       });
+      saveUndo("ai", [oldValue]);
       showToast("AI rewrite applied");
       await fetchImages();
     } catch (err) {
@@ -1257,7 +1310,9 @@ export default function ImageAltMediaSEO() {
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <button onClick={handleBulkApply} aria-label={`Apply alt text to ${selectedImageIds.length} selected images`} disabled={!selectedImageIds.length || !bulkAltText.trim() || loading} style={{ background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || !bulkAltText.trim() || loading) ? "not-allowed" : "pointer" }}>Apply to selected</button>
               <button onClick={handleAiImproveSelected} aria-label="Use AI to rewrite alt text for selected images" disabled={!selectedImageIds.length || loading} style={{ background: "#7c3aed", color: "#f8fafc", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>AI improve selected</button>
+              <button onClick={handleUndo} aria-label="Undo last bulk or AI change" disabled={!undoBuffer.length || loading} title={undoBuffer.length ? `Undo (Ctrl+Z) - ${undoBuffer.length} action${undoBuffer.length > 1 ? 's' : ''} available` : "No actions to undo"} style={{ background: undoBuffer.length ? "#f59e0b" : "#334155", color: undoBuffer.length ? "#0b0b0b" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!undoBuffer.length || loading) ? "not-allowed" : "pointer" }}>Undo ({undoBuffer.length})</button>
               {selectedImageIds.length ? <span style={{ fontSize: 12 }}>IDs: {selectedImageIds.slice(0, 6).join(', ')}{selectedImageIds.length > 6 ? '…' : ''}</span> : <span style={{ fontSize: 12 }}>Pick rows to enable bulk update</span>}
+              <span style={{ fontSize: 11, color: "#94a3b8" }}>Shortcuts: Ctrl+Shift+A (select all), Ctrl+Z (undo)</span>
             </div>
           </div>
           {similarityResults?.length ? (
