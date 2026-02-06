@@ -62,15 +62,14 @@ router.use((req, res, next) => {
   // Skip health endpoints
   if (req.path.startsWith('/health')) return next();
 
-  const shop = (req.query.shop || req.headers['x-shopify-shop-domain'] || req.session?.shop || req.body?.shop || '').toLowerCase();
+  let shop = (req.query.shop || req.headers['x-shopify-shop-domain'] || req.session?.shop || req.body?.shop || '').toLowerCase();
   const hmac = req.query.hmac;
 
-  if (SHOPIFY_STORE_URL && shop && shop !== SHOPIFY_STORE_URL) {
-    return res.status(401).json({ ok: false, error: 'Shop mismatch' });
+  // Fallback to configured store if none provided
+  if (!shop && SHOPIFY_STORE_URL) {
+    shop = SHOPIFY_STORE_URL;
   }
-  if (SHOPIFY_STORE_URL && !shop) {
-    return res.status(401).json({ ok: false, error: 'Shop required' });
-  }
+
   if (shop && !isValidShopDomain(shop)) {
     return res.status(400).json({ ok: false, error: 'Invalid shop domain' });
   }
