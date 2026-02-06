@@ -37,6 +37,7 @@ export default function ImageAltMediaSEO() {
   const [filterMode, setFilterMode] = useState("all");
   const [duplicateAltIds, setDuplicateAltIds] = useState(new Set());
   const [rewritingId, setRewritingId] = useState(null);
+  const [sortMode, setSortMode] = useState("newest");
   const [shopDomain, setShopDomain] = useState("");
   const [shopifyMaxImages, setShopifyMaxImages] = useState(250);
   const [shopifyProductLimit, setShopifyProductLimit] = useState(400);
@@ -348,6 +349,17 @@ export default function ImageAltMediaSEO() {
     return Number.isNaN(d.getTime()) ? '' : d.toLocaleString();
   };
 
+  const shortenUrl = url => {
+    if (!url) return '';
+    try {
+      const u = new URL(url);
+      const last = (u.pathname || '').split('/').filter(Boolean).pop() || '';
+      return `${u.hostname}${last ? `/${last}` : ''}`;
+    } catch (_) {
+      return url;
+    }
+  };
+
   const clearSelectedImages = () => setSelectedImageIds([]);
 
   const handleBulkApply = async () => {
@@ -394,7 +406,7 @@ export default function ImageAltMediaSEO() {
     });
     setDuplicateAltIds(dupIds);
 
-    const next = images.filter(img => {
+    let next = images.filter(img => {
       const altInfo = lintAltText(resolveAlt(img));
       if (filterMode === "all") return true;
       if (filterMode === "missing") return altInfo.status === "missing";
@@ -403,8 +415,23 @@ export default function ImageAltMediaSEO() {
       if (filterMode === "duplicates") return dupIds.has(img.id);
       return true;
     });
+    next = next.sort((a, b) => {
+      if (sortMode === "newest") {
+        return (new Date(b.createdAt || b.created_at || b.createdat || 0).getTime()) - (new Date(a.createdAt || a.created_at || a.createdat || 0).getTime());
+      }
+      if (sortMode === "oldest") {
+        return (new Date(a.createdAt || a.created_at || a.createdat || 0).getTime()) - (new Date(b.createdAt || b.created_at || b.createdat || 0).getTime());
+      }
+      if (sortMode === "score") {
+        return (b.score || 0) - (a.score || 0);
+      }
+      if (sortMode === "length") {
+        return (resolveAlt(b)?.length || 0) - (resolveAlt(a)?.length || 0);
+      }
+      return 0;
+    });
     setFilteredImages(next);
-  }, [images, filterMode]);
+  }, [images, filterMode, sortMode]);
 
   const handleAiImproveSelected = async () => {
     if (!selectedImageIds.length) {
@@ -1271,6 +1298,15 @@ export default function ImageAltMediaSEO() {
                 <option value="duplicates">Duplicates</option>
               </select>
             </div>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <span style={{ fontSize: 13, color: "#cbd5e1" }}>Sort</span>
+              <select value={sortMode} onChange={e => setSortMode(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#111827", color: "#e2e8f0" }}>
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="score">Score</option>
+                <option value="length">Alt length</option>
+              </select>
+            </div>
             <button onClick={() => {
               const ids = filteredImages.map(img => img.id).filter(Boolean);
               setSelectedImageIds(ids);
@@ -1313,11 +1349,19 @@ export default function ImageAltMediaSEO() {
                       {duplicateAltIds.has(img.id) ? <span style={{ fontSize: 11, background: "#e11d48", color: "#f8fafc", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>Duplicate</span> : null}
                     </div>
                     <div style={{ fontSize: 12, color: "#cbd5e1", wordBreak: "break-all" }}>
-                      <b>URL:</b> {img.url || "(none)"}
+                      <b>URL:</b> {shortenUrl(img.url) || "(none)"}
+                      {img.url ? (
+                        <button onClick={() => { navigator.clipboard?.writeText(img.url); showToast("URL copied"); }} style={{ marginLeft: 8, background: "#1f2937", color: "#e2e8f0", border: "1px solid #334155", borderRadius: 6, padding: "2px 8px", fontSize: 11, cursor: "pointer" }}>Copy</button>
+                      ) : null}
                     </div>
                     <div style={{ marginTop: 6 }}>
                       <div style={{ fontWeight: 700, color: "#e5e7eb" }}>Alt</div>
-                      <div style={{ fontSize: 13, color: "#e2e8f0" }}>{truncate(resolveAlt(img), 220) || "(none)"}</div>
+                      <div style={{ fontSize: 13, color: "#e2e8f0" }} title={resolveAlt(img) || "(none)"}>
+                        {truncate(resolveAlt(img), 220) || "(none)"}
+                        {resolveAlt(img) ? (
+                          <button onClick={() => { navigator.clipboard?.writeText(resolveAlt(img)); showToast("Alt copied"); }} style={{ marginLeft: 8, background: "#1f2937", color: "#e2e8f0", border: "1px solid #334155", borderRadius: 6, padding: "2px 8px", fontSize: 11, cursor: "pointer" }}>Copy</button>
+                        ) : null}
+                      </div>
                     </div>
                     <div style={{ marginTop: 6, fontSize: 12, color: "#94a3b8", display: "flex", gap: 10, flexWrap: "wrap" }}>
                       {img.createdAt || img.created_at || img.createdat ? <span>Created: {formatDate(img.createdAt || img.created_at || img.createdat)}</span> : null}
