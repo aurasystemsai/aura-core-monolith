@@ -494,17 +494,29 @@ router.post('/images/import-shopify', async (req, res) => {
     const maxImages = clampInt(req.body?.maxImages || req.query?.maxImages || 500, 1, 5000);
     const productLimit = clampInt(req.body?.productLimit || req.query?.productLimit || maxImages, 1, 5000);
 
+    const tokenSourceMap = {
+      shopTokens: getShopToken(shop),
+      SHOPIFY_ACCESS_TOKEN: process.env.SHOPIFY_ACCESS_TOKEN,
+      SHOPIFY_ADMIN_API_TOKEN: process.env.SHOPIFY_ADMIN_API_TOKEN,
+      SHOPIFY_API_TOKEN: process.env.SHOPIFY_API_TOKEN,
+      SHOPIFY_ADMIN_TOKEN: process.env.SHOPIFY_ADMIN_TOKEN,
+      SHOPIFY_CLIENT_SECRET: process.env.SHOPIFY_CLIENT_SECRET,
+    };
     const resolvedToken =
-      getShopToken(shop)
-      || process.env.SHOPIFY_ACCESS_TOKEN
-      || process.env.SHOPIFY_ADMIN_API_TOKEN
-      || process.env.SHOPIFY_API_TOKEN
-      || process.env.SHOPIFY_ADMIN_TOKEN
-      || process.env.SHOPIFY_CLIENT_SECRET
+      tokenSourceMap.shopTokens
+      || tokenSourceMap.SHOPIFY_ACCESS_TOKEN
+      || tokenSourceMap.SHOPIFY_ADMIN_API_TOKEN
+      || tokenSourceMap.SHOPIFY_API_TOKEN
+      || tokenSourceMap.SHOPIFY_ADMIN_TOKEN
+      || tokenSourceMap.SHOPIFY_CLIENT_SECRET
       || null;
 
+    const tokenSource = Object.entries(tokenSourceMap).find(([, val]) => !!val)?.[0] || 'none';
+
+    console.log('[image-alt import-shopify] shop:', shop, 'tokenSource:', tokenSource, 'maxImages:', maxImages, 'productLimit:', productLimit);
+
     if (!resolvedToken) {
-      return res.status(401).json({ ok: false, error: 'No Shopify admin token available for this shop. Reinstall the app or set SHOPIFY_ACCESS_TOKEN.' });
+      return res.status(401).json({ ok: false, error: 'No Shopify admin token available for this shop. Reinstall the app or set SHOPIFY_ACCESS_TOKEN.', tokenSource });
     }
 
     const { items: products } = await shopifyFetchPaginated(
@@ -564,7 +576,14 @@ router.post('/images/import-shopify', async (req, res) => {
     });
   } catch (err) {
     const status = err.status || 500;
-    res.status(status).json({ ok: false, error: err.message || 'Shopify import failed', detail: err.body || undefined, endpoint: err.endpoint || undefined });
+    console.warn('[image-alt import-shopify] failed', {
+      status: err.status || 500,
+      message: err.message,
+      endpoint: err.endpoint,
+      body: err.body,
+      shop: (req.body?.shop || req.query?.shop || req.headers['x-shopify-shop-domain'] || '').toLowerCase()
+    });
+    res.status(status).json({ ok: false, error: err.message || 'Shopify import failed', detail: err.body || undefined, endpoint: err.endpoint || undefined, tokenSource: tokenSource || undefined });
   }
 });
 
