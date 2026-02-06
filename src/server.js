@@ -689,11 +689,8 @@ async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
     throw new Error("Invalid shop. Expected *.myshopify.com");
   }
 
-  const fallbackAdminToken =
-    process.env.SHOPIFY_ADMIN_TOKEN ||
-    process.env.SHOPIFY_FALLBACK_ADMIN_TOKEN ||
-    process.env.SHOPIFY_CLIENT_SECRET ||
-    null;
+  // Single admin token; do not fall back to client secret
+  const fallbackAdminToken = null;
 
   const ver = apiVersion || process.env.SHOPIFY_API_VERSION || "2025-10";
   const url = `https://${safeShop}/admin/api/${ver}/graphql.json`;
@@ -786,14 +783,6 @@ async function fetchShopifyProducts({ shop, token, apiVersion, limit }) {
     json = await attempt(token, "primary");
   } catch (err) {
     lastErr = err;
-    if (err && err.status === 401 && fallbackAdminToken && fallbackAdminToken !== token) {
-      console.warn(`[Core] Primary token failed with 401; retrying with fallback admin token for ${safeShop}`);
-      try {
-        json = await attempt(fallbackAdminToken, "fallback");
-      } catch (fallbackErr) {
-        lastErr = fallbackErr;
-      }
-    }
   }
 
   if (!json) {
@@ -906,8 +895,6 @@ app.get("/api/shopify/products", async (req, res) => {
       token = allTokens[onlyShop]?.token || token;
       if (!shop) shop = onlyShop;
     }
-
-    if (!token) token = process.env.SHOPIFY_CLIENT_SECRET || null;
 
     console.log("[Core] /api/shopify/products called", {
       query: req.query,
