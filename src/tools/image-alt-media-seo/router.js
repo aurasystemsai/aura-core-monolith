@@ -486,6 +486,7 @@ router.get('/images', async (req, res) => {
 
 // Import images directly from Shopify products (uses Admin API token)
 router.post('/images/import-shopify', async (req, res) => {
+  let tokenSource = 'none';
   try {
     const shop = (req.body?.shop || req.query?.shop || req.headers['x-shopify-shop-domain'] || '').toLowerCase();
     if (!shop) return res.status(400).json({ ok: false, error: 'shop required (e.g., mystore.myshopify.com)' });
@@ -494,24 +495,17 @@ router.post('/images/import-shopify', async (req, res) => {
     const maxImages = clampInt(req.body?.maxImages || req.query?.maxImages || 500, 1, 5000);
     const productLimit = clampInt(req.body?.productLimit || req.query?.productLimit || maxImages, 1, 5000);
 
+    // Prefer env tokens first (valid for other tools), then fall back to persisted shop token
     const tokenSourceMap = {
-      shopTokens: getShopToken(shop),
       SHOPIFY_ACCESS_TOKEN: process.env.SHOPIFY_ACCESS_TOKEN,
       SHOPIFY_ADMIN_API_TOKEN: process.env.SHOPIFY_ADMIN_API_TOKEN,
       SHOPIFY_API_TOKEN: process.env.SHOPIFY_API_TOKEN,
       SHOPIFY_ADMIN_TOKEN: process.env.SHOPIFY_ADMIN_TOKEN,
       SHOPIFY_CLIENT_SECRET: process.env.SHOPIFY_CLIENT_SECRET,
+      shopTokens: getShopToken(shop),
     };
-    const resolvedToken =
-      tokenSourceMap.shopTokens
-      || tokenSourceMap.SHOPIFY_ACCESS_TOKEN
-      || tokenSourceMap.SHOPIFY_ADMIN_API_TOKEN
-      || tokenSourceMap.SHOPIFY_API_TOKEN
-      || tokenSourceMap.SHOPIFY_ADMIN_TOKEN
-      || tokenSourceMap.SHOPIFY_CLIENT_SECRET
-      || null;
-
-    const tokenSource = Object.entries(tokenSourceMap).find(([, val]) => !!val)?.[0] || 'none';
+    const resolvedToken = Object.entries(tokenSourceMap).find(([, val]) => !!val)?.[1] || null;
+    tokenSource = Object.entries(tokenSourceMap).find(([, val]) => !!val)?.[0] || 'none';
 
     console.log('[image-alt import-shopify] shop:', shop, 'tokenSource:', tokenSource, 'maxImages:', maxImages, 'productLimit:', productLimit);
 
@@ -581,7 +575,8 @@ router.post('/images/import-shopify', async (req, res) => {
       message: err.message,
       endpoint: err.endpoint,
       body: err.body,
-      shop: (req.body?.shop || req.query?.shop || req.headers['x-shopify-shop-domain'] || '').toLowerCase()
+      shop: (req.body?.shop || req.query?.shop || req.headers['x-shopify-shop-domain'] || '').toLowerCase(),
+      tokenSource,
     });
     res.status(status).json({ ok: false, error: err.message || 'Shopify import failed', detail: err.body || undefined, endpoint: err.endpoint || undefined, tokenSource: tokenSource || undefined });
   }
