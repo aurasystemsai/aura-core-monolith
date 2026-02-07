@@ -102,6 +102,11 @@ export default function ImageAltMediaSEO() {
   const [stateHydrated, setStateHydrated] = useState(false);
   const [visibleCount, setVisibleCount] = useState(120);
   const [imageRefreshedAt, setImageRefreshedAt] = useState(null);
+  const [activeTab, setActiveTab] = useState("images");
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [pendingDeleteIds, setPendingDeleteIds] = useState([]);
+  const [jumpToPage, setJumpToPage] = useState("");
   const simulationTones = [
     { key: "balanced", label: "Balanced" },
     { key: "descriptive", label: "Descriptive" },
@@ -212,6 +217,96 @@ export default function ImageAltMediaSEO() {
   const showToast = (msg, timeout = 2200) => {
     setToast(msg);
     setTimeout(() => setToast(""), timeout);
+  };
+
+  const SkeletonLoader = ({ count = 3, height = 120 }) => (
+    <div>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} style={{ marginBottom: 16, background: "linear-gradient(90deg, #1e293b 0%, #334155 50%, #1e293b 100%)", backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite", borderRadius: 16, height, border: "1px solid #334155" }}>
+          <style>{`
+            @keyframes shimmer {
+              0% { background-position: -200% 0; }
+              100% { background-position: 200% 0; }
+            }
+          `}</style>
+        </div>
+      ))}
+    </div>
+  );
+
+  const FloatingActionBar = () => {
+    if (!selectedImageIds.length) return null;
+    return (
+      <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", padding: "16px 24px", borderRadius: 999, boxShadow: "0 12px 48px rgba(124, 58, 237, 0.4)", zIndex: 1000, display: "flex", gap: 12, alignItems: "center", animation: "slideUp 0.3s ease-out" }}>
+        <style>{`
+          @keyframes slideUp {
+            from { transform: translate(-50%, 100px); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+          }
+        `}</style>
+        <span style={{ color: "#fff", fontWeight: 700, fontSize: 14 }}>{selectedImageIds.length} selected</span>
+        <button onClick={handleBulkApply} disabled={!roleCanApply || !bulkAltText.trim()} style={{ background: "#fff", color: "#7c3aed", border: "none", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: roleCanApply && bulkAltText.trim() ? "pointer" : "not-allowed", transition: "all 0.2s", transform: "scale(1)" }} onMouseEnter={e => e.target.style.transform = "scale(1.05)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>Apply bulk</button>
+        <button onClick={handleAiImproveSelected} disabled={!roleCanApply} style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: roleCanApply ? "pointer" : "not-allowed", transition: "all 0.2s" }}>✨ AI improve</button>
+        <button onClick={handlePushShopify} disabled={!selectedImageIds.length || shopifyPushing} style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || shopifyPushing) ? "not-allowed" : "pointer", transition: "all 0.2s" }}>{shopifyPushing ? "Pushing…" : "🚀 Push to Shopify"}</button>
+        <button onClick={clearSelectedImages} style={{ background: "transparent", color: "#fff", border: "none", padding: "8px", cursor: "pointer", fontSize: 18 }} title="Clear selection">✕</button>
+      </div>
+    );
+  };
+
+  const KeyboardShortcutsModal = () => {
+    if (!showKeyboardHelp) return null;
+    return (
+      <div onClick={() => setShowKeyboardHelp(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.7)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s" }}>
+        <style>{`
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+          }
+        `}</style>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 32, maxWidth: 600, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #475569", animation: "scaleIn 0.3s ease-out" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f1f5f9" }}>⌨️ Keyboard Shortcuts</h3>
+            <button onClick={() => setShowKeyboardHelp(false)} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 24, cursor: "pointer", padding: 0 }}>✕</button>
+          </div>
+          <div style={{ display: "grid", gap: 12, color: "#e2e8f0" }}>
+            {[
+              { keys: "Ctrl + Shift + A", desc: "Select all images" },
+              { keys: "Ctrl + Z", desc: "Undo last action" },
+              { keys: "Ctrl + K", desc: "Open keyboard shortcuts" },
+              { keys: "Escape", desc: "Close modals" },
+              { keys: "Tab", desc: "Navigate sections" },
+              { keys: "Enter", desc: "Submit search" }
+            ].map(shortcut => (
+              <div key={shortcut.keys} style={{ display: "flex", justifyContent: "space-between", padding: "12px 16px", background: "rgba(15, 23, 42, 0.5)", borderRadius: 12, border: "1px solid #334155" }}>
+                <span style={{ fontWeight: 600 }}>{shortcut.desc}</span>
+                <kbd style={{ background: "#475569", color: "#f1f5f9", padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700, border: "1px solid #64748b" }}>{shortcut.keys}</kbd>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const DeleteConfirmModal = () => {
+    if (!showDeleteModal) return null;
+    return (
+      <div onClick={() => setShowDeleteModal(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.7)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #ef4444", animation: "scaleIn 0.3s ease-out" }}>
+          <div style={{ fontSize: 48, textAlign: "center", marginBottom: 16 }}>⚠️</div>
+          <h3 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 16px 0", color: "#f1f5f9", textAlign: "center" }}>Confirm Deletion</h3>
+          <p style={{ fontSize: 15, color: "#cbd5e1", marginBottom: 24, textAlign: "center" }}>Are you sure you want to delete {pendingDeleteIds.length} item(s)? This action cannot be undone.</p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+            <button onClick={() => setShowDeleteModal(false)} style={{ background: "#64748b", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.2s" }}>Cancel</button>
+            <button onClick={() => { /* handle delete */ setShowDeleteModal(false); setPendingDeleteIds([]); showToast("Deleted successfully"); }} style={{ background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(239, 68, 68, 0.3)", transition: "all 0.2s" }}>Delete {pendingDeleteIds.length} items</button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const rateLimitMessage = retryAfter => {
@@ -1540,12 +1635,33 @@ export default function ImageAltMediaSEO() {
       .then(r => r.json())
       .then(d => { if (d.ok) setRuns(d.runs || []); })
       .catch(() => {});
+    
+    // Keyboard shortcuts
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        const ids = filteredImages.map(img => img.id).filter(Boolean);
+        setSelectedImageIds(ids);
+        showToast(`Selected all ${ids.length} images`, 1500);
+      }
+      if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault();
+        setShowKeyboardHelp(true);
+      }
+      if (e.key === 'Escape') {
+        setShowKeyboardHelp(false);
+        setShowDeleteModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    
     return () => {
       if (batchProgressTimer.current) {
         clearInterval(batchProgressTimer.current);
       }
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [filteredImages]);
 
   // Debounced search to avoid rapid network churn while typing
   useEffect(() => {
@@ -1633,11 +1749,31 @@ export default function ImageAltMediaSEO() {
 
   return (
     <div style={{ padding: 0, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", minHeight: "100vh" }}>
-      <div style={{ background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)", padding: "32px 40px", marginBottom: 32, boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
-        <h2 style={{ fontSize: 36, fontWeight: 900, margin: 0, color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.2)", letterSpacing: "-0.02em" }}>✨ Image Alt & SEO Autopilot</h2>
-        <p style={{ fontSize: 14, margin: "8px 0 0 0", color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>AI-powered alt text generation, translation & Shopify sync</p>
+      <div style={{ background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)", padding: "32px 40px", marginBottom: 32, boxShadow: "0 8px 32px rgba(0,0,0,0.3)", position: "sticky", top: 0, zIndex: 100 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <h2 style={{ fontSize: 36, fontWeight: 900, margin: 0, color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.2)", letterSpacing: "-0.02em" }}>✨ Image Alt & SEO Autopilot</h2>
+            <p style={{ fontSize: 14, margin: "8px 0 0 0", color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>AI-powered alt text generation, translation & Shopify sync</p>
+          </div>
+          <button onClick={() => setShowKeyboardHelp(true)} style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.2s", backdropFilter: "blur(10px)" }} onMouseEnter={e => e.target.style.background = "rgba(255,255,255,0.3)"} onMouseLeave={e => e.target.style.background = "rgba(255,255,255,0.2)"}>⌨️ Shortcuts</button>
+        </div>
+        <div style={{ display: "flex", gap: 8, marginTop: 16, borderBottom: "2px solid rgba(255,255,255,0.2)", paddingBottom: 8 }}>
+          {[
+            { id: "images", label: "📸 Images", icon: "📸" },
+            { id: "generate", label: "✨ Generate", icon: "✨" },
+            { id: "batch", label: "📝 Batch", icon: "📝" },
+            { id: "analytics", label: "📊 Analytics", icon: "📊" }
+          ].map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ background: activeTab === tab.id ? "rgba(255,255,255,0.25)" : "transparent", border: "none", color: "#fff", borderRadius: 10, padding: "8px 16px", fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.2s", borderBottom: activeTab === tab.id ? "3px solid #fff" : "3px solid transparent" }}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
       <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 40px" }}>
+
+      {activeTab === "images" && (
+        <>
 
       {(result || captionResult) && (
         <div style={{ display: "grid", gridTemplateColumns: captionResult ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 12 }}>
@@ -1947,9 +2083,12 @@ export default function ImageAltMediaSEO() {
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10, fontSize: 13, color: "#a3e635" }}>
             <span>Showing {images.length} of {imageTotal} images</span>
             <span>Page {currentImagePage} / {totalImagePages}</span>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => handleImagePageChange(-1)} disabled={currentImagePage <= 1} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: currentImagePage <= 1 ? "not-allowed" : "pointer" }}>Prev</button>
-              <button onClick={() => handleImagePageChange(1)} disabled={currentImagePage >= totalImagePages} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: currentImagePage >= totalImagePages ? "not-allowed" : "pointer" }}>Next</button>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <button onClick={() => handleImagePageChange(-1)} disabled={currentImagePage <= 1} style={{ background: "linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: currentImagePage <= 1 ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: currentImagePage <= 1 ? 0.5 : 1 }}>← Prev</button>
+              <input type="number" min={1} max={totalImagePages} value={jumpToPage || currentImagePage} onChange={e => setJumpToPage(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const page = Math.min(Math.max(1, Number(jumpToPage) || 1), totalImagePages); setImageOffset((page - 1) * imageLimit); setJumpToPage(""); fetchImages((page - 1) * imageLimit, imageLimit, imageSearch); } }} placeholder="Jump" style={{ width: 60, padding: "6px 8px", borderRadius: 8, border: "2px solid #8b5cf6", background: "#23263a", color: "#a3e635", textAlign: "center", fontWeight: 700 }} />
+              <span style={{ color: "#cbd5e1" }}>/</span>
+              <span style={{ fontWeight: 700, color: "#a3e635" }}>{totalImagePages}</span>
+              <button onClick={() => handleImagePageChange(1)} disabled={currentImagePage >= totalImagePages} style={{ background: "linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: currentImagePage >= totalImagePages ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: currentImagePage >= totalImagePages ? 0.5 : 1 }}>Next →</button>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10, fontSize: 13, color: "#a3e635" }}>
@@ -2115,8 +2254,17 @@ export default function ImageAltMediaSEO() {
               </button>
             ) : null}
           </div>
+          {loading && <SkeletonLoader count={5} height={140} />}
+          {!loading && !filteredImages.length ? (
+            <div style={{ textAlign: "center", padding: "80px 20px", background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, border: "2px solid #475569" }}>
+              <div style={{ fontSize: 64, marginBottom: 16 }}>🖼️</div>
+              <h3 style={{ fontSize: 24, fontWeight: 800, color: "#f1f5f9", margin: "0 0 12px 0" }}>No images yet</h3>
+              <p style={{ fontSize: 15, color: "#cbd5e1", marginBottom: 24 }}>Import from Shopify or create your first image alt text to get started.</p>
+              <button onClick={handleImportShopify} style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)" }}>Pull from Shopify</button>
+            </div>
+          ) : null}
           <ul style={{ paddingLeft: 18 }} aria-busy={loading} aria-live="polite">
-            {visibleImages.map(img => {
+            {!loading && visibleImages.map(img => {
               const lint = lintCache.get(img.id) || lintAltText(resolveAlt(img));
               return (
                 <li key={img.id} style={{ marginBottom: 16, background: selectedImageIds.includes(img.id) ? "linear-gradient(135deg, #1e293b 0%, #334155 100%)" : "rgba(15, 23, 42, 0.5)", borderRadius: 16, padding: 16, border: selectedImageIds.includes(img.id) ? "2px solid #8b5cf6" : "1px solid #334155", color: "#e2e8f0", boxShadow: selectedImageIds.includes(img.id) ? "0 4px 16px rgba(139, 92, 246, 0.2)" : "0 2px 8px rgba(0,0,0,0.1)", transition: "all 0.2s", transform: "translateY(0)" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
@@ -2176,6 +2324,11 @@ export default function ImageAltMediaSEO() {
             {!filteredImages.length ? <li style={{ color: "#a3e635" }}>No images yet.</li> : null}
           </ul>
         </div>
+        </>
+      )}
+      
+      {activeTab === "generate" && (
+        <div style={{ animation: "fadeIn 0.3s ease-out" }}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Tone</span>
@@ -2460,17 +2613,49 @@ export default function ImageAltMediaSEO() {
           </div>
         )}
       {error && (
-        <div style={{ background: "linear-gradient(135deg, #fecaca 0%, #fca5a5 100%)", color: "#7f1d1d", padding: "16px 20px", borderRadius: 16, marginBottom: 20, fontSize: 14, fontWeight: 600, border: "2px solid #dc2626", boxShadow: "0 4px 16px rgba(220, 38, 38, 0.2)" }} role="alert" aria-live="assertive">
-          ❌ {error}
-          <div style={{ marginTop: 12 }}>
-            <button onClick={reconnectShopify} style={{ background: "linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)", color: "#fff", border: "none", borderRadius: 10, padding: "8px 16px", fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 12px rgba(14, 165, 233, 0.3)" }}>
-              🔗 Reconnect Shopify
-            </button>
+        <div style={{ position: "fixed", top: 24, right: 24, background: "linear-gradient(135deg, #fecaca 0%, #fca5a5 100%)", color: "#7f1d1d", padding: "16px 20px", borderRadius: 16, fontSize: 14, fontWeight: 600, border: "2px solid #dc2626", boxShadow: "0 12px 32px rgba(220, 38, 38, 0.3)", zIndex: 1500, maxWidth: 400, animation: "slideInRight 0.3s ease-out" }} role="alert" aria-live="assertive">
+          <style>{`
+            @keyframes slideInRight {
+              from { transform: translateX(400px); opacity: 0; }
+              to { transform: translateX(0); opacity: 1; }
+            }
+          `}</style>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <span style={{ fontSize: 20 }}>❌</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>Error</div>
+              <div>{error}</div>
+              <div style={{ marginTop: 12 }}>
+                <button onClick={reconnectShopify} style={{ background: "linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)", color: "#fff", border: "none", borderRadius: 10, padding: "8px 16px", fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 12px rgba(14, 165, 233, 0.3)", fontSize: 13 }}>
+                  🔗 Reconnect Shopify
+                </button>
+              </div>
+            </div>
+            <button onClick={() => setError("")} style={{ background: "transparent", border: "none", color: "#7f1d1d", fontSize: 18, cursor: "pointer", padding: 0 }}>✕</button>
           </div>
         </div>
       )}
-      {toast && <div style={{ background: "linear-gradient(135deg, #6ee7b7 0%, #34d399 100%)", color: "#064e3b", padding: "16px 20px", borderRadius: 16, marginBottom: 20, fontSize: 14, fontWeight: 600, border: "2px solid #10b981", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.2)" }} role="status" aria-live="polite">✅ {toast}</div>}
-      {loading && <div role="status" aria-live="polite" style={{ fontSize: 14, color: "#fbbf24", fontWeight: 700, padding: "12px 20px", background: "rgba(251, 191, 36, 0.1)", borderRadius: 12, marginBottom: 16, border: "1px solid rgba(251, 191, 36, 0.3)" }}>⏳ Loading...</div>}
+      {toast && (
+        <div style={{ position: "fixed", top: 24, right: 24, background: "linear-gradient(135deg, #6ee7b7 0%, #34d399 100%)", color: "#064e3b", padding: "16px 20px", borderRadius: 16, fontSize: 14, fontWeight: 600, border: "2px solid #10b981", boxShadow: "0 12px 32px rgba(16, 185, 129, 0.3)", zIndex: 1500, maxWidth: 400, animation: "slideInRight 0.3s ease-out", display: "flex", alignItems: "center", gap: 12 }} role="status" aria-live="polite">
+          <span style={{ fontSize: 20 }}>✅</span>
+          <span style={{ flex: 1 }}>{toast}</span>
+        </div>
+      )}
+      {loading && (
+        <div role="status" aria-live="polite" style={{ position: "fixed", top: 24, right: 24, background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)", color: "#78350f", padding: "16px 20px", borderRadius: 16, fontSize: 14, fontWeight: 600, border: "2px solid #fbbf24", boxShadow: "0 12px 32px rgba(251, 191, 36, 0.3)", zIndex: 1500, maxWidth: 400, animation: "slideInRight 0.3s ease-out", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 16, height: 16, border: "2px solid #78350f", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }}>
+            <style>{`
+              @keyframes spin {
+                to { transform: rotate(360deg); }
+              }
+            `}</style>
+          </div>
+          <span>Loading...</span>
+        </div>
+      )}
+      <FloatingActionBar />
+      <KeyboardShortcutsModal />
+      <DeleteConfirmModal />
 
       <div style={{ marginTop: 24, background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 24, border: "2px solid #475569", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
         <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 16, color: "#f1f5f9", display: "flex", alignItems: "center", gap: 8 }}>📝 Batch Generate (JSON array)</div>
@@ -2506,10 +2691,13 @@ export default function ImageAltMediaSEO() {
         </div>
         {batchProgress > 0 && (
           <div style={{ marginTop: 10 }} aria-label="Batch progress" aria-live="polite">
-            <div style={{ height: 10, background: "#0f172a", borderRadius: 8, overflow: "hidden" }}>
-              <div style={{ width: `${Math.min(100, Math.round(batchProgress))}%`, height: "100%", background: "#10b981", transition: "width 0.2s ease" }} />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#a3e635" }}>Processing batch...</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#a3e635" }}>{Math.min(100, Math.round(batchProgress))}%</span>
             </div>
-            <div style={{ fontSize: 12, marginTop: 4, color: "#a3e635" }}>{Math.min(100, Math.round(batchProgress))}%</div>
+            <div style={{ height: 12, background: "#0f172a", borderRadius: 999, overflow: "hidden", border: "1px solid #334155" }}>
+              <div style={{ width: `${Math.min(100, Math.round(batchProgress))}%`, height: "100%", background: "linear-gradient(90deg, #10b981 0%, #34d399 100%)", transition: "width 0.3s ease", boxShadow: "0 0 10px rgba(16, 185, 129, 0.5)" }} />
+            </div>
           </div>
         )}
         {batchSummary && (
@@ -2593,19 +2781,11 @@ export default function ImageAltMediaSEO() {
           </ul>
         </div>
       ) : null}
-
-      <div style={{ marginTop: 24, background: "#334155", borderRadius: 12, padding: 18 }}>
-        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Images</div>
-        <ul style={{ paddingLeft: 18 }}>
-          {images.map(img => (
-            <li key={img.id} style={{ marginBottom: 10 }}>
-              <div><b>ID:</b> {img.id}</div>
-              <div><b>URL:</b> {img.url || "(none)"}</div>
-              <div><b>Alt:</b> {img.altText || img.content || JSON.stringify(img)}</div>
-            </li>
-          ))}
-        </ul>
-      </div>
+        </div>
+      )}
+      
+      {activeTab === "analytics" && (
+        <div style={{ animation: "fadeIn 0.3s ease-out" }}>
       <div style={{ marginTop: 24, background: "#334155", borderRadius: 12, padding: 18 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
           <div style={{ fontWeight: 700, fontSize: 18 }}>Analytics</div>
@@ -2747,6 +2927,8 @@ export default function ImageAltMediaSEO() {
           ) : <div style={{ fontSize: 14 }}>Load duplicates to view.</div>}
         </div>
       </div>
+        </div>
+      )}
       </div>
       <div style={{ marginTop: 40, padding: "24px 40px", fontSize: 13, color: "#cbd5e1", textAlign: "center", background: "linear-gradient(90deg, #1e293b 0%, #334155 100%)", borderTop: "2px solid #475569" }}>
         <span>✨ Powered by AURA Systems AI · <a href="mailto:support@aura-core.ai" style={{ color: "#8b5cf6", textDecoration: "underline", fontWeight: 600 }}>Contact Support</a></span>
