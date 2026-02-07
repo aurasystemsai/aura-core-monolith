@@ -205,8 +205,6 @@ export default function ImageAltMediaSEO() {
   const [scheduledScans, setScheduledScans] = useState([]);
   const [autoFixEnabled, setAutoFixEnabled] = useState(false);
   const [autoComplete, setAutoComplete] = useState(true);
-  const [autoPilotMode, setAutoPilotMode] = useState(false);
-  const [automationRules, setAutomationRules] = useState([]);
   
   // Image Analysis (112-123)
   const [imageQualityScores, setImageQualityScores] = useState({});
@@ -2580,72 +2578,7 @@ export default function ImageAltMediaSEO() {
     return data.text || "";
   };
   
-  // Analytics & Insights (13-27)
-  const calculateRoi = () => {
-    const improved = images.filter(img => calculateQualityScore(img) > 70).length;
-    const estimatedTraffic = improved * 2.5; // avg 2.5 visits per optimized image
-    const estimatedRevenue = estimatedTraffic * 0.03; // $0.03 per visit
-    setRoiData({ improved, estimatedTraffic, estimatedRevenue: estimatedRevenue.toFixed(2) });
-  };
-  
-  const analyzeTrends = () => {
-    const last7Days = [];
-    for (let i = 7; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      last7Days.push({ date: date.toISOString().split('T')[0], improvements: Math.floor(Math.random() * 20) + 5 });
-    }
-    setTrendData(last7Days);
-  };
-  
-  const fetchCompetitorData = async () => {
-    // Placeholder for competitor analysis
-    setCompetitorData({ avgQuality: 65, yourQuality: 78, advantage: "+13%" });
-  };
-  
-  const predictSeoScore = (img) => {
-    const quality = calculateQualityScore(img);
-    const keyword = keywords.split(',').some(k => img.altText?.toLowerCase().includes(k.trim().toLowerCase()));
-    return quality + (keyword ? 15 : 0);
-  };
-  
-  const trackConversion = (imageId) => {
-    setConversionTracking(prev => ({ ...prev, [imageId]: (prev?.[imageId] || 0) + 1 }));
-  };
-  
-  const generatePerformanceDashboard = () => {
-    const totalImages = images.length;
-    const optimized = images.filter(img => calculateQualityScore(img) > 70).length;
-    const avgQuality = images.reduce((sum, img) => sum + calculateQualityScore(img), 0) / totalImages;
-    setPerformanceDashboard({ totalImages, optimized, optimizationRate: (optimized / totalImages * 100).toFixed(1), avgQuality: avgQuality.toFixed(1) });
-  };
-  
-  const exportCustomReport = () => {
-    const report = { images, analytics, meta, timestamp: new Date().toISOString() };
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `custom-report-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-  
-  // Collaboration & Workflow (28-39)
-  const assignImage = (imageId, userId) => {
-    setTeamAssignments(prev => ({ ...prev, [imageId]: userId }));
-    showToast(`Assigned to ${userId}`);
-  };
-  
-  const addComment = (imageId, comment) => {
-    setImageComments(prev => ({ ...prev, [imageId]: [...(prev[imageId] || []), { user: "current", comment, timestamp: Date.now() }] }));
-  };
-  
-  const requestApproval = (imageId) => {
-    setApprovalWorkflows(prev => [...prev, { imageId, status: "pending", timestamp: Date.now() }]);
-    showToast("Approval requested");
-  };
-  
+  // Image Version History & Templates (image-specific only)
   const saveVersion = (imageId, altText) => {
     setVersionHistory(prev => ({ ...prev, [imageId]: [...(prev[imageId] || []), { altText, timestamp: Date.now() }] }));
   };
@@ -2653,10 +2586,6 @@ export default function ImageAltMediaSEO() {
   const shareTemplate = (template) => {
     setSharedTemplates(prev => [...prev, { ...template, sharedAt: Date.now() }]);
     showToast("Template shared with team");
-  };
-  
-  const logActivity = (action, details) => {
-    setActivityFeed(prev => [{ action, details, timestamp: Date.now(), user: "current" }, ...prev].slice(0, 100));
   };
   
   // Import/Export (40-53)
@@ -2899,18 +2828,6 @@ export default function ImageAltMediaSEO() {
   const enableAutoFix = () => {
     setAutoFixEnabled(true);
     showToast("Auto-fix enabled - will fix quality issues automatically");
-  };
-  
-  const createAutomationRule = (rule) => {
-    setAutomationRules(prev => [...prev, rule]);
-    showToast("Automation rule created");
-  };
-  
-  const toggleAutoPilot = () => {
-    setAutoPilotMode(prev => !prev);
-    if (!autoPilotMode) {
-      showToast("Auto-pilot activated - AI will manage alt text automatically");
-    }
   };
   
   // Image Analysis (112-123)
@@ -7192,47 +7109,6 @@ export default function ImageAltMediaSEO() {
         </div>
       )}
       
-      {activeTab === "collaboration" && (
-        <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px" }}>
-          <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Team Collaboration</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
-            {/* Feature 28: Team Assignments */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Assign Images</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Assign images to team members</p>
-              <div style={{ fontSize: 13 }}>{Object.keys(teamAssignments).length} images assigned</div>
-            </div>
-            
-            {/* Feature 29: Comments */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Comments</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Add notes to images</p>
-              <div style={{ fontSize: 13 }}>{Object.values(imageComments).flat().length} total comments</div>
-            </div>
-            
-            {/* Feature 30: Approval Workflow */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Approval Workflows</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Request/approve changes</p>
-              <div>{approvalWorkflows.filter(w => w.status === "pending").length} pending approvals</div>
-            </div>
-            
-            {/* Feature 36: Activity Feed */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Activity Feed</h3>
-              <div style={{ maxHeight: 300, overflowY: "auto" }}>
-                {activityFeed.slice(0, 10).map((item, idx) => (
-                  <div key={idx} style={{ padding: "8px 0", borderBottom: "1px solid #334155", fontSize: 13 }}>
-                    <div style={{ fontWeight: 600 }}>{item.action}</div>
-                    <div style={{ fontSize: 11, color: "#94a3b8" }}>{new Date(item.timestamp).toLocaleString()}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      
       {activeTab === "automation" && (
         <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px" }}>
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Automation & Scheduling</h2>
@@ -7255,20 +7131,6 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Auto-Fix</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Automatically fix quality issues</p>
               <button onClick={enableAutoFix} style={{ width: "100%", background: autoFixEnabled ? "#94a3b8" : "#10b981", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>{autoFixEnabled ? "✓ Enabled" : "Enable Auto-Fix"}</button>
-            </div>
-            
-            {/* Feature 110: Auto-Pilot Mode */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Auto-Pilot Mode</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>AI manages alt text automatically</p>
-              <button onClick={toggleAutoPilot} style={{ width: "100%", background: autoPilotMode ? "#ef4444" : "#ec4899", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>{autoPilotMode ? "Disable Auto-Pilot" : "Enable Auto-Pilot"}</button>
-            </div>
-            
-            {/* Feature 109: Workflow Builder */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Automation Rules</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Create if-then automation rules</p>
-              <div style={{ fontSize: 13 }}>{automationRules.length} active rules</div>
             </div>
           </div>
         </div>
