@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 
+// Safe theme detector for SSR/CSR
+const isDarkTheme = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+
 export default function ImageAltMediaSEO() {
   const [input, setInput] = useState("");
   const [imageUrl, setImageUrl] = useState("");
