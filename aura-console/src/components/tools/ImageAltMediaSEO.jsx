@@ -733,17 +733,6 @@ export default function ImageAltMediaSEO() {
     }, 5000);
   };
 
-  const checkAchievements = () => {
-    if (selectedImageIds.length >= 100 && !achievements.includes("selector")) {
-      setAchievements(prev => [...prev, "selector"]);
-      addNotification({ type: "achievement", icon: "🏆", title: "Achievement Unlocked!", message: "Selected 100+ images at once" });
-    }
-    if (images.length >= 1000 && !achievements.includes("library")) {
-      setAchievements(prev => [...prev, "library"]);
-      addNotification({ type: "achievement", icon: "📚", title: "Library Master!", message: "You've built a library of 1000+ images" });
-    }
-  };
-
   const rateLimitMessage = retryAfter => {
     if (!retryAfter) return "Rate limit exceeded. Please wait a minute and retry.";
     return `Rate limit exceeded. Please wait ${retryAfter}s and retry.`;
@@ -2723,8 +2712,8 @@ export default function ImageAltMediaSEO() {
 
   // Achievement checking
   useEffect(() => {
-    checkAchievements();
-  }, [selectedImageIds.length, images.length]);
+    checkAchievements(gamificationPoints);
+  }, [selectedImageIds.length, images.length, gamificationPoints]);
 
   React.useEffect(() => {
     if (!shopDomain.trim()) {
