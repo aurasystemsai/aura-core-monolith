@@ -59,9 +59,12 @@ if (isTest || !connectionString) {
     update: async (id, data) => {
       const idx = images.findIndex(i => i.id === Number(id));
       if (idx === -1) return null;
-      const url = data.url || data.imageUrl || null;
-      const altText = data.altText || data.content || '';
-      images[idx] = { ...images[idx], url, altText };
+      const current = images[idx];
+      const hasUrl = Object.prototype.hasOwnProperty.call(data, 'url') || Object.prototype.hasOwnProperty.call(data, 'imageUrl');
+      const hasAlt = Object.prototype.hasOwnProperty.call(data, 'altText') || Object.prototype.hasOwnProperty.call(data, 'content');
+      const url = hasUrl ? (data.url || data.imageUrl || null) : current.url;
+      const altText = hasAlt ? (data.altText || data.content || '') : current.altText;
+      images[idx] = { ...current, url, altText, updatedAt: stamp() };
       return clone(images[idx]);
     },
     delete: async id => {
@@ -223,8 +226,13 @@ if (isTest || !connectionString) {
     upsertByUrl,
     update: async (id, data) => {
       await ready;
-      const url = data.url || data.imageUrl || null;
-      const altText = data.altText || data.content || '';
+      const { rows: existingRows } = await pool.query('SELECT id, url, alt_text AS altText FROM image_alt_media_images WHERE id = $1', [id]);
+      const current = existingRows[0];
+      if (!current) return null;
+      const hasUrl = Object.prototype.hasOwnProperty.call(data, 'url') || Object.prototype.hasOwnProperty.call(data, 'imageUrl');
+      const hasAlt = Object.prototype.hasOwnProperty.call(data, 'altText') || Object.prototype.hasOwnProperty.call(data, 'content');
+      const url = hasUrl ? (data.url || data.imageUrl || null) : current.url;
+      const altText = hasAlt ? (data.altText || data.content || '') : current.altText;
       const { rows } = await pool.query(
         'UPDATE image_alt_media_images SET url = $1, alt_text = $2 WHERE id = $3 RETURNING id, url, alt_text AS altText, created_at AS createdAt',
         [url, altText, id]
