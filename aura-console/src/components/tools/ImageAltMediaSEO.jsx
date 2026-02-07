@@ -777,7 +777,7 @@ export default function ImageAltMediaSEO() {
 
       const updates = (data.results || []).map((r, idx) => {
         const id = selected[idx]?.id || r.id;
-        const altText = r.altText || r.output || r.text || resolveAlt(r);
+        const altText = r.altText || r.result || r.output || r.text || r.raw || resolveAlt(r);
         return id && altText ? { id, altText } : null;
       }).filter(Boolean);
 
@@ -964,7 +964,7 @@ export default function ImageAltMediaSEO() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const altText = data.altText || data.output || data.text || resolveAlt(data);
+      const altText = data.altText || data.result || data.output || data.text || data.raw || resolveAlt(data);
       if (!altText) throw new Error("AI did not return alt text");
       await fetchJson("/api/image-alt-media-seo/images/bulk-update", {
         method: "POST",
