@@ -1883,7 +1883,15 @@ export default function ImageAltMediaSEO() {
       .then(d => { if (d.ok) setRuns(d.runs || []); })
       .catch(() => {});
     
-    // Keyboard shortcuts
+    return () => {
+      if (batchProgressTimer.current) {
+        clearInterval(batchProgressTimer.current);
+      }
+    };
+  }, []);
+
+  // Keyboard shortcuts (separate effect)
+  useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.ctrlKey && e.shiftKey && e.key === 'A') {
         e.preventDefault();
@@ -1903,9 +1911,6 @@ export default function ImageAltMediaSEO() {
     window.addEventListener('keydown', handleKeyDown);
     
     return () => {
-      if (batchProgressTimer.current) {
-        clearInterval(batchProgressTimer.current);
-      }
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [filteredImages]);
