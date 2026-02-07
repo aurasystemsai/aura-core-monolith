@@ -106,6 +106,7 @@ export default function ImageAltMediaSEO() {
   const [visibleCount, setVisibleCount] = useState(120);
   const [imageRefreshedAt, setImageRefreshedAt] = useState(null);
   const [activeTab, setActiveTab] = useState("images");
+  const [navCategory, setNavCategory] = useState("core");
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [pendingDeleteIds, setPendingDeleteIds] = useState([]);
@@ -5754,73 +5755,106 @@ export default function ImageAltMediaSEO() {
 
   const visibleImages = filteredImages.slice(0, visibleCount);
 
+  const tabGroups = {
+    core: [
+      { id: "images", label: "Images" },
+      { id: "generate", label: "Generate" },
+      { id: "batch", label: "Batch" },
+      { id: "analytics", label: "Analytics" }
+    ],
+    "ai-features": [
+      { id: "ai-tools", label: "AI Tools" },
+      { id: "ai-v2", label: "AI V2" },
+      { id: "ai-visual", label: "Visual Analysis" },
+      { id: "alt-quality", label: "Alt Quality" }
+    ],
+    workflow: [
+      { id: "automation", label: "Automation" },
+      { id: "workflow-v2", label: "Workflow" },
+      { id: "collaboration", label: "Team" },
+      { id: "team-v2", label: "Team V2" }
+    ],
+    "seo-tools": [
+      { id: "seo", label: "SEO" },
+      { id: "seo-power", label: "SEO Power" },
+      { id: "visual-seo", label: "Visual SEO" },
+      { id: "wcag-standards", label: "WCAG" },
+      { id: "accessibility", label: "Accessibility" }
+    ],
+    "image-ops": [
+      { id: "image-processing", label: "Processing" },
+      { id: "quality-control", label: "Quality" },
+      { id: "smart-cropping", label: "Cropping" },
+      { id: "image-format", label: "Format" },
+      { id: "background-intel", label: "Background" }
+    ],
+    advanced: [
+      { id: "advanced-analytics", label: "Analytics" },
+      { id: "performance", label: "Performance" },
+      { id: "image-performance", label: "Image Analytics" },
+      { id: "insights", label: "Insights" }
+    ],
+    content: [
+      { id: "content-intelligence", label: "Intelligence" },
+      { id: "content-intel", label: "Content Intel" },
+      { id: "color-psychology", label: "Color" },
+      { id: "product-photo", label: "Product Photo" }
+    ],
+    testing: [
+      { id: "visual-ab", label: "A/B Testing" },
+      { id: "multi-image", label: "Multi-Image" },
+      { id: "image-matching", label: "Matching" }
+    ],
+    specialized: [
+      { id: "specialized-types", label: "Types" },
+      { id: "image-categorization", label: "Categories" },
+      { id: "alt-automation", label: "Automation" },
+      { id: "asset-management", label: "Assets" }
+    ],
+    compliance: [
+      { id: "image-rights", label: "Rights" },
+      { id: "compliance-safety", label: "Safety" },
+      { id: "metadata", label: "Metadata" },
+      { id: "localization", label: "i18n" }
+    ],
+    platform: [
+      { id: "platform-specific", label: "Platforms" },
+      { id: "ecommerce", label: "E-commerce" },
+      { id: "integrations", label: "Integrations" },
+      { id: "ecosystem", label: "Ecosystem" }
+    ],
+    system: [
+      { id: "scalability", label: "Scale" },
+      { id: "security", label: "Security" },
+      { id: "mobile", label: "Mobile" },
+      { id: "gamification", label: "Achievements" }
+    ]
+  };
+
   return (
     <div style={{ padding: 0, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", minHeight: "100vh" }}>
-      <div style={{ background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)", padding: "32px 40px", marginBottom: 32, boxShadow: "0 8px 32px rgba(0,0,0,0.3)", position: "sticky", top: 0, zIndex: 100 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)", padding: "16px 24px", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <div>
-            <h2 style={{ fontSize: 36, fontWeight: 900, margin: 0, color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.2)", letterSpacing: "-0.02em" }}>Image Alt & SEO Autopilot</h2>
-            <p style={{ fontSize: 14, margin: "8px 0 0 0", color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>AI-powered alt text generation, translation & Shopify sync</p>
+            <h2 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#fff", letterSpacing: "-0.01em" }}>Image Alt & SEO Autopilot</h2>
+            <p style={{ fontSize: 12, margin: "4px 0 0 0", color: "rgba(255,255,255,0.85)" }}>AI-powered alt text & Shopify sync</p>
           </div>
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <button onClick={() => setShowUndoHistory(true)} style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.2s", backdropFilter: "blur(10px)" }}>History</button>
-            <button onClick={() => setShowThemePanel(true)} style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.2s", backdropFilter: "blur(10px)" }}>Theme</button>
-            <button onClick={() => setShowKeyboardHelp(true)} style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.2s", backdropFilter: "blur(10px)" }} onMouseEnter={e => e.target.style.background = "rgba(255,255,255,0.3)"} onMouseLeave={e => e.target.style.background = "rgba(255,255,255,0.2)"}>Shortcuts</button>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <button onClick={() => setShowUndoHistory(true)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", borderRadius: 8, padding: "6px 12px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>History</button>
+            <button onClick={() => setShowThemePanel(true)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", borderRadius: 8, padding: "6px 12px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Theme</button>
+            <button onClick={() => setShowKeyboardHelp(true)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", borderRadius: 8, padding: "6px 12px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Shortcuts</button>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8, marginTop: 16, borderBottom: "2px solid rgba(255,255,255,0.2)", paddingBottom: 8, overflowX: "auto", flexWrap: "wrap" }}>
-          {[
-            { id: "images", label: "Images" },
-            { id: "generate", label: "Generate" },
-            { id: "batch", label: "Batch" },
-            { id: "analytics", label: "Analytics" },
-            { id: "ai-tools", label: "AI Tools" },
-            { id: "collaboration", label: "Team" },
-            { id: "automation", label: "Automation" },
-            { id: "seo", label: "SEO" },
-            { id: "performance", label: "Performance" },
-            { id: "gamification", label: "Achievements" },
-            { id: "integrations", label: "Integrations" },
-            { id: "accessibility", label: "Accessibility" },
-            { id: "ai-v2", label: "AI V2" },
-            { id: "advanced-analytics", label: "Advanced Analytics" },
-            { id: "ecommerce", label: "E-commerce" },
-            { id: "image-processing", label: "Image Processing" },
-            { id: "seo-power", label: "SEO Power" },
-            { id: "workflow-v2", label: "Workflow V2" },
-            { id: "team-v2", label: "Team V2" },
-            { id: "content-intelligence", label: "Content Intelligence" },
-            { id: "scalability", label: "Scalability" },
-            { id: "security", label: "Security" },
-            { id: "mobile", label: "Mobile" },
-            { id: "ecosystem", label: "Ecosystem" },
-            { id: "insights", label: "Data Insights" },
-            { id: "ai-visual", label: "AI Visual Analysis" },
-            { id: "alt-quality", label: "Alt Text Quality" },
-            { id: "wcag-standards", label: "WCAG Standards" },
-            { id: "visual-seo", label: "Visual SEO" },
-            { id: "image-format", label: "Format Optimization" },
-            { id: "color-psychology", label: "Color Psychology" },
-            { id: "product-photo", label: "Product Photography" },
-            { id: "content-intel", label: "Content Intelligence" },
-            { id: "multi-image", label: "Multi-Image Context" },
-            { id: "alt-automation", label: "Alt Automation" },
-            { id: "visual-ab", label: "Visual A/B Testing" },
-            { id: "image-performance", label: "Image Analytics" },
-            { id: "image-categorization", label: "Categorization" },
-            { id: "specialized-types", label: "Specialized Types" },
-            { id: "image-rights", label: "Rights & Attribution" },
-            { id: "quality-control", label: "Quality Control" },
-            { id: "smart-cropping", label: "Smart Cropping" },
-            { id: "platform-specific", label: "Platform Optimization" },
-            { id: "background-intel", label: "Background Intelligence" },
-            { id: "metadata", label: "Advanced Metadata" },
-            { id: "compliance-safety", label: "Compliance & Safety" },
-            { id: "localization", label: "Localization" },
-            { id: "image-matching", label: "Comparison & Matching" },
-            { id: "asset-management", label: "Asset Management" }
-          ].map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ background: activeTab === tab.id ? "rgba(255,255,255,0.25)" : "transparent", border: "none", color: "#fff", borderRadius: 10, padding: "8px 16px", fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.2s", borderBottom: activeTab === tab.id ? "3px solid #fff" : "3px solid transparent", whiteSpace: "nowrap" }}>
+        <div style={{ display: "flex", gap: 6, marginBottom: 8, overflowX: "auto", scrollbarWidth: "none" }}>
+          {Object.keys(tabGroups).map(cat => (
+            <button key={cat} onClick={() => setNavCategory(cat)} style={{ background: navCategory === cat ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.1)", border: "none", color: "#fff", borderRadius: 6, padding: "6px 12px", fontWeight: 600, fontSize: 11, cursor: "pointer", textTransform: "capitalize", whiteSpace: "nowrap", opacity: navCategory === cat ? 1 : 0.8 }}>
+              {cat.replace("-", " ")}
+            </button>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4 }}>
+          {tabGroups[navCategory].map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ background: activeTab === tab.id ? "rgba(255,255,255,0.25)" : "transparent", border: "none", color: "#fff", borderRadius: 6, padding: "6px 14px", fontWeight: 600, fontSize: 13, cursor: "pointer", borderBottom: activeTab === tab.id ? "2px solid #fff" : "2px solid transparent", whiteSpace: "nowrap" }}>
               {tab.label}
             </button>
           ))}
