@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 
 export default function ImageAltMediaSEO() {
   const [input, setInput] = useState("");
@@ -34,11 +34,27 @@ export default function ImageAltMediaSEO() {
   const [imageSearch, setImageSearch] = useState("");
   const [selectedImageIds, setSelectedImageIds] = useState([]);
   const [filteredImages, setFilteredImages] = useState([]);
+  const lintCache = useMemo(() => {
+    const map = new Map();
+    images.forEach(img => {
+      map.set(img.id, lintAltText(resolveAlt(img)));
+    });
+    return map;
+  }, [images]);
   const [filterMode, setFilterMode] = useState("all");
   const [duplicateAltIds, setDuplicateAltIds] = useState(new Set());
   const [rewritingId, setRewritingId] = useState(null);
   const [sortMode, setSortMode] = useState("newest");
   const [undoBuffer, setUndoBuffer] = useState([]);
+  const [role, setRole] = useState("editor");
+  const [coverageGoals, setCoverageGoals] = useState({ missing: 0, duplicatesPct: 5, inRangePct: 95 });
+  const [simulationResults, setSimulationResults] = useState([]);
+  const [simulationSummary, setSimulationSummary] = useState(null);
+  const [simulateVariants, setSimulateVariants] = useState(["balanced"]);
+  const [translateLocale, setTranslateLocale] = useState("es");
+  const [translationResults, setTranslationResults] = useState([]);
+  const [visionResults, setVisionResults] = useState([]);
+  const [visionFilter, setVisionFilter] = useState("all");
   const [shopDomain, setShopDomain] = useState("");
   const [shopifyMaxImages, setShopifyMaxImages] = useState(250);
   const [shopifyProductLimit, setShopifyProductLimit] = useState(400);
@@ -78,6 +94,36 @@ export default function ImageAltMediaSEO() {
   const [batchProgress, setBatchProgress] = useState(0);
   const [exportFilename, setExportFilename] = useState("images.json");
   const batchProgressTimer = useRef(null);
+  const lastWriteTsRef = useRef(0);
+  const roleCanApply = role === "admin" || role === "editor";
+  const roleCanApprove = role === "admin" || role === "editor" || role === "reviewer";
+  const roleCanSimulate = role !== "viewer";
+  const roleCanWrite = roleCanApply;
+  const [approvalQueue, setApprovalQueue] = useState([]);
+  const [actionLog, setActionLog] = useState([]);
+  const [webhookReplayStatus, setWebhookReplayStatus] = useState("");
+  const [hookMetrics, setHookMetrics] = useState(null);
+  const [hookMetricsAt, setHookMetricsAt] = useState(null);
+  const [hookMetricsError, setHookMetricsError] = useState("");
+  const [stateHydrated, setStateHydrated] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(120);
+  const [imageRefreshedAt, setImageRefreshedAt] = useState(null);
+  const simulationTones = [
+    { key: "balanced", label: "Balanced" },
+    { key: "descriptive", label: "Descriptive" },
+    { key: "concise", label: "Concise" },
+    { key: "brand", label: "Brand-heavy" },
+  ];
+  const localeStyleGuides = {
+    "es": { tone: "Neutral/informative", formality: "Neutral", punctuation: "Standard", numerals: "Arabic" },
+    "fr": { tone: "Warm, not flowery", formality: "Vous", punctuation: "Space before ; : ! ?", numerals: "Arabic" },
+    "de": { tone: "Direct, precise", formality: "Sie", punctuation: "Standard", numerals: "Arabic" },
+    "en-GB": { tone: "Concise, UK spelling", formality: "Light formal", punctuation: "Standard", numerals: "Arabic" },
+    "en-US": { tone: "Concise, US spelling", formality: "Neutral", punctuation: "Standard", numerals: "Arabic" },
+    "ja": { tone: "Polite (です/ます)", formality: "Polite", punctuation: "Full-width where natural", numerals: "Arabic" },
+    "ko": { tone: "Polite (체)", formality: "Polite", punctuation: "Standard", numerals: "Arabic" },
+    "zh": { tone: "Neutral, Mainland", formality: "Neutral", punctuation: "Full-width Chinese punctuation", numerals: "Arabic" },
+  };
 
     const getShopFromQuery = () => {
       try {
@@ -166,6 +212,8 @@ export default function ImageAltMediaSEO() {
   const [toast, setToast] = useState("");
   const [resultDownloadUrl, setResultDownloadUrl] = useState("");
   const fileInputRef = useRef();
+  const searchReadyRef = useRef(false);
+  const fetchImagesAbortRef = useRef(null);
 
   const showToast = (msg, timeout = 2200) => {
     setToast(msg);
@@ -175,6 +223,175 @@ export default function ImageAltMediaSEO() {
   const rateLimitMessage = retryAfter => {
     if (!retryAfter) return "Rate limit exceeded. Please wait a minute and retry.";
     return `Rate limit exceeded. Please wait ${retryAfter}s and retry.`;
+  };
+
+  const enforceWritePace = (label = "write") => {
+    const now = Date.now();
+    const delta = now - (lastWriteTsRef.current || 0);
+    const minGap = 1200;
+    if (delta < minGap) {
+      const waitMs = Math.max(200, minGap - delta);
+      const msg = `Write actions are throttled. Wait ${waitMs}ms before ${label}.`;
+      setError(msg);
+      showToast(msg, 1500);
+      return false;
+    }
+    lastWriteTsRef.current = now;
+    return true;
+  };
+
+  const recordAction = (action, count = 0, meta = {}) => {
+    const entry = { action, count, role, ts: Date.now(), ...meta };
+    setActionLog(prev => [...prev, entry].slice(-50));
+  };
+
+  const persistState = async (nextApprovals = approvalQueue, nextActions = actionLog) => {
+    if (!roleCanWrite) return;
+    try {
+      await fetchJson("/api/image-alt-media-seo/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approvals: nextApprovals.slice(0, 50), actionLog: nextActions.slice(-50) })
+      });
+    } catch (err) {
+      setError(err.message || "Failed to persist state");
+    }
+  };
+
+  const hydrateState = async () => {
+    try {
+      const res = await fetch("/api/image-alt-media-seo/state");
+      const json = await res.json().catch(() => ({}));
+      if (Array.isArray(json.approvals)) setApprovalQueue(json.approvals);
+      if (Array.isArray(json.actionLog)) setActionLog(json.actionLog);
+    } catch (_err) {
+      // keep local state when server persistence is unavailable
+    } finally {
+      setStateHydrated(true);
+    }
+  };
+
+  const handleFetchHookMetrics = async () => {
+    try {
+      const { data } = await fetchJson("/api/image-alt-media-seo/hooks/metrics");
+      setHookMetrics(data.hookStats || null);
+      setHookMetricsAt(Date.now());
+      setHookMetricsError("");
+      showToast("Hook metrics refreshed", 1400);
+    } catch (err) {
+      const msg = err.message || "Hook metrics failed";
+      setHookMetricsError(msg);
+      setError(msg);
+    }
+  };
+
+  const handleResetHookMetrics = async () => {
+    if (!ensureWriter("reset hook metrics")) return;
+    if (!enforceWritePace("reset")) return;
+    try {
+      const { data } = await fetchJson("/api/image-alt-media-seo/hooks/metrics/reset", { method: "POST" });
+      setHookMetrics(data.hookStats || null);
+      setHookMetricsAt(Date.now());
+      setWebhookReplayStatus("");
+      setHookMetricsError("");
+      showToast("Hook metrics reset", 1400);
+    } catch (err) {
+      const msg = err.message || "Reset failed";
+      setHookMetricsError(msg);
+      setError(msg);
+    }
+  };
+
+  const handleReplayHooks = async () => {
+    if (!ensureWriter("replay hooks")) return;
+    if (!enforceWritePace("replay")) return;
+    setWebhookReplayStatus("running");
+    try {
+      const { data } = await fetchJson("/api/image-alt-media-seo/hooks/replay", { method: "POST" });
+      setWebhookReplayStatus(`ok: replayed ${data.replayed || 0}`);
+      showToast(`Replayed ${data.replayed || 0}`);
+      recordAction("hooks-replay", data.replayed || 0);
+      fetchImages();
+    } catch (err) {
+      setWebhookReplayStatus(err.message || "Replay failed");
+      setError(err.message || "Replay failed");
+      recordAction("hooks-replay-error", 0, { error: err.message });
+    }
+  };
+
+  const ensureWriter = (actionLabel = "write") => {
+    if (roleCanWrite) return true;
+    const msg = `Role ${role} cannot ${actionLabel}. Switch to editor or admin.`;
+    setError(msg);
+    showToast(msg, 2000);
+    return false;
+  };
+
+  const enqueueApproval = (label, items) => {
+    if (!roleCanApprove) {
+      setError("Only reviewers/editors/admins can queue approvals");
+      showToast("Switch role to reviewer/editor/admin", 1800);
+      return false;
+    }
+    if (!items?.length) {
+      setError("No items to queue for approval");
+      return false;
+    }
+    const entry = {
+      id: `appr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      label: label || "Alt update",
+      items,
+      status: "pending",
+      requestedBy: role,
+      requestedAt: Date.now(),
+    };
+    setApprovalQueue(prev => [entry, ...prev].slice(0, 50));
+    recordAction("queue-approval", items.length, { label: entry.label });
+    showToast(`Queued ${items.length} item(s) for approval`, 1600);
+    return true;
+  };
+
+  const markApproval = (id, status) => {
+    if (!roleCanApprove) {
+      setError("Role cannot approve or reject.");
+      return;
+    }
+    setApprovalQueue(prev => prev.map(entry => entry.id === id ? { ...entry, status, approvedBy: status === "approved" ? role : undefined, approvedAt: status === "approved" ? Date.now() : undefined } : entry));
+    recordAction(status, 1, { id });
+    showToast(`Marked ${status}`, 1200);
+  };
+
+  const applyApproval = async entry => {
+    if (!ensureWriter("apply approved items")) return;
+    if (!roleCanApply) return;
+    if (entry.status !== "approved") {
+      setError("Only approved requests can be applied.");
+      return;
+    }
+    if (!enforceWritePace("apply")) return;
+    const items = (entry.items || []).map(i => ({ id: i.id, altText: i.altText })).filter(i => i.id && i.altText);
+    if (!items.length) {
+      setError("No valid items to apply.");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      await fetchJson("/api/image-alt-media-seo/images/bulk-update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items })
+      });
+      saveUndo("bulk", entry.items.map(i => ({ id: i.id, altText: resolveAlt(images.find(img => img.id === i.id) || {}) })));
+      setApprovalQueue(prev => prev.filter(e => e.id !== entry.id));
+      recordAction("apply-approved", items.length, { id: entry.id });
+      showToast(`Applied ${items.length} approved item(s)`);
+      fetchImages();
+    } catch (err) {
+      setError(err.message || "Failed to apply approval");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const buildFilterParams = () => {
@@ -198,7 +415,8 @@ export default function ImageAltMediaSEO() {
   };
 
   const fetchJson = async (url, options = {}) => {
-    const res = await fetch(url, options);
+    const headers = { ...(options.headers || {}), "X-Role": role };
+    const res = await fetch(url, { ...options, headers });
     const data = await res.json().catch(() => ({}));
     if (!data.ok) {
       const err = new Error(data.error || `HTTP ${res.status}`);
@@ -211,6 +429,11 @@ export default function ImageAltMediaSEO() {
 
   // Fetch images
   const fetchImages = async (nextOffset = imageOffset, nextLimit = imageLimit, nextSearch = imageSearch) => {
+    if (fetchImagesAbortRef.current) {
+      fetchImagesAbortRef.current.abort();
+    }
+    const controller = new AbortController();
+    fetchImagesAbortRef.current = controller;
     setLoading(true);
     setError("");
     try {
@@ -219,12 +442,14 @@ export default function ImageAltMediaSEO() {
       params.set("offset", String(nextOffset || 0));
       if (nextSearch && nextSearch.trim()) params.set("search", nextSearch.trim());
       const qs = params.toString();
-      const { data } = await fetchJson(`/api/image-alt-media-seo/images${qs ? `?${qs}` : ""}`);
+      const { data } = await fetchJson(`/api/image-alt-media-seo/images${qs ? `?${qs}` : ""}`, { signal: controller.signal });
       setImages(data.images || []);
       setImageLimit(data.limit || nextLimit || 20);
       setImageOffset(typeof data.offset === "number" ? data.offset : nextOffset || 0);
       setImageTotal(data.total || (data.images || []).length || 0);
+      setImageRefreshedAt(Date.now());
     } catch (err) {
+      if (err.name === "AbortError") return;
       if (err?.status === 429) setError(rateLimitMessage(err.retryAfter));
       else setError(err.message);
     } finally {
@@ -267,6 +492,7 @@ export default function ImageAltMediaSEO() {
   };
 
   const handleImportShopify = async () => {
+    if (!ensureWriter("import from Shopify")) return;
     const derivedShop = shopDomain.trim() || getShopFromQuery();
     const shop = derivedShop.toLowerCase();
     if (!shop) {
@@ -367,6 +593,7 @@ export default function ImageAltMediaSEO() {
   };
 
   const handleUndo = async () => {
+    if (!ensureWriter("undo changes")) return;
     if (!undoBuffer.length) return;
     const last = undoBuffer[undoBuffer.length - 1];
     setLoading(true);
@@ -410,6 +637,7 @@ export default function ImageAltMediaSEO() {
   const clearSelectedImages = () => setSelectedImageIds([]);
 
   const handleBulkApply = async () => {
+    if (!ensureWriter("apply bulk updates")) return;
     if (!selectedImageIds.length) {
       setError("Select at least one image to bulk update");
       return;
@@ -418,6 +646,7 @@ export default function ImageAltMediaSEO() {
       setError("Add alt text to apply");
       return;
     }
+    if (!enforceWritePace("apply")) return;
     setLoading(true);
     setError("");
     try {
@@ -430,6 +659,7 @@ export default function ImageAltMediaSEO() {
       });
       const updatedCount = (data.updated || []).filter(u => u.ok).length;
       saveUndo("bulk", oldValues);
+      recordAction("bulk-apply", updatedCount, { ids: selectedImageIds.slice(0, 20) });
       showToast(`Updated ${updatedCount} images`);
       fetchImages();
     } catch (err) {
@@ -438,6 +668,24 @@ export default function ImageAltMediaSEO() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleQueueBulkApproval = () => {
+    if (!roleCanApprove) {
+      setError("Only reviewers/editors/admins can request approval");
+      showToast("Switch role to reviewer/editor/admin", 1800);
+      return;
+    }
+    if (!selectedImageIds.length) {
+      setError("Select images before requesting approval");
+      return;
+    }
+    if (!bulkAltText.trim()) {
+      setError("Add alt text to queue");
+      return;
+    }
+    const items = selectedImageIds.map(id => ({ id, altText: bulkAltText.trim() }));
+    enqueueApproval("Bulk alt update", items);
   };
 
   useEffect(() => {
@@ -482,11 +730,23 @@ export default function ImageAltMediaSEO() {
     setFilteredImages(next);
   }, [images, filterMode, sortMode]);
 
+  useEffect(() => {
+    const baseWindow = 120;
+    setVisibleCount(Math.min(filteredImages.length || baseWindow, baseWindow));
+  }, [filteredImages]);
+
+  // Initial observability pull for hooks
+  useEffect(() => {
+    handleFetchHookMetrics();
+  }, []);
+
   const handleAiImproveSelected = async () => {
+    if (!ensureWriter("run AI updates")) return;
     if (!selectedImageIds.length) {
       setError("Select at least one image to improve");
       return;
     }
+    if (!enforceWritePace("apply")) return;
     const selected = images.filter(img => selectedImageIds.includes(img.id));
     if (!selected.length) {
       setError("No matching images found for selection");
@@ -528,6 +788,7 @@ export default function ImageAltMediaSEO() {
         });
         saveUndo("ai", oldValues);
         showToast(`AI improved ${updates.length} images`);
+        recordAction("ai-improve", updates.length, { ids: selectedImageIds.slice(0, 20) });
         await fetchImages();
       } else {
         setError("AI did not return any alt text");
@@ -540,7 +801,147 @@ export default function ImageAltMediaSEO() {
     }
   };
 
+  const handleSimulateSelected = async (variantListOverride = null) => {
+    if (!roleCanSimulate) {
+      setError("Role cannot simulate. Switch to reviewer/editor/admin.");
+      showToast("Switch role to simulate", 1600);
+      return;
+    }
+    if (!selectedImageIds.length) {
+      setError("Select at least one image to simulate");
+      return;
+    }
+    const selected = images.filter(img => selectedImageIds.includes(img.id));
+    if (!selected.length) {
+      setError("No matching images found for selection");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const variantsToRun = (variantListOverride && variantListOverride.length) ? variantListOverride : [tone];
+      const allResults = [];
+      const summaries = [];
+      for (const variantTone of variantsToRun) {
+        const items = selected.map(img => ({
+          input: resolveAlt(img) || "Product image",
+          url: img.url,
+          locale,
+          tone: variantTone,
+          verbosity,
+          keywords: keywords || undefined,
+          brandTerms: brandTerms || undefined,
+          safeMode,
+          variantCount: 1,
+          originalAlt: resolveAlt(img),
+        }));
+        const { data } = await fetchJson("/api/image-alt-media-seo/ai/batch-generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items, locale, safeMode, keywords, brandTerms, tone: variantTone, verbosity, variantCount: 1, simulateOnly: true })
+        });
+        const variantResults = (data.results || []).map(r => ({ ...r, promptVariant: variantTone }));
+        allResults.push(...variantResults);
+        if (data.summary) summaries.push({ variant: variantTone, hitRateAvg: data.summary.hitRateAvg, hitRate: data.summary.hitRateAvg });
+      }
+      const avgHit = summaries.length ? Math.round(summaries.reduce((acc, s) => acc + (s.hitRateAvg || 0), 0) / summaries.length) : null;
+      setSimulationResults(allResults);
+      setSimulationSummary(summaries.length ? { variants: summaries, hitRateAvg: avgHit } : null);
+      showToast("Simulation ready", 1800);
+      recordAction("simulate", selected.length * variantsToRun.length, { ids: selectedImageIds.slice(0, 20), variants: variantsToRun });
+    } catch (err) {
+      if (err?.status === 429) setError(rateLimitMessage(err.retryAfter));
+      else setError(err.message || "Simulation failed");
+      setSimulationResults([]);
+      setSimulationSummary(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTranslateSelected = async apply => {
+    if (!selectedImageIds.length) {
+      setError("Select at least one image to translate");
+      return;
+    }
+    const selected = images.filter(img => selectedImageIds.includes(img.id));
+    if (!selected.length) {
+      setError("No matching images found for selection");
+      return;
+    }
+    if (apply && !ensureWriter("apply translations")) return;
+    if (apply && !enforceWritePace("apply")) return;
+    setLoading(true);
+    setError("");
+    try {
+      const items = selected.map(img => ({ id: img.id, altText: resolveAlt(img), url: img.url }));
+      const { data } = await fetchJson("/api/image-alt-media-seo/ai/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetLocale: translateLocale, items })
+      });
+      setTranslationResults(data.results || []);
+      if (apply) {
+        const updates = (data.results || []).filter(r => r.ok && r.id && r.altText).map(r => ({ id: r.id, altText: r.altText }));
+        if (updates.length) {
+          const oldValues = selected.map(img => ({ id: img.id, altText: resolveAlt(img) }));
+          await fetchJson("/api/image-alt-media-seo/images/bulk-update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ items: updates })
+          });
+          saveUndo("bulk", oldValues);
+          recordAction("translate-apply", updates.length, { ids: selectedImageIds.slice(0, 20), locale: translateLocale });
+          showToast(`Translated ${updates.length} alts`);
+          await fetchImages();
+        }
+      } else {
+        showToast("Translations preview ready", 1800);
+      }
+    } catch (err) {
+      if (err?.status === 429) setError(rateLimitMessage(err.retryAfter));
+      else setError(err.message || "Translation failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVisionCheck = async () => {
+    if (!selectedImageIds.length) {
+      setError("Select at least one image for QC");
+      return;
+    }
+    const selected = images.filter(img => selectedImageIds.includes(img.id));
+    if (!selected.length) {
+      setError("No matching images found for selection");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const items = selected.map(img => ({ id: img.id, altText: resolveAlt(img), url: img.url }));
+      const { data } = await fetchJson("/api/image-alt-media-seo/vision/qc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items })
+      });
+      const enriched = (data.results || []).map(r => ({
+        ...r,
+        risk: r.mismatch ? "mismatch" : "ok",
+        overlapScore: typeof r.overlap === 'number' ? r.overlap : null,
+      }));
+      setVisionResults(enriched);
+      showToast("QC results ready", 1600);
+    } catch (err) {
+      if (err?.status === 429) setError(rateLimitMessage(err.retryAfter));
+      else setError(err.message || "QC failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAiRewriteSingle = async img => {
+    if (!ensureWriter("rewrite alt text")) return;
     if (!img?.id) return;
     const oldValue = { id: img.id, altText: resolveAlt(img) };
     setRewritingId(img.id);
@@ -907,6 +1308,7 @@ export default function ImageAltMediaSEO() {
 
   // CRUD
   const handleAddImage = async () => {
+    if (!ensureWriter("save alt text")) return;
     setLoading(true);
     setError("");
     try {
@@ -927,6 +1329,7 @@ export default function ImageAltMediaSEO() {
 
   // Import/Export
   const handleImport = e => {
+    if (!ensureWriter("import alt text")) return;
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -1079,6 +1482,7 @@ export default function ImageAltMediaSEO() {
   );
 
   React.useEffect(() => {
+    hydrateState();
     fetchImages();
     fetchAnalytics();
     fetchMissing();
@@ -1096,6 +1500,27 @@ export default function ImageAltMediaSEO() {
     };
   }, []);
 
+  // Debounced search to avoid rapid network churn while typing
+  useEffect(() => {
+    const trimmed = imageSearch.trim();
+    if (!searchReadyRef.current) {
+      searchReadyRef.current = true;
+      return () => {};
+    }
+    const timer = setTimeout(() => {
+      fetchImages(0, imageLimit, trimmed);
+    }, 420);
+    return () => clearTimeout(timer);
+  }, [imageSearch, imageLimit]);
+
+  // Periodic hook metrics refresh for observability
+  useEffect(() => {
+    const id = setInterval(() => {
+      handleFetchHookMetrics();
+    }, 60000);
+    return () => clearInterval(id);
+  }, []);
+
   React.useEffect(() => {
     if (!shopDomain.trim()) {
       const fromUrl = getShopFromQuery();
@@ -1103,8 +1528,61 @@ export default function ImageAltMediaSEO() {
     }
   }, [shopDomain]);
 
+  useEffect(() => {
+    if (!stateHydrated) return undefined;
+    const timer = setTimeout(() => {
+      persistState();
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [approvalQueue, actionLog, stateHydrated]);
+
   const totalImagePages = imageLimit ? Math.max(1, Math.ceil(imageTotal / imageLimit)) : 1;
   const currentImagePage = imageLimit ? Math.floor(imageOffset / imageLimit) + 1 : 1;
+  const missingPct = analytics?.totalImages ? Math.round(((analytics?.missingAlt || 0) / analytics.totalImages) * 100) : 0;
+  const duplicatePct = analytics?.totalImages ? Math.round(((analytics?.duplicateAlts || 0) / analytics.totalImages) * 100) : 0;
+  const inRangePct = (() => {
+    if (!lengthBands?.bands || !lengthBands?.total) return null;
+    const bands = lengthBands.bands || [];
+    const mid = bands.filter(b => b.label !== '0-24' && b.label !== '161+').reduce((acc, b) => acc + (b.count || 0), 0);
+    return Math.round((mid / (lengthBands.total || 1)) * 100);
+  })();
+  const coverageProgress = [
+    { label: 'Missing', value: missingPct, target: coverageGoals.missing, good: missingPct <= coverageGoals.missing },
+    { label: 'Duplicates %', value: duplicatePct, target: coverageGoals.duplicatesPct, good: duplicatePct <= coverageGoals.duplicatesPct },
+    { label: 'Length in range %', value: typeof inRangePct === 'number' ? inRangePct : analytics?.coveragePct ?? 0, target: coverageGoals.inRangePct, good: (typeof inRangePct === 'number' ? inRangePct : analytics?.coveragePct ?? 0) >= coverageGoals.inRangePct },
+  ];
+  const issueStats = (() => {
+    const total = filteredImages.length || 1; // avoid divide-by-zero
+    let missing = 0;
+    let short = 0;
+    let long = 0;
+    let ok = 0;
+    let duplicate = 0;
+    filteredImages.forEach(img => {
+      const info = lintAltText(resolveAlt(img));
+      if (info.status === "missing") missing += 1;
+      else if (info.status === "short") short += 1;
+      else if (info.status === "long") long += 1;
+      else ok += 1;
+      if (duplicateAltIds.has(img.id)) duplicate += 1;
+    });
+    const toPct = (num) => Math.round((num / total) * 100);
+    return {
+      total: filteredImages.length,
+      missing,
+      short,
+      long,
+      ok,
+      duplicate,
+      missingPct: toPct(missing),
+      shortPct: toPct(short),
+      longPct: toPct(long),
+      duplicatePct: toPct(duplicate),
+      okPct: toPct(ok),
+    };
+  })();
+
+  const visibleImages = filteredImages.slice(0, visibleCount);
 
   return (
     <div style={{ padding: 18 }}>
@@ -1204,6 +1682,99 @@ export default function ImageAltMediaSEO() {
           aria-label="Image URL"
           style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
         />
+
+        {simulationResults?.length ? (
+          <div style={{ marginBottom: 12, background: "#0f172a", borderRadius: 10, padding: 12, border: "1px solid #334155" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 6 }}>
+              <div style={{ fontWeight: 700 }}>Simulation ({simulationResults.length}) {simulationSummary?.hitRateAvg ? `· Hit rate ~${simulationSummary.hitRateAvg}%` : ''}</div>
+              <button onClick={() => { setSimulationResults([]); setSimulationSummary(null); }} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Clear</button>
+            </div>
+            {simulationSummary?.variants?.length ? (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6, fontSize: 12, color: "#cbd5e1" }}>
+                {simulationSummary.variants.map(v => (
+                  <span key={v.variant} style={{ background: "#111827", border: "1px solid #334155", padding: "4px 8px", borderRadius: 8 }}>{v.variant}: {v.hitRate ?? v.hitRateAvg ?? "-"}%</span>
+                ))}
+              </div>
+            ) : null}
+            <ul style={{ margin: 0, paddingLeft: 16 }}>
+              {simulationResults.slice(0, 10).map((r, idx) => (
+                <li key={`sim-${idx}`} style={{ marginBottom: 8 }}>
+                  <div style={{ fontWeight: 600 }}>{r.ok ? "OK" : "Error"} · {r.meta?.url ? shortenUrl(r.meta.url) : 'Item'} {typeof r.hitRate === 'number' ? `· Hit ${r.hitRate}%` : ''} {r.promptVariant ? `· ${r.promptVariant}` : ''}</div>
+                  {r.error ? <div style={{ color: "#f87171" }}>{r.error}</div> : null}
+                  {r.result ? <div style={{ fontSize: 13 }}>Suggested: {r.result}</div> : null}
+                  {r.diff ? <div style={{ fontSize: 12, color: "#cbd5e1" }}>Δlen {r.diff.lengthDelta}; overlap {r.diff.overlap}</div> : null}
+                </li>
+              ))}
+              {simulationResults.length > 10 ? <li style={{ fontSize: 12, color: "#94a3b8" }}>Showing first 10</li> : null}
+            </ul>
+          </div>
+        ) : null}
+
+        {translationResults?.length ? (
+          <div style={{ marginBottom: 12, background: "#0f172a", borderRadius: 10, padding: 12, border: "1px solid #334155" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 6 }}>
+              <div style={{ fontWeight: 700 }}>Translations ({translationResults.length}) → {translateLocale}</div>
+              <button onClick={() => setTranslationResults([])} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Clear</button>
+            </div>
+            <ul style={{ margin: 0, paddingLeft: 16 }}>
+              {translationResults.slice(0, 10).map((t, idx) => (
+                <li key={`tr-${idx}`} style={{ marginBottom: 6 }}>
+                  <div style={{ fontSize: 13 }}>{t.altText || t.error || '(none)'} {t.ok === false ? <span style={{ color: "#f87171" }}>error</span> : null}</div>
+                  {t.lint ? <div style={{ fontSize: 12, color: "#cbd5e1" }}>Len {t.lint.length}; Issues {t.lint.issueCount}; Findings {t.lint.totalFindings}</div> : null}
+                </li>
+              ))}
+              {translationResults.length > 10 ? <li style={{ fontSize: 12, color: "#94a3b8" }}>Showing first 10</li> : null}
+            </ul>
+          </div>
+        ) : null}
+
+        {visionResults?.length ? (
+          <div style={{ marginBottom: 12, background: "#0f172a", borderRadius: 10, padding: 12, border: "1px solid #334155" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 6 }}>
+              <div style={{ fontWeight: 700 }}>Vision QC ({visionResults.length})</div>
+              <button onClick={() => setVisionResults([])} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Clear</button>
+            </div>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 8, fontSize: 12, color: "#cbd5e1" }}>
+              <span>Filter</span>
+              <select value={visionFilter} onChange={e => setVisionFilter(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #334155", background: "#0b1220", color: "#e2e8f0" }}>
+                <option value="all">All</option>
+                <option value="mismatch">Mismatches</option>
+                <option value="ok">Aligned</option>
+                <option value="low-overlap">Low overlap (&lt;0.5)</option>
+              </select>
+            </div>
+            <ul style={{ margin: 0, paddingLeft: 16 }}>
+              {visionResults.filter(v => {
+                if (visionFilter === "mismatch") return v.mismatch;
+                if (visionFilter === "ok") return !v.mismatch;
+                if (visionFilter === "low-overlap") return typeof v.overlapScore === 'number' && v.overlapScore < 0.5;
+                return true;
+              }).slice(0, 10).map((v, idx) => (
+                <li key={`qc-${idx}`} style={{ marginBottom: 10, background: "#0b1220", borderRadius: 8, padding: 10, border: "1px solid #334155" }}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <div style={{ flex: "0 0 120px" }}>
+                      {v.url ? (
+                        <img src={v.url} alt="Vision sample" loading="lazy" style={{ width: 120, height: 120, objectFit: "contain", borderRadius: 8, background: "#0b0b0b" }} />
+                      ) : (
+                        <div style={{ width: 120, height: 120, borderRadius: 8, background: "#111827", border: "1px dashed #555", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 12 }}>
+                          No image
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, color: v.mismatch ? "#f97316" : "#a3e635" }}>
+                        {v.mismatch ? "Mismatch" : "Looks aligned"} · overlap {v.overlap}
+                      </div>
+                      <div style={{ fontSize: 12, color: "#cbd5e1" }}>{v.url ? shortenUrl(v.url) : '(no url)'}</div>
+                      <div style={{ fontSize: 12, marginTop: 4 }}>{v.altText || '(none)'}</div>
+                    </div>
+                  </div>
+                </li>
+              ))}
+              {visionResults.length > 10 ? <li style={{ fontSize: 12, color: "#94a3b8" }}>Showing first 10</li> : null}
+            </ul>
+          </div>
+        ) : null}
         <input
           value={keywords}
           onChange={e => setKeywords(e.target.value)}
@@ -1218,6 +1789,42 @@ export default function ImageAltMediaSEO() {
           aria-label="Brand terms"
           style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", marginTop: 10, marginBottom: 14 }}
         />
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 8, color: "#a3e635", fontSize: 13 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            Role
+            <select value={role} onChange={e => setRole(e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+              <option value="admin">admin</option>
+              <option value="editor">editor</option>
+              <option value="reviewer">reviewer</option>
+              <option value="viewer">viewer</option>
+            </select>
+          </label>
+          <span style={{ fontSize: 12, color: roleCanWrite ? "#a3e635" : "#f97316" }}>
+            {roleCanWrite ? "Write actions enabled" : roleCanApprove ? "Reviewer: approve only, no apply" : "Read-only"}
+          </span>
+        </div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 10, fontSize: 12, color: "#cbd5e1" }}>
+            <span style={{ fontWeight: 700, color: "#e2e8f0" }}>Prompt variants for simulation</span>
+            {simulationTones.map(opt => {
+              const checked = simulateVariants.includes(opt.key);
+              return (
+                <label key={opt.key} style={{ display: "flex", alignItems: "center", gap: 4, background: checked ? "#0ea5e9" : "#1f2937", color: checked ? "#0b0b0b" : "#e2e8f0", padding: "4px 8px", borderRadius: 8, border: "1px solid #334155" }}>
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={e => {
+                      if (e.target.checked) setSimulateVariants(prev => Array.from(new Set([...prev, opt.key])));
+                      else setSimulateVariants(prev => prev.filter(k => k !== opt.key));
+                    }}
+                    aria-label={`Include ${opt.label} variant`}
+                  />
+                  {opt.label}
+                </label>
+              );
+            })}
+            <button onClick={() => handleSimulateSelected(simulateVariants.length ? simulateVariants : null)} aria-label="Simulate with selected prompt variants" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#e0e7ff" : "#334155", color: roleCanSimulate ? "#1e293b" : "#94a3b8", border: "1px solid #c7d2fe", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Run sim (variants)</button>
+            <span style={{ fontSize: 11, color: "#94a3b8" }}>Runs each variant separately and aggregates.</span>
+          </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
             <div style={{ fontWeight: 700, fontSize: 18 }}>Images</div>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -1238,6 +1845,7 @@ export default function ImageAltMediaSEO() {
                 </select>
               </label>
               <button onClick={() => fetchImages(imageOffset, imageLimit, imageSearch)} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Refresh</button>
+              <span style={{ fontSize: 11, color: "#94a3b8" }}>{imageRefreshedAt ? `Updated ${new Date(imageRefreshedAt).toLocaleTimeString()}` : "Not loaded yet"}</span>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <input
                   value={shopDomain}
@@ -1308,8 +1916,9 @@ export default function ImageAltMediaSEO() {
               style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", marginBottom: 8 }}
             />
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-              <button onClick={handleBulkApply} aria-label={`Apply alt text to ${selectedImageIds.length} selected images`} disabled={!selectedImageIds.length || !bulkAltText.trim() || loading} style={{ background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || !bulkAltText.trim() || loading) ? "not-allowed" : "pointer" }}>Apply to selected</button>
-              <button onClick={handleAiImproveSelected} aria-label="Use AI to rewrite alt text for selected images" disabled={!selectedImageIds.length || loading} style={{ background: "#7c3aed", color: "#f8fafc", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>AI improve selected</button>
+              <button onClick={handleBulkApply} aria-label={`Apply alt text to ${selectedImageIds.length} selected images`} disabled={!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading} style={{ background: roleCanApply ? "#10b981" : "#334155", color: roleCanApply ? "#0b0b0b" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading) ? "not-allowed" : "pointer" }}>Apply to selected</button>
+              <button onClick={handleAiImproveSelected} aria-label="Use AI to rewrite alt text for selected images" disabled={!roleCanApply || !selectedImageIds.length || loading} style={{ background: roleCanApply ? "#7c3aed" : "#334155", color: roleCanApply ? "#f8fafc" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>AI improve selected</button>
+              <button onClick={handleQueueBulkApproval} aria-label="Queue approval for bulk alt update" disabled={!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()} style={{ background: roleCanApprove ? "#f59e0b" : "#334155", color: roleCanApprove ? "#0b0b0b" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()) ? "not-allowed" : "pointer" }}>Request approval</button>
               <button onClick={handleUndo} aria-label="Undo last bulk or AI change" disabled={!undoBuffer.length || loading} title={undoBuffer.length ? `Undo (Ctrl+Z) - ${undoBuffer.length} action${undoBuffer.length > 1 ? 's' : ''} available` : "No actions to undo"} style={{ background: undoBuffer.length ? "#f59e0b" : "#334155", color: undoBuffer.length ? "#0b0b0b" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!undoBuffer.length || loading) ? "not-allowed" : "pointer" }}>Undo ({undoBuffer.length})</button>
               {selectedImageIds.length ? <span style={{ fontSize: 12 }}>IDs: {selectedImageIds.slice(0, 6).join(', ')}{selectedImageIds.length > 6 ? '…' : ''}</span> : <span style={{ fontSize: 12 }}>Pick rows to enable bulk update</span>}
               <span style={{ fontSize: 11, color: "#94a3b8" }}>Shortcuts: Ctrl+Shift+A (select all), Ctrl+Z (undo)</span>
@@ -1342,6 +1951,39 @@ export default function ImageAltMediaSEO() {
               </ul>
             </div>
           ) : null}
+
+          <div style={{ marginBottom: 12, background: "#0f172a", borderRadius: 10, padding: 12, border: "1px solid #334155" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <div style={{ fontWeight: 700 }}>Approval queue ({approvalQueue.length})</div>
+              <span style={{ fontSize: 12, color: "#cbd5e1" }}>{roleCanApply ? "Editors/Admins can apply" : roleCanApprove ? "Reviewers can approve; editors apply" : "View-only"}</span>
+            </div>
+            {approvalQueue.length ? (
+              <ul style={{ margin: 0, paddingLeft: 16 }}>
+                {approvalQueue.slice(0, 15).map(entry => (
+                  <li key={entry.id} style={{ marginBottom: 8 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <div style={{ fontWeight: 700 }}>{entry.label}</div>
+                      <div style={{ display: "flex", gap: 6, fontSize: 12, color: "#cbd5e1" }}>
+                        <span>{entry.items.length} item(s)</span>
+                        <span>Status: <span style={{ color: entry.status === "approved" ? "#22c55e" : entry.status === "rejected" ? "#f87171" : "#f59e0b" }}>{entry.status}</span></span>
+                        <span>By {entry.requestedBy}</span>
+                        <span>{new Date(entry.requestedAt).toLocaleTimeString()}</span>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
+                      <button onClick={() => markApproval(entry.id, "approved")} disabled={!roleCanApprove || entry.status === "approved"} style={{ background: "#22c55e", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: (!roleCanApprove || entry.status === "approved") ? "not-allowed" : "pointer" }}>Approve</button>
+                      <button onClick={() => markApproval(entry.id, "rejected")} disabled={!roleCanApprove} style={{ background: "#ef4444", color: "#f8fafc", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: !roleCanApprove ? "not-allowed" : "pointer" }}>Reject</button>
+                      <button onClick={() => applyApproval(entry)} disabled={!roleCanApply || entry.status !== "approved" || loading} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: (!roleCanApply || entry.status !== "approved" || loading) ? "not-allowed" : "pointer" }}>Apply approved</button>
+                      <span style={{ fontSize: 12, color: "#cbd5e1" }}>IDs: {entry.items.slice(0, 5).map(i => i.id).join(', ')}{entry.items.length > 5 ? '…' : ''}</span>
+                    </div>
+                  </li>
+                ))}
+                {approvalQueue.length > 15 ? <li style={{ fontSize: 12, color: "#94a3b8" }}>Showing first 15</li> : null}
+              </ul>
+            ) : (
+              <div style={{ fontSize: 13, color: "#cbd5e1" }}>No approvals queued. Reviewers can approve; editors/admins can apply.</div>
+            )}
+          </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               <span style={{ fontSize: 13, color: "#cbd5e1" }}>Filter</span>
@@ -1372,63 +2014,110 @@ export default function ImageAltMediaSEO() {
               Clear selection
             </button>
           </div>
-          <ul style={{ paddingLeft: 18 }}>
-            {filteredImages.map(img => (
-              <li key={img.id} style={{ marginBottom: 10, background: selectedImageIds.includes(img.id) ? "#0f172a" : "transparent", borderRadius: 10, padding: 10, border: "1px solid #555", color: "#a3e635" }}>
-                <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                  <input type="checkbox" checked={selectedImageIds.includes(img.id)} onChange={() => toggleSelectImage(img.id)} aria-label={`Select image ${img.id}`} />
-                  <div style={{ flex: "0 0 140px", maxWidth: 160 }}>
-                    {img.url ? (
-                      <img
-                        src={img.url}
-                        alt={img.altText || "Shopify image"}
-                        loading="lazy"
-                        style={{ width: "100%", maxWidth: 150, maxHeight: 150, objectFit: "contain", borderRadius: 8, background: "#0b0b0b" }}
-                      />
-                    ) : (
-                      <div style={{ width: 140, height: 120, borderRadius: 8, background: "#111827", border: "1px dashed #555", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 12 }}>
-                        No image
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <div><b>ID:</b> {img.id}</div>
-                      {selectedImageIds.includes(img.id) ? <span style={{ fontSize: 11, background: "#0ea5e9", color: "#fff", padding: "2px 6px", borderRadius: 999 }}>Selected</span> : null}
-                      {img.url ? <a href={img.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#38bdf8", textDecoration: "underline" }}>Open</a> : null}
-                      {(() => {
-                        const lint = lintAltText(resolveAlt(img));
-                        const colors = { ok: "#22c55e", missing: "#ef4444", short: "#f59e0b", long: "#0ea5e9" };
-                        return <span style={{ fontSize: 11, background: colors[lint.status] || "#334155", color: "#0b0b0b", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>{lint.label}</span>;
-                      })()}
-                      {duplicateAltIds.has(img.id) ? <span style={{ fontSize: 11, background: "#e11d48", color: "#f8fafc", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>Duplicate</span> : null}
-                    </div>
-                    <div style={{ fontSize: 12, color: "#cbd5e1", wordBreak: "break-all" }}>
-                      <b>URL:</b> {shortenUrl(img.url) || "(none)"}
+          <div style={{ marginBottom: 12, background: "#0b1220", borderRadius: 10, padding: 12, border: "1px solid #334155" }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Action log (last 10)</div>
+            {actionLog.length ? (
+              <ul style={{ margin: 0, paddingLeft: 16 }}>
+                {actionLog.slice(-10).reverse().map((a, idx) => (
+                  <li key={`${a.ts}-${idx}`} style={{ fontSize: 12, color: "#cbd5e1", marginBottom: 4 }}>
+                    <span style={{ fontWeight: 700 }}>{a.action}</span> · {a.count || 0} · role {a.role} · {new Date(a.ts).toLocaleTimeString()}
+                    {a.label ? <> · {a.label}</> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : <div style={{ fontSize: 12, color: "#94a3b8" }}>No actions yet.</div>}
+          </div>
+          <div style={{ marginBottom: 12, background: "#0b1220", borderRadius: 10, padding: 12, border: "1px solid #334155" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <div style={{ fontWeight: 700 }}>Hooks observability</div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <button onClick={handleFetchHookMetrics} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Refresh</button>
+                <button onClick={handleResetHookMetrics} disabled={!roleCanApply} style={{ background: roleCanApply ? "#f59e0b" : "#334155", color: roleCanApply ? "#0b0b0b" : "#94a3b8", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: roleCanApply ? "pointer" : "not-allowed" }}>Reset metrics</button>
+                <button onClick={handleReplayHooks} disabled={!roleCanApply || webhookReplayStatus === "running"} style={{ background: roleCanApply ? "#0ea5e9" : "#334155", color: roleCanApply ? "#fff" : "#94a3b8", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: (!roleCanApply || webhookReplayStatus === "running") ? "not-allowed" : "pointer" }}>{webhookReplayStatus === "running" ? "Replaying..." : "Replay last push"}</button>
+              </div>
+            </div>
+            {hookMetrics ? (
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", fontSize: 12, color: "#cbd5e1" }}>
+                <span style={{ background: "#111827", border: "1px solid #334155", borderRadius: 8, padding: "4px 8px" }}>Push ok {hookMetrics.push?.success || 0} / err {hookMetrics.push?.error || 0}</span>
+                <span style={{ background: "#111827", border: "1px solid #334155", borderRadius: 8, padding: "4px 8px" }}>Pull ok {hookMetrics.pull?.success || 0} / err {hookMetrics.pull?.error || 0}</span>
+                <span style={{ background: "#111827", border: "1px solid #334155", borderRadius: 8, padding: "4px 8px" }}>AI improve ok {hookMetrics.aiImprove?.success || 0} / err {hookMetrics.aiImprove?.error || 0}</span>
+                {hookMetrics.lastReplayAt ? <span style={{ background: "#111827", border: "1px solid #334155", borderRadius: 8, padding: "4px 8px" }}>Last replay {new Date(hookMetrics.lastReplayAt).toLocaleTimeString()}</span> : null}
+                {hookMetrics.lastPush ? <span style={{ background: "#111827", border: "1px solid #334155", borderRadius: 8, padding: "4px 8px" }}>Last push items {hookMetrics.lastPush.length}</span> : null}
+                {hookMetrics.persistedAt ? <span style={{ background: "#111827", border: "1px solid #334155", borderRadius: 8, padding: "4px 8px" }}>Persisted {new Date(hookMetrics.persistedAt).toLocaleTimeString()}</span> : null}
+              </div>
+            ) : <div style={{ fontSize: 12, color: "#94a3b8" }}>Refresh to see hook metrics.</div>}
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 8, fontSize: 12, color: "#cbd5e1" }}>
+              {hookMetricsAt ? <span>Updated {new Date(hookMetricsAt).toLocaleTimeString()}</span> : <span>Not refreshed yet</span>}
+              {hookMetricsError ? <span style={{ color: "#f87171" }}>Error: {hookMetricsError}</span> : null}
+              {webhookReplayStatus ? <span>{webhookReplayStatus}</span> : null}
+            </div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", color: "#cbd5e1", fontSize: 12, margin: "0 0 8px 0" }} aria-live="polite">
+            <span>Showing {visibleImages.length} of {filteredImages.length} image(s)</span>
+            {filteredImages.length > visibleImages.length ? (
+              <button aria-label="Load 80 more images" onClick={() => setVisibleCount(c => Math.min(filteredImages.length, c + 80))} style={{ background: "#1f2937", color: "#e2e8f0", border: "1px solid #334155", borderRadius: 8, padding: "4px 8px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>
+                Load 80 more
+              </button>
+            ) : null}
+          </div>
+          <ul style={{ paddingLeft: 18 }} aria-busy={loading} aria-live="polite">
+            {visibleImages.map(img => {
+              const lint = lintCache.get(img.id) || lintAltText(resolveAlt(img));
+              return (
+                <li key={img.id} style={{ marginBottom: 10, background: selectedImageIds.includes(img.id) ? "#0f172a" : "transparent", borderRadius: 10, padding: 10, border: "1px solid #555", color: "#a3e635" }}>
+                  <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                    <input type="checkbox" checked={selectedImageIds.includes(img.id)} onChange={() => toggleSelectImage(img.id)} aria-label={`Select image ${img.id}`} />
+                    <div style={{ position: "relative", flex: "0 0 140px", maxWidth: 160 }}>
                       {img.url ? (
-                        <button onClick={() => { navigator.clipboard?.writeText(img.url); showToast("URL copied"); }} style={{ marginLeft: 8, background: "#1f2937", color: "#e2e8f0", border: "1px solid #334155", borderRadius: 6, padding: "2px 8px", fontSize: 11, cursor: "pointer" }}>Copy</button>
-                      ) : null}
+                        <img
+                          src={img.url}
+                          alt={img.altText || "Shopify image"}
+                          loading="lazy"
+                          style={{ width: "100%", maxWidth: 150, maxHeight: 150, objectFit: "contain", borderRadius: 8, background: "#0b0b0b" }}
+                        />
+                      ) : (
+                        <div style={{ width: 140, height: 120, borderRadius: 8, background: "#111827", border: "1px dashed #555", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 12 }}>
+                          No image
+                        </div>
+                      )}
+                      <span style={{ position: "absolute", top: 6, left: 6, fontSize: 11, background: "#0ea5e9", color: "#0b0b0b", padding: "2px 6px", borderRadius: 999, fontWeight: 800 }}>{lint.label}</span>
+                      {duplicateAltIds.has(img.id) ? <span style={{ position: "absolute", top: 6, right: 6, fontSize: 11, background: "#e11d48", color: "#f8fafc", padding: "2px 6px", borderRadius: 999, fontWeight: 800 }}>Dup</span> : null}
                     </div>
-                    <div style={{ marginTop: 6 }}>
-                      <div style={{ fontWeight: 700, color: "#e5e7eb" }}>Alt</div>
-                      <div style={{ fontSize: 13, color: "#e2e8f0" }} title={resolveAlt(img) || "(none)"}>
-                        {truncate(resolveAlt(img), 220) || "(none)"}
-                        {resolveAlt(img) ? (
-                          <button onClick={() => { navigator.clipboard?.writeText(resolveAlt(img)); showToast("Alt copied"); }} style={{ marginLeft: 8, background: "#1f2937", color: "#e2e8f0", border: "1px solid #334155", borderRadius: 6, padding: "2px 8px", fontSize: 11, cursor: "pointer" }}>Copy</button>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <div><b>ID:</b> {img.id}</div>
+                        {selectedImageIds.includes(img.id) ? <span style={{ fontSize: 11, background: "#0ea5e9", color: "#fff", padding: "2px 6px", borderRadius: 999 }}>Selected</span> : null}
+                        {img.url ? <a href={img.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#38bdf8", textDecoration: "underline" }}>Open</a> : null}
+                        <span style={{ fontSize: 11, background: lint.status === "ok" ? "#22c55e" : lint.status === "missing" ? "#ef4444" : lint.status === "short" ? "#f59e0b" : "#0ea5e9", color: "#0b0b0b", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>{lint.label}</span>
+                        {duplicateAltIds.has(img.id) ? <span style={{ fontSize: 11, background: "#e11d48", color: "#f8fafc", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>Duplicate</span> : null}
+                      </div>
+                      <div style={{ fontSize: 12, color: "#cbd5e1", wordBreak: "break-all" }}>
+                        <b>URL:</b> {shortenUrl(img.url) || "(none)"}
+                        {img.url ? (
+                          <button onClick={() => { navigator.clipboard?.writeText(img.url); showToast("URL copied"); }} style={{ marginLeft: 8, background: "#1f2937", color: "#e2e8f0", border: "1px solid #334155", borderRadius: 6, padding: "2px 8px", fontSize: 11, cursor: "pointer" }}>Copy</button>
                         ) : null}
                       </div>
-                    </div>
-                    <div style={{ marginTop: 6, fontSize: 12, color: "#94a3b8", display: "flex", gap: 10, flexWrap: "wrap" }}>
-                      {img.createdAt || img.created_at || img.createdat ? <span>Created: {formatDate(img.createdAt || img.created_at || img.createdat)}</span> : null}
-                      {img.score ? <span>Score: {img.score}</span> : null}
-                      <button onClick={() => handleAiRewriteSingle(img)} disabled={rewritingId === img.id || loading} style={{ background: rewritingId === img.id ? "#475569" : "#7c3aed", color: "#f8fafc", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: rewritingId === img.id || loading ? "wait" : "pointer" }}>
-                        {rewritingId === img.id ? "Rewriting…" : "AI rewrite"}
-                      </button>
+                      <div style={{ marginTop: 6 }}>
+                        <div style={{ fontWeight: 700, color: "#e5e7eb" }}>Alt</div>
+                        <div style={{ fontSize: 13, color: "#e2e8f0" }} title={resolveAlt(img) || "(none)"}>
+                          {truncate(resolveAlt(img), 220) || "(none)"}
+                          {resolveAlt(img) ? (
+                            <button onClick={() => { navigator.clipboard?.writeText(resolveAlt(img)); showToast("Alt copied"); }} style={{ marginLeft: 8, background: "#1f2937", color: "#e2e8f0", border: "1px solid #334155", borderRadius: 6, padding: "2px 8px", fontSize: 11, cursor: "pointer" }}>Copy</button>
+                          ) : null}
+                        </div>
+                      </div>
+                      <div style={{ marginTop: 6, fontSize: 12, color: "#94a3b8", display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        {img.createdAt || img.created_at || img.createdat ? <span>Created: {formatDate(img.createdAt || img.created_at || img.createdat)}</span> : null}
+                        {img.score ? <span>Score: {img.score}</span> : null}
+                        <button onClick={() => handleAiRewriteSingle(img)} disabled={rewritingId === img.id || loading} style={{ background: rewritingId === img.id ? "#475569" : "#7c3aed", color: "#f8fafc", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: rewritingId === img.id || loading ? "wait" : "pointer" }}>
+                          {rewritingId === img.id ? "Rewriting…" : "AI rewrite"}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
             {!filteredImages.length ? <li style={{ color: "#a3e635" }}>No images yet.</li> : null}
           </ul>
         </div>
@@ -1678,6 +2367,23 @@ export default function ImageAltMediaSEO() {
             <button onClick={handleCopyResult} disabled={!result} style={{ background: "#14b8a6", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
             <button onClick={handleDownloadResult} disabled={!result} style={{ background: "#e0f2fe", color: "#0f172a", border: "1px solid #bae6fd", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Download .txt</button>
             {resultDownloadUrl && <a href={resultDownloadUrl} download="alt-text.txt" style={{ alignSelf: "center", color: "#0ea5e9", fontWeight: 700 }}>Save file</a>}
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 8 }}>
+              <button onClick={handleSimulateSelected} aria-label="Simulate AI for selected" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#e0e7ff" : "#334155", color: roleCanSimulate ? "#1e293b" : "#94a3b8", border: "1px solid #c7d2fe", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Simulate AI</button>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+                Translate to
+                <select value={translateLocale} onChange={e => setTranslateLocale(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+                  {['es','fr','de','en-GB','en-US','ja','ko','zh'].map(code => <option key={code} value={code}>{code}</option>)}
+                </select>
+              </label>
+              {localeStyleGuides[translateLocale] ? (
+                <span style={{ fontSize: 11, color: "#cbd5e1", background: "#0b1220", border: "1px solid #334155", borderRadius: 8, padding: "6px 10px" }}>
+                  Tone {localeStyleGuides[translateLocale].tone}; Formality {localeStyleGuides[translateLocale].formality}; Punct {localeStyleGuides[translateLocale].punctuation}; Numerals {localeStyleGuides[translateLocale].numerals}
+                </span>
+              ) : null}
+              <button onClick={() => handleTranslateSelected(false)} aria-label="Translate selected (preview)" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#c084fc" : "#334155", color: roleCanSimulate ? "#0b0b0b" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Translate (preview)</button>
+              <button onClick={() => handleTranslateSelected(true)} aria-label="Translate and apply" disabled={!roleCanApply || !selectedImageIds.length || loading} style={{ background: roleCanApply ? "#a855f7" : "#334155", color: roleCanApply ? "#fff" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Translate + apply</button>
+              <button onClick={handleVisionCheck} aria-label="Run vision QC for selected" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#38bdf8" : "#334155", color: roleCanSimulate ? "#0b0b0b" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Vision QC</button>
+            </div>
           </div>
         </div>
       )}
@@ -1887,6 +2593,39 @@ export default function ImageAltMediaSEO() {
               {typeof analytics.cached !== 'undefined' ? <div><b>Cached:</b> {String(analytics.cached)}</div> : null}
             </div>
           ) : <span>No analytics yet. Generate or import images to see results.</span>}
+        </div>
+        <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ background: "#1f2937", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Coverage vs goals</div>
+            {coverageProgress.map(p => {
+              const pct = Math.min(100, Math.max(0, p.value));
+              const target = p.target ?? 0;
+              const good = p.good;
+              return (
+                <div key={p.label} style={{ marginBottom: 8 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
+                    <span>{p.label}</span>
+                    <span>{p.value}% (goal {target}{p.label.includes('%') ? '%' : ''})</span>
+                  </div>
+                  <div style={{ position: "relative", height: 10, background: "#0b1220", borderRadius: 999 }}>
+                    <div style={{ position: "absolute", left: `${Math.min(100, Math.max(0, target))}%`, top: 0, bottom: 0, width: 2, background: "#f59e0b", opacity: 0.7 }} />
+                    <div style={{ width: `${pct}%`, height: "100%", borderRadius: 999, background: good ? "#22c55e" : "#f97316" }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ background: "#1f2937", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Needs attention (this view)</div>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", fontSize: 13 }}>
+              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#0f172a", border: "1px solid #334155" }}>Missing {issueStats.missing} ({issueStats.missingPct}%)</span>
+              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#0f172a", border: "1px solid #334155" }}>Short {issueStats.short} ({issueStats.shortPct}%)</span>
+              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#0f172a", border: "1px solid #334155" }}>Long {issueStats.long} ({issueStats.longPct}%)</span>
+              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#0f172a", border: "1px solid #334155" }}>Duplicate {issueStats.duplicate} ({issueStats.duplicatePct}%)</span>
+              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#0f172a", border: "1px solid #334155", color: "#a3e635" }}>OK {issueStats.ok} ({issueStats.okPct}%)</span>
+            </div>
+            <div style={{ marginTop: 8, fontSize: 12, color: "#cbd5e1" }}>Counts/percentages respect current filters and sort, so you can zoom into segments.</div>
+          </div>
         </div>
         <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div style={{ background: "#1f2937", borderRadius: 10, padding: 12, border: "1px solid #555" }}>

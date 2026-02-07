@@ -5,6 +5,7 @@ const router = express.Router();
 const OpenAI = require('openai');
 const db = require('./db');
 const runs = require('./runs');
+const storageJson = require('../../core/storageJson');
 const { shopifyFetchPaginated } = require('../../core/shopifyApi');
 const { getToken: getShopToken } = require('../../core/shopTokens');
 
@@ -32,6 +33,74 @@ const p95 = arr => {
   return sorted[idx];
 };
 
+// Hook metrics for observability (persisted to disk)
+const defaultHookStats = {
+  push: { success: 0, error: 0 },
+  pull: { success: 0, error: 0 },
+  aiImprove: { success: 0, error: 0 },
+  lastPush: null,
+  lastReplayAt: null,
+  persistedAt: null,
+};
+let hookStats = { ...defaultHookStats };
+
+const HOOK_STATS_KEY = 'image-alt-media-seo-hook-stats';
+const normalizeHookStats = raw => {
+  if (!raw || typeof raw !== 'object') return { ...defaultHookStats };
+  const coerceCounts = obj => ({
+    success: Math.max(0, Number(obj?.success) || 0),
+    error: Math.max(0, Number(obj?.error) || 0),
+  });
+  const safePush = Array.isArray(raw.lastPush) ? raw.lastPush.slice(-50).map(item => ({
+    id: item?.id,
+    url: item?.url,
+    altText: item?.altText,
+  })) : null;
+  return {
+    push: coerceCounts(raw.push),
+    pull: coerceCounts(raw.pull),
+    aiImprove: coerceCounts(raw.aiImprove),
+    lastPush: safePush,
+    lastReplayAt: raw.lastReplayAt && Number.isFinite(raw.lastReplayAt) ? raw.lastReplayAt : null,
+    persistedAt: raw.persistedAt && Number.isFinite(raw.persistedAt) ? raw.persistedAt : null,
+  };
+};
+
+const persistHookStats = async () => {
+  try {
+    hookStats.persistedAt = Date.now();
+    await storageJson.set(HOOK_STATS_KEY, hookStats);
+  } catch (err) {
+    console.warn('[image-alt-media-seo] failed to persist hook stats', err.message);
+  }
+};
+
+const loadHookStats = async () => {
+  try {
+    const saved = await storageJson.get(HOOK_STATS_KEY, null);
+    if (saved) hookStats = normalizeHookStats(saved);
+  } catch (err) {
+    console.warn('[image-alt-media-seo] failed to load hook stats', err.message);
+  }
+};
+(async () => { await loadHookStats(); })();
+
+const recordHook = (name, ok, meta = {}) => {
+  if (!hookStats[name]) hookStats[name] = { success: 0, error: 0 };
+  hookStats[name][ok ? 'success' : 'error'] += 1;
+  if (name === 'push' && ok && meta.items) {
+    const trimmed = Array.isArray(meta.items) ? meta.items.slice(-50).map(item => ({
+      id: item?.id,
+      url: item?.url,
+      altText: item?.altText || item?.alt,
+    })) : null;
+    hookStats.lastPush = trimmed;
+  }
+  if (name === 'replay' && ok) hookStats.lastReplayAt = Date.now();
+  // Persist asynchronously; errors are logged but non-blocking
+  persistHookStats();
+};
+
 const tokenize = str => (str || '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
 const similarityScore = (needle, haystack) => {
   const n = new Set(tokenize(needle));
@@ -40,6 +109,52 @@ const similarityScore = (needle, haystack) => {
   let overlap = 0;
   n.forEach(tok => { if (h.has(tok)) overlap += 1; });
   return overlap / n.size;
+};
+
+// Lightweight persistence for approvals + action log
+const STATE_KEY = 'image-alt-media-seo-state';
+const DEFAULT_STATE = { approvals: [], actionLog: [] };
+const sanitizeApproval = entry => {
+  if (!entry || typeof entry !== 'object') return null;
+  const items = Array.isArray(entry.items) ? entry.items.map(i => ({
+    id: i?.id,
+    altText: i?.altText,
+  })).filter(i => i.id && i.altText).slice(0, 50) : [];
+  const validStatuses = new Set(['pending', 'approved', 'rejected', 'applied']);
+  return {
+    id: entry.id || `appr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    label: entry.label || 'Alt update',
+    items,
+    status: validStatuses.has(entry.status) ? entry.status : 'pending',
+    requestedBy: entry.requestedBy || 'unknown',
+    requestedAt: entry.requestedAt || Date.now(),
+    approvedBy: entry.approvedBy || null,
+    approvedAt: entry.approvedAt || null,
+  };
+};
+const sanitizeAction = entry => {
+  if (!entry || typeof entry !== 'object') return null;
+  return {
+    action: entry.action || 'action',
+    count: Number.isFinite(entry.count) ? entry.count : Number(entry.count) || 0,
+    role: entry.role || 'unknown',
+    ts: entry.ts || Date.now(),
+    label: entry.label,
+  };
+};
+const loadState = async () => {
+  const raw = await storageJson.get(STATE_KEY, DEFAULT_STATE);
+  const approvals = Array.isArray(raw.approvals) ? raw.approvals.map(sanitizeApproval).filter(Boolean).slice(0, 100) : [];
+  const actionLog = Array.isArray(raw.actionLog) ? raw.actionLog.map(sanitizeAction).filter(Boolean).slice(-200) : [];
+  return { approvals, actionLog };
+};
+const saveState = async ({ approvals = [], actionLog = [] } = {}) => {
+  const payload = {
+    approvals: (approvals || []).map(sanitizeApproval).filter(Boolean).slice(0, 100),
+    actionLog: (actionLog || []).map(sanitizeAction).filter(Boolean).slice(-200),
+  };
+  await storageJson.set(STATE_KEY, payload);
+  return payload;
 };
 
 const isValidShopDomain = shop => typeof shop === 'string' && /^[a-z0-9][a-z0-9.-]*\.myshopify\.com$/i.test(shop);
@@ -399,6 +514,95 @@ const gradeAlt = ({ altText = '', keywords = '', lint, locale }) => {
   return { score: base, grade };
 };
 
+const SEGMENT_PROMPTS = {
+  apparel: 'Mention cut, material, color, fit; avoid marketing fluff. Prioritize accessibility and practical descriptors.',
+  electronics: 'Note device type, key specs, ports/buttons placement, and color; avoid speculative claims.',
+  home: 'Include material, finish, size cues, and room context when visible; keep concise.',
+  beauty: 'Name product type, shade, finish, applicator/packaging; avoid benefits/claims.',
+  general: 'Describe the subject precisely with one distinguishing detail.',
+};
+
+const detectCategory = ({ productTitle = '', attributes = '', url = '', keywords = '', productType = '', tags = '' }) => {
+  const haystack = [productTitle, attributes, url, keywords, productType, Array.isArray(tags) ? tags.join(' ') : tags].join(' ').toLowerCase();
+  if (/(dress|shirt|hoodie|jacket|pants|jeans|sneaker|boot|apparel|cotton|denim|polyester|athleisure)/.test(haystack)) return 'apparel';
+  if (/(laptop|tablet|phone|camera|headphone|charger|monitor|keyboard|mouse|electronics|smartwatch|wearable)/.test(haystack)) return 'electronics';
+  if (/(sofa|chair|table|lamp|rug|bedding|pillow|kitchen|cookware|home decor|furniture)/.test(haystack)) return 'home';
+  if (/(lipstick|mascara|serum|moisturizer|palette|skincare|fragrance|perfume|beauty)/.test(haystack)) return 'beauty';
+  return 'general';
+};
+
+const enrichKeywords = ({ keywords = '', productTitle = '', vendor = '', productType = '', tags = [], collections = [] }) => {
+  const bag = [];
+  const pushTokens = val => {
+    if (!val) return;
+    const items = Array.isArray(val) ? val : String(val).split(/[,|]/);
+    items.forEach(entry => {
+      const token = (entry || '').toString().trim().toLowerCase();
+      if (token) bag.push(token);
+    });
+  };
+  pushTokens(keywords);
+  pushTokens(productTitle.split(/\s+/));
+  pushTokens(vendor);
+  pushTokens(productType);
+  pushTokens(tags);
+  pushTokens(collections);
+  const deduped = Array.from(new Set(bag)).filter(Boolean).slice(0, 20);
+  return { enrichedKeywords: deduped.join(', '), keywordsUsed: deduped };
+};
+
+const detectLocaleFromText = text => {
+  const sample = (text || '').toLowerCase();
+  if (!sample) return null;
+  if (/[äöüß]/.test(sample) || / und /.test(sample)) return 'de';
+  if (/ el | la | una | un | los | las /.test(sample) || /ñ/.test(sample)) return 'es';
+  if (/ le | la | une | des | avec /.test(sample) || /é|è|à|ç/.test(sample)) return 'fr';
+  if (/が|です|ます/.test(sample)) return 'ja';
+  if (/的/.test(sample)) return 'zh';
+  if (/의/.test(sample)) return 'ko';
+  return null;
+};
+
+const localeStyleGuide = locale => {
+  const norm = normalizeLocale(locale);
+  if (norm.startsWith('de')) return 'Deutsch: sentence-case nouns, avoid English adjectives, concise yet specific.';
+  if (norm.startsWith('fr')) return 'Français: sentence-case, avoid English borrow words, concise descriptive phrase.';
+  if (norm.startsWith('es')) return 'Español: neutral tone, avoid promotional phrasing, concise description.';
+  if (norm.startsWith('ja')) return 'Japanese: short descriptive phrase, avoid katakana loanwords if unnecessary, no punctuation.';
+  if (norm.startsWith('ko')) return 'Korean: concise noun-first phrasing, avoid honorifics, no marketing tone.';
+  if (norm.startsWith('zh')) return 'Chinese: concise, simplified Chinese, noun-first, avoid marketing tone.';
+  return 'Keep concise, factual, ADA-friendly phrasing.';
+};
+
+const diffAlt = (previous = '', next = '') => {
+  const prevLen = (previous || '').length;
+  const nextLen = (next || '').length;
+  const overlap = similarityScore(previous || '', next || '');
+  return { prevLen, nextLen, lengthDelta: nextLen - prevLen, overlap: Number(overlap.toFixed(3)) };
+};
+
+const visionCheck = ({ altText = '', url = '', productTitle = '' }) => {
+  const urlTokens = tokenize(url).slice(0, 12);
+  const titleTokens = tokenize(productTitle).slice(0, 12);
+  const altTokens = tokenize(altText).slice(0, 50);
+  const joined = new Set([...urlTokens, ...titleTokens].filter(Boolean));
+  let overlap = 0;
+  altTokens.forEach(tok => { if (joined.has(tok)) overlap += 1; });
+  const coverage = altTokens.length ? overlap / altTokens.length : 0;
+  const mismatch = coverage < 0.15;
+  return { overlap: Number(coverage.toFixed(3)), mismatch };
+};
+
+const ENFORCE_ROLES = process.env.IMAGE_ALT_ENFORCE_ROLES === 'true';
+const writerRoles = new Set(['admin', 'editor']);
+const getRole = req => (req.headers['x-role'] || req.query.role || req.body?.role || 'editor').toString().toLowerCase();
+const requireWriter = (req, res, next) => {
+  if (!ENFORCE_ROLES) return next();
+  const role = getRole(req);
+  if (writerRoles.has(role)) return next();
+  return res.status(403).json({ ok: false, error: 'Forbidden: editor or admin role required', role });
+};
+
 const buildDeterministicVariants = (base, count = 1) => {
   const variants = [];
   for (let i = 0; i < count; i++) {
@@ -485,7 +689,7 @@ router.get('/images', async (req, res) => {
 });
 
 // Import images directly from Shopify products (uses Admin API token)
-router.post('/images/import-shopify', async (req, res) => {
+router.post('/images/import-shopify', requireWriter, async (req, res) => {
   let tokenSource = 'none';
   try {
     const shop = (req.body?.shop || req.query?.shop || req.headers['x-shopify-shop-domain'] || '').toLowerCase();
@@ -621,7 +825,7 @@ router.get('/images/:id', async (req, res) => {
     res.status(500).json({ ok: false, error: err.message || 'DB error' });
   }
 });
-router.post('/images', async (req, res) => {
+router.post('/images', requireWriter, async (req, res) => {
   try {
     const image = await db.create(req.body || {});
     clearAnalyticsCache();
@@ -630,7 +834,7 @@ router.post('/images', async (req, res) => {
     res.status(500).json({ ok: false, error: err.message || 'DB error' });
   }
 });
-router.put('/images/:id', async (req, res) => {
+router.put('/images/:id', requireWriter, async (req, res) => {
   try {
     const image = await db.update(req.params.id, req.body || {});
     if (!image) return res.status(404).json({ ok: false, error: 'Not found' });
@@ -640,7 +844,7 @@ router.put('/images/:id', async (req, res) => {
     res.status(500).json({ ok: false, error: err.message || 'DB error' });
   }
 });
-router.delete('/images/:id', async (req, res) => {
+router.delete('/images/:id', requireWriter, async (req, res) => {
   try {
     const ok = await db.delete(req.params.id);
     if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
@@ -652,7 +856,7 @@ router.delete('/images/:id', async (req, res) => {
 });
 
 // Bulk update alts
-router.post('/images/bulk-update', async (req, res) => {
+router.post('/images/bulk-update', requireWriter, async (req, res) => {
   try {
     const items = Array.isArray(req.body?.items) ? req.body.items : [];
     if (!items.length) return res.status(400).json({ ok: false, error: 'items[] required' });
@@ -681,7 +885,7 @@ router.post('/images/bulk-update', async (req, res) => {
 router.post(['/ai/generate', '/ai/generate-alt'], async (req, res) => {
   try {
     const body = req.body || {};
-    const locale = normalizeLocale(body.locale || 'default');
+    let locale = normalizeLocale(body.locale || 'default');
     const safeMode = body.safeMode !== false;
     const keywords = normalizeStr(body.keywords || '', MAX_KEYWORDS_LEN);
     const brandTerms = normalizeStr(body.brandTerms || '', MAX_BRAND_TERMS_LEN);
@@ -696,6 +900,13 @@ router.post(['/ai/generate', '/ai/generate-alt'], async (req, res) => {
     const url = normalizeStr(body.url || '', MAX_URL_LEN);
     const description = normalizeStr(body.input || body.imageDescription || '', MAX_DESC_LEN);
     const variantCount = clampInt(body.variantCount || body.variants || 1, 1, 5);
+    const { enrichedKeywords, keywordsUsed } = enrichKeywords({ keywords, productTitle, vendor: body.vendor, productType: body.productType, tags: body.tags, collections: body.collections });
+    const appliedKeywords = enrichedKeywords || keywords;
+    const detectedCategory = detectCategory({ productTitle, attributes, url, keywords: appliedKeywords, productType: body.productType, tags: body.tags });
+    const detectedLocale = detectLocaleFromText(description || productTitle || keywords) || null;
+    if (detectedLocale && locale === 'default') {
+      locale = normalizeLocale(detectedLocale);
+    }
 
     if (!description && !url) {
       return res.status(400).json({ ok: false, error: 'Provide input or url' });
@@ -714,13 +925,13 @@ router.post(['/ai/generate', '/ai/generate-alt'], async (req, res) => {
     const maxTokens = verbosity === 'terse' ? 80 : verbosity === 'detailed' ? 160 : 120;
     const messages = [
       { role: 'system', content: 'You are an image SEO expert who writes concise, specific, ADA-friendly alt text without fluff.' },
-      { role: 'user', content: `Image description: ${description || '(none)'}; URL: ${url || '(none)'}; Keywords: ${keywords || '(none)'}; Brand vocab: ${brandTerms || '(none)'}; Context: ${contextStr || '(none)'}; Constraints: no promo language, no PII, keep concise. ${toneHint} ${verbosityHint}` },
+      { role: 'user', content: `Image description: ${description || '(none)'}; URL: ${url || '(none)'}; Keywords: ${appliedKeywords || '(none)'}; Brand vocab: ${brandTerms || '(none)'}; Context: ${contextStr || '(none)'}; Segment: ${detectedCategory}; Style guide: ${localeStyleGuide(locale)}; Constraints: no promo language, no PII, keep concise. ${SEGMENT_PROMPTS[detectedCategory] || SEGMENT_PROMPTS.general} ${toneHint} ${verbosityHint}` },
     ];
 
     const variantTexts = await generateVariants({ openai, messages, maxTokens, variantCount, fallbackText: buildFallbackAlt({ imageDescription: description, url, keywords, productTitle, shotType }) });
     const variants = variantTexts.map((text, idx) => {
-      const lint = lintAlt(text, keywords, locale, brandTerms);
-      const grade = gradeAlt({ altText: text, keywords, lint, locale });
+      const lint = lintAlt(text, appliedKeywords, locale, brandTerms);
+      const grade = gradeAlt({ altText: text, keywords: appliedKeywords, lint, locale });
       return { label: labelFromIndex(idx), altText: text, lint, grade };
     });
     const primary = variants[0];
@@ -735,7 +946,7 @@ router.post(['/ai/generate', '/ai/generate-alt'], async (req, res) => {
       finalAlt = finalAlt.slice(0, MAX_ALT_LEN);
     }
 
-    res.json({ ok: true, result: finalAlt, variants, lint: primary?.lint, grade: primary?.grade, raw: primary?.altText, sanitized });
+    res.json({ ok: true, result: finalAlt, variants, lint: primary?.lint, grade: primary?.grade, raw: primary?.altText, sanitized, appliedKeywords: keywordsUsed, appliedSegment: detectedCategory, detectedLocale: locale });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message || 'AI error' });
   }
@@ -745,7 +956,7 @@ router.post(['/ai/generate', '/ai/generate-alt'], async (req, res) => {
 router.post('/ai/caption', async (req, res) => {
   try {
     const body = req.body || {};
-    const locale = normalizeLocale(body.locale || 'default');
+    let locale = normalizeLocale(body.locale || 'default');
     const safeMode = body.safeMode !== false;
     const keywords = normalizeStr(body.keywords || '', MAX_KEYWORDS_LEN);
     const brandTerms = normalizeStr(body.brandTerms || '', MAX_BRAND_TERMS_LEN);
@@ -757,6 +968,13 @@ router.post('/ai/caption', async (req, res) => {
     const scene = normalizeStr(body.scene || '', 200);
     const url = normalizeStr(body.url || '', MAX_URL_LEN);
     const description = normalizeStr(body.input || body.imageDescription || '', MAX_DESC_LEN);
+    const { enrichedKeywords, keywordsUsed } = enrichKeywords({ keywords, productTitle, vendor: body.vendor, productType: body.productType, tags: body.tags, collections: body.collections });
+    const appliedKeywords = enrichedKeywords || keywords;
+    const detectedCategory = detectCategory({ productTitle, attributes, url, keywords: appliedKeywords, productType: body.productType, tags: body.tags });
+    const detectedLocale = detectLocaleFromText(description || productTitle || keywords) || null;
+    if (detectedLocale && locale === 'default') {
+      locale = normalizeLocale(detectedLocale);
+    }
 
     if (!description && !url) {
       return res.status(400).json({ ok: false, error: 'Provide input or url' });
@@ -766,11 +984,11 @@ router.post('/ai/caption', async (req, res) => {
     const contextStr = toContextString({ productTitle, attributes, shotType, focus, variant, scene });
     const messages = [
       { role: 'system', content: 'You write concise, specific, single-sentence image captions without promo language or PII.' },
-      { role: 'user', content: `Image description: ${description || '(none)'}; URL: ${url || '(none)'}; Keywords: ${keywords || '(none)'}; Brand vocab: ${brandTerms || '(none)'}; Context: ${contextStr || '(none)'}; Style: concise, human-friendly, single sentence.` },
+      { role: 'user', content: `Image description: ${description || '(none)'}; URL: ${url || '(none)'}; Keywords: ${appliedKeywords || '(none)'}; Brand vocab: ${brandTerms || '(none)'}; Context: ${contextStr || '(none)'}; Segment: ${detectedCategory}; Style: concise, human-friendly, single sentence. ${localeStyleGuide(locale)}` },
     ];
     const [captionRaw] = await generateVariants({ openai, messages, maxTokens: 80, variantCount: 1, fallbackText: buildFallbackAlt({ imageDescription: description, url, keywords, productTitle, shotType }) });
     const caption = captionRaw || '';
-    const lint = lintAlt(caption, keywords, locale, brandTerms);
+    const lint = lintAlt(caption, appliedKeywords, locale, brandTerms);
     const sanitized = lint?.sanitizedAlt && lint.sanitizedAlt !== caption ? lint.sanitizedAlt : null;
     let finalCaption = caption;
     if (safeMode) {
@@ -779,7 +997,7 @@ router.post('/ai/caption', async (req, res) => {
     }
     if (finalCaption && finalCaption.length > 240) finalCaption = finalCaption.slice(0, 240);
 
-    res.json({ ok: true, caption: finalCaption, raw: caption, sanitized, lint });
+    res.json({ ok: true, caption: finalCaption, raw: caption, sanitized, lint, appliedKeywords: keywordsUsed, appliedSegment: detectedCategory, detectedLocale: locale });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message || 'AI error' });
   }
@@ -798,6 +1016,7 @@ router.post('/ai/batch-generate', async (req, res) => {
     const chunkSize = Math.min(Math.max(Number(body.chunkSize) || 50, 1), 100);
     const paceMs = Math.min(Math.max(Number(body.paceMs) || 0, 0), 2000); // optional delay between chunks
     const variantCountDefault = clampInt(body.variantCount || body.variants || 1, 1, 5);
+    const simulateOnly = body.simulateOnly === true;
     const items = Array.isArray(body.items) ? body.items : [];
 
     if (!items.length) return res.status(400).json({ ok: false, error: 'items[] required' });
@@ -829,6 +1048,11 @@ router.post('/ai/batch-generate', async (req, res) => {
         const itemVariantCount = clampInt(item?.variantCount || item?.variants || variantCountDefault, 1, 5);
         const itemTone = normalizeStr(item?.tone || tone, 40);
         const itemVerbosity = normalizeStr(item?.verbosity || verbosity, 40);
+        const { enrichedKeywords, keywordsUsed } = enrichKeywords({ keywords: itemKeywords, productTitle, vendor: item.vendor, productType: item.productType, tags: item.tags, collections: item.collections });
+        const appliedKeywords = enrichedKeywords || itemKeywords;
+        const detectedCategory = detectCategory({ productTitle, attributes, url, keywords: appliedKeywords, productType: item.productType, tags: item.tags });
+        const detectedLocale = detectLocaleFromText(description || productTitle || itemKeywords) || null;
+        const itemLocale = normalizeLocale(item?.locale || detectedLocale || locale);
 
         if (!description && !url) {
           results.push({ ok: false, error: 'Provide input or url', item });
@@ -849,12 +1073,12 @@ router.post('/ai/batch-generate', async (req, res) => {
         const maxTokens = itemVerbosity === 'terse' ? 80 : itemVerbosity === 'detailed' ? 160 : 120;
         const messages = [
           { role: 'system', content: 'You are an image SEO expert who writes concise, specific, ADA-friendly alt text without fluff.' },
-          { role: 'user', content: `Image description: ${description || '(none)'}; URL: ${url || '(none)'}; Keywords: ${itemKeywords || '(none)'}; Brand vocab: ${itemBrandTerms || '(none)'}; Context: ${contextStr || '(none)'}; Constraints: no promo language, no PII, keep concise. ${toneHint} ${verbosityHint}` },
+          { role: 'user', content: `Image description: ${description || '(none)'}; URL: ${url || '(none)'}; Keywords: ${appliedKeywords || '(none)'}; Brand vocab: ${itemBrandTerms || '(none)'}; Context: ${contextStr || '(none)'}; Segment: ${detectedCategory}; Style guide: ${localeStyleGuide(itemLocale)}; Constraints: no promo language, no PII, keep concise. ${SEGMENT_PROMPTS[detectedCategory] || SEGMENT_PROMPTS.general} ${toneHint} ${verbosityHint}` },
         ];
         const variantTexts = await generateVariants({ openai, messages, maxTokens, variantCount: itemVariantCount, fallbackText: buildFallbackAlt({ imageDescription: description, url, keywords: itemKeywords, productTitle, shotType }) });
         const variants = variantTexts.map((text, idx) => {
-          const lint = lintAlt(text, itemKeywords, locale, itemBrandTerms);
-          const grade = gradeAlt({ altText: text, keywords: itemKeywords, lint, locale });
+          const lint = lintAlt(text, appliedKeywords, itemLocale, itemBrandTerms);
+          const grade = gradeAlt({ altText: text, keywords: appliedKeywords, lint, locale: itemLocale });
           return { label: labelFromIndex(idx), altText: text, lint, grade };
         });
         const primary = variants[0];
@@ -867,7 +1091,9 @@ router.post('/ai/batch-generate', async (req, res) => {
         if (finalAlt && finalAlt.length > MAX_ALT_LEN) {
           finalAlt = finalAlt.slice(0, MAX_ALT_LEN);
         }
-        results.push({ ok: true, result: finalAlt, variants, lint: primary?.lint, grade: primary?.grade, raw: primary?.altText, sanitized, meta: { productTitle, url, shotType, focus, variant, brandTerms: itemBrandTerms, tone: itemTone, verbosity: itemVerbosity, variantCount: itemVariantCount } });
+        const diff = item.originalAlt ? diffAlt(item.originalAlt, finalAlt) : null;
+        const hitRate = primary?.lint ? Math.max(0, Math.min(100, 100 - (primary.lint.totalFindings || 0) * 5)) : null;
+        results.push({ ok: true, result: finalAlt, variants, lint: primary?.lint, grade: primary?.grade, raw: primary?.altText, sanitized, diff, hitRate, appliedKeywords: keywordsUsed, appliedSegment: detectedCategory, detectedLocale: itemLocale, meta: { productTitle, url, shotType, focus, variant, brandTerms: itemBrandTerms, tone: itemTone, verbosity: itemVerbosity, variantCount: itemVariantCount } });
       }
       if (paceMs && i + chunkSize < items.length) {
         await sleep(paceMs);
@@ -894,6 +1120,10 @@ router.post('/ai/batch-generate', async (req, res) => {
     if (paceMs || chunkSize !== 50) {
       console.info('[image-alt-media-seo] batch summary', { total: summary.total, ok: summary.ok, errors: summary.errors, chunkSize: summary.chunkSize, paceMs: summary.paceMs, durationMs: summary.durationMs });
     }
+    const hitRates = results.filter(r => typeof r.hitRate === 'number').map(r => r.hitRate);
+    const hitRateAvg = hitRates.length ? Math.round(hitRates.reduce((a, b) => a + b, 0) / hitRates.length) : null;
+    if (hitRateAvg !== null) summary.hitRateAvg = hitRateAvg;
+    summary.simulateOnly = simulateOnly;
     res.json({ ok: true, results, summary });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message || 'AI error' });
@@ -1065,7 +1295,7 @@ router.post('/analytics/cache/clear', (req, res) => {
 });
 
 // Import/export endpoints (live)
-router.post('/import', async (req, res) => {
+router.post('/import', requireWriter, async (req, res) => {
   try {
     const { items, data, dryRun, errorExport } = req.body || {};
     const payload = Array.isArray(items) ? items : Array.isArray(data) ? data : null;
@@ -1119,7 +1349,7 @@ router.post('/import', async (req, res) => {
 });
 
 // CSV import endpoint: accepts text/csv payload in body.csv or raw string
-router.post('/import/csv', async (req, res) => {
+router.post('/import/csv', requireWriter, async (req, res) => {
   try {
     const csvText = typeof req.body === 'string' ? req.body : req.body?.csv;
     if (!csvText || !csvText.trim()) return res.status(400).json({ ok: false, error: 'csv required' });
@@ -1251,6 +1481,260 @@ router.get('/export/csv', async (req, res) => {
     res.status(200).send(csv);
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message || 'DB error' });
+  }
+});
+
+// Translate alt text to a target locale (batch-friendly)
+router.post('/ai/translate', async (req, res) => {
+  try {
+    const targetLocale = normalizeLocale(req.body?.targetLocale || req.body?.locale || 'default');
+    const items = Array.isArray(req.body?.items) ? req.body.items : [];
+    if (!items.length) return res.status(400).json({ ok: false, error: 'items[] required' });
+    const openai = getOpenAI();
+    const results = [];
+    for (const item of items) {
+      const alt = normalizeStr(item?.altText || item?.alt || '', MAX_ALT_LEN);
+      const id = item?.id;
+      if (!alt) {
+        results.push({ ok: false, error: 'altText required', id });
+        continue;
+      }
+      const sourceLocale = detectLocaleFromText(alt) || 'unknown';
+      let translated = alt;
+      if (openai) {
+        const messages = [
+          { role: 'system', content: 'Translate the provided image alt text to the target locale. Keep meaning, keep length similar, avoid marketing tone. Return only the translated alt text.' },
+          { role: 'user', content: `Target locale: ${targetLocale}. Alt text: ${alt}` },
+        ];
+        const completion = await withRetry(() => callOpenAIChat({ openai, messages, maxTokens: 120, n: 1 }));
+        translated = completion.choices?.[0]?.message?.content?.trim() || alt;
+      } else {
+        translated = `[${targetLocale}] ${alt}`;
+      }
+      const lint = lintAlt(translated, '', targetLocale, '');
+      results.push({ ok: true, id, altText: translated, sourceLocale, targetLocale, lint });
+    }
+    res.json({ ok: true, results, targetLocale });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'Translate error' });
+  }
+});
+
+// Heuristic vision/semantic QC (token overlap between URL/title and alt text)
+router.post('/vision/qc', async (req, res) => {
+  try {
+    const items = Array.isArray(req.body?.items) ? req.body.items : [];
+    if (!items.length) return res.status(400).json({ ok: false, error: 'items[] required' });
+    const results = items.map(item => {
+      const altText = normalizeStr(item?.altText || item?.alt || '', MAX_ALT_LEN);
+      const url = normalizeStr(item?.url || '', MAX_URL_LEN);
+      const productTitle = normalizeStr(item?.productTitle || '', 200);
+      const qc = visionCheck({ altText, url, productTitle });
+      const note = qc.mismatch ? 'Alt may not match product context' : 'Alt seems aligned with product context';
+      return { id: item?.id, url, altText, overlap: qc.overlap, mismatch: qc.mismatch, note };
+    });
+    res.json({ ok: true, results });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'Vision QC error' });
+  }
+});
+
+// Cross-check with Shopify live data to detect drift (optionally auto-heal by syncing alt text)
+router.post('/images/shopify-drift', requireWriter, async (req, res) => {
+  let tokenSource = 'none';
+  try {
+    const shop = (req.body?.shop || req.query?.shop || req.headers['x-shopify-shop-domain'] || '').toLowerCase();
+    if (!shop) return res.status(400).json({ ok: false, error: 'shop required (e.g., mystore.myshopify.com)' });
+    if (!isValidShopDomain(shop)) return res.status(400).json({ ok: false, error: 'Invalid shop domain' });
+    const limit = clampInt(req.body?.limit || req.query?.limit || 100, 1, 500);
+    const autoHeal = req.body?.autoHeal === true;
+
+    const tokenSourceMap = {
+      body: req.body?.token,
+      session: req.session?.shopifyToken,
+      SHOPIFY_ACCESS_TOKEN: process.env.SHOPIFY_ACCESS_TOKEN,
+      SHOPIFY_ADMIN_API_TOKEN: process.env.SHOPIFY_ADMIN_API_TOKEN,
+      SHOPIFY_API_TOKEN: process.env.SHOPIFY_API_TOKEN,
+      SHOPIFY_ADMIN_TOKEN: process.env.SHOPIFY_ADMIN_TOKEN,
+      shopTokens: getShopToken(shop),
+    };
+    const tokenEntry = Object.entries(tokenSourceMap).find(([, val]) => !!val);
+    const resolvedToken = tokenEntry ? tokenEntry[1] : null;
+    tokenSource = tokenEntry ? tokenEntry[0] : 'none';
+    if (!resolvedToken) {
+      return res.status(401).json({ ok: false, error: 'No Shopify admin token available', tokenSource });
+    }
+
+    const { items: products } = await shopifyFetchPaginated(
+      shop,
+      'products.json',
+      { limit: 250, fields: 'id,title,handle,images' },
+      resolvedToken,
+      {
+        maxPages: Math.ceil(limit / 250),
+        rateLimitThreshold: 0.7,
+        rateLimitSleepMs: 900,
+      }
+    );
+
+    const trimmed = products.slice(0, Math.ceil(limit / 1));
+    const existing = await db.list();
+    const map = new Map();
+    existing.forEach(row => { if (row.url) map.set(row.url.toLowerCase(), row); });
+    const drift = [];
+    const missing = [];
+    for (const product of trimmed) {
+      for (const image of product.images || []) {
+        const url = normalizeStr(image.src || image.original_src || '', MAX_URL_LEN);
+        if (!url) continue;
+        const key = url.toLowerCase();
+        const shopifyAlt = normalizeStr(image.alt || image.alt_text || '', MAX_ALT_LEN);
+        const stored = map.get(key);
+        if (!stored) {
+          missing.push({ url, shopifyAlt });
+          continue;
+        }
+        if ((stored.altText || '') !== shopifyAlt) {
+          drift.push({ id: stored.id, url, storedAlt: stored.altText || '', shopifyAlt });
+          if (autoHeal && shopifyAlt) {
+            await db.upsertByUrl({ url, altText: shopifyAlt });
+          }
+        }
+      }
+    }
+    if (autoHeal && drift.length) clearAnalyticsCache();
+    res.json({ ok: true, drift, missing, shop, autoHeal, tokenSource, checked: drift.length + missing.length });
+  } catch (err) {
+    const status = err.status || 500;
+    res.status(status).json({ ok: false, error: err.message || 'Shopify drift check failed', tokenSource });
+  }
+});
+
+// Persisted collaboration state (approvals + action log)
+router.get('/state', async (_req, res) => {
+  try {
+    const state = await loadState();
+    res.json({ ok: true, ...state, updatedAt: new Date().toISOString() });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'Failed to load state' });
+  }
+});
+
+router.post('/state', requireWriter, async (req, res) => {
+  try {
+    const approvals = Array.isArray(req.body?.approvals) ? req.body.approvals : [];
+    const actionLog = Array.isArray(req.body?.actionLog) ? req.body.actionLog : [];
+    const saved = await saveState({ approvals, actionLog });
+    res.json({ ok: true, approvals: saved.approvals.length, actionLog: saved.actionLog.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'Failed to save state' });
+  }
+});
+
+// API hooks for CI / programmatic integrations
+router.post('/hooks/push', requireWriter, async (req, res) => {
+  try {
+    const items = Array.isArray(req.body?.items) ? req.body.items : [];
+    if (!items.length) return res.status(400).json({ ok: false, error: 'items[] required' });
+    const results = [];
+    for (const item of items) {
+      const url = normalizeStr(item?.url || '', MAX_URL_LEN);
+      const altText = normalizeStr(item?.altText || item?.alt || '', MAX_ALT_LEN);
+      if (!url || !altText) {
+        results.push({ ok: false, error: 'url and altText required', item });
+        continue;
+      }
+      const saved = await db.upsertByUrl({ url, altText });
+      results.push(saved ? { ok: true, id: saved.id, url: saved.url } : { ok: false, error: 'upsert failed', url });
+    }
+    clearAnalyticsCache();
+    recordHook('push', true, { items });
+    res.json({ ok: true, results });
+  } catch (err) {
+    recordHook('push', false);
+    res.status(500).json({ ok: false, error: err.message || 'Push error' });
+  }
+});
+
+router.get('/hooks/pull', async (req, res) => {
+  try {
+    const limit = clampInt(req.query.limit || 50, 1, 500);
+    const items = (await db.list()).slice(0, limit);
+    recordHook('pull', true);
+    res.json({ ok: true, items, limit });
+  } catch (err) {
+    recordHook('pull', false);
+    res.status(500).json({ ok: false, error: err.message || 'Pull error' });
+  }
+});
+
+router.post('/hooks/ai-improve', async (req, res) => {
+  try {
+    const items = Array.isArray(req.body?.items) ? req.body.items : [];
+    const locale = normalizeLocale(req.body?.locale || 'default');
+    if (!items.length) return res.status(400).json({ ok: false, error: 'items[] required' });
+    const openai = getOpenAI();
+    const results = [];
+    for (const item of items) {
+      const description = normalizeStr(item?.altText || item?.input || item?.imageDescription || '', MAX_DESC_LEN);
+      const url = normalizeStr(item?.url || '', MAX_URL_LEN);
+      const keywords = normalizeStr(item?.keywords || '', MAX_KEYWORDS_LEN);
+      if (!description && !url) {
+        results.push({ ok: false, error: 'altText or url required', item });
+        continue;
+      }
+      const { enrichedKeywords, keywordsUsed } = enrichKeywords({ keywords, productTitle: item.productTitle, vendor: item.vendor, productType: item.productType, tags: item.tags });
+      const appliedKeywords = enrichedKeywords || keywords;
+      const detectedCategory = detectCategory({ productTitle: item.productTitle, attributes: item.attributes, url, keywords: appliedKeywords, productType: item.productType, tags: item.tags });
+      const messages = [
+        { role: 'system', content: 'Rewrite image alt text to improve clarity and accessibility. Keep concise, avoid marketing tone, avoid PII.' },
+        { role: 'user', content: `Existing alt: ${description || '(none)'}; URL: ${url || '(none)'}; Keywords: ${appliedKeywords || '(none)'}; Segment: ${detectedCategory}; Style: ${localeStyleGuide(locale)}` },
+      ];
+      const completion = openai ? await withRetry(() => callOpenAIChat({ openai, messages, maxTokens: 120, n: 1 })) : null;
+      const candidate = completion?.choices?.[0]?.message?.content?.trim() || description;
+      const lint = lintAlt(candidate, appliedKeywords, locale, item.brandTerms || '');
+      results.push({ ok: true, result: candidate, lint, appliedKeywords: keywordsUsed, appliedSegment: detectedCategory });
+    }
+    recordHook('aiImprove', true);
+    res.json({ ok: true, results });
+  } catch (err) {
+    recordHook('aiImprove', false);
+    res.status(500).json({ ok: false, error: err.message || 'AI improve error' });
+  }
+});
+
+// Hook metrics and replay
+router.get('/hooks/metrics', async (_req, res) => {
+  res.json({ ok: true, hookStats });
+});
+
+router.post('/hooks/metrics/reset', requireWriter, async (_req, res) => {
+  hookStats = { ...defaultHookStats };
+  await persistHookStats();
+  res.json({ ok: true, reset: true, hookStats });
+});
+
+router.post('/hooks/replay', requireWriter, async (_req, res) => {
+  try {
+    const items = Array.isArray(hookStats.lastPush) ? hookStats.lastPush : [];
+    if (!items.length) return res.status(400).json({ ok: false, error: 'No previous push payload to replay' });
+    const results = [];
+    for (const item of items) {
+      const url = normalizeStr(item?.url || '', MAX_URL_LEN);
+      const altText = normalizeStr(item?.altText || item?.alt || '', MAX_ALT_LEN);
+      if (!url || !altText) {
+        results.push({ ok: false, error: 'url and altText required', item });
+        continue;
+      }
+      const saved = await db.upsertByUrl({ url, altText });
+      results.push(saved ? { ok: true, id: saved.id, url: saved.url } : { ok: false, error: 'upsert failed', url });
+    }
+    clearAnalyticsCache();
+    recordHook('replay', true, { items });
+    res.json({ ok: true, results, replayed: items.length });
+  } catch (err) {
+    recordHook('replay', false);
+    res.status(500).json({ ok: false, error: err.message || 'Replay error' });
   }
 });
 

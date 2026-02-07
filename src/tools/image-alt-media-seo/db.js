@@ -31,9 +31,27 @@ if (isTest || !connectionString) {
       return { items: clone(items), total: filtered.length };
     },
     get: async id => clone(images.find(i => i.id === Number(id)) || null),
+    findByUrl: async url => {
+      if (!url) return null;
+      const lower = url.toLowerCase();
+      return clone(images.find(i => (i.url || '').toLowerCase() === lower) || null);
+    },
     create: async data => {
       const url = data.url || data.imageUrl || null;
       const altText = data.altText || data.content || '';
+      const row = { id: nextId++, url, altText, createdAt: stamp() };
+      images.push(row);
+      return clone(row);
+    },
+    upsertByUrl: async data => {
+      const url = data.url || data.imageUrl || null;
+      const altText = data.altText || data.content || '';
+      if (!url) return null;
+      const existingIdx = images.findIndex(i => (i.url || '').toLowerCase() === url.toLowerCase());
+      if (existingIdx !== -1) {
+        images[existingIdx] = { ...images[existingIdx], altText, updatedAt: stamp() };
+        return clone(images[existingIdx]);
+      }
       const row = { id: nextId++, url, altText, createdAt: stamp() };
       images.push(row);
       return clone(row);
@@ -137,12 +155,40 @@ if (isTest || !connectionString) {
 
   const ready = ensureTables();
 
+  const findByUrl = async url => {
+    await ready;
+    if (!url) return null;
+    const { rows } = await pool.query('SELECT id, url, alt_text AS altText, created_at AS createdAt FROM image_alt_media_images WHERE lower(url) = lower($1) LIMIT 1', [url]);
+    return rows[0] || null;
+  };
+
+  const upsertByUrl = async data => {
+    await ready;
+    const url = data.url || data.imageUrl || null;
+    const altText = data.altText || data.content || '';
+    if (!url) return null;
+    const existing = await findByUrl(url);
+    if (existing?.id) {
+      const { rows } = await pool.query(
+        'UPDATE image_alt_media_images SET alt_text = $1 WHERE id = $2 RETURNING id, url, alt_text AS altText, created_at AS createdAt',
+        [altText, existing.id]
+      );
+      return rows[0] || null;
+    }
+    const { rows } = await pool.query(
+      'INSERT INTO image_alt_media_images (url, alt_text) VALUES ($1, $2) RETURNING id, url, alt_text AS altText, created_at AS createdAt',
+      [url, altText]
+    );
+    return rows[0] || null;
+  };
+
   module.exports = {
     list: async () => {
       await ready;
       const { rows } = await pool.query('SELECT id, url, alt_text AS altText, created_at AS createdAt FROM image_alt_media_images ORDER BY id DESC');
       return rows;
     },
+    findByUrl,
     listPaged: async ({ offset = 0, limit = 50, search = '' } = {}) => {
       await ready;
       const safeLimit = Math.min(Math.max(Number(limit) || 1, 1), 200);
@@ -174,6 +220,7 @@ if (isTest || !connectionString) {
       );
       return rows[0];
     },
+    upsertByUrl,
     update: async (id, data) => {
       await ready;
       const url = data.url || data.imageUrl || null;
