@@ -205,6 +205,7 @@ export default function ImageAltMediaSEO() {
   const [scheduledScans, setScheduledScans] = useState([]);
   const [autoFixEnabled, setAutoFixEnabled] = useState(false);
   const [autoComplete, setAutoComplete] = useState(true);
+  const [autoPilotMode, setAutoPilotMode] = useState(false);
   
   // Image Analysis (112-123)
   const [imageQualityScores, setImageQualityScores] = useState({});
