@@ -34,13 +34,6 @@ export default function ImageAltMediaSEO() {
   const [imageSearch, setImageSearch] = useState("");
   const [selectedImageIds, setSelectedImageIds] = useState([]);
   const [filteredImages, setFilteredImages] = useState([]);
-  const lintCache = useMemo(() => {
-    const map = new Map();
-    images.forEach(img => {
-      map.set(img.id, lintAltText(resolveAlt(img)));
-    });
-    return map;
-  }, [images]);
   const [filterMode, setFilterMode] = useState("all");
   const [duplicateAltIds, setDuplicateAltIds] = useState(new Set());
   const [rewritingId, setRewritingId] = useState(null);
@@ -564,6 +557,14 @@ export default function ImageAltMediaSEO() {
     if (raw && typeof raw === 'object') return raw.altText || raw.alttext || raw.alt || JSON.stringify(raw);
     return '';
   };
+
+  const lintCache = useMemo(() => {
+    const map = new Map();
+    images.forEach(img => {
+      map.set(img.id, lintAltText(resolveAlt(img)));
+    });
+    return map;
+  }, [images]);
 
   const truncate = (text, max = 160) => {
     if (!text) return '';
