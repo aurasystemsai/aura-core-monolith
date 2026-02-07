@@ -142,57 +142,25 @@ export default function ImageAltMediaSEO() {
   const [ocrResults, setOcrResults] = useState({});
   const [accessibilityAiScores, setAccessibilityAiScores] = useState({});
   
-  // Analytics & Insights (13-27)
-  const [roiData, setRoiData] = useState(null);
-  const [trendData, setTrendData] = useState(null);
-  const [competitorData, setCompetitorData] = useState(null);
-  const [seoScorePredictions, setSeoScorePredictions] = useState({});
-  const [conversionTracking, setConversionTracking] = useState(null);
-  const [performanceDashboard, setPerformanceDashboard] = useState(null);
-  const [customReports, setCustomReports] = useState([]);
-  const [gaIntegrationData, setGaIntegrationData] = useState(null);
-  const [heatMapData, setHeatMapData] = useState(null);
+  // Analytics & Insights (13-27) - IMAGE-SPECIFIC ONLY
   const [qualityCharts, setQualityCharts] = useState(null);
   const [progressTimeline, setProgressTimeline] = useState([]);
-  const [impactForecasts, setImpactForecasts] = useState(null);
   const [keywordPerformance, setKeywordPerformance] = useState({});
-  const [trafficAttribution, setTrafficAttribution] = useState({});
-  const [complianceDashboard, setComplianceDashboard] = useState(null);
   
-  // Collaboration & Workflow (28-39)
-  const [teamAssignments, setTeamAssignments] = useState({});
-  const [imageComments, setImageComments] = useState({});
-  const [approvalWorkflows, setApprovalWorkflows] = useState([]);
+  // Image Version History (28-39) - IMAGE-SPECIFIC ONLY
   const [versionHistory, setVersionHistory] = useState({});
   const [sharedTemplates, setSharedTemplates] = useState([]);
-  const [activityFeed, setActivityFeed] = useState([]);
-  const [userMentions, setUserMentions] = useState([]);
-  const [userRoles, setUserRoles] = useState({});
-  const [reviewQueue, setReviewQueue] = useState([]);
-  const [auditTrail, setAuditTrail] = useState([]);
-  const [teamAnalytics, setTeamAnalytics] = useState(null);
   
-  // Import/Export & Integrations (40-53)
+  // Import/Export - IMAGE DATA ONLY (40-53)
   const [csvData, setCsvData] = useState(null);
   const [excelImportData, setExcelImportData] = useState(null);
-  const [googleSheetsSync, setGoogleSheetsSync] = useState(false);
-  const [zapierWebhooks, setZapierWebhooks] = useState([]);
-  const [slackNotifications, setSlackNotifications] = useState(false);
-  const [emailReportSchedule, setEmailReportSchedule] = useState(null);
-  const [wordpressSync, setWordpressSync] = useState(false);
-  const [airtableIntegration, setAirtableIntegration] = useState(false);
-  const [apiDocs, setApiDocs] = useState(null);
-  const [pdfReports, setPdfReports] = useState([]);
   
-  // Accessibility & Compliance (54-63)
+  // Accessibility & Compliance - IMAGE/VISUAL ACCESSIBILITY ONLY (54-63)
   const [wcagCompliance, setWcagCompliance] = useState({});
   const [accessibilityScore, setAccessibilityScore] = useState(0);
   const [screenReaderPreview, setScreenReaderPreview] = useState("");
   const [colorContrast, setColorContrast] = useState({});
   const [contextAwareLength, setContextAwareLength] = useState({});
-  const [industryGuidelines, setIndustryGuidelines] = useState({});
-  const [adaCompliance, setAdaCompliance] = useState(false);
-  const [complianceAudit, setComplianceAudit] = useState(null);
   const [decorativeImages, setDecorativeImages] = useState([]);
   
   // Advanced Search & Filters (64-75)
@@ -207,7 +175,7 @@ export default function ImageAltMediaSEO() {
   const [searchHistory, setSearchHistory] = useState([]);
   const [savedSearches, setSavedSearches] = useState([]);
   
-  // Bulk Operations (76-86)
+  // Bulk Operations - IMAGE-SPECIFIC (76-86)
   const [bulkRenamePattern, setBulkRenamePattern] = useState("");
   const [findReplaceData, setFindReplaceData] = useState({ find: "", replace: "" });
   const [bulkTagOps, setBulkTagOps] = useState([]);
@@ -229,17 +197,10 @@ export default function ImageAltMediaSEO() {
   const [breadcrumbs, setBreadcrumbs] = useState([]);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   
-  // Automation & Scheduling (102-111)
+  // Image-Specific Automation (102-111)
   const [scheduledScans, setScheduledScans] = useState([]);
   const [autoFixEnabled, setAutoFixEnabled] = useState(false);
-  const [recurringReports, setRecurringReports] = useState([]);
-  const [automatedBackups, setAutomatedBackups] = useState([]);
   const [autoComplete, setAutoComplete] = useState(true);
-  const [automationRules, setAutomationRules] = useState([]);
-  const [cronJobs, setCronJobs] = useState([]);
-  const [workflowBuilder, setWorkflowBuilder] = useState([]);
-  const [autoPilotMode, setAutoPilotMode] = useState(false);
-  const [notificationRules, setNotificationRules] = useState([]);
   
   // Image Analysis (112-123)
   const [imageQualityScores, setImageQualityScores] = useState({});
@@ -269,37 +230,23 @@ export default function ImageAltMediaSEO() {
   const [structuredData, setStructuredData] = useState({});
   const [breadcrumbSchema, setBreadcrumbSchema] = useState({});
   
-  // Performance & Technical (137-148)
+  // Performance & Technical - IMAGE-SPECIFIC (137-148)
   const [virtualScrolling, setVirtualScrolling] = useState(true);
   const [lazyLoadImages, setLazyLoadImages] = useState(true);
   const [compressionRatios, setCompressionRatios] = useState({});
-  const [cdnData, setCdnData] = useState(null);
-  const [pwaInstalled, setPwaInstalled] = useState(false);
-  const [offlineMode, setOfflineMode] = useState(false);
-  const [backgroundSync, setBackgroundSync] = useState(true);
-  const [webWorkers, setWebWorkers] = useState(true);
-  const [indexedDbCache, setIndexedDbCache] = useState({});
-  const [requestBatching, setRequestBatching] = useState(true);
   const [prefetchEnabled, setPrefetchEnabled] = useState(true);
   const [memoryOptimization, setMemoryOptimization] = useState(true);
   
-  // Mobile & Responsive (149-154)
-  const [mobileFirstMode, setMobileFirstMode] = useState(false);
+  // Mobile & Responsive - IMAGE-SPECIFIC (149-154)
   const [swipeGestures, setSwipeGestures] = useState(true);
-  const [mobileAppInstalled, setMobileAppInstalled] = useState(false);
   const [qrScanner, setQrScanner] = useState(false);
   const [voiceInput, setVoiceInput] = useState(false);
-  const [pushNotifications, setPushNotifications] = useState(false);
   
-  // E-commerce Specific (155-162)
+  // E-commerce Specific - IMAGE ALT TEXT (155-162)
   const [productVariants, setProductVariants] = useState({});
   const [collectionImages, setCollectionImages] = useState({});
   const [collectionSeoScores, setCollectionSeoScores] = useState({});
-  const [seasonalCampaigns, setSeasonalCampaigns] = useState([]);
-  const [saleBadges, setSaleBadges] = useState([]);
-  const [priceInAltWarnings, setPriceInAltWarnings] = useState([]);
   const [productTaxonomy, setProductTaxonomy] = useState({});
-  const [inventoryIntegration, setInventoryIntegration] = useState(false);
   
   // ========== NEW STATE for 172 MORE Features ==========
   // AI & ML V2 (1-13)
@@ -317,37 +264,15 @@ export default function ImageAltMediaSEO() {
   const [contentModeration, setContentModeration] = useState(true);
   const [customModelTraining, setCustomModelTraining] = useState(false);
   
-  // Advanced Analytics & Reporting (14-28)
-  const [conversionCorrelation, setConversionCorrelation] = useState({});
-  const [abTestAnalytics, setAbTestAnalytics] = useState({});
-  const [seoImpactDashboard, setSeoImpactDashboard] = useState({});
-  const [timeSeriesAnalysis, setTimeSeriesAnalysis] = useState([]);
-  const [predictiveAnalytics, setPredictiveAnalytics] = useState({});
-  const [competitorBenchmarking, setCompetitorBenchmarking] = useState([]);
+  // Advanced Analytics & Reporting - IMAGE-SPECIFIC ONLY (14-28)
   const [imagePerformanceScoring, setImagePerformanceScoring] = useState({});
   const [altTextReadabilityIndex, setAltTextReadabilityIndex] = useState({});
-  const [roiCalculator, setRoiCalculator] = useState({ revenue: 0, cost: 0 });
-  const [customMetricsBuilder, setCustomMetricsBuilder] = useState([]);
-  const [biToolsExport, setBiToolsExport] = useState(false);
-  const [automatedWeeklyReports, setAutomatedWeeklyReports] = useState(false);
-  const [funnelAnalysis, setFunnelAnalysis] = useState({});
-  const [heatmapOverlays, setHeatmapOverlays] = useState({});
-  const [anomalyDetection, setAnomalyDetection] = useState(true);
   
-  // E-Commerce Enhancements (29-46)
+  // E-Commerce Enhancements - IMAGE ALT TEXT ONLY (29-46)
   const [variantImageSync, setVariantImageSync] = useState(true);
   const [collectionLevelTemplates, setCollectionLevelTemplates] = useState({});
   const [seasonalContentRotation, setSeasonalContentRotation] = useState([]);
-  const [multiCurrencyDescription, setMultiCurrencyDescription] = useState({});
-  const [bundleProductHandler, setBundleProductHandler] = useState(true);
-  const [preOrderBadgeIntegration, setPreOrderBadgeIntegration] = useState(false);
   const [saleDiscountMentions, setSaleDiscountMentions] = useState(true);
-  const [inventoryAwareAltText, setInventoryAwareAltText] = useState(false);
-  const [shippingInfoIntegration, setShippingInfoIntegration] = useState(false);
-  const [giftCardTemplates, setGiftCardTemplates] = useState({});
-  const [subscriptionProductTags, setSubscriptionProductTags] = useState(false);
-  const [productRecommendationAltText, setProductRecommendationAltText] = useState(false);
-  const [cartAbandonmentImages, setCartAbandonmentImages] = useState([]);
   const [reviewStarIntegration, setReviewStarIntegration] = useState(false);
   const [newArrivalFlags, setNewArrivalFlags] = useState(true);
   const [bestsellerMentions, setBestsellerMentions] = useState(false);
@@ -372,7 +297,7 @@ export default function ImageAltMediaSEO() {
   const [arModelPreview, setArModelPreview] = useState(false);
   const [beforeAfterSlider, setBeforeAfterSlider] = useState(false);
   
-  // SEO Power Features (63-76)
+  // SEO Power Features - IMAGE SEO (63-76)
   const [structuredDataGenerator, setStructuredDataGenerator] = useState(true);
   const [imageSitemapBuilder, setImageSitemapBuilder] = useState(false);
   const [googleLensOptimization, setGoogleLensOptimization] = useState(true);
@@ -388,44 +313,10 @@ export default function ImageAltMediaSEO() {
   const [richResultsPreview, setRichResultsPreview] = useState(false);
   const [brokenImageChecker, setBrokenImageChecker] = useState(true);
   
-  // Workflow & Automation V2 (77-93)
-  const [zapierIntegration, setZapierIntegration] = useState(false);
-  const [iftttSupport, setIftttSupport] = useState(false);
-  const [webhookTriggers, setWebhookTriggers] = useState([]);
-  const [conditionalLogicBuilder, setConditionalLogicBuilder] = useState([]);
-  const [autoTaggingEngine, setAutoTaggingEngine] = useState(true);
-  const [smartFolders, setSmartFolders] = useState({});
-  const [duplicateImageFinder, setDuplicateImageFinder] = useState(true);
-  const [brokenLinkFixer, setBrokenLinkFixer] = useState(true);
-  const [changeDetection, setChangeDetection] = useState(true);
-  const [rollbackProtection, setRollbackProtection] = useState(true);
-  const [stagingEnvironment, setStagingEnvironment] = useState(false);
-  const [blueGreenDeployment, setBlueGreenDeployment] = useState(false);
-  const [canaryReleases, setCanaryReleases] = useState(false);
-  const [featureFlags, setFeatureFlags] = useState({});
-  const [rateLimitManager, setRateLimitManager] = useState(true);
-  const [retryLogic, setRetryLogic] = useState(true);
-  const [deadLetterQueue, setDeadLetterQueue] = useState([]);
-  
-  // Team & Collaboration V2 (94-105)
-  const [roleTemplates, setRoleTemplates] = useState(['Editor', 'Reviewer', 'Admin']);
-  const [departmentSegmentation, setDepartmentSegmentation] = useState({});
-  const [approvalWorkflowsV2, setApprovalWorkflowsV2] = useState([]);
-  const [changeRequests, setChangeRequests] = useState([]);
-  const [commentingSystemV2, setCommentingSystemV2] = useState([]);
-  const [mentions, setMentions] = useState([]);
-  const [taskAssignment, setTaskAssignment] = useState({});
-  const [workloadBalancing, setWorkloadBalancing] = useState(false);
-  const [timeTracking, setTimeTracking] = useState({});
-  const [performanceReviews, setPerformanceReviews] = useState({});
-  const [trainingMode, setTrainingMode] = useState(false);
-  const [guestAccess, setGuestAccess] = useState([]);
-  
-  // Content Intelligence (106-116)
+  // Content Intelligence - ALT TEXT QUALITY (106-116)
   const [brandVoiceLibrary, setBrandVoiceLibrary] = useState([]);
   const [toneDetector, setToneDetector] = useState(true);
   const [profanityFilter, setProfanityFilter] = useState(true);
-  const [plagiarismChecker, setPlagiarismChecker] = useState(false);
   const [readabilityOptimizer, setReadabilityOptimizer] = useState(true);
   const [inclusiveLanguageChecker, setInclusiveLanguageChecker] = useState(true);
   const [legalComplianceScanner, setLegalComplianceScanner] = useState(true);
@@ -434,71 +325,21 @@ export default function ImageAltMediaSEO() {
   const [accessibilityLinter, setAccessibilityLinter] = useState(true);
   const [plainLanguageScorer, setPlainLanguageScorer] = useState(true);
   
-  // Performance & Scalability (117-129)
-  const [cdnIntegration, setCdnIntegration] = useState(false);
-  const [progressiveWebApp, setProgressiveWebApp] = useState(false);
-  const [serviceWorker, setServiceWorker] = useState(false);
-  const [indexedDbStorage, setIndexedDbStorage] = useState(true);
-  const [webWorkersEnabled, setWebWorkersEnabled] = useState(true);
-  const [codeSplitting, setCodeSplitting] = useState(true);
-  const [bundleSizeOptimization, setBundleSizeOptimization] = useState(true);
-  const [imagePreloading, setImagePreloading] = useState(true);
-  const [infiniteScrollV2, setInfiniteScrollV2] = useState(true);
-  const [debouncedSearch, setDebouncedSearch] = useState(true);
-  const [memoization, setMemoization] = useState(true);
-  const [requestBatchingV2, setRequestBatchingV2] = useState(true);
-  const [connectionPooling, setConnectionPooling] = useState(false);
+  // Image-Specific Automation Tools (117-119)
+  const [autoTaggingEngine, setAutoTaggingEngine] = useState(true);
+  const [smartFolders, setSmartFolders] = useState({});
+  const [duplicateImageFinder, setDuplicateImageFinder] = useState(true);
   
-  // Security & Privacy (130-143)
-  const [twoFactorAuth, setTwoFactorAuth] = useState(false);
-  const [ipWhitelist, setIpWhitelist] = useState([]);
-  const [auditTrailV2, setAuditTrailV2] = useState([]);
-  const [dataEncryptionAtRest, setDataEncryptionAtRest] = useState(true);
-  const [piiDetection, setPiiDetection] = useState(true);
-  const [gdprComplianceTools, setGdprComplianceTools] = useState(true);
-  const [ccpaSupport, setCcpaSupport] = useState(true);
-  const [soc2Compliance, setSoc2Compliance] = useState(false);
-  const [penetrationTesting, setPenetrationTesting] = useState(false);
-  const [rateLimitingSecurity, setRateLimitingSecurity] = useState(true);
-  const [contentSecurityPolicy, setContentSecurityPolicy] = useState(true);
-  const [corsConfiguration, setCorsConfiguration] = useState({}); 
-  const [sessionManagement, setSessionManagement] = useState(true);
-  const [encryptedBackups, setEncryptedBackups] = useState(true);
-  
-  // Mobile & Responsive (144-153)
-  const [nativeMobileApp, setNativeMobileApp] = useState(false);
+  // Mobile - IMAGE-SPECIFIC (144-153)
   const [touchGestures, setTouchGestures] = useState(true);
-  const [voiceInputMobile, setVoiceInputMobile] = useState(false);
   const [cameraIntegration, setCameraIntegration] = useState(false);
   const [mobileFirstUI, setMobileFirstUI] = useState(true);
-  const [hapticFeedback, setHapticFeedback] = useState(false);
   const [darkModeV2, setDarkModeV2] = useState(isDarkTheme);
-  const [mobileNotifications, setMobileNotifications] = useState(false);
-  const [offlineMobileSync, setOfflineMobileSync] = useState(false);
-  const [mobileShortcuts, setMobileShortcuts] = useState(true);
   
-  // Integration Ecosystem (154-164)
-  const [wordpressPlugin, setWordpressPlugin] = useState(false);
-  const [magentoExtension, setMagentoExtension] = useState(false);
-  const [bigCommerceApp, setBigCommerceApp] = useState(false);
-  const [wixIntegration, setWixIntegration] = useState(false);
-  const [squarespaceSupport, setSquarespaceSupport] = useState(false);
-  const [amazonSellerCentral, setAmazonSellerCentral] = useState(false);
-  const [ebayIntegration, setEbayIntegration] = useState(false);
-  const [etsyConnector, setEtsyConnector] = useState(false);
-  const [facebookShopSync, setFacebookShopSync] = useState(false);
-  const [instagramShopping, setInstagramShopping] = useState(false);
-  const [tiktokShop, setTiktokShop] = useState(false);
-  
-  // Data & Insights (165-172)
+  // Data & Insights - IMAGE-SPECIFIC ML (165-172)
   const [machineLearningInsights, setMachineLearningInsights] = useState({});
   const [predictiveSuggestions, setPredictiveSuggestions] = useState([]);
   const [impactForecasting, setImpactForecasting] = useState({});
-  const [cohortAnalysis, setCohortAnalysis] = useState({});
-  const [attributionModeling, setAttributionModeling] = useState({});
-  const [customerJourneyMapping, setCustomerJourneyMapping] = useState([]);
-  const [sqlQueryBuilder, setSqlQueryBuilder] = useState('');
-  const [dataWarehouseExport, setDataWarehouseExport] = useState(false);
   
   const simulationTones = [
     { key: "balanced", label: "Balanced" },
@@ -2826,44 +2667,7 @@ export default function ImageAltMediaSEO() {
     setTimeout(() => showToast("Model training complete!"), 3000);
   };
   
-  // Advanced Analytics Handlers (14-28)
-  const analyzeConversionCorrelation = () => {
-    const correlation = { altTextQuality: 0.78, conversionRate: 0.034 };
-    setConversionCorrelation(correlation);
-    showToast(`Correlation coefficient: ${correlation.altTextQuality}`);
-  };
-  
-  const runABTestAnalytics = (testId) => {
-    const results = { variantA: 3.2, variantB: 3.8, winner: "B", confidence: 0.95 };
-    setAbTestAnalytics(prev => ({ ...prev, [testId]: results }));
-    showToast(`A/B Test: Variant B wins with ${results.confidence * 100}% confidence`);
-  };
-  
-  const generateSEOImpactDashboard = () => {
-    const impact = { rankingImprovement: 12, trafficIncrease: 23, ctrBoost: 0.8 };
-    setSeoImpactDashboard(impact);
-    showToast("SEO impact dashboard generated");
-  };
-  
-  const performTimeSeriesAnalysis = () => {
-    const series = Array.from({ length: 12 }, (_, i) => ({ month: i + 1, quality: 60 + Math.random() * 30 }));
-    setTimeSeriesAnalysis(series);
-    showToast("Time-series analysis complete");
-  };
-  
-  const forecastPredictiveAnalytics = () => {
-    const forecast = { nextMonthQuality: 85, confideceInterval: [80, 90] };
-    setPredictiveAnalytics(forecast);
-    showToast(`Forecast: ${forecast.nextMonthQuality}% quality next month`);
-  };
-  
-  const benchmarkCompetitors = async () => {
-    showToast("Analyzing competitor alt text...");
-    const benchmark = [{ competitor: "CompA", avgQuality: 72 }, { competitor: "CompB", avgQuality: 68 }];
-    setCompetitorBenchmarking(benchmark);
-    showToast("Competitor benchmarking complete");
-  };
-  
+  // Advanced Analytics Handlers - IMAGE-SPECIFIC ONLY (14-28)
   const scoreImagePerformance = (imageId) => {
     const score = Math.floor(Math.random() * 40) + 60;
     setImagePerformanceScoring(prev => ({ ...prev, [imageId]: score }));
@@ -2876,44 +2680,7 @@ export default function ImageAltMediaSEO() {
     return score;
   };
   
-  const calculateROI = (revenue, cost) => {
-    const roi = ((revenue - cost) / cost) * 100;
-    setRoiCalculator({ revenue, cost, roi });
-    showToast(`ROI: ${roi.toFixed(2)}%`);
-  };
-  
-  const buildCustomMetric = (name, formula) => {
-    setCustomMetricsBuilder(prev => [...prev, { name, formula }]);
-    showToast(`Custom metric "${name}" created`);
-  };
-  
-  const exportToBITools = (format) => {
-    showToast(`Exporting to ${format}...`);
-    setBiToolsExport(true);
-  };
-  
-  const scheduleWeeklyReport = (email) => {
-    setAutomatedWeeklyReports(true);
-    showToast(`Weekly reports scheduled for ${email}`);
-  };
-  
-  const analyzeFunnel = () => {
-   const funnel = { views: 1000, clicks: 120, conversions: 34 };
-    setFunnelAnalysis(funnel);
-    showToast("Funnel analysis complete");
-  };
-  
-  const generateHeatmap = () => {
-    showToast("Generating engagement heatmap...");
-    setHeatmapOverlays({ data: "heatmap_data" });
-  };
-  
-  const detectAnomalies = () => {
-    const anomalies = Math.random() > 0.7 ? ["Unusual spike in missing alt text"] : [];
-    showToast(anomalies.length ? `Anomaly detected: ${anomalies[0]}` : "No anomalies detected");
-  };
-  
-  // E-Commerce Enhancement Handlers (29-46)
+  // E-Commerce Enhancement Handlers - IMAGE ALT TEXT ONLY (29-46)
   const syncVariantImages = (productId) => {
     setVariantImageSync(true);
     showToast(`Synced alt text across all variants of product ${productId}`);
@@ -2929,34 +2696,9 @@ export default function ImageAltMediaSEO() {
     showToast(`Seasonal content scheduled for ${season}`);
   };
   
-  const adaptForCurrency = (currency) => {
-    setMultiCurrencyDescription(prev => ({ ...prev, [currency]: `Description for ${currency}` }));
-    showToast(`Alt text adapted for ${currency} market`);
-  };
-  
-  const handleBundleProduct = (bundleId) => {
-    showToast("Special alt text logic applied for bundle product");
-  };
-  
-  const addPreOrderBadge = (imageId) => {
-    setPreOrderBadgeIntegration(true);
-    showToast("Pre-order badge mentioned in alt text");
-  };
-  
   const addSaleDiscount = (imageId, discount) => {
     showToast(`"${discount}% off" added to alt text`);
   };
-  
-  const updateInventoryAwareAlt = (imageId, inStock) => {
-    const status = inStock ? "in stock" : "low stock";
-    showToast(`Alt text updated with inventory status: ${status}`);
-  };
-  
-  const addShippingInfo = (imageId) => {
-    showToast('"Free shipping" added to alt text');
-  };
-  
-  const applyGiftCardTemplate = (imageId) => {
     setGiftCardTemplates(prev => ({ ...prev, [imageId]: "Gift card template" }));
     showToast("Gift card template applied");
   };
@@ -3184,12 +2926,6 @@ export default function ImageAltMediaSEO() {
     showToast(`Smart folder "${name}" created`);
   };
   
-  const findDuplicateImages = () => {
-    showToast("Scanning for duplicate images...");
-    const duplicates = Math.floor(Math.random() * 5);
-    showToast(`${duplicates} duplicate(s) found`);
-  };
-  
   const fixBrokenLinks = () => {
     showToast("Fixing broken product URLs...");
     setTimeout(() => showToast("All links updated"), 2000);
@@ -3370,198 +3106,28 @@ export default function ImageAltMediaSEO() {
     return score;
   };
   
-  // Performance & Scalability Handlers (117-129)
-  const setupCDN = (provider) => {
-    setCdnIntegration(true);
-    showToast(`CDN integration with ${provider} configured`);
+  // Image-Specific Automation Handlers (117-119)
+  const autoTagImages = () => {
+    setAutoTaggingEngine(true);
+    showToast("Auto-tagging images based on content");
   };
   
-  const installPWA = () => {
-    setProgressiveWebApp(true);
-    showToast("Progressive Web App installed");
+  const organizeIntoSmartFolders = () => {
+    showToast("Images organized by category");
   };
   
-  const registerServiceWorker = () => {
-    setServiceWorker(true);
-    showToast("Service worker registered for offline support");
+  const findDuplicateImages = () => {
+    setDuplicateImageFinder(true);
+    showToast("Duplicate image finder running...");
   };
   
-  const cacheToIndexedDB = (key, data) => {
-    setIndexedDbStorage(true);
-    showToast("Data cached locally");
-  };
-  
-  const spawnWebWorker = (task) => {
-    showToast("Processing in background thread...");
-  };
-  
-  const optimizeBundleSize = () => {
-    showToast("Bundle size reduced by 40%");
-  };
-  
-  const preloadCriticalImages = () => {
-    showToast("Critical images preloaded");
-  };
-  
-  const setupConnectionPool = (size) => {
-    setConnectionPooling(true);
-    showToast(`Connection pool: ${size} connections`);
-  };
-  
-  // Security & Privacy Handlers (130-143)
-  const enable2FA = () => {
-    setTwoFactorAuth(true);
-    showToast("Two-factor authentication enabled");
-  };
-  
-  const addToIPWhitelist = (ip) => {
-    setIpWhitelist(prev => [...prev, ip]);
-    showToast(`IP ${ip} whitelisted`);
-  };
-  
-  const logAuditEvent = (event) => {
-    setAuditTrailV2(prev => [...prev, { event, timestamp: Date.now() }]);
-  };
-  
-  const encryptData = (data) => {
-    showToast("Data encrypted at rest");
-    return `encrypted_${data}`;
-  };
-  
-  const detectPII = (text) => {
-    const hasPII = /\b\d{3}-\d{2}-\d{4}\b/.test(text);
-    if (hasPII) showToast("Warning: Possible PII detected");
-    return hasPII;
-  };
-  
-  const exportGDPRData = (userId) => {
-    showToast("GDPR data export initiated");
-  };
-  
-  const handleCCPARequest = (userId) => {
-    showToast("CCPA data request processed");
-  };
-  
-  const runPenetrationTest = () => {
-    showToast("Security penetration test started");
-  };
-  
-  const configureCSP = (policy) => {
-    setContentSecurityPolicy(true);
-    showToast("Content Security Policy configured");
-  };
-  
-  const configureCORS = (origins) => {
-    setCorsConfiguration({ allowedOrigins: origins });
-    showToast("CORS configuration updated");
-  };
-  
-  const setupSessionTimeout = (minutes) => {
-    showToast(`Auto-logout after ${minutes} minutes of inactivity`);
-  };
-  
-  const createEncryptedBackup = () => {
-    showToast("Encrypted backup created");
-  };
-  
-  // Mobile & Responsive Handlers (144-153)
-  const launchMobileApp = () => {
-    setNativeMobileApp(true);
-    showToast("Mobile app available on iOS & Android");
-  };
-  
-  const enableTouchGestures = () => {
-    setTouchGestures(true);
-    showToast("Swipe gestures enabled");
-  };
-  
-  const enableVoiceInput = () => {
-    setVoiceInputMobile(true);
-    showToast("Voice input activated");
-  };
-  
+  // Mobile - IMAGE-SPECIFIC Handlers
   const openCamera = () => {
     setCameraIntegration(true);
     showToast("Camera opened for product photos");
   };
   
-  const triggerHaptic = () => {
-    if ('vibrate' in navigator) {
-      navigator.vibrate(50);
-    }
-  };
-  
-  const sendMobileNotification = (title, body) => {
-    setMobileNotifications(true);
-    showToast(`Notification sent: ${title}`);
-  };
-  
-  const syncOfflineChanges = () => {
-    setOfflineMobileSync(true);
-    showToast("Offline changes synced");
-  };
-  
-  const addMobileShortcut = (action) => {
-    showToast(`Quick action "${action}" added to home screen`);
-  };
-  
-  // Integration Ecosystem Handlers (154-164)
-  const installWordPressPlugin = () => {
-    setWordpressPlugin(true);
-    showToast("WordPress plugin installed");
-  };
-  
-  const installMagentoExtension = () => {
-    setMagentoExtension(true);
-    showToast("Magento extension installed");
-  };
-  
-  const connectBigCommerce = () => {
-    setBigCommerceApp(true);
-    showToast("BigCommerce connected");
-  };
-  
-  const connectWix = () => {
-    setWixIntegration(true);
-    showToast("Wix integration connected");
-  };
-  
-  const connectSquarespace = () => {
-    setSquarespaceSupport(true);
-    showToast("Squarespace connected");
-  };
-  
-  const syncToAmazon = () => {
-    setAmazonSellerCentral(true);
-    showToast("Syncing to Amazon Seller Central...");
-  };
-  
-  const syncToEbay = () => {
-    setEbayIntegration(true);
-    showToast("Syncing to eBay...");
-  };
-  
-  const connectEtsy = () => {
-    setEtsyConnector(true);
-    showToast("Etsy shop connected");
-  };
-  
-  const syncToFacebookShop = () => {
-    setFacebookShopSync(true);
-    showToast("Facebook Shop catalog synced");
-  };
-  
-  const syncToInstagram = () => {
-    setInstagramShopping(true);
-    showToast("Instagram Shopping tags updated");
-  };
-  
-  const syncToTikTok = () => {
-    setTiktokShop(true);
-    showToast("TikTok Shop synced");
-  };
-  
-  // Data & Insights Handlers (165-172)
+  // Data & Insights Handlers - IMAGE ML ONLY (165-172)
   const generateMLInsights = () => {
     const insights = { pattern: "High-quality alt text correlates with 23% more engagement" };
     setMachineLearningInsights(insights);
@@ -3578,34 +3144,6 @@ export default function ImageAltMediaSEO() {
     const forecast = { trafficIncrease: "+18%", conversionBoost: "+0.7%" };
     setImpactForecasting(forecast);
     showToast(`Forecast: ${forecast.trafficIncrease} traffic increase`);
-  };
-  
-  const runCohortAnalysis = (cohort) => {
-    const analysis = { cohort, avgQuality: 78, conversionRate: 0.032 };
-    setCohortAnalysis(prev => ({ ...prev, [cohort]: analysis }));
-    showToast(`Cohort "${cohort}" analyzed`);
-  };
-  
-  const modelAttribution = () => {
-    const model = { firstClick: 0.3, lastClick: 0.4, linear: 0.3 };
-    setAttributionModeling(model);
-    showToast("Multi-touch attribution model generated");
-  };
-  
-  const mapCustomerJourney = () => {
-    const journey = ["View product image", "Read alt text", "Add to cart", "Purchase"];
-    setCustomerJourneyMapping(journey);
-    showToast("Customer journey mapped");
-  };
-  
-  const buildSQLQuery = (query) => {
-    setSqlQueryBuilder(query);
-    showToast("Custom SQL query saved");
-  };
-  
-  const exportToWarehouse = (destination) => {
-    setDataWarehouseExport(true);
-    showToast(`Exporting to ${destination}...`);
   };
 
   // Onboarding
