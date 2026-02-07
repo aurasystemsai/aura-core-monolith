@@ -303,18 +303,6 @@ export default function ImageAltMediaSEO() {
   const [productTaxonomy, setProductTaxonomy] = useState({});
   const [inventoryIntegration, setInventoryIntegration] = useState(false);
   
-  // Bonus Features (163-172)
-  const [gamificationPoints, setGamificationPoints] = useState(0);
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [dailyChallenges, setDailyChallenges] = useState([]);
-  const [browserExtension, setBrowserExtension] = useState(false);
-  const [chromeDevTools, setChromeDevTools] = useState(false);
-  const [vscodeExtension, setVscodeExtension] = useState(false);
-  const [cliTool, setCliTool] = useState(false);
-  const [desktopApp, setDesktopApp] = useState(false);
-  const [publicApi, setPublicApi] = useState(false);
-  const [marketplace, setMarketplace] = useState([]);
-  
   const simulationTones = [
     { key: "balanced", label: "Balanced" },
     { key: "descriptive", label: "Descriptive" },
@@ -2574,48 +2562,6 @@ export default function ImageAltMediaSEO() {
   const tagProductTaxonomy = (imageId, category) => {
     setProductTaxonomy(prev => ({ ...prev, [imageId]: category }));
   };
-  
-  // Gamification (163-172)
-  const addGamificationPoints = (points, reason) => {
-    setGamificationPoints(prev => prev + points);
-    showToast(`+${points} points: ${reason}`, 2000);
-    checkAchievements(gamificationPoints + points);
-  };
-  
-  const checkAchievements = (points) => {
-    const milestones = [
-      { threshold: 100, title: "Getting Started", icon: "🎯" },
-      { threshold: 500, title: "Alt Text Pro", icon: "🏆" },
-      { threshold: 1000, title: "SEO Master", icon: "👑" },
-      { threshold: 5000, title: "Legendary Optimizer", icon: "⭐" }
-    ];
-    milestones.forEach(m => {
-      if (points >= m.threshold && !achievements.find(a => a.title === m.title)) {
-        setAchievements(prev => [...prev, m]);
-        showToast(`🎉 Achievement unlocked: ${m.icon} ${m.title}`, 3000);
-      }
-    });
-  };
-  
-  const loadLeaderboard = async () => {
-    // Fetch team leaderboard
-    setLeaderboard([
-      { user: "You", points: gamificationPoints, rank: 1 },
-      { user: "Alice", points: 850, rank: 2 },
-      { user: "Bob", points: 720, rank: 3 }
-    ]);
-  };
-  
-  const generateDailyChallenge = () => {
-    const challenges = [
-      "Optimize 10 images today",
-      "Achieve 90%+ quality score on 5 images",
-      "Use AI to generate alt text for 20 images",
-      "Fix all duplicate alt texts"
-    ];
-    const daily = challenges[Math.floor(Math.random() * challenges.length)];
-    setDailyChallenges([{ challenge: daily, completed: false, points: 50 }]);
-  };
 
   // Onboarding
   const onboardingContent = (
@@ -2710,10 +2656,7 @@ export default function ImageAltMediaSEO() {
     return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); };
   }, [bulkAltText, selectedImageIds, autoSaveEnabled]);
 
-  // Achievement checking
-  useEffect(() => {
-    checkAchievements(gamificationPoints);
-  }, [selectedImageIds.length, images.length, gamificationPoints]);
+  // Achievement checking removed - no longer using gamification points
 
   React.useEffect(() => {
     if (!shopDomain.trim()) {
@@ -2803,7 +2746,7 @@ export default function ImageAltMediaSEO() {
             { id: "automation", label: "⚡ Automation" },
             { id: "seo", label: "🔍 SEO" },
             { id: "performance", label: "⚙️ Performance" },
-            { id: "gamification", label: "🏆 Rewards" },
+            { id: "gamification", label: "🏆 Achievements" },
             { id: "integrations", label: "🔌 Integrations" },
             { id: "accessibility", label: "♿ Accessibility" }
           ].map(tab => (
@@ -4299,42 +4242,11 @@ export default function ImageAltMediaSEO() {
       
       {activeTab === "gamification" && (
         <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px" }}>
-          <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>🏆 Gamification & Rewards</h2>
+          <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>🏆 Achievements</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
-            {/* Feature 163: Points */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #fbbf24", textAlign: "center" }}>
-              <div style={{ fontSize: 48 }}>⭐</div>
-              <div style={{ fontSize: 48, fontWeight: 800, color: "#fbbf24", marginTop: 12 }}>{gamificationPoints}</div>
-              <div style={{ fontSize: 16, color: "#cbd5e1", marginTop: 8 }}>Total Points</div>
-            </div>
-            
-            {/* Feature 164: Leaderboard */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>🏅 Leaderboard</h3>
-              <button onClick={loadLeaderboard} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer", marginBottom: 12 }}>Load Leaderboard</button>
-              {leaderboard.map((entry, idx) => (
-                <div key={idx} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #334155" }}>
-                  <span>#{entry.rank} {entry.user}</span>
-                  <span style={{ fontWeight: 700, color: "#fbbf24" }}>{entry.points} pts</span>
-                </div>
-              ))}
-            </div>
-            
-            {/* Feature 165: Daily Challenges */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>🎯 Daily Challenges</h3>
-              <button onClick={generateDailyChallenge} style={{ width: "100%", background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer", marginBottom: 12 }}>Get Challenge</button>
-              {dailyChallenges.map((ch, idx) => (
-                <div key={idx} style={{ padding: "12px", background: "#0f172a", borderRadius: 8, border: "1px solid #10b981" }}>
-                  <div style={{ fontSize: 14, marginBottom: 4 }}>{ch.challenge}</div>
-                  <div style={{ fontSize: 12, color: "#fbbf24" }}>Reward: {ch.points} points</div>
-                </div>
-              ))}
-            </div>
-            
-            {/* Achievements */}
+            {/* Achievements Only */}
             <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>🏆 Achievements</h3>
+              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>🏆 Your Achievements</h3>
               {achievements.length === 0 ? <div style={{ fontSize: 13, color: "#94a3b8" }}>Keep optimizing to unlock achievements!</div> : achievements.map((ach, idx) => (
                 <div key={idx} style={{ padding: "12px", background: "#0f172a", borderRadius: 8, marginBottom: 8, border: "1px solid #ec4899" }}>
                   <div style={{ fontSize: 24 }}>{ach.icon}</div>
