@@ -1632,7 +1632,12 @@ export default function ImageAltMediaSEO() {
   const visibleImages = filteredImages.slice(0, visibleCount);
 
   return (
-    <div style={{ padding: 18 }}>
+    <div style={{ padding: 0, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", minHeight: "100vh" }}>
+      <div style={{ background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)", padding: "32px 40px", marginBottom: 32, boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
+        <h2 style={{ fontSize: 36, fontWeight: 900, margin: 0, color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.2)", letterSpacing: "-0.02em" }}>✨ Image Alt & SEO Autopilot</h2>
+        <p style={{ fontSize: 14, margin: "8px 0 0 0", color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>AI-powered alt text generation, translation & Shopify sync</p>
+      </div>
+      <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 40px" }}>
 
       {(result || captionResult) && (
         <div style={{ display: "grid", gridTemplateColumns: captionResult ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 12 }}>
@@ -1953,21 +1958,23 @@ export default function ImageAltMediaSEO() {
             <button onClick={clearSelectedImages} aria-label="Clear selected images" disabled={!selectedImageIds.length} style={{ background: "#f8fafc", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: !selectedImageIds.length ? "not-allowed" : "pointer" }}>Clear selection</button>
             <button onClick={handlePushShopify} aria-label="Push selected alt text to Shopify" disabled={!selectedImageIds.length || shopifyPushing || loading} style={{ background: !selectedImageIds.length || shopifyPushing ? "#334155" : "#0ea5e9", color: "#f8fafc", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || shopifyPushing || loading) ? "not-allowed" : "pointer" }}>{shopifyPushing ? "Pushing…" : "Push to Shopify"}</button>
           </div>
-          <div style={{ marginBottom: 12, background: "#1f2937", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Bulk update selected alts</div>
+          <div style={{ marginBottom: 24, background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 24, border: "2px solid #475569", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
+            <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 16, color: "#f1f5f9", display: "flex", alignItems: "center", gap: 8 }}>🎯 Bulk Update</div>
             <textarea
               value={bulkAltText}
               onChange={e => setBulkAltText(e.target.value)}
-              rows={2}
+              rows={3}
               aria-label="Bulk alt text"
               placeholder="Enter alt text to apply to selected images"
-              style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", marginBottom: 8 }}
+              style={{ width: "100%", fontSize: 14, padding: 16, borderRadius: 12, border: "2px solid #64748b", background: "#0f172a", color: "#e2e8f0", marginBottom: 12, transition: "all 0.2s", outline: "none" }}
+              onFocus={e => e.target.style.borderColor = "#8b5cf6"}
+              onBlur={e => e.target.style.borderColor = "#64748b"}
             />
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-              <button onClick={handleBulkApply} aria-label={`Apply alt text to ${selectedImageIds.length} selected images`} disabled={!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading} style={{ background: roleCanApply ? "#10b981" : "#334155", color: roleCanApply ? "#0b0b0b" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading) ? "not-allowed" : "pointer" }}>Apply to selected</button>
-              <button onClick={handleAiImproveSelected} aria-label="Use AI to rewrite alt text for selected images" disabled={!roleCanApply || !selectedImageIds.length || loading} style={{ background: roleCanApply ? "#7c3aed" : "#334155", color: roleCanApply ? "#f8fafc" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>AI improve selected</button>
-              <button onClick={handleQueueBulkApproval} aria-label="Queue approval for bulk alt update" disabled={!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()} style={{ background: roleCanApprove ? "#f59e0b" : "#334155", color: roleCanApprove ? "#0b0b0b" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()) ? "not-allowed" : "pointer" }}>Request approval</button>
-              <button onClick={handleUndo} aria-label="Undo last bulk or AI change" disabled={!undoBuffer.length || loading} title={undoBuffer.length ? `Undo (Ctrl+Z) - ${undoBuffer.length} action${undoBuffer.length > 1 ? 's' : ''} available` : "No actions to undo"} style={{ background: undoBuffer.length ? "#f59e0b" : "#334155", color: undoBuffer.length ? "#0b0b0b" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!undoBuffer.length || loading) ? "not-allowed" : "pointer" }}>Undo ({undoBuffer.length})</button>
+              <button onClick={handleBulkApply} aria-label={`Apply alt text to ${selectedImageIds.length} selected images`} disabled={!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading} style={{ background: roleCanApply ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" : "#334155", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading) ? "not-allowed" : "pointer", boxShadow: roleCanApply ? "0 4px 12px rgba(16, 185, 129, 0.3)" : "none", transition: "all 0.2s", transform: "translateY(0)" }} onMouseEnter={e => { if (roleCanApply && selectedImageIds.length && bulkAltText.trim() && !loading) e.target.style.transform = "translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "translateY(0)"}>Apply to selected</button>
+              <button onClick={handleAiImproveSelected} aria-label="Use AI to rewrite alt text for selected images" disabled={!roleCanApply || !selectedImageIds.length || loading} style={{ background: roleCanApply ? "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)" : "#334155", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || loading) ? "not-allowed" : "pointer", boxShadow: roleCanApply ? "0 4px 12px rgba(139, 92, 246, 0.3)" : "none", transition: "all 0.2s", transform: "translateY(0)" }} onMouseEnter={e => { if (roleCanApply && selectedImageIds.length && !loading) e.target.style.transform = "translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "translateY(0)"}>✨ AI improve</button>
+              <button onClick={handleQueueBulkApproval} aria-label="Queue approval for bulk alt update" disabled={!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()} style={{ background: roleCanApprove ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" : "#334155", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()) ? "not-allowed" : "pointer", boxShadow: roleCanApprove ? "0 4px 12px rgba(245, 158, 11, 0.3)" : "none", transition: "all 0.2s" }}>📋 Request approval</button>
+              <button onClick={handleUndo} aria-label="Undo last bulk or AI change" disabled={!undoBuffer.length || loading} title={undoBuffer.length ? `Undo (Ctrl+Z) - ${undoBuffer.length} action${undoBuffer.length > 1 ? 's' : ''} available` : "No actions to undo"} style={{ background: undoBuffer.length ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" : "#334155", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!undoBuffer.length || loading) ? "not-allowed" : "pointer", boxShadow: undoBuffer.length ? "0 4px 12px rgba(245, 158, 11, 0.3)" : "none", transition: "all 0.2s" }}>↩️ Undo ({undoBuffer.length})</button>
               {selectedImageIds.length ? <span style={{ fontSize: 12 }}>IDs: {selectedImageIds.slice(0, 6).join(', ')}{selectedImageIds.length > 6 ? '…' : ''}</span> : <span style={{ fontSize: 12 }}>Pick rows to enable bulk update</span>}
               <span style={{ fontSize: 11, color: "#94a3b8" }}>Shortcuts: Ctrl+Shift+A (select all), Ctrl+Z (undo)</span>
             </div>
@@ -2000,9 +2007,9 @@ export default function ImageAltMediaSEO() {
             </div>
           ) : null}
 
-          <div style={{ marginBottom: 12, background: "#0f172a", borderRadius: 10, padding: 12, border: "1px solid #334155" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <div style={{ fontWeight: 700 }}>Approval queue ({approvalQueue.length})</div>
+          <div style={{ marginBottom: 24, background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderRadius: 20, padding: 24, border: "2px solid #334155", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 16 }}>
+              <div style={{ fontWeight: 800, fontSize: 16, color: "#f1f5f9", display: "flex", alignItems: "center", gap: 8 }}>📋 Approval Queue <span style={{ background: "#7c3aed", color: "#fff", fontSize: 12, padding: "2px 10px", borderRadius: 999, fontWeight: 700 }}>{approvalQueue.length}</span></div>
               <span style={{ fontSize: 12, color: "#cbd5e1" }}>{roleCanApply ? "Editors/Admins can apply" : roleCanApprove ? "Reviewers can approve; editors apply" : "View-only"}</span>
             </div>
             {approvalQueue.length ? (
@@ -2112,7 +2119,7 @@ export default function ImageAltMediaSEO() {
             {visibleImages.map(img => {
               const lint = lintCache.get(img.id) || lintAltText(resolveAlt(img));
               return (
-                <li key={img.id} style={{ marginBottom: 10, background: selectedImageIds.includes(img.id) ? "#0f172a" : "transparent", borderRadius: 10, padding: 10, border: "1px solid #555", color: "#a3e635" }}>
+                <li key={img.id} style={{ marginBottom: 16, background: selectedImageIds.includes(img.id) ? "linear-gradient(135deg, #1e293b 0%, #334155 100%)" : "rgba(15, 23, 42, 0.5)", borderRadius: 16, padding: 16, border: selectedImageIds.includes(img.id) ? "2px solid #8b5cf6" : "1px solid #334155", color: "#e2e8f0", boxShadow: selectedImageIds.includes(img.id) ? "0 4px 16px rgba(139, 92, 246, 0.2)" : "0 2px 8px rgba(0,0,0,0.1)", transition: "all 0.2s", transform: "translateY(0)" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
                   <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                     <input type="checkbox" checked={selectedImageIds.includes(img.id)} onChange={() => toggleSelectImage(img.id)} aria-label={`Select image ${img.id}`} />
                     <div style={{ position: "relative", flex: "0 0 140px", maxWidth: 160 }}>
@@ -2157,8 +2164,8 @@ export default function ImageAltMediaSEO() {
                       <div style={{ marginTop: 6, fontSize: 12, color: "#94a3b8", display: "flex", gap: 10, flexWrap: "wrap" }}>
                         {img.createdAt || img.created_at || img.createdat ? <span>Created: {formatDate(img.createdAt || img.created_at || img.createdat)}</span> : null}
                         {img.score ? <span>Score: {img.score}</span> : null}
-                        <button onClick={() => handleAiRewriteSingle(img)} disabled={rewritingId === img.id || loading} style={{ background: rewritingId === img.id ? "#475569" : "#7c3aed", color: "#f8fafc", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: rewritingId === img.id || loading ? "wait" : "pointer" }}>
-                          {rewritingId === img.id ? "Rewriting…" : "AI rewrite"}
+                        <button onClick={() => handleAiRewriteSingle(img)} disabled={rewritingId === img.id || loading} style={{ background: rewritingId === img.id ? "#475569" : "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", color: "#fff", border: "none", borderRadius: 10, padding: "8px 14px", fontWeight: 700, fontSize: 12, cursor: rewritingId === img.id || loading ? "wait" : "pointer", boxShadow: rewritingId === img.id ? "none" : "0 4px 12px rgba(139, 92, 246, 0.3)", transition: "all 0.2s", transform: "translateY(0)" }} onMouseEnter={e => { if (rewritingId !== img.id && !loading) e.target.style.transform = "translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "translateY(0)"}>
+                          {rewritingId === img.id ? "⏳ Rewriting…" : "✨ AI rewrite"}
                         </button>
                       </div>
                     </div>
@@ -2453,24 +2460,25 @@ export default function ImageAltMediaSEO() {
           </div>
         )}
       {error && (
-        <div style={{ color: "#ef4444", marginBottom: 10 }} role="alert" aria-live="assertive">
-          {error}
-          <div style={{ marginTop: 8 }}>
-            <button onClick={reconnectShopify} style={{ background: "#0ea5e9", color: "#0b0b0b", border: "none", borderRadius: 6, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>
-              Reconnect Shopify
+        <div style={{ background: "linear-gradient(135deg, #fecaca 0%, #fca5a5 100%)", color: "#7f1d1d", padding: "16px 20px", borderRadius: 16, marginBottom: 20, fontSize: 14, fontWeight: 600, border: "2px solid #dc2626", boxShadow: "0 4px 16px rgba(220, 38, 38, 0.2)" }} role="alert" aria-live="assertive">
+          ❌ {error}
+          <div style={{ marginTop: 12 }}>
+            <button onClick={reconnectShopify} style={{ background: "linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)", color: "#fff", border: "none", borderRadius: 10, padding: "8px 16px", fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 12px rgba(14, 165, 233, 0.3)" }}>
+              🔗 Reconnect Shopify
             </button>
           </div>
         </div>
       )}
-      {toast && <div style={{ color: "#16a34a", marginBottom: 10 }} role="status" aria-live="polite">{toast}</div>}
+      {toast && <div style={{ background: "linear-gradient(135deg, #6ee7b7 0%, #34d399 100%)", color: "#064e3b", padding: "16px 20px", borderRadius: 16, marginBottom: 20, fontSize: 14, fontWeight: 600, border: "2px solid #10b981", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.2)" }} role="status" aria-live="polite">✅ {toast}</div>}
+      {loading && <div role="status" aria-live="polite" style={{ fontSize: 14, color: "#fbbf24", fontWeight: 700, padding: "12px 20px", background: "rgba(251, 191, 36, 0.1)", borderRadius: 12, marginBottom: 16, border: "1px solid rgba(251, 191, 36, 0.3)" }}>⏳ Loading...</div>}
 
-      <div style={{ marginTop: 24, background: "#1f2937", borderRadius: 12, padding: 18 }}>
-        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Batch Generate (JSON array)</div>
+      <div style={{ marginTop: 24, background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 24, border: "2px solid #475569", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
+        <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 16, color: "#f1f5f9", display: "flex", alignItems: "center", gap: 8 }}>📝 Batch Generate (JSON array)</div>
         <textarea
           value={batchInput}
           onChange={e => setBatchInput(e.target.value)}
           rows={6}
-          style={{ width: "100%", fontSize: 14, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", fontFamily: 'Menlo, Consolas, monospace' }}
+          style={{ width: "100%", fontSize: 14, padding: 16, borderRadius: 12, border: "2px solid #64748b", background: "#0f172a", color: "#e2e8f0", fontFamily: 'Menlo, Consolas, monospace', transition: "all 0.2s", outline: "none" }}
           aria-label="Batch JSON"
           placeholder='[
   { "input": "red leather tote on white", "url": "https://...", "keywords": "leather tote" }
@@ -2739,8 +2747,9 @@ export default function ImageAltMediaSEO() {
           ) : <div style={{ fontSize: 14 }}>Load duplicates to view.</div>}
         </div>
       </div>
-      <div style={{ marginTop: 32, fontSize: 13, color: "#a3e635", textAlign: "center" }}>
-        <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: "#a3e635", textDecoration: "underline" }}>Contact Support</a></span>
+      </div>
+      <div style={{ marginTop: 40, padding: "24px 40px", fontSize: 13, color: "#cbd5e1", textAlign: "center", background: "linear-gradient(90deg, #1e293b 0%, #334155 100%)", borderTop: "2px solid #475569" }}>
+        <span>✨ Powered by AURA Systems AI · <a href="mailto:support@aura-core.ai" style={{ color: "#8b5cf6", textDecoration: "underline", fontWeight: 600 }}>Contact Support</a></span>
       </div>
     </div>
   );
