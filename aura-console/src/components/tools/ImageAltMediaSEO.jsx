@@ -3127,6 +3127,8 @@ export default function ImageAltMediaSEO() {
   const addSaleDiscount = (imageId, discount) => {
     showToast(`"${discount}% off" added to alt text`);
   };
+  
+  const applyGiftCardTemplate = (imageId) => {
     setGiftCardTemplates(prev => ({ ...prev, [imageId]: "Gift card template" }));
     showToast("Gift card template applied");
   };
@@ -3782,7 +3784,7 @@ export default function ImageAltMediaSEO() {
     showToast(`${industry} terminology valid`);
   };
   
-  const extractProductAttributes = (altText) => {
+  const extractProductAttributesFromAlt = (altText) => {
     const attributes = { color: "blue", size: "medium", material: "cotton" };
     setProductAttributeExtractor(attributes);
     showToast("Attributes extracted");
@@ -7877,7 +7879,7 @@ export default function ImageAltMediaSEO() {
               { name: "Uniqueness Check", fn: () => checkAltTextUniqueness("Blue dress"), desc: "Check if alt text is unique across images" },
               { name: "Synonym Variations", fn: () => generateSynonymVariations("Elegant dress"), desc: "Generate synonym variations" },
               { name: "Industry Terminology", fn: () => validateTerminology("Dress", "fashion"), desc: "Validate industry-specific terminology" },
-              { name: "Product Attributes", fn: () => extractProductAttributes("Blue cotton dress"), desc: "Extract product attributes from alt text" },
+              { name: "Product Attributes", fn: () => extractProductAttributesFromAlt("Blue cotton dress"), desc: "Extract product attributes from alt text" },
               { name: "Emotional Tone", fn: () => analyzeEmotionalTone("Luxurious elegant dress"), desc: "Analyze emotional tone of alt text" },
               { name: "Sensory Language", fn: () => enhanceSensoryLanguage("Blue dress"), desc: "Enhance with sensory descriptors" },
               { name: "Alt Text Pacing", fn: () => analyzeAltTextPacing("Blue elegant cotton dress"), desc: "Analyze rhythm and pacing" },
@@ -8594,4 +8596,5 @@ export default function ImageAltMediaSEO() {
       </div>
     </div>
   );
+}
 
