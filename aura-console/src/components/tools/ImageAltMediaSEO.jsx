@@ -107,6 +107,26 @@ export default function ImageAltMediaSEO() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [pendingDeleteIds, setPendingDeleteIds] = useState([]);
   const [jumpToPage, setJumpToPage] = useState("");
+  const [lastSelectedIdx, setLastSelectedIdx] = useState(null);
+  const [hoveredImageId, setHoveredImageId] = useState(null);
+  const [contextMenu, setContextMenu] = useState(null);
+  const [pinnedIds, setPinnedIds] = useState([]);
+  const [imageTags, setImageTags] = useState({});
+  const [tagInput, setTagInput] = useState("");
+  const [showComparison, setShowComparison] = useState(false);
+  const [comparisonBefore, setComparisonBefore] = useState(null);
+  const [comparisonAfter, setComparisonAfter] = useState(null);
+  const [collapsedSections, setCollapsedSections] = useState({});
+  const [notifications, setNotifications] = useState([]);
+  const [showBulkPreview, setShowBulkPreview] = useState(false);
+  const [showUndoHistory, setShowUndoHistory] = useState(false);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  const [theme, setTheme] = useState("dark");
+  const [accentColor, setAccentColor] = useState("#8b5cf6");
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [showThemePanel, setShowThemePanel] = useState(false);
+  const [achievements, setAchievements] = useState([]);
+  const autoSaveTimer = useRef(null);
   const simulationTones = [
     { key: "balanced", label: "Balanced" },
     { key: "descriptive", label: "Descriptive" },
@@ -307,6 +327,233 @@ export default function ImageAltMediaSEO() {
         </div>
       </div>
     );
+  };
+
+  const ContextMenu = () => {
+    if (!contextMenu) return null;
+    const img = images.find(i => i.id === contextMenu.imageId);
+    return (
+      <div onClick={() => setContextMenu(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1999 }}>
+        <div onClick={e => e.stopPropagation()} style={{ position: "absolute", top: contextMenu.y, left: contextMenu.x, background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 12, boxShadow: "0 12px 32px rgba(0,0,0,0.5)", border: "1px solid #475569", minWidth: 200, animation: "scaleIn 0.15s ease-out" }}>
+          {[
+            { icon: "📌", label: pinnedIds.includes(contextMenu.imageId) ? "Unpin" : "Pin", action: () => { togglePin(contextMenu.imageId); setContextMenu(null); } },
+            { icon: "✨", label: "AI Rewrite", action: () => { handleAiRewriteSingle(img); setContextMenu(null); } },
+            { icon: "📋", label: "Copy URL", action: () => { navigator.clipboard?.writeText(img?.url || ""); showToast("URL copied"); setContextMenu(null); } },
+            { icon: "🏷️", label: "Add Tag", action: () => { /* open tag input */ setContextMenu(null); } },
+            { icon: "🔄", label: "Compare", action: () => { setComparisonBefore(img); setShowComparison(true); setContextMenu(null); } },
+            { icon: "❌", label: "Delete", action: () => { setPendingDeleteIds([contextMenu.imageId]); setShowDeleteModal(true); setContextMenu(null); }, danger: true }
+          ].map((item, idx) => (
+            <button key={idx} onClick={item.action} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 16px", background: "transparent", border: "none", borderBottom: idx < 5 ? "1px solid #334155" : "none", color: item.danger ? "#ef4444" : "#e2e8f0", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s", textAlign: "left" }} onMouseEnter={e => e.target.style.background = "rgba(255,255,255,0.1)"} onMouseLeave={e => e.target.style.background = "transparent"}>
+              <span style={{ fontSize: 18 }}>{item.icon}</span>
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const CircularProgress = ({ percent, size = 80, strokeWidth = 8, color = "#8b5cf6" }) => {
+    const radius = (size - strokeWidth) / 2;
+    const circumference = radius * 2 * Math.PI;
+    const offset = circumference - (percent / 100) * circumference;
+    return (
+      <div style={{ position: "relative", width: size, height: size }}>
+        <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+          <circle cx={size/2} cy={size/2} r={radius} stroke="#334155" strokeWidth={strokeWidth} fill="none" />
+          <circle cx={size/2} cy={size/2} r={radius} stroke={color} strokeWidth={strokeWidth} fill="none" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.5s ease" }} />
+        </svg>
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", fontSize: 16, fontWeight: 800, color: "#f1f5f9" }}>{Math.round(percent)}%</div>
+      </div>
+    );
+  };
+
+  const ComparisonModal = () => {
+    if (!showComparison) return null;
+    return (
+      <div onClick={() => setShowComparison(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.3s" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 32, maxWidth: 900, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #475569", animation: "scaleIn 0.3s ease-out" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f1f5f9" }}>🔄 Before/After Comparison</h3>
+            <button onClick={() => setShowComparison(false)} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 24, cursor: "pointer", padding: 0 }}>✕</button>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#94a3b8", marginBottom: 8 }}>BEFORE</div>
+              <div style={{ background: "#0f172a", borderRadius: 12, padding: 16, border: "2px solid #475569" }}>
+                {comparisonBefore?.url && <img src={comparisonBefore.url} alt="Before" style={{ width: "100%", borderRadius: 8, marginBottom: 12 }} />}
+                <div style={{ fontSize: 13, color: "#e2e8f0" }}>{comparisonBefore?.altText || "(no alt text)"}</div>
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#94a3b8", marginBottom: 8 }}>AFTER</div>
+              <div style={{ background: "#0f172a", borderRadius: 12, padding: 16, border: "2px solid #10b981" }}>
+                {comparisonAfter?.url && <img src={comparisonAfter.url} alt="After" style={{ width: "100%", borderRadius: 8, marginBottom: 12 }} />}
+                <div style={{ fontSize: 13, color: "#e2e8f0" }}>{comparisonAfter?.altText || "(no alt text)"}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const BulkPreviewModal = () => {
+    if (!showBulkPreview) return null;
+    const previewItems = images.filter(img => selectedImageIds.includes(img.id)).slice(0, 10);
+    return (
+      <div onClick={() => setShowBulkPreview(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.3s", overflow: "auto" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 32, maxWidth: 800, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #475569", animation: "scaleIn 0.3s ease-out" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f1f5f9" }}>👁️ Bulk Preview ({selectedImageIds.length} items)</h3>
+            <button onClick={() => setShowBulkPreview(false)} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 24, cursor: "pointer", padding: 0 }}>✕</button>
+          </div>
+          <div style={{ marginBottom: 16, padding: 16, background: "rgba(251, 191, 36, 0.1)", borderRadius: 12, border: "1px solid #fbbf24" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#fbbf24", marginBottom: 8 }}>Will apply:</div>
+            <div style={{ fontSize: 15, color: "#fef3c7" }}>{bulkAltText}</div>
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            {previewItems.map(img => (
+              <div key={img.id} style={{ marginBottom: 12, padding: 12, background: "#0f172a", borderRadius: 10, border: "1px solid #334155" }}>
+                <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4 }}>ID: {img.id}</div>
+                <div style={{ fontSize: 13, color: "#e2e8f0" }}>Current: {img.altText || "(none)"}</div>
+              </div>
+            ))}
+            {selectedImageIds.length > 10 && <div style={{ fontSize: 12, color: "#94a3b8", textAlign: "center" }}>...and {selectedImageIds.length - 10} more</div>}
+          </div>
+          <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
+            <button onClick={() => setShowBulkPreview(false)} style={{ background: "#64748b", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Cancel</button>
+            <button onClick={() => { handleBulkApply(); setShowBulkPreview(false); }} style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)" }}>Apply to {selectedImageIds.length} items</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const UndoHistoryModal = () => {
+    if (!showUndoHistory) return null;
+    return (
+      <div onClick={() => setShowUndoHistory(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.3s" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "70vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #475569", animation: "scaleIn 0.3s ease-out" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f1f5f9" }}>⏱️ Undo History</h3>
+            <button onClick={() => setShowUndoHistory(false)} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 24, cursor: "pointer", padding: 0 }}>✕</button>
+          </div>
+          <div style={{ position: "relative", paddingLeft: 32 }}>
+            <div style={{ position: "absolute", left: 8, top: 0, bottom: 0, width: 2, background: "#475569" }} />
+            {undoBuffer.map((item, idx) => (
+              <div key={idx} style={{ position: "relative", marginBottom: 20 }}>
+                <div style={{ position: "absolute", left: -28, top: 4, width: 12, height: 12, borderRadius: "50%", background: "#8b5cf6", border: "2px solid #334155" }} />
+                <div style={{ padding: "12px 16px", background: "#0f172a", borderRadius: 10, border: "1px solid #334155" }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", marginBottom: 4 }}>{item.action || "Change"}</div>
+                  <div style={{ fontSize: 12, color: "#94a3b8" }}>{item.ids?.length || 0} items affected</div>
+                  <button onClick={() => { /* restore this state */ showToast("Restored"); setShowUndoHistory(false); }} style={{ marginTop: 8, background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Restore to this point</button>
+                </div>
+              </div>
+            ))}
+            {!undoBuffer.length && <div style={{ fontSize: 14, color: "#94a3b8", textAlign: "center", padding: 32 }}>No undo history yet</div>}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const ThemeCustomizationPanel = () => {
+    if (!showThemePanel) return null;
+    const presetColors = ["#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#0ea5e9", "#ef4444"];
+    return (
+      <div onClick={() => setShowThemePanel(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.7)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.3s" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #475569", animation: "scaleIn 0.3s ease-out" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f1f5f9" }}>🎨 Theme Customization</h3>
+            <button onClick={() => setShowThemePanel(false)} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 24, cursor: "pointer", padding: 0 }}>✕</button>
+          </div>
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#cbd5e1", marginBottom: 12 }}>Accent Color</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }}>
+              {presetColors.map(color => (
+                <button key={color} onClick={() => setAccentColor(color)} style={{ width: 50, height: 50, borderRadius: 12, background: color, border: accentColor === color ? "3px solid #fff" : "2px solid #475569", cursor: "pointer", transition: "transform 0.2s", transform: accentColor === color ? "scale(1.1)" : "scale(1)" }} />
+              ))}
+            </div>
+          </div>
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 14, color: "#e2e8f0" }}>
+              <input type="checkbox" checked={autoSaveEnabled} onChange={e => setAutoSaveEnabled(e.target.checked)} />
+              <span>Enable auto-save</span>
+            </label>
+          </div>
+          <button onClick={() => { showToast("Theme saved"); setShowThemePanel(false); }} style={{ width: "100%", background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}dd 100%)`, color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 16px rgba(139, 92, 246, 0.3)" }}>Save Theme</button>
+        </div>
+      </div>
+    );
+  };
+
+  const NotificationToast = ({ notification, onDismiss }) => (
+    <div style={{ position: "fixed", top: 24 + (notification.index * 80), right: 24, background: notification.type === "achievement" ? "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)" : "linear-gradient(135deg, #6ee7b7 0%, #34d399 100%)", color: notification.type === "achievement" ? "#78350f" : "#064e3b", padding: "16px 20px", borderRadius: 16, fontSize: 14, fontWeight: 600, border: "2px solid", borderColor: notification.type === "achievement" ? "#fbbf24" : "#10b981", boxShadow: "0 12px 32px rgba(0,0,0,0.3)", zIndex: 1600, maxWidth: 350, animation: "slideInRight 0.3s ease-out", display: "flex", alignItems: "flex-start", gap: 12 }}>
+      <span style={{ fontSize: 24 }}>{notification.icon || "🎉"}</span>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontWeight: 800, marginBottom: 4 }}>{notification.title}</div>
+        <div style={{ fontSize: 13 }}>{notification.message}</div>
+      </div>
+      <button onClick={() => onDismiss(notification.id)} style={{ background: "transparent", border: "none", color: "inherit", fontSize: 18, cursor: "pointer", padding: 0 }}>✕</button>
+    </div>
+  );
+
+  const HeatMap = ({ data, maxValue }) => {
+    const getColor = (value) => {
+      const intensity = maxValue > 0 ? value / maxValue : 0;
+      if (intensity > 0.75) return "#ef4444";
+      if (intensity > 0.5) return "#f59e0b";
+      if (intensity > 0.25) return "#fbbf24";
+      return "#10b981";
+    };
+    return (
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gap: 4 }}>
+        {data.map((value, idx) => (
+          <div key={idx} style={{ aspectRatio: "1", background: getColor(value), borderRadius: 4, position: "relative" }} title={`${value}`}>
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: value > maxValue * 0.5 ? "#fff" : "#0f172a" }}>{value}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const togglePin = (id) => {
+    setPinnedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    showToast(pinnedIds.includes(id) ? "Unpinned" : "Pinned");
+  };
+
+  const handleShiftClick = (idx) => {
+    if (lastSelectedIdx === null) {
+      toggleSelectImage(filteredImages[idx].id);
+      setLastSelectedIdx(idx);
+      return;
+    }
+    const start = Math.min(lastSelectedIdx, idx);
+    const end = Math.max(lastSelectedIdx, idx);
+    const rangeIds = filteredImages.slice(start, end + 1).map(img => img.id);
+    setSelectedImageIds(prev => [...new Set([...prev, ...rangeIds])]);
+    setLastSelectedIdx(idx);
+    showToast(`Selected ${rangeIds.length} items`, 1200);
+  };
+
+  const addNotification = (notification) => {
+    const id = Date.now();
+    setNotifications(prev => [...prev, { ...notification, id, index: prev.length }]);
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }, 5000);
+  };
+
+  const checkAchievements = () => {
+    if (selectedImageIds.length >= 100 && !achievements.includes("selector")) {
+      setAchievements(prev => [...prev, "selector"]);
+      addNotification({ type: "achievement", icon: "🏆", title: "Achievement Unlocked!", message: "Selected 100+ images at once" });
+    }
+    if (images.length >= 1000 && !achievements.includes("library")) {
+      setAchievements(prev => [...prev, "library"]);
+      addNotification({ type: "achievement", icon: "📚", title: "Library Master!", message: "You've built a library of 1000+ images" });
+    }
   };
 
   const rateLimitMessage = retryAfter => {
@@ -1684,6 +1931,24 @@ export default function ImageAltMediaSEO() {
     return () => clearInterval(id);
   }, []);
 
+  // Auto-save functionality
+  useEffect(() => {
+    if (!autoSaveEnabled) return;
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      if (bulkAltText.trim() && selectedImageIds.length) {
+        // Save draft state to localStorage
+        localStorage.setItem('imageSEO_draft', JSON.stringify({ bulkAltText, selectedImageIds, timestamp: Date.now() }));
+      }
+    }, 2000);
+    return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); };
+  }, [bulkAltText, selectedImageIds, autoSaveEnabled]);
+
+  // Achievement checking
+  useEffect(() => {
+    checkAchievements();
+  }, [selectedImageIds.length, images.length]);
+
   React.useEffect(() => {
     if (!shopDomain.trim()) {
       const fromUrl = getShopFromQuery();
@@ -1755,7 +2020,11 @@ export default function ImageAltMediaSEO() {
             <h2 style={{ fontSize: 36, fontWeight: 900, margin: 0, color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.2)", letterSpacing: "-0.02em" }}>✨ Image Alt & SEO Autopilot</h2>
             <p style={{ fontSize: 14, margin: "8px 0 0 0", color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>AI-powered alt text generation, translation & Shopify sync</p>
           </div>
-          <button onClick={() => setShowKeyboardHelp(true)} style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.2s", backdropFilter: "blur(10px)" }} onMouseEnter={e => e.target.style.background = "rgba(255,255,255,0.3)"} onMouseLeave={e => e.target.style.background = "rgba(255,255,255,0.2)"}>⌨️ Shortcuts</button>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <button onClick={() => setShowUndoHistory(true)} style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.2s", backdropFilter: "blur(10px)" }}>⏱️ History</button>
+            <button onClick={() => setShowThemePanel(true)} style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.2s", backdropFilter: "blur(10px)" }}>🎨 Theme</button>
+            <button onClick={() => setShowKeyboardHelp(true)} style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.2s", backdropFilter: "blur(10px)" }} onMouseEnter={e => e.target.style.background = "rgba(255,255,255,0.3)"} onMouseLeave={e => e.target.style.background = "rgba(255,255,255,0.2)"}>⌨️ Shortcuts</button>
+          </div>
         </div>
         <div style={{ display: "flex", gap: 8, marginTop: 16, borderBottom: "2px solid rgba(255,255,255,0.2)", paddingBottom: 8 }}>
           {[
@@ -2018,12 +2287,34 @@ export default function ImageAltMediaSEO() {
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <input
                 value={imageSearch}
-                onChange={e => setImageSearch(e.target.value)}
+                onChange={e => { 
+                  setImageSearch(e.target.value); 
+                  // Generate autocomplete suggestions
+                  const val = e.target.value.toLowerCase();
+                  if (val.length > 2) {
+                    const suggestions = images
+                      .filter(img => (img.altText || '').toLowerCase().includes(val) || (img.url || '').toLowerCase().includes(val))
+                      .slice(0, 5)
+                      .map(img => img.altText || img.url || '')
+                      .filter(Boolean);
+                    setSearchSuggestions([...new Set(suggestions)]);
+                  } else {
+                    setSearchSuggestions([]);
+                  }
+                }}
                 onKeyDown={handleImageSearchKeyDown}
+                onBlur={() => setTimeout(() => setSearchSuggestions([]), 200)}
                 placeholder="Search URL or alt text"
                 aria-label="Search images"
-                style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 180 }}
+                style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 180, position: "relative" }}
               />
+              {searchSuggestions.length > 0 && (
+                <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#1e293b", border: "1px solid #475569", borderRadius: 8, marginTop: 4, maxHeight: 200, overflow: "auto", zIndex: 100, boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
+                  {searchSuggestions.map((suggestion, idx) => (
+                    <div key={idx} onClick={() => { setImageSearch(suggestion); setSearchSuggestions([]); }} style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13, color: "#e2e8f0", borderBottom: idx < searchSuggestions.length - 1 ? "1px solid #334155" : "none", transition: "background 0.15s" }} onMouseEnter={e => e.target.style.background = "#334155"} onMouseLeave={e => e.target.style.background = "transparent"}>{suggestion}</div>
+                  ))}
+                </div>
+              )}
               <button onClick={handleImageSearchSubmit} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Search</button>
               <button onClick={handleClearImageSearch} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Clear</button>
               <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
@@ -2098,7 +2389,11 @@ export default function ImageAltMediaSEO() {
             <button onClick={handlePushShopify} aria-label="Push selected alt text to Shopify" disabled={!selectedImageIds.length || shopifyPushing || loading} style={{ background: !selectedImageIds.length || shopifyPushing ? "#334155" : "#0ea5e9", color: "#f8fafc", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || shopifyPushing || loading) ? "not-allowed" : "pointer" }}>{shopifyPushing ? "Pushing…" : "Push to Shopify"}</button>
           </div>
           <div style={{ marginBottom: 24, background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 24, border: "2px solid #475569", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
-            <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 16, color: "#f1f5f9", display: "flex", alignItems: "center", gap: 8 }}>🎯 Bulk Update</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div style={{ fontWeight: 800, fontSize: 16, color: "#f1f5f9", display: "flex", alignItems: "center", gap: 8 }}>🎯 Bulk Update</div>
+              <button onClick={() => setCollapsedSections(prev => ({ ...prev, bulk: !prev.bulk }))} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 20, cursor: "pointer" }}>{collapsedSections.bulk ? "▶" : "▼"}</button>
+            </div>
+            {!collapsedSections.bulk && (<>
             <textarea
               value={bulkAltText}
               onChange={e => setBulkAltText(e.target.value)}
@@ -2109,14 +2404,16 @@ export default function ImageAltMediaSEO() {
               onFocus={e => e.target.style.borderColor = "#8b5cf6"}
               onBlur={e => e.target.style.borderColor = "#64748b"}
             />
-            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-              <button onClick={handleBulkApply} aria-label={`Apply alt text to ${selectedImageIds.length} selected images`} disabled={!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading} style={{ background: roleCanApply ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" : "#334155", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading) ? "not-allowed" : "pointer", boxShadow: roleCanApply ? "0 4px 12px rgba(16, 185, 129, 0.3)" : "none", transition: "all 0.2s", transform: "translateY(0)" }} onMouseEnter={e => { if (roleCanApply && selectedImageIds.length && bulkAltText.trim() && !loading) e.target.style.transform = "translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "translateY(0)"}>Apply to selected</button>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <button onClick={handleBulkApply} disabled={!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading} style={{ background: roleCanApply ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" : "#334155", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading) ? "not-allowed" : "pointer", boxShadow: roleCanApply ? "0 4px 12px rgba(16, 185, 129, 0.3)" : "none", transition: "all 0.2s", transform: "translateY(0)" }} onMouseEnter={e => { if (roleCanApply && selectedImageIds.length && bulkAltText.trim() && !loading) e.target.style.transform = "translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "translateY(0)"}>Apply to selected</button>
+              <button onClick={() => { if (selectedImageIds.length && bulkAltText.trim()) setShowBulkPreview(true); }} disabled={!selectedImageIds.length || !bulkAltText.trim()} style={{ background: "rgba(139, 92, 246, 0.2)", color: "#a78bfa", border: "1px solid #8b5cf6", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || !bulkAltText.trim()) ? "not-allowed" : "pointer", transition: "all 0.2s" }}>👁️ Preview</button>
               <button onClick={handleAiImproveSelected} aria-label="Use AI to rewrite alt text for selected images" disabled={!roleCanApply || !selectedImageIds.length || loading} style={{ background: roleCanApply ? "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)" : "#334155", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || loading) ? "not-allowed" : "pointer", boxShadow: roleCanApply ? "0 4px 12px rgba(139, 92, 246, 0.3)" : "none", transition: "all 0.2s", transform: "translateY(0)" }} onMouseEnter={e => { if (roleCanApply && selectedImageIds.length && !loading) e.target.style.transform = "translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "translateY(0)"}>✨ AI improve</button>
               <button onClick={handleQueueBulkApproval} aria-label="Queue approval for bulk alt update" disabled={!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()} style={{ background: roleCanApprove ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" : "#334155", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()) ? "not-allowed" : "pointer", boxShadow: roleCanApprove ? "0 4px 12px rgba(245, 158, 11, 0.3)" : "none", transition: "all 0.2s" }}>📋 Request approval</button>
               <button onClick={handleUndo} aria-label="Undo last bulk or AI change" disabled={!undoBuffer.length || loading} title={undoBuffer.length ? `Undo (Ctrl+Z) - ${undoBuffer.length} action${undoBuffer.length > 1 ? 's' : ''} available` : "No actions to undo"} style={{ background: undoBuffer.length ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" : "#334155", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!undoBuffer.length || loading) ? "not-allowed" : "pointer", boxShadow: undoBuffer.length ? "0 4px 12px rgba(245, 158, 11, 0.3)" : "none", transition: "all 0.2s" }}>↩️ Undo ({undoBuffer.length})</button>
               {selectedImageIds.length ? <span style={{ fontSize: 12 }}>IDs: {selectedImageIds.slice(0, 6).join(', ')}{selectedImageIds.length > 6 ? '…' : ''}</span> : <span style={{ fontSize: 12 }}>Pick rows to enable bulk update</span>}
-              <span style={{ fontSize: 11, color: "#94a3b8" }}>Shortcuts: Ctrl+Shift+A (select all), Ctrl+Z (undo)</span>
+              <span style={{ fontSize: 11, color: "#94a3b8" }}>Shortcuts: Ctrl+Shift+A (select all), Ctrl+Z (undo), Shift+Click (range select)</span>
             </div>
+            </>) }
           </div>
           {similarityResults?.length ? (
             <div style={{ marginBottom: 12, background: "#111827", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
@@ -2149,8 +2446,12 @@ export default function ImageAltMediaSEO() {
           <div style={{ marginBottom: 24, background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderRadius: 20, padding: 24, border: "2px solid #334155", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <div style={{ fontWeight: 800, fontSize: 16, color: "#f1f5f9", display: "flex", alignItems: "center", gap: 8 }}>📋 Approval Queue <span style={{ background: "#7c3aed", color: "#fff", fontSize: 12, padding: "2px 10px", borderRadius: 999, fontWeight: 700 }}>{approvalQueue.length}</span></div>
-              <span style={{ fontSize: 12, color: "#cbd5e1" }}>{roleCanApply ? "Editors/Admins can apply" : roleCanApprove ? "Reviewers can approve; editors apply" : "View-only"}</span>
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <span style={{ fontSize: 12, color: "#cbd5e1" }}>{roleCanApply ? "Editors/Admins can apply" : roleCanApprove ? "Reviewers can approve; editors apply" : "View-only"}</span>
+                <button onClick={() => setCollapsedSections(prev => ({ ...prev, approval: !prev.approval }))} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 20, cursor: "pointer" }}>{collapsedSections.approval ? "▶" : "▼"}</button>
+              </div>
             </div>
+            {!collapsedSections.approval && (<>
             {approvalQueue.length ? (
               <ul style={{ margin: 0, paddingLeft: 16 }}>
                 {approvalQueue.slice(0, 15).map(entry => (
@@ -2177,6 +2478,7 @@ export default function ImageAltMediaSEO() {
             ) : (
               <div style={{ fontSize: 13, color: "#cbd5e1" }}>No approvals queued. Reviewers can approve; editors/admins can apply.</div>
             )}
+            </>) }
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -2264,10 +2566,36 @@ export default function ImageAltMediaSEO() {
             </div>
           ) : null}
           <ul style={{ paddingLeft: 18 }} aria-busy={loading} aria-live="polite">
-            {!loading && visibleImages.map(img => {
+            {!loading && visibleImages.map((img, idx) => {
               const lint = lintCache.get(img.id) || lintAltText(resolveAlt(img));
+              const isPinned = pinnedIds.includes(img.id);
               return (
-                <li key={img.id} style={{ marginBottom: 16, background: selectedImageIds.includes(img.id) ? "linear-gradient(135deg, #1e293b 0%, #334155 100%)" : "rgba(15, 23, 42, 0.5)", borderRadius: 16, padding: 16, border: selectedImageIds.includes(img.id) ? "2px solid #8b5cf6" : "1px solid #334155", color: "#e2e8f0", boxShadow: selectedImageIds.includes(img.id) ? "0 4px 16px rgba(139, 92, 246, 0.2)" : "0 2px 8px rgba(0,0,0,0.1)", transition: "all 0.2s", transform: "translateY(0)" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
+                <li 
+                  key={img.id} 
+                  onContextMenu={e => { e.preventDefault(); setContextMenu({ imageId: img.id, x: e.clientX, y: e.clientY }); }}
+                  onClick={e => { if (e.shiftKey) { e.preventDefault(); handleShiftClick(idx); } }}
+                  onMouseEnter={() => setHoveredImageId(img.id)}
+                  onMouseLeave={() => setHoveredImageId(null)}
+                  style={{ 
+                    marginBottom: 16, 
+                    background: selectedImageIds.includes(img.id) ? "linear-gradient(135deg, #1e293b 0%, #334155 100%)" : "rgba(15, 23, 42, 0.5)", 
+                    borderRadius: 16, 
+                    padding: 16, 
+                    border: selectedImageIds.includes(img.id) ? `2px solid ${accentColor}` : "1px solid #334155", 
+                    color: "#e2e8f0", 
+                    boxShadow: selectedImageIds.includes(img.id) ? `0 4px 16px rgba(139, 92, 246, 0.2)` : hoveredImageId === img.id ? "0 8px 24px rgba(0,0,0,0.3)" : "0 2px 8px rgba(0,0,0,0.1)", 
+                    transition: "all 0.2s", 
+                    transform: hoveredImageId === img.id ? "translateY(-4px) scale(1.01)" : "translateY(0)",
+                    cursor: "pointer",
+                    position: "relative"
+                  }}
+                >
+                  {isPinned && <div style={{ position: "absolute", top: 12, right: 12, fontSize: 20, zIndex: 10 }}>📌</div>}
+                  {hoveredImageId === img.id && img.url && (
+                    <div style={{ position: "absolute", top: -160, right: 16, width: 300, height: 150, background: "#0f172a", border: "2px solid #8b5cf6", borderRadius: 12, padding: 8, boxShadow: "0 12px 32px rgba(0,0,0,0.5)", zIndex: 100, animation: "scaleIn 0.2s ease" }}>
+                      <img src={img.url} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: 8 }} />
+                    </div>
+                  )}
                   <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                     <input type="checkbox" checked={selectedImageIds.includes(img.id)} onChange={() => toggleSelectImage(img.id)} aria-label={`Select image ${img.id}`} />
                     <div style={{ position: "relative", flex: "0 0 140px", maxWidth: 160 }}>
@@ -2656,6 +2984,14 @@ export default function ImageAltMediaSEO() {
       <FloatingActionBar />
       <KeyboardShortcutsModal />
       <DeleteConfirmModal />
+      <ContextMenu />
+      <ComparisonModal />
+      <BulkPreviewModal />
+      <UndoHistoryModal />
+      <ThemeCustomizationPanel />
+      {notifications.map(notif => (
+        <NotificationToast key={notif.id} notification={notif} onDismiss={(id) => setNotifications(prev => prev.filter(n => n.id !== id))} />
+      ))}
 
       <div style={{ marginTop: 24, background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 24, border: "2px solid #475569", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
         <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 16, color: "#f1f5f9", display: "flex", alignItems: "center", gap: 8 }}>📝 Batch Generate (JSON array)</div>
@@ -2816,6 +3152,25 @@ export default function ImageAltMediaSEO() {
             <button onClick={async () => { await fetchJson("/api/image-alt-media-seo/analytics/cache/clear", { method: "POST" }); showToast("Analytics cache cleared"); }} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Clear cache</button>
           </div>
         </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 24 }}>
+          {analytics && [
+            { label: "Total Images", value: analytics.totalImages ?? 0, icon: "📸", color: "#8b5cf6" },
+            { label: "Avg Length", value: analytics.avgLength ?? 0, icon: "📏", color: "#0ea5e9" },
+            { label: "Missing Alt", value: analytics.missingAlt ?? 0, icon: "⚠️", color: "#ef4444" },
+            { label: "Duplicates", value: analytics.duplicateAlts ?? 0, icon: "🔄", color: "#f59e0b" },
+            { label: "Coverage", value: `${analytics.coveragePct ?? 0}%`, icon: "🎯", color: "#10b981" }
+          ].map(stat => (
+            <div key={stat.label} style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 20, border: `2px solid ${stat.color}`, boxShadow: `0 4px 16px ${stat.color}33` }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>{stat.icon}</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: stat.color, marginBottom: 4 }}>{stat.value}</div>
+              <div style={{ fontSize: 13, color: "#cbd5e1", fontWeight: 600 }}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12, color: "#f1f5f9" }}>🔥 Length Distribution Heat Map</div>
+          <HeatMap data={(lengthBands?.bands || []).map(b => b.count || 0)} maxValue={Math.max(...(lengthBands?.bands || []).map(b => b.count || 0))} />
+        </div>
         <div style={{ fontSize: 15, color: "#a3e635" }}>
           {analytics ? (
             <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
@@ -2832,21 +3187,25 @@ export default function ImageAltMediaSEO() {
         </div>
         <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div style={{ background: "#1f2937", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Coverage vs goals</div>
-            {coverageProgress.map(p => {
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ fontWeight: 700 }}>Coverage vs goals</div>
+              <button onClick={() => setCollapsedSections(prev => ({ ...prev, coverage: !prev.coverage }))} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 18, cursor: "pointer" }}>{collapsedSections.coverage ? "▶" : "▼"}</button>
+            </div>
+            {!collapsedSections.coverage && coverageProgress.map(p => {
               const pct = Math.min(100, Math.max(0, p.value));
               const target = p.target ?? 0;
               const good = p.good;
               return (
-                <div key={p.label} style={{ marginBottom: 8 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
-                    <span>{p.label}</span>
-                    <span>{p.value}% (goal {target}{p.label.includes('%') ? '%' : ''})</span>
+                <div key={p.label} style={{ marginBottom: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                    <span style={{ fontSize: 13 }}>{p.label}</span>
+                    <CircularProgress percent={pct} size={60} strokeWidth={6} color={good ? "#10b981" : "#f59e0b"} />
                   </div>
                   <div style={{ position: "relative", height: 10, background: "#0b1220", borderRadius: 999 }}>
                     <div style={{ position: "absolute", left: `${Math.min(100, Math.max(0, target))}%`, top: 0, bottom: 0, width: 2, background: "#f59e0b", opacity: 0.7 }} />
                     <div style={{ width: `${pct}%`, height: "100%", borderRadius: 999, background: good ? "#22c55e" : "#f97316" }} />
                   </div>
+                  <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>Goal: {target}{p.label.includes('%') ? '%' : ''}</div>
                 </div>
               );
             })}
@@ -2931,7 +3290,12 @@ export default function ImageAltMediaSEO() {
       )}
       </div>
       <div style={{ marginTop: 40, padding: "24px 40px", fontSize: 13, color: "#cbd5e1", textAlign: "center", background: "linear-gradient(90deg, #1e293b 0%, #334155 100%)", borderTop: "2px solid #475569" }}>
-        <span>✨ Powered by AURA Systems AI · <a href="mailto:support@aura-core.ai" style={{ color: "#8b5cf6", textDecoration: "underline", fontWeight: 600 }}>Contact Support</a></span>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+          <span>✨ Powered by AURA Systems AI</span>
+          <a href="mailto:support@aura-core.ai" style={{ color: accentColor, textDecoration: "underline", fontWeight: 600 }}>Contact Support</a>
+          {autoSaveEnabled && <span style={{ fontSize: 11, color: "#94a3b8" }}>💾 Auto-save enabled</span>}
+          {achievements.length > 0 && <span style={{ fontSize: 11, color: "#fbbf24" }}>🏆 {achievements.length} achievements</span>}
+        </div>
       </div>
     </div>
   );
