@@ -7,6 +7,7 @@ const db = require('./db');
 const runs = require('./runs');
 const storageJson = require('../../core/storageJson');
 const { shopifyFetchPaginated } = require('../../core/shopifyApi');
+const fetch = (...args) => globalThis.fetch(...args);
 const { getToken: getShopToken } = require('../../core/shopTokens');
 
 // Shopify embedding guard: optional HMAC + shop validation for embedded requests
@@ -1735,6 +1736,110 @@ router.post('/hooks/replay', requireWriter, async (_req, res) => {
   } catch (err) {
     recordHook('replay', false);
     res.status(500).json({ ok: false, error: err.message || 'Replay error' });
+  }
+});
+
+// Push local alt text back to Shopify images (by matching image URL)
+router.post('/images/push-shopify', requireWriter, async (req, res) => {
+  let tokenSource = 'none';
+  try {
+    const shop = (req.body?.shop || req.query?.shop || req.headers['x-shopify-shop-domain'] || '').toLowerCase();
+    if (!shop) return res.status(400).json({ ok: false, error: 'shop required (e.g., mystore.myshopify.com)' });
+    if (!isValidShopDomain(shop)) return res.status(400).json({ ok: false, error: 'Invalid shop domain' });
+    const items = Array.isArray(req.body?.items) ? req.body.items : [];
+    if (!items.length) return res.status(400).json({ ok: false, error: 'items[] required (url + altText)' });
+    if (items.length > 500) return res.status(400).json({ ok: false, error: 'Max 500 items per push' });
+
+    const tokenSourceMap = {
+      body: req.body?.token,
+      session: req.session?.shopifyToken,
+      SHOPIFY_ACCESS_TOKEN: process.env.SHOPIFY_ACCESS_TOKEN,
+      SHOPIFY_ADMIN_API_TOKEN: process.env.SHOPIFY_ADMIN_API_TOKEN,
+      SHOPIFY_API_TOKEN: process.env.SHOPIFY_API_TOKEN,
+      SHOPIFY_ADMIN_TOKEN: process.env.SHOPIFY_ADMIN_TOKEN,
+      shopTokens: getShopToken(shop),
+    };
+    const tokenEntry = Object.entries(tokenSourceMap).find(([, val]) => !!val);
+    const resolvedToken = tokenEntry ? tokenEntry[1] : null;
+    tokenSource = tokenEntry ? tokenEntry[0] : 'none';
+    if (!resolvedToken) {
+      return res.status(401).json({ ok: false, error: 'No Shopify admin token available', tokenSource });
+    }
+
+    // Pull a product image map to resolve URLs -> image IDs
+    const maxProducts = clampInt(req.body?.productLimit || req.query?.productLimit || 400, 50, 2000);
+    const { items: products } = await shopifyFetchPaginated(
+      shop,
+      'products.json',
+      { limit: 250, fields: 'id,images' },
+      resolvedToken,
+      {
+        maxPages: Math.ceil(maxProducts / 250),
+        rateLimitThreshold: 0.75,
+        rateLimitSleepMs: 900,
+      }
+    );
+
+    const imageMap = new Map(); // urlLower -> { productId, imageId }
+    products.forEach(p => {
+      (p.images || []).forEach(img => {
+        const url = normalizeStr(img.src || img.original_src || '', MAX_URL_LEN);
+        if (url) imageMap.set(url.toLowerCase(), { productId: p.id, imageId: img.id });
+      });
+    });
+
+    const apiVersion = process.env.SHOPIFY_API_VERSION || '2023-10';
+    const results = [];
+    let synced = 0;
+    let notFound = 0;
+    let errors = 0;
+
+    for (const item of items) {
+      const url = normalizeStr(item?.url || '', MAX_URL_LEN);
+      const altText = normalizeStr(item?.altText || item?.alt || '', MAX_ALT_LEN);
+      if (!url || !altText) {
+        results.push({ ok: false, error: 'url and altText required', url });
+        errors += 1;
+        continue;
+      }
+      const mapping = imageMap.get(url.toLowerCase());
+      if (!mapping) {
+        results.push({ ok: false, error: 'not found in Shopify catalog', url });
+        notFound += 1;
+        continue;
+      }
+
+      const endpoint = `https://${shop}/admin/api/${apiVersion}/products/${mapping.productId}/images/${mapping.imageId}.json`;
+      try {
+        const resp = await fetch(endpoint, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Access-Token': resolvedToken,
+          },
+          body: JSON.stringify({ image: { id: mapping.imageId, alt: altText } }),
+        });
+        const text = await resp.text();
+        const json = text ? JSON.parse(text) : {};
+        if (!resp.ok) {
+          results.push({ ok: false, error: json?.errors || text || `HTTP ${resp.status}`, url, productId: mapping.productId, imageId: mapping.imageId });
+          errors += 1;
+          continue;
+        }
+        synced += 1;
+        results.push({ ok: true, url, altText, productId: mapping.productId, imageId: mapping.imageId });
+      } catch (err) {
+        results.push({ ok: false, error: err.message || 'Shopify push failed', url, productId: mapping.productId, imageId: mapping.imageId });
+        errors += 1;
+      }
+    }
+
+    recordHook('push', errors === 0, { items: items.slice(0, 50) });
+    res.json({ ok: true, synced, notFound, errors, total: items.length, products: products.length, tokenSource, results });
+  } catch (err) {
+    recordHook('push', false);
+    const status = err.status || 500;
+    res.status(status).json({ ok: false, error: err.message || 'Shopify push failed', tokenSource });
   }
 });
 

@@ -52,6 +52,7 @@ export default function ImageAltMediaSEO() {
   const [shopifyMaxImages, setShopifyMaxImages] = useState(250);
   const [shopifyProductLimit, setShopifyProductLimit] = useState(400);
   const [shopifyImporting, setShopifyImporting] = useState(false);
+  const [shopifyPushing, setShopifyPushing] = useState(false);
   const [shopifyImportSummary, setShopifyImportSummary] = useState(null);
   const [bulkAltText, setBulkAltText] = useState("");
   const [similarityQuery, setSimilarityQuery] = useState("");
@@ -530,6 +531,51 @@ export default function ImageAltMediaSEO() {
     if (typeof window !== 'undefined') {
       if (window.top) window.top.location.href = target;
       else window.location.href = target;
+    }
+  };
+
+  const handlePushShopify = async () => {
+    if (!ensureWriter("push to Shopify")) return;
+    const shop = shopDomain.trim() || getShopFromQuery();
+    if (!shop) {
+      setError("Shop domain is required to push to Shopify (e.g. yourstore.myshopify.com)");
+      showToast("Add your shop domain to push");
+      return;
+    }
+    if (!selectedImageIds.length) {
+      setError("Select at least one image to push to Shopify");
+      return;
+    }
+    const selected = images.filter(img => selectedImageIds.includes(img.id));
+    if (!selected.length) {
+      setError("No matching images found for selection");
+      return;
+    }
+    setShopifyPushing(true);
+    setError("");
+    try {
+      const payload = {
+        shop,
+        items: selected.map(img => ({ url: img.url, altText: resolveAlt(img) })),
+        productLimit: shopifyProductLimit,
+      };
+      const { data } = await fetchJson("/api/image-alt-media-seo/images/push-shopify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const okCount = data.synced || 0;
+      const notFound = data.notFound || 0;
+      const errs = data.errors || 0;
+      showToast(`Pushed ${okCount} to Shopify; ${notFound} not found; ${errs} errors`, 2400);
+      if (errs) setError("Some items failed to push to Shopify — check tokens and rate limits.");
+      recordAction("shopify-push", okCount, { notFound, errors: errs, tokenSource: data.tokenSource });
+      handleFetchHookMetrics();
+    } catch (err) {
+      if (err?.status === 429) setError(rateLimitMessage(err.retryAfter));
+      else setError(err.message || "Shopify push failed");
+    } finally {
+      setShopifyPushing(false);
     }
   };
 
@@ -1905,6 +1951,7 @@ export default function ImageAltMediaSEO() {
             <span role="status" aria-live="polite">Selected {selectedImageIds.length}</span>
             <button onClick={selectPageImages} aria-label="Select all images on this page" style={{ background: "#e0f2fe", color: "#0f172a", border: "1px solid #bae6fd", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: "pointer" }}>Select page</button>
             <button onClick={clearSelectedImages} aria-label="Clear selected images" disabled={!selectedImageIds.length} style={{ background: "#f8fafc", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: !selectedImageIds.length ? "not-allowed" : "pointer" }}>Clear selection</button>
+            <button onClick={handlePushShopify} aria-label="Push selected alt text to Shopify" disabled={!selectedImageIds.length || shopifyPushing || loading} style={{ background: !selectedImageIds.length || shopifyPushing ? "#334155" : "#0ea5e9", color: "#f8fafc", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || shopifyPushing || loading) ? "not-allowed" : "pointer" }}>{shopifyPushing ? "Pushing…" : "Push to Shopify"}</button>
           </div>
           <div style={{ marginBottom: 12, background: "#1f2937", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Bulk update selected alts</div>
