@@ -8583,7 +8583,7 @@ export default function ImageAltMediaSEO() {
       )}
       
       </div>
-      
+
       <div style={{ marginTop: 40, padding: "24px 40px", fontSize: 13, color: "#cbd5e1", textAlign: "center", background: "linear-gradient(90deg, #1e293b 0%, #334155 100%)", borderTop: "2px solid #475569" }}>
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
           <span>Powered by AURA Systems AI</span>
@@ -8594,4 +8594,4 @@ export default function ImageAltMediaSEO() {
       </div>
     </div>
   );
-}
+
