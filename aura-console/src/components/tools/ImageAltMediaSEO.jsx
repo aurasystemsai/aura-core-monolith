@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 
+const BUILD_DEBUG_TAG = "AI-BUTTON-DEBUG-4d24f0d-001";
+
 // Safe theme detector for SSR/CSR
 const isDarkTheme = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
 
@@ -7968,6 +7970,10 @@ export default function ImageAltMediaSEO() {
 
   return (
     <div style={{ padding: 0, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", minHeight: "100vh", overflowX: "hidden" }}>
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 20000, background: "#0f172a", color: "#fbbf24", padding: "6px 10px", fontWeight: 800, fontSize: 12, display: "flex", gap: 12, alignItems: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}>
+        <span>{BUILD_DEBUG_TAG}</span>
+        <span style={{ color: "#38bdf8" }}>Portal AI button should be visible at bottom-right.</span>
+      </div>
       <div style={{ position: "sticky", top: 0, zIndex: 999, background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)", padding: "16px 24px", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
           <div>
