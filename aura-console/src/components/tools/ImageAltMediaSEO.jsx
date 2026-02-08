@@ -131,7 +131,21 @@ export default function ImageAltMediaSEO() {
   const [showThemePanel, setShowThemePanel] = useState(false);
   const [achievements, setAchievements] = useState([]);
   const [simpleMode, setSimpleMode] = useState(true);
+  const [showBackToTop, setShowBackToTop] = useState(false);
   const autoSaveTimer = useRef(null);
+  
+  // Tab descriptions for tooltips
+  const tabDescriptions = {
+    images: "View and manage all images with AI-powered alt text generation",
+    generate: "Bulk generate alt text for multiple images at once",
+    analytics: "View statistics and insights about your image alt text quality",
+    seo: "Optimize alt text for search engines and discoverability",
+    accessibility: "Ensure images meet WCAG accessibility standards",
+    quality: "Validate and improve alt text quality with AI insights",
+    automation: "Set up automated workflows and scheduling",
+    collaboration: "Team permissions, approvals, and integrations",
+    platform: "Platform-specific settings and configurations"
+  };
   
   // ========== NEW STATE for 172 Features ==========
   // AI & ML (1-12)
@@ -1075,22 +1089,34 @@ export default function ImageAltMediaSEO() {
   );
 
   const FloatingActionBar = () => {
-    if (!selectedImageIds.length) return null;
     return (
-      <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", padding: "16px 24px", borderRadius: 999, boxShadow: "0 12px 48px rgba(124, 58, 237, 0.4)", zIndex: 1000, display: "flex", gap: 12, alignItems: "center", animation: "slideUp 0.3s ease-out" }}>
+      <div style={{ position: "sticky", top: 72, zIndex: 998, background: selectedImageIds.length ? "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)" : "linear-gradient(135deg, #1e293b 0%, #334155 100%)", padding: "16px 24px", borderRadius: 16, boxShadow: "0 8px 24px rgba(0,0,0,0.3)", marginBottom: 16, border: selectedImageIds.length ? "2px solid #8b5cf6" : "2px solid #475569", display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", animation: "fadeIn 0.3s ease-out" }}>
         <style>{`
-          @keyframes slideUp {
-            from { transform: translate(-50%, 100px); opacity: 0; }
-            to { transform: translate(-50%, 0); opacity: 1; }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
           }
         `}</style>
-        <span style={{ color: "#fff", fontWeight: 700, fontSize: 14 }}>{selectedImageIds.length} selected</span>
-        {!simpleMode && (
-          <button onClick={handleBulkApply} disabled={!roleCanApply || !bulkAltText.trim()} style={{ background: "#fff", color: "#7c3aed", border: "none", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: roleCanApply && bulkAltText.trim() ? "pointer" : "not-allowed", transition: "all 0.2s", transform: "scale(1)" }} onMouseEnter={e => e.target.style.transform = "scale(1.05)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>Apply bulk</button>
-        )}
-        <button onClick={handleAiImproveSelected} disabled={!roleCanApply} style={{ background: "#fff", color: "#7c3aed", border: "none", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: roleCanApply ? "pointer" : "not-allowed", transition: "all 0.2s", transform: "scale(1)" }} onMouseEnter={e => e.target.style.transform = "scale(1.05)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>🤖 AI Improve All</button>
-        <button onClick={handlePushShopify} disabled={!selectedImageIds.length || shopifyPushing} style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || shopifyPushing) ? "not-allowed" : "pointer", transition: "all 0.2s" }}>{shopifyPushing ? "Pushing…" : "Push to Shopify"}</button>
-        <button onClick={clearSelectedImages} style={{ background: "transparent", color: "#fff", border: "none", padding: "8px", cursor: "pointer", fontSize: 18 }} title="Clear selection">✕</button>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+          <span style={{ color: "#fff", fontWeight: 700, fontSize: 14 }}>
+            {selectedImageIds.length ? `${selectedImageIds.length} selected` : simpleMode ? "Select images to auto-generate alt text" : "No images selected"}
+          </span>
+          {!selectedImageIds.length && simpleMode && (
+            <button onClick={selectPageImages} style={{ background: "#22c55e", color: "#fff", border: "none", borderRadius: 12, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "0 4px 12px rgba(34, 197, 94, 0.3)", transition: "all 0.2s" }} onMouseEnter={e => e.target.style.transform = "scale(1.05)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>⚡ Select All on Page</button>
+          )}
+        </div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+          {selectedImageIds.length > 0 && (
+            <>
+              {!simpleMode && (
+                <button onClick={handleBulkApply} disabled={!roleCanApply || !bulkAltText.trim()} style={{ background: "#fff", color: "#7c3aed", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: roleCanApply && bulkAltText.trim() ? "pointer" : "not-allowed", transition: "all 0.2s", transform: "scale(1)" }} onMouseEnter={e => { if (roleCanApply && bulkAltText.trim()) e.target.style.transform = "scale(1.05)"; }} onMouseLeave={e => e.target.style.transform = "scale(1)"}>Apply bulk</button>
+              )}
+              <button onClick={handleAiImproveSelected} disabled={!roleCanApply || !selectedImageIds.length} style={{ background: "#fff", color: "#7c3aed", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 800, fontSize: 15, cursor: roleCanApply && selectedImageIds.length ? "pointer" : "not-allowed", transition: "all 0.2s", transform: "scale(1)", boxShadow: "0 4px 16px rgba(139, 92, 246, 0.4)" }} onMouseEnter={e => { if (roleCanApply && selectedImageIds.length) e.target.style.transform = "scale(1.08) translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "scale(1) translateY(0)"}>🤖 AI Improve All ({selectedImageIds.length})</button>
+              {!simpleMode && <button onClick={handlePushShopify} disabled={!selectedImageIds.length || shopifyPushing} style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || shopifyPushing) ? "not-allowed" : "pointer", transition: "all 0.2s" }}>{shopifyPushing ? "Pushing…" : "Push to Shopify"}</button>}
+              <button onClick={clearSelectedImages} style={{ background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 12, padding: "8px 16px", fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "all 0.2s" }} title="Clear selection">Clear</button>
+            </>
+          )}
+        </div>
       </div>
     );
   };
@@ -1827,11 +1853,39 @@ export default function ImageAltMediaSEO() {
           e.preventDefault();
           handleUndo();
         }
+        // Tab switching with Ctrl+1-9
+        const num = parseInt(e.key);
+        if (!e.shiftKey && !e.altKey && num >= 1 && num <= 9) {
+          e.preventDefault();
+          const allTabs = tabGroups[navCategory];
+          if (num <= allTabs.length) {
+            setActiveTab(allTabs[num - 1].id);
+          }
+        }
+        // Category switching with Ctrl+[ and Ctrl+]
+        if (e.key === '[') {
+          e.preventDefault();
+          const cats = Object.keys(tabGroups);
+          const currentIdx = cats.indexOf(navCategory);
+          const prevIdx = currentIdx === 0 ? cats.length - 1 : currentIdx - 1;
+          setNavCategory(cats[prevIdx]);
+        }
+        if (e.key === ']') {
+          e.preventDefault();
+          const cats = Object.keys(tabGroups);
+          const currentIdx = cats.indexOf(navCategory);
+          const nextIdx = (currentIdx + 1) % cats.length;
+          setNavCategory(cats[nextIdx]);
+        }
+      }
+      // Escape to clear selection
+      if (e.key === 'Escape' && selectedImageIds.length) {
+        clearSelectedImages();
       }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [filteredImages, undoBuffer, loading]);
+  }, [filteredImages, undoBuffer, loading, navCategory, tabGroups, selectedImageIds]);
 
   const clearSelectedImages = () => setSelectedImageIds([]);
 
@@ -1933,6 +1987,39 @@ export default function ImageAltMediaSEO() {
     const baseWindow = 120;
     setVisibleCount(Math.min(filteredImages.length || baseWindow, baseWindow));
   }, [filteredImages]);
+
+  // Load last viewed tab and category from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedTab = localStorage.getItem('imageAltSEO_lastTab');
+      const savedCategory = localStorage.getItem('imageAltSEO_lastCategory');
+      if (savedTab) setActiveTab(savedTab);
+      if (savedCategory) setNavCategory(savedCategory);
+    } catch (err) {
+      // localStorage might be disabled
+      console.warn('Could not load tab state from localStorage:', err);
+    }
+  }, []);
+
+  // Save tab state to localStorage when it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('imageAltSEO_lastTab', activeTab);
+      localStorage.setItem('imageAltSEO_lastCategory', navCategory);
+    } catch (err) {
+      // localStorage might be disabled
+    }
+  }, [activeTab, navCategory]);
+
+  // Scroll listener for back-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 400);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Initial observability pull for hooks
   useEffect(() => {
@@ -7744,7 +7831,7 @@ export default function ImageAltMediaSEO() {
 
   return (
     <div style={{ padding: 0, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", minHeight: "100vh", overflowX: "hidden" }}>
-      <div style={{ background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)", padding: "16px 24px", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 999, background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)", padding: "16px 24px", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
           <div>
             <h2 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#fff", letterSpacing: "-0.01em" }}>Image Alt & SEO Autopilot</h2>
@@ -7757,6 +7844,12 @@ export default function ImageAltMediaSEO() {
             <button onClick={() => setShowKeyboardHelp(true)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", borderRadius: 8, padding: "6px 12px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Help</button>
           </div>
         </div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+          <span>{navCategory.charAt(0).toUpperCase() + navCategory.slice(1)}</span>
+          <span>›</span>
+          <span style={{ fontWeight: 600 }}>{tabGroups[navCategory].find(t => t.id === activeTab)?.label || activeTab}</span>
+          <span style={{ marginLeft: "auto", fontSize: 10, opacity: 0.6 }}>Shortcuts: Ctrl+1-9 (tabs), Ctrl+[ ] (categories)</span>
+        </div>
         <div style={{ display: "flex", gap: 6, marginBottom: 8, overflowX: "auto", scrollbarWidth: "none" }}>
           {Object.keys(tabGroups).map(cat => (
             <button key={cat} onClick={() => setNavCategory(cat)} style={{ background: navCategory === cat ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.1)", border: "none", color: "#fff", borderRadius: 6, padding: "6px 12px", fontWeight: 600, fontSize: 11, cursor: "pointer", textTransform: "capitalize", whiteSpace: "nowrap", opacity: navCategory === cat ? 1 : 0.8 }}>
@@ -7765,9 +7858,10 @@ export default function ImageAltMediaSEO() {
           ))}
         </div>
         <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4 }}>
-          {tabGroups[navCategory].map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ background: activeTab === tab.id ? "rgba(255,255,255,0.25)" : "transparent", border: "none", color: "#fff", borderRadius: 6, padding: "6px 14px", fontWeight: 600, fontSize: 13, cursor: "pointer", borderBottom: activeTab === tab.id ? "2px solid #fff" : "2px solid transparent", whiteSpace: "nowrap" }}>
+          {tabGroups[navCategory].map((tab, idx) => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} title={tabDescriptions[tab.id] || tab.label} style={{ background: activeTab === tab.id ? "rgba(255,255,255,0.25)" : "transparent", border: "none", color: "#fff", borderRadius: 6, padding: "6px 14px", fontWeight: 600, fontSize: 13, cursor: "pointer", borderBottom: activeTab === tab.id ? "2px solid #fff" : "2px solid transparent", whiteSpace: "nowrap", position: "relative" }}>
               {tab.label}
+              {idx < 9 && <span style={{ position: "absolute", top: 2, right: 4, fontSize: 9, opacity: 0.5 }}>{idx + 1}</span>}
             </button>
           ))}
         </div>
@@ -7776,6 +7870,7 @@ export default function ImageAltMediaSEO() {
 
       {activeTab === "images" && (
         <>
+      <FloatingActionBar />
 
       {(result || captionResult) && (
         <div style={{ display: "grid", gridTemplateColumns: captionResult ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 12 }}>
@@ -8286,27 +8381,16 @@ export default function ImageAltMediaSEO() {
             </div>
           </div>
           {simpleMode && !selectedImageIds.length && filteredImages.length > 0 && (
-            <div style={{ marginBottom: 16, background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6", boxShadow: "0 8px 24px rgba(124, 58, 237, 0.3)", animation: "pulse 2s ease-in-out infinite" }}>
-              <style>{`
-                @keyframes pulse {
-                  0%, 100% { transform: scale(1); }
-                  50% { transform: scale(1.02); }
-                }
-              `}</style>
-              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
+            <div style={{ marginBottom: 16, background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", borderRadius: 16, padding: 20, border: "2px solid #8b5cf6", boxShadow: "0 8px 24px rgba(124, 58, 237, 0.3)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 <div style={{ fontSize: 48 }}>✓</div>
-                <div>
-                  <h3 style={{ fontSize: 20, fontWeight: 800, color: "#fff", margin: "0 0 8px 0" }}>Get Started in 3 Easy Steps</h3>
-                  <ol style={{ margin: 0, paddingLeft: 20, color: "#f3e8ff", fontSize: 15, lineHeight: 1.8 }}>
-                    <li><strong>Select images</strong> - Click the checkbox next to any image below</li>
-                    <li><strong>Click "🤖 AI Improve All"</strong> - A floating button will appear at the bottom</li>
-                    <li><strong>Done!</strong> - AI automatically generates all alt text</li>
-                  </ol>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", margin: "0 0 8px 0" }}>Quick Start</h3>
+                  <p style={{ margin: 0, color: "#f3e8ff", fontSize: 14, lineHeight: 1.6 }}>
+                    Click <strong>⚡ Select All on Page</strong> in the action bar above, then click <strong>🤖 AI Improve All</strong> to automatically generate optimized alt text for all images!
+                  </p>
                 </div>
               </div>
-              <button onClick={selectPageImages} style={{ background: "#fff", color: "#7c3aed", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 800, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 12px rgba(0,0,0,0.2)", transition: "transform 0.2s" }} onMouseEnter={e => e.target.style.transform = "scale(1.05)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>
-                ⚡ Quick Start: Select All Images on This Page
-              </button>
             </div>
           )}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", color: "#cbd5e1", fontSize: 12, margin: "0 0 8px 0" }} aria-live="polite">
@@ -8742,7 +8826,6 @@ export default function ImageAltMediaSEO() {
           <span>Loading...</span>
         </div>
       )}
-      <FloatingActionBar />
       <KeyboardShortcutsModal />
       <DeleteConfirmModal />
       <ContextMenu />
@@ -10625,6 +10708,41 @@ export default function ImageAltMediaSEO() {
           {achievements.length > 0 && <span style={{ fontSize: 11, color: "#fbbf24" }}>{achievements.length} achievements</span>}
         </div>
       </div>
+      
+      {showBackToTop && (
+        <button 
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
+          style={{ 
+            position: "fixed", 
+            bottom: 24, 
+            right: 24, 
+            width: 56, 
+            height: 56, 
+            borderRadius: "50%", 
+            background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", 
+            border: "none", 
+            color: "#fff", 
+            fontSize: 24, 
+            cursor: "pointer", 
+            boxShadow: "0 8px 24px rgba(124, 58, 237, 0.4)", 
+            zIndex: 998,
+            transition: "all 0.3s ease",
+            animation: "fadeInUp 0.3s ease-out"
+          }}
+          onMouseEnter={e => e.target.style.transform = "scale(1.1) translateY(-4px)"}
+          onMouseLeave={e => e.target.style.transform = "scale(1) translateY(0)"}
+          title="Back to top (scroll up)"
+        >
+          ↑
+        </button>
+      )}
+      
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   </div>
 );
