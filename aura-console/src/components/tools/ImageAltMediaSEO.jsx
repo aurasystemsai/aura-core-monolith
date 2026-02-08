@@ -1990,6 +1990,44 @@ export default function ImageAltMediaSEO() {
     return { status: "ok", label: "OK" };
   };
 
+  // Calculate approximate SEO score based on alt text quality
+  const calculateSeoScore = (alt) => {
+    const text = (alt || "").trim();
+    if (!text) return 0;
+    
+    let score = 50; // Base score for having alt text
+    
+    // Length scoring (ideal 100-125 chars)
+    const len = text.length;
+    if (len >= 100 && len <= 125) {
+      score += 30; // Perfect length
+    } else if (len >= 80 && len < 100) {
+      score += 20; // Good length
+    } else if (len >= 50 && len < 80) {
+      score += 15; // Acceptable
+    } else if (len >= 125 && len <= 150) {
+      score += 15; // Slightly long but ok
+    } else if (len < 50) {
+      score += Math.max(0, len - 15); // Short = lower score
+    } else if (len > 150) {
+      score -= (len - 150) / 3; // Penalize very long
+    }
+    
+    // Bonus for descriptive words (simple heuristic)
+    const words = text.split(/\s+/).length;
+    if (words >= 10 && words <= 20) score += 10;
+    else if (words >= 5 && words < 10) score += 5;
+    
+    // Bonus for capital letters (proper nouns, brands)
+    if (/[A-Z]/.test(text)) score += 5;
+    
+    // Penalty for excessive punctuation or special chars
+    const specialChars = (text.match(/[^a-zA-Z0-9\s,.'-]/g) || []).length;
+    if (specialChars > 3) score -= specialChars * 2;
+    
+    return Math.max(0, Math.min(100, Math.round(score)));
+  };
+
   const handleImagePageChange = delta => {
     const maxOffset = Math.max(0, imageTotal - imageLimit);
     const nextOffset = Math.min(maxOffset, Math.max(0, imageOffset + delta * imageLimit));
@@ -8844,10 +8882,15 @@ export default function ImageAltMediaSEO() {
                       <div style={{ marginTop: 6, fontSize: 12, color: "#94a3b8", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                         {img.createdAt || img.created_at || img.createdat ? <span>Created: {formatDate(img.createdAt || img.created_at || img.createdat)}</span> : null}
                         {img.score ? <span>Score: {img.score}</span> : null}
-                        {img.seoScore !== null && img.seoScore !== undefined ? (
-                          <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", borderRadius: 8, background: img.seoScore >= 80 ? "rgba(34, 197, 94, 0.15)" : img.seoScore >= 60 ? "rgba(251, 191, 36, 0.15)" : "rgba(239, 68, 68, 0.15)", border: `1px solid ${img.seoScore >= 80 ? "#22c55e" : img.seoScore >= 60 ? "#fbbf24" : "#ef4444"}` }}>
-                            <span style={{ fontSize: 10, color: "#94a3b8" }}>SEO:</span>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: img.seoScore >= 80 ? "#22c55e" : img.seoScore >= 60 ? "#fbbf24" : "#ef4444" }}>{Math.round(img.seoScore)}/100</span>
+                        {(() => {
+                          const seoScore = img.seoScore !== null && img.seoScore !== undefined ? img.seoScore : calculateSeoScore(resolveAlt(img));
+                          return (
+                            <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", borderRadius: 8, background: seoScore >= 80 ? "rgba(34, 197, 94, 0.15)" : seoScore >= 60 ? "rgba(251, 191, 36, 0.15)" : "rgba(239, 68, 68, 0.15)", border: `1px solid ${seoScore >= 80 ? "#22c55e" : seoScore >= 60 ? "#fbbf24" : "#ef4444"}` }}>
+                              <span style={{ fontSize: 10, color: "#94a3b8" }}>SEO:</span>
+                              <span style={{ fontSize: 12, fontWeight: 700, color: seoScore >= 80 ? "#22c55e" : seoScore >= 60 ? "#fbbf24" : "#ef4444" }}>{Math.round(seoScore)}/100</span>
+                            </div>
+                          );
+                        })()}
                           </div>
                         ) : null}
                         <button onClick={() => handleAiRewriteSingle(img)} disabled={rewritingId === img.id || loading} style={{ background: rewritingId === img.id ? "#475569" : "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", color: "#fff", border: "none", borderRadius: 10, padding: "8px 14px", fontWeight: 700, fontSize: 12, cursor: rewritingId === img.id || loading ? "wait" : "pointer", boxShadow: rewritingId === img.id ? "none" : "0 4px 12px rgba(139, 92, 246, 0.3)", transition: "all 0.2s", transform: "translateY(0)" }} onMouseEnter={e => { if (rewritingId !== img.id && !loading) e.target.style.transform = "translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "translateY(0)"}>
