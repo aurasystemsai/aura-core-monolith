@@ -1290,6 +1290,7 @@ export default function ImageAltMediaSEO() {
   };
 
   const AIResultsModal = () => {
+    console.log('🔍 AIResultsModal render check:', { show: aiResults.show, success: aiResults.success, items: aiResults.items?.length });
     if (!aiResults.show) return null;
     
     // Calculate average SEO score
@@ -1297,6 +1298,8 @@ export default function ImageAltMediaSEO() {
     const avgScore = scoresAvailable.length > 0 
       ? Math.round(scoresAvailable.reduce((sum, item) => sum + item.seoScore, 0) / scoresAvailable.length)
       : null;
+    
+    console.log('✅ Rendering AIResultsModal with avgScore:', avgScore);
     
     return (
       <div onClick={() => setAiResults({ show: false, success: 0, failed: 0, items: [] })} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s" }}>
@@ -2296,7 +2299,7 @@ export default function ImageAltMediaSEO() {
         recordAction("ai-improve", updates.length, { ids: selectedImageIds.slice(0, 20) });
         
         // Show results
-        setAiResults({
+        const resultsData = {
           show: true,
           success: updates.length,
           failed: selected.length - updates.length,
@@ -2310,7 +2313,9 @@ export default function ImageAltMediaSEO() {
               grade: u.grade
             };
           })
-        });
+        };
+        console.log('🎉 Setting AI Results:', resultsData);
+        setAiResults(resultsData);
         
         await fetchImages();
         showToast(`✓ AI improved ${updates.length} images`);
