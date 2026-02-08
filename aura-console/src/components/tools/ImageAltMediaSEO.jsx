@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 
 // Safe theme detector for SSR/CSR
 const isDarkTheme = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -1110,14 +1111,15 @@ export default function ImageAltMediaSEO() {
   );
 
   const FloatingAIButton = () => {
-    // Temporarily show always for debugging
+    // Always render (disabled at 0) so we can see it even with no selection
     const count = selectedImageIds.length;
     console.log('FloatingAIButton rendering, count:', count, 'selectedImageIds:', selectedImageIds);
-    
-    return (
-      <div style={{ position: "fixed", top: 100, left: "50%", transform: "translateX(-50%)", zIndex: 99999, background: "red", padding: 20, fontSize: 24, fontWeight: "bold", color: "white", border: "5px solid yellow" }}>
-        <div>FLOATING AI BUTTON TEST</div>
-        <div style={{ color: "white", fontSize: 16, marginTop: 10 }}>Count: {count}</div>
+
+    return createPortal(
+      <div style={{ position: "fixed", bottom: 120, right: 24, zIndex: 99999, display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+        <div style={{ background: "rgba(15,23,42,0.9)", color: "#fff", padding: "6px 10px", borderRadius: 8, border: "2px solid #fbbf24", fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,0.35)", fontSize: 12 }}>
+          AI bulk (debug) — count {count}
+        </div>
         <button 
           onClick={handleAiImproveSelected} 
           disabled={!count || !roleCanApply || aiProgress.show}
@@ -1126,11 +1128,11 @@ export default function ImageAltMediaSEO() {
             height: 64, 
             borderRadius: "50%", 
             background: aiProgress.show ? "linear-gradient(135deg, #94a3b8 0%, #64748b 100%)" : "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", 
-            border: "none", 
+            border: "4px solid #fbbf24", 
             color: "#fff", 
             fontSize: 28, 
-            cursor: (!roleCanApply || aiProgress.show) ? "not-allowed" : "pointer", 
-            boxShadow: "0 8px 32px rgba(124, 58, 237, 0.5)", 
+            cursor: (!count || !roleCanApply || aiProgress.show) ? "not-allowed" : "pointer", 
+            boxShadow: "0 12px 36px rgba(124, 58, 237, 0.6)", 
             transition: "all 0.3s ease",
             position: "relative",
             display: "flex",
@@ -1158,7 +1160,8 @@ export default function ImageAltMediaSEO() {
             </>
           )}
         </button>
-      </div>
+      </div>,
+      document.body
     );
   };
 
