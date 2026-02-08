@@ -1180,36 +1180,34 @@ export default function ImageAltMediaSEO() {
     const count = selectedImageIds.length;
     console.log('FloatingAIButtonFallback rendering, count:', count);
     return (
-      <div style={{ position: "fixed", bottom: 180, right: 24, zIndex: 999999, display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end", background: "rgba(15,23,42,0.95)", padding: 12, borderRadius: 12, border: "4px solid #fbbf24", boxShadow: "0 20px 50px rgba(251, 191, 36, 0.6)" }}>
-        <div style={{ color: "#fbbf24", fontWeight: 900, fontSize: 14, textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>AI BULK — {count} selected</div>
-        <button
-          onClick={handleAiImproveSelected}
-          disabled={!count || !roleCanApply || aiProgress.show}
-          style={{
-            width: 72,
-            height: 72,
-            borderRadius: "50%",
-            background: aiProgress.show ? "linear-gradient(135deg, #94a3b8 0%, #64748b 100%)" : "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-            border: "4px solid #fbbf24",
-            color: "#fff",
-            fontSize: 32,
-            cursor: (!count || !roleCanApply || aiProgress.show) ? "not-allowed" : "pointer",
-            boxShadow: "0 16px 48px rgba(239, 68, 68, 0.6)",
-            transition: "all 0.25s ease",
-            position: "relative",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}
-          title={count > 0 ? `AI Improve ${count} selected image${count > 1 ? 's' : ''}` : 'Select images to use AI Improve'}
-          onMouseEnter={e => { if (count && roleCanApply && !aiProgress.show) e.target.style.transform = "scale(1.08)"; }}
-          onMouseLeave={e => { e.target.style.transform = "scale(1)"; }}
-        >
-          🤖
-          <span style={{ position: "absolute", top: -8, right: -8, background: count > 0 ? "#22c55e" : "#64748b", color: "#fff", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, border: "3px solid #fff", boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}>
-            {count}
-          </span>
-        </button>
+      <div 
+        onClick={count && roleCanApply && !aiProgress.show ? handleAiImproveSelected : null}
+        style={{ 
+          position: "fixed", 
+          bottom: 100, 
+          right: 24, 
+          zIndex: 999999, 
+          background: count > 0 && !aiProgress.show ? "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)" : "rgba(71, 85, 105, 0.8)",
+          padding: "16px 24px", 
+          borderRadius: 16, 
+          border: "2px solid " + (count > 0 ? "#a855f7" : "#64748b"),
+          boxShadow: count > 0 ? "0 12px 32px rgba(124, 58, 237, 0.5)" : "0 8px 16px rgba(0,0,0,0.3)",
+          cursor: (!count || !roleCanApply || aiProgress.show) ? "not-allowed" : "pointer",
+          transition: "all 0.3s ease",
+          opacity: (!count || !roleCanApply || aiProgress.show) ? 0.6 : 1,
+          userSelect: "none"
+        }}
+        onMouseEnter={e => { if (count && roleCanApply && !aiProgress.show) { e.currentTarget.style.transform = "scale(1.05) translateY(-2px)"; e.currentTarget.style.boxShadow = "0 16px 40px rgba(124, 58, 237, 0.6)"; } }}
+        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1) translateY(0)"; e.currentTarget.style.boxShadow = count > 0 ? "0 12px 32px rgba(124, 58, 237, 0.5)" : "0 8px 16px rgba(0,0,0,0.3)"; }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "center" }}>
+          <div style={{ color: "#fff", fontWeight: 800, fontSize: 15, letterSpacing: "0.5px" }}>
+            {aiProgress.show ? "PROCESSING..." : "AI BULK GENERATE"}
+          </div>
+          <div style={{ color: count > 0 ? "#c084fc" : "#94a3b8", fontSize: 12, fontWeight: 600 }}>
+            {count} image{count !== 1 ? 's' : ''} selected
+          </div>
+        </div>
       </div>
     );
   };
@@ -1360,9 +1358,42 @@ export default function ImageAltMediaSEO() {
               </div>
             </div>
           )}
-          <div style={{ marginTop: 24, textAlign: "center" }}>
-            <button onClick={() => setAiResults({ show: false, success: 0, failed: 0, items: [] })} style={{ background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 32px", fontWeight: 700, fontSize: 16, cursor: "pointer", boxShadow: "0 4px 16px rgba(124, 58, 237, 0.4)" }}>
-              Got it!
+          <div style={{ marginTop: 24, display: "flex", gap: 12, justifyContent: "center" }}>
+            <button 
+              onClick={() => setAiResults({ show: false, success: 0, failed: 0, items: [] })} 
+              style={{ background: "#64748b", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 15, cursor: "pointer", transition: "all 0.2s" }}
+              onMouseEnter={e => e.target.style.background = "#475569"}
+              onMouseLeave={e => e.target.style.background = "#64748b"}
+            >
+              Reject Changes
+            </button>
+            <button 
+              onClick={async () => {
+                try {
+                  showToast("Syncing to Shopify...");
+                  // Sync approved changes to Shopify
+                  const imagesToSync = aiResults.items.map(item => ({
+                    url: item.url,
+                    altText: item.newAlt
+                  }));
+                  
+                  await fetchJson("/api/image-alt-media-seo/images/sync-shopify", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ images: imagesToSync })
+                  });
+                  
+                  showToast(`✓ Synced ${aiResults.success} images to Shopify`);
+                  setAiResults({ show: false, success: 0, failed: 0, items: [] });
+                } catch (err) {
+                  setError(err.message || "Shopify sync failed");
+                }
+              }}
+              style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 32px", fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.4)", transition: "all 0.2s" }}
+              onMouseEnter={e => { e.target.style.transform = "scale(1.02)"; e.target.style.boxShadow = "0 6px 20px rgba(16, 185, 129, 0.5)"; }}
+              onMouseLeave={e => { e.target.style.transform = "scale(1)"; e.target.style.boxShadow = "0 4px 16px rgba(16, 185, 129, 0.4)"; }}
+            >
+              Approve & Sync to Shopify
             </button>
           </div>
         </div>
