@@ -7510,11 +7510,6 @@ export default function ImageAltMediaSEO() {
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Predict traffic increase from optimization</p>
               <button onClick={() => forecastImpact(10)} style={{ width: "100%", background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Forecast Impact</button>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Customer Journey Mapping</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>See how alt text affects user flow</p>
-              <button onClick={mapCustomerJourney} style={{ width: "100%", background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Map Journey</button>
-            </div>
           </div>
         </div>
       )}
