@@ -2617,32 +2617,6 @@ export default function ImageAltMediaSEO() {
     showToast("Excel export started");
   };
   
-  const syncWithGoogleSheets = async () => {
-    // Integration with Google Sheets API
-    setGoogleSheetsSync(true);
-    showToast("Syncing with Google Sheets...");
-  };
-  
-  const sendSlackNotification = async (message) => {
-    if (slackNotifications) {
-      await fetch("/api/integrations/slack", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
-      });
-    }
-  };
-  
-  const scheduleEmailReport = (schedule) => {
-    setEmailReportSchedule(schedule);
-    showToast(`Email reports scheduled: ${schedule}`);
-  };
-  
-  const generatePdfReport = async () => {
-    // Use library like jsPDF
-    showToast("Generating PDF report...");
-  };
-  
   // Accessibility & Compliance (54-63)
   const checkWcagCompliance = (img) => {
     const issues = [];
@@ -2898,7 +2872,6 @@ export default function ImageAltMediaSEO() {
   
   const enableBackgroundSync = () => {
     if ('serviceWorker' in navigator && 'SyncManager' in window) {
-      setBackgroundSync(true);
       showToast("Background sync enabled");
     }
   };
@@ -2907,7 +2880,6 @@ export default function ImageAltMediaSEO() {
   const requestPushPermission = async () => {
     const permission = await Notification.requestPermission();
     if (permission === "granted") {
-      setPushNotifications(true);
       showToast("Push notifications enabled");
     }
   };
@@ -3325,67 +3297,6 @@ export default function ImageAltMediaSEO() {
   
   const viewDeadLetterQueue = () => {
     showToast(`${deadLetterQueue.length} failed operations in queue`);
-  };
-  
-  // Team & Collaboration V2 Handlers (94-105)
-  const applyRoleTemplate = (userId, template) => {
-    showToast(`Role template "${template}" applied to user`);
-  };
-  
-  const segmentByDepartment = (dept, images) => {
-    setDepartmentSegmentation(prev => ({ ...prev, [dept]: images }));
-    showToast(`${images.length} images assigned to ${dept}`);
-  };
-  
-  const createApprovalWorkflow = (stages) => {
-    setApprovalWorkflowsV2(prev => [...prev, { stages, id: Date.now() }]);
-    showToast(`${stages.length}-stage approval workflow created`);
-  };
-  
-  const submitChangeRequest = (imageId, proposedAlt) => {
-    setChangeRequests(prev => [...prev, { imageId, proposedAlt, status: 'pending' }]);
-    showToast("Change request submitted for review");
-  };
-  
-  const addThreadedComment = (imageId, comment, parentId) => {
-    setCommentingSystemV2(prev => [...prev, { imageId, comment, parentId, timestamp: Date.now() }]);
-    showToast("Comment added");
-  };
-  
-  const mentionUser = (username, imageId) => {
-    setMentions(prev => [...prev, { username, imageId, timestamp: Date.now() }]);
-    showToast(`@${username} mentioned`);
-  };
-  
-  const assignTask = (imageId, userId) => {
-    setTaskAssignment(prev => ({ ...prev, [imageId]: userId }));
-    showToast("Image assigned to team member");
-  };
-  
-  const balanceWorkload = () => {
-    setWorkloadBalancing(true);
-    showToast("Images distributed evenly across team");
-  };
-  
-  const trackTime = (imageId, minutes) => {
-    setTimeTracking(prev => ({ ...prev, [imageId]: (prev[imageId] || 0) + minutes }));
-    showToast(`${minutes} minutes logged`);
-  };
-  
-  const generatePerformanceReview = (userId) => {
-    const stats = { imagesOptimized: 45, avgQuality: 82, timeSpent: 120 };
-    setPerformanceReviews(prev => ({ ...prev, [userId]: stats }));
-    showToast("Performance review generated");
-  };
-  
-  const enableTrainingMode = () => {
-    setTrainingMode(true);
-    showToast("Training sandbox activated");
-  };
-  
-  const grantGuestAccess = (email, expiryDays) => {
-    setGuestAccess(prev => [...prev, { email, expiry: Date.now() + expiryDays * 86400000 }]);
-    showToast(`Guest access granted to ${email} for ${expiryDays} days`);
   };
   
   // Content Intelligence Handlers (106-116)
@@ -7235,27 +7146,6 @@ export default function ImageAltMediaSEO() {
               <button onClick={exportToCsv} style={{ width: "100%", background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer", marginBottom: 8 }}>Export to CSV</button>
               <button onClick={exportToExcel} style={{ width: "100%", background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Export to Excel</button>
             </div>
-            
-            {/* Feature 42: Google Sheets */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #22c55e" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Google Sheets Sync</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Two-way sync with Google Sheets</p>
-              <button onClick={syncWithGoogleSheets} style={{ width: "100%", background: "#22c55e", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>{googleSheetsSync ? "✓ Synced" : "Sync Now"}</button>
-            </div>
-            
-            {/* Feature 45: Slack */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Slack Notifications</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Get alerts in Slack channels</p>
-              <button onClick={() => setSlackNotifications(prev => !prev)} style={{ width: "100%", background: slackNotifications ? "#94a3b8" : "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>{slackNotifications ? "✓ Enabled" : "Enable Slack"}</button>
-            </div>
-            
-            {/* Feature 51: PDF Reports */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #ef4444" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>PDF Reports</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Generate printable PDF reports</p>
-              <button onClick={generatePdfReport} style={{ width: "100%", background: "#ef4444", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Generate PDF</button>
-            </div>
           </div>
         </div>
       )}
@@ -7286,13 +7176,6 @@ export default function ImageAltMediaSEO() {
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Suggest null alt text where appropriate</p>
               <button onClick={detectDecorativeImages} style={{ width: "100%", background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Detect Decorative</button>
               <div style={{ marginTop: 12, fontSize: 13 }}>{decorativeImages.length} decorative images found</div>
-            </div>
-            
-            {/* Feature 60: ADA Compliance */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>ADA Compliance</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Check legal compliance status</p>
-              <div style={{ fontSize: 13, color: adaCompliance ? "#10b981" : "#ef4444" }}>{adaCompliance ? "ADA Compliant" : "Issues Found"}</div>
             </div>
           </div>
         </div>
