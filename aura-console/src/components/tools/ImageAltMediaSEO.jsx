@@ -1175,6 +1175,42 @@ export default function ImageAltMediaSEO() {
     );
   };
 
+  // Fallback rendered inside tree (no portal) in case portal is blocked
+  const FloatingAIButtonFallback = () => {
+    const count = selectedImageIds.length;
+    return (
+      <div style={{ position: "fixed", bottom: 60, right: 24, zIndex: 99990, display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end", background: "rgba(15,23,42,0.92)", padding: 10, borderRadius: 12, border: "3px solid #f59e0b", boxShadow: "0 16px 40px rgba(0,0,0,0.55)" }}>
+        <div style={{ color: "#fff", fontWeight: 800, fontSize: 13 }}>Fallback AI bulk — count {count}</div>
+        <button
+          onClick={handleAiImproveSelected}
+          disabled={!count || !roleCanApply || aiProgress.show}
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: "50%",
+            background: aiProgress.show ? "linear-gradient(135deg, #94a3b8 0%, #64748b 100%)" : "linear-gradient(135deg, #16a34a 0%, #22c55e 100%)",
+            border: "3px solid #f59e0b",
+            color: "#fff",
+            fontSize: 26,
+            cursor: (!count || !roleCanApply || aiProgress.show) ? "not-allowed" : "pointer",
+            boxShadow: "0 12px 36px rgba(34, 197, 94, 0.45)",
+            transition: "all 0.25s ease",
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+          title={count > 0 ? `AI Improve ${count} selected image${count > 1 ? 's' : ''}` : 'Select images to use AI Improve'}
+        >
+          🤖
+          <span style={{ position: "absolute", top: -6, right: -6, background: count > 0 ? "#ef4444" : "#475569", color: "#fff", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, border: "2px solid #fff" }}>
+            {count}
+          </span>
+        </button>
+      </div>
+    );
+  };
+
   const KeyboardShortcutsModal = () => {
     if (!showKeyboardHelp) return null;
     return (
@@ -8984,6 +9020,7 @@ export default function ImageAltMediaSEO() {
       <UndoHistoryModal />
       <ThemeCustomizationPanel />
       <FloatingAIButton />
+      <FloatingAIButtonFallback />
       <AIProgressModal />
       <AIResultsModal />
       {notifications.map(notif => (
