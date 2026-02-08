@@ -6350,12 +6350,23 @@ export default function ImageAltMediaSEO() {
   const handleApplyTrendTerminology = (altText) => {
     const trends2024 = ["Quiet Luxury", "Dopamine Dressing", "Cottagecore",  "Y2K Revival", "Sustainable Fashion"];
     let enhanced = altText;
+    let appliedTrends = [];
     
     if (/\b(minimalist|elegant|understated)\b/i.test(altText)) {
       enhanced += " | Quiet Luxury aesthetic";
+      appliedTrends.push("Quiet Luxury");
     }
     if (/\b(bright|vibrant|bold|colorful)\b/i.test(altText)) {
       enhanced += " | Dopamine Dressing style";
+      appliedTrends.push("Dopamine Dressing");
+    }
+    
+    setTrendTerminology(prev => ({ ...prev, [altText]: enhanced }));
+    
+    if (appliedTrends.length > 0) {
+      showToast(`Trend tags: ${appliedTrends.join(", ")}`, 2500);
+    } else {
+      showToast("No matching 2024 trends detected", 2000);
     }
     
     return enhanced;
@@ -6370,6 +6381,10 @@ export default function ImageAltMediaSEO() {
       strength: Math.random() * 0.5 + 0.5
     };
     setFocalPoints(prev => ({ ...prev, [imageUrl]: focal }));
+    
+    const position = focal.x < 0.33 ? "left" : focal.x > 0.66 ? "right" : "center";
+    showToast(`Focal point: ${position} (strength: ${(focal.strength * 100).toFixed(0)}%)`, 2500);
+    
     return focal;
   };
   
@@ -6380,6 +6395,10 @@ export default function ImageAltMediaSEO() {
       blurIntensity: Math.random()
     };
     setDepthOfFieldData(prev => ({ ...prev, [imageUrl]: depth }));
+    
+    const dofType = depth.shallow ? "SHALLOW" : "DEEP";
+    showToast(`Depth of field: ${dofType} (blur: ${(depth.blurIntensity * 100).toFixed(0)}%)`, 2500);
+    
     return depth;
   };
   
@@ -6390,6 +6409,7 @@ export default function ImageAltMediaSEO() {
       contrast: Math.random() * 100
     };
     setShadowHighlightData(prev => ({ ...prev, [imageUrl]: data }));
+    showToast(`Shadows: ${data.shadowPercentage.toFixed(0)}% | Highlights: ${data.highlightPercentage.toFixed(0)}%`, 2500);
     return data;
   };
   
@@ -6397,12 +6417,15 @@ export default function ImageAltMediaSEO() {
     const orientations = ["landscape", "portrait", "square"];
     const optimal = orientations[Math.floor(Math.random() * orientations.length)];
     setOrientationOptimization(prev => ({ ...prev, [imageUrl]: optimal }));
+    showToast(`Optimal orientation: ${optimal.toUpperCase()}`, 2000);
     return optimal;
   };
   
   const handleAnalyzeBackgroundComplexity = (imageUrl) => {
     const complexity = Math.floor(Math.random() * 100);
     setBackgroundComplexityScores(prev => ({ ...prev, [imageUrl]: complexity }));
+    const level = complexity < 30 ? "SIMPLE" : complexity < 70 ? "MODERATE" : "COMPLEX";
+    showToast(`Background: ${level} (${complexity}/100)`, 2500);
     return complexity;
   };
   
@@ -6411,6 +6434,7 @@ export default function ImageAltMediaSEO() {
     const dominant = colors[Math.floor(Math.random() * colors.length)];
     const percentage = Math.floor(Math.random() * 40 + 30);
     setColorDominance(prev => ({ ...prev, [imageUrl]: { color: dominant, percentage } }));
+    showToast(`Dominant color: ${dominant.toUpperCase()} (${percentage}%)`, 2500);
     return { color: dominant, percentage };
   };
   
@@ -6418,12 +6442,15 @@ export default function ImageAltMediaSEO() {
     const textures = ["smooth", "rough", "glossy", "matte", "textured", "grainy"];
     const detected = textures[Math.floor(Math.random() * textures.length)];
     setTextureData(prev => ({ ...prev, [imageUrl]: detected }));
+    showToast(`Texture: ${detected.toUpperCase()}`, 2000);
     return detected;
   };
   
   const handleCalculateSymmetry = (imageUrl) => {
     const score = Math.floor(Math.random() * 100);
     setSymmetryScores(prev => ({ ...prev, [imageUrl]: score }));
+    const symmetryType = score > 80 ? "HIGHLY SYMMETRIC" : score > 50 ? "MODERATELY SYMMETRIC" : "ASYMMETRIC";
+    showToast(`Symmetry: ${symmetryType} (${score}/100)`, 2500);
     return score;
   };
   
@@ -6435,18 +6462,25 @@ export default function ImageAltMediaSEO() {
       right: Math.random()
     };
     setVisualWeightMaps(prev => ({ ...prev, [imageUrl]: weight }));
+    
+    const heaviest = Object.entries(weight).sort((a, b) => b[1] - a[1])[0];
+    showToast(`Visual weight: ${heaviest[0].toUpperCase()} (${(heaviest[1] * 100).toFixed(0)}%)`, 2500);
+    
     return weight;
   };
   
   const handleCalculateNegativeSpace = (imageUrl) => {
     const ratio = Math.random() * 0.6 + 0.1;
     setNegativeSpaceRatios(prev => ({ ...prev, [imageUrl]: ratio }));
+    const spaceType = ratio > 0.4 ? "HIGH" : ratio > 0.2 ? "MODERATE" : "LOW";
+    showToast(`Negative space: ${spaceType} (${(ratio * 100).toFixed(0)}%)`, 2500);
     return ratio;
   };
   
   const handleCountObjects = async (imageUrl) => {
     const count = Math.floor(Math.random() * 10 + 1);
     setObjectCounts(prev => ({ ...prev, [imageUrl]: count }));
+    showToast(`Object count: ${count} object${count !== 1 ? 's' : ''} detected`, 2000);
     return count;
   };
   
@@ -6454,6 +6488,7 @@ export default function ImageAltMediaSEO() {
     const relationships = ["subject dominant", "balanced composition", "background dominant"];
     const relationship = relationships[Math.floor(Math.random() * relationships.length)];
     setSizeRelationships(prev => ({ ...prev, [imageUrl]: relationship }));
+    showToast(`Composition: ${relationship.toUpperCase()}`, 2500);
     return relationship;
   };
   
@@ -6461,6 +6496,7 @@ export default function ImageAltMediaSEO() {
     const perspectives = ["eye-level", "bird's eye", "worm's eye", "oblique"];
     const angle = perspectives[Math.floor(Math.random() * perspectives.length)];
     setPerspectiveAngles(prev => ({ ...prev, [imageUrl]: angle }));
+    showToast(`Perspective: ${angle.toUpperCase()}`, 2000);
     return angle;
   };
   
@@ -6468,6 +6504,13 @@ export default function ImageAltMediaSEO() {
     const hasBlur = Math.random() > 0.7;
     const data = hasBlur ? { detected: true, intensity: Math.random() } : { detected: false };
     setMotionBlurDetection(prev => ({ ...prev, [imageUrl]: data }));
+    
+    if (hasBlur) {
+      showToast(`Motion blur detected (${(data.intensity * 100).toFixed(0)}% intensity)`, 2500);
+    } else {
+      showToast("No motion blur detected", 2000);
+    }
+    
     return data;
   };
   
@@ -6617,20 +6660,28 @@ export default function ImageAltMediaSEO() {
     
     // Ensure descriptive, keyword-rich alt text
     const words = altText.split(' ');
+    let result = altText;
     if (words.length < 5) {
-      return altText + " - high quality product image";
+      result = altText + " - high quality product image";
+      showToast("Optimized for Google Image Pack", 2000);
+    } else {
+      showToast("Already optimized for Image Pack", 2000);
     }
-    return altText;
+    return result;
   };
   
   const handleOptimizeForVoiceSearch = (altText) => {
     if (!voiceSearchPhrasing) return altText;
     
     // Convert to natural question format
+    let result = altText;
     if (!/^(what|where|how|when|why|who)\b/i.test(altText)) {
-      return "What is " + altText;
+      result = "What is " + altText;
+      showToast("Optimized for voice search", 2000);
+    } else {
+      showToast("Already voice search friendly", 2000);
     }
-    return altText;
+    return result;
   };
   
   const handleFormatAsQuestion = (altText) => {
@@ -6638,7 +6689,9 @@ export default function ImageAltMediaSEO() {
     
     const questionStarters = ["What is", "Where can I find", "How does", "Why choose"];
     const starter = questionStarters[Math.floor(Math.random() * questionStarters.length)];
-    return `${starter} ${altText}?`;
+    const result = `${starter} ${altText}?`;
+    showToast(`Formatted as question: '${starter}...'`, 2500);
+    return result;
   };
   
   const handleOptimizeForMobile = (altText) => {
@@ -6646,10 +6699,14 @@ export default function ImageAltMediaSEO() {
     
     // Shorter, punchier alt text for mobile
     const words = altText.split(' ');
+    let result = altText;
     if (words.length > 10) {
-      return words.slice(0, 10).join(' ') + "...";
+      result = words.slice(0, 10).join(' ') + "...";
+      showToast("Optimized for mobile (10 word limit)", 2500);
+    } else {
+      showToast("Already mobile-optimized", 2000);
     }
-    return altText;
+    return result;
   };
   
   const handleExtractLSIKeywords = (primaryKeyword) => {
@@ -6669,16 +6726,16 @@ export default function ImageAltMediaSEO() {
     }
     return lsi;
   };
-    return lsi;
-  };
   
   const handleAddPowerWords = (altText) => {
     const powerWordsList = ["premium", "exclusive", "limited", "authentic", "certified", "professional", "guaranteed", "innovative"];
     const randomPowerWord = powerWordsList[Math.floor(Math.random() * powerWordsList.length)];
     
     if (!altText.toLowerCase().includes(randomPowerWord)) {
+      showToast(`Added power word: '${randomPowerWord}'`, 2000);
       return `${randomPowerWord} ${altText}`;
     }
+    showToast("Power word already present", 2000);
     return altText;
   };
   
@@ -6686,12 +6743,15 @@ export default function ImageAltMediaSEO() {
     const specificTerms = altText.match(/\b(specific|exact|precise|particular|detailed|custom|unique)\b/gi) || [];
     const score = Math.min(100, specificTerms.length * 20 + (altText.length > 50 ? 20 : 0));
     setSpecificityScores(prev => ({ ...prev, [altText]: score }));
+    const rating = score >= 80 ? "EXCELLENT" : score >= 60 ? "GOOD" : score >= 40 ? "FAIR" : "NEEDS WORK";
+    showToast(`Specificity: ${rating} (${score}/100)`, 2500);
     return score;
   };
   
   const handleOptimizeBrandKeywordPlacement = (altText, brand) => {
     // Place brand name early in alt text
     if (!altText.toLowerCase().includes(brand.toLowerCase())) {
+      showToast(`Brand '${brand}' added to beginning`, 2000);
       return `${brand} ${altText}`;
     }
     
@@ -6700,9 +6760,11 @@ export default function ImageAltMediaSEO() {
     
     if (brandIndex > 3) {
       const withoutBrand = words.filter(w => w.toLowerCase() !== brand.toLowerCase());
+      showToast(`Brand '${brand}' moved to front for better SEO`, 2500);
       return `${brand} ${withoutBrand.join(' ')}`;
     }
     
+    showToast(`Brand '${brand}' already optimally placed`, 2000);
     return altText;
   };
   
