@@ -7082,7 +7082,6 @@ export default function ImageAltMediaSEO() {
     }
     
     return result;
-  };    return altText;
   };
   
   const handleOptimizeForDyslexia = (altText) => {
@@ -10659,7 +10658,7 @@ export default function ImageAltMediaSEO() {
           {achievements.length > 0 && <span style={{ fontSize: 11, color: "#fbbf24" }}>{achievements.length} achievements</span>}
         </div>
       </div>
-      </div>
     </div>
-  );
+  </div>
+);
 }
