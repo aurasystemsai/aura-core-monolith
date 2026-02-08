@@ -7415,14 +7415,14 @@ export default function ImageAltMediaSEO() {
   };
 
   return (
-    <div style={{ padding: 0, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", minHeight: "100vh" }}>
+    <div style={{ padding: 0, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", minHeight: "100vh", overflowX: "hidden" }}>
       <div style={{ background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)", padding: "16px 24px", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
           <div>
             <h2 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#fff", letterSpacing: "-0.01em" }}>Image Alt & SEO Autopilot</h2>
             <p style={{ fontSize: 12, margin: "4px 0 0 0", color: "rgba(255,255,255,0.85)" }}>AI-powered alt text & Shopify sync</p>
           </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <button onClick={() => setShowUndoHistory(true)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", borderRadius: 8, padding: "6px 12px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>History</button>
             <button onClick={() => setShowThemePanel(true)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", borderRadius: 8, padding: "6px 12px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Theme</button>
             <button onClick={() => setShowKeyboardHelp(true)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", borderRadius: 8, padding: "6px 12px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Shortcuts</button>
@@ -7443,7 +7443,7 @@ export default function ImageAltMediaSEO() {
           ))}
         </div>
       </div>
-      <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 40px" }}>
+      <div style={{ maxWidth: "100%", width: "100%", margin: "0 auto", padding: "0 20px", boxSizing: "border-box" }}>
 
       {activeTab === "images" && (
         <>
