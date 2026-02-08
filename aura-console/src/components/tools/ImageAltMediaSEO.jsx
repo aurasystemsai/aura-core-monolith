@@ -130,6 +130,7 @@ export default function ImageAltMediaSEO() {
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showThemePanel, setShowThemePanel] = useState(false);
   const [achievements, setAchievements] = useState([]);
+  const [simpleMode, setSimpleMode] = useState(true);
   const autoSaveTimer = useRef(null);
   
   // ========== NEW STATE for 172 Features ==========
@@ -7748,9 +7749,10 @@ export default function ImageAltMediaSEO() {
             <p style={{ fontSize: 12, margin: "4px 0 0 0", color: "rgba(255,255,255,0.85)" }}>AI-powered alt text & Shopify sync</p>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <button onClick={() => setShowUndoHistory(true)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", borderRadius: 8, padding: "6px 12px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>History</button>
-            <button onClick={() => setShowThemePanel(true)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", borderRadius: 8, padding: "6px 12px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Theme</button>
-            <button onClick={() => setShowKeyboardHelp(true)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", borderRadius: 8, padding: "6px 12px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Shortcuts</button>
+            <button onClick={() => setSimpleMode(!simpleMode)} style={{ background: simpleMode ? "rgba(34,197,94,0.25)" : "rgba(255,255,255,0.15)", border: "1px solid " + (simpleMode ? "rgba(34,197,94,0.4)" : "rgba(255,255,255,0.25)"), color: "#fff", borderRadius: 8, padding: "6px 12px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>{simpleMode ? "✓ Simple Mode" : "Advanced Mode"}</button>
+            {!simpleMode && <button onClick={() => setShowUndoHistory(true)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", borderRadius: 8, padding: "6px 12px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>History</button>}
+            {!simpleMode && <button onClick={() => setShowThemePanel(true)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", borderRadius: 8, padding: "6px 12px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Theme</button>}
+            <button onClick={() => setShowKeyboardHelp(true)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", borderRadius: 8, padding: "6px 12px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Help</button>
           </div>
         </div>
         <div style={{ display: "flex", gap: 6, marginBottom: 8, overflowX: "auto", scrollbarWidth: "none" }}>
@@ -7961,6 +7963,8 @@ export default function ImageAltMediaSEO() {
             </ul>
           </div>
         ) : null}
+        {!simpleMode && (
+          <>
         <input
           value={keywords}
           onChange={e => setKeywords(e.target.value)}
@@ -8011,6 +8015,8 @@ export default function ImageAltMediaSEO() {
             <button onClick={() => handleSimulateSelected(simulateVariants.length ? simulateVariants : null)} aria-label="Simulate with selected prompt variants" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#e0e7ff" : "#334155", color: roleCanSimulate ? "#1e293b" : "#94a3b8", border: "1px solid #c7d2fe", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Run sim (variants)</button>
             <span style={{ fontSize: 11, color: "#94a3b8" }}>Runs each variant separately and aggregates.</span>
           </div>
+          </>
+        )}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
             <div style={{ fontWeight: 700, fontSize: 18 }}>Images</div>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
