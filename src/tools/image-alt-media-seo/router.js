@@ -1072,10 +1072,41 @@ router.post('/ai/batch-generate', async (req, res) => {
         const toneHint = itemTone === 'minimalist' ? 'Keep language spare and factual.' : itemTone === 'expressive' ? 'Allow a touch more descriptiveness but stay factual.' : 'Balanced tone.';
         const verbosityHint = itemVerbosity === 'terse' ? 'Keep it short.' : itemVerbosity === 'detailed' ? 'Include one extra specific detail.' : 'Keep concise.';
         const maxTokens = itemVerbosity === 'terse' ? 80 : itemVerbosity === 'detailed' ? 160 : 120;
-        const messages = [
-          { role: 'system', content: 'You are an image SEO expert who writes concise, specific, ADA-friendly alt text without fluff.' },
-          { role: 'user', content: `Image description: ${description || '(none)'}; URL: ${url || '(none)'}; Keywords: ${appliedKeywords || '(none)'}; Brand vocab: ${itemBrandTerms || '(none)'}; Context: ${contextStr || '(none)'}; Segment: ${detectedCategory}; Style guide: ${localeStyleGuide(itemLocale)}; Constraints: no promo language, no PII, keep concise. ${SEGMENT_PROMPTS[detectedCategory] || SEGMENT_PROMPTS.general} ${toneHint} ${verbosityHint}` },
-        ];
+        
+        // Build prompt text
+        const promptText = `Generate a concise, ADA-friendly alt text for this product image.
+Keywords to incorporate: ${appliedKeywords || '(none)'}
+Brand vocabulary: ${itemBrandTerms || '(none)'}
+Product context: ${contextStr || '(none)'}
+Category: ${detectedCategory}
+Style guide: ${localeStyleGuide(itemLocale)}
+${SEGMENT_PROMPTS[detectedCategory] || SEGMENT_PROMPTS.general}
+${toneHint} ${verbosityHint}
+
+Constraints:
+- Write in plain, accessible language
+- NO promotional language or PII
+- Be specific about what you SEE in the image
+- Keep concise (under 125 characters)
+${description ? `\nExisting description (may be inaccurate): ${description}` : ''}`;
+
+        // Use vision API if URL provided, otherwise text-only
+        const messages = url 
+          ? [
+              { role: 'system', content: 'You are an image SEO expert who writes concise, specific, ADA-friendly alt text based on what you actually see in images.' },
+              { 
+                role: 'user', 
+                content: [
+                  { type: 'text', text: promptText },
+                  { type: 'image_url', image_url: { url: url, detail: 'low' } }
+                ]
+              },
+            ]
+          : [
+              { role: 'system', content: 'You are an image SEO expert who writes concise, specific, ADA-friendly alt text without fluff.' },
+              { role: 'user', content: promptText },
+            ];
+        
         const variantTexts = await generateVariants({ openai, messages, maxTokens, variantCount: itemVariantCount, fallbackText: buildFallbackAlt({ imageDescription: description, url, keywords: itemKeywords, productTitle, shotType }) });
         const variants = variantTexts.map((text, idx) => {
           const lint = lintAlt(text, appliedKeywords, itemLocale, itemBrandTerms);
