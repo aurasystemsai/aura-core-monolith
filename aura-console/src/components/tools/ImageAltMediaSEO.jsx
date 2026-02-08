@@ -1116,12 +1116,19 @@ export default function ImageAltMediaSEO() {
     // Always render (disabled at 0) so we can see it even with no selection
     const count = selectedImageIds.length;
     console.log('FloatingAIButton rendering, count:', count, 'selectedImageIds:', selectedImageIds);
+    if (typeof window !== 'undefined') {
+      window.__AI_BUTTON_DEBUG = { count, ts: Date.now() };
+    }
 
     return createPortal(
-      <div style={{ position: "fixed", bottom: 120, right: 24, zIndex: 99999, display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
-        <div style={{ background: "rgba(15,23,42,0.9)", color: "#fff", padding: "6px 10px", borderRadius: 8, border: "2px solid #fbbf24", fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,0.35)", fontSize: 12 }}>
-          AI bulk (debug) — count {count}
+      <>
+        <div style={{ position: "fixed", top: 80, left: "50%", transform: "translateX(-50%)", zIndex: 99999, background: "#991b1b", color: "#fff", padding: "12px 16px", borderRadius: 10, border: "4px solid #fbbf24", fontWeight: 900, fontSize: 16, boxShadow: "0 16px 40px rgba(0,0,0,0.5)" }}>
+          PORTAL ACTIVE — count {count}
         </div>
+        <div style={{ position: "fixed", bottom: 120, right: 24, zIndex: 99999, display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+          <div style={{ background: "rgba(15,23,42,0.9)", color: "#fff", padding: "6px 10px", borderRadius: 8, border: "2px solid #fbbf24", fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,0.35)", fontSize: 12 }}>
+            AI bulk (debug) — count {count}
+          </div>
         <button 
           onClick={handleAiImproveSelected} 
           disabled={!count || !roleCanApply || aiProgress.show}
@@ -1162,7 +1169,8 @@ export default function ImageAltMediaSEO() {
             </>
           )}
         </button>
-      </div>,
+        </div>
+      </>,
       document.body
     );
   };
