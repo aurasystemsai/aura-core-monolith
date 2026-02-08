@@ -147,6 +147,25 @@ export default function ImageAltMediaSEO() {
     platform: "Platform-specific settings and configurations"
   };
   
+  // Tab grouping for navigation (used by header and keyboard shortcuts)
+  const tabGroups = {
+    manage: [
+      { id: "images", label: "Images" },
+      { id: "generate", label: "Generate & Batch" },
+      { id: "analytics", label: "Analytics" }
+    ],
+    optimize: [
+      { id: "seo", label: "SEO" },
+      { id: "accessibility", label: "Accessibility" },
+      { id: "quality-validation", label: "Quality" }
+    ],
+    settings: [
+      { id: "automation", label: "Automation" },
+      { id: "collaboration", label: "Team & Integrations" },
+      { id: "platform-specific", label: "Platform" }
+    ]
+  };
+  
   // ========== NEW STATE for 172 Features ==========
   // AI & ML (1-12)
   const [aiGenerating, setAiGenerating] = useState(false);
@@ -5856,25 +5875,6 @@ export default function ImageAltMediaSEO() {
   })();
 
   const visibleImages = filteredImages.slice(0, visibleCount);
-
-  const tabGroups = {
-    manage: [
-      { id: "images", label: "Images" },
-      { id: "generate", label: "Generate & Batch" },
-      { id: "analytics", label: "Analytics" }
-    ],
-    optimize: [
-      { id: "seo", label: "SEO" },
-      { id: "accessibility", label: "Accessibility" },
-      { id: "quality-validation", label: "Quality" }
-    ],
-    settings: [
-      { id: "automation", label: "Automation" },
-      { id: "collaboration", label: "Team & Integrations" },
-      { id: "platform-specific", label: "Platform" }
-    ]
-  };
-
   // ========== ENHANCED HANDLER FUNCTIONS: 160 New Features ==========
   
   // AI Alt Text Generation Handlers (30 features)
