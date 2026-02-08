@@ -1178,22 +1178,23 @@ export default function ImageAltMediaSEO() {
   // Fallback rendered inside tree (no portal) in case portal is blocked
   const FloatingAIButtonFallback = () => {
     const count = selectedImageIds.length;
+    console.log('FloatingAIButtonFallback rendering, count:', count);
     return (
-      <div style={{ position: "fixed", bottom: 60, right: 24, zIndex: 99990, display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end", background: "rgba(15,23,42,0.92)", padding: 10, borderRadius: 12, border: "3px solid #f59e0b", boxShadow: "0 16px 40px rgba(0,0,0,0.55)" }}>
-        <div style={{ color: "#fff", fontWeight: 800, fontSize: 13 }}>Fallback AI bulk — count {count}</div>
+      <div style={{ position: "fixed", bottom: 180, right: 24, zIndex: 999999, display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end", background: "rgba(15,23,42,0.95)", padding: 12, borderRadius: 12, border: "4px solid #fbbf24", boxShadow: "0 20px 50px rgba(251, 191, 36, 0.6)" }}>
+        <div style={{ color: "#fbbf24", fontWeight: 900, fontSize: 14, textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>AI BULK — {count} selected</div>
         <button
           onClick={handleAiImproveSelected}
           disabled={!count || !roleCanApply || aiProgress.show}
           style={{
-            width: 64,
-            height: 64,
+            width: 72,
+            height: 72,
             borderRadius: "50%",
-            background: aiProgress.show ? "linear-gradient(135deg, #94a3b8 0%, #64748b 100%)" : "linear-gradient(135deg, #16a34a 0%, #22c55e 100%)",
-            border: "3px solid #f59e0b",
+            background: aiProgress.show ? "linear-gradient(135deg, #94a3b8 0%, #64748b 100%)" : "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+            border: "4px solid #fbbf24",
             color: "#fff",
-            fontSize: 26,
+            fontSize: 32,
             cursor: (!count || !roleCanApply || aiProgress.show) ? "not-allowed" : "pointer",
-            boxShadow: "0 12px 36px rgba(34, 197, 94, 0.45)",
+            boxShadow: "0 16px 48px rgba(239, 68, 68, 0.6)",
             transition: "all 0.25s ease",
             position: "relative",
             display: "flex",
@@ -1201,9 +1202,11 @@ export default function ImageAltMediaSEO() {
             justifyContent: "center"
           }}
           title={count > 0 ? `AI Improve ${count} selected image${count > 1 ? 's' : ''}` : 'Select images to use AI Improve'}
+          onMouseEnter={e => { if (count && roleCanApply && !aiProgress.show) e.target.style.transform = "scale(1.08)"; }}
+          onMouseLeave={e => { e.target.style.transform = "scale(1)"; }}
         >
           🤖
-          <span style={{ position: "absolute", top: -6, right: -6, background: count > 0 ? "#ef4444" : "#475569", color: "#fff", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, border: "2px solid #fff" }}>
+          <span style={{ position: "absolute", top: -8, right: -8, background: count > 0 ? "#22c55e" : "#64748b", color: "#fff", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, border: "3px solid #fff", boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}>
             {count}
           </span>
         </button>
@@ -2220,6 +2223,8 @@ export default function ImageAltMediaSEO() {
       return;
     }
     
+    console.log('🤖 AI IMPROVE SELECTED:', { count: selected.length, images: selected.map(s => ({ id: s.id, url: s.url, currentAlt: resolveAlt(s) })) });
+    
     // Show progress modal
     setAiProgress({ show: true, current: 0, total: selected.length, status: 'Starting AI generation...' });
     setError("");
@@ -2238,12 +2243,16 @@ export default function ImageAltMediaSEO() {
         variantCount: 1,
       }));
 
+      console.log('📤 Sending to API:', items);
+      
       setAiProgress(prev => ({ ...prev, status: 'Generating AI alt text...' }));
       const { data } = await fetchJson("/api/image-alt-media-seo/ai/batch-generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ items, locale, safeMode, keywords, brandTerms, tone, verbosity, variantCount: 1 })
       });
+
+      console.log('📥 API Response:', data);
 
       const updates = (data.results || []).map((r, idx) => {
         const id = selected[idx]?.id || r.id;
@@ -8014,10 +8023,6 @@ export default function ImageAltMediaSEO() {
 
   return (
     <div style={{ padding: 0, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", minHeight: "100vh", overflowX: "hidden" }}>
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 20000, background: "#0f172a", color: "#fbbf24", padding: "6px 10px", fontWeight: 800, fontSize: 12, display: "flex", gap: 12, alignItems: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}>
-        <span>{BUILD_DEBUG_TAG}</span>
-        <span style={{ color: "#38bdf8" }}>Portal AI button should be visible at bottom-right.</span>
-      </div>
       <div style={{ position: "sticky", top: 0, zIndex: 999, background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)", padding: "16px 24px", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
           <div>
@@ -9018,7 +9023,6 @@ export default function ImageAltMediaSEO() {
       <BulkPreviewModal />
       <UndoHistoryModal />
       <ThemeCustomizationPanel />
-      <FloatingAIButton />
       <FloatingAIButtonFallback />
       <AIProgressModal />
       <AIResultsModal />
