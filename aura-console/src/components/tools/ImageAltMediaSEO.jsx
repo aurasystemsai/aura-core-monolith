@@ -9057,7 +9057,6 @@ export default function ImageAltMediaSEO() {
       <UndoHistoryModal />
       <ThemeCustomizationPanel />
       <AIProgressModal />
-      <AIResultsModal />
       {notifications.map(notif => (
         <NotificationToast key={notif.id} notification={notif} onDismiss={(id) => setNotifications(prev => prev.filter(n => n.id !== id))} />
       ))}
@@ -9189,6 +9188,8 @@ export default function ImageAltMediaSEO() {
         </div>
       )}
       
+      <AIResultsModal />
+
       {activeTab === "analytics" && (
         <div style={{ animation: "fadeIn 0.3s ease-out" }}>
       <div style={{ marginTop: 24, background: "#334155", borderRadius: 12, padding: 18 }}>
