@@ -8023,6 +8023,7 @@ export default function ImageAltMediaSEO() {
 
   return (
     <div style={{ padding: 0, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", minHeight: "100vh", overflowX: "hidden" }}>
+      <FloatingAIButtonFallback />
       <div style={{ position: "sticky", top: 0, zIndex: 999, background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)", padding: "16px 24px", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
           <div>
@@ -9023,7 +9024,6 @@ export default function ImageAltMediaSEO() {
       <BulkPreviewModal />
       <UndoHistoryModal />
       <ThemeCustomizationPanel />
-      <FloatingAIButtonFallback />
       <AIProgressModal />
       <AIResultsModal />
       {notifications.map(notif => (
