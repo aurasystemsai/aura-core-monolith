@@ -2785,7 +2785,6 @@ export default function ImageAltMediaSEO() {
       "export-csv": exportToCsv,
       "import-shopify": handleImportShopify,
       "bulk-ai": handleBulkAiGenerate,
-      "calculate-roi": calculateRoi,
       "fullscreen": toggleFullscreen,
       "theme-panel": () => setShowThemePanel(prev => !prev),
     };
@@ -7260,72 +7259,6 @@ export default function ImageAltMediaSEO() {
               <button onClick={trainCustomModel} disabled={customModelTraining} style={{ width: "100%", background: customModelTraining ? "#334155" : "#10b981", color: customModelTraining ? "#94a3b8" : "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: customModelTraining ? "not-allowed" : "pointer" }}>
                 {customModelTraining ? "Training..." : "Train Model"}
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* Advanced Analytics Tab */}
-      {activeTab === "advanced-analytics" && (
-        <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px" }}>
-          <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Advanced Analytics & Reporting</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
-            
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Conversion Correlation</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Track which alt text drives sales</p>
-              <button onClick={analyzeConversionCorrelation} style={{ width: "100%", background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Analyze Correlation</button>
-              {conversionCorrelation.altTextQuality && (
-                <div style={{ marginTop: 12, fontSize: 13 }}>Correlation: {(conversionCorrelation.altTextQuality * 100).toFixed(1)}%</div>
-              )}
-            </div>
-            
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>A/B Test Analytics</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Compare performance of variants</p>
-              <button onClick={() => runABTestAnalytics('test-1')} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Run A/B Analysis</button>
-            </div>
-            
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>SEO Impact Dashboard</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Track Google ranking changes</p>
-              <button onClick={generateSEOImpactDashboard} style={{ width: "100%", background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Generate Dashboard</button>
-            </div>
-            
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Predictive Analytics</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Forecast SEO impact before publishing</p>
-              <button onClick={forecastPredictiveAnalytics} style={{ width: "100%", background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Generate Forecast</button>
-            </div>
-            
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Competitor Benchmarking</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Compare your alt text to competitors</p>
-              <button onClick={benchmarkCompetitors} style={{ width: "100%", background: "#ec4899", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Benchmark Now</button>
-            </div>
-            
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>ROI Calculator</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Measure revenue impact</p>
-              <button onClick={() => calculateROI(50000, 5000)} style={{ width: "100%", background: "#14b8a6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Calculate ROI</button>
-              {roiCalculator.roi && <div style={{ marginTop: 12, fontSize: 20, fontWeight: 700, color: "#10b981" }}>ROI: {roiCalculator.roi.toFixed(1)}%</div>}
-            </div>
-            
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #6366f1" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Automated Reports</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Email PDF summaries to stakeholders</p>
-              <input type="email" placeholder="stakeholder@company.com" style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #475569", background: "#0f172a", color: "#fff", marginBottom: 12 }} />
-              <button onClick={() => scheduleWeeklyReport('stakeholder@company.com')} style={{ width: "100%", background: "#6366f1", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Schedule Weekly</button>
-            </div>
-            
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #f97316" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Anomaly Detection</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Alert on unusual performance patterns</p>
-              <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={anomalyDetection} onChange={() => setAnomalyDetection(!anomalyDetection)} />
-                <span style={{ fontSize: 13 }}>Enable Anomaly Detection</span>
-              </label>
-              <button onClick={detectAnomalies} style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer", marginTop: 12 }}>Check Now</button>
             </div>
           </div>
         </div>
