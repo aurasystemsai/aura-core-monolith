@@ -132,6 +132,8 @@ export default function ImageAltMediaSEO() {
   const [achievements, setAchievements] = useState([]);
   const [simpleMode, setSimpleMode] = useState(true);
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [aiProgress, setAiProgress] = useState({ show: false, current: 0, total: 0, status: '' });
+  const [aiResults, setAiResults] = useState({ show: false, success: 0, failed: 0, items: [] });
   const autoSaveTimer = useRef(null);
   
   // Tab descriptions for tooltips
@@ -1107,35 +1109,51 @@ export default function ImageAltMediaSEO() {
     </div>
   );
 
-  const FloatingActionBar = () => {
+  const FloatingAIButton = () => {
+    if (!selectedImageIds.length) return null;
+    
     return (
-      <div style={{ position: "sticky", top: 72, zIndex: 998, background: selectedImageIds.length ? "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)" : "linear-gradient(135deg, #1e293b 0%, #334155 100%)", padding: "16px 24px", borderRadius: 16, boxShadow: "0 8px 24px rgba(0,0,0,0.3)", marginBottom: 16, border: selectedImageIds.length ? "2px solid #8b5cf6" : "2px solid #475569", display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", animation: "fadeIn 0.3s ease-out" }}>
-        <style>{`
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-        `}</style>
-        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-          <span style={{ color: "#fff", fontWeight: 700, fontSize: 14 }}>
-            {selectedImageIds.length ? `${selectedImageIds.length} selected` : simpleMode ? "Select images to auto-generate alt text" : "No images selected"}
-          </span>
-          {!selectedImageIds.length && simpleMode && (
-            <button onClick={selectPageImages} style={{ background: "#22c55e", color: "#fff", border: "none", borderRadius: 12, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "0 4px 12px rgba(34, 197, 94, 0.3)", transition: "all 0.2s" }} onMouseEnter={e => e.target.style.transform = "scale(1.05)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>⚡ Select All on Page</button>
-          )}
-        </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-          {selectedImageIds.length > 0 && (
+      <div style={{ position: "fixed", bottom: 100, right: 24, zIndex: 1000 }}>
+        <button 
+          onClick={handleAiImproveSelected} 
+          disabled={!roleCanApply || aiProgress.show}
+          style={{ 
+            width: 64, 
+            height: 64, 
+            borderRadius: "50%", 
+            background: aiProgress.show ? "linear-gradient(135deg, #94a3b8 0%, #64748b 100%)" : "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", 
+            border: "none", 
+            color: "#fff", 
+            fontSize: 28, 
+            cursor: (!roleCanApply || aiProgress.show) ? "not-allowed" : "pointer", 
+            boxShadow: "0 8px 32px rgba(124, 58, 237, 0.5)", 
+            transition: "all 0.3s ease",
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+          onMouseEnter={e => { if (roleCanApply && !aiProgress.show) e.target.style.transform = "scale(1.1) translateY(-4px)"; }}
+          onMouseLeave={e => { e.target.style.transform = "scale(1) translateY(0)"; }}
+          title={`AI Improve ${selectedImageIds.length} selected image${selectedImageIds.length > 1 ? 's' : ''}`}
+        >
+          {aiProgress.show ? (
+            <div style={{ width: 24, height: 24, border: "3px solid #fff", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }}>
+              <style>{`
+                @keyframes spin {
+                  to { transform: rotate(360deg); }
+                }
+              `}</style>
+            </div>
+          ) : (
             <>
-              {!simpleMode && (
-                <button onClick={handleBulkApply} disabled={!roleCanApply || !bulkAltText.trim()} style={{ background: "#fff", color: "#7c3aed", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: roleCanApply && bulkAltText.trim() ? "pointer" : "not-allowed", transition: "all 0.2s", transform: "scale(1)" }} onMouseEnter={e => { if (roleCanApply && bulkAltText.trim()) e.target.style.transform = "scale(1.05)"; }} onMouseLeave={e => e.target.style.transform = "scale(1)"}>Apply bulk</button>
-              )}
-              <button onClick={handleAiImproveSelected} disabled={!roleCanApply || !selectedImageIds.length} style={{ background: "#fff", color: "#7c3aed", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 800, fontSize: 15, cursor: roleCanApply && selectedImageIds.length ? "pointer" : "not-allowed", transition: "all 0.2s", transform: "scale(1)", boxShadow: "0 4px 16px rgba(139, 92, 246, 0.4)" }} onMouseEnter={e => { if (roleCanApply && selectedImageIds.length) e.target.style.transform = "scale(1.08) translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "scale(1) translateY(0)"}>🤖 AI Improve All ({selectedImageIds.length})</button>
-              {!simpleMode && <button onClick={handlePushShopify} disabled={!selectedImageIds.length || shopifyPushing} style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || shopifyPushing) ? "not-allowed" : "pointer", transition: "all 0.2s" }}>{shopifyPushing ? "Pushing…" : "Push to Shopify"}</button>}
-              <button onClick={clearSelectedImages} style={{ background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 12, padding: "8px 16px", fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "all 0.2s" }} title="Clear selection">Clear</button>
+              🤖
+              <span style={{ position: "absolute", top: -4, right: -4, background: "#ef4444", color: "#fff", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, border: "2px solid #fff" }}>
+                {selectedImageIds.length}
+              </span>
             </>
           )}
-        </div>
+        </button>
       </div>
     );
   };
@@ -1173,6 +1191,97 @@ export default function ImageAltMediaSEO() {
                 <kbd style={{ background: "#475569", color: "#f1f5f9", padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700, border: "1px solid #64748b" }}>{shortcut.keys}</kbd>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const AIProgressModal = () => {
+    if (!aiProgress.show) return null;
+    const percentage = aiProgress.total ? Math.round((aiProgress.current / aiProgress.total) * 100) : 0;
+    return (
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s" }}>
+        <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #7c3aed", animation: "scaleIn 0.3s ease-out" }}>
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🤖</div>
+            <h3 style={{ fontSize: 24, fontWeight: 800, margin: "0 0 8px 0", color: "#f1f5f9" }}>AI Processing</h3>
+            <p style={{ fontSize: 14, color: "#cbd5e1", margin: 0 }}>{aiProgress.status}</p>
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 14, color: "#e2e8f0" }}>
+              <span>{aiProgress.current} of {aiProgress.total}</span>
+              <span>{percentage}%</span>
+            </div>
+            <div style={{ width: "100%", height: 8, background: "#334155", borderRadius: 999, overflow: "hidden" }}>
+              <div style={{ width: `${percentage}%`, height: "100%", background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)", transition: "width 0.3s ease", borderRadius: 999 }}></div>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 16 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#7c3aed", animation: "pulse 1s ease-in-out infinite" }}></div>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#a855f7", animation: "pulse 1s ease-in-out 0.2s infinite" }}></div>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#c084fc", animation: "pulse 1s ease-in-out 0.4s infinite" }}></div>
+          </div>
+          <style>{`
+            @keyframes pulse {
+              0%, 100% { opacity: 0.3; transform: scale(1); }
+              50% { opacity: 1; transform: scale(1.2); }
+            }
+          `}</style>
+        </div>
+      </div>
+    );
+  };
+
+  const AIResultsModal = () => {
+    if (!aiResults.show) return null;
+    return (
+      <div onClick={() => setAiResults({ show: false, success: 0, failed: 0, items: [] })} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #22c55e", animation: "scaleIn 0.3s ease-out" }}>
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <div style={{ fontSize: 64, marginBottom: 16 }}>✓</div>
+            <h3 style={{ fontSize: 28, fontWeight: 800, margin: "0 0 8px 0", color: "#f1f5f9" }}>AI Improvements Complete!</h3>
+            <div style={{ display: "flex", gap: 24, justifyContent: "center", marginTop: 16 }}>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 32, fontWeight: 800, color: "#22c55e" }}>{aiResults.success}</div>
+                <div style={{ fontSize: 14, color: "#cbd5e1" }}>Improved</div>
+              </div>
+              {aiResults.failed > 0 && (
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 32, fontWeight: 800, color: "#ef4444" }}>{aiResults.failed}</div>
+                  <div style={{ fontSize: 14, color: "#cbd5e1" }}>Failed</div>
+                </div>
+              )}
+            </div>
+          </div>
+          {aiResults.items.length > 0 && (
+            <div style={{ marginTop: 24 }}>
+              <h4 style={{ fontSize: 16, fontWeight: 700, color: "#f1f5f9", marginBottom: 16 }}>Preview (first 5)</h4>
+              <div style={{ display: "grid", gap: 16 }}>
+                {aiResults.items.map((item, idx) => (
+                  <div key={idx} style={{ background: "rgba(15, 23, 42, 0.5)", borderRadius: 12, padding: 16, border: "1px solid #334155" }}>
+                    <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                      {item.url && (
+                        <img src={item.url} alt="" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8, background: "#0b0b0b" }} />
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 6 }}>
+                          <span style={{ color: "#ef4444" }}>Old:</span> {item.oldAlt}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#94a3b8" }}>
+                          <span style={{ color: "#22c55e" }}>New:</span> {item.newAlt}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <div style={{ marginTop: 24, textAlign: "center" }}>
+            <button onClick={() => setAiResults({ show: false, success: 0, failed: 0, items: [] })} style={{ background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 32px", fontWeight: 700, fontSize: 16, cursor: "pointer", boxShadow: "0 4px 16px rgba(124, 58, 237, 0.4)" }}>
+              Got it!
+            </button>
           </div>
         </div>
       </div>
@@ -2057,8 +2166,11 @@ export default function ImageAltMediaSEO() {
       setError("No matching images found for selection");
       return;
     }
-    setLoading(true);
+    
+    // Show progress modal
+    setAiProgress({ show: true, current: 0, total: selected.length, status: 'Starting AI generation...' });
     setError("");
+    
     try {
       const oldValues = selected.map(img => ({ id: img.id, altText: resolveAlt(img) }));
       const items = selected.map(img => ({
@@ -2073,6 +2185,7 @@ export default function ImageAltMediaSEO() {
         variantCount: 1,
       }));
 
+      setAiProgress(prev => ({ ...prev, status: 'Generating AI alt text...' }));
       const { data } = await fetchJson("/api/image-alt-media-seo/ai/batch-generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -2086,15 +2199,32 @@ export default function ImageAltMediaSEO() {
       }).filter(Boolean);
 
       if (updates.length) {
+        setAiProgress(prev => ({ ...prev, current: updates.length, status: 'Saving updates...' }));
         await fetchJson("/api/image-alt-media-seo/images/bulk-update", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ items: updates })
         });
         saveUndo("ai", oldValues);
-        showToast(`AI improved ${updates.length} images`);
         recordAction("ai-improve", updates.length, { ids: selectedImageIds.slice(0, 20) });
+        
+        // Show results
+        setAiResults({
+          show: true,
+          success: updates.length,
+          failed: selected.length - updates.length,
+          items: updates.slice(0, 5).map(u => {
+            const img = selected.find(s => s.id === u.id);
+            return {
+              url: img?.url,
+              oldAlt: oldValues.find(o => o.id === u.id)?.altText || '(empty)',
+              newAlt: u.altText
+            };
+          })
+        });
+        
         await fetchImages();
+        showToast(`✓ AI improved ${updates.length} images`);
       } else {
         setError("AI did not return any alt text");
       }
@@ -2102,7 +2232,7 @@ export default function ImageAltMediaSEO() {
       if (err?.status === 429) setError(rateLimitMessage(err.retryAfter));
       else setError(err.message || "AI improve failed");
     } finally {
-      setLoading(false);
+      setAiProgress({ show: false, current: 0, total: 0, status: '' });
     }
   };
 
@@ -7870,7 +8000,6 @@ export default function ImageAltMediaSEO() {
 
       {activeTab === "images" && (
         <>
-      <FloatingActionBar />
 
       {(result || captionResult) && (
         <div style={{ display: "grid", gridTemplateColumns: captionResult ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 12 }}>
@@ -8833,6 +8962,9 @@ export default function ImageAltMediaSEO() {
       <BulkPreviewModal />
       <UndoHistoryModal />
       <ThemeCustomizationPanel />
+      <FloatingAIButton />
+      <AIProgressModal />
+      <AIResultsModal />
       {notifications.map(notif => (
         <NotificationToast key={notif.id} notification={notif} onDismiss={(id) => setNotifications(prev => prev.filter(n => n.id !== id))} />
       ))}
