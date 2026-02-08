@@ -1291,6 +1291,13 @@ export default function ImageAltMediaSEO() {
 
   const AIResultsModal = () => {
     if (!aiResults.show) return null;
+    
+    // Calculate average SEO score
+    const scoresAvailable = aiResults.items.filter(item => item.seoScore !== null && item.seoScore !== undefined);
+    const avgScore = scoresAvailable.length > 0 
+      ? Math.round(scoresAvailable.reduce((sum, item) => sum + item.seoScore, 0) / scoresAvailable.length)
+      : null;
+    
     return (
       <div onClick={() => setAiResults({ show: false, success: 0, failed: 0, items: [] })} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s" }}>
         <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #22c55e", animation: "scaleIn 0.3s ease-out" }}>
@@ -1306,6 +1313,12 @@ export default function ImageAltMediaSEO() {
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 32, fontWeight: 800, color: "#ef4444" }}>{aiResults.failed}</div>
                   <div style={{ fontSize: 14, color: "#cbd5e1" }}>Failed</div>
+                </div>
+              )}
+              {avgScore !== null && (
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 32, fontWeight: 800, color: avgScore >= 80 ? "#22c55e" : avgScore >= 60 ? "#fbbf24" : "#f97316" }}>{avgScore}</div>
+                  <div style={{ fontSize: 14, color: "#cbd5e1" }}>Avg SEO Score</div>
                 </div>
               )}
             </div>
@@ -1324,9 +1337,19 @@ export default function ImageAltMediaSEO() {
                         <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 6 }}>
                           <span style={{ color: "#ef4444" }}>Old:</span> {item.oldAlt}
                         </div>
-                        <div style={{ fontSize: 12, color: "#94a3b8" }}>
+                        <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 8 }}>
                           <span style={{ color: "#22c55e" }}>New:</span> {item.newAlt}
                         </div>
+                        {item.seoScore !== null && item.seoScore !== undefined && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontSize: 11, color: "#94a3b8" }}>SEO Score:</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 8, background: item.seoScore >= 80 ? "rgba(34, 197, 94, 0.15)" : item.seoScore >= 60 ? "rgba(251, 191, 36, 0.15)" : "rgba(239, 68, 68, 0.15)", border: `1px solid ${item.seoScore >= 80 ? "#22c55e" : item.seoScore >= 60 ? "#fbbf24" : "#ef4444"}` }}>
+                              <span style={{ fontSize: 14, fontWeight: 700, color: item.seoScore >= 80 ? "#22c55e" : item.seoScore >= 60 ? "#fbbf24" : "#ef4444" }}>{Math.round(item.seoScore)}</span>
+                              <span style={{ fontSize: 10, color: item.seoScore >= 80 ? "#22c55e" : item.seoScore >= 60 ? "#fbbf24" : "#ef4444" }}>/100</span>
+                              <span style={{ fontSize: 10 }}>{item.seoScore >= 80 ? "🎯" : item.seoScore >= 60 ? "⚡" : "📈"}</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2257,7 +2280,9 @@ export default function ImageAltMediaSEO() {
       const updates = (data.results || []).map((r, idx) => {
         const id = selected[idx]?.id || r.id;
         const altText = r.altText || r.result || r.output || r.text || r.raw || resolveAlt(r);
-        return id && altText ? { id, altText } : null;
+        const grade = r.grade || {};
+        const seoScore = grade.score || r.hitRate || null;
+        return id && altText ? { id, altText, grade, seoScore } : null;
       }).filter(Boolean);
 
       if (updates.length) {
@@ -2280,7 +2305,9 @@ export default function ImageAltMediaSEO() {
             return {
               url: img?.url,
               oldAlt: oldValues.find(o => o.id === u.id)?.altText || '(empty)',
-              newAlt: u.altText
+              newAlt: u.altText,
+              seoScore: u.seoScore,
+              grade: u.grade
             };
           })
         });
