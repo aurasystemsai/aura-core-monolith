@@ -5643,8 +5643,7 @@ export default function ImageAltMediaSEO() {
     platform: [
       { id: "platform-specific", label: "Platforms" },
       { id: "ecommerce", label: "E-commerce" },
-      { id: "integrations", label: "Integrations" },
-      { id: "ecosystem", label: "Ecosystem" }
+      { id: "integrations", label: "Integrations" }
     ],
     system: [
       { id: "scalability", label: "Scale" },
@@ -7451,40 +7450,6 @@ export default function ImageAltMediaSEO() {
                 <input type="checkbox" checked={mobileShortcuts} onChange={() => setMobileShortcuts(!mobileShortcuts)} />
                 <span style={{ fontSize: 13 }}>Enable mobile shortcuts</span>
               </label>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* Ecosystem Tab */}
-      {activeTab === "ecosystem" && (
-        <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px" }}>
-          <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Integration Ecosystem</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Amazon Seller Central</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Sync to Amazon listings</p>
-              <button onClick={syncToAmazon} style={{ width: "100%", background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Connect Amazon</button>
-            </div>
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>eBay Integration</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Update eBay product images</p>
-              <button onClick={syncToEbay} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Connect eBay</button>
-            </div>
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Instagram Shopping</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Optimize Instagram product tags</p>
-              <button onClick={syncToInstagram} style={{ width: "100%", background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Connect Instagram</button>
-            </div>
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>TikTok Shop</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Sync to TikTok shopping</p>
-              <button onClick={syncToTikTok} style={{ width: "100%", background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Connect TikTok</button>
-            </div>
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Etsy Connector</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Connect Etsy shop</p>
-              <button onClick={connectEtsy} style={{ width: "100%", background: "#ec4899", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Connect Etsy</button>
             </div>
           </div>
         </div>
