@@ -1085,8 +1085,10 @@ export default function ImageAltMediaSEO() {
           }
         `}</style>
         <span style={{ color: "#fff", fontWeight: 700, fontSize: 14 }}>{selectedImageIds.length} selected</span>
-        <button onClick={handleBulkApply} disabled={!roleCanApply || !bulkAltText.trim()} style={{ background: "#fff", color: "#7c3aed", border: "none", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: roleCanApply && bulkAltText.trim() ? "pointer" : "not-allowed", transition: "all 0.2s", transform: "scale(1)" }} onMouseEnter={e => e.target.style.transform = "scale(1.05)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>Apply bulk</button>
-        <button onClick={handleAiImproveSelected} disabled={!roleCanApply} style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: roleCanApply ? "pointer" : "not-allowed", transition: "all 0.2s" }}>AI Improve</button>
+        {!simpleMode && (
+          <button onClick={handleBulkApply} disabled={!roleCanApply || !bulkAltText.trim()} style={{ background: "#fff", color: "#7c3aed", border: "none", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: roleCanApply && bulkAltText.trim() ? "pointer" : "not-allowed", transition: "all 0.2s", transform: "scale(1)" }} onMouseEnter={e => e.target.style.transform = "scale(1.05)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>Apply bulk</button>
+        )}
+        <button onClick={handleAiImproveSelected} disabled={!roleCanApply} style={{ background: "#fff", color: "#7c3aed", border: "none", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: roleCanApply ? "pointer" : "not-allowed", transition: "all 0.2s", transform: "scale(1)" }} onMouseEnter={e => e.target.style.transform = "scale(1.05)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>🤖 AI Improve All</button>
         <button onClick={handlePushShopify} disabled={!selectedImageIds.length || shopifyPushing} style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || shopifyPushing) ? "not-allowed" : "pointer", transition: "all 0.2s" }}>{shopifyPushing ? "Pushing…" : "Push to Shopify"}</button>
         <button onClick={clearSelectedImages} style={{ background: "transparent", color: "#fff", border: "none", padding: "8px", cursor: "pointer", fontSize: 18 }} title="Clear selection">✕</button>
       </div>
@@ -8283,6 +8285,30 @@ export default function ImageAltMediaSEO() {
               {webhookReplayStatus ? <span>{webhookReplayStatus}</span> : null}
             </div>
           </div>
+          {simpleMode && !selectedImageIds.length && filteredImages.length > 0 && (
+            <div style={{ marginBottom: 16, background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6", boxShadow: "0 8px 24px rgba(124, 58, 237, 0.3)", animation: "pulse 2s ease-in-out infinite" }}>
+              <style>{`
+                @keyframes pulse {
+                  0%, 100% { transform: scale(1); }
+                  50% { transform: scale(1.02); }
+                }
+              `}</style>
+              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
+                <div style={{ fontSize: 48 }}>✓</div>
+                <div>
+                  <h3 style={{ fontSize: 20, fontWeight: 800, color: "#fff", margin: "0 0 8px 0" }}>Get Started in 3 Easy Steps</h3>
+                  <ol style={{ margin: 0, paddingLeft: 20, color: "#f3e8ff", fontSize: 15, lineHeight: 1.8 }}>
+                    <li><strong>Select images</strong> - Click the checkbox next to any image below</li>
+                    <li><strong>Click "🤖 AI Improve All"</strong> - A floating button will appear at the bottom</li>
+                    <li><strong>Done!</strong> - AI automatically generates all alt text</li>
+                  </ol>
+                </div>
+              </div>
+              <button onClick={selectPageImages} style={{ background: "#fff", color: "#7c3aed", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 800, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 12px rgba(0,0,0,0.2)", transition: "transform 0.2s" }} onMouseEnter={e => e.target.style.transform = "scale(1.05)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>
+                ⚡ Quick Start: Select All Images on This Page
+              </button>
+            </div>
+          )}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", color: "#cbd5e1", fontSize: 12, margin: "0 0 8px 0" }} aria-live="polite">
             <span>Showing {visibleImages.length} of {filteredImages.length} image(s)</span>
             {filteredImages.length > visibleImages.length ? (
