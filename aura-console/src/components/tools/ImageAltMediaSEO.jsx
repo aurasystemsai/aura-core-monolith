@@ -5770,49 +5770,18 @@ export default function ImageAltMediaSEO() {
   const tabGroups = {
     manage: [
       { id: "images", label: "Images" },
-      { id: "generate", label: "Generate" },
-      { id: "batch", label: "Batch" },
-      { id: "ai-tools", label: "AI Tools" },
-      { id: "ai-visual", label: "Visual Analysis" },
-      { id: "image-processing", label: "Processing" },
-      { id: "quality-control", label: "Quality" }
+      { id: "generate", label: "Generate & Batch" },
+      { id: "analytics", label: "Analytics" }
     ],
     optimize: [
       { id: "seo", label: "SEO" },
-      { id: "seo-power", label: "SEO Power" },
       { id: "accessibility", label: "Accessibility" },
-      { id: "wcag-standards", label: "WCAG" },
-      { id: "quality-validation", label: "Quality Checks" },
-      { id: "ai-alt-generation", label: "AI Generation" },
-      { id: "seo-optimization", label: "SEO Optimizer" },
-      { id: "accessibility-excellence", label: "Accessibility+" }
-    ],
-    analyze: [
-      { id: "analytics", label: "Analytics" },
-      { id: "advanced-analytics", label: "Advanced" },
-      { id: "performance", label: "Performance" },
-      { id: "insights", label: "Insights" },
-      { id: "visual-ab", label: "A/B Testing" },
-      { id: "advanced-analysis", label: "Deep Analysis" }
+      { id: "quality-validation", label: "Quality" }
     ],
     settings: [
       { id: "automation", label: "Automation" },
-      { id: "workflow-v2", label: "Workflow" },
-      { id: "collaboration", label: "Team" },
-      { id: "integrations", label: "Integrations" },
-      { id: "platform-specific", label: "Platforms" },
-      { id: "mobile", label: "Mobile" },
-      { id: "security", label: "Security" }
-    ],
-    advanced: [
-      { id: "content-intelligence", label: "Content Intel" },
-      { id: "specialized-types", label: "Specialized" },
-      { id: "asset-management", label: "Assets" },
-      { id: "metadata", label: "Metadata" },
-      { id: "compliance-safety", label: "Compliance" },
-      { id: "localization", label: "i18n" },
-      { id: "ui-enhancements", label: "UI Features" },
-      { id: "gamification", label: "Achievements" }
+      { id: "collaboration", label: "Team & Integrations" },
+      { id: "platform-specific", label: "Platform" }
     ]
   };
 
