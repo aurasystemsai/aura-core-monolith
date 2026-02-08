@@ -137,6 +137,7 @@ export default function ImageAltMediaSEO() {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [aiProgress, setAiProgress] = useState({ show: false, current: 0, total: 0, status: '' });
   const [aiResults, setAiResults] = useState({ show: false, success: 0, failed: 0, items: [] });
+  const [manualAiResult, setManualAiResult] = useState({ show: false, result: '', grade: null, lint: null, url: '', oldAlt: '' });
   const autoSaveTimer = useRef(null);
   
   // Tab descriptions for tooltips
@@ -1417,6 +1418,75 @@ export default function ImageAltMediaSEO() {
               onMouseLeave={e => { e.target.style.transform = "scale(1)"; e.target.style.boxShadow = "0 4px 16px rgba(16, 185, 129, 0.4)"; }}
             >
               Approve & Sync to Shopify
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const ManualAIResultsModal = () => {
+    if (!manualAiResult.show) return null;
+    
+    const seoScore = manualAiResult.seoScore;
+    
+    return (
+      <div onClick={() => setManualAiResult({ show: false, result: '', grade: null, lint: null, url: '', oldAlt: '' })} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #8b5cf6", animation: "scaleIn 0.3s ease-out" }}>
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>AI Generated</div>
+            <h3 style={{ fontSize: 24, fontWeight: 800, margin: "0 0 8px 0", color: "#f1f5f9" }}>Review Alt Text</h3>
+            {seoScore !== null && seoScore !== undefined && (
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 32, fontWeight: 800, color: seoScore >= 80 ? "#22c55e" : seoScore >= 60 ? "#fbbf24" : "#f97316" }}>{Math.round(seoScore)}</div>
+                  <div style={{ fontSize: 14, color: "#cbd5e1" }}>SEO Score</div>
+                </div>
+              </div>
+            )}
+          </div>
+          <div style={{ marginTop: 24 }}>
+            <div style={{ background: "rgba(15, 23, 42, 0.5)", borderRadius: 12, padding: 16, border: "1px solid #334155", marginBottom: 16 }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                {manualAiResult.url && (
+                  <img src={manualAiResult.url} alt="" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, background: "#0b0b0b" }} />
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 6 }}>
+                    <span style={{ color: "#ef4444" }}>Old:</span> {manualAiResult.oldAlt}
+                  </div>
+                  <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 8 }}>
+                    <span style={{ color: "#22c55e" }}>New:</span> {manualAiResult.result}
+                  </div>
+                  {seoScore !== null && seoScore !== undefined && (
+                    <div style={{ fontSize: 11, color: "#cbd5e1" }}>
+                      Quality: {seoScore >= 80 ? "Excellent" : seoScore >= 60 ? "Good" : "Needs Improvement"}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style={{ marginTop: 24, display: "flex", gap: 12, justifyContent: "center" }}>
+            <button 
+              onClick={() => setManualAiResult({ show: false, result: '', grade: null, lint: null, url: '', oldAlt: '' })} 
+              style={{ background: "#64748b", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 15, cursor: "pointer", transition: "all 0.2s" }}
+              onMouseEnter={e => e.target.style.background = "#475569"}
+              onMouseLeave={e => e.target.style.background = "#64748b"}
+            >
+              Reject
+            </button>
+            <button 
+              onClick={() => {
+                setResult(manualAiResult.result);
+                setManualAiResult({ show: false, result: '', grade: null, lint: null, url: '', oldAlt: '' });
+                showToast("Alt text approved - use 'Save' to apply");
+              }}
+              style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 32px", fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.4)", transition: "all 0.2s" }}
+              onMouseEnter={e => { e.target.style.transform = "scale(1.02)"; e.target.style.boxShadow = "0 6px 20px rgba(16, 185, 129, 0.5)"; }}
+              onMouseLeave={e => { e.target.style.transform = "scale(1)"; e.target.style.boxShadow = "0 4px 16px rgba(16, 185, 129, 0.4)"; }}
+            >
+              Approve & Use
             </button>
           </div>
         </div>
@@ -2849,14 +2919,26 @@ export default function ImageAltMediaSEO() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input, url: imageUrl, keywords, brandTerms, tone, verbosity, locale, safeMode, productTitle, attributes, shotType, variant, focus, scene, variantCount })
       });
+      
+      // Show manual AI approval modal
+      setManualAiResult({
+        show: true,
+        result: data.result || "No alt text generated",
+        grade: data.grade,
+        lint: data.lint,
+        seoScore: data.grade?.score || null,
+        url: imageUrl,
+        oldAlt: input || '(none)',
+        variants: data.variants || [],
+        sanitized: data.sanitized || ""
+      });
+      
       setResult(data.result || "No alt text generated");
       setLint(data.lint || null);
       setGrade(data.grade || null);
       setVariants(data.variants || []);
       setSelectedVariantIdx(0);
       setSanitized(data.sanitized || "");
-      fetchImages();
-      showToast("Generated and linted alt text");
     } catch (err) {
       if (err?.status === 429) setError(rateLimitMessage(err.retryAfter));
       else setError(err.message);
@@ -8759,9 +8841,15 @@ export default function ImageAltMediaSEO() {
                           ) : null}
                         </div>
                       </div>
-                      <div style={{ marginTop: 6, fontSize: 12, color: "#94a3b8", display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      <div style={{ marginTop: 6, fontSize: 12, color: "#94a3b8", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                         {img.createdAt || img.created_at || img.createdat ? <span>Created: {formatDate(img.createdAt || img.created_at || img.createdat)}</span> : null}
                         {img.score ? <span>Score: {img.score}</span> : null}
+                        {img.seoScore !== null && img.seoScore !== undefined ? (
+                          <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", borderRadius: 8, background: img.seoScore >= 80 ? "rgba(34, 197, 94, 0.15)" : img.seoScore >= 60 ? "rgba(251, 191, 36, 0.15)" : "rgba(239, 68, 68, 0.15)", border: `1px solid ${img.seoScore >= 80 ? "#22c55e" : img.seoScore >= 60 ? "#fbbf24" : "#ef4444"}` }}>
+                            <span style={{ fontSize: 10, color: "#94a3b8" }}>SEO:</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: img.seoScore >= 80 ? "#22c55e" : img.seoScore >= 60 ? "#fbbf24" : "#ef4444" }}>{Math.round(img.seoScore)}/100</span>
+                          </div>
+                        ) : null}
                         <button onClick={() => handleAiRewriteSingle(img)} disabled={rewritingId === img.id || loading} style={{ background: rewritingId === img.id ? "#475569" : "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", color: "#fff", border: "none", borderRadius: 10, padding: "8px 14px", fontWeight: 700, fontSize: 12, cursor: rewritingId === img.id || loading ? "wait" : "pointer", boxShadow: rewritingId === img.id ? "none" : "0 4px 12px rgba(139, 92, 246, 0.3)", transition: "all 0.2s", transform: "translateY(0)" }} onMouseEnter={e => { if (rewritingId !== img.id && !loading) e.target.style.transform = "translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "translateY(0)"}>
                           {rewritingId === img.id ? "Rewriting…" : "AI rewrite"}
                         </button>
@@ -9243,6 +9331,7 @@ export default function ImageAltMediaSEO() {
       )}
       
       <AIResultsModal />
+      <ManualAIResultsModal />
 
       {activeTab === "analytics" && (
         <div style={{ animation: "fadeIn 0.3s ease-out" }}>
