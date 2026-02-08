@@ -1112,9 +1112,11 @@ export default function ImageAltMediaSEO() {
   const FloatingAIButton = () => {
     // Temporarily show always for debugging
     const count = selectedImageIds.length;
+    console.log('FloatingAIButton rendering, count:', count, 'selectedImageIds:', selectedImageIds);
     
     return (
-      <div style={{ position: "fixed", bottom: 180, right: 24, zIndex: 1001 }}>
+      <div style={{ position: "fixed", bottom: 180, right: 24, zIndex: 9999, background: "red", padding: 10 }}>
+        <div style={{ color: "white", fontSize: 10, marginBottom: 4 }}>Count: {count}</div>
         <button 
           onClick={handleAiImproveSelected} 
           disabled={!count || !roleCanApply || aiProgress.show}
