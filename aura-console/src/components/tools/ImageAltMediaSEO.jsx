@@ -2869,12 +2869,6 @@ export default function ImageAltMediaSEO() {
     showToast("Memory optimized");
   };
   
-  const enableBackgroundSync = () => {
-    if ('serviceWorker' in navigator && 'SyncManager' in window) {
-      showToast("Background sync enabled");
-    }
-  };
-  
   // Mobile & Responsive (149-154)
   const requestPushPermission = async () => {
     const permission = await Notification.requestPermission();
@@ -7091,20 +7085,6 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Virtual Scrolling</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Handle 10,000+ images smoothly</p>
               <button onClick={enableVirtualScrolling} style={{ width: "100%", background: virtualScrolling ? "#94a3b8" : "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>{virtualScrolling ? "✓ Enabled" : "Enable"}</button>
-            </div>
-            
-            {/* Feature 142: Offline Mode */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Offline Mode</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Work without internet connection</p>
-              <div style={{ fontSize: 13, color: offlineMode ? "#10b981" : "#94a3b8" }}>{offlineMode ? "✓ Offline capable" : "Online only"}</div>
-            </div>
-            
-            {/* Feature 143: Background Sync */}
-            <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Background Sync</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Sync when connection returns</p>
-              <button onClick={enableBackgroundSync} style={{ width: "100%", background: backgroundSync ? "#94a3b8" : "#f59e0b", color: backgroundSync ? "#fff" : "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>{backgroundSync ? "✓ Enabled" : "Enable"}</button>
             </div>
             
             {/* Feature 148: Memory Optimization */}
