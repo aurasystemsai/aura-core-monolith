@@ -1113,7 +1113,7 @@ export default function ImageAltMediaSEO() {
     if (!selectedImageIds.length) return null;
     
     return (
-      <div style={{ position: "fixed", bottom: 100, right: 24, zIndex: 1000 }}>
+      <div style={{ position: "fixed", bottom: 180, right: 24, zIndex: 1001 }}>
         <button 
           onClick={handleAiImproveSelected} 
           disabled={!roleCanApply || aiProgress.show}
@@ -10846,7 +10846,7 @@ export default function ImageAltMediaSEO() {
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
           style={{ 
             position: "fixed", 
-            bottom: 24, 
+            bottom: 100, 
             right: 24, 
             width: 56, 
             height: 56, 
@@ -10857,7 +10857,7 @@ export default function ImageAltMediaSEO() {
             fontSize: 24, 
             cursor: "pointer", 
             boxShadow: "0 8px 24px rgba(124, 58, 237, 0.4)", 
-            zIndex: 998,
+            zIndex: 1000,
             transition: "all 0.3s ease",
             animation: "fadeInUp 0.3s ease-out"
           }}
