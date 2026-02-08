@@ -106,7 +106,7 @@ export default function ImageAltMediaSEO() {
   const [visibleCount, setVisibleCount] = useState(120);
   const [imageRefreshedAt, setImageRefreshedAt] = useState(null);
   const [activeTab, setActiveTab] = useState("images");
-  const [navCategory, setNavCategory] = useState("core");
+  const [navCategory, setNavCategory] = useState("manage");
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [pendingDeleteIds, setPendingDeleteIds] = useState([]);
@@ -5768,85 +5768,51 @@ export default function ImageAltMediaSEO() {
   const visibleImages = filteredImages.slice(0, visibleCount);
 
   const tabGroups = {
-    core: [
+    manage: [
       { id: "images", label: "Images" },
       { id: "generate", label: "Generate" },
       { id: "batch", label: "Batch" },
-      { id: "analytics", label: "Analytics" }
-    ],
-    "ai-features": [
       { id: "ai-tools", label: "AI Tools" },
-      { id: "ai-v2", label: "AI V2" },
       { id: "ai-visual", label: "Visual Analysis" },
-      { id: "alt-quality", label: "Alt Quality" }
+      { id: "image-processing", label: "Processing" },
+      { id: "quality-control", label: "Quality" }
     ],
-    workflow: [
+    optimize: [
+      { id: "seo", label: "SEO" },
+      { id: "seo-power", label: "SEO Power" },
+      { id: "accessibility", label: "Accessibility" },
+      { id: "wcag-standards", label: "WCAG" },
+      { id: "quality-validation", label: "Quality Checks" },
+      { id: "ai-alt-generation", label: "AI Generation" },
+      { id: "seo-optimization", label: "SEO Optimizer" },
+      { id: "accessibility-excellence", label: "Accessibility+" }
+    ],
+    analyze: [
+      { id: "analytics", label: "Analytics" },
+      { id: "advanced-analytics", label: "Advanced" },
+      { id: "performance", label: "Performance" },
+      { id: "insights", label: "Insights" },
+      { id: "visual-ab", label: "A/B Testing" },
+      { id: "advanced-analysis", label: "Deep Analysis" }
+    ],
+    settings: [
       { id: "automation", label: "Automation" },
       { id: "workflow-v2", label: "Workflow" },
       { id: "collaboration", label: "Team" },
-      { id: "team-v2", label: "Team V2" }
-    ],
-    "seo-tools": [
-      { id: "seo", label: "SEO" },
-      { id: "seo-power", label: "SEO Power" },
-      { id: "visual-seo", label: "Visual SEO" },
-      { id: "wcag-standards", label: "WCAG" },
-      { id: "accessibility", label: "Accessibility" }
-    ],
-    "image-ops": [
-      { id: "image-processing", label: "Processing" },
-      { id: "quality-control", label: "Quality" },
-      { id: "smart-cropping", label: "Cropping" },
-      { id: "image-format", label: "Format" },
-      { id: "background-intel", label: "Background" }
+      { id: "integrations", label: "Integrations" },
+      { id: "platform-specific", label: "Platforms" },
+      { id: "mobile", label: "Mobile" },
+      { id: "security", label: "Security" }
     ],
     advanced: [
-      { id: "advanced-analytics", label: "Analytics" },
-      { id: "performance", label: "Performance" },
-      { id: "image-performance", label: "Image Analytics" },
-      { id: "insights", label: "Insights" }
-    ],
-    content: [
-      { id: "content-intelligence", label: "Intelligence" },
-      { id: "content-intel", label: "Content Intel" },
-      { id: "color-psychology", label: "Color" },
-      { id: "product-photo", label: "Product Photo" }
-    ],
-    testing: [
-      { id: "visual-ab", label: "A/B Testing" },
-      { id: "multi-image", label: "Multi-Image" },
-      { id: "image-matching", label: "Matching" }
-    ],
-    specialized: [
-      { id: "specialized-types", label: "Types" },
-      { id: "image-categorization", label: "Categories" },
-      { id: "alt-automation", label: "Automation" },
-      { id: "asset-management", label: "Assets" }
-    ],
-    compliance: [
-      { id: "image-rights", label: "Rights" },
-      { id: "compliance-safety", label: "Safety" },
+      { id: "content-intelligence", label: "Content Intel" },
+      { id: "specialized-types", label: "Specialized" },
+      { id: "asset-management", label: "Assets" },
       { id: "metadata", label: "Metadata" },
-      { id: "localization", label: "i18n" }
-    ],
-    platform: [
-      { id: "platform-specific", label: "Platforms" },
-      { id: "ecommerce", label: "E-commerce" },
-      { id: "integrations", label: "Integrations" }
-    ],
-    system: [
-      { id: "scalability", label: "Scale" },
-      { id: "security", label: "Security" },
-      { id: "mobile", label: "Mobile" },
+      { id: "compliance-safety", label: "Compliance" },
+      { id: "localization", label: "i18n" },
+      { id: "ui-enhancements", label: "UI Features" },
       { id: "gamification", label: "Achievements" }
-    ],
-    "enhanced-features": [
-      { id: "ai-alt-generation", label: "AI Alt Generation" },
-      { id: "advanced-analysis", label: "Advanced Analysis" },
-      { id: "seo-optimization", label: "SEO Optimizer" },
-      { id: "accessibility-excellence", label: "Accessibility+" },
-      { id: "quality-validation", label: "Quality Checks" },
-      { id: "ui-enhancements", label: "UI Features" }
     ]
   };
 
