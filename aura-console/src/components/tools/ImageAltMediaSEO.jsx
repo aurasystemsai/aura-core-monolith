@@ -1370,23 +1370,46 @@ export default function ImageAltMediaSEO() {
             <button 
               onClick={async () => {
                 try {
+                  const shop = shopDomain.trim() || getShopFromQuery();
+                  if (!shop) {
+                    setError("Shop domain required for Shopify sync. Set it in Settings tab.");
+                    showToast("Add shop domain first", 2000);
+                    return;
+                  }
+                  
+                  setAiResults(prev => ({ ...prev, show: false }));
                   showToast("Syncing to Shopify...");
+                  
                   // Sync approved changes to Shopify
                   const imagesToSync = aiResults.items.map(item => ({
                     url: item.url,
                     altText: item.newAlt
                   }));
                   
-                  await fetchJson("/api/image-alt-media-seo/images/sync-shopify", {
+                  const { data } = await fetchJson("/api/image-alt-media-seo/images/push-shopify", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ images: imagesToSync })
+                    body: JSON.stringify({ 
+                      shop,
+                      items: imagesToSync 
+                    })
                   });
                   
-                  showToast(`✓ Synced ${aiResults.success} images to Shopify`);
+                  const synced = data.synced || 0;
+                  const failed = (data.notFound || 0) + (data.errors || 0);
+                  
+                  if (synced > 0) {
+                    showToast(`✓ Synced ${synced} image${synced > 1 ? 's' : ''} to Shopify!`);
+                  }
+                  if (failed > 0) {
+                    setError(`${failed} image${failed > 1 ? 's' : ''} failed to sync (not found in Shopify)`);
+                  }
+                  
                   setAiResults({ show: false, success: 0, failed: 0, items: [] });
+                  await fetchImages();
                 } catch (err) {
                   setError(err.message || "Shopify sync failed");
+                  setAiResults(prev => ({ ...prev, show: true })); // Re-show modal on error
                 }
               }}
               style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 32px", fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.4)", transition: "all 0.2s" }}
