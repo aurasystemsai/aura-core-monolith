@@ -1110,13 +1110,14 @@ export default function ImageAltMediaSEO() {
   );
 
   const FloatingAIButton = () => {
-    if (!selectedImageIds.length) return null;
+    // Temporarily show always for debugging
+    const count = selectedImageIds.length;
     
     return (
       <div style={{ position: "fixed", bottom: 180, right: 24, zIndex: 1001 }}>
         <button 
           onClick={handleAiImproveSelected} 
-          disabled={!roleCanApply || aiProgress.show}
+          disabled={!count || !roleCanApply || aiProgress.show}
           style={{ 
             width: 64, 
             height: 64, 
@@ -1135,7 +1136,7 @@ export default function ImageAltMediaSEO() {
           }}
           onMouseEnter={e => { if (roleCanApply && !aiProgress.show) e.target.style.transform = "scale(1.1) translateY(-4px)"; }}
           onMouseLeave={e => { e.target.style.transform = "scale(1) translateY(0)"; }}
-          title={`AI Improve ${selectedImageIds.length} selected image${selectedImageIds.length > 1 ? 's' : ''}`}
+          title={count > 0 ? `AI Improve ${count} selected image${count > 1 ? 's' : ''}` : 'Select images to use AI Improve'}
         >
           {aiProgress.show ? (
             <div style={{ width: 24, height: 24, border: "3px solid #fff", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }}>
@@ -1148,8 +1149,8 @@ export default function ImageAltMediaSEO() {
           ) : (
             <>
               🤖
-              <span style={{ position: "absolute", top: -4, right: -4, background: "#ef4444", color: "#fff", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, border: "2px solid #fff" }}>
-                {selectedImageIds.length}
+              <span style={{ position: "absolute", top: -4, right: -4, background: count > 0 ? "#ef4444" : "#64748b", color: "#fff", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, border: "2px solid #fff" }}>
+                {count}
               </span>
             </>
           )}
