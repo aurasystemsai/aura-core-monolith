@@ -6855,6 +6855,13 @@ export default function ImageAltMediaSEO() {
     
     const children = childMap[parentKeyword.toLowerCase()] || [];
     setChildKeywords(prev => ({ ...prev, [parentKeyword]: children }));
+    
+    if (children.length > 0) {
+      showToast(`Child keywords: ${children.length} variants for '${parentKeyword}'`, 2500);
+    } else {
+      showToast(`No child keywords for '${parentKeyword}'`, 2000);
+    }
+    
     return children;
   };
   
@@ -6868,6 +6875,13 @@ export default function ImageAltMediaSEO() {
     });
     
     setPronunciationGuide(prev => ({ ...prev, [altText]: guide }));
+    
+    if (difficultWords.length > 0) {
+      showToast(`Pronunciation guide: ${difficultWords.length} complex word${difficultWords.length !== 1 ? 's' : ''}`, 2500);
+    } else {
+      showToast("No complex words needing pronunciation", 2000);
+    }
+    
     return guide;
   };
   
@@ -6878,6 +6892,10 @@ export default function ImageAltMediaSEO() {
     
     const load = Math.min(100, (avgWordLength * 5) + (longWords * 10));
     setCognitiveLoadScores(prev => ({ ...prev, [altText]: load }));
+    
+    const loadLevel = load < 30 ? "LOW" : load < 60 ? "MODERATE" : "HIGH";
+    showToast(`Cognitive load: ${loadLevel} (${load.toFixed(0)}/100)`, 2500);
+    
     return load;
   };
   
@@ -6890,8 +6908,13 @@ export default function ImageAltMediaSEO() {
     
     // Flesch-Kincaid Grade Level
     const grade = 0.39 * (words / sentences) + 11.8 * (syllables / words) - 15.59;
-    setReadabilityGrades(prev => ({ ...prev, [altText]: Math.max(0, grade) }));
-    return Math.max(0, grade);
+    const finalGrade = Math.max(0, grade);
+    setReadabilityGrades(prev => ({ ...prev, [altText]: finalGrade }));
+    
+    const gradeLevel = finalGrade < 6 ? "Elementary" : finalGrade < 9 ? "Middle School" : finalGrade < 13 ? "High School" : "College+";
+    showToast(`Readability: Grade ${finalGrade.toFixed(1)} (${gradeLevel})`, 2500);
+    
+    return finalGrade;
   };
   
   const handleConvertToPlainLanguage = (altText) => {
@@ -6909,8 +6932,18 @@ export default function ImageAltMediaSEO() {
     };
     
     let simple = altText;
+    let changeCount = 0;
+    
     for (const [complex, plain] of Object.entries(simplifications)) {
-      simple = simple.replace(new RegExp(`\\b${complex}\\b`, 'gi'), plain);
+      const pattern = new RegExp(`\\b${complex}\\b`, 'gi');
+      if (pattern.test(simple)) {
+        simple = simple.replace(pattern, plain);
+        changeCount++;
+      }
+    }
+    
+    if (changeCount > 0) {
+      showToast(`Plain language: simplified ${changeCount} word${changeCount !== 1 ? 's' : ''}`, 2500);
     }
     
     return simple;
@@ -7027,11 +7060,18 @@ export default function ImageAltMediaSEO() {
     const essentialWords = words.filter(w => essential.some(e => w.toLowerCase().includes(e)));
     const other = words.filter(w => !essential.some(e => w.toLowerCase().includes(e)));
     
-    return [...essentialWords, ...other].join(' ');
+    const reordered = [...essentialWords, ...other].join(' ');
+    
+    if (essentialWords.length > 0) {
+      showToast(`Prioritized ${essentialWords.length} essential term${essentialWords.length !== 1 ? 's' : ''}`, 2500);
+    }
+    
+    return reordered;
   };
   
   const handleMarkDecorativeImage = (imageId) => {
     setDecorativeImageIds(prev => [...new Set([...prev, imageId])]);
+    showToast("Image marked as decorative (empty alt)", 2000);
     return { altText: "" }; // Decorative images should have empty alt
   };
   
@@ -7040,18 +7080,21 @@ export default function ImageAltMediaSEO() {
       ...prev,
       [imageId]: { type: "functional", purpose: functionality }
     }));
+    showToast(`Functional description set: ${functionality}`, 2500);
     return functionality;
   };
   
   const handleGenerateLongDescription = (imageId, detailedContext) => {
     const longDesc = `Detailed description: ${detailedContext}. This image contains complex information that cannot be conveyed in a brief alt text.`;
     setLongDescriptions(prev => ({ ...prev, [imageId]: longDesc }));
+    showToast(`Generated long description (${longDesc.length} chars)`, 2500);
     return longDesc;
   };
   
   const handleDescribeDataVisualization = (imageId, chartData) => {
     const description = `Chart showing ${chartData.type || 'data'}. Key insights: ${chartData.insights || 'trends over time'}. Values range from ${chartData.min || 0} to ${chartData.max || 100}.`;
     setDataVizDescriptions(prev => ({ ...prev, [imageId]: description }));
+    showToast(`Data visualization described: ${chartData.type || 'chart'}`, 2500);
     return description;
   };
   
@@ -7061,11 +7104,16 @@ export default function ImageAltMediaSEO() {
     // Don't rely solely on color
     const colorOnlyPatterns = /^(red|blue|green|yellow|black|white|purple|pink)\s*(one|item|object|thing)?$/i;
     
+    let result = altText;
     if (colorOnlyPatterns.test(altText.trim())) {
-      return altText + " product with distinctive design";
+      result = altText + " product with distinctive design";
+      showToast("Enhanced color-only description for accessibility", 2500);
+    } else {
+      showToast("Color description is accessibility-friendly \u2713", 2000);
     }
     
-    return altText;
+    return result;
+  };    return altText;
   };
   
   const handleOptimizeForDyslexia = (altText) => {
