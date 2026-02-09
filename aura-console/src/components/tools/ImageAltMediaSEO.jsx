@@ -8891,12 +8891,32 @@ export default function ImageAltMediaSEO() {
                             </div>
                           );
                         })()}
-                          </div>
-                        ) : null}
-                        <button onClick={() => handleAiRewriteSingle(img)} disabled={rewritingId === img.id || loading} style={{ background: rewritingId === img.id ? "#475569" : "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", color: "#fff", border: "none", borderRadius: 10, padding: "8px 14px", fontWeight: 700, fontSize: 12, cursor: rewritingId === img.id || loading ? "wait" : "pointer", boxShadow: rewritingId === img.id ? "none" : "0 4px 12px rgba(139, 92, 246, 0.3)", transition: "all 0.2s", transform: "translateY(0)" }} onMouseEnter={e => { if (rewritingId !== img.id && !loading) e.target.style.transform = "translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "translateY(0)"}>
-                          {rewritingId === img.id ? "Rewriting…" : "AI rewrite"}
-                        </button>
                       </div>
+                      <button
+                        onClick={() => handleAiRewriteSingle(img)}
+                        disabled={rewritingId === img.id || loading}
+                        style={{
+                          background: rewritingId === img.id ? "#475569" : "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: 10,
+                          padding: "8px 14px",
+                          fontWeight: 700,
+                          fontSize: 12,
+                          cursor: rewritingId === img.id || loading ? "wait" : "pointer",
+                          boxShadow: rewritingId === img.id ? "none" : "0 4px 12px rgba(139, 92, 246, 0.3)",
+                          transition: "all 0.2s",
+                          transform: "translateY(0)"
+                        }}
+                        onMouseEnter={e => {
+                          if (rewritingId !== img.id && !loading) e.target.style.transform = "translateY(-2px)";
+                        }}
+                        onMouseLeave={e => {
+                          e.target.style.transform = "translateY(0)";
+                        }}
+                      >
+                        {rewritingId === img.id ? "Rewriting…" : "AI rewrite"}
+                      </button>
                     </div>
                   </div>
                 </li>
