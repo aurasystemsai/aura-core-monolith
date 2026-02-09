@@ -1659,7 +1659,7 @@ export default function ImageAltMediaSEO() {
           </div>
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 14, color: "#e2e8f0" }}>
-              <input type="checkbox" checked={autoSaveEnabled} onChange={e => setAutoSaveEnabled(e.target.checked)} />
+              <input name="autoSaveEnabled" type="checkbox" checked={autoSaveEnabled} onChange={e => setAutoSaveEnabled(e.target.checked)} />
               <span>Enable auto-save</span>
             </label>
           </div>
@@ -8358,8 +8358,7 @@ export default function ImageAltMediaSEO() {
         </div>
       )}
       <div>
-        <input
-          name="imageUrl"
+        <input name="imageUrl"
           value={imageUrl}
           onChange={e => setImageUrl(e.target.value)}
           placeholder="Image URL (optional but recommended)"
@@ -8420,7 +8419,7 @@ export default function ImageAltMediaSEO() {
             </div>
             <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 8, fontSize: 12, color: "#cbd5e1" }}>
               <span>Filter</span>
-              <select value={visionFilter} onChange={e => setVisionFilter(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #334155", background: "#0b1220", color: "#e2e8f0" }}>
+              <select name="visionFilter" value={visionFilter} onChange={e => setVisionFilter(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #334155", background: "#0b1220", color: "#e2e8f0" }}>
                 <option value="all">All</option>
                 <option value="mismatch">Mismatches</option>
                 <option value="ok">Aligned</option>
@@ -8461,16 +8460,14 @@ export default function ImageAltMediaSEO() {
         ) : null}
         {!simpleMode && (
           <>
-        <input
-          name="keywords"
+        <input name="keywords"
           value={keywords}
           onChange={e => setKeywords(e.target.value)}
           placeholder="Keywords (comma separated)"
           aria-label="Keywords"
           style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", marginTop: 10 }}
         />
-        <input
-          name="brandTerms"
+        <input name="brandTerms"
           value={brandTerms}
           onChange={e => setBrandTerms(e.target.value)}
           placeholder="Brand vocabulary (comma separated)"
@@ -8497,7 +8494,7 @@ export default function ImageAltMediaSEO() {
               const checked = simulateVariants.includes(opt.key);
               return (
                 <label key={opt.key} style={{ display: "flex", alignItems: "center", gap: 4, background: checked ? "#0ea5e9" : "#1f2937", color: checked ? "#0b0b0b" : "#e2e8f0", padding: "4px 8px", borderRadius: 8, border: "1px solid #334155" }}>
-                  <input
+                  <input name={`simulateVariant-${opt.key}`}
                     type="checkbox"
                     checked={checked}
                     onChange={e => {
@@ -8518,8 +8515,7 @@ export default function ImageAltMediaSEO() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
             <div style={{ fontWeight: 700, fontSize: 18 }}>Images</div>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-              <input
-                name="imageSearch"
+              <input name="imageSearch"
                 value={imageSearch}
                 onChange={e => { 
                   setImageSearch(e.target.value); 
@@ -8560,8 +8556,7 @@ export default function ImageAltMediaSEO() {
               <button onClick={() => fetchImages(imageOffset, imageLimit, imageSearch)} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Refresh</button>
               <span style={{ fontSize: 11, color: "#94a3b8" }}>{imageRefreshedAt ? `Updated ${new Date(imageRefreshedAt).toLocaleTimeString()}` : "Not loaded yet"}</span>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <input
-                  name="shopDomain"
+                <input name="shopDomain"
                   value={shopDomain}
                   onChange={e => setShopDomain(e.target.value)}
                   placeholder="shop.myshopify.com"
@@ -8579,7 +8574,7 @@ export default function ImageAltMediaSEO() {
                 <button onClick={handleImportShopify} disabled={shopifyImporting} style={{ background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: shopifyImporting ? "wait" : "pointer" }}>{shopifyImporting ? "Importing..." : "Pull from Shopify"}</button>
               </div>
               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                <input
+                <input name="similarityQuery"
                   value={similarityQuery}
                   onChange={e => setSimilarityQuery(e.target.value)}
                   onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleSimilaritySearch(); } }}
@@ -8629,7 +8624,7 @@ export default function ImageAltMediaSEO() {
               <button onClick={() => setCollapsedSections(prev => ({ ...prev, bulk: !prev.bulk }))} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 20, cursor: "pointer" }}>{collapsedSections.bulk ? "▶" : "▼"}</button>
             </div>
             {!collapsedSections.bulk && (<>
-            <textarea
+            <textarea name="bulkAltText"
               value={bulkAltText}
               onChange={e => setBulkAltText(e.target.value)}
               rows={3}
@@ -8717,7 +8712,7 @@ export default function ImageAltMediaSEO() {
           <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               <span style={{ fontSize: 13, color: "#cbd5e1" }}>Filter</span>
-              <select value={filterMode} onChange={e => setFilterMode(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#111827", color: "#e2e8f0" }}>
+              <select name="filterMode" value={filterMode} onChange={e => setFilterMode(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#111827", color: "#e2e8f0" }}>
                 <option value="all">All</option>
                 <option value="missing">Missing</option>
                 <option value="short">Short</option>
@@ -8727,7 +8722,7 @@ export default function ImageAltMediaSEO() {
             </div>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               <span style={{ fontSize: 13, color: "#cbd5e1" }}>Sort</span>
-              <select value={sortMode} onChange={e => setSortMode(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#111827", color: "#e2e8f0" }}>
+              <select name="sortMode" value={sortMode} onChange={e => setSortMode(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#111827", color: "#e2e8f0" }}>
                 <option value="newest">Newest</option>
                 <option value="oldest">Oldest</option>
                 <option value="score">Score</option>
@@ -8844,7 +8839,7 @@ export default function ImageAltMediaSEO() {
                     </div>
                   )}
                   <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                    <input type="checkbox" checked={selectedImageIds.includes(img.id)} onChange={() => toggleSelectImage(img.id)} aria-label={`Select image ${img.id}`} />
+                    <input name={`selectImage-${img.id}`} type="checkbox" checked={selectedImageIds.includes(img.id)} onChange={() => toggleSelectImage(img.id)} aria-label={`Select image ${img.id}`} />
                     <div style={{ position: "relative", flex: "0 0 140px", maxWidth: 160 }}>
                       {img.url ? (
                         <img
@@ -8938,7 +8933,7 @@ export default function ImageAltMediaSEO() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Tone</span>
-          <select value={tone} onChange={e => setTone(e.target.value)} aria-label="Tone" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+          <select name="tone" value={tone} onChange={e => setTone(e.target.value)} aria-label="Tone" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
             {(meta?.presets?.tone || ["minimalist", "balanced", "expressive"]).map(opt => (
               <option key={opt} value={opt}>{opt}</option>
             ))}
@@ -8946,7 +8941,7 @@ export default function ImageAltMediaSEO() {
         </label>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Verbosity</span>
-          <select value={verbosity} onChange={e => setVerbosity(e.target.value)} aria-label="Verbosity" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+          <select name="verbosity" value={verbosity} onChange={e => setVerbosity(e.target.value)} aria-label="Verbosity" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
             {(meta?.presets?.verbosity || ["terse", "balanced", "detailed"]).map(opt => (
               <option key={opt} value={opt}>{opt}</option>
             ))}
@@ -8973,16 +8968,14 @@ export default function ImageAltMediaSEO() {
           </label>
         </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-        <input
-          name="productTitle"
+        <input name="productTitle"
           value={productTitle}
           onChange={e => setProductTitle(e.target.value)}
           placeholder="Product title"
           aria-label="Product title"
           style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
         />
-        <input
-          name="variant"
+        <input name="variant"
           value={variant}
           onChange={e => setVariant(e.target.value)}
           placeholder="Variant (e.g., red / size M)"
@@ -9013,8 +9006,7 @@ export default function ImageAltMediaSEO() {
       </div>
       <div style={{ marginBottom: 16, background: "#1f2937", borderRadius: 12, padding: 14, border: "1px solid #555" }}>
         <div style={{ fontWeight: 700, marginBottom: 8 }}>Lint existing alt text</div>
-        <textarea
-          name="lintOnlyText"
+        <textarea name="lintOnlyText"
           value={lintOnlyText}
           onChange={e => setLintOnlyText(e.target.value)}
           rows={3}
@@ -9023,16 +9015,14 @@ export default function ImageAltMediaSEO() {
           aria-label="Alt text to lint"
         />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 10 }}>
-          <input
-            name="lintOnlyKeywords"
+          <input name="lintOnlyKeywords"
             value={lintOnlyKeywords}
             onChange={e => setLintOnlyKeywords(e.target.value)}
             placeholder="Keywords (comma separated)"
             aria-label="Lint keywords"
             style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
           />
-          <input
-            name="lintOnlyBrandTerms"
+          <input name="lintOnlyBrandTerms"
             value={lintOnlyBrandTerms}
             onChange={e => setLintOnlyBrandTerms(e.target.value)}
             placeholder={meta?.presets?.brandVocabHint || "Brand vocabulary (comma separated)"}
@@ -9058,7 +9048,7 @@ export default function ImageAltMediaSEO() {
           </div>
         )}
       </div>
-      <textarea
+      <textarea name="attributes"
         value={attributes}
         onChange={e => setAttributes(e.target.value)}
         rows={3}
@@ -9066,7 +9056,7 @@ export default function ImageAltMediaSEO() {
         placeholder="Attributes (comma or JSON: color, material, style, use-case)"
         aria-label="Attributes"
       />
-      <input
+      <input name="scene"
         value={scene}
         onChange={e => setScene(e.target.value)}
         placeholder="Scene (e.g., studio on white, outdoor cafe)"
@@ -9076,7 +9066,7 @@ export default function ImageAltMediaSEO() {
       <div style={{ display: "flex", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Locale</span>
-          <select value={locale} onChange={e => setLocale(e.target.value)} aria-label="Locale" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+          <select name="locale" value={locale} onChange={e => setLocale(e.target.value)} aria-label="Locale" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
             <option value="en-US">en-US</option>
             <option value="en-GB">en-GB</option>
             <option value="de">de</option>
@@ -9094,11 +9084,11 @@ export default function ImageAltMediaSEO() {
           <button onClick={() => applyLocalePreset("fr")} style={{ background: "#e2e8f0", color: "#0f172a", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: "pointer" }}>FR</button>
         </div>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
-          <input type="checkbox" checked={safeMode} onChange={e => setSafeMode(e.target.checked)} />
+          <input name="safeMode" type="checkbox" checked={safeMode} onChange={e => setSafeMode(e.target.checked)} />
           <span>Safe mode (PII/promo sanitization)</span>
         </label>
       </div>
-      <textarea
+      <textarea name="inputText"
         value={input}
         onChange={e => setInput(e.target.value)}
         rows={4}
@@ -9112,7 +9102,7 @@ export default function ImageAltMediaSEO() {
         <button onClick={handleAddImage} disabled={!result} style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Save Alt Text</button>
         <button onClick={handleCopyResult} disabled={!result} style={{ background: "#14b8a6", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "10px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
         <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
-        <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import images" />
+        <input name="importFile" ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import images" />
         <button onClick={handleExportJson} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export JSON</button>
         <button onClick={handleExportCsv} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export CSV</button>
         {exported && <a href={exported} download={exportFilename || "export"} style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
@@ -9190,7 +9180,7 @@ export default function ImageAltMediaSEO() {
               <button onClick={handleSimulateSelected} aria-label="Simulate AI for selected" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#e0e7ff" : "#334155", color: roleCanSimulate ? "#1e293b" : "#94a3b8", border: "1px solid #c7d2fe", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Simulate AI</button>
               <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
                 Translate to
-                <select value={translateLocale} onChange={e => setTranslateLocale(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+                <select name="translateLocale" value={translateLocale} onChange={e => setTranslateLocale(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
                   {['es','fr','de','en-GB','en-US','ja','ko','zh'].map(code => <option key={code} value={code}>{code}</option>)}
                 </select>
               </label>
@@ -9278,7 +9268,7 @@ export default function ImageAltMediaSEO() {
 
       <div style={{ marginTop: 24, background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 24, border: "2px solid #475569", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
         <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 16, color: "#f1f5f9", display: "flex", alignItems: "center", gap: 8 }}>Batch Generate (JSON array)</div>
-        <textarea
+        <textarea name="batchInput"
           value={batchInput}
           onChange={e => setBatchInput(e.target.value)}
           rows={6}
@@ -9293,15 +9283,15 @@ export default function ImageAltMediaSEO() {
           <button onClick={loadSampleBatch} disabled={loading} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "10px 16px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Load sample batch</button>
           <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#a3e635" }}>
             Chunk size
-            <input type="number" min={1} max={100} value={chunkSize} onChange={e => setChunkSize(Number(e.target.value) || 1)} style={{ width: 70, padding: "6px 8px", borderRadius: 6, border: "1px solid #cbd5e1" }} />
+            <input name="chunkSize" type="number" min={1} max={100} value={chunkSize} onChange={e => setChunkSize(Number(e.target.value) || 1)} style={{ width: 70, padding: "6px 8px", borderRadius: 6, border: "1px solid #cbd5e1" }} />
           </label>
           <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#a3e635" }}>
             Variants
-            <input type="number" min={1} max={5} value={batchVariantCount} onChange={e => setBatchVariantCount(Math.min(5, Math.max(1, Number(e.target.value) || 1)))} style={{ width: 70, padding: "6px 8px", borderRadius: 6, border: "1px solid #cbd5e1" }} />
+            <input name="batchVariantCount" type="number" min={1} max={5} value={batchVariantCount} onChange={e => setBatchVariantCount(Math.min(5, Math.max(1, Number(e.target.value) || 1)))} style={{ width: 70, padding: "6px 8px", borderRadius: 6, border: "1px solid #cbd5e1" }} />
           </label>
           <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#a3e635" }}>
             Pause ms
-            <input type="number" min={0} max={2000} value={paceMs} onChange={e => setPaceMs(Math.max(0, Number(e.target.value) || 0))} style={{ width: 80, padding: "6px 8px", borderRadius: 6, border: "1px solid #cbd5e1" }} />
+            <input name="paceMs" type="number" min={0} max={2000} value={paceMs} onChange={e => setPaceMs(Math.max(0, Number(e.target.value) || 0))} style={{ width: 80, padding: "6px 8px", borderRadius: 6, border: "1px solid #cbd5e1" }} />
           </label>
           <span style={{ fontSize: 13, color: "#a3e635" }}>Sends to /ai/batch-generate; locale, safe mode, tone, verbosity, keywords, brand vocab, chunking, and pacing are applied.</span>
           {batchDownloadUrl && <a href={batchDownloadUrl} download="batch-results.json" style={{ color: "#a3e635", fontWeight: 600 }}>Download results JSON</a>}
@@ -9412,14 +9402,14 @@ export default function ImageAltMediaSEO() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
           <div style={{ fontWeight: 700, fontSize: 18 }}>Analytics</div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <input
+            <input name="collectionFilter"
               value={collectionFilter}
               onChange={e => setCollectionFilter(e.target.value)}
               placeholder="Filter by collection (substring)"
               aria-label="Collection filter"
               style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 180 }}
             />
-            <input
+            <input name="vendorFilter"
               value={vendorFilter}
               onChange={e => setVendorFilter(e.target.value)}
               placeholder="Filter by vendor (substring)"
@@ -9427,7 +9417,7 @@ export default function ImageAltMediaSEO() {
               style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 180 }}
             />
             <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-              <input type="checkbox" checked={includeHeaders} onChange={e => setIncludeHeaders(e.target.checked)} />
+              <input name="includeHeaders" type="checkbox" checked={includeHeaders} onChange={e => setIncludeHeaders(e.target.checked)} />
               <span>CSV headers</span>
             </label>
             <button onClick={fetchAnalytics} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Refresh</button>
@@ -9627,7 +9617,7 @@ export default function ImageAltMediaSEO() {
             <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #6366f1" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#6366f1" }}>Translation (50+ Languages)</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Auto-translate alt text</p>
-              <select value={translateLocale} onChange={e => setTranslateLocale(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: 8, background: "#0f172a", color: "#e2e8f0", border: "1px solid #475569", marginBottom: 12 }}>
+              <select name="translateLocaleAnalytics" value={translateLocale} onChange={e => setTranslateLocale(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: 8, background: "#0f172a", color: "#e2e8f0", border: "1px solid #475569", marginBottom: 12 }}>
                 <option value="es">Spanish</option>
                 <option value="fr">French</option>
                 <option value="de">German</option>
@@ -9663,7 +9653,7 @@ export default function ImageAltMediaSEO() {
             <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Scheduled Scans</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Auto-scan for new images</p>
-              <select onChange={e => scheduleAutomation("scan", e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: 8, background: "#0f172a", color: "#e2e8f0", border: "1px solid #475569" }}>
+              <select name="automationSchedule" onChange={e => scheduleAutomation("scan", e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: 8, background: "#0f172a", color: "#e2e8f0", border: "1px solid #475569" }}>
                 <option value="">Select schedule...</option>
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
@@ -9812,7 +9802,7 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#8b5cf6" }}>GPT-4 Vision Analysis</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Use vision models for ultra-accurate image descriptions</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={gpt4VisionEnabled} onChange={() => setGpt4VisionEnabled(!gpt4VisionEnabled)} />
+                <input name="gpt4VisionEnabled" type="checkbox" checked={gpt4VisionEnabled} onChange={() => setGpt4VisionEnabled(!gpt4VisionEnabled)} />
                 <span style={{ fontSize: 13 }}>Enable GPT-4 Vision</span>
               </label>
               <button onClick={() => selectedImageIds[0] && handleGPT4Vision(selectedImageIds[0])} disabled={!gpt4VisionEnabled} style={{ width: "100%", background: gpt4VisionEnabled ? "#8b5cf6" : "#334155", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: gpt4VisionEnabled ? "pointer" : "not-allowed", marginTop: 12 }}>Analyze Selected Image</button>
@@ -9870,7 +9860,7 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#ef4444" }}>Content Moderation</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Flag inappropriate or off-brand imagery</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={contentModeration} onChange={() => setContentModeration(!contentModeration)} />
+                <input name="contentModeration" type="checkbox" checked={contentModeration} onChange={() => setContentModeration(!contentModeration)} />
                 <span style={{ fontSize: 13 }}>Enable Auto-Moderation</span>
               </label>
             </div>
@@ -9895,7 +9885,7 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Variant Image Sync</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Auto-propagate alt text across product variants</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={variantImageSync} onChange={() => setVariantImageSync(!variantImageSync)} />
+                <input name="variantImageSync" type="checkbox" checked={variantImageSync} onChange={() => setVariantImageSync(!variantImageSync)} />
                 <span style={{ fontSize: 13 }}>Enable Variant Sync</span>
               </label>
             </div>
@@ -9908,7 +9898,7 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Sale Discount Mentions</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Auto-add "on sale" during promotions</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={saleDiscountMentions} onChange={() => setSaleDiscountMentions(!saleDiscountMentions)} />
+                <input name="saleDiscountMentions" type="checkbox" checked={saleDiscountMentions} onChange={() => setSaleDiscountMentions(!saleDiscountMentions)} />
                 <span style={{ fontSize: 13 }}>Enable Sale Mentions</span>
               </label>
             </div>
@@ -9921,7 +9911,7 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>New Arrival Flags</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Auto-tag new products</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={newArrivalFlags} onChange={() => setNewArrivalFlags(!newArrivalFlags)} />
+                <input name="newArrivalFlags" type="checkbox" checked={newArrivalFlags} onChange={() => setNewArrivalFlags(!newArrivalFlags)} />
                 <span style={{ fontSize: 13 }}>Enable New Arrival Tags</span>
               </label>
             </div>
@@ -9948,14 +9938,14 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Compression Optimizer</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Reduce file size without quality loss</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={compressionOptimizer} onChange={() => setCompressionOptimizer(!compressionOptimizer)} />
+                <input name="compressionOptimizer" type="checkbox" checked={compressionOptimizer} onChange={() => setCompressionOptimizer(!compressionOptimizer)} />
                 <span style={{ fontSize: 13 }}>Auto-optimize on upload</span>
               </label>
             </div>
             <div style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Format Converter</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Convert to WebP/AVIF</p>
-              <select onChange={(e) => setFormatConverter({ targetFormat: e.target.value })} value={formatConverter.targetFormat} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #475569", background: "#0f172a", color: "#fff", marginBottom: 12 }}>
+              <select name="formatConverterTarget" onChange={(e) => setFormatConverter({ targetFormat: e.target.value })} value={formatConverter.targetFormat} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #475569", background: "#0f172a", color: "#fff", marginBottom: 12 }}>
                 <option value="webp">WebP</option>
                 <option value="avif">AVIF</option>
                 <option value="jpeg">JPEG</option>
@@ -9985,7 +9975,7 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Structured Data Generator</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Create Product schema automatically</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={structuredDataGenerator} onChange={() => setStructuredDataGenerator(!structuredDataGenerator)} />
+                <input name="structuredDataGenerator" type="checkbox" checked={structuredDataGenerator} onChange={() => setStructuredDataGenerator(!structuredDataGenerator)} />
                 <span style={{ fontSize: 13 }}>Auto-generate schema</span>
               </label>
             </div>
@@ -9993,7 +9983,7 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Google Lens Optimization</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Optimize for visual search</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={googleLensOptimization} onChange={() => setGoogleLensOptimization(!googleLensOptimization)} />
+                <input name="googleLensOptimization" type="checkbox" checked={googleLensOptimization} onChange={() => setGoogleLensOptimization(!googleLensOptimization)} />
                 <span style={{ fontSize: 13 }}>Enable Lens optimization</span>
               </label>
             </div>
@@ -10001,7 +9991,7 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Alt Text Length Checker</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Ensure optimal 125-character sweet spot</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={altTextLengthChecker} onChange={() => setAltTextLengthChecker(!altTextLengthChecker)} />
+                <input name="altTextLengthChecker" type="checkbox" checked={altTextLengthChecker} onChange={() => setAltTextLengthChecker(!altTextLengthChecker)} />
                 <span style={{ fontSize: 13 }}>Real-time length validation</span>
               </label>
             </div>
@@ -10014,7 +10004,7 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Broken Image Checker</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Find and fix 404 images</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={brokenImageChecker} onChange={() => setBrokenImageChecker(!brokenImageChecker)} />
+                <input name="brokenImageChecker" type="checkbox" checked={brokenImageChecker} onChange={() => setBrokenImageChecker(!brokenImageChecker)} />
                 <span style={{ fontSize: 13 }}>Auto-check on sync</span>
               </label>
               <button onClick={checkBrokenImages} style={{ width: "100%", background: "#ec4899", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer", marginTop: 12 }}>Check Now</button>
@@ -10039,7 +10029,7 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>PII Detection</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Flag personal information in alt text</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={piiDetection} onChange={() => setPiiDetection(!piiDetection)} />
+                <input name="piiDetection" type="checkbox" checked={piiDetection} onChange={() => setPiiDetection(!piiDetection)} />
                 <span style={{ fontSize: 13 }}>Auto-detect PII</span>
               </label>
             </div>
@@ -10047,7 +10037,7 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>GDPR Compliance</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Data deletion & export for EU</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={gdprComplianceTools} onChange={() => setGdprComplianceTools(!gdprComplianceTools)} />
+                <input name="gdprComplianceTools" type="checkbox" checked={gdprComplianceTools} onChange={() => setGdprComplianceTools(!gdprComplianceTools)} />
                 <span style={{ fontSize: 13 }}>GDPR Mode</span>
               </label>
             </div>
@@ -10055,7 +10045,7 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Encrypted Backups</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Secure data backups</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={encryptedBackups} onChange={() => setEncryptedBackups(!encryptedBackups)} />
+                <input name="encryptedBackups" type="checkbox" checked={encryptedBackups} onChange={() => setEncryptedBackups(!encryptedBackups)} />
                 <span style={{ fontSize: 13 }}>Enable encrypted backups</span>
               </label>
             </div>
@@ -10072,7 +10062,7 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Touch Gestures</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Swipe to navigate images</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={touchGestures} onChange={() => setTouchGestures(!touchGestures)} />
+                <input name="touchGestures" type="checkbox" checked={touchGestures} onChange={() => setTouchGestures(!touchGestures)} />
                 <span style={{ fontSize: 13 }}>Enable swipe gestures</span>
               </label>
             </div>
@@ -10090,7 +10080,7 @@ export default function ImageAltMediaSEO() {
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Mobile Shortcuts</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Quick actions from home screen</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                <input type="checkbox" checked={mobileShortcuts} onChange={() => setMobileShortcuts(!mobileShortcuts)} />
+                <input name="mobileShortcuts" type="checkbox" checked={mobileShortcuts} onChange={() => setMobileShortcuts(!mobileShortcuts)} />
                 <span style={{ fontSize: 13 }}>Enable mobile shortcuts</span>
               </label>
             </div>
