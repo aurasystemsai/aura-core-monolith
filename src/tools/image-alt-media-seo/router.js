@@ -754,7 +754,13 @@ router.post('/images/import-shopify', requireWriter, async (req, res) => {
         }
         seen.add(key);
         const altText = normalizeStr(image.alt || image.alt_text || '', MAX_ALT_LEN);
-        toCreate.push({ url, altText });
+        toCreate.push({ 
+          url, 
+          altText,
+          productTitle: product.title || null,
+          productHandle: product.handle || null,
+          productId: String(product.id || '')
+        });
       }
       if (toCreate.length >= maxImages) break;
     }
