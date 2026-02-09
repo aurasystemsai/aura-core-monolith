@@ -1881,7 +1881,10 @@ export default function ImageAltMediaSEO() {
       const params = new URLSearchParams();
       params.set("limit", String(nextLimit || 20));
       params.set("offset", String(nextOffset || 0));
+      const shop = (shopDomain.trim() || getShopFromQuery() || "").toLowerCase();
       if (nextSearch && nextSearch.trim()) params.set("search", nextSearch.trim());
+      if (shop) params.set("shop", shop);
+      params.set("enrich", "shopify");
       const qs = params.toString();
       const { data } = await fetchJson(`/api/image-alt-media-seo/images${qs ? `?${qs}` : ""}`, { signal: controller.signal });
       setImages(data.images || []);

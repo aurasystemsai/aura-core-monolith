@@ -175,6 +175,31 @@ const verifyShopifyHmac = (query = {}) => {
   return crypto.timingSafeEqual(hmacBuf, computedBuf);
 };
 
+// Resolve shop context and admin token (prefers request-scoped values, then env, then persisted token)
+const resolveShopContext = req => {
+  const shop = (req.query.shop || req.headers['x-shopify-shop-domain'] || req.session?.shop || req.body?.shop || SHOPIFY_STORE_URL || '').toLowerCase();
+  if (!shop || !isValidShopDomain(shop)) {
+    return { shop: null, token: null, tokenSource: 'none' };
+  }
+
+  const tokenSourceMap = {
+    body: req.body?.token,
+    session: req.session?.shopifyToken,
+    SHOPIFY_ACCESS_TOKEN: process.env.SHOPIFY_ACCESS_TOKEN,
+    SHOPIFY_ADMIN_API_TOKEN: process.env.SHOPIFY_ADMIN_API_TOKEN,
+    SHOPIFY_API_TOKEN: process.env.SHOPIFY_API_TOKEN,
+    SHOPIFY_ADMIN_TOKEN: process.env.SHOPIFY_ADMIN_TOKEN,
+    shopTokens: getShopToken(shop),
+  };
+
+  const tokenEntry = Object.entries(tokenSourceMap).find(([, val]) => !!val);
+  return {
+    shop,
+    token: tokenEntry ? tokenEntry[1] : null,
+    tokenSource: tokenEntry ? tokenEntry[0] : 'none',
+  };
+};
+
 router.use((req, res, next) => {
   // Skip health endpoints
   if (req.path.startsWith('/health')) return next();
@@ -683,7 +708,71 @@ router.get('/images', async (req, res) => {
     const offset = Math.max(Number(req.query.offset) || 0, 0);
     const search = normalizeStr(req.query.search || '', 200);
     const { items, total } = await (db.listPaged ? db.listPaged({ limit, offset, search }) : { items: await db.list(), total: (await db.list()).length });
-    res.json({ ok: true, images: items, total, limit, offset, search });
+
+    const wantsShopifyEnrich = req.query.enrich === 'shopify' || req.query.enrichShopify === 'true' || !!req.query.shop;
+    const missingMeta = wantsShopifyEnrich ? items.filter(img => (!img.productTitle && !img.productHandle) && (img.url || '').toLowerCase().includes('cdn.shopify.com')) : [];
+
+    let enriched = items;
+    if (missingMeta.length) {
+      const { shop, token, tokenSource } = resolveShopContext(req);
+      if (shop && token) {
+        const missingUrls = new Set(missingMeta.map(i => (i.url || '').toLowerCase()).filter(Boolean));
+        const metaByUrl = new Map();
+
+        try {
+          await shopifyFetchPaginated(
+            shop,
+            'products.json',
+            { limit: 250, fields: 'id,title,handle,images' },
+            token,
+            {
+              maxPages: Math.min(10, Math.max(1, Math.ceil(missingUrls.size / 10))),
+              rateLimitThreshold: 0.7,
+              rateLimitSleepMs: 900,
+              onPage: async ({ items: products }) => {
+                products.forEach(product => {
+                  (product.images || []).forEach(image => {
+                    const url = (image.src || image.original_src || '').toLowerCase();
+                    if (!url || !missingUrls.has(url) || metaByUrl.has(url)) return;
+                    metaByUrl.set(url, {
+                      productTitle: product.title || null,
+                      productHandle: product.handle || null,
+                      productId: product.id ? String(product.id) : null,
+                    });
+                  });
+                });
+              },
+            }
+          );
+        } catch (err) {
+          console.warn('[image-alt-media-seo] shopify enrich failed', { shop, error: err.message, tokenSource });
+        }
+
+        if (metaByUrl.size) {
+          const updates = [];
+          enriched = items.map(img => {
+            const meta = metaByUrl.get((img.url || '').toLowerCase());
+            if (!meta) return img;
+            const merged = { ...img, ...meta };
+            updates.push({
+              url: merged.url,
+              altText: merged.altText || merged.alt || merged.content || '',
+              productTitle: merged.productTitle,
+              productHandle: merged.productHandle,
+              productId: merged.productId,
+            });
+            return merged;
+          });
+
+          if (updates.length) {
+            await Promise.allSettled(updates.map(row => db.upsertByUrl(row)));
+            clearAnalyticsCache();
+          }
+        }
+      }
+    }
+
+    res.json({ ok: true, images: enriched, total, limit, offset, search });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message || 'DB error' });
   }
