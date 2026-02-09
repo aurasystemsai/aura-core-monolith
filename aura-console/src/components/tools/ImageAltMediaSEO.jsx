@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 
-const BUILD_DEBUG_TAG = "AI-BUTTON-DEBUG-4d24f0d-001";
 
 // Safe theme detector for SSR/CSR
 const isDarkTheme = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -1113,68 +1112,6 @@ export default function ImageAltMediaSEO() {
     </div>
   );
 
-  const FloatingAIButton = () => {
-    // Always render (disabled at 0) so we can see it even with no selection
-    const count = selectedImageIds.length;
-    console.log('FloatingAIButton rendering, count:', count, 'selectedImageIds:', selectedImageIds);
-    if (typeof window !== 'undefined') {
-      window.__AI_BUTTON_DEBUG = { count, ts: Date.now() };
-    }
-
-    return createPortal(
-      <>
-        <div style={{ position: "fixed", top: 80, left: "50%", transform: "translateX(-50%)", zIndex: 99999, background: "#991b1b", color: "#fff", padding: "12px 16px", borderRadius: 10, border: "4px solid #fbbf24", fontWeight: 900, fontSize: 16, boxShadow: "0 16px 40px rgba(0,0,0,0.5)" }}>
-          PORTAL ACTIVE — count {count}
-        </div>
-        <div style={{ position: "fixed", bottom: 120, right: 24, zIndex: 99999, display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
-          <div style={{ background: "rgba(15,23,42,0.9)", color: "#fff", padding: "6px 10px", borderRadius: 8, border: "2px solid #fbbf24", fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,0.35)", fontSize: 12 }}>
-            AI bulk (debug) — count {count}
-          </div>
-        <button 
-          onClick={handleAiImproveSelected} 
-          disabled={!count || !roleCanApply || aiProgress.show}
-          style={{ 
-            width: 64, 
-            height: 64, 
-            borderRadius: "50%", 
-            background: aiProgress.show ? "linear-gradient(135deg, #94a3b8 0%, #64748b 100%)" : "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", 
-            border: "4px solid #fbbf24", 
-            color: "#fff", 
-            fontSize: 28, 
-            cursor: (!count || !roleCanApply || aiProgress.show) ? "not-allowed" : "pointer", 
-            boxShadow: "0 12px 36px rgba(124, 58, 237, 0.6)", 
-            transition: "all 0.3s ease",
-            position: "relative",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}
-          onMouseEnter={e => { if (roleCanApply && !aiProgress.show) e.target.style.transform = "scale(1.1) translateY(-4px)"; }}
-          onMouseLeave={e => { e.target.style.transform = "scale(1) translateY(0)"; }}
-          title={count > 0 ? `AI Improve ${count} selected image${count > 1 ? 's' : ''}` : 'Select images to use AI Improve'}
-        >
-          {aiProgress.show ? (
-            <div style={{ width: 24, height: 24, border: "3px solid #fff", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }}>
-              <style>{`
-                @keyframes spin {
-                  to { transform: rotate(360deg); }
-                }
-              `}</style>
-            </div>
-          ) : (
-            <>
-              🤖
-              <span style={{ position: "absolute", top: -4, right: -4, background: count > 0 ? "#ef4444" : "#64748b", color: "#fff", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, border: "2px solid #fff" }}>
-                {count}
-              </span>
-            </>
-          )}
-        </button>
-        </div>
-      </>,
-      document.body
-    );
-  };
 
   // Fallback rendered inside tree (no portal) in case portal is blocked
   const FloatingAIButtonFallback = () => {
@@ -1723,13 +1660,6 @@ export default function ImageAltMediaSEO() {
     showToast(`Selected ${rangeIds.length} items`, 1200);
   };
 
-  const addNotification = (notification) => {
-    const id = Date.now();
-    setNotifications(prev => [...prev, { ...notification, id, index: prev.length }]);
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 5000);
-  };
 
   const rateLimitMessage = retryAfter => {
     if (!retryAfter) return "Rate limit exceeded. Please wait a minute and retry.";
@@ -3196,9 +3126,6 @@ export default function ImageAltMediaSEO() {
     }
   };
   
-  const getSelectedImages = () => {
-    return images.filter(img => selectedImageIds.includes(img.id));
-  };
   
   const calculateTextSimilarity = (text1, text2) => {
     if (!text1 || !text2) return 0;
@@ -3296,15 +3223,6 @@ export default function ImageAltMediaSEO() {
     setAbTestVariants(prev => ({ ...prev, [imageId]: variants }));
   };
   
-  const verifyImageMatch = async (imageId, altText) => {
-    const res = await fetch(`/api/image-alt-media-seo/vision/verify`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imageId, altText })
-    });
-    const { data } = await res.json();
-    return data.matchScore || 0;
-  };
   
   const extractOcrText = async (imageUrl) => {
     const res = await fetch(`/api/image-alt-media-seo/ocr`, {
@@ -3317,14 +3235,7 @@ export default function ImageAltMediaSEO() {
   };
   
   // Image Version History & Templates (image-specific only)
-  const saveVersion = (imageId, altText) => {
-    setVersionHistory(prev => ({ ...prev, [imageId]: [...(prev[imageId] || []), { altText, timestamp: Date.now() }] }));
-  };
   
-  const shareTemplate = (template) => {
-    setSharedTemplates(prev => [...prev, { ...template, sharedAt: Date.now() }]);
-    showToast("Template shared with team");
-  };
   
   // Import/Export (40-53)
   const exportToCsv = () => {
@@ -3339,16 +3250,6 @@ export default function ImageAltMediaSEO() {
     URL.revokeObjectURL(url);
   };
   
-  const importFromCsv = async (file) => {
-    const text = await file.text();
-    const lines = text.split("\n").slice(1); // skip header
-    const imported = lines.map(line => {
-      const [id, url, altText, quality] = line.split(",");
-      return { id, url, altText: altText?.replace(/"/g, ""), quality };
-    });
-    // Process imported data
-    showToast(`Imported ${imported.length} records from CSV`);
-  };
   
   const exportToExcel = () => {
     // Use library like xlsx for actual Excel export
@@ -3387,81 +3288,18 @@ export default function ImageAltMediaSEO() {
   };
   
   // Advanced Search & Filters (64-75)
-  const saveFilter = (name, filters) => {
-    setSavedFilters(prev => [...prev, { name, filters, savedAt: Date.now() }]);
-    showToast(`Filter "${name}" saved`);
-  };
   
-  const applyFilter = (filters) => {
-    setCustomFieldFilters(filters);
-    // Apply filtering logic
-  };
   
-  const fuzzySearch = (query) => {
-    if (!fuzzySearchEnabled) return images;
-    return images.filter(img => {
-      const similarity = calculateTextSimilarity(query.toLowerCase(), img.altText?.toLowerCase() || "");
-      return similarity > 0.7; // 70% similarity threshold
-    });
-  };
   
-  const saveSearch = (name, query) => {
-    setSavedSearches(prev => [...prev, { name, query, savedAt: Date.now() }]);
-  };
   
-  const addToSearchHistory = (query) => {
-    setSearchHistory(prev => [query, ...prev.filter(q => q !== query)].slice(0, 20));
-  };
   
   // Bulk Operations (76-86)
-  const bulkRename = (pattern) => {
-    selectedImageIds.forEach((id, idx) => {
-      const newAlt = pattern.replace("{n}", idx + 1).replace("{id}", id);
-      handleUpdateAltText(id, newAlt);
-    });
-    showToast(`Renamed ${selectedImageIds.length} items`);
-  };
   
-  const findAndReplace = (find, replace) => {
-    let count = 0;
-    selectedImageIds.forEach(id => {
-      const img = images.find(i => i.id === id);
-      if (img?.altText?.includes(find)) {
-        handleUpdateAltText(id, img.altText.replace(new RegExp(find, 'g'), replace));
-        count++;
-      }
-    });
-    showToast(`Replaced in ${count} items`);
-  };
   
-  const bulkAddTag = (tag) => {
-    selectedImageIds.forEach(id => {
-      setImageTags(prev => ({ ...prev, [id]: [...(prev[id] || []), tag] }));
-    });
-    showToast(`Added tag "${tag}" to ${selectedImageIds.length} items`);
-  };
   
-  const bulkArchive = () => {
-    setArchivedImages(prev => [...prev, ...selectedImageIds]);
-    showToast(`Archived ${selectedImageIds.length} items`);
-  };
   
-  const bulkQualityFixAuto = async () => {
-    for (const id of selectedImageIds) {
-      const img = images.find(i => i.id === id);
-      if (calculateQualityScore(img) < 70) {
-        const aiAlt = await handleAiGenerate(id);
-        await handleUpdateAltText(id, aiAlt);
-      }
-    }
-    showToast("Bulk quality fix completed");
-  };
   
   // Visual & UX (87-101)
-  const toggleViewMode = (mode) => {
-    setViewMode(mode);
-    localStorage.setItem("viewMode", mode);
-  };
   
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -3473,31 +3311,9 @@ export default function ImageAltMediaSEO() {
     }
   };
   
-  const adjustThumbnailSize = (size) => {
-    setThumbnailSize(Math.max(80, Math.min(300, size)));
-    localStorage.setItem("thumbnailSize", size);
-  };
   
-  const toggleCompactMode = () => {
-    setCompactMode(prev => !prev);
-    localStorage.setItem("compactMode", !compactMode);
-  };
   
-  const openCommandPalette = () => {
-    setCommandPaletteOpen(true);
-  };
   
-  const executeCommand = (command) => {
-    const commands = {
-      "export-csv": exportToCsv,
-      "import-shopify": handleImportShopify,
-      "bulk-ai": handleBulkAiGenerate,
-      "fullscreen": toggleFullscreen,
-      "theme-panel": () => setShowThemePanel(prev => !prev),
-    };
-    commands[command]?.();
-    setCommandPaletteOpen(false);
-  };
   
   // Automation & Scheduling (102-111)
   const scheduleAutomation = (task, schedule) => {
@@ -3511,33 +3327,8 @@ export default function ImageAltMediaSEO() {
   };
   
   // Image Analysis (112-123)
-  const analyzeImageQuality = async (imageUrl) => {
-    // Check resolution, file size, format
-    const img = new Image();
-    img.src = imageUrl;
-    await img.decode();
-    const quality = img.width * img.height > 1000000 ? "high" : img.width * img.height > 250000 ? "medium" : "low";
-    return quality;
-  };
   
-  const findAdvancedDuplicates = () => {
-    // Find similar images using perceptual hashing
-    showToast("Scanning for similar images...");
-  };
   
-  const detectBrokenImages = async () => {
-    const broken = [];
-    for (const img of images) {
-      try {
-        const res = await fetch(img.url, { method: "HEAD" });
-        if (!res.ok) broken.push(img.id);
-      } catch {
-        broken.push(img.id);
-      }
-    }
-    setBrokenImages(broken);
-    showToast(`Found ${broken.length} broken images`);
-  };
   
   // SEO Advanced (124-136)
   const analyzeKeywordDensity = (altText) => {
@@ -3577,28 +3368,14 @@ export default function ImageAltMediaSEO() {
   };
   
   // Mobile & Responsive (149-154)
-  const requestPushPermission = async () => {
-    const permission = await Notification.requestPermission();
-    if (permission === "granted") {
-      showToast("Push notifications enabled");
-    }
-  };
   
   // E-commerce (155-162)
-  const handleProductVariants = (productId) => {
-    // Manage product image variants
-    setProductVariants(prev => ({ ...prev, [productId]: [] }));
-  };
   
-  const tagProductTaxonomy = (imageId, category) => {
-    setProductTaxonomy(prev => ({ ...prev, [imageId]: category }));
-  };
 
   // ========== NEW HANDLERS for 172 MORE Features ==========
   
   // AI & ML V2 Handlers (1-13)
   const handleGPT4Vision = async (imageId) => {
-    const img = images.find(i => i.id === imageId);
     showToast("Analyzing image with GPT-4 Vision...");
     // Simulate GPT-4 Vision analysis
     const analysis = { objects: ["product", "background"], colors: ["blue", "white"], scene: "studio" };
@@ -3606,41 +3383,34 @@ export default function ImageAltMediaSEO() {
     return analysis;
   };
   
-  const detectStyleTransfer = (imageId) => {
-    const styles = ["minimalist", "vintage", "modern", "artistic"];
-    const detected = styles[Math.floor(Math.random() * styles.length)];
-    setStyleTransferDetection(true);
-    showToast(`Style detected: ${detected}`);
-    return detected;
-  };
   
-  const extractProductAttributes = (imageId) => {
+  const extractProductAttributes = () => {
     const attributes = { color: "navy blue", material: "cotton", size: "medium" };
     showToast("Product attributes extracted successfully");
     return attributes;
   };
   
-  const analyzeScene = (imageId) => {
+  const analyzeScene = () => {
     const scenes = ["indoor studio", "outdoor natural light", "lifestyle setting", "product closeup"];
     const scene = scenes[Math.floor(Math.random() * scenes.length)];
     showToast(`Scene: ${scene}`);
     return scene;
   };
   
-  const detectFaces = (imageId) => {
+  const detectFaces = () => {
     const faceCount = Math.floor(Math.random() * 3);
     setFaceDetection(true);
     showToast(`${faceCount} face(s) detected`);
     return faceCount;
   };
   
-  const countObjects = (imageId) => {
+  const countObjects = () => {
     const count = Math.floor(Math.random() * 10) + 1;
     showToast(`${count} object(s) counted in image`);
     return count;
   };
   
-  const detectLogos = (imageId) => {
+  const detectLogos = () => {
     const logos = ["brand logo detected", "no logos"];
     const result = logos[Math.floor(Math.random() * logos.length)];
     setLogoDetection(true);
@@ -3658,14 +3428,8 @@ export default function ImageAltMediaSEO() {
     }
   };
   
-  const tagNeuralStyle = (imageId) => {
-    const styles = ["flat lay", "lifestyle", "studio", "editorial"];
-    const style = styles[Math.floor(Math.random() * styles.length)];
-    showToast(`Neural style: ${style}`);
-    return style;
-  };
   
-  const extractColorPalette = (imageId) => {
+  const extractColorPalette = () => {
     const palette = ["#1e293b", "#8b5cf6", "#10b981", "#f59e0b"];
     setColorPaletteExtraction(true);
     showToast(`Color palette: ${palette.join(', ')}`);
@@ -3678,11 +3442,6 @@ export default function ImageAltMediaSEO() {
     return { clusters: 5, processed: images.length };
   };
   
-  const moderateContent = (imageId) => {
-    const safe = Math.random() > 0.1;
-    showToast(safe ? "Content approved" : "Content flagged for review");
-    return { safe, confidence: 0.95 };
-  };
   
   const trainCustomModel = async () => {
     showToast("Training custom model on your catalog...");
@@ -3691,228 +3450,85 @@ export default function ImageAltMediaSEO() {
   };
   
   // Advanced Analytics Handlers - IMAGE-SPECIFIC ONLY (14-28)
-  const scoreImagePerformance = (imageId) => {
-    const score = Math.floor(Math.random() * 40) + 60;
-    setImagePerformanceScoring(prev => ({ ...prev, [imageId]: score }));
-    showToast(`Image performance score: ${score}/100`);
-  };
   
-  const calculateReadabilityIndex = (text) => {
-    const score = Math.max(0, 100 - text.length * 0.5);
-    showToast(`Readability score: ${score.toFixed(1)}`);
-    return score;
-  };
   
   // E-Commerce Enhancement Handlers - IMAGE ALT TEXT ONLY (29-46)
-  const syncVariantImages = (productId) => {
-    setVariantImageSync(true);
-    showToast(`Synced alt text across all variants of product ${productId}`);
-  };
   
-  const createCollectionTemplate = (collectionId, template) => {
-    setCollectionLevelTemplates(prev => ({ ...prev, [collectionId]: template }));
-    showToast("Collection template created");
-  };
   
   const scheduleSeasonalContent = (season, content) => {
     setSeasonalContentRotation(prev => [...prev, { season, content, scheduledDate: new Date() }]);
     showToast(`Seasonal content scheduled for ${season}`);
   };
   
-  const addSaleDiscount = (imageId, discount) => {
-    showToast(`"${discount}% off" added to alt text`);
-  };
   
-  const applyGiftCardTemplate = (imageId) => {
-    setGiftCardTemplates(prev => ({ ...prev, [imageId]: "Gift card template" }));
-    showToast("Gift card template applied");
-  };
   
-  const tagSubscriptionProduct = (imageId) => {
-    setSubscriptionProductTags(true);
-    showToast("Subscription-eligible tag added");
-  };
   
-  const optimizeRecommendationAlt = (imageId) => {
-    showToast("Alt text optimized for recommendations section");
-  };
   
-  const handleCartAbandonment = (imageId) => {
-    setCartAbandonmentImages(prev => [...prev, imageId]);
-    showToast("Image optimized for cart recovery email");
-  };
   
   const integrateReviewStars = (imageId, rating) => {
     setReviewStarIntegration(true);
     showToast(`"${rating}-star rated" added to alt text`);
   };
   
-  const flagNewArrival = (imageId) => {
-    showToast('"New arrival" tag added to alt text');
-  };
   
-  const mentionBestseller = (imageId) => {
-    setBestsellerMentions(true);
-    showToast('"Bestseller" badge added to alt text');
-  };
   
-  const tagLimitedEdition = (imageId) => {
-    setLimitedEditionTags(true);
-    showToast('"Limited edition" tag added');
-  };
   
-  const optimizeSizeGuide = (imageId) => {
-    showToast("Size guide image alt text optimized");
-  };
   
   // Image Processing Handlers (47-62)
-  const suggestAutoCrop = (imageId) => {
-    const suggestion = { x: 10, y: 10, width: 500, height: 500 };
-    setAutoCropSuggestions(prev => [...prev, { imageId, suggestion }]);
-    showToast("Crop suggestion generated");
-  };
   
-  const removeBackground = async (imageId) => {
+  const removeBackground = async () => {
     showToast("Removing background...");
     setBackgroundRemoval(true);
     setTimeout(() => showToast("Background removed successfully"), 2000);
   };
   
-  const upscaleImage = async (imageId) => {
+  const upscaleImage = async () => {
     showToast("Upscaling image with AI...");
     setImageUpscaling(true);
     setTimeout(() => showToast("Image upscaled to 2x resolution"), 2500);
   };
   
-  const optimizeCompression = (imageId) => {
-    const savings = Math.floor(Math.random() * 40) + 20;
-    showToast(`File size reduced by ${savings}% without quality loss`);
-  };
   
   const convertFormat = (imageId, targetFormat) => {
     setFormatConverter({ targetFormat });
     showToast(`Converting to ${targetFormat}...`);
   };
   
-  const removeWatermark = async (imageId) => {
-    showToast("Removing watermark...");
-    setWatermarkRemoval(true);
-    setTimeout(() => showToast("Watermark removed"), 2000);
-  };
   
-  const repairImage = async (imageId) => {
-    showToast("Repairing image defects...");
-    setImageRepair(true);
-    setTimeout(() => showToast("Image repaired successfully"), 2000);
-  };
   
-  const correctPerspective = (imageId) => {
-    setPerspectiveCorrection(true);
-    showToast("Perspective corrected");
-  };
   
-  const generateShadow = (imageId) => {
-    setShadowGeneration(true);
-    showToast("Drop shadow generated");
-  };
   
-  const enhanceLighting = (imageId) => {
-    setLightingEnhancement(true);
-    showToast("Lighting enhanced");
-  };
   
-  const correctColor = (imageId) => {
-    setColorCorrection(true);
-    showToast("White balance normalized");
-  };
   
   const smartResizeImage = (imageId, dimensions) => {
     setSmartResize(true);
     showToast(`Content-aware resize to ${dimensions.width}x${dimensions.height}`);
   };
   
-  const applyBatchFilter = (filter) => {
-    setBatchFilters(prev => [...prev, filter]);
-    showToast(`Filter "${filter}" applied to selected images`);
-  };
   
-  const enable360View = (imageId) => {
+  const enable360View = () => {
     setImage360Support(true);
     showToast("360° view enabled for product");
   };
   
-  const previewARModel = (imageId) => {
-    setArModelPreview(true);
-    showToast("AR preview available");
-  };
   
-  const showBeforeAfter = (imageId) => {
-    setBeforeAfterSlider(true);
-    showToast("Before/after comparison ready");
-  };
   
   // SEO Power Features Handlers (63-76)
-  const generateStructuredData = (imageId) => {
-    const schema = { "@type": "Product", "image": "url", "name": "Product" };
-    showToast("Product schema generated");
-    return schema;
-  };
   
-  const buildImageSitemap = () => {
-    setImageSitemapBuilder(true);
-    showToast("Image sitemap generated");
-  };
   
-  const optimizeForGoogleLens = (imageId) => {
-    showToast("Image optimized for Google Lens visual search");
-  };
   
-  const generatePinterestRichPins = (imageId) => {
-    setPinterestRichPins(true);
-    showToast("Pinterest Rich Pin metadata generated");
-  };
   
-  const optimizeOpenGraph = (imageId) => {
-    showToast("Open Graph tags optimized for social sharing");
-  };
   
-  const addCanonicalImageTag = (imageId) => {
-    showToast("Canonical image tag added");
-  };
   
-  const implementLazyLoad = () => {
-    setLazyLoadImplementation(true);
-    showToast("Lazy loading attributes added");
-  };
   
-  const checkAltTextLength = (text) => {
-    const optimal = text.length <= 125;
-    showToast(optimal ? "Alt text length optimal" : `Warning: ${text.length} chars (125 recommended)`);
-    return optimal;
-  };
   
-  const integreateLSIKeywords = (imageId) => {
-    const keywords = ["related", "semantic", "keywords"];
-    showToast(`LSI keywords added: ${keywords.join(', ')}`);
-  };
   
-  const targetFeaturedSnippet = (imageId) => {
-    showToast("Alt text optimized for Google featured snippets");
-  };
   
-  const optimizeVoiceSearch = (imageId) => {
+  const optimizeVoiceSearch = () => {
     showToast("Natural language alt text for voice assistants");
   };
   
-  const addLocalSEOTags = (location) => {
-    setLocalSeoTags(true);
-    showToast(`Location "${location}" added to alt text`);
-  };
   
-  const previewRichResults = (imageId) => {
-    setRichResultsPreview(true);
-    showToast("Google Shopping preview available");
-  };
   
   const checkBrokenImages = async () => {
     showToast("Checking for broken images...");
@@ -3921,169 +3537,37 @@ export default function ImageAltMediaSEO() {
   };
   
   // Workflow & Automation V2 Handlers (77-93)
-  const connectZapier = () => {
-    setZapierIntegration(true);
-    showToast("Zapier integration connected");
-  };
   
-  const connectIFTTT = () => {
-    setIftttSupport(true);
-    showToast("IFTTT integration connected");
-  };
   
-  const createWebhook = (event, url) => {
-    setWebhookTriggers(prev => [...prev, { event, url }]);
-    showToast(`Webhook created for ${event}`);
-  };
   
-  const buildAutomationRule = (rule) => {
-    setConditionalLogicBuilder(prev => [...prev, rule]);
-    showToast("Automation rule created");
-  };
   
-  const enableAutoTagging = () => {
-    setAutoTaggingEngine(true);
-    showToast("Auto-tagging enabled");
-  };
   
-  const createSmartFolder = (name, criteria) => {
-    setSmartFolders(prev => ({ ...prev, [name]: criteria }));
-    showToast(`Smart folder "${name}" created`);
-  };
   
-  const fixBrokenLinks = () => {
-    showToast("Fixing broken product URLs...");
-    setTimeout(() => showToast("All links updated"), 2000);
-  };
   
-  const enableChangeDetection = () => {
-    setChangeDetection(true);
-    showToast("Change detection monitoring enabled");
-  };
   
-  const enableRollbackProtection = () => {
-    setRollbackProtection(true);
-    showToast("Rollback protection enabled");
-  };
   
-  const createStagingEnvironment = () => {
-    setStagingEnvironment(true);
-    showToast("Staging environment created");
-  };
   
-  const setupBlueGreenDeployment = () => {
-    setBlueGreenDeployment(true);
-    showToast("Blue-green deployment configured");
-  };
   
-  const configureCanaryRelease = (percentage) => {
-    setCanaryReleases(true);
-    showToast(`Canary release: ${percentage}% of traffic`);
-  };
   
-  const toggleFeatureFlag = (feature, enabled) => {
-    setFeatureFlags(prev => ({ ...prev, [feature]: enabled }));
-    showToast(`Feature "${feature}" ${enabled ? 'enabled' : 'disabled'}`);
-  };
   
-  const configureRateLimitManager = (limit) => {
-    showToast(`Rate limit set to ${limit} requests/min`);
-  };
   
-  const setupRetryLogic = (maxRetries) => {
-    setRetryLogic(true);
-    showToast(`Retry logic: max ${maxRetries} attempts`);
-  };
   
-  const viewDeadLetterQueue = () => {
-    showToast(`${deadLetterQueue.length} failed operations in queue`);
-  };
   
   // Content Intelligence Handlers (106-116)
-  const saveBrandVoice = (name, profile) => {
-    setBrandVoiceLibrary(prev => [...prev, { name, profile }]);
-    showToast(`Brand voice "${name}" saved`);
-  };
   
-  const detectTone = (text) => {
-    const tones = ["professional", "casual", "enthusiastic", "neutral"];
-    const detected = tones[Math.floor(Math.random() * tones.length)];
-    showToast(`Tone detected: ${detected}`);
-    return detected;
-  };
   
-  const filterProfanity = (text) => {
-    const clean = text.replace(/badword/gi, '***');
-    showToast(clean !== text ? "Profanity filtered" : "Text clean");
-    return clean;
-  };
   
-  const checkPlagiarism = async (text) => {
-    showToast("Checking for plagiarism...");
-    const similarity = Math.random() * 20;
-    showToast(`${similarity.toFixed(1)}% similarity found`);
-    return similarity < 10;
-  };
   
-  const optimizeReadability = (text) => {
-    const simplified = text.replace(/utilize/g, 'use').replace(/necessitate/g, 'need');
-    showToast("Text simplified for readability");
-    return simplified;
-  };
   
-  const checkInclusiveLanguage = (text) => {
-    const suggestions = [];
-    if (text.includes('guys')) suggestions.push('Replace "guys" with "everyone"');
-    showToast(suggestions.length ? `${suggestions.length} suggestion(s)` : "Language is inclusive");
-    return suggestions;
-  };
   
-  const scanLegalCompliance = (text) => {
-    const issues = text.match(/™|®|©/) ? [] : ["Consider trademark symbols"];
-    showToast(issues.length ? `${issues.length} compliance issue(s)` : "Legal compliance OK");
-    return issues;
-  };
   
-  const checkCulturalSensitivity = (text) => {
-    showToast("Cultural sensitivity check passed");
-    return true;
-  };
   
-  const suggestGenderNeutral = (text) => {
-    const neutral = text.replace(/\bhe\b|\bshe\b/gi, 'they');
-    showToast("Gender-neutral alternatives suggested");
-    return neutral;
-  };
   
-  const lintAccessibility = (text) => {
-    const issues = [];
-    if (text.length > 125) issues.push("Alt text too long");
-    if (text.toLowerCase().includes('image of')) issues.push('Remove redundant "image of"');
-    showToast(issues.length ? `${issues.length} accessibility issue(s)` : "WCAG compliant");
-    return issues;
-  };
   
-  const scorePlainLanguage = (text) => {
-    const complexWords = text.split(' ').filter(w => w.length > 12).length;
-    const score = Math.max(0, 100 - complexWords * 5);
-    showToast(`Plain language score: ${score}/100`);
-    return score;
-  };
   
   // Image-Specific Automation Handlers (117-119)
-  const autoTagImages = () => {
-    setAutoTaggingEngine(true);
-    showToast("Auto-tagging images based on content");
-  };
   
-  const organizeIntoSmartFolders = () => {
-    showToast("Images organized by category");
-  };
   
-  const findDuplicateImages = () => {
-    setDuplicateImageFinder(true);
-    showToast("Duplicate image finder running...");
-  };
   
   // Mobile - IMAGE-SPECIFIC Handlers
   const openCamera = () => {
@@ -4104,7 +3588,7 @@ export default function ImageAltMediaSEO() {
     showToast(`${suggestions.length} AI suggestions available`);
   };
   
-  const forecastImpact = (changes) => {
+  const forecastImpact = () => {
     const forecast = { trafficIncrease: "+18%", conversionBoost: "+0.7%" };
     setImpactForecasting(forecast);
     showToast(`Forecast: ${forecast.trafficIncrease} traffic increase`);
@@ -4272,13 +3756,13 @@ export default function ImageAltMediaSEO() {
     return cleaned;
   };
   
-  const suggestActionVerbs = (altText) => {
+  const suggestActionVerbs = () => {
     const verbs = ["wearing", "holding", "displaying", "featuring"];
     setActionVerbSuggestions(verbs);
     showToast(`Verbs: ${verbs.join(", ")}`);
   };
   
-  const suggestAdjectives = (product) => {
+  const suggestAdjectives = () => {
     const adjectives = ["elegant", "modern", "versatile", "premium"];
     setAdjectiveSuggestions(adjectives);
     showToast(`Adjectives: ${adjectives.join(", ")}`);
@@ -4295,7 +3779,7 @@ export default function ImageAltMediaSEO() {
     showToast(`Optimized for ${context}`);
   };
   
-  const analyzeReadingLevel = (altText) => {
+  const analyzeReadingLevel = () => {
     const score = 65;
     setReadingLevelAnalysis(score);
     showToast(`Reading level: Grade ${Math.floor(score / 10)}`);
@@ -4307,7 +3791,7 @@ export default function ImageAltMediaSEO() {
     if (!unique) showToast("Similar alt text found");
   };
   
-  const generateSynonymVariations = (altText) => {
+  const generateSynonymVariations = () => {
     const variations = ["elegant dress", "stylish gown", "sophisticated attire"];
     setSynonymVariationGenerator(variations);
     showToast(`${variations.length} variations`);
@@ -4318,13 +3802,13 @@ export default function ImageAltMediaSEO() {
     showToast(`${industry} terminology valid`);
   };
   
-  const extractProductAttributesFromAlt = (altText) => {
+  const extractProductAttributesFromAlt = () => {
     const attributes = { color: "blue", size: "medium", material: "cotton" };
     setProductAttributeExtractor(attributes);
     showToast("Attributes extracted");
   };
   
-  const analyzeEmotionalTone = (altText) => {
+  const analyzeEmotionalTone = () => {
     const tone = "Positive, aspirational";
     setEmotionalToneAnalyzer(tone);
     showToast(`Tone: ${tone}`);
@@ -4337,7 +3821,7 @@ export default function ImageAltMediaSEO() {
     return enhanced;
   };
   
-  const analyzeAltTextPacing = (altText) => {
+  const analyzeAltTextPacing = () => {
     const rhythm = "Balanced, natural";
     setAltTextPacingAnalyzer(rhythm);
     showToast(rhythm);
@@ -6128,18 +5612,6 @@ export default function ImageAltMediaSEO() {
   };
 
   // Onboarding
-  const onboardingContent = (
-    <div style={{ padding: 24, background: "#23263a", borderRadius: 12, marginBottom: 18 }}>
-      <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Image Alt Media SEO</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: "#a3e635", fontSize: 16 }}>
-        <li>Generate, import, and manage image alt text with AI</li>
-        <li>Analyze performance with real-time analytics</li>
-        <li>Collaborate and share with your team</li>
-        <li>Accessible, secure, and fully compliant</li>
-      </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#23263a", color: "#a3e635", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
-    </div>
-  );
 
   React.useEffect(() => {
     hydrateState();
@@ -6287,7 +5759,7 @@ export default function ImageAltMediaSEO() {
   // ========== ENHANCED HANDLER FUNCTIONS: 160 New Features ==========
   
   // AI Alt Text Generation Handlers (30 features)
-  const handleFashionVisionAnalysis = async (imageUrl) => {
+  const handleFashionVisionAnalysis = async () => {
     setLoading(true);
     try {
       // Simulate fashion-specific analysis
@@ -6309,7 +5781,7 @@ export default function ImageAltMediaSEO() {
     }
   };
   
-  const handleFoodVisionAnalysis = async (imageUrl) => {
+  const handleFoodVisionAnalysis = async () => {
     setLoading(true);
     try {
       const analysis = {
@@ -6350,44 +5822,7 @@ export default function ImageAltMediaSEO() {
     return result;
   };
   
-  const handleApplyBrandVoice = (altText) => {
-    const { tone, style } = brandVoiceSettings;
-    let result = altText;
-    
-    if (tone === "professional") {
-      result = result.replace(/\b(cool|neat|nice)\b/gi, "excellent");
-      result = result.replace(/\b(thing|stuff)\b/gi, "item");
-    } else if (tone === "casual") {
-      result = result.replace(/\b(premium)\b/gi, "top-notch");
-      result = result.replace(/\b(sophisticated)\b/gi, "stylish");
-    } else if (tone === "luxury") {
-      result = result.replace(/\b(good|nice)\b/gi, "exquisite");
-      result = result.replace(/\b(pretty)\b/gi, "elegant");
-    }
-    
-    if (style === "concise") {
-      result = result.split('.')[0] + '.';
-    } else if (style === "descriptive") {
-      if (!result.includes(",")) result += ", expertly crafted";
-    }
-    
-    showToast(`Applied ${tone} tone and ${style} style to alt text`, 2500);
-    return result;
-  };
   
-  const handleContextLengthOptimization = (altText, context) => {
-    const rules = contextLengthRules;
-    const targetLength = rules[context] || 70;
-    
-    let optimized = altText;
-    if (altText.length > targetLength) {
-      optimized = altText.substring(0, targetLength - 3) + "...";
-    }
-    
-    setOptimizedLength(prev => ({ ...prev, [altText]: optimized }));
-    showToast(`Optimized for ${context}: ${optimized.length}/${targetLength} chars`, 2500);
-    return optimized;
-  };
   
   const handleLearnFromEdits = (originalAlt, editedAlt, imageId) => {
     const editPattern = {
@@ -6751,7 +6186,6 @@ export default function ImageAltMediaSEO() {
   };
   
   const handleApplyTrendTerminology = (altText) => {
-    const trends2024 = ["Quiet Luxury", "Dopamine Dressing", "Cottagecore",  "Y2K Revival", "Sustainable Fashion"];
     let enhanced = altText;
     let appliedTrends = [];
     
@@ -6933,7 +6367,7 @@ export default function ImageAltMediaSEO() {
   const handleDetectSeries = (images) => {
     // Detect if images are part of a series
     const isSeries = images.length > 1 && Math.random() > 0.5;
-    setSeriesDetection(prev => ({ detected: isSeries, count: images.length }));
+    setSeriesDetection(() => ({ detected: isSeries, count: images.length }));
     return isSeries;
   };
   
@@ -7242,8 +6676,6 @@ export default function ImageAltMediaSEO() {
   
   const handleOptimizeModifierPlacement = (altText) => {
     // Place descriptive modifiers close to nouns
-    const modifiers = ["beautiful", "stunning", "elegant", "premium", "luxury"];
-    const words = altText.split(' ');
     
     // This is a simplified version - real implementation would use NLP
     return altText;
@@ -7433,7 +6865,7 @@ export default function ImageAltMediaSEO() {
     return active;
   };
   
-  const handleCheckContextCompleteness = (altText, imageContext) => {
+  const handleCheckContextCompleteness = (altText) => {
     const requiredElements = ["subject", "color", "style", "context"];
     const present = [];
     
@@ -8050,9 +7482,6 @@ export default function ImageAltMediaSEO() {
     showToast("Copied with metadata");
   };
   
-  const handleRecordUndo = (action) => {
-    setMultiLevelUndo(prev => [...prev, { action, timestamp: Date.now() }]);
-  };
   
   const handlePerformUndo = () => {
     if (multiLevelUndo.length === 0) {
@@ -8060,7 +7489,6 @@ export default function ImageAltMediaSEO() {
       return;
     }
     
-    const lastAction = multiLevelUndo[multiLevelUndo.length - 1];
     setMultiLevelUndo(prev => prev.slice(0, -1));
     showToast("Undone");
   };
