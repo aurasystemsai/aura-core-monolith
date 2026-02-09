@@ -42,7 +42,8 @@ if (isTest || !connectionString) {
       const productTitle = data.productTitle || null;
       const productHandle = data.productHandle || null;
       const productId = data.productId || null;
-      const row = { id: nextId++, url, altText, productTitle, productHandle, productId, createdAt: stamp() };
+      const imageId = data.imageId || null;
+      const row = { id: nextId++, url, altText, productTitle, productHandle, productId, imageId, createdAt: stamp() };
       images.push(row);
       return clone(row);
     },
@@ -52,13 +53,14 @@ if (isTest || !connectionString) {
       const productTitle = data.productTitle || null;
       const productHandle = data.productHandle || null;
       const productId = data.productId || null;
+      const imageId = data.imageId || null;
       if (!url) return null;
       const existingIdx = images.findIndex(i => (i.url || '').toLowerCase() === url.toLowerCase());
       if (existingIdx !== -1) {
-        images[existingIdx] = { ...images[existingIdx], altText, productTitle, productHandle, productId, updatedAt: stamp() };
+        images[existingIdx] = { ...images[existingIdx], altText, productTitle, productHandle, productId, imageId, updatedAt: stamp() };
         return clone(images[existingIdx]);
       }
-      const row = { id: nextId++, url, altText, productTitle, productHandle, productId, createdAt: stamp() };
+      const row = { id: nextId++, url, altText, productTitle, productHandle, productId, imageId, createdAt: stamp() };
       images.push(row);
       return clone(row);
     },
@@ -87,6 +89,7 @@ if (isTest || !connectionString) {
         productTitle: item.productTitle || null,
         productHandle: item.productHandle || null,
         productId: item.productId || null,
+        imageId: item.imageId || null,
         createdAt: stamp(),
       }));
     },
@@ -156,6 +159,7 @@ if (isTest || !connectionString) {
       ALTER TABLE image_alt_media_images ADD COLUMN IF NOT EXISTS product_title TEXT;
       ALTER TABLE image_alt_media_images ADD COLUMN IF NOT EXISTS product_handle TEXT;
       ALTER TABLE image_alt_media_images ADD COLUMN IF NOT EXISTS product_id TEXT;
+      ALTER TABLE image_alt_media_images ADD COLUMN IF NOT EXISTS image_id TEXT;
       CREATE INDEX IF NOT EXISTS idx_image_alt_media_images_url_lower ON image_alt_media_images (lower(url));
       CREATE INDEX IF NOT EXISTS idx_image_alt_media_images_alt_lower ON image_alt_media_images (lower(alt_text));
       DO $$ BEGIN
@@ -173,7 +177,7 @@ if (isTest || !connectionString) {
   const findByUrl = async url => {
     await ready;
     if (!url) return null;
-    const { rows } = await pool.query('SELECT id, url, alt_text AS altText, created_at AS createdAt, product_title AS productTitle, product_handle AS productHandle, product_id AS productId FROM image_alt_media_images WHERE lower(url) = lower($1) LIMIT 1', [url]);
+    const { rows } = await pool.query('SELECT id, url, alt_text AS altText, created_at AS createdAt, product_title AS productTitle, product_handle AS productHandle, product_id AS productId, image_id AS imageId FROM image_alt_media_images WHERE lower(url) = lower($1) LIMIT 1', [url]);
     return rows[0] || null;
   };
 
@@ -184,18 +188,19 @@ if (isTest || !connectionString) {
     const productTitle = data.productTitle || null;
     const productHandle = data.productHandle || null;
     const productId = data.productId || null;
+    const imageId = data.imageId || null;
     if (!url) return null;
     const existing = await findByUrl(url);
     if (existing?.id) {
       const { rows } = await pool.query(
-        'UPDATE image_alt_media_images SET alt_text = $1, product_title = $2, product_handle = $3, product_id = $4 WHERE id = $5 RETURNING id, url, alt_text AS altText, created_at AS createdAt, product_title AS productTitle, product_handle AS productHandle, product_id AS productId',
-        [altText, productTitle, productHandle, productId, existing.id]
+        'UPDATE image_alt_media_images SET alt_text = $1, product_title = $2, product_handle = $3, product_id = $4, image_id = $5 WHERE id = $6 RETURNING id, url, alt_text AS altText, created_at AS createdAt, product_title AS productTitle, product_handle AS productHandle, product_id AS productId, image_id AS imageId',
+        [altText, productTitle, productHandle, productId, imageId, existing.id]
       );
       return rows[0] || null;
     }
     const { rows } = await pool.query(
-      'INSERT INTO image_alt_media_images (url, alt_text, product_title, product_handle, product_id) VALUES ($1, $2, $3, $4, $5) RETURNING id, url, alt_text AS altText, created_at AS createdAt, product_title AS productTitle, product_handle AS productHandle, product_id AS productId',
-      [url, altText, productTitle, productHandle, productId]
+      'INSERT INTO image_alt_media_images (url, alt_text, product_title, product_handle, product_id, image_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, url, alt_text AS altText, created_at AS createdAt, product_title AS productTitle, product_handle AS productHandle, product_id AS productId, image_id AS imageId',
+      [url, altText, productTitle, productHandle, productId, imageId]
     );
     return rows[0] || null;
   };

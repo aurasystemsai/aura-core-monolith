@@ -6,7 +6,7 @@ const OpenAI = require('openai');
 const db = require('./db');
 const runs = require('./runs');
 const storageJson = require('../../core/storageJson');
-const { shopifyFetchPaginated } = require('../../core/shopifyApi');
+const { shopifyFetchPaginated, shopifyUpdate } = require('../../core/shopifyApi');
 const fetch = (...args) => globalThis.fetch(...args);
 const { getToken: getShopToken } = require('../../core/shopTokens');
 
@@ -738,6 +738,7 @@ router.get('/images', async (req, res) => {
                       productTitle: product.title || null,
                       productHandle: product.handle || null,
                       productId: product.id ? String(product.id) : null,
+                      imageId: image.id ? String(image.id) : null,
                     });
                   });
                 });
@@ -760,6 +761,7 @@ router.get('/images', async (req, res) => {
               productTitle: merged.productTitle,
               productHandle: merged.productHandle,
               productId: merged.productId,
+              imageId: merged.imageId,
             });
             return merged;
           });
@@ -2279,6 +2281,65 @@ router.post('/advanced/exif', async (req, res) => {
 });
 
 // ========== END ADVANCED IMAGE-SPECIFIC SEO ENDPOINTS ==========
+
+// Push alt text updates to Shopify
+router.post('/shopify/push', async (req, res) => {
+  try {
+    const { shop, adminToken } = resolveShopContext(req);
+    if (!shop) {
+      return res.status(400).json({ ok: false, error: 'Shop domain required' });
+    }
+    
+    const { imageIds } = req.body;
+    if (!imageIds || !Array.isArray(imageIds) || imageIds.length === 0) {
+      return res.status(400).json({ ok: false, error: 'imageIds array required' });
+    }
+    
+    // Fetch images from DB
+    const images = await Promise.all(imageIds.map(id => db.get(id)));
+    const validImages = images.filter(img => img && img.productId && img.imageId);
+    
+    if (validImages.length === 0) {
+      return res.status(400).json({ ok: false, error: 'No valid images with Shopify product/image IDs' });
+    }
+    
+    const results = [];
+    const errors = [];
+    
+    for (const img of validImages) {
+      try {
+        // Update product image alt text in Shopify
+        const endpoint = `products/${img.productId}/images/${img.imageId}.json`;
+        const payload = {
+          image: {
+            id: img.imageId,
+            alt: img.altText || ''
+          }
+        };
+        
+        await shopifyUpdate(shop, endpoint, payload, adminToken, 'PUT');
+        results.push({ id: img.id, productId: img.productId, imageId: img.imageId, success: true });
+      } catch (err) {
+        errors.push({ 
+          id: img.id, 
+          productId: img.productId, 
+          imageId: img.imageId, 
+          error: err.message 
+        });
+      }
+    }
+    
+    res.json({ 
+      ok: true, 
+      pushed: results.length, 
+      failed: errors.length,
+      results,
+      errors: errors.length > 0 ? errors : undefined
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message || 'Shopify push failed' });
+  }
+});
 
 // OpenAI health (config presence only; avoids live call to stay cheap)
 router.get('/health/openai', (req, res) => {

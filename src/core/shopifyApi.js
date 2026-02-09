@@ -137,4 +137,34 @@ async function shopifyFetchPaginated(shop, endpoint, params = {}, tokenOverride 
   return { items: aggregated, headers: lastHeaders, status: lastStatus };
 }
 
-module.exports = { shopifyFetch, shopifyFetchPaginated, shopifyRequest };
+async function shopifyUpdate(shop, endpoint, data, tokenOverride = null, method = 'PUT') {
+  const token = resolveToken(shop, tokenOverride);
+  if (!token) throw new Error('No Shopify token for shop: ' + shop);
+  const apiVersion = process.env.SHOPIFY_API_VERSION || '2023-10';
+  const url = `https://${shop}/admin/api/${apiVersion}/${endpoint}`;
+  
+  const resp = await fetch(url, {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Shopify-Access-Token': token,
+    },
+    body: JSON.stringify(data),
+  });
+  
+  const text = await resp.text();
+  const json = text ? JSON.parse(text) : {};
+  
+  if (!resp.ok) {
+    const err = new Error(`Shopify update failed (${resp.status}) for ${endpoint}: ${text}`);
+    err.status = resp.status;
+    err.body = text;
+    err.endpoint = endpoint;
+    err.url = url;
+    throw err;
+  }
+  
+  return { json, headers: resp.headers, status: resp.status };
+}
+
+module.exports = { shopifyFetch, shopifyFetchPaginated, shopifyRequest, shopifyUpdate };

@@ -137,6 +137,8 @@ export default function ImageAltMediaSEO() {
   const [aiProgress, setAiProgress] = useState({ show: false, current: 0, total: 0, status: '' });
   const [aiResults, setAiResults] = useState({ show: false, success: 0, failed: 0, items: [] });
   const [manualAiResult, setManualAiResult] = useState({ show: false, result: '', grade: null, lint: null, url: '', oldAlt: '' });
+  const [shopifyPushProgress, setShopifyPushProgress] = useState({ show: false, current: 0, total: 0, status: '' });
+  const [shopifyPushResults, setShopifyPushResults] = useState({ show: false, pushed: 0, failed: 0, errors: [] });
   const autoSaveTimer = useRef(null);
   
   // Tab descriptions for tooltips
@@ -1170,6 +1172,47 @@ export default function ImageAltMediaSEO() {
     );
   };
 
+  const FloatingShopifyPushButton = () => {
+    const count = selectedImageIds.length;
+    const selected = images.filter(img => selectedImageIds.includes(img.id));
+    const shopifyImages = selected.filter(img => img.productId && img.imageId);
+    const hasShopifyImages = shopifyImages.length > 0;
+    
+    if (count === 0) return null;
+    
+    return (
+      <div 
+        onClick={hasShopifyImages && roleCanApply && !shopifyPushProgress.show ? () => handlePushToShopify() : null}
+        style={{ 
+          position: "fixed", 
+          bottom: 180, 
+          right: 24, 
+          zIndex: 999999, 
+          background: hasShopifyImages && !shopifyPushProgress.show ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" : "rgba(71, 85, 105, 0.8)",
+          padding: "16px 24px", 
+          borderRadius: 16, 
+          border: "2px solid " + (hasShopifyImages ? "#10b981" : "#64748b"),
+          boxShadow: hasShopifyImages ? "0 12px 32px rgba(16, 185, 129, 0.5)" : "0 8px 16px rgba(0,0,0,0.3)",
+          cursor: (!hasShopifyImages || !roleCanApply || shopifyPushProgress.show) ? "not-allowed" : "pointer",
+          transition: "all 0.3s ease",
+          opacity: (!hasShopifyImages || !roleCanApply || shopifyPushProgress.show) ? 0.6 : 1,
+          userSelect: "none"
+        }}
+        onMouseEnter={e => { if (hasShopifyImages && roleCanApply && !shopifyPushProgress.show) { e.currentTarget.style.transform = "scale(1.05) translateY(-2px)"; e.currentTarget.style.boxShadow = "0 16px 40px rgba(16, 185, 129, 0.6)"; } }}
+        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1) translateY(0)"; e.currentTarget.style.boxShadow = hasShopifyImages ? "0 12px 32px rgba(16, 185, 129, 0.5)" : "0 8px 16px rgba(0,0,0,0.3)"; }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "center" }}>
+          <div style={{ color: "#fff", fontWeight: 800, fontSize: 15, letterSpacing: "0.5px" }}>
+            {shopifyPushProgress.show ? "PUSHING..." : "PUSH TO SHOPIFY"}
+          </div>
+          <div style={{ color: hasShopifyImages ? "#6ee7b7" : "#94a3b8", fontSize: 12, fontWeight: 600 }}>
+            {shopifyImages.length} of {count} ready
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const KeyboardShortcutsModal = () => {
     if (!showKeyboardHelp) return null;
     return (
@@ -1382,6 +1425,59 @@ export default function ImageAltMediaSEO() {
     );
   };
 
+  const ShopifyPushResultsModal = () => {
+    if (!shopifyPushResults.show) return null;
+    
+    return (
+      <div onClick={() => setShopifyPushResults({ show: false, pushed: 0, failed: 0, errors: [] })} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 32, maxWidth: 600, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: `2px solid ${shopifyPushResults.pushed > 0 ? "#10b981" : "#ef4444"}`, animation: "scaleIn 0.3s ease-out" }}>
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <div style={{ fontSize: 64, marginBottom: 16 }}>{shopifyPushResults.pushed > 0 ? "✓" : "✗"}</div>
+            <h3 style={{ fontSize: 28, fontWeight: 800, margin: "0 0 8px 0", color: "#f1f5f9" }}>
+              {shopifyPushResults.pushed > 0 ? "Shopify Push Complete!" : "Shopify Push Failed"}
+            </h3>
+            <div style={{ display: "flex", gap: 24, justifyContent: "center", marginTop: 16 }}>
+              {shopifyPushResults.pushed > 0 && (
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 32, fontWeight: 800, color: "#10b981" }}>{shopifyPushResults.pushed}</div>
+                  <div style={{ fontSize: 14, color: "#cbd5e1" }}>Pushed to Shopify</div>
+                </div>
+              )}
+              {shopifyPushResults.failed > 0 && (
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 32, fontWeight: 800, color: "#ef4444" }}>{shopifyPushResults.failed}</div>
+                  <div style={{ fontSize: 14, color: "#cbd5e1" }}>Failed</div>
+                </div>
+              )}
+            </div>
+          </div>
+          {shopifyPushResults.errors && shopifyPushResults.errors.length > 0 && (
+            <div style={{ marginTop: 24, background: "rgba(239, 68, 68, 0.1)", borderRadius: 12, padding: 16, border: "1px solid #ef4444" }}>
+              <h4 style={{ fontSize: 14, fontWeight: 700, color: "#ef4444", marginBottom: 12 }}>Errors:</h4>
+              <div style={{ display: "grid", gap: 8 }}>
+                {shopifyPushResults.errors.map((err, idx) => (
+                  <div key={idx} style={{ fontSize: 12, color: "#fca5a5" }}>
+                    <strong>Image {err.id}:</strong> {err.error}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <div style={{ marginTop: 24, display: "flex", gap: 12, justifyContent: "center" }}>
+            <button 
+              onClick={() => setShopifyPushResults({ show: false, pushed: 0, failed: 0, errors: [] })} 
+              style={{ background: "#10b981", color: "#fff", border: "none", borderRadius: 12, padding: "12px 32px", fontWeight: 700, fontSize: 15, cursor: "pointer", transition: "all 0.2s" }}
+              onMouseEnter={e => e.target.style.background = "#059669"}
+              onMouseLeave={e => e.target.style.background = "#10b981"}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const ManualAIResultsModal = () => {
     if (!manualAiResult.show) return null;
     
@@ -1471,18 +1567,21 @@ export default function ImageAltMediaSEO() {
   const ContextMenu = () => {
     if (!contextMenu) return null;
     const img = images.find(i => i.id === contextMenu.imageId);
+    const canPushToShopify = img?.productId && img?.imageId;
+    
     return (
       <div onClick={() => setContextMenu(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1999 }}>
         <div onClick={e => e.stopPropagation()} style={{ position: "absolute", top: contextMenu.y, left: contextMenu.x, background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 12, boxShadow: "0 12px 32px rgba(0,0,0,0.5)", border: "1px solid #475569", minWidth: 200, animation: "scaleIn 0.15s ease-out" }}>
           {[
             { label: pinnedIds.includes(contextMenu.imageId) ? "Unpin" : "Pin", action: () => { togglePin(contextMenu.imageId); setContextMenu(null); } },
             { label: "AI Rewrite", action: () => { handleAiRewriteSingle(img); setContextMenu(null); } },
+            ...(canPushToShopify ? [{ label: "Push to Shopify", action: () => { handlePushToShopify([contextMenu.imageId]); setContextMenu(null); }, shopify: true }] : []),
             { label: "Copy URL", action: () => { navigator.clipboard?.writeText(img?.url || ""); showToast("URL copied"); setContextMenu(null); } },
             { label: "Add Tag", action: () => { /* open tag input */ setContextMenu(null); } },
             { label: "Compare", action: () => { setComparisonBefore(img); setShowComparison(true); setContextMenu(null); } },
             { label: "Delete", action: () => { setPendingDeleteIds([contextMenu.imageId]); setShowDeleteModal(true); setContextMenu(null); }, danger: true }
-          ].map((item, idx) => (
-            <button key={idx} onClick={item.action} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 16px", background: "transparent", border: "none", borderBottom: idx < 5 ? "1px solid #334155" : "none", color: item.danger ? "#ef4444" : "#e2e8f0", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s", textAlign: "left" }} onMouseEnter={e => e.target.style.background = "rgba(255,255,255,0.1)"} onMouseLeave={e => e.target.style.background = "transparent"}>
+          ].map((item, idx, arr) => (
+            <button key={idx} onClick={item.action} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 16px", background: "transparent", border: "none", borderBottom: idx < arr.length - 1 ? "1px solid #334155" : "none", color: item.danger ? "#ef4444" : item.shopify ? "#10b981" : "#e2e8f0", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s", textAlign: "left" }} onMouseEnter={e => e.target.style.background = "rgba(255,255,255,0.1)"} onMouseLeave={e => e.target.style.background = "transparent"}>
               <span>{item.label}</span>
             </button>
           ))}
@@ -2636,6 +2735,46 @@ export default function ImageAltMediaSEO() {
       else setError(err.message || "AI rewrite failed");
     } finally {
       setRewritingId(null);
+    }
+  };
+
+  const handlePushToShopify = async (imageIds = null) => {
+    if (!ensureWriter("push to Shopify")) return;
+    
+    const ids = imageIds || selectedImageIds;
+    if (!ids || ids.length === 0) {
+      setError("Select at least one image to push to Shopify");
+      return;
+    }
+    
+    setShopifyPushProgress({ show: true, current: 0, total: ids.length, status: 'Pushing to Shopify...' });
+    setError("");
+    
+    try {
+      const { data } = await fetchJson("/api/image-alt-media-seo/shopify/push", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageIds: ids })
+      });
+      
+      setShopifyPushResults({
+        show: true,
+        pushed: data.pushed || 0,
+        failed: data.failed || 0,
+        errors: data.errors || []
+      });
+      
+      if (data.pushed > 0) {
+        showToast(`✓ Pushed ${data.pushed} image${data.pushed !== 1 ? 's' : ''} to Shopify`);
+      }
+      if (data.failed > 0) {
+        setError(`Failed to push ${data.failed} image${data.failed !== 1 ? 's' : ''}`);
+      }
+    } catch (err) {
+      if (err?.status === 429) setError(rateLimitMessage(err.retryAfter));
+      else setError(err.message || "Shopify push failed");
+    } finally {
+      setShopifyPushProgress({ show: false, current: 0, total: 0, status: '' });
     }
   };
 
@@ -7999,6 +8138,7 @@ export default function ImageAltMediaSEO() {
   return (
     <div style={{ padding: 0, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", minHeight: "100vh", overflowX: "hidden" }}>
       <FloatingAIButtonFallback />
+      <FloatingShopifyPushButton />
       <div style={{ position: "sticky", top: 0, zIndex: 999, background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)", padding: "16px 24px", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
           <div>
@@ -9165,6 +9305,7 @@ export default function ImageAltMediaSEO() {
       
       <AIResultsModal />
       <ManualAIResultsModal />
+      <ShopifyPushResultsModal />
 
       {activeTab === "analytics" && (
         <div style={{ animation: "fadeIn 0.3s ease-out" }}>
