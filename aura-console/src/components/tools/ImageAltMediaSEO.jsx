@@ -1595,7 +1595,7 @@ export default function ImageAltMediaSEO() {
           </div>
           <div style={{ marginBottom: 16 }}>
             {previewItems.map(img => {
-              const displayName = img.productTitle || img.productName || img.title || img.handle || img.productHandle || img.id;
+              const displayName = displayNameForImage(img);
               return (
                 <div key={img.id} style={{ marginBottom: 12, padding: 12, background: "#0f172a", borderRadius: 10, border: "1px solid #334155" }}>
                   <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4 }}>
@@ -2157,6 +2157,12 @@ export default function ImageAltMediaSEO() {
     if (typeof raw === 'string') return raw;
     if (raw && typeof raw === 'object') return raw.altText || raw.alttext || raw.alt || JSON.stringify(raw);
     return '';
+  };
+
+  const displayNameForImage = img => {
+    if (!img) return "";
+    const displayName = img.productTitle || img.productName || img.title || img.handle || img.productHandle || img.product?.title || img.product?.handle || img.imageTitle || img.imageName || img.filename || img.fileName;
+    return displayName || img.id || "";
   };
 
   const lintCache = useMemo(() => {
@@ -8816,7 +8822,7 @@ export default function ImageAltMediaSEO() {
             {!loading && visibleImages.map((img, idx) => {
               const lint = lintCache.get(img.id) || lintAltText(resolveAlt(img));
               const isPinned = pinnedIds.includes(img.id);
-              const displayName = img.productTitle || img.productName || img.title || img.handle || img.productHandle || img.id;
+              const displayName = displayNameForImage(img);
               return (
                 <li 
                   key={img.id} 
