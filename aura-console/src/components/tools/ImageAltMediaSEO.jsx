@@ -1170,26 +1170,28 @@ export default function ImageAltMediaSEO() {
             </>
           )}
         </button>
-        </div>
+                name="imageSearch"
+                value={imageSearch}
       </>,
       document.body
     );
   };
-
+                <select name="imageLimit" value={imageLimit} onChange={e => handleImageLimitChange(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
   // Fallback rendered inside tree (no portal) in case portal is blocked
-  const FloatingAIButtonFallback = () => {
-    const count = selectedImageIds.length;
-    console.log('FloatingAIButtonFallback rendering, count:', count);
-    return (
-      <div 
-        onClick={count && roleCanApply && !aiProgress.show ? handleAiImproveSelected : null}
+                  name="shopDomain"
+                  value={shopDomain}
+                  onChange={e => setShopDomain(e.target.value)}
+                  placeholder="shop.myshopify.com"
+                  aria-label="Shopify shop domain"
+                  style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 180 }}
+                />
         style={{ 
           position: "fixed", 
-          bottom: 100, 
+                  <input name="shopifyMaxImages" type="number" min={1} max={5000} value={shopifyMaxImages} onChange={e => setShopifyMaxImages(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: "1px solid #555" }} />
           right: 24, 
           zIndex: 999999, 
           background: count > 0 && !aiProgress.show ? "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)" : "rgba(71, 85, 105, 0.8)",
-          padding: "16px 24px", 
+                  <input name="shopifyProductLimit" type="number" min={1} max={5000} value={shopifyProductLimit} onChange={e => setShopifyProductLimit(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: "1px solid #555" }} />
           borderRadius: 16, 
           border: "2px solid " + (count > 0 ? "#a855f7" : "#64748b"),
           boxShadow: count > 0 ? "0 12px 32px rgba(124, 58, 237, 0.5)" : "0 8px 16px rgba(0,0,0,0.3)",
@@ -8359,6 +8361,7 @@ export default function ImageAltMediaSEO() {
       )}
       <div>
         <input
+          name="imageUrl"
           value={imageUrl}
           onChange={e => setImageUrl(e.target.value)}
           placeholder="Image URL (optional but recommended)"
@@ -8461,6 +8464,7 @@ export default function ImageAltMediaSEO() {
         {!simpleMode && (
           <>
         <input
+          name="keywords"
           value={keywords}
           onChange={e => setKeywords(e.target.value)}
           placeholder="Keywords (comma separated)"
@@ -8468,6 +8472,7 @@ export default function ImageAltMediaSEO() {
           style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", marginTop: 10 }}
         />
         <input
+          name="brandTerms"
           value={brandTerms}
           onChange={e => setBrandTerms(e.target.value)}
           placeholder="Brand vocabulary (comma separated)"
@@ -8477,7 +8482,7 @@ export default function ImageAltMediaSEO() {
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 8, color: "#a3e635", fontSize: 13 }}>
           <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
             Role
-            <select value={role} onChange={e => setRole(e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+            <select name="role" value={role} onChange={e => setRole(e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
               <option value="admin">admin</option>
               <option value="editor">editor</option>
               <option value="reviewer">reviewer</option>
@@ -8495,6 +8500,7 @@ export default function ImageAltMediaSEO() {
               return (
                 <label key={opt.key} style={{ display: "flex", alignItems: "center", gap: 4, background: checked ? "#0ea5e9" : "#1f2937", color: checked ? "#0b0b0b" : "#e2e8f0", padding: "4px 8px", borderRadius: 8, border: "1px solid #334155" }}>
                   <input
+                    name={`simulate-${opt.key}`}
                     type="checkbox"
                     checked={checked}
                     onChange={e => {
@@ -8516,6 +8522,7 @@ export default function ImageAltMediaSEO() {
             <div style={{ fontWeight: 700, fontSize: 18 }}>Images</div>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <input
+                name="imageSearch"
                 value={imageSearch}
                 onChange={e => { 
                   setImageSearch(e.target.value); 
@@ -8584,7 +8591,7 @@ export default function ImageAltMediaSEO() {
                 />
                 <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                   Top
-                  <select value={similarityLimit} onChange={e => setSimilarityLimit(Math.min(Math.max(Number(e.target.value) || 5, 1), 50))} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+                  <select name="similarityLimit" value={similarityLimit} onChange={e => setSimilarityLimit(Math.min(Math.max(Number(e.target.value) || 5, 1), 50))} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
                     {[3, 5, 10, 20, 50].map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
                   <span>results</span>
@@ -8606,7 +8613,7 @@ export default function ImageAltMediaSEO() {
             <span>Page {currentImagePage} / {totalImagePages}</span>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <button onClick={() => handleImagePageChange(-1)} disabled={currentImagePage <= 1} style={{ background: "linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: currentImagePage <= 1 ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: currentImagePage <= 1 ? 0.5 : 1 }}>← Prev</button>
-              <input type="number" min={1} max={totalImagePages} value={jumpToPage || currentImagePage} onChange={e => setJumpToPage(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const page = Math.min(Math.max(1, Number(jumpToPage) || 1), totalImagePages); setImageOffset((page - 1) * imageLimit); setJumpToPage(""); fetchImages((page - 1) * imageLimit, imageLimit, imageSearch); } }} placeholder="Jump" style={{ width: 60, padding: "6px 8px", borderRadius: 8, border: "2px solid #8b5cf6", background: "#23263a", color: "#a3e635", textAlign: "center", fontWeight: 700 }} />
+              <input name="jumpToPage" type="number" min={1} max={totalImagePages} value={jumpToPage || currentImagePage} onChange={e => setJumpToPage(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const page = Math.min(Math.max(1, Number(jumpToPage) || 1), totalImagePages); setImageOffset((page - 1) * imageLimit); setJumpToPage(""); fetchImages((page - 1) * imageLimit, imageLimit, imageSearch); } }} placeholder="Jump" style={{ width: 60, padding: "6px 8px", borderRadius: 8, border: "2px solid #8b5cf6", background: "#23263a", color: "#a3e635", textAlign: "center", fontWeight: 700 }} />
               <span style={{ color: "#cbd5e1" }}>/</span>
               <span style={{ fontWeight: 700, color: "#a3e635" }}>{totalImagePages}</span>
               <button onClick={() => handleImagePageChange(1)} disabled={currentImagePage >= totalImagePages} style={{ background: "linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: currentImagePage >= totalImagePages ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: currentImagePage >= totalImagePages ? 0.5 : 1 }}>Next →</button>
@@ -8951,12 +8958,12 @@ export default function ImageAltMediaSEO() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
           <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontWeight: 600 }}>Variants</span>
-            <input type="number" min={1} max={5} value={variantCount} onChange={e => setVariantCount(Math.min(5, Math.max(1, Number(e.target.value) || 1)))} aria-label="Variant count" style={{ width: 80, padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }} />
+            <input name="variantCount" type="number" min={1} max={5} value={variantCount} onChange={e => setVariantCount(Math.min(5, Math.max(1, Number(e.target.value) || 1)))} aria-label="Variant count" style={{ width: 80, padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }} />
             <span style={{ fontSize: 12, color: "#a3e635" }}>1-5 suggestions</span>
           </label>
           <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontWeight: 600 }}>Preset bundle</span>
-            <select value={selectedBundle} onChange={e => applyBundle(e.target.value)} aria-label="Preset bundle" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+            <select name="presetBundle" value={selectedBundle} onChange={e => applyBundle(e.target.value)} aria-label="Preset bundle" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
               <option value="custom">Custom</option>
               {(meta?.presets?.bundles || []).map(b => (
                 <option key={b.key} value={b.key}>{b.key}</option>
@@ -8969,6 +8976,7 @@ export default function ImageAltMediaSEO() {
         </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
         <input
+          name="productTitle"
           value={productTitle}
           onChange={e => setProductTitle(e.target.value)}
           placeholder="Product title"
@@ -8976,6 +8984,7 @@ export default function ImageAltMediaSEO() {
           style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
         />
         <input
+          name="variant"
           value={variant}
           onChange={e => setVariant(e.target.value)}
           placeholder="Variant (e.g., red / size M)"
@@ -8986,7 +8995,7 @@ export default function ImageAltMediaSEO() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Shot type</span>
-          <select value={shotType} onChange={e => setShotType(e.target.value)} aria-label="Shot type" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+          <select name="shotType" value={shotType} onChange={e => setShotType(e.target.value)} aria-label="Shot type" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
             <option value="front">front</option>
             <option value="back">back</option>
             <option value="side">side</option>
@@ -8997,7 +9006,7 @@ export default function ImageAltMediaSEO() {
         </label>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Focus</span>
-          <select value={focus} onChange={e => setFocus(e.target.value)} aria-label="Focus" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+          <select name="focus" value={focus} onChange={e => setFocus(e.target.value)} aria-label="Focus" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
             <option value="product">product</option>
             <option value="scene">scene</option>
             <option value="detail">detail</option>
@@ -9007,6 +9016,7 @@ export default function ImageAltMediaSEO() {
       <div style={{ marginBottom: 16, background: "#1f2937", borderRadius: 12, padding: 14, border: "1px solid #555" }}>
         <div style={{ fontWeight: 700, marginBottom: 8 }}>Lint existing alt text</div>
         <textarea
+          name="lintAltText"
           value={lintOnlyText}
           onChange={e => setLintOnlyText(e.target.value)}
           rows={3}
@@ -9016,6 +9026,7 @@ export default function ImageAltMediaSEO() {
         />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 10 }}>
           <input
+            name="lintKeywords"
             value={lintOnlyKeywords}
             onChange={e => setLintOnlyKeywords(e.target.value)}
             placeholder="Keywords (comma separated)"
@@ -9023,6 +9034,7 @@ export default function ImageAltMediaSEO() {
             style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
           />
           <input
+            name="lintBrandTerms"
             value={lintOnlyBrandTerms}
             onChange={e => setLintOnlyBrandTerms(e.target.value)}
             placeholder={meta?.presets?.brandVocabHint || "Brand vocabulary (comma separated)"}
