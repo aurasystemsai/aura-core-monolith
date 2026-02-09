@@ -733,11 +733,10 @@ router.post('/images/import-shopify', requireWriter, async (req, res) => {
     );
 
     const trimmedProducts = products.slice(0, productLimit);
-    const existing = await db.list();
-    const seen = new Set((existing || []).map(i => (i.url || '').toLowerCase()).filter(Boolean));
 
     const toCreate = [];
     let skipped = 0;
+    const seenUrls = new Set();
 
     for (const product of trimmedProducts) {
       for (const image of product.images || []) {
@@ -748,11 +747,12 @@ router.post('/images/import-shopify', requireWriter, async (req, res) => {
           continue;
         }
         const key = url.toLowerCase();
-        if (seen.has(key)) {
+        // Skip duplicates within this import batch
+        if (seenUrls.has(key)) {
           skipped += 1;
           continue;
         }
-        seen.add(key);
+        seenUrls.add(key);
         const altText = normalizeStr(image.alt || image.alt_text || '', MAX_ALT_LEN);
         toCreate.push({ 
           url, 
@@ -765,17 +765,17 @@ router.post('/images/import-shopify', requireWriter, async (req, res) => {
       if (toCreate.length >= maxImages) break;
     }
 
-    const created = [];
+    const upserted = [];
     for (const item of toCreate) {
-      const row = await db.create(item);
-      created.push(row);
+      const row = await db.upsertByUrl(item);
+      upserted.push(row);
     }
 
     clearAnalyticsCache();
 
     res.json({
       ok: true,
-      imported: created.length,
+      imported: upserted.length,
       skipped,
       total: toCreate.length + skipped,
       productCount: trimmedProducts.length,
