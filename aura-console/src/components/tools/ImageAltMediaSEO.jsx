@@ -1594,12 +1594,17 @@ export default function ImageAltMediaSEO() {
             <div style={{ fontSize: 15, color: "#fef3c7" }}>{bulkAltText}</div>
           </div>
           <div style={{ marginBottom: 16 }}>
-            {previewItems.map(img => (
-              <div key={img.id} style={{ marginBottom: 12, padding: 12, background: "#0f172a", borderRadius: 10, border: "1px solid #334155" }}>
-                <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4 }}>ID: {img.id}</div>
-                <div style={{ fontSize: 13, color: "#e2e8f0" }}>Current: {img.altText || "(none)"}</div>
-              </div>
-            ))}
+            {previewItems.map(img => {
+              const displayName = img.productTitle || img.productName || img.title || img.handle || img.productHandle || img.id;
+              return (
+                <div key={img.id} style={{ marginBottom: 12, padding: 12, background: "#0f172a", borderRadius: 10, border: "1px solid #334155" }}>
+                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4 }}>
+                    {displayName}{displayName !== img.id ? ` · ID: ${img.id}` : ""}
+                  </div>
+                  <div style={{ fontSize: 13, color: "#e2e8f0" }}>Current: {img.altText || "(none)"}</div>
+                </div>
+              );
+            })}
             {selectedImageIds.length > 10 && <div style={{ fontSize: 12, color: "#94a3b8", textAlign: "center" }}>...and {selectedImageIds.length - 10} more</div>}
           </div>
           <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
@@ -8811,6 +8816,7 @@ export default function ImageAltMediaSEO() {
             {!loading && visibleImages.map((img, idx) => {
               const lint = lintCache.get(img.id) || lintAltText(resolveAlt(img));
               const isPinned = pinnedIds.includes(img.id);
+              const displayName = img.productTitle || img.productName || img.title || img.handle || img.productHandle || img.id;
               return (
                 <li 
                   key={img.id} 
@@ -8858,7 +8864,7 @@ export default function ImageAltMediaSEO() {
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                        <div><b>ID:</b> {img.id}</div>
+                        <div><b>{displayName}</b>{displayName !== img.id ? <> · ID: {img.id}</> : null}</div>
                         {selectedImageIds.includes(img.id) ? <span style={{ fontSize: 11, background: "#0ea5e9", color: "#fff", padding: "2px 6px", borderRadius: 999 }}>Selected</span> : null}
                         {img.url ? <a href={img.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#38bdf8", textDecoration: "underline" }}>Open</a> : null}
                         <span style={{ fontSize: 11, background: lint.status === "ok" ? "#22c55e" : lint.status === "missing" ? "#ef4444" : lint.status === "short" ? "#f59e0b" : "#0ea5e9", color: "#0b0b0b", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>{lint.label}</span>
