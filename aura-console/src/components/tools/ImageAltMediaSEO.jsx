@@ -1170,28 +1170,26 @@ export default function ImageAltMediaSEO() {
             </>
           )}
         </button>
-                name="imageSearch"
-                value={imageSearch}
+        </div>
       </>,
       document.body
     );
   };
-                <select name="imageLimit" value={imageLimit} onChange={e => handleImageLimitChange(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+
   // Fallback rendered inside tree (no portal) in case portal is blocked
-                  name="shopDomain"
-                  value={shopDomain}
-                  onChange={e => setShopDomain(e.target.value)}
-                  placeholder="shop.myshopify.com"
-                  aria-label="Shopify shop domain"
-                  style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 180 }}
-                />
+  const FloatingAIButtonFallback = () => {
+    const count = selectedImageIds.length;
+    console.log('FloatingAIButtonFallback rendering, count:', count);
+    return (
+      <div 
+        onClick={count && roleCanApply && !aiProgress.show ? handleAiImproveSelected : null}
         style={{ 
           position: "fixed", 
-                  <input name="shopifyMaxImages" type="number" min={1} max={5000} value={shopifyMaxImages} onChange={e => setShopifyMaxImages(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: "1px solid #555" }} />
+          bottom: 100, 
           right: 24, 
           zIndex: 999999, 
           background: count > 0 && !aiProgress.show ? "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)" : "rgba(71, 85, 105, 0.8)",
-                  <input name="shopifyProductLimit" type="number" min={1} max={5000} value={shopifyProductLimit} onChange={e => setShopifyProductLimit(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: "1px solid #555" }} />
+          padding: "16px 24px", 
           borderRadius: 16, 
           border: "2px solid " + (count > 0 ? "#a855f7" : "#64748b"),
           boxShadow: count > 0 ? "0 12px 32px rgba(124, 58, 237, 0.5)" : "0 8px 16px rgba(0,0,0,0.3)",
@@ -8500,7 +8498,6 @@ export default function ImageAltMediaSEO() {
               return (
                 <label key={opt.key} style={{ display: "flex", alignItems: "center", gap: 4, background: checked ? "#0ea5e9" : "#1f2937", color: checked ? "#0b0b0b" : "#e2e8f0", padding: "4px 8px", borderRadius: 8, border: "1px solid #334155" }}>
                   <input
-                    name={`simulate-${opt.key}`}
                     type="checkbox"
                     checked={checked}
                     onChange={e => {
@@ -8556,7 +8553,7 @@ export default function ImageAltMediaSEO() {
               <button onClick={handleClearImageSearch} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Clear</button>
               <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                 Page size
-                <select value={imageLimit} onChange={e => handleImageLimitChange(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+                <select name="imageLimit" value={imageLimit} onChange={e => handleImageLimitChange(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
                   {[10, 20, 50, 100, 200].map(opt => <option key={opt} value={opt}>{opt}</option>)}
                 </select>
               </label>
@@ -8564,6 +8561,7 @@ export default function ImageAltMediaSEO() {
               <span style={{ fontSize: 11, color: "#94a3b8" }}>{imageRefreshedAt ? `Updated ${new Date(imageRefreshedAt).toLocaleTimeString()}` : "Not loaded yet"}</span>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <input
+                  name="shopDomain"
                   value={shopDomain}
                   onChange={e => setShopDomain(e.target.value)}
                   placeholder="shop.myshopify.com"
@@ -8572,11 +8570,11 @@ export default function ImageAltMediaSEO() {
                 />
                 <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                   Max images
-                  <input type="number" min={1} max={5000} value={shopifyMaxImages} onChange={e => setShopifyMaxImages(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: "1px solid #555" }} />
+                  <input name="shopifyMaxImages" type="number" min={1} max={5000} value={shopifyMaxImages} onChange={e => setShopifyMaxImages(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: "1px solid #555" }} />
                 </label>
                 <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                   Products
-                  <input type="number" min={1} max={5000} value={shopifyProductLimit} onChange={e => setShopifyProductLimit(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: "1px solid #555" }} />
+                  <input name="shopifyProductLimit" type="number" min={1} max={5000} value={shopifyProductLimit} onChange={e => setShopifyProductLimit(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: "1px solid #555" }} />
                 </label>
                 <button onClick={handleImportShopify} disabled={shopifyImporting} style={{ background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: shopifyImporting ? "wait" : "pointer" }}>{shopifyImporting ? "Importing..." : "Pull from Shopify"}</button>
               </div>
@@ -9016,7 +9014,7 @@ export default function ImageAltMediaSEO() {
       <div style={{ marginBottom: 16, background: "#1f2937", borderRadius: 12, padding: 14, border: "1px solid #555" }}>
         <div style={{ fontWeight: 700, marginBottom: 8 }}>Lint existing alt text</div>
         <textarea
-          name="lintAltText"
+          name="lintOnlyText"
           value={lintOnlyText}
           onChange={e => setLintOnlyText(e.target.value)}
           rows={3}
@@ -9026,7 +9024,7 @@ export default function ImageAltMediaSEO() {
         />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 10 }}>
           <input
-            name="lintKeywords"
+            name="lintOnlyKeywords"
             value={lintOnlyKeywords}
             onChange={e => setLintOnlyKeywords(e.target.value)}
             placeholder="Keywords (comma separated)"
@@ -9034,7 +9032,7 @@ export default function ImageAltMediaSEO() {
             style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
           />
           <input
-            name="lintBrandTerms"
+            name="lintOnlyBrandTerms"
             value={lintOnlyBrandTerms}
             onChange={e => setLintOnlyBrandTerms(e.target.value)}
             placeholder={meta?.presets?.brandVocabHint || "Brand vocabulary (comma separated)"}
