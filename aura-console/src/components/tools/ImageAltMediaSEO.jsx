@@ -1004,7 +1004,6 @@ export default function ImageAltMediaSEO() {
   const [brokenImagesList, setBrokenImagesList] = useState([]);
   const [duplicateImagesList, setDuplicateImagesList] = useState([]);
   const [heatmapData, setHeatmapData] = useState({});
-  const [exifData, setExifData] = useState({});
   
   const simulationTones = [
     { key: "balanced", label: "Balanced" },
@@ -10902,7 +10901,7 @@ export default function ImageAltMediaSEO() {
 
       {activeTab === "advanced-image-seo" && (
         <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px" }}>
-          <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24, color: "#06b6d4" }}>🖼️ Advanced Image SEO Tools (17 Features)</h2>
+          <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24, color: "#06b6d4" }}>Advanced Image SEO Tools (17 Features)</h2>
           <p style={{ fontSize: 15, color: "#cbd5e1", marginBottom: 32, lineHeight: 1.7 }}>
             Comprehensive image-specific SEO enhancements including schema markup, social optimization, Core Web Vitals, accessibility audits, and technical performance analysis.
           </p>
@@ -10910,77 +10909,66 @@ export default function ImageAltMediaSEO() {
             {[
               { 
                 name: "Image Schema Markup", 
-                icon: "🏷️",
                 fn: () => selectedImageIds.forEach(id => handleGenerateImageSchema(id)), 
                 desc: "Generate structured data (ImageObject, Product.image) for rich results",
                 color: "#06b6d4"
               },
               { 
                 name: "Social Media Optimizer", 
-                icon: "📱",
                 fn: () => selectedImageIds.forEach(id => handleCheckSocialSpecs(id)), 
                 desc: "Validate OG:image, Twitter Card, Pinterest specs and dimensions",
                 color: "#0ea5e9"
               },
               { 
                 name: "Image XML Sitemap", 
-                icon: "🗺️",
                 fn: () => handleGenerateImageSitemap(), 
                 desc: "Generate image sitemap with captions, geo-location, license info",
                 color: "#14b8a6"
               },
               { 
                 name: "SEO File Name Generator", 
-                icon: "✏️",
                 fn: () => selectedImageIds.forEach(id => handleGenerateSeoFileName(id)), 
                 desc: "Create SEO-friendly filenames from alt text and product titles",
                 color: "#10b981"
               },
               { 
                 name: "Image Requirements Checker", 
-                icon: "📐",
                 fn: () => selectedImageIds.forEach(id => handleCheckImageRequirements(id)), 
                 desc: "Validate dimensions, file size, format, aspect ratio requirements",
                 color: "#22c55e"
               },
               { 
                 name: "Responsive Config Generator", 
-                icon: "📺",
                 fn: () => selectedImageIds.forEach(id => handleGenerateResponsiveConfig(id)), 
                 desc: "Generate srcset, sizes, picture elements for responsive images",
                 color: "#84cc16"
               },
               { 
                 name: "Core Web Vitals Analyzer", 
-                icon: "⚡",
                 fn: () => selectedImageIds.forEach(id => handleAnalyzeCoreWebVitals(id)), 
                 desc: "Analyze LCP, CLS impact and recommend fetchpriority settings",
                 color: "#eab308"
               },
               { 
                 name: "Copyright & Attribution", 
-                icon: "©️",
                 fn: () => selectedImageIds.forEach(id => handleManageCopyright(id, { source: "proprietary" })), 
                 desc: "Manage licenses, sources, watermarks, and attribution requirements",
                 color: "#f59e0b"
               },
               { 
                 name: "Photography Best Practices", 
-                icon: "📸",
                 fn: () => selectedImageIds.forEach(id => handleCheckPhotographyBestPractices(id)), 
                 desc: "Check white background, multi-angle coverage, consistency across catalog",
                 color: "#f97316"
               },
               { 
                 name: "WCAG Accessibility Audit", 
-                icon: "♿",
                 fn: () => selectedImageIds.forEach(id => handleAuditWcag(id)), 
                 desc: "Validate WCAG compliance, decorative images, figure/figcaption usage",
                 color: "#ef4444"
               },
               { 
                 name: "Hero Image A/B Testing", 
-                icon: "🧪",
                 fn: () => {
                   if (selectedImageIds.length >= 2) {
                     handleCreateHeroAbTest("test-1", selectedImageIds[0], selectedImageIds[1]);
@@ -10993,50 +10981,43 @@ export default function ImageAltMediaSEO() {
               },
               { 
                 name: "Loading Strategy Optimizer", 
-                icon: "🚀",
                 fn: () => selectedImageIds.forEach(id => handleOptimizeLoadingStrategy(id, "below-fold")), 
                 desc: "Recommend lazy/eager loading, fetchpriority, decoding strategies",
                 color: "#d946ef"
               },
               { 
                 name: "Format & Compression", 
-                icon: "🗜️",
                 fn: () => selectedImageIds.forEach(id => handleAnalyzeFormatCompression(id)), 
                 desc: "Recommend WebP/AVIF, analyze compression, estimate file size savings",
                 color: "#a855f7"
               },
               { 
                 name: "Broken Image Detector", 
-                icon: "🔗",
                 fn: () => handleDetectBrokenImages(), 
                 desc: "Scan for 404 images, missing URLs, suggest replacements",
                 color: "#8b5cf6"
               },
               { 
                 name: "Duplicate Image Finder", 
-                icon: "🔍",
                 fn: () => handleFindDuplicateImages(), 
                 desc: "Detect identical/similar images via perceptual hashing, consolidate",
                 color: "#7c3aed"
               },
               { 
                 name: "Engagement Analytics", 
-                icon: "📊",
                 fn: () => selectedImageIds.forEach(id => handleAnalyzeImageEngagement(id)), 
                 desc: "Track clicks, views, zooms, CTR, avg time viewed per image",
                 color: "#6366f1"
               },
               { 
                 name: "EXIF & Geo-Location", 
-                icon: "🌍",
                 fn: () => selectedImageIds.forEach(id => handleManageExifData(id, { camera: "Unknown" })), 
                 desc: "Extract/edit EXIF data, GPS coordinates, copyright, strip PII",
                 color: "#4f46e5"
               }
             ].map((feature, idx) => (
               <div key={idx} style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 16, padding: 24, border: `2px solid ${feature.color}`, position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", top: 16, right: 16, fontSize: 32, opacity: 0.15 }}>{feature.icon}</div>
-                <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: feature.color }}>{feature.icon} {feature.name}</h3>
+                <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: feature.color }}>{feature.name}</h3>
                 <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16, lineHeight: 1.6 }}>{feature.desc}</p>
                 <button 
                   onClick={feature.fn} 
@@ -11065,7 +11046,7 @@ export default function ImageAltMediaSEO() {
           {/* Results Display Sections */}
           {imageSitemapData && (
             <div style={{ marginTop: 32, background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#14b8a6" }}>🗺️ Image Sitemap Generated</h3>
+              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#14b8a6" }}>Image Sitemap Generated</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 12 }}>Total entries: <strong>{imageSitemapData.count}</strong></p>
               <textarea 
                 readOnly 
@@ -11077,7 +11058,7 @@ export default function ImageAltMediaSEO() {
           
           {brokenImagesList.length > 0 && (
             <div style={{ marginTop: 32, background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ef4444" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#ef4444" }}>🔗 Broken Images Detected</h3>
+              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#ef4444" }}>Broken Images Detected</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 12 }}>Found <strong>{brokenImagesList.length}</strong> broken images:</p>
               <ul style={{ paddingLeft: 20, color: "#94a3b8", fontSize: 13 }}>
                 {brokenImagesList.slice(0, 10).map(img => (
@@ -11090,7 +11071,7 @@ export default function ImageAltMediaSEO() {
           
           {duplicateImagesList.length > 0 && (
             <div style={{ marginTop: 32, background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#f59e0b" }}>🔍 Duplicate Images Found</h3>
+              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#f59e0b" }}>Duplicate Images Found</h3>
               <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 12 }}>Found <strong>{duplicateImagesList.length}</strong> duplicate groups:</p>
               <ul style={{ paddingLeft: 20, color: "#94a3b8", fontSize: 13 }}>
                 {duplicateImagesList.slice(0, 5).map((group, idx) => (
