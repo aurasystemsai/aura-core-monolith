@@ -2386,6 +2386,7 @@ export default function ImageAltMediaSEO() {
       const items = selected.map(img => ({
         input: resolveAlt(img) || "Product image",
         url: img.url,
+        productTitle: img.productTitle || img.productName || img.title || img.product?.title || undefined,
         locale,
         tone,
         verbosity,
@@ -2602,9 +2603,11 @@ export default function ImageAltMediaSEO() {
     setRewritingId(img.id);
     setError("");
     try {
+      const productTitle = img.productTitle || img.productName || img.title || img.product?.title || "";
       const payload = {
         input: resolveAlt(img) || "Product image",
         url: img.url,
+        productTitle: productTitle || undefined,
         locale,
         tone,
         verbosity,
