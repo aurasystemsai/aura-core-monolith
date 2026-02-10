@@ -4618,4 +4618,484 @@ router.get('/insights/themes', async (req, res) => {
   }
 });
 
+// ==================== BATCH 5: Performance, Security, Integrations, Advanced Tools ====================
+
+// Bulk Import from URL/CSV
+router.post('/import/csv', async (req, res) => {
+  try {
+    const { csvData } = req.body; // Array of {imageUrl, altText, productId, etc}
+    const imported = [];
+    const errors = [];
+    
+    for (const row of csvData) {
+      try {
+        if (!row.imageUrl) {
+          errors.push({ row, error: 'Missing imageUrl' });
+          continue;
+        }
+        
+        const existing = await db.upsertByUrl({
+          imageUrl: row.imageUrl,
+          altText: row.altText || '',
+          productId: row.productId,
+          imageId: row.imageId,
+          qualityScore: row.qualityScore || null
+        });
+        
+        imported.push(existing);
+      } catch (err) {
+        errors.push({ row, error: err.message });
+      }
+    }
+    
+    res.json({ ok: true, imported: imported.length, errors: errors.length, errorDetails: errors });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/import/url-list', async (req, res) => {
+  try {
+    const { urls } = req.body; // Array of URLs
+    const imported = [];
+    
+    for (const url of urls) {
+      const existing = await db.upsertByUrl({ imageUrl: url, altText: '' });
+      imported.push(existing);
+    }
+    
+    res.json({ ok: true, imported: imported.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Rate Limiting & Quotas
+router.get('/quota/status/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const quotas = await storageJson.load('user-quotas.json') || {};
+    const userQuota = quotas[userId] || { aiGenerations: 0, shopifyPushes: 0, exports: 0 };
+    
+    const limits = {
+      aiGenerations: 1000,
+      shopifyPushes: 500,
+      exports: 100
+    };
+    
+    const usage = {
+      aiGenerations: { used: userQuota.aiGenerations, limit: limits.aiGenerations, remaining: limits.aiGenerations - userQuota.aiGenerations },
+      shopifyPushes: { used: userQuota.shopifyPushes, limit: limits.shopifyPushes, remaining: limits.shopifyPushes - userQuota.shopifyPushes },
+      exports: { used: userQuota.exports, limit: limits.exports, remaining: limits.exports - userQuota.exports }
+    };
+    
+    res.json({ ok: true, usage });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/quota/increment/:userId/:type', async (req, res) => {
+  try {
+    const { userId, type } = req.params; // type: aiGenerations, shopifyPushes, exports
+    const quotas = await storageJson.load('user-quotas.json') || {};
+    if (!quotas[userId]) quotas[userId] = {};
+    quotas[userId][type] = (quotas[userId][type] || 0) + 1;
+    await storageJson.save('user-quotas.json', quotas);
+    res.json({ ok: true, newCount: quotas[userId][type] });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Caching & Performance
+router.get('/cache/stats', async (req, res) => {
+  try {
+    const cacheStats = await storageJson.load('cache-stats.json') || { hits: 0, misses: 0, size: 0 };
+    res.json({ ok: true, stats: cacheStats, hitRate: cacheStats.hits + cacheStats.misses > 0 ? (cacheStats.hits / (cacheStats.hits + cacheStats.misses) * 100).toFixed(1) : 0 });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/cache/clear', async (req, res) => {
+  try {
+    await storageJson.save('cache-stats.json', { hits: 0, misses: 0, size: 0, clearedAt: new Date().toISOString() });
+    res.json({ ok: true, message: 'Cache cleared' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Backup & Restore
+router.post('/backup/create', async (req, res) => {
+  try {
+    const images = await db.list();
+    const templates = await storageJson.load('alt-templates.json') || [];
+    const settings = await storageJson.load('user-preferences.json') || {};
+    
+    const backup = {
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      data: {
+        images,
+        templates,
+        settings,
+        imageCount: images.length
+      }
+    };
+    
+    const backups = await storageJson.load('backups.json') || [];
+    backups.push(backup);
+    
+    // Keep only last 10 backups
+    if (backups.length > 10) {
+      backups.splice(0, backups.length - 10);
+    }
+    
+    await storageJson.save('backups.json', backups);
+    res.json({ ok: true, backup: { id: backup.id, timestamp: backup.timestamp, imageCount: backup.data.imageCount } });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/backup/list', async (req, res) => {
+  try {
+    const backups = await storageJson.load('backups.json') || [];
+    const list = backups.map(b => ({ id: b.id, timestamp: b.timestamp, imageCount: b.data.imageCount }));
+    res.json({ ok: true, backups: list });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/backup/restore/:backupId', async (req, res) => {
+  try {
+    const { backupId } = req.params;
+    const backups = await storageJson.load('backups.json') || [];
+    const backup = backups.find(b => b.id == backupId);
+    if (!backup) return res.status(404).json({ ok: false, error: 'Backup not found' });
+    
+    // In production, would restore to DB
+    // For now, just return the data
+    res.json({ ok: true, message: 'Restore simulation', data: backup.data, imageCount: backup.data.imageCount });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// API Key Management
+router.post('/api-keys', async (req, res) => {
+  try {
+    const { userId, name, scopes } = req.body;
+    const keys = await storageJson.load('api-keys.json') || [];
+    const apiKey = {
+      id: Date.now(),
+      userId,
+      name,
+      key: 'sk_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+      scopes: scopes || ['read'], // read, write, admin
+      usageCount: 0,
+      createdAt: new Date().toISOString(),
+      lastUsedAt: null
+    };
+    keys.push(apiKey);
+    await storageJson.save('api-keys.json', keys);
+    res.json({ ok: true, apiKey });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/api-keys/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const keys = (await storageJson.load('api-keys.json') || [])
+      .filter(k => k.userId === userId)
+      .map(k => ({ ...k, key: k.key.substring(0, 10) + '...' })); // Mask keys
+    res.json({ ok: true, keys });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/api-keys/:keyId', async (req, res) => {
+  try {
+    const { keyId } = req.params;
+    let keys = await storageJson.load('api-keys.json') || [];
+    keys = keys.filter(k => k.id != keyId);
+    await storageJson.save('api-keys.json', keys);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Integration Marketplace
+router.get('/integrations/available', async (req, res) => {
+  try {
+    const integrations = [
+      { id: 'shopify', name: 'Shopify', icon: '🛍️', status: 'active', category: 'ecommerce' },
+      { id: 'wordpress', name: 'WordPress', icon: '📝', status: 'available', category: 'cms' },
+      { id: 'wix', name: 'Wix', icon: '🎨', status: 'available', category: 'website-builder' },
+      { id: 'squarespace', name: 'Squarespace', icon: '🏢', status: 'available', category: 'website-builder' },
+      { id: 'magento', name: 'Magento', icon: '🛒', status: 'available', category: 'ecommerce' },
+      { id: 'bigcommerce', name: 'BigCommerce', icon: '💼', status: 'available', category: 'ecommerce' },
+      { id: 'slack', name: 'Slack', icon: '💬', status: 'available', category: 'communication' },
+      { id: 'zapier', name: 'Zapier', icon: '⚡', status: 'available', category: 'automation' },
+      { id: 'google-analytics', name: 'Google Analytics', icon: '📊', status: 'available', category: 'analytics' },
+      { id: 'contentful', name: 'Contentful', icon: '📦', status: 'available', category: 'cms' }
+    ];
+    res.json({ ok: true, integrations });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/integrations/:integrationId/connect', async (req, res) => {
+  try {
+    const { integrationId } = req.params;
+    const { userId, credentials } = req.body;
+    
+    const connections = await storageJson.load('integration-connections.json') || [];
+    const connection = {
+      id: Date.now(),
+      userId,
+      integrationId,
+      credentials: credentials || {}, // In production, encrypt this
+      status: 'connected',
+      connectedAt: new Date().toISOString()
+    };
+    connections.push(connection);
+    await storageJson.save('integration-connections.json', connections);
+    
+    res.json({ ok: true, connection: { id: connection.id, integrationId, status: connection.status } });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/integrations/connections/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const connections = (await storageJson.load('integration-connections.json') || [])
+      .filter(c => c.userId === userId)
+      .map(c => ({ id: c.id, integrationId: c.integrationId, status: c.status, connectedAt: c.connectedAt }));
+    res.json({ ok: true, connections });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Revision History (detailed)
+router.get('/revisions/:imageId', async (req, res) => {
+  try {
+    const { imageId } = req.params;
+    const revisions = (await storageJson.load('alt-revisions.json') || [])
+      .filter(r => r.imageId === imageId)
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    res.json({ ok: true, revisions });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/revisions/:imageId/compare', async (req, res) => {
+  try {
+    const { imageId } = req.params;
+    const { revisionId1, revisionId2 } = req.body;
+    
+    const revisions = await storageJson.load('alt-revisions.json') || [];
+    const rev1 = revisions.find(r => r.id == revisionId1);
+    const rev2 = revisions.find(r => r.id == revisionId2);
+    
+    if (!rev1 || !rev2) return res.status(404).json({ ok: false, error: 'Revision not found' });
+    
+    const diff = {
+      before: rev1.altText,
+      after: rev2.altText,
+      lengthChange: rev2.altText.length - rev1.altText.length,
+      qualityChange: (rev2.qualityScore || 0) - (rev1.qualityScore || 0),
+      timestamp1: rev1.timestamp,
+      timestamp2: rev2.timestamp
+    };
+    
+    res.json({ ok: true, diff });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Activity Feed
+router.get('/activity/feed', async (req, res) => {
+  try {
+    const { userId, limit = 50 } = req.query;
+    const logs = await storageJson.load('audit-logs.json') || [];
+    
+    let feed = logs
+      .map(log => ({
+        id: log.id,
+        userId: log.userId,
+        userName: log.userName,
+        action: log.action,
+        resource: log.resource,
+        timestamp: log.timestamp,
+        details: log.details
+      }))
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    if (userId) feed = feed.filter(f => f.userId === userId);
+    feed = feed.slice(0, parseInt(limit));
+    
+    res.json({ ok: true, feed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Batch Operations Advanced
+router.post('/batch/revert', async (req, res) => {
+  try {
+    const { batchId } = req.body;
+    const history = await storageJson.load('batch-history.json') || [];
+    const batch = history.find(b => b.id == batchId);
+    if (!batch) return res.status(404).json({ ok: false, error: 'Batch not found' });
+    
+    let reverted = 0;
+    for (const item of batch.items) {
+      if (item.previousValue !== undefined) {
+        await db.update(item.imageId, { altText: item.previousValue });
+        reverted++;
+      }
+    }
+    
+    res.json({ ok: true, reverted, batchId });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/batch/preview', async (req, res) => {
+  try {
+    const { imageIds, operation, params } = req.body;
+    // operation: 'append', 'prepend', 'replace', 'remove-keyword'
+    
+    const images = await Promise.all(imageIds.map(id => db.get(id)));
+    const previews = images.map(img => {
+      let newAlt = img.altText || '';
+      
+      if (operation === 'append') newAlt += ' ' + params.text;
+      if (operation === 'prepend') newAlt = params.text + ' ' + newAlt;
+      if (operation === 'replace') newAlt = newAlt.replace(new RegExp(params.find, 'gi'), params.replace);
+      if (operation === 'remove-keyword') newAlt = newAlt.replace(new RegExp('\\b' + params.keyword + '\\b', 'gi'), '').trim();
+      
+      return {
+        imageId: img.id,
+        imageUrl: img.imageUrl,
+        before: img.altText,
+        after: newAlt,
+        lengthChange: newAlt.length - (img.altText || '').length
+      };
+    });
+    
+    res.json({ ok: true, previews });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Localization Tools
+router.post('/translate', async (req, res) => {
+  try {
+    const { altText, targetLanguage } = req.body;
+    
+    // Placeholder: In production would call translation API
+    const translated = `[${targetLanguage}] ${altText}`;
+    
+    res.json({ ok: true, original: altText, translated, targetLanguage, method: 'placeholder' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/translate/batch', async (req, res) => {
+  try {
+    const { imageIds, targetLanguage } = req.body;
+    const images = await Promise.all(imageIds.map(id => db.get(id)));
+    
+    const results = images.map(img => ({
+      imageId: img.id,
+      original: img.altText,
+      translated: `[${targetLanguage}] ${img.altText}`
+    }));
+    
+    res.json({ ok: true, results, targetLanguage });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Quality Scoring Advanced
+router.post('/quality/custom-rules', async (req, res) => {
+  try {
+    const { name, rules, weight } = req.body;
+    const customRules = await storageJson.load('custom-quality-rules.json') || [];
+    const rule = {
+      id: Date.now(),
+      name,
+      rules: rules || [], // [{type: 'length', min: 20, max: 120, points: 10}, {type: 'keyword-required', keyword: 'product', points: 5}]
+      weight: weight || 1,
+      createdAt: new Date().toISOString()
+    };
+    customRules.push(rule);
+    await storageJson.save('custom-quality-rules.json', customRules);
+    res.json({ ok: true, rule });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/quality/custom-rules', async (req, res) => {
+  try {
+    const rules = await storageJson.load('custom-quality-rules.json') || [];
+    res.json({ ok: true, rules });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/quality/score-with-custom', async (req, res) => {
+  try {
+    const { altText } = req.body;
+    const customRules = await storageJson.load('custom-quality-rules.json') || [];
+    
+    let score = 50; // Base score
+    const appliedRules = [];
+    
+    for (const ruleSet of customRules) {
+      for (const rule of ruleSet.rules) {
+        if (rule.type === 'length') {
+          const len = altText.length;
+          if (len >= rule.min && len <= rule.max) {
+            score += rule.points * ruleSet.weight;
+            appliedRules.push({ rule: ruleSet.name, points: rule.points });
+          }
+        }
+        if (rule.type === 'keyword-required') {
+          if (altText.toLowerCase().includes(rule.keyword.toLowerCase())) {
+            score += rule.points * ruleSet.weight;
+            appliedRules.push({ rule: ruleSet.name, points: rule.points });
+          }
+        }
+      }
+    }
+    
+    score = Math.min(100, Math.max(0, score));
+    res.json({ ok: true, score, appliedRules });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
