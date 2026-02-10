@@ -1984,7 +1984,7 @@ export default function ImageAltMediaSEO() {
     const headers = { ...(options.headers || {}), "X-Role": role };
     const res = await fetch(url, { ...options, headers });
     const data = await res.json().catch(() => ({}));
-    if (!data.ok) {
+    if (!res.ok || !data.ok) {
       const err = new Error(data.error || `HTTP ${res.status}`);
       err.status = res.status;
       err.retryAfter = res.headers?.get?.("Retry-After") || null;
@@ -2750,11 +2750,14 @@ export default function ImageAltMediaSEO() {
     const ids = imageIds || selectedImageIds;
     if (!ids || ids.length === 0) {
       setError("Select at least one image to push to Shopify");
+      showToast("⚠️ Select at least one image", 2000);
       return;
     }
     
+    console.log('🚀 Starting Shopify push for image IDs:', ids);
     setShopifyPushProgress({ show: true, current: 0, total: ids.length, status: 'Pushing to Shopify...' });
     setError("");
+    showToast(`Pushing ${ids.length} image${ids.length !== 1 ? 's' : ''} to Shopify...`, 1500);
     
     try {
       const { data } = await fetchJson("/api/image-alt-media-seo/shopify/push", {
@@ -2762,6 +2765,8 @@ export default function ImageAltMediaSEO() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imageIds: ids })
       });
+      
+      console.log('✅ Shopify push response:', data);
       
       setShopifyPushResults({
         show: true,
@@ -2771,14 +2776,21 @@ export default function ImageAltMediaSEO() {
       });
       
       if (data.pushed > 0) {
-        showToast(`✓ Pushed ${data.pushed} image${data.pushed !== 1 ? 's' : ''} to Shopify`);
+        showToast(`✓ Pushed ${data.pushed} image${data.pushed !== 1 ? 's' : ''} to Shopify`, 3000);
       }
       if (data.failed > 0) {
         setError(`Failed to push ${data.failed} image${data.failed !== 1 ? 's' : ''}`);
+        showToast(`⚠️ ${data.failed} failed to push`, 3000);
       }
     } catch (err) {
-      if (err?.status === 429) setError(rateLimitMessage(err.retryAfter));
-      else setError(err.message || "Shopify push failed");
+      console.error('❌ Shopify push error:', err);
+      if (err?.status === 429) {
+        setError(rateLimitMessage(err.retryAfter));
+        showToast("⚠️ Rate limit reached", 3000);
+      } else {
+        setError(err.message || "Shopify push failed");
+        showToast(`❌ Push failed: ${err.message || 'Unknown error'}`, 4000);
+      }
     } finally {
       setShopifyPushProgress({ show: false, current: 0, total: 0, status: '' });
     }

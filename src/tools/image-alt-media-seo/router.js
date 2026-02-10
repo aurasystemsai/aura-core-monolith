@@ -2285,21 +2285,32 @@ router.post('/advanced/exif', async (req, res) => {
 // Push alt text updates to Shopify
 router.post('/shopify/push', async (req, res) => {
   try {
+    console.log('📤 Shopify push request received');
     const { shop, adminToken } = resolveShopContext(req);
+    console.log('🏪 Shop context:', { shop: shop || 'none', hasToken: !!adminToken });
+    
     if (!shop) {
+      console.error('❌ No shop domain found');
       return res.status(400).json({ ok: false, error: 'Shop domain required' });
     }
     
     const { imageIds } = req.body;
+    console.log('🖼️ Image IDs to push:', imageIds);
+    
     if (!imageIds || !Array.isArray(imageIds) || imageIds.length === 0) {
+      console.error('❌ Invalid imageIds');
       return res.status(400).json({ ok: false, error: 'imageIds array required' });
     }
     
     // Fetch images from DB
     const images = await Promise.all(imageIds.map(id => db.get(id)));
+    console.log('📦 Fetched images from DB:', images.map(i => i ? { id: i.id, productId: i.productId, imageId: i.imageId, altText: i.altText?.substring(0, 50) } : null));
+    
     const validImages = images.filter(img => img && img.productId && img.imageId);
+    console.log('✅ Valid images for Shopify push:', validImages.length);
     
     if (validImages.length === 0) {
+      console.error('❌ No valid images with Shopify IDs');
       return res.status(400).json({ ok: false, error: 'No valid images with Shopify product/image IDs' });
     }
     
@@ -2317,9 +2328,12 @@ router.post('/shopify/push', async (req, res) => {
           }
         };
         
+        console.log(`🔄 Updating Shopify image ${img.imageId} for product ${img.productId}`);
         await shopifyUpdate(shop, endpoint, payload, adminToken, 'PUT');
+        console.log(`✅ Successfully updated image ${img.imageId}`);
         results.push({ id: img.id, productId: img.productId, imageId: img.imageId, success: true });
       } catch (err) {
+        console.error(`❌ Failed to update image ${img.id}:`, err.message);
         errors.push({ 
           id: img.id, 
           productId: img.productId, 
@@ -2329,6 +2343,7 @@ router.post('/shopify/push', async (req, res) => {
       }
     }
     
+    console.log('📊 Push complete:', { pushed: results.length, failed: errors.length });
     res.json({ 
       ok: true, 
       pushed: results.length, 
@@ -2337,6 +2352,7 @@ router.post('/shopify/push', async (req, res) => {
       errors: errors.length > 0 ? errors : undefined
     });
   } catch (err) {
+    console.error('💥 Shopify push error:', err);
     res.status(500).json({ ok: false, error: err.message || 'Shopify push failed' });
   }
 });
