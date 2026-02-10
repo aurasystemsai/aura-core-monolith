@@ -2760,6 +2760,17 @@ export default function ImageAltMediaSEO() {
       return;
     }
     
+    const selected = images.filter(img => ids.includes(img.id));
+    const itemsWithAlt = selected
+      .map(img => ({ id: img.id, altText: resolveAlt(img).trim(), url: img.url }))
+      .filter(item => item.altText);
+
+    if (!itemsWithAlt.length) {
+      setError("Add alt text before pushing to Shopify");
+      showToast("⚠️ Add alt text before push", 2500);
+      return;
+    }
+
     console.log('🚀 Starting Shopify push for image IDs:', ids);
     console.log('🏪 Shop domain:', shop);
     setShopifyPushProgress({ show: true, current: 0, total: ids.length, status: 'Pushing to Shopify...' });
@@ -2767,6 +2778,13 @@ export default function ImageAltMediaSEO() {
     showToast(`Pushing ${ids.length} image${ids.length !== 1 ? 's' : ''} to Shopify...`, 1500);
     
     try {
+      // Persist latest alt text before push so backend uses the same values
+      await fetchJson("/api/image-alt-media-seo/images/bulk-update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: itemsWithAlt })
+      });
+
       const { data } = await fetchJson("/api/image-alt-media-seo/shopify/push", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
