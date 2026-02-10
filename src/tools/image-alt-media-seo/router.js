@@ -274,14 +274,14 @@ const getOpenAI = () => {
   return new OpenAI({ apiKey: key });
 };
 
-const callOpenAIChat = async ({ openai, messages, maxTokens, n }) => {
+const callOpenAIChat = async ({ openai, messages, maxTokens, n, temperature = 0.4 }) => {
   const start = Date.now();
   try {
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages,
       max_tokens: maxTokens,
-      temperature: 0.4,
+      temperature,
       n,
     });
     openaiStats.success += 1;
@@ -689,9 +689,9 @@ const lintAlt = (altText = '', keywords = '', locale = 'default', brandTerms = '
   };
 };
 
-const generateVariants = async ({ openai, messages, maxTokens, variantCount, fallbackText }) => {
+const generateVariants = async ({ openai, messages, maxTokens, variantCount, fallbackText, temperature = 0.4 }) => {
   if (openai) {
-    const completion = await withRetry(() => callOpenAIChat({ openai, messages, maxTokens, n: variantCount }));
+    const completion = await withRetry(() => callOpenAIChat({ openai, messages, maxTokens, n: variantCount, temperature }));
     const alts = (completion.choices || [])
       .map(c => c.message?.content?.trim())
       .filter(Boolean);
@@ -1023,11 +1023,11 @@ router.post(['/ai/generate', '/ai/generate-alt'], async (req, res) => {
     const verbosityHint = verbosity === 'terse' ? 'Keep it short.' : verbosity === 'detailed' ? 'Include one extra specific detail.' : 'Keep concise.';
     const maxTokens = verbosity === 'terse' ? 80 : verbosity === 'detailed' ? 160 : 120;
     const messages = [
-      { role: 'system', content: 'You are an image SEO expert who writes concise, specific, ADA-friendly alt text without fluff.' },
-      { role: 'user', content: `Image description: ${description || '(none)'}; URL: ${url || '(none)'}; Keywords: ${appliedKeywords || '(none)'}; Brand vocab: ${brandTerms || '(none)'}; Context: ${contextStr || '(none)'}; Segment: ${detectedCategory}; Style guide: ${localeStyleGuide(locale)}; Constraints: no promo language, no PII, keep concise. ${SEGMENT_PROMPTS[detectedCategory] || SEGMENT_PROMPTS.general} ${toneHint} ${verbosityHint}` },
+      { role: 'system', content: 'You are an image SEO expert. Write concise (70-125 chars), specific, ADA-friendly alt text with one concrete visual detail (color, material, pattern, angle, setting). Use provided keywords or product cues naturally. Avoid promo tone, avoid PII, avoid repeating the prior alt; prefer fresh wording.' },
+      { role: 'user', content: `Image description: ${description || '(none)'}; URL: ${url || '(none)'}; Keywords: ${appliedKeywords || '(none)'}; Brand vocab: ${brandTerms || '(none)'}; Context: ${contextStr || '(none)'}; Segment: ${detectedCategory}; Style guide: ${localeStyleGuide(locale)}; Constraints: keep concise, ADA-friendly. ${SEGMENT_PROMPTS[detectedCategory] || SEGMENT_PROMPTS.general} ${toneHint} ${verbosityHint}` },
     ];
 
-    const variantTexts = await generateVariants({ openai, messages, maxTokens, variantCount, fallbackText: buildFallbackAlt({ imageDescription: description, url, keywords, productTitle, shotType }) });
+    const variantTexts = await generateVariants({ openai, messages, maxTokens, variantCount, temperature: 0.6, fallbackText: buildFallbackAlt({ imageDescription: description, url, keywords, productTitle, shotType }) });
     const variants = variantTexts.map((text, idx) => {
       const lint = lintAlt(text, appliedKeywords, locale, brandTerms);
       const grade = gradeAlt({ altText: text, keywords: appliedKeywords, lint, locale });
