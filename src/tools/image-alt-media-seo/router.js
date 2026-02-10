@@ -5098,4 +5098,483 @@ router.post('/quality/score-with-custom', async (req, res) => {
   }
 });
 
+// ==================== BATCH 6: SEO, Image Recognition, Performance, Schema ====================
+
+// SEO Recommendations
+router.post('/seo/analyze', async (req, res) => {
+  try {
+    const { pageUrl, images } = req.body;
+    const recommendations = [];
+    
+    // Check image alt text density
+    const withAlt = images.filter(img => img.altText && img.altText.trim().length > 0);
+    const coverage = (withAlt.length / images.length * 100).toFixed(1);
+    
+    if (coverage < 80) {
+      recommendations.push({
+        priority: 'high',
+        type: 'coverage',
+        message: `Only ${coverage}% of images have alt text. Aim for 100% coverage.`,
+        impact: 'High SEO impact'
+      });
+    }
+    
+    // Check for keyword stuffing
+    images.forEach((img, idx) => {
+      if (img.altText) {
+        const words = img.altText.toLowerCase().split(/\s+/);
+        const uniqueWords = new Set(words);
+        if (words.length > 10 && uniqueWords.size < words.length * 0.6) {
+          recommendations.push({
+            priority: 'medium',
+            type: 'keyword-stuffing',
+            message: `Image ${idx + 1} may have keyword stuffing`,
+            imageUrl: img.imageUrl
+          });
+        }
+      }
+    });
+    
+    // Check for decorative images
+    const potentiallyDecorative = images.filter(img => 
+      img.imageUrl && (img.imageUrl.includes('decoration') || img.imageUrl.includes('spacer') || img.imageUrl.includes('pixel'))
+    );
+    
+    if (potentiallyDecorative.length > 0) {
+      recommendations.push({
+        priority: 'low',
+        type: 'decorative',
+        message: `${potentiallyDecorative.length} image(s) may be decorative - consider empty alt=""`,
+        count: potentiallyDecorative.length
+      });
+    }
+    
+    res.json({ ok: true, recommendations, seoScore: Math.max(0, 100 - recommendations.length * 10) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/seo/sitemap-images', async (req, res) => {
+  try {
+    const images = await db.list();
+    
+    const sitemapEntries = images
+      .filter(img => img.altText && img.imageUrl)
+      .map(img => ({
+        'image:loc': img.imageUrl,
+        'image:caption': img.altText,
+        'image:title': img.altText.split(' ').slice(0, 5).join(' ')
+      }));
+    
+    res.json({ ok: true, entries: sitemapEntries, count: sitemapEntries.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Schema Markup Generation
+router.post('/schema/generate', async (req, res) => {
+  try {
+    const { imageUrl, altText, caption, creator, license, context } = req.body;
+    
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': context === 'product' ? 'ImageObject' : 'ImageObject',
+      contentUrl: imageUrl,
+      description: altText,
+      name: caption || altText
+    };
+    
+    if (creator) schema.creator = { '@type': 'Person', name: creator };
+    if (license) schema.license = license;
+    
+    res.json({ ok: true, schema });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/schema/product-with-images', async (req, res) => {
+  try {
+    const { productName, productUrl, images, brand, price } = req.body;
+    
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: productName,
+      url: productUrl,
+      image: images.map(img => img.imageUrl),
+      brand: brand ? { '@type': 'Brand', name: brand } : undefined,
+      offers: price ? {
+        '@type': 'Offer',
+        priceCurrency: 'USD',
+        price: price
+      } : undefined
+    };
+    
+    res.json({ ok: true, schema });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Image Recognition Integration (placeholder for actual service)
+router.post('/recognition/analyze', async (req, res) => {
+  try {
+    const { imageUrl } = req.body;
+    
+    // Placeholder: In production would call Google Vision, AWS Rekognition, etc.
+    const mockResults = {
+      labels: [
+        { name: 'Product', confidence: 0.95 },
+        { name: 'Clothing', confidence: 0.87 },
+        { name: 'Fashion', confidence: 0.82 }
+      ],
+      colors: [
+        { color: 'Blue', pixelFraction: 0.34 },
+        { color: 'White', pixelFraction: 0.28 }
+      ],
+      text: [],
+      objects: [
+        { name: 'shirt', confidence: 0.91, boundingBox: { x: 100, y: 150, w: 200, h: 300 } }
+      ],
+      suggestedAlt: 'Blue and white shirt displayed on white background'
+    };
+    
+    res.json({ ok: true, results: mockResults, provider: 'mock' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/recognition/suggest-alt', async (req, res) => {
+  try {
+    const { imageUrl, context } = req.body;
+    
+    // Placeholder: Would use recognition results to suggest alt text
+    const suggestion = `Image showing ${context || 'content'} - Auto-detected`;
+    
+    res.json({ ok: true, suggestedAlt: suggestion, confidence: 0.75 });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Performance Optimization
+router.post('/performance/analyze', async (req, res) => {
+  try {
+    const { imageUrl, dimensions, fileSize } = req.body;
+    const suggestions = [];
+    
+    // File size check
+    if (fileSize && fileSize > 500000) { // 500KB
+      suggestions.push({
+        type: 'compression',
+        priority: 'high',
+        message: `Image is ${(fileSize / 1024).toFixed(0)}KB. Consider compressing to under 200KB`,
+        savings: '60-80%'
+      });
+    }
+    
+    // Format check
+    if (imageUrl && imageUrl.endsWith('.png') && !imageUrl.includes('logo')) {
+      suggestions.push({
+        type: 'format',
+        priority: 'medium',
+        message: 'Consider WebP format for better compression',
+        savings: '25-35%'
+      });
+    }
+    
+    // Dimensions check
+    if (dimensions && (dimensions.width > 2000 || dimensions.height > 2000)) {
+      suggestions.push({
+        type: 'resize',
+        priority: 'high',
+        message: 'Image dimensions are very large. Consider responsive images with srcset',
+        impact: 'Faster page load'
+      });
+    }
+    
+    // Lazy loading
+    suggestions.push({
+      type: 'lazy-load',
+      priority: 'medium',
+      message: 'Add loading="lazy" attribute for images below the fold',
+      impact: 'Better initial page load'
+    });
+    
+    res.json({ ok: true, suggestions });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/performance/budget', async (req, res) => {
+  try {
+    const images = await db.list();
+    
+    // Mock performance budget
+    const budget = {
+      maxImages: 50,
+      maxTotalSize: 2000000, // 2MB
+      maxSingleImageSize: 200000, // 200KB
+      current: {
+        imageCount: images.length,
+        estimatedTotalSize: images.length * 150000, // Mock estimate
+        violations: []
+      }
+    };
+    
+    if (budget.current.imageCount > budget.maxImages) {
+      budget.current.violations.push({ type: 'count', message: 'Too many images on page' });
+    }
+    
+    if (budget.current.estimatedTotalSize > budget.maxTotalSize) {
+      budget.current.violations.push({ type: 'size', message: 'Total image size exceeds budget' });
+    }
+    
+    res.json({ ok: true, budget });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// CDN Recommendations
+router.post('/cdn/analyze', async (req, res) => {
+  try {
+    const { imageUrl } = req.body;
+    const recommendations = [];
+    
+    if (!imageUrl.includes('cdn')) {
+      recommendations.push({
+        priority: 'high',
+        message: 'Image not served from CDN',
+        suggestion: 'Use a CDN like Cloudflare, Cloudinary, or Shopify CDN',
+        benefit: '40-60% faster global load times'
+      });
+    }
+    
+    if (!imageUrl.includes('https')) {
+      recommendations.push({
+        priority: 'high',
+        message: 'Image not served over HTTPS',
+        suggestion: 'Always serve images over HTTPS',
+        benefit: 'Security and SEO'
+      });
+    }
+    
+    recommendations.push({
+      priority: 'medium',
+      message: 'Consider using image transformations',
+      suggestion: 'Use CDN parameters for responsive images (e.g., ?w=800&q=80)',
+      benefit: 'Adaptive image delivery'
+    });
+    
+    res.json({ ok: true, recommendations });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Link Building & Internal Linking
+router.get('/linking/opportunities', async (req, res) => {
+  try {
+    const images = await db.list();
+    
+    const opportunities = images.map(img => {
+      const keywords = img.altText ? img.altText.toLowerCase().match(/\b\w{4,}\b/g) || [] : [];
+      return {
+        imageId: img.id,
+        imageUrl: img.imageUrl,
+        suggestedAnchors: keywords.slice(0, 5),
+        linkPotential: keywords.length > 0 ? 'high' : 'low'
+      };
+    }).filter(o => o.linkPotential === 'high');
+    
+    res.json({ ok: true, opportunities: opportunities.slice(0, 20) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Image Compression Simulation
+router.post('/compression/estimate', async (req, res) => {
+  try {
+    const { imageUrl, currentSize, format } = req.body;
+    
+    const estimates = {
+      current: { size: currentSize, format: format || 'unknown' },
+      webp: { size: Math.floor(currentSize * 0.7), savings: '30%', quality: '90%' },
+      avif: { size: Math.floor(currentSize * 0.5), savings: '50%', quality: '90%' },
+      optimizedJpg: { size: Math.floor(currentSize * 0.8), savings: '20%', quality: '85%' }
+    };
+    
+    res.json({ ok: true, estimates, recommendation: 'WebP with JPG fallback for best compatibility' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Accessibility Color Contrast
+router.post('/accessibility/color-contrast', async (req, res) => {
+  try {
+    const { textColor, backgroundColor } = req.body;
+    
+    // Simple luminance calculation
+    const hexToRgb = (hex) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : null;
+    };
+    
+    const luminance = (r, g, b) => {
+      const [rs, gs, bs] = [r, g, b].map(c => {
+        c = c / 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+    };
+    
+    const tc = hexToRgb(textColor);
+    const bc = hexToRgb(backgroundColor);
+    
+    if (!tc || !bc) {
+      return res.status(400).json({ ok: false, error: 'Invalid color format' });
+    }
+    
+    const l1 = luminance(tc.r, tc.g, tc.b);
+    const l2 = luminance(bc.r, bc.g, bc.b);
+    
+    const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+    
+    const wcagAA = ratio >= 4.5;
+    const wcagAAA = ratio >= 7;
+    
+    res.json({
+      ok: true,
+      ratio: ratio.toFixed(2),
+      passWCAG_AA: wcagAA,
+      passWCAG_AAA: wcagAAA,
+      recommendation: wcagAAA ? 'Excellent' : wcagAA ? 'Good' : 'Needs improvement'
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Multi-Language Alt Text Management
+router.post('/i18n/alt-text', async (req, res) => {
+  try {
+    const { imageId, language, altText } = req.body;
+    const i18nAlt = await storageJson.load('i18n-alt-text.json') || {};
+    
+    if (!i18nAlt[imageId]) i18nAlt[imageId] = {};
+    i18nAlt[imageId][language] = altText;
+    
+    await storageJson.save('i18n-alt-text.json', i18nAlt);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/i18n/alt-text/:imageId', async (req, res) => {
+  try {
+    const { imageId } = req.params;
+    const i18nAlt = await storageJson.load('i18n-alt-text.json') || {};
+    const translations = i18nAlt[imageId] || {};
+    res.json({ ok: true, translations });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Image Sitemap Generator
+router.get('/sitemap/xml', async (req, res) => {
+  try {
+    const images = await db.list();
+    
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n';
+    
+    const grouped = {};
+    images.forEach(img => {
+      const pageUrl = img.productId ? `/products/${img.productId}` : '/images';
+      if (!grouped[pageUrl]) grouped[pageUrl] = [];
+      grouped[pageUrl].push(img);
+    });
+    
+    Object.entries(grouped).forEach(([url, imgs]) => {
+      xml += `  <url>\n    <loc>${url}</loc>\n`;
+      imgs.forEach(img => {
+        xml += `    <image:image>\n`;
+        xml += `      <image:loc>${img.imageUrl}</image:loc>\n`;
+        if (img.altText) xml += `      <image:caption>${img.altText}</image:caption>\n`;
+        xml += `    </image:image>\n`;
+      });
+      xml += `  </url>\n`;
+    });
+    
+    xml += '</urlset>';
+    
+    res.type('application/xml').send(xml);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Heatmap Data (placeholder)
+router.get('/heatmap/clicks/:imageId', async (req, res) => {
+  try {
+    const { imageId } = req.params;
+    
+    // Mock heatmap data
+    const clicks = Array.from({ length: 20 }, () => ({
+      x: Math.random(),
+      y: Math.random(),
+      intensity: Math.random()
+    }));
+    
+    res.json({ ok: true, imageId, clicks });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Funnel Analysis
+router.get('/funnel/images', async (req, res) => {
+  try {
+    // Mock funnel: impressions -> clicks -> conversions
+    const images = await db.list();
+    
+    const funnel = images.slice(0, 10).map(img => ({
+      imageId: img.id,
+      imageUrl: img.imageUrl,
+      impressions: Math.floor(Math.random() * 10000) + 1000,
+      clicks: Math.floor(Math.random() * 500) + 50,
+      conversions: Math.floor(Math.random() * 50) + 5
+    }));
+    
+    const totals = funnel.reduce((acc, f) => ({
+      impressions: acc.impressions + f.impressions,
+      clicks: acc.clicks + f.clicks,
+      conversions: acc.conversions + f.conversions
+    }), { impressions: 0, clicks: 0, conversions: 0 });
+    
+    res.json({
+      ok: true,
+      funnel,
+      totals,
+      conversionRate: (totals.conversions / totals.impressions * 100).toFixed(2) + '%'
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
