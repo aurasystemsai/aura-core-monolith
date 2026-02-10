@@ -3533,4 +3533,562 @@ router.get('/health/full', async (req, res) => {
   }
 });
 
+// ==================== BATCH 3: Collaboration, Workflow, Team, Audit ====================
+
+// Comments & Collaboration
+router.post('/comments', async (req, res) => {
+  try {
+    const { imageId, userId, userName, text } = req.body;
+    const comments = await storageJson.load('image-comments.json') || [];
+    const comment = {
+      id: Date.now() + Math.random(),
+      imageId,
+      userId,
+      userName,
+      text,
+      createdAt: new Date().toISOString(),
+      replies: []
+    };
+    comments.push(comment);
+    await storageJson.save('image-comments.json', comments);
+    res.json({ ok: true, comment });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/comments/:imageId', async (req, res) => {
+  try {
+    const { imageId } = req.params;
+    const comments = (await storageJson.load('image-comments.json') || [])
+      .filter(c => c.imageId === imageId);
+    res.json({ ok: true, comments });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/comments/:commentId/reply', async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const { userId, userName, text } = req.body;
+    const comments = await storageJson.load('image-comments.json') || [];
+    const comment = comments.find(c => c.id == commentId);
+    if (!comment) return res.status(404).json({ ok: false, error: 'Comment not found' });
+    const reply = { id: Date.now(), userId, userName, text, createdAt: new Date().toISOString() };
+    comment.replies.push(reply);
+    await storageJson.save('image-comments.json', comments);
+    res.json({ ok: true, reply });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Assignments & Ownership
+router.post('/assignments', async (req, res) => {
+  try {
+    const { imageId, assignedTo, assignedBy, dueDate, priority } = req.body;
+    const assignments = await storageJson.load('image-assignments.json') || [];
+    const assignment = {
+      id: Date.now(),
+      imageId,
+      assignedTo,
+      assignedBy,
+      dueDate,
+      priority: priority || 'medium',
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    };
+    assignments.push(assignment);
+    await storageJson.save('image-assignments.json', assignments);
+    res.json({ ok: true, assignment });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/assignments/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const assignments = (await storageJson.load('image-assignments.json') || [])
+      .filter(a => a.assignedTo === userId);
+    res.json({ ok: true, assignments });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.patch('/assignments/:assignmentId', async (req, res) => {
+  try {
+    const { assignmentId } = req.params;
+    const { status } = req.body;
+    const assignments = await storageJson.load('image-assignments.json') || [];
+    const assignment = assignments.find(a => a.id == assignmentId);
+    if (!assignment) return res.status(404).json({ ok: false, error: 'Assignment not found' });
+    assignment.status = status;
+    assignment.updatedAt = new Date().toISOString();
+    await storageJson.save('image-assignments.json', assignments);
+    res.json({ ok: true, assignment });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Team Management
+router.post('/teams', async (req, res) => {
+  try {
+    const { name, members, permissions } = req.body;
+    const teams = await storageJson.load('teams.json') || [];
+    const team = {
+      id: Date.now(),
+      name,
+      members: members || [],
+      permissions: permissions || {},
+      createdAt: new Date().toISOString()
+    };
+    teams.push(team);
+    await storageJson.save('teams.json', teams);
+    res.json({ ok: true, team });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/teams', async (req, res) => {
+  try {
+    const teams = await storageJson.load('teams.json') || [];
+    res.json({ ok: true, teams });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.patch('/teams/:teamId/members', async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { userId, action } = req.body; // action: add or remove
+    const teams = await storageJson.load('teams.json') || [];
+    const team = teams.find(t => t.id == teamId);
+    if (!team) return res.status(404).json({ ok: false, error: 'Team not found' });
+    if (action === 'add') {
+      if (!team.members.includes(userId)) team.members.push(userId);
+    } else if (action === 'remove') {
+      team.members = team.members.filter(id => id !== userId);
+    }
+    await storageJson.save('teams.json', teams);
+    res.json({ ok: true, team });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Audit Logging (detailed)
+router.get('/audit/logs', async (req, res) => {
+  try {
+    const { userId, action, startDate, endDate, limit = 100 } = req.query;
+    let logs = await storageJson.load('audit-logs.json') || [];
+    if (userId) logs = logs.filter(l => l.userId === userId);
+    if (action) logs = logs.filter(l => l.action === action);
+    if (startDate) logs = logs.filter(l => new Date(l.timestamp) >= new Date(startDate));
+    if (endDate) logs = logs.filter(l => new Date(l.timestamp) <= new Date(endDate));
+    logs = logs.slice(0, parseInt(limit));
+    res.json({ ok: true, logs, total: logs.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/audit/log', async (req, res) => {
+  try {
+    const { userId, userName, action, resource, details } = req.body;
+    const logs = await storageJson.load('audit-logs.json') || [];
+    const log = {
+      id: Date.now(),
+      userId,
+      userName,
+      action,
+      resource,
+      details,
+      timestamp: new Date().toISOString()
+    };
+    logs.push(log);
+    await storageJson.save('audit-logs.json', logs);
+    res.json({ ok: true, log });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Custom Fields (metadata extension)
+router.post('/custom-fields', async (req, res) => {
+  try {
+    const { name, type, options, required } = req.body;
+    const fields = await storageJson.load('custom-fields.json') || [];
+    const field = {
+      id: Date.now(),
+      name,
+      type, // text, number, select, multi-select, date, bool
+      options: options || [],
+      required: required || false,
+      createdAt: new Date().toISOString()
+    };
+    fields.push(field);
+    await storageJson.save('custom-fields.json', fields);
+    res.json({ ok: true, field });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/custom-fields', async (req, res) => {
+  try {
+    const fields = await storageJson.load('custom-fields.json') || [];
+    res.json({ ok: true, fields });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/custom-fields/values', async (req, res) => {
+  try {
+    const { imageId, fieldId, value } = req.body;
+    const values = await storageJson.load('custom-field-values.json') || [];
+    const existing = values.find(v => v.imageId === imageId && v.fieldId == fieldId);
+    if (existing) {
+      existing.value = value;
+      existing.updatedAt = new Date().toISOString();
+    } else {
+      values.push({ id: Date.now(), imageId, fieldId, value, createdAt: new Date().toISOString() });
+    }
+    await storageJson.save('custom-field-values.json', values);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/custom-fields/values/:imageId', async (req, res) => {
+  try {
+    const { imageId } = req.params;
+    const values = (await storageJson.load('custom-field-values.json') || [])
+      .filter(v => v.imageId === imageId);
+    res.json({ ok: true, values });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Notifications & Alerts
+router.post('/notifications', async (req, res) => {
+  try {
+    const { userId, type, title, message, link, priority } = req.body;
+    const notifications = await storageJson.load('notifications.json') || [];
+    const notification = {
+      id: Date.now(),
+      userId,
+      type, // info, warning, error, success
+      title,
+      message,
+      link,
+      priority: priority || 'normal',
+      read: false,
+      createdAt: new Date().toISOString()
+    };
+    notifications.push(notification);
+    await storageJson.save('notifications.json', notifications);
+    res.json({ ok: true, notification });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/notifications/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { unreadOnly } = req.query;
+    let notifications = (await storageJson.load('notifications.json') || [])
+      .filter(n => n.userId === userId);
+    if (unreadOnly === 'true') notifications = notifications.filter(n => !n.read);
+    res.json({ ok: true, notifications, unreadCount: notifications.filter(n => !n.read).length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.patch('/notifications/:notificationId/read', async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    const notifications = await storageJson.load('notifications.json') || [];
+    const notification = notifications.find(n => n.id == notificationId);
+    if (!notification) return res.status(404).json({ ok: false, error: 'Notification not found' });
+    notification.read = true;
+    notification.readAt = new Date().toISOString();
+    await storageJson.save('notifications.json', notifications);
+    res.json({ ok: true, notification });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Workflow Automation (rules engine)
+router.post('/workflows', async (req, res) => {
+  try {
+    const { name, trigger, conditions, actions, enabled } = req.body;
+    const workflows = await storageJson.load('workflows.json') || [];
+    const workflow = {
+      id: Date.now(),
+      name,
+      trigger, // e.g., "image_created", "alt_updated", "quality_low"
+      conditions: conditions || [], // [{field, operator, value}]
+      actions: actions || [], // [{type, params}] e.g., {type: 'notify', params: {userId: 'x'}}
+      enabled: enabled !== false,
+      createdAt: new Date().toISOString()
+    };
+    workflows.push(workflow);
+    await storageJson.save('workflows.json', workflows);
+    res.json({ ok: true, workflow });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/workflows', async (req, res) => {
+  try {
+    const workflows = await storageJson.load('workflows.json') || [];
+    res.json({ ok: true, workflows });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/workflows/:workflowId/execute', async (req, res) => {
+  try {
+    const { workflowId } = req.params;
+    const { payload } = req.body;
+    const workflows = await storageJson.load('workflows.json') || [];
+    const workflow = workflows.find(w => w.id == workflowId);
+    if (!workflow) return res.status(404).json({ ok: false, error: 'Workflow not found' });
+    if (!workflow.enabled) return res.json({ ok: true, skipped: true, reason: 'Workflow disabled' });
+    
+    // Simple condition evaluation
+    let conditionsMet = true;
+    for (const cond of workflow.conditions || []) {
+      const fieldValue = payload[cond.field];
+      if (cond.operator === 'equals' && fieldValue !== cond.value) conditionsMet = false;
+      if (cond.operator === 'contains' && !String(fieldValue).includes(cond.value)) conditionsMet = false;
+      if (cond.operator === 'gt' && !(fieldValue > cond.value)) conditionsMet = false;
+      if (cond.operator === 'lt' && !(fieldValue < cond.value)) conditionsMet = false;
+    }
+    
+    if (!conditionsMet) return res.json({ ok: true, executed: false, reason: 'Conditions not met' });
+    
+    const results = [];
+    for (const action of workflow.actions || []) {
+      if (action.type === 'notify') {
+        // Create notification
+        const notifications = await storageJson.load('notifications.json') || [];
+        notifications.push({
+          id: Date.now(),
+          userId: action.params.userId,
+          type: 'info',
+          title: action.params.title || 'Workflow triggered',
+          message: action.params.message || `Workflow ${workflow.name} executed`,
+          createdAt: new Date().toISOString(),
+          read: false
+        });
+        await storageJson.save('notifications.json', notifications);
+        results.push({ action: 'notify', success: true });
+      } else if (action.type === 'assign') {
+        // Create assignment
+        const assignments = await storageJson.load('image-assignments.json') || [];
+        assignments.push({
+          id: Date.now(),
+          imageId: payload.imageId,
+          assignedTo: action.params.userId,
+          assignedBy: 'workflow',
+          priority: action.params.priority || 'medium',
+          status: 'pending',
+          createdAt: new Date().toISOString()
+        });
+        await storageJson.save('image-assignments.json', assignments);
+        results.push({ action: 'assign', success: true });
+      }
+    }
+    
+    res.json({ ok: true, executed: true, results });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// SLA Tracking
+router.post('/sla/config', async (req, res) => {
+  try {
+    const { name, targetHours, priority, categoryFilter } = req.body;
+    const configs = await storageJson.load('sla-configs.json') || [];
+    const config = {
+      id: Date.now(),
+      name,
+      targetHours,
+      priority: priority || 'medium',
+      categoryFilter: categoryFilter || {},
+      createdAt: new Date().toISOString()
+    };
+    configs.push(config);
+    await storageJson.save('sla-configs.json', configs);
+    res.json({ ok: true, config });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/sla/status', async (req, res) => {
+  try {
+    const configs = await storageJson.load('sla-configs.json') || [];
+    const assignments = await storageJson.load('image-assignments.json') || [];
+    
+    const statuses = configs.map(config => {
+      const relevantAssignments = assignments.filter(a => 
+        a.priority === config.priority && a.status === 'pending'
+      );
+      
+      let breaching = 0;
+      let atRisk = 0;
+      let compliant = 0;
+      
+      relevantAssignments.forEach(a => {
+        const ageHours = (Date.now() - new Date(a.createdAt).getTime()) / (1000 * 60 * 60);
+        if (ageHours > config.targetHours) breaching++;
+        else if (ageHours > config.targetHours * 0.8) atRisk++;
+        else compliant++;
+      });
+      
+      return {
+        configId: config.id,
+        configName: config.name,
+        targetHours: config.targetHours,
+        breaching,
+        atRisk,
+        compliant,
+        total: relevantAssignments.length
+      };
+    });
+    
+    res.json({ ok: true, statuses });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Dashboard Widgets (configurable)
+router.post('/dashboard/widgets', async (req, res) => {
+  try {
+    const { userId, widgetType, config, position } = req.body;
+    const widgets = await storageJson.load('dashboard-widgets.json') || [];
+    const widget = {
+      id: Date.now(),
+      userId,
+      widgetType, // e.g., 'quality-trend', 'pending-assignments', 'recent-pushes'
+      config: config || {},
+      position: position || { x: 0, y: 0, w: 4, h: 3 },
+      createdAt: new Date().toISOString()
+    };
+    widgets.push(widget);
+    await storageJson.save('dashboard-widgets.json', widgets);
+    res.json({ ok: true, widget });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/dashboard/widgets/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const widgets = (await storageJson.load('dashboard-widgets.json') || [])
+      .filter(w => w.userId === userId);
+    res.json({ ok: true, widgets });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/dashboard/widgets/:widgetId', async (req, res) => {
+  try {
+    const { widgetId } = req.params;
+    let widgets = await storageJson.load('dashboard-widgets.json') || [];
+    widgets = widgets.filter(w => w.id != widgetId);
+    await storageJson.save('dashboard-widgets.json', widgets);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Tags & Categories (hierarchical)
+router.post('/tags', async (req, res) => {
+  try {
+    const { name, color, category } = req.body;
+    const tags = await storageJson.load('tags.json') || [];
+    const tag = {
+      id: Date.now(),
+      name,
+      color: color || '#999',
+      category: category || 'general',
+      usageCount: 0,
+      createdAt: new Date().toISOString()
+    };
+    tags.push(tag);
+    await storageJson.save('tags.json', tags);
+    res.json({ ok: true, tag });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/tags', async (req, res) => {
+  try {
+    const tags = await storageJson.load('tags.json') || [];
+    res.json({ ok: true, tags });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/tags/assign', async (req, res) => {
+  try {
+    const { imageId, tagIds } = req.body;
+    const imageTags = await storageJson.load('image-tags.json') || [];
+    const existing = imageTags.find(it => it.imageId === imageId);
+    if (existing) {
+      existing.tagIds = tagIds;
+      existing.updatedAt = new Date().toISOString();
+    } else {
+      imageTags.push({ imageId, tagIds, createdAt: new Date().toISOString() });
+    }
+    await storageJson.save('image-tags.json', imageTags);
+    
+    // Update usage counts
+    const tags = await storageJson.load('tags.json') || [];
+    tags.forEach(t => {
+      if (tagIds.includes(t.id)) t.usageCount = (t.usageCount || 0) + 1;
+    });
+    await storageJson.save('tags.json', tags);
+    
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/tags/images/:tagId', async (req, res) => {
+  try {
+    const { tagId } = req.params;
+    const imageTags = (await storageJson.load('image-tags.json') || [])
+      .filter(it => it.tagIds.includes(parseInt(tagId)));
+    res.json({ ok: true, imageIds: imageTags.map(it => it.imageId) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
