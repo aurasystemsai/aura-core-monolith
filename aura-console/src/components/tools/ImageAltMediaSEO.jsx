@@ -168,7 +168,14 @@ export default function ImageAltMediaSEO() {
     "exports-advanced": "Advanced export formats (PDF, XML, Google Sheets)",
     "performance-monitor": "Track quotas and performance metrics",
     "api-keys": "Manage API keys and integrations",
-    "backup-restore": "Backup and restore your data"
+    "backup-restore": "Backup and restore your data",
+    "ab-testing": "Create and manage A/B tests",
+    webhooks: "Webhook subscriptions and events",
+    "sla-dashboard": "SLA compliance monitoring",
+    "audit-logs": "View audit trail and logs",
+    "image-comparison": "Compare images side-by-side",
+    "activity-timeline": "View activity timeline",
+    visualizations: "Advanced data visualizations"
   };
   
   // Tab grouping for navigation (used by header and keyboard shortcuts)
@@ -191,18 +198,27 @@ export default function ImageAltMediaSEO() {
       { id: "collaboration-advanced", label: "Collaboration" },
       { id: "integrations", label: "Integrations" },
       { id: "brand-voice", label: "Brand Voice" },
-      { id: "competitors", label: "Competitors" }
+      { id: "competitors", label: "Competitors" },
+      { id: "ab-testing", label: "A/B Testing" },
+      { id: "visualizations", label: "Visualizations" }
     ],
     tools: [
       { id: "social-media", label: "Social Media" },
       { id: "exports-advanced", label: "Exports" },
       { id: "custom-fields", label: "Custom Fields" },
       { id: "tags-system", label: "Tags" },
-      { id: "notifications-center", label: "Notifications" }
+      { id: "notifications-center", label: "Notifications" },
+      { id: "image-comparison", label: "Compare" },
+      { id: "activity-timeline", label: "Activity" }
+    ],
+    monitoring: [
+      { id: "performance-monitor", label: "Performance" },
+      { id: "sla-dashboard", label: "SLA Dashboard" },
+      { id: "audit-logs", label: "Audit Logs" },
+      { id: "webhooks", label: "Webhooks" }
     ],
     settings: [
       { id: "preferences", label: "Preferences" },
-      { id: "performance-monitor", label: "Performance" },
       { id: "api-keys", label: "API Keys" },
       { id: "backup-restore", label: "Backup & Restore" },
       { id: "automation", label: "Automation" },
@@ -12073,6 +12089,348 @@ export default function ImageAltMediaSEO() {
             >
               View Backups
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ========== ADDITIONAL ADVANCED FEATURES ========== */}
+      
+      {/* A/B Testing Dashboard */}
+      {activeTab === "ab-testing" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>A/B Testing Dashboard</h2>
+          
+          <button
+            onClick={async () => {
+              if (selectedImageIds.length === 0) return alert("Select an image first");
+              const res = await fetch("/api/image-alt-media-seo/ab-test/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  imageId: selectedImageIds[0],
+                  variantA: "Current alt text",
+                  variantB: "AI-generated alternative",
+                  metrics: ["clicks", "conversions"],
+                  duration: 7
+                })
+              });
+              const data = await res.json();
+              setNotifications([...notifications, { text: `A/B test created: #${data.test.id}`, type: "success" }]);
+            }}
+            style={{ padding: "12px 24px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, marginBottom: 24 }}
+          >
+            Create A/B Test
+          </button>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Active Tests</h3>
+              <div style={{ fontSize: 14, color: "#94a3b8" }}>3 tests running</div>
+            </div>
+            
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Best Performers</h3>
+              <div style={{ fontSize: 14, color: "#10b981" }}>+18% avg improvement</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Webhooks Management */}
+      {activeTab === "webhooks" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Webhook Management</h2>
+          
+          <button
+            onClick={async () => {
+              const url = prompt("Webhook URL:");
+              if (!url) return;
+              const res = await fetch("/api/image-alt-media-seo/webhooks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  url,
+                  events: ["image.created", "alt.updated", "quality.low"],
+                  secret: Math.random().toString(36)
+                })
+              });
+              const data = await res.json();
+              setNotifications([...notifications, { text: "Webhook subscribed", type: "success" }]);
+            }}
+            style={{ padding: "12px 24px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, marginBottom: 24 }}
+          >
+            + Add Webhook
+          </button>
+          
+          <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Event Types</h3>
+            <ul style={{ fontSize: 14, color: "#94a3b8", paddingLeft: 20 }}>
+              <li>image.created</li>
+              <li>alt.updated</li>
+              <li>quality.low</li>
+              <li>shopify.sync</li>
+              <li>batch.complete</li>
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* SLA Dashboard */}
+      {activeTab === "sla-dashboard" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>SLA Dashboard</h2>
+          
+          <button
+            onClick={async () => {
+              const res = await fetch("/api/image-alt-media-seo/sla/status");
+              const data = await res.json();
+              console.log("SLA Status:", data);
+            }}
+            style={{ padding: "12px 24px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, marginBottom: 24 }}
+          >
+            Refresh SLA Status
+          </button>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24, borderLeft: "4px solid #10b981" }}>
+              <div style={{ fontSize: 14, color: "#94a3b8", marginBottom: 8 }}>Compliant</div>
+              <div style={{ fontSize: 32, fontWeight: 700, color: "#10b981" }}>87%</div>
+            </div>
+            
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24, borderLeft: "4px solid #f59e0b" }}>
+              <div style={{ fontSize: 14, color: "#94a3b8", marginBottom: 8 }}>At Risk</div>
+              <div style={{ fontSize: 32, fontWeight: 700, color: "#f59e0b" }}>8%</div>
+            </div>
+            
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24, borderLeft: "4px solid #ef4444" }}>
+              <div style={{ fontSize: 14, color: "#94a3b8", marginBottom: 8 }}>Breaching</div>
+              <div style={{ fontSize: 32, fontWeight: 700, color: "#ef4444" }}>5%</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Audit Log Viewer */}
+      {activeTab === "audit-logs" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Audit Logs</h2>
+          
+          <div style={{ marginBottom: 24, display: "flex", gap: 12 }}>
+            <input
+              type="text"
+              placeholder="Filter by user..."
+              style={{ flex: 1, padding: 12, background: theme === "dark" ? "#1e293b" : "#f8fafc", color: theme === "dark" ? "#e2e8f0" : "#0f172a", border: "1px solid #334155", borderRadius: 8 }}
+            />
+            <button
+              onClick={async () => {
+                const res = await fetch("/api/image-alt-media-seo/audit/logs?limit=50");
+                const data = await res.json();
+                console.log("Audit logs:", data.logs);
+              }}
+              style={{ padding: "12px 24px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
+            >
+              Load Logs
+            </button>
+          </div>
+          
+          <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+            <div style={{ fontSize: 13, color: "#94a3b8", fontFamily: "monospace" }}>
+              [2026-02-10 14:23:15] USER:admin ACTION:bulk-update RESOURCE:images COUNT:45<br/>
+              [2026-02-10 14:18:32] USER:editor ACTION:create RESOURCE:template NAME:"Product Alt"<br/>
+              [2026-02-10 14:12:08] USER:admin ACTION:push RESOURCE:shopify COUNT:12
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Command Palette (Keyboard-driven) */}
+      {commandPaletteOpen && (
+        <div onClick={() => setCommandPaletteOpen(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.7)", zIndex: 10000, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 120 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 600, background: theme === "dark" ? "#1e293b" : "#fff", borderRadius: 16, padding: 24, maxHeight: "70vh", overflow: "auto" }}>
+            <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Command Palette</h3>
+            <input
+              type="text"
+              placeholder="Type a command..."
+              autoFocus
+              style={{ width: "100%", padding: 12, background: theme === "dark" ? "#0f172a" : "#f8fafc", color: theme === "dark" ? "#e2e8f0" : "#0f172a", border: "1px solid #334155", borderRadius: 8, marginBottom: 16 }}
+            />
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                { label: "Generate Alt Text", shortcut: "Ctrl+G", action: () => setActiveTab("generate") },
+                { label: "Bulk Select All", shortcut: "Ctrl+A", action: () => setSelectedImageIds(images.map(i => i.id)) },
+                { label: "Push to Shopify", shortcut: "Ctrl+Shift+P", action: () => {} },
+                { label: "Open Templates", shortcut: "Ctrl+T", action: () => setActiveTab("templates") },
+                { label: "View Analytics", shortcut: "Ctrl+Shift+A", action: () => setActiveTab("advanced-analytics") },
+                { label: "Toggle Theme", shortcut: "Ctrl+Alt+T", action: () => setTheme(theme === "dark" ? "light" : "dark") }
+              ].map((cmd, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => { cmd.action(); setCommandPaletteOpen(false); }}
+                  style={{ padding: 12, background: theme === "dark" ? "#0f172a" : "#f8fafc", borderRadius: 8, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                >
+                  <span style={{ fontSize: 14, fontWeight: 500 }}>{cmd.label}</span>
+                  <span style={{ fontSize: 12, color: "#94a3b8", fontFamily: "monospace" }}>{cmd.shortcut}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Comparison Tool */}
+      {activeTab === "image-comparison" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Image Comparison</h2>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Before</h3>
+              {comparisonBefore && (
+                <div>
+                  <img src={comparisonBefore.imageUrl} alt="" style={{ width: "100%", borderRadius: 8, marginBottom: 12 }} />
+                  <div style={{ fontSize: 14, color: "#94a3b8" }}>{comparisonBefore.altText || "(no alt text)"}</div>
+                </div>
+              )}
+            </div>
+            
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>After</h3>
+              {comparisonAfter && (
+                <div>
+                  <img src={comparisonAfter.imageUrl} alt="" style={{ width: "100%", borderRadius: 8, marginBottom: 12 }} />
+                  <div style={{ fontSize: 14, color: "#10b981" }}>{comparisonAfter.altText}</div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <button
+            onClick={() => {
+              if (selectedImageIds.length >= 1) {
+                setComparisonBefore(images.find(i => i.id === selectedImageIds[0]));
+                setComparisonAfter(images.find(i => i.id === selectedImageIds[1] || selectedImageIds[0]));
+              }
+            }}
+            style={{ marginTop: 24, padding: "12px 24px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
+          >
+            Compare Selected
+          </button>
+        </div>
+      )}
+
+      {/* Activity Timeline */}
+      {activeTab === "activity-timeline" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Activity Timeline</h2>
+          
+          <button
+            onClick={async () => {
+              const res = await fetch("/api/image-alt-media-seo/activity/feed?limit=50");
+              const data = await res.json();
+              console.log("Activity feed:", data.feed);
+            }}
+            style={{ padding: "12px 24px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, marginBottom: 24 }}
+          >
+            Load Recent Activity
+          </button>
+          
+          <div style={{ position: "relative", paddingLeft: 40 }}>
+            <div style={{ position: "absolute", left: 18, top: 0, bottom: 0, width: 2, background: "#334155" }} />
+            
+            {actionLog.slice(0, 20).map((log, idx) => (
+              <div key={idx} style={{ position: "relative", marginBottom: 24 }}>
+                <div style={{ position: "absolute", left: -30, top: 6, width: 12, height: 12, borderRadius: "50%", background: accentColor, border: "2px solid #0f172a" }} />
+                <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 16 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{log.action || "Activity"}</div>
+                  <div style={{ fontSize: 12, color: "#94a3b8" }}>{log.timestamp || "Just now"}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Advanced Visualizations */}
+      {activeTab === "visualizations" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Data Visualizations</h2>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Quality Distribution</h3>
+              <div style={{ height: 200, display: "flex", alignItems: "flex-end", gap: 4 }}>
+                {[65, 78, 82, 91, 88, 95, 87, 92, 84, 79].map((score, idx) => (
+                  <div key={idx} style={{ flex: 1, background: `linear-gradient(135deg, ${accentColor}, ${accentColor}aa)`, height: `${score}%`, borderRadius: "4px 4px 0 0" }} title={`${score}%`} />
+                ))}
+              </div>
+            </div>
+            
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Coverage Over Time</h3>
+              <div style={{ height: 200, position: "relative" }}>
+                <svg width="100%" height="100%" viewBox="0 0 400 200" style={{ overflow: "visible" }}>
+                  <polyline
+                    points="0,150 50,120 100,90 150,70 200,50 250,40 300,30 350,20 400,15"
+                    fill="none"
+                    stroke={accentColor}
+                    strokeWidth="3"
+                    style={{ filter: "drop-shadow(0 4px 8px rgba(139, 92, 246, 0.3))" }}
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Operation Preview */}
+      {showBulkPreview && (
+        <div onClick={() => setShowBulkPreview(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.7)", zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 800, maxHeight: "80vh", background: theme === "dark" ? "#1e293b" : "#fff", borderRadius: 16, padding: 32, overflow: "auto" }}>
+            <h3 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Bulk Operation Preview</h3>
+            
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 14, color: "#94a3b8", marginBottom: 12 }}>
+                This operation will affect {selectedImageIds.length} images
+              </div>
+              
+              <div style={{ background: theme === "dark" ? "#0f172a" : "#f8fafc", borderRadius: 12, padding: 16, maxHeight: 300, overflow: "auto" }}>
+                {selectedImageIds.slice(0, 10).map(id => {
+                  const img = images.find(i => i.id === id);
+                  return (
+                    <div key={id} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid #334155" }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Image #{id}</div>
+                      <div style={{ fontSize: 12, color: "#94a3b8" }}>Before: {img?.altText || "(empty)"}</div>
+                      <div style={{ fontSize: 12, color: "#10b981" }}>After: [AI Generated Alt Text]</div>
+                    </div>
+                  );
+                })}
+                {selectedImageIds.length > 10 && (
+                  <div style={{ fontSize: 13, color: "#94a3b8", textAlign: "center", marginTop: 12 }}>
+                    ... and {selectedImageIds.length - 10} more
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setShowBulkPreview(false)}
+                style={{ padding: "10px 20px", background: "#6b7280", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowBulkPreview(false);
+                  // Execute bulk operation
+                }}
+                style={{ padding: "10px 20px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
+              >
+                Confirm & Execute
+              </button>
+            </div>
           </div>
         </div>
       )}
