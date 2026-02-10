@@ -1138,7 +1138,6 @@ export default function ImageAltMediaSEO() {
   // Fallback rendered inside tree (no portal) in case portal is blocked
   const FloatingAIButtonFallback = () => {
     const count = selectedImageIds.length;
-    console.log('FloatingAIButtonFallback rendering, count:', count);
     return (
       <div 
         onClick={count && roleCanApply && !aiProgress.show ? handleAiImproveSelected : null}
@@ -1295,7 +1294,6 @@ export default function ImageAltMediaSEO() {
   };
 
   const AIResultsModal = () => {
-    console.log('🔍 AIResultsModal render check:', { show: aiResults.show, success: aiResults.success, items: aiResults.items?.length });
     if (!aiResults.show) return null;
     
     // Calculate average SEO score
@@ -2754,7 +2752,16 @@ export default function ImageAltMediaSEO() {
       return;
     }
     
+    const derivedShop = shopDomain.trim() || getShopFromQuery();
+    const shop = derivedShop.toLowerCase();
+    if (!shop) {
+      setError("Shop domain required for Shopify push (e.g. yourstore.myshopify.com)");
+      showToast("⚠️ Add shop domain in Settings tab", 3000);
+      return;
+    }
+    
     console.log('🚀 Starting Shopify push for image IDs:', ids);
+    console.log('🏪 Shop domain:', shop);
     setShopifyPushProgress({ show: true, current: 0, total: ids.length, status: 'Pushing to Shopify...' });
     setError("");
     showToast(`Pushing ${ids.length} image${ids.length !== 1 ? 's' : ''} to Shopify...`, 1500);
@@ -2763,7 +2770,7 @@ export default function ImageAltMediaSEO() {
       const { data } = await fetchJson("/api/image-alt-media-seo/shopify/push", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageIds: ids })
+        body: JSON.stringify({ imageIds: ids, shop })
       });
       
       console.log('✅ Shopify push response:', data);
