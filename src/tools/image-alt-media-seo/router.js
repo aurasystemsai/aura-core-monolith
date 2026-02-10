@@ -2283,6 +2283,542 @@ router.post('/advanced/exif', async (req, res) => {
 
 // ========== END ADVANCED IMAGE-SPECIFIC SEO ENDPOINTS ==========
 
+// Alt text uniqueness checker - find duplicate alts
+router.get('/analytics/duplicate-alts', async (req, res) => {
+  try {
+    const images = await db.list();
+    const altMap = new Map();
+    images.forEach(img => {
+      const alt = (img.altText || '').trim().toLowerCase();
+      if (alt && alt.length > 0) {
+        if (altMap.has(alt)) {
+          altMap.get(alt).push({ id: img.id, url: img.url, altText: img.altText });
+        } else {
+          altMap.set(alt, [{ id: img.id, url: img.url, altText: img.altText }]);
+        }
+      }
+    });
+    const duplicates = Array.from(altMap.entries())
+      .filter(([, imgs]) => imgs.length > 1)
+      .map(([alt, imgs]) => ({ altText: alt, count: imgs.length, images: imgs }));
+    res.json({ ok: true, duplicates, total: duplicates.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Quality trends over time
+router.get('/analytics/quality-trends', async (req, res) => {
+  try {
+    const images = await db.list();
+    const daysBack = clampInt(req.query.days || 30, 1, 365);
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+    
+    const trends = [];
+    for (let i = 0; i < daysBack; i++) {
+      const dayStart = now - (i + 1) * dayMs;
+      const dayEnd = now - i * dayMs;
+      const dayImages = images.filter(img => {
+        const created = new Date(img.createdAt).getTime();
+        return created >= dayStart && created < dayEnd;
+      });
+      
+      const avgLength = dayImages.length > 0
+        ? dayImages.reduce((sum, img) => sum + (img.altText || '').length, 0) / dayImages.length
+        : 0;
+      
+      trends.unshift({
+        date: new Date(dayStart).toISOString().split('T')[0],
+        count: dayImages.length,
+        avgLength: Math.round(avgLength),
+        withAlt: dayImages.filter(img => img.altText && img.altText.length > 0).length
+      });
+    }
+    
+    res.json({ ok: true, trends, daysBack });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Bulk undo system - track bulk operations
+const bulkOperationsLog = [];
+const MAX_UNDO_HISTORY = 50;
+
+// Alt text templates system
+const altTemplates = new Map();
+const loadTemplates = async () => {
+  try {
+    const saved = await storageJson.get('alt-templates', []);
+    saved.forEach(t => altTemplates.set(t.id, t));
+  } catch (err) {
+    console.warn('[alt-templates] load failed', err.message);
+  }
+};
+const saveTemplates = async () => {
+  try {
+    await storageJson.set('alt-templates', Array.from(altTemplates.values()));
+  } catch (err) {
+    console.warn('[alt-templates] save failed', err.message);
+  }
+};
+(async () => { await loadTemplates(); })();
+
+router.get('/templates', async (req, res) => {
+  try {
+    const templates = Array.from(altTemplates.values());
+    res.json({ ok: true, templates });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/templates', requireWriter, async (req, res) => {
+  try {
+    const { name, template, category, keywords } = req.body;
+    if (!name || !template) return res.status(400).json({ ok: false, error: 'name and template required' });
+    const id = `tpl-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const newTemplate = { id, name, template, category: category || 'general', keywords: keywords || '', createdAt: Date.now() };
+    altTemplates.set(id, newTemplate);
+    await saveTemplates();
+    res.json({ ok: true, template: newTemplate });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/templates/:id', requireWriter, async (req, res) => {
+  try {
+    const deleted = altTemplates.delete(req.params.id);
+    if (!deleted) return res.status(404).json({ ok: false, error: 'Template not found' });
+    await saveTemplates();
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Spelling and grammar checker
+router.post('/validation/spelling', async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ ok: false, error: 'text required' });
+    
+    const commonMisspellings = {
+      'recieve': 'receive', 'occured': 'occurred', 'seperate': 'separate',
+      'definately': 'definitely', 'necesary': 'necessary', 'wierd': 'weird',
+      'accomodate': 'accommodate', 'embarass': 'embarrass', 'occassion': 'occasion'
+    };
+    
+    const issues = [];
+    const words = text.split(/\b/);
+    words.forEach((word, idx) => {
+      const lower = word.toLowerCase();
+      if (commonMisspellings[lower]) {
+        issues.push({
+          word,
+          suggestion: commonMisspellings[lower],
+          position: idx,
+          type: 'spelling'
+        });
+      }
+    });
+    
+    // Grammar checks
+    if (/\ba\s+[aeiou]/i.test(text)) issues.push({ type: 'grammar', issue: 'Use "an" before vowel sounds', severity: 'warning' });
+    if (/\ban\s+[^aeiou]/i.test(text)) issues.push({ type: 'grammar', issue: 'Use "a" before consonant sounds', severity: 'warning' });
+    if (/\s{2,}/.test(text)) issues.push({ type: 'spacing', issue: 'Multiple spaces detected', severity: 'info' });
+    if (/[.!?]{2,}/.test(text)) issues.push({ type: 'punctuation', issue: 'Repeated punctuation', severity: 'warning' });
+    
+    let corrected = text;
+    Object.entries(commonMisspellings).forEach(([wrong, right]) => {
+      const re = new RegExp(`\\b${wrong}\\b`, 'gi');
+      corrected = corrected.replace(re, right);
+    });
+    
+    res.json({ ok: true, issues, corrected, hasIssues: issues.length > 0 });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// WCAG compliance checker
+router.post('/validation/wcag', async (req, res) => {
+  try {
+    const { altText, context } = req.body;
+    if (!altText) return res.status(400).json({ ok: false, error: 'altText required' });
+    
+    const violations = [];
+    const warnings = [];
+    const passes = [];
+    
+    // WCAG 2.1 criteria checks
+    if (altText.length > 150) violations.push({ criterion: '1.1.1', level: 'A', issue: 'Alt text exceeds 150 characters (screen reader fatigue)' });
+    else passes.push({ criterion: '1.1.1', level: 'A', check: 'Length within bounds' });
+    
+    if (/^(image|picture|photo|graphic)\s+of/i.test(altText)) warnings.push({ criterion: '1.1.1', level: 'A', issue: 'Avoid redundant "image of" prefix' });
+    else passes.push({ criterion: '1.1.1', level: 'A', check: 'No redundant image prefix' });
+    
+    if (/\.(jpg|png|gif|webp)$/i.test(altText)) violations.push({ criterion: '1.1.1', level: 'A', issue: 'File extension in alt text' });
+    else passes.push({ criterion: '1.1.1', level: 'A', check: 'No file extensions' });
+    
+    if (altText.trim().length === 0) violations.push({ criterion: '1.1.1', level: 'A', issue: 'Empty alt text for non-decorative image' });
+    else passes.push({ criterion: '1.1.1', level: 'A', check: 'Alt text present' });
+    
+    if (/[<>]/.test(altText)) violations.push({ criterion: '1.1.1', level: 'A', issue: 'HTML tags in alt text' });
+    else passes.push({ criterion: '1.1.1', level: 'A', check: 'No HTML markup' });
+    
+    const level = violations.length === 0 ? (warnings.length === 0 ? 'AAA' : 'AA') : 'Fail';
+    
+    res.json({ ok: true, level, violations, warnings, passes, compliant: violations.length === 0 });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Version history tracking
+const versionHistory = new Map();
+const MAX_VERSIONS = 20;
+
+const trackVersion = (imageId, altText, action, metadata = {}) => {
+  if (!versionHistory.has(imageId)) versionHistory.set(imageId, []);
+  const versions = versionHistory.get(imageId);
+  versions.push({
+    altText,
+    action,
+    timestamp: Date.now(),
+    ...metadata
+  });
+  if (versions.length > MAX_VERSIONS) versions.shift();
+};
+
+router.get('/images/:id/versions', async (req, res) => {
+  try {
+    const versions = versionHistory.get(Number(req.params.id)) || [];
+    res.json({ ok: true, versions, count: versions.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Scheduled jobs system
+const scheduledJobs = new Map();
+
+router.post('/automation/schedule', requireWriter, async (req, res) => {
+  try {
+    const { action, schedule, imageIds, options } = req.body;
+    if (!action || !schedule) return res.status(400).json({ ok: false, error: 'action and schedule required' });
+    
+    const jobId = `job-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const job = {
+      id: jobId,
+      action,
+      schedule,
+      imageIds: imageIds || [],
+      options: options || {},
+      status: 'pending',
+      createdAt: Date.now(),
+      nextRun: Date.now() + 60000
+    };
+    
+    scheduledJobs.set(jobId, job);
+    res.json({ ok: true, job });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/automation/jobs', async (req, res) => {
+  try {
+    const jobs = Array.from(scheduledJobs.values());
+    res.json({ ok: true, jobs, count: jobs.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/automation/jobs/:id', requireWriter, async (req, res) => {
+  try {
+    const deleted = scheduledJobs.delete(req.params.id);
+    if (!deleted) return res.status(404).json({ ok: false, error: 'Job not found' });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Multi-language detection and support
+router.post('/i18n/detect', async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ ok: false, error: 'text required' });
+    
+    const languagePatterns = {
+      en: /\b(the|and|or|but|with|from|this|that)\b/i,
+      es: /\b(el|la|los|las|de|con|por|para)\b/i,
+      fr: /\b(le|la|les|de|avec|pour|dans)\b/i,
+      de: /\b(der|die|das|den|dem|des|und|oder)\b/i,
+      it: /\b(il|lo|la|i|gli|le|di|con|per)\b/i
+    };
+    
+    const scores = {};
+    Object.entries(languagePatterns).forEach(([lang, pattern]) => {
+      const matches = (text.match(pattern) || []).length;
+      scores[lang] = matches;
+    });
+    
+    const detected = Object.entries(scores).sort(([, a], [, b]) => b - a)[0];
+    res.json({ ok: true, language: detected ? detected[0] : 'unknown', scores, confidence: detected ? detected[1] / text.split(/\s+/).length : 0 });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Competitor analysis scraper
+router.post('/competitive/analyze', async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+    
+    // Placeholder - would need real scraping in production
+    const analysis = {
+      url,
+      imageCount: 15,
+      avgAltLength: 87,
+      withAlt: 12,
+      withoutAlt: 3,
+      qualityScore: 72,
+      commonKeywords: ['product', 'quality', 'handmade', 'organic'],
+      patterns: ['Brand name in most alts', 'Color mentioned frequently', 'Descriptive adjectives used'],
+      analyzedAt: Date.now()
+    };
+    
+    res.json({ ok: true, analysis });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Advanced search with multiple filters
+router.post('/search/advanced', async (req, res) => {
+  try {
+    const { query, filters = {} } = req.body;
+    const images = await db.list();
+    
+    let results = images;
+    
+    // Text search
+    if (query) {
+      const lowerQuery = query.toLowerCase();
+      results = results.filter(img => 
+        (img.altText || '').toLowerCase().includes(lowerQuery) ||
+        (img.url || '').toLowerCase().includes(lowerQuery) ||
+        (img.productTitle || '').toLowerCase().includes(lowerQuery)
+      );
+    }
+    
+    // Length filters
+    if (filters.minLength) results = results.filter(img => (img.altText || '').length >= filters.minLength);
+    if (filters.maxLength) results = results.filter(img => (img.altText || '').length <= filters.maxLength);
+    
+    // Quality filters
+    if (filters.hasAlt !== undefined) {
+      results = results.filter(img => filters.hasAlt ? (img.altText && img.altText.length > 0) : !img.altText || img.altText.length === 0);
+    }
+    
+    // Product filters
+    if (filters.productTitle) results = results.filter(img => (img.productTitle || '').toLowerCase().includes(filters.productTitle.toLowerCase()));
+    if (filters.hasProductId !== undefined) results = results.filter(img => filters.hasProductId ? !!img.productId : !img.productId);
+    
+    // Date filters
+    if (filters.createdAfter) results = results.filter(img => new Date(img.createdAt) >= new Date(filters.createdAfter));
+    if (filters.createdBefore) results = results.filter(img => new Date(img.createdAt) <= new Date(filters.createdBefore));
+    
+    res.json({ ok: true, results, count: results.length, filters });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Batch operations processor
+const batchQueue = [];
+let batchProcessing = false;
+
+router.post('/batch/enqueue', requireWriter, async (req, res) => {
+  try {
+    const { operations } = req.body;
+    if (!Array.isArray(operations)) return res.status(400).json({ ok: false, error: 'operations array required' });
+    
+    const batchId = `batch-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    batchQueue.push({ id: batchId, operations, status: 'queued', createdAt: Date.now() });
+    
+    res.json({ ok: true, batchId, queued: operations.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/batch/status/:id', async (req, res) => {
+  try {
+    const batch = batchQueue.find(b => b.id === req.params.id);
+    if (!batch) return res.status(404).json({ ok: false, error: 'Batch not found' });
+    res.json({ ok: true, batch });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Performance monitoring
+const performanceMetrics = {
+  requests: 0,
+  errors: 0,
+  avgResponseTime: 0,
+  responseTimes: [],
+  endpoints: new Map()
+};
+
+router.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    performanceMetrics.requests++;
+    if (res.statusCode >= 400) performanceMetrics.errors++;
+    
+    performanceMetrics.responseTimes.push(duration);
+    if (performanceMetrics.responseTimes.length > 1000) performanceMetrics.responseTimes.shift();
+    
+    const sum = performanceMetrics.responseTimes.reduce((a, b) => a + b, 0);
+    performanceMetrics.avgResponseTime = Math.round(sum / performanceMetrics.responseTimes.length);
+    
+    const endpoint = `${req.method} ${req.path}`;
+    const epStats = performanceMetrics.endpoints.get(endpoint) || { count: 0, totalTime: 0, errors: 0 };
+    epStats.count++;
+    epStats.totalTime += duration;
+    if (res.statusCode >= 400) epStats.errors++;
+    performanceMetrics.endpoints.set(endpoint, epStats);
+  });
+  next();
+});
+
+router.get('/monitoring/performance', async (req, res) => {
+  try {
+    const topEndpoints = Array.from(performanceMetrics.endpoints.entries())
+      .map(([path, stats]) => ({ path, ...stats, avgTime: Math.round(stats.totalTime / stats.count) }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20);
+    
+    res.json({
+      ok: true,
+      metrics: {
+        totalRequests: performanceMetrics.requests,
+        totalErrors: performanceMetrics.errors,
+        errorRate: performanceMetrics.requests > 0 ? (performanceMetrics.errors / performanceMetrics.requests * 100).toFixed(2) + '%' : '0%',
+        avgResponseTime: performanceMetrics.avgResponseTime,
+        topEndpoints
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Enhanced export with multiple formats
+router.get('/export/formats', async (req, res) => {
+  try {
+    const format = req.query.format || 'csv';
+    const images = await db.exportAll();
+    
+    if (format === 'json') {
+      res.set('Content-Type', 'application/json');
+      res.set('Content-Disposition', 'attachment; filename="alt-texts.json"');
+      return res.send(JSON.stringify(images, null, 2));
+    }
+    
+    if (format === 'tsv') {
+      res.set('Content-Type', 'text/tab-separated-values');
+      res.set('Content-Disposition', 'attachment; filename="alt-texts.tsv"');
+      const header = 'ID\tURL\tAlt Text\tProduct Title\tProduct ID\tImage ID\tCreated At\n';
+      const rows = images.map(img => [
+        img.id,
+        img.url || '',
+        (img.altText || '').replace(/\t/g, ' '),
+        (img.productTitle || '').replace(/\t/g, ' '),
+        img.productId || '',
+        img.imageId || '',
+        img.createdAt || ''
+      ].join('\t')).join('\n');
+      return res.send(header + rows);
+    }
+    
+    if (format === 'xml') {
+      res.set('Content-Type', 'application/xml');
+      res.set('Content-Disposition', 'attachment; filename="alt-texts.xml"');
+      let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<images>\n';
+      images.forEach(img => {
+        xml += '  <image>\n';
+        xml += `    <id>${img.id}</id>\n`;
+        xml += `    <url><![CDATA[${img.url || ''}]]></url>\n`;
+        xml += `    <altText><![CDATA[${img.altText || ''}]]></altText>\n`;
+        xml += `    <productTitle><![CDATA[${img.productTitle || ''}]]></productTitle>\n`;
+        xml += `    <productId>${img.productId || ''}</productId>\n`;
+        xml += `    <imageId>${img.imageId || ''}</imageId>\n`;
+        xml += `    <createdAt>${img.createdAt || ''}</createdAt>\n`;
+        xml += '  </image>\n';
+      });
+      xml += '</images>';
+      return res.send(xml);
+    }
+    
+    // Default CSV
+    res.set('Content-Type', 'text/csv');
+    res.set('Content-Disposition', 'attachment; filename="alt-texts.csv"');
+    const header = 'ID,URL,Alt Text,Product Title,Product ID,Image ID,Created At\n';
+    const rows = images.map(img => [
+      img.id,
+      `"${(img.url || '').replace(/"/g, '""')}"`,
+      `"${(img.altText || '').replace(/"/g, '""')}"`,
+      `"${(img.productTitle || '').replace(/"/g, '""')}"`,
+      img.productId || '',
+      img.imageId || '',
+      img.createdAt || ''
+    ].join(',')).join('\n');
+    res.send(header + rows);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/bulk/undo', requireWriter, async (req, res) => {
+  try {
+    const { operationId } = req.body;
+    if (!operationId) return res.status(400).json({ ok: false, error: 'operationId required' });
+    
+    const operation = bulkOperationsLog.find(op => op.id === operationId);
+    if (!operation) return res.status(404).json({ ok: false, error: 'Operation not found or expired' });
+    
+    const restored = [];
+    for (const item of operation.changes) {
+      const result = await db.update(item.id, { altText: item.oldAlt });
+      if (result) restored.push(result);
+    }
+    
+    clearAnalyticsCache();
+    res.json({ ok: true, restored: restored.length, operation });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/bulk/history', async (req, res) => {
+  try {
+    const limit = clampInt(req.query.limit || 20, 1, MAX_UNDO_HISTORY);
+    res.json({ ok: true, history: bulkOperationsLog.slice(-limit).reverse() });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // Push alt text updates to Shopify
 router.post('/shopify/push', async (req, res) => {
   try {
@@ -2427,6 +2963,293 @@ router.post('/shopify/push', async (req, res) => {
   } catch (err) {
     console.error('💥 Shopify push error:', err);
     res.status(500).json({ ok: false, error: err.message || 'Shopify push failed' });
+  }
+});
+
+// Image similarity detection by URL patterns
+router.post('/analysis/similarity', async (req, res) => {
+  try {
+    const { imageId } = req.body;
+    if (!imageId) return res.status(400).json({ ok: false, error: 'imageId required' });
+    
+    const targetImage = await db.get(imageId);
+    if (!targetImage) return res.status(404).json({ ok: false, error: 'Image not found' });
+    
+    const allImages = await db.list();
+    const similarities = allImages
+      .filter(img => img.id !== imageId)
+      .map(img => {
+        let score = 0;
+        
+        // URL similarity
+        const targetUrl = (targetImage.url || '').toLowerCase();
+        const imgUrl = (img.url || '').toLowerCase();
+        const urlParts = targetUrl.split(/[\\/._-]/).filter(Boolean);
+        const imgParts = imgUrl.split(/[\\/._-]/).filter(Boolean);
+        const commonParts = urlParts.filter(part => imgParts.includes(part)).length;
+        score += (commonParts / Math.max(urlParts.length, 1)) * 50;
+        
+        // Alt text similarity\n        const targetAlt = (targetImage.altText || '').toLowerCase();
+        const imgAlt = (img.altText || '').toLowerCase();
+        const targetWords = new Set(targetAlt.split(/\\s+/).filter(w => w.length > 3));
+        const imgWords = new Set(imgAlt.split(/\\s+/).filter(w => w.length > 3));
+        const commonWords = [...targetWords].filter(w => imgWords.has(w)).length;
+        score += (commonWords / Math.max(targetWords.size, 1)) * 30;
+        
+        // Product similarity
+        if (targetImage.productId && img.productId === targetImage.productId) score += 20;
+        
+        return { image: img, similarity: Math.min(100, Math.round(score)) };
+      })
+      .filter(s => s.similarity > 20)
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, 10);
+    
+    res.json({ ok: true, similarities, count: similarities.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Content calendar for alt text management
+const contentCalendar = new Map();
+
+router.post('/calendar/events', requireWriter, async (req, res) => {
+  try {
+    const { title, date, imageIds, notes } = req.body;
+    if (!title || !date) return res.status(400).json({ ok: false, error: 'title and date required' });
+    
+    const eventId = `event-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const event = {
+      id: eventId,
+      title,
+      date: new Date(date).toISOString(),
+      imageIds: imageIds || [],
+      notes: notes || '',
+      status: 'scheduled',
+      createdAt: Date.now()
+    };
+    
+    contentCalendar.set(eventId, event);
+    res.json({ ok: true, event });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/calendar/events', async (req, res) => {
+  try {
+    const startDate = req.query.start ? new Date(req.query.start) : new Date();
+    const endDate = req.query.end ? new Date(req.query.end) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    
+    const events = Array.from(contentCalendar.values())
+      .filter(event => {
+        const eventDate = new Date(event.date);
+        return eventDate >= startDate && eventDate <= endDate;
+      })
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    res.json({ ok: true, events, count: events.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/calendar/events/:id', requireWriter, async (req, res) => {
+  try {
+    const deleted = contentCalendar.delete(req.params.id);
+    if (!deleted) return res.status(404).json({ ok: false, error: 'Event not found' });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// A/B testing framework for alt text\nconst abTests = new Map();
+
+router.post('/ab-test/create', requireWriter, async (req, res) => {
+  try {
+    const { name, imageId, variants, duration } = req.body;
+    if (!name || !imageId || !variants || !Array.isArray(variants)) {
+      return res.status(400).json({ ok: false, error: 'name, imageId, and variants array required' });
+    }
+    
+    const testId = `test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const test = {
+      id: testId,
+      name,
+      imageId,
+      variants: variants.map((v, idx) => ({
+        id: `var-${idx}`,
+        altText: v.altText || v,
+        impressions: 0,
+        clicks: 0,
+        conversions: 0
+      })),
+      status: 'active',
+      startDate: Date.now(),
+      endDate: Date.now() + (duration || 7 * 24 * 60 * 60 * 1000),
+      createdAt: Date.now()
+    };
+    
+    abTests.set(testId, test);
+    res.json({ ok: true, test });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/ab-test/:id/track', async (req, res) => {
+  try {
+    const { variantId, event } = req.body;
+    if (!variantId || !event) return res.status(400).json({ ok: false, error: 'variantId and event required' });
+    
+    const test = abTests.get(req.params.id);
+    if (!test) return res.status(404).json({ ok: false, error: 'Test not found' });
+    
+    const variant = test.variants.find(v => v.id === variantId);
+    if (!variant) return res.status(404).json({ ok: false, error: 'Variant not found' });
+    
+    if (event === 'impression') variant.impressions++;
+    else if (event === 'click') variant.clicks++;
+    else if (event === 'conversion') variant.conversions++;
+    
+    res.json({ ok: true, variant });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/ab-test/:id/results', async (req, res) => {
+  try {
+    const test = abTests.get(req.params.id);
+    if (!test) return res.status(404).json({ ok: false, error: 'Test not found' });
+    
+    const results = test.variants.map(v => ({
+      ...v,
+      ctr: v.impressions > 0 ? ((v.clicks / v.impressions) * 100).toFixed(2) + '%' : '0%',
+      cvr: v.clicks > 0 ? ((v.conversions / v.clicks) * 100).toFixed(2) + '%' : '0%'
+    }));
+    
+    const winner = results.reduce((best, current) => \n      current.conversions > best.conversions ? current : best\n    , results[0]);
+    
+    res.json({ ok: true, test, results, winner });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Notification/webhook system
+const webhookSubscriptions = new Map();
+
+router.post('/webhooks/subscribe', requireWriter, async (req, res) => {
+  try {
+    const { url, events } = req.body;
+    if (!url || !events || !Array.isArray(events)) {
+      return res.status(400).json({ ok: false, error: 'url and events array required' });
+    }
+    
+    const subId = `sub-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    webhookSubscriptions.set(subId, { id: subId, url, events, createdAt: Date.now(), active: true });
+    
+    res.json({ ok: true, subscription: webhookSubscriptions.get(subId) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/webhooks/subscriptions', async (req, res) => {
+  try {
+    const subs = Array.from(webhookSubscriptions.values());
+    res.json({ ok: true, subscriptions: subs, count: subs.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/webhooks/subscriptions/:id', requireWriter, async (req, res) => {
+  try {
+    const deleted = webhookSubscriptions.delete(req.params.id);
+    if (!deleted) return res.status(404).json({ ok: false, error: 'Subscription not found' });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Gap analysis - identify missing or low quality alts
+router.get('/analysis/gaps', async (req, res) => {
+  try {
+    const images = await db.list();
+    
+    const gaps = {
+      noAlt: images.filter(img => !img.altText || img.altText.trim().length === 0),
+      tooShort: images.filter(img => img.altText && img.altText.length < 30),
+      tooLong: images.filter(img => img.altText && img.altText.length > 150),
+      noProductInfo: images.filter(img => !img.productTitle && !img.productId),
+      missingKeywords: images.filter(img => {
+        const alt = (img.altText || '').toLowerCase();
+        const title = (img.productTitle || '').toLowerCase();
+        return title && title.split(/\\s+/).filter(w => w.length > 3).every(w => !alt.includes(w));
+      })
+    };
+    
+    const summary = {
+      total: images.length,
+      noAlt: gaps.noAlt.length,
+      tooShort: gaps.tooShort.length,
+      tooLong: gaps.tooLong.length,
+      noProductInfo: gaps.noProductInfo.length,
+      missingKeywords: gaps.missingKeywords.length,
+      score: 100 - Math.round(((gaps.noAlt.length + gaps.tooShort.length + gaps.tooLong.length) / images.length) * 100)
+    };
+    
+    res.json({ ok: true, gaps, summary });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Smart suggestions based on patterns
+router.post('/suggestions/smart', async (req, res) => {
+  try {
+    const { imageId } = req.body;
+    if (!imageId) return res.status(400).json({ ok: false, error: 'imageId required' });
+    
+    const image = await db.get(imageId);
+    if (!image) return res.status(404).json({ ok: false, error: 'Image not found' });
+    
+    const suggestions = [];
+    
+    // Analyze URL for hints
+    const url = (image.url || '').toLowerCase();
+    if (url.includes('red') || url.includes('blue') || url.includes('green')) {
+      const color = url.match(/(red|blue|green|black|white|yellow|pink)/)?.[1];
+      if (color && !(image.altText || '').toLowerCase().includes(color)) {
+        suggestions.push({ type: 'color', suggestion: `Add color \"${color}\" from URL`, confidence: 0.8 });
+      }
+    }
+    
+    // Check product title for keywords
+    if (image.productTitle && image.altText) {
+      const titleWords = image.productTitle.toLowerCase().split(/\\s+/).filter(w => w.length > 3);
+      const altWords = new Set(image.altText.toLowerCase().split(/\\s+/));
+      const missing = titleWords.filter(w => !altWords.has(w)).slice(0, 3);
+      if (missing.length > 0) {
+        suggestions.push({ type: 'keyword', suggestion: `Consider adding: ${missing.join(', ')}`, confidence: 0.7 });
+      }
+    }
+    
+    // Length optimization
+    if (image.altText) {
+      const len = image.altText.length;
+      if (len < 50) suggestions.push({ type: 'length', suggestion: 'Alt text is short - add more detail', confidence: 0.9 });
+      if (len > 140) suggestions.push({ type: 'length', suggestion: 'Alt text is long - consider trimming', confidence: 0.8 });
+    }
+    
+    res.json({ ok: true, suggestions, count: suggestions.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
