@@ -175,7 +175,16 @@ export default function ImageAltMediaSEO() {
     "audit-logs": "View audit trail and logs",
     "image-comparison": "Compare images side-by-side",
     "activity-timeline": "View activity timeline",
-    visualizations: "Advanced data visualizations"
+    visualizations: "Advanced data visualizations",
+    "ai-orchestration": "Multi-model AI with intelligent routing (GPT-4, Claude, Gemini)",
+    "realtime-collab": "Live collaboration with real-time cursors and presence",
+    security: "Enterprise security with SSO, MFA, encryption, and compliance certifications",
+    "predictive-bi": "Predictive analytics, revenue forecasting, anomaly detection, and churn prediction",
+    "developer-platform": "SDKs, CLI tools, GraphQL API, and OpenAPI documentation",
+    "ai-training": "Fine-tune custom models with RLHF and active learning",
+    "white-label": "Multi-tenancy with custom branding and white-label capabilities",
+    "monitoring-apm": "Application performance monitoring with distributed tracing and alerts",
+    "edge-computing": "Global edge network with multi-tier caching and auto-scaling"
   };
   
   // Tab grouping for navigation (used by header and keyboard shortcuts)
@@ -224,6 +233,17 @@ export default function ImageAltMediaSEO() {
       { id: "automation", label: "Automation" },
       { id: "collaboration", label: "Team & Integrations" },
       { id: "platform-specific", label: "Platform" }
+    ],
+    "world-class": [
+      { id: "ai-orchestration", label: "AI Orchestration" },
+      { id: "realtime-collab", label: "Real-Time Collab" },
+      { id: "security", label: "Security & Compliance" },
+      { id: "predictive-bi", label: "Predictive BI" },
+      { id: "developer-platform", label: "Developer Platform" },
+      { id: "ai-training", label: "AI Training" },
+      { id: "white-label", label: "White-Label" },
+      { id: "monitoring-apm", label: "APM & Monitoring" },
+      { id: "edge-computing", label: "Edge Computing" }
     ]
   };
   
@@ -12378,6 +12398,836 @@ export default function ImageAltMediaSEO() {
                     style={{ filter: "drop-shadow(0 4px 8px rgba(139, 92, 246, 0.3))" }}
                   />
                 </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Multi-Model AI Orchestration */}
+      {activeTab === "ai-orchestration" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Multi-Model AI Orchestration</h2>
+          
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Model Selection</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+              {[
+                { id: "gpt-4o", name: "GPT-4o", provider: "OpenAI", tier: "Premium", cost: "$0.010/1K", latency: "850ms", quality: 95 },
+                { id: "claude-3.5-sonnet", name: "Claude 3.5 Sonnet", provider: "Anthropic", tier: "Premium", cost: "$0.015/1K", latency: "920ms", quality: 96 },
+                { id: "gemini-pro", name: "Gemini Pro", provider: "Google", tier: "Premium", cost: "$0.0125/1K", latency: "780ms", quality: 94 },
+                { id: "gpt-4o-mini", name: "GPT-4o Mini", provider: "OpenAI", tier: "Standard", cost: "$0.0015/1K", latency: "450ms", quality: 88 },
+                { id: "claude-3-haiku", name: "Claude 3 Haiku", provider: "Anthropic", tier: "Fast", cost: "$0.0025/1K", latency: "380ms", quality: 86 },
+                { id: "gemini-flash", name: "Gemini Flash", provider: "Google", tier: "Fast", cost: "$0.001/1K", latency: "220ms", quality: 84 }
+              ].map(model => (
+                <div key={model.id} style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 20, border: "2px solid transparent", cursor: "pointer", transition: "all 0.3s" }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = accentColor}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = "transparent"}
+                >
+                  <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{model.name}</div>
+                  <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 12 }}>{model.provider} • {model.tier}</div>
+                  <div style={{ fontSize: 11, color: "#64748b", display: "flex", flexDirection: "column", gap: 4 }}>
+                    <div>Cost: {model.cost}</div>
+                    <div>Latency: {model.latency}</div>
+                    <div>Quality: {model.quality}/100</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Orchestration Strategy</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+              {[
+                { id: "best-of-n", name: "Best-of-N", desc: "Run multiple models and select highest quality result", icon: "🏆" },
+                { id: "ensemble", name: "Ensemble Voting", desc: "Combine results from multiple models", icon: "🤝" },
+                { id: "cascade", name: "Cascade", desc: "Try fast model first, fallback to premium if needed", icon: "⚡" },
+                { id: "ab-test", name: "A/B Test", desc: "Split traffic across models for comparison", icon: "🔬" }
+              ].map(strategy => (
+                <div key={strategy.id} style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 20, cursor: "pointer" }}>
+                  <div style={{ fontSize: 32, marginBottom: 8 }}>{strategy.icon}</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{strategy.name}</div>
+                  <div style={{ fontSize: 13, color: "#94a3b8" }}>{strategy.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Performance Comparison</h3>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc" }}>
+                  <th style={{ padding: 12, textAlign: "left", fontSize: 12, fontWeight: 600 }}>Model</th>
+                  <th style={{ padding: 12, textAlign: "left", fontSize: 12, fontWeight: 600 }}>Avg Latency</th>
+                  <th style={{ padding: 12, textAlign: "left", fontSize: 12, fontWeight: 600 }}>Quality Score</th>
+                  <th style={{ padding: 12, textAlign: "left", fontSize: 12, fontWeight: 600 }}>Cost/1K</th>
+                  <th style={{ padding: 12, textAlign: "left", fontSize: 12, fontWeight: 600 }}>Uptime</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { model: "GPT-4o", latency: "850ms", quality: "95%", cost: "$0.010", uptime: "99.9%" },
+                  { model: "Claude 3.5", latency: "920ms", quality: "96%", cost: "$0.015", uptime: "99.8%" },
+                  { model: "Gemini Pro", latency: "780ms", quality: "94%", cost: "$0.0125", uptime: "99.7%" }
+                ].map((row, i) => (
+                  <tr key={i} style={{ borderBottom: "1px solid #334155" }}>
+                    <td style={{ padding: 12, fontSize: 13 }}>{row.model}</td>
+                    <td style={{ padding: 12, fontSize: 13, color: "#94a3b8" }}>{row.latency}</td>
+                    <td style={{ padding: 12, fontSize: 13, color: "#10b981" }}>{row.quality}</td>
+                    <td style={{ padding: 12, fontSize: 13, color: "#94a3b8" }}>{row.cost}</td>
+                    <td style={{ padding: 12, fontSize: 13, color: "#10b981" }}>{row.uptime}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Real-Time Collaboration */}
+      {activeTab === "realtime-collab" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Real-Time Collaboration</h2>
+          
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Active Session</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
+                <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#10b981" }}></div>
+                <div style={{ fontSize: 16, fontWeight: 600 }}>3 users online</div>
+                <div style={{ fontSize: 13, color: "#94a3b8", marginLeft: "auto" }}>Session ID: session_12345</div>
+              </div>
+              
+              <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+                {[
+                  { name: "Sarah Chen",  avatar: "SC", color: "#3b82f6", status: "editing" },
+                  { name: "Mike Johnson", avatar: "MJ", color: "#10b981", status: "viewing" },
+                  { name: "You", avatar: "YO", color: "#8b5cf6", status: "editing" }
+                ].map(user => (
+                  <div key={user.name} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: "50%", background: user.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 600 }}>{user.avatar}</div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 500 }}>{user.name}</div>
+                      <div style={{ fontSize: 11, color: "#94a3b8" }}>{user.status}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div style={{ background: theme === "dark" ? "#0f172a" : "#fff", borderRadius: 8, padding: 16, border: "1px solid #334155" }}>
+                <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 12 }}>Live Activity Feed</div>
+                {[
+                  { user: "Sarah Chen", action: "updated alt text for Image #124", time: "2s ago", color: "#3b82f6" },
+                  { user: "Mike Johnson", action: "is viewing the Analytics tab", time: "5s ago", color: "#10b981" },
+                  { user: "You", action: "generated AI alt text for 5 images", time: "12s ago", color: "#8b5cf6" }
+                ].map((activity, i) => (
+                  <div key={i} style={{ fontSize: 12, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: activity.color }}></div>
+                    <span style={{ fontWeight: 500 }}>{activity.user}</span>
+                    <span style={{ color: "#94a3b8" }}>{activity.action}</span>
+                    <span style={{ color: "#64748b", marginLeft: "auto" }}>{activity.time}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Live Cursors & Selections</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24, position: "relative", minHeight: 200 }}>
+              <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 16 }}>See what others are editing in real-time</div>
+              <div style={{ position: "absolute", top: 80, left: 120, width: 2, height: 20, background: "#3b82f6" }}>
+                <div style={{ position: "absolute", top: -20, left: -40, fontSize: 11, color: "#3b82f6", fontWeight: 500 }}>Sarah Chen</div>
+              </div>
+              <div style={{ position: "absolute", top: 120, left: 240, width: 2, height: 20, background: "#10b981" }}>
+                <div style={{ position: "absolute", top: -20, left: -50, fontSize: 11, color: "#10b981", fontWeight: 500 }}>Mike Johnson</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Conflict Resolution</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ fontSize: 14, marginBottom: 12 }}>Operational Transformation ensures conflict-free editing</div>
+              <div style={{ fontSize: 13, color: "#94a3b8" }}>✓ Automatic merge of concurrent edits</div>
+              <div style={{ fontSize: 13, color: "#94a3b8" }}>✓ Last-write-wins with version tracking</div>
+              <div style={{ fontSize: 13, color: "#94a3b8" }}>✓ Undo/redo across all participants</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enterprise Security Dashboard */}
+      {activeTab === "security" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Enterprise Security & Compliance</h2>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 32 }}>
+            {[
+              { label: "Security Score", value: "98/100", color: "#10b981", icon: "🛡️" },
+              { label: "Active SSO Sessions", value: "247", color: "#3b82f6", icon: "🔐" },
+              { label: "MFA Enabled Users", value: "94%", color: "#8b5cf6", icon: "📱" }
+            ].map((metric, i) => (
+              <div key={i} style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>{metric.icon}</div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: metric.color, marginBottom: 8 }}>{metric.value}</div>
+                <div style={{ fontSize: 13, color: "#94a3b8" }}>{metric.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Compliance Certifications</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+                {[
+                  { name: "SOC 2 Type II", status: "Certified", validUntil: "2026-12-31", color: "#10b981" },
+                  { name: "ISO 27001", status: "Certified", validUntil: "2026-09-15", color: "#10b981" },
+                  { name: "GDPR", status: "Compliant", lastReview: "2025-11-20", color: "#10b981" },
+                  { name: "HIPAA", status: "Certified", validUntil: "2026-06-30", color: "#10b981" },
+                  { name: "PCI DSS Level 1", status: "Compliant", validUntil: "2026-08-15", color: "#10b981" },
+                  { name: "FedRAMP Moderate", status: "In Progress", expected: "2026-Q3", color: "#f59e0b" }
+                ].map((cert, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, background: theme === "dark" ? "#0f172a" : "#fff", borderRadius: 8 }}>
+                    <div style={{ width: 12, height: 12, borderRadius: "50%", background: cert.color }}></div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>{cert.name}</div>
+                      <div style={{ fontSize: 12, color: "#94a3b8" }}>{cert.status} {cert.validUntil ? `• Valid until ${cert.validUntil}` : cert.expected ? `• Expected ${cert.expected}` : ''}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Single Sign-On (SSO)</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+              {["Okta", "Auth0", "Azure AD", "Google Workspace"].map(provider => (
+                <div key={provider} style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 20, textAlign: "center", cursor: "pointer" }}>
+                  <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{provider}</div>
+                  <div style={{ fontSize: 12, color: "#10b981" }}>✓ Configured</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Encryption</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24 }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>At Rest</div>
+                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 6 }}>Algorithm: AES-256-GCM</div>
+                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 6 }}>Key Management: AWS KMS</div>
+                  <div style={{ fontSize: 13, color: "#94a3b8" }}>Rotation: Quarterly</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>In Transit</div>
+                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 6 }}>Protocol: TLS 1.3</div>
+                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 6 }}>Certificate: Wildcard SSL</div>
+                  <div style={{ fontSize: 13, color: "#94a3b8" }}>HSTS: Enabled</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Predictive Analytics & BI */}
+      {activeTab === "predictive-bi" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Predictive Analytics & Business Intelligence</h2>
+          
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Revenue Forecast (Next 12 Months)</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ height: 300, display: "flex", alignItems: "flex-end", gap: 8 }}>
+                {Array.from({ length: 12 }, (_, i) => {
+                  const height = 100 + Math.random() * 150;
+                  return (
+                    <div key={i} style={{ flex: 1, background: `linear-gradient(180deg, ${accentColor}, ${accentColor}80)`, borderRadius: "4px 4px 0 0", height: `${height}px`, position: "relative" }}>
+                      <div style={{ position: "absolute", top: -20, left: 0, right: 0, textAlign: "center", fontSize: 11, color: "#94a3b8" }}>
+                        ${Math.floor(100 + Math.random() * 50)}K
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ marginTop: 24, fontSize: 13, color: "#94a3b8", textAlign: "center" }}>
+                Forecast Model: Prophet (94.2% accuracy) • Predicted Growth: +27.8%
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Anomaly Detection</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              {[
+                { metric: "API Latency", value: "3,500ms", expected: "450ms", severity: "high", deviation: "6.2σ", causes: ["Database slow query", "High concurrent requests"] },
+                { metric: "Error Rate", value: "8.5%", expected: "0.3%", severity: "critical", deviation: "12.4σ", causes: ["Third-party API outage"] }
+              ].map((anomaly, i) => (
+                <div key={i} style={{ padding: 16, background: theme === "dark" ? "#0f172a" : "#fff", borderRadius: 8, marginBottom: 12, borderLeft: `4px solid ${anomaly.severity === 'critical' ? '#ef4444' : '#f59e0b'}` }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                    <div style={{ fontSize: 16, fontWeight: 600 }}>{anomaly.metric}</div>
+                    <div style={{ padding: "4px 8px", background: anomaly.severity === 'critical' ? '#ef444420' : '#f59e0b20', color: anomaly.severity === 'critical' ? '#ef4444' : '#f59e0b', borderRadius: 4, fontSize: 11, fontWeight: 600 }}>{anomaly.severity.toUpperCase()}</div>
+                  </div>
+                  <div style={{ fontSize: 13, marginBottom: 8 }}>
+                    <span style={{ color: "#ef4444", fontWeight: 600 }}>{anomaly.value}</span>
+                    <span style={{ color: "#94a3b8" }}> (expected: {anomaly.expected})</span>
+                    <span style={{ color: "#64748b", marginLeft: 12 }}>Deviation: {anomaly.deviation}</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#94a3b8" }}>
+                    Potential causes: {anomaly.causes.join(", ")}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Executive Dashboard</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+              {[
+                { label: "Monthly Revenue", value: "$485K", growth: "+27.8%", color: "#10b981" },
+                { label: "Active Users", value: "12,450", growth: "+15.3%", color: "#3b82f6" },
+                { label: "Retention Rate", value: "94.6%", growth: "+2.1%", color: "#8b5cf6" },
+                { label: "AI Quality Score", value: "92.5", growth: "+4.2%", color: "#f59e0b" }
+              ].map((metric, i) => (
+                <div key={i} style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 20 }}>
+                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 8 }}>{metric.label}</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, marginBottom: 4 }}>{metric.value}</div>
+                  <div style={{ fontSize: 13, color: metric.color, fontWeight: 600 }}>{metric.growth}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Churn Prediction</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 14, marginBottom: 12 }}>High-Risk Users (68% churn probability)</div>
+                <div style={{ height: 8, background: theme === "dark" ? "#0f172a" : "#e2e8f0", borderRadius: 4, overflow: "hidden" }}>
+                  <div style={{ width: "68%", height: "100%", background: "linear-gradient(90deg, #ef4444, #f59e0b)", borderRadius: 4 }}></div>
+                </div>
+              </div>
+              <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 16 }}>Top Risk Factors:</div>
+              {[
+                { factor: "Usage declined 45% in last 14 days", impact: 32 },
+                { factor: "No login in last 7 days", impact: 24 },
+                { factor: "Support tickets increased", impact: 18 }
+              ].map((factor, i) => (
+                <div key={i} style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, marginBottom: 4, display: "flex", justifyContent: "space-between" }}>
+                    <span>{factor.factor}</span>
+                    <span style={{ color: "#94a3b8" }}>{factor.impact}% impact</span>
+                  </div>
+                  <div style={{ height: 4, background: theme === "dark" ? "#0f172a" : "#e2e8f0", borderRadius: 2 }}>
+                    <div style={{ width: `${factor.impact}%`, height: "100%", background: "#ef4444", borderRadius: 2 }}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Developer Platform */}
+      {activeTab === "developer-platform" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Developer Platform</h2>
+          
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>SDKs & Libraries</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+              {[
+                { lang: "JavaScript", color: "#f7df1e", version: "v2.1.0", downloads: "125K" },
+                { lang: "Python", color: "#3776ab", version: "v2.0.5", downloads: "98K" },
+                { lang: "Ruby", color: "#cc342d", version: "v1.9.2", downloads: "45K" },
+                { lang: "PHP", color: "#777bb4", version: "v2.0.1", downloads: "52K" },
+                { lang: "Go", color: "#00add8", version: "v1.8.0", downloads: "38K" },
+                { lang: "Java", color: "#007396", version: "v2.1.3", downloads: "67K" },
+                { lang: "C#", color: "#239120", version: "v2.0.0", downloads: "41K" },
+                { lang: "Swift", color: "#fa7343", version: "v1.5.0", downloads: "29K" }
+              ].map(sdk => (
+                <div key={sdk.lang} style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 20, cursor: "pointer", border: "2px solid transparent", transition: "all 0.3s" }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = sdk.color}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = "transparent"}
+                >
+                  <div style={{ width: 40, height: 40, borderRadius: 8, background: sdk.color, marginBottom: 12 }}></div>
+                  <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{sdk.lang}</div>
+                  <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 2 }}>{sdk.version}</div>
+                  <div style={{ fontSize: 11, color: "#64748b" }}>{sdk.downloads} downloads</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>CLI Tool</h3>
+            <div style={{ background: "#0f172a", borderRadius: 12, padding: 24, fontFamily: "monospace", fontSize: 13 }}>
+              <div style={{ color: "#10b981", marginBottom: 8 }}>$ npm install -g aura-cli</div>
+              <div style={{ color: "#64748b", marginBottom: 24 }}>✓ Installed aura-cli v2.1.0</div>
+              
+              <div style={{ color: "#3b82f6", marginBottom: 4 }}>$ aura init my-project</div>
+              <div style={{ color: "#64748b", marginBottom: 4 }}>Creating project structure...</div>
+              <div style={{ color: "#10b981", marginBottom: 24 }}>✓ Project initialized!</div>
+              
+              <div style={{ color: "#3b82f6", marginBottom: 4 }}>$ aura generate --count 100</div>
+              <div style={{ color: "#64748b", marginBottom: 4 }}>Generating alt text for 100 images...</div>
+              <div style={{ color: "#10b981" }}>✓ Generated 100 alt texts in 12.4s</div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>GraphQL API</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ marginBottom: 16, fontSize: 14, fontWeight: 600 }}>Introspection Endpoint</div>
+              <div style={{ background: "#0f172a", borderRadius: 8, padding: 16, fontFamily: "monospace", fontSize: 12, color: "#94a3b8", marginBottom: 16 }}>
+                https://api.aura.ai/graphql
+              </div>
+              <div style={{ fontSize: 13, color: "#94a3b8" }}>
+                ✓ Strongly typed schema<br />
+                ✓ Real-time subscriptions<br />
+                ✓ Automatic documentation<br />
+                ✓ Query batching & caching
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>OpenAPI Specification</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ fontSize: 14, marginBottom: 16 }}>
+                <span style={{ fontWeight: 600 }}>Version:</span> OpenAPI 3.1.0
+              </div>
+              <div style={{ display: "flex", gap: 12 }}>
+                <button style={{ padding: "10px 20px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}>
+                  Download Spec
+                </button>
+                <button style={{ padding: "10px 20px", background: theme === "dark" ? "#334155" : "#e2e8f0", color: theme === "dark" ? "#fff" : "#000", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}>
+                  View Docs
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Training & Fine-Tuning */}
+      {activeTab === "ai-training" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>AI Training & Fine-Tuning</h2>
+          
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Create Fine-Tune Job</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, display: "block" }}>Base Model</label>
+                <select style={{ width: "100%", padding: "10px 12px", background: theme === "dark" ? "#0f172a" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #334155", borderRadius: 8 }}>
+                  <option>GPT-4o Mini</option>
+                  <option>GPT-4o</option>
+                  <option>Claude 3.5 Sonnet</option>
+                </select>
+              </div>
+              
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, display: "block" }}>Training Examples</label>
+                <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 8 }}>Upload JSONL file with your training data</div>
+                <button style={{ padding: "10px 16px", background: theme === "dark" ? "#334155" : "#e2e8f0", color: theme === "dark" ? "#fff" : "#000", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}>
+                  Upload Training Data
+                </button>
+              </div>
+              
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, display: "block" }}>Hyperparameters</label>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4, display: "block" }}>Epochs</label>
+                    <input type="number" defaultValue="3" style={{ width: "100%", padding: "8px", background: theme === "dark" ? "#0f172a" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #334155", borderRadius: 6 }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4, display: "block" }}>Learning Rate</label>
+                    <input type="text" defaultValue="0.0001" style={{ width: "100%", padding: "8px", background: theme === "dark" ? "#0f172a" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #334155", borderRadius: 6 }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4, display: "block" }}>Batch Size</label>
+                    <input type="number" defaultValue="32" style={{ width: "100%", padding: "8px", background: theme === "dark" ? "#0f172a" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #334155", borderRadius: 6 }} />
+                  </div>
+                </div>
+              </div>
+              
+              <button style={{ padding: "12px 24px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 14 }}>
+                Start Fine-Tuning
+              </button>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Active Training Jobs</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              {[
+                { id: "ft_123", model: "GPT-4o Mini", status: "running", progress: 67, epoch: "2/3", eta: "45 min" },
+                { id: "ft_124", model: "Claude 3.5", status: "queued", progress: 0, epoch: "0/3", eta: "2 hours" }
+              ].map(job => (
+                <div key={job.id} style={{ marginBottom: 20, padding: 16, background: theme === "dark" ? "#0f172a" : "#fff", borderRadius: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>{job.model}</div>
+                      <div style={{ fontSize: 12, color: "#94a3b8" }}>Job ID: {job.id}</div>
+                    </div>
+                    <div style={{ padding: "4px 12px", background: job.status === 'running' ? '#10b98120' : '#64748b20', color: job.status === 'running' ? '#10b981' : '#64748b', borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
+                      {job.status.toUpperCase()}
+                    </div>
+                  </div>
+                  
+                  <div style={{ marginBottom: 8 }}>
+                    <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 4 }}>Progress: {job.progress}% • Epoch {job.epoch} • ETA: {job.eta}</div>
+                    <div style={{ height: 6, background: theme === "dark" ? "#0f172a" : "#e2e8f0", borderRadius: 3 }}>
+                      <div style={{ width: `${job.progress}%`, height: "100%", background: `linear-gradient(90deg, ${accentColor}, ${accentColor}80)`, borderRadius: 3, transition: "width 0.5s" }}></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>RLHF (Reinforcement Learning from Human Feedback)</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ marginBottom: 16, fontSize: 14 }}>Help improve AI quality by rating generated alt text</div>
+              <div style={{ padding: 16, background: theme === "dark" ? "#0f172a" : "#fff", borderRadius: 8, marginBottom: 12 }}>
+                <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 8 }}>Generated Alt Text:</div>
+                <div style={{ fontSize: 14, marginBottom: 12 }}>"Modern minimalist living room with gray sofa and wooden coffee table"</div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  {[1, 2, 3, 4, 5].map(rating => (
+                    <div key={rating} style={{ width: 32, height: 32, borderRadius: "50%", border: `2px solid ${accentColor}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14 }}>
+                      ⭐
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{ fontSize: 12, color: "#94a3b8" }}>
+                Total feedback collected: 12,450 • Used for training: 8,920
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Active Learning - Uncertain Samples</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ marginBottom: 16, fontSize: 13, color: "#94a3b8" }}>47 samples need human review to improve model accuracy</div>
+              {[
+                { imageId: "img_1234", generated: "Person wearing casual outfit", uncertainty: 42 },
+                { imageId: "img_5678", generated: "Abstract geometric pattern", uncertainty: 38 }
+              ].map(sample => (
+                <div key={sample.imageId} style={{ padding: 12, background: theme === "dark" ? "#0f172a" : "#fff", borderRadius: 8, marginBottom: 12 }}>
+                  <div style={{ fontSize: 13, marginBottom: 8 }}>
+                    <span style={{ fontWeight: 600 }}>Image {sample.imageId}</span>
+                    <span style={{ color: "#f59e0b", marginLeft: 12 }}>Uncertainty: {sample.uncertainty}%</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 12 }}>{sample.generated}</div>
+                  <button style={{ padding: "6px 12px", background: accentColor, color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
+                    Review & Correct
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* White-Label & Multi-Tenancy */}
+      {activeTab === "white-label" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>White-Label & Multi-Tenancy</h2>
+          
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Tenant Management</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <button style={{ padding: "12px 24px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, marginBottom: 24 }}>
+                + Create New Tenant
+              </button>
+              
+              <div style={{ display: "grid", gap: 16 }}>
+                {[
+                  { name: "Acme Corp", domain: "acme.aura-platform.com", users: 78, max: 100, status: "active" },
+                  { name: "TechStart Inc", domain: "techstart.aura-platform.com", users: 145, max: 200, status: "active" },
+                  { name: "Global Retail", domain: "globalretail.aura-platform.com", users: 52, max: 100, status: "trial" }
+                ].map(tenant => (
+                  <div key={tenant.name} style={{ padding: 20, background: theme === "dark" ? "#0f172a" : "#fff", borderRadius: 8, border: "1px solid #334155" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                      <div>
+                        <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{tenant.name}</div>
+                        <div style={{ fontSize: 12, color: "#94a3b8" }}>{tenant.domain}</div>
+                      </div>
+                      <div style={{ padding: "4px 12px", background: tenant.status === 'active' ? '#10b98120' : '#f59e0b20', color: tenant.status === 'active' ? '#10b981' : '#f59e0b', borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
+                        {tenant.status.toUpperCase()}
+                      </div>
+                    </div>
+                    
+                    <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 8 }}>
+                      Users: {tenant.users}/{tenant.max} ({Math.round(tenant.users/tenant.max*100)}%)
+                    </div>
+                    <div style={{ height: 4, background: theme === "dark" ? "#0f172a" : "#e2e8f0", borderRadius: 2 }}>
+                      <div style={{ width: `${tenant.users/tenant.max*100}%`, height: "100%", background: accentColor, borderRadius: 2 }}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Branding Customization</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24 }}>
+                <div>
+                  <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, display: "block" }}>Logo Upload</label>
+                  <div style={{ width: "100%", height: 120, border: "2px dashed #334155", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: 32, marginBottom: 8 }}>📤</div>
+                      <div style={{ fontSize: 13, color: "#94a3b8" }}>Click to upload</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, display: "block" }}>Primary Color</label>
+                  <input type="color" defaultValue="#3b82f6" style={{ width: "100%", height: 120, border: "none", borderRadius: 8, cursor: "pointer" }} />
+                </div>
+              </div>
+              
+              <div style={{ marginTop: 24 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, display: "block" }}>Custom Domain</label>
+                <input 
+                  type="text" 
+                  placeholder="your-brand.com" 
+                  style={{ width: "100%", padding: "12px", background: theme === "dark" ? "#0f172a" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #334155", borderRadius: 8 }}
+                />
+                <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 8 }}>
+                  Configure DNS: CNAME your-brand.com → aura-platform.com
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Usage Limits</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+                {[
+                  { label: "Max Users", current: 78, limit: 100, unit: "" },
+                  { label: "Max Images", current: 45230, limit: 100000, unit: "" },
+                  { label: "AI Generations/Month", current: 38500, limit: 50000, unit: "" }
+                ].map((quota, i) => (
+                  <div key={i} style={{ padding: 16, background: theme === "dark" ? "#0f172a" : "#fff", borderRadius: 8 }}>
+                    <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 8 }}>{quota.label}</div>
+                    <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
+                      {quota.current.toLocaleString()} / {quota.limit.toLocaleString()}
+                    </div>
+                    <div style={{ height: 4, background: theme === "dark" ? "#0f172a" : "#e2e8f0", borderRadius: 2 }}>
+                      <div style={{ width: `${quota.current/quota.limit*100}%`, height: "100%", background: accentColor, borderRadius: 2 }}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Advanced Monitoring & APM */}
+      {activeTab === "monitoring-apm" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Advanced Monitoring & APM</h2>
+          
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Real-Time System Metrics</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+              {[
+                { label: "Requests/sec", value: 847, color: "#3b82f6", unit: "rps" },
+                { label: "Avg Latency", value: 124, color: "#10b981", unit: "ms" },
+                { label: "Error Rate", value: 0.12, color: "#f59e0b", unit: "%" }
+              ].map((metric, i) => (
+                <div key={i} style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 8 }}>{metric.label}</div>
+                  <div style={{ fontSize: 36, fontWeight: 700, color: metric.color, marginBottom: 4 }}>
+                    {metric.value}
+                    <span style={{ fontSize: 16, color: "#94a3b8", marginLeft: 8 }}>{metric.unit}</span>
+                  </div>
+                  <div style={{ height: 40, display: "flex", alignItems: "flex-end", gap: 1, marginTop: 12 }}>
+                    {Array.from({ length: 30 }, () => Math.random() * 40 + 10).map((h, i) => (
+                      <div key={i} style={{ flex: 1, height: `${h}px`, background: `${metric.color}40`, borderRadius: "2px 2px 0 0" }}></div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Distributed Tracing</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ fontFamily: "monospace", fontSize: 12 }}>
+                <div style={{ marginBottom: 16, padding: 12, background: theme === "dark" ? "#0f172a" : "#fff", borderRadius: 6 }}>
+                  <div style={{ color: "#94a3b8", marginBottom: 8 }}>Trace ID: trace_abc123xyz</div>
+                  <div style={{ fontSize: 11, color: "#64748b" }}>Total Duration: 245ms</div>
+                </div>
+                
+                {[
+                  { span: "HTTP GET /api/images", duration: 245, indent: 0, color: "#3b82f6" },
+                  { span: "Auth Middleware", duration: 12, indent: 1, color: "#10b981" },
+                  { span: "Database Query", duration: 145, indent: 1, color: "#f59e0b" },
+                  { span: "SELECT * FROM images", duration: 142, indent: 2, color: "#ef4444" },
+                  { span: "AI Generation", duration: 75, indent: 1, color: "#8b5cf6" },
+                  { span: "Response Serialization", duration: 8, indent: 1, color: "#06b6d4" }
+                ].map((span, i) => (
+                  <div key={i} style={{ marginLeft: span.indent * 20, marginBottom: 4, padding: "6px 10px", background: `${span.color}10`, borderLeft: `3px solid ${span.color}`, borderRadius: 4 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ color: theme === "dark" ? "#fff" : "#000" }}>{span.span}</span>
+                      <span style={{ color: span.color, fontWeight: 600 }}>{span.duration}ms</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Alert Configuration</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <button style={{ padding: "10px 20px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, marginBottom: 20 }}>
+                + Create Alert Rule
+              </button>
+              
+              {[
+                { metric: "Error Rate > 1%", channels: ["Email", "Slack", "PagerDuty"], status: "active" },
+                { metric: "Latency P99 > 1000ms", channels: ["Email", "Slack"], status: "active" },
+                { metric: "CPU Usage > 80%", channels: ["Webhook"], status: "active" }
+              ].map((alert, i) => (
+                <div key={i} style={{ padding: 16, background: theme === "dark" ? "#0f172a" : "#fff", borderRadius: 8, marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{alert.metric}</div>
+                    <div style={{ fontSize: 12, color: "#94a3b8" }}>
+                      Notify via: {alert.channels.join(", ")}
+                    </div>
+                  </div>
+                  <div style={{ padding: "4px 12px", background: "#10b98120", color: "#10b981", borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
+                    {alert.status.toUpperCase()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Service Health</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+              {[
+                { service: "API Gateway", uptime: "99.99%", status: "healthy", latency: "45ms" },
+                { service: "Database", uptime: "99.98%", status: "healthy", latency: "12ms" },
+                { service: "AI Service", uptime: "99.95%", status: "healthy", latency: "450ms" },
+                { service: "Cache Layer", uptime: "100%", status: "healthy", latency: "3ms" }
+              ].map(service => (
+                <div key={service.service} style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 20 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                    <div style={{ fontSize: 16, fontWeight: 600 }}>{service.service}</div>
+                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#10b981" }}></div>
+                  </div>
+                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4 }}>Uptime: {service.uptime}</div>
+                  <div style={{ fontSize: 13, color: "#94a3b8" }}>Latency: {service.latency}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edge Computing & Scalability */}
+      {activeTab === "edge-computing" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Edge Computing & Global Scalability</h2>
+          
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Global Edge Network</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ fontSize: 14, marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ fontSize: 32, fontWeight: 700, color: accentColor }}>147</div>
+                <div style={{ color: "#94a3b8" }}>Edge nodes deployed globally</div>
+              </div>
+              
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
+                {[
+                  { region: "US East", latency: 12, uptime: 99.99, requests: 450000 },
+                  { region: "US West", latency: 15, uptime: 99.98, requests: 380000 },
+                  { region: "EU West", latency: 18, uptime: 99.97, requests: 320000 },
+                  { region: "Asia Pacific", latency: 22, uptime: 99.96, requests: 290000 },
+                  { region: "Asia NE", latency: 20, uptime: 99.98, requests: 310000 }
+                ].map(region => (
+                  <div key={region.region} style={{ padding: 16, background: theme === "dark" ? "#0f172a" : "#fff", borderRadius: 8, border: "1px solid #334155" }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>{region.region}</div>
+                    <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>Latency: {region.latency}ms</div>
+                    <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>Uptime: {region.uptime}%</div>
+                    <div style={{ fontSize: 11, color: "#10b981" }}>{(region.requests / 1000).toFixed(0)}K req/day</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Multi-Tier Caching</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              {[
+                { tier: "Browser Cache", ttl: "5 min", size: "50 MB", hitRate: 45 },
+                { tier: "CDN Edge", ttl: "1 hour", size: "10 GB", hitRate: 78 },
+                { tier: "Redis Cluster", ttl: "2 hours", size: "50 GB", hitRate: 92 },
+                { tier: "Database", ttl: "Permanent", size: "Unlimited", hitRate: 100 }
+              ].map((layer, i) => (
+                <div key={i} style={{ marginBottom: 16 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>{layer.tier}</div>
+                      <div style={{ fontSize: 12, color: "#94a3b8" }}>TTL: {layer.ttl} • Size: {layer.size}</div>
+                    </div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: accentColor }}>{layer.hitRate}%</div>
+                  </div>
+                  <div style={{ height: 6, background: theme === "dark" ? "#0f172a" : "#e2e8f0", borderRadius: 3 }}>
+                    <div style={{ width: `${layer.hitRate}%`, height: "100%", background: `linear-gradient(90deg, ${accentColor}, ${accentColor}80)`, borderRadius: 3 }}></div>
+                  </div>
+                </div>
+              ))}
+              <div style={{ marginTop: 20, fontSize: 14, fontWeight: 600, color: "#10b981" }}>
+                Global Hit Rate: 85% • Avg Latency Reduction: 65%
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Auto-Scaling Configuration</h3>
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 14, marginBottom: 12 }}>Current Load: 67% capacity</div>
+                <div style={{ height: 40, background: theme === "dark" ? "#0f172a" : "#e2e8f0", borderRadius: 8, overflow: "hidden", position: "relative" }}>
+                  <div style={{ width: "67%", height: "100%", background: `linear-gradient(90deg, ${accentColor}, ${accentColor}80)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 600 }}>
+                    67%
+                  </div>
+                  <div style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: "#94a3b8" }}>
+                    Scale up at 80%
+                  </div>
+                </div>
+              </div>
+              
+              <div style={{ fontSize: 13, color: "#94a3b8" }}>
+                ✓ Auto-scaling enabled<br />
+                ✓ Min instances: 5 | Max instances: 50<br />
+                ✓ Scale-up threshold: 80% CPU/Memory<br />
+                ✓ Scale-down threshold: 30% CPU/Memory<br />
+                ✓ Cooldown period: 5 minutes
               </div>
             </div>
           </div>
