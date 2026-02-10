@@ -3253,6 +3253,260 @@ router.post('/suggestions/smart', async (req, res) => {
   }
 });
 
+// ML Quality prediction
+router.post('/ml/predict-quality', async (req, res) => {
+  try {
+    const { altText, url, productTitle } = req.body;
+    if (!altText) return res.status(400).json({ ok: false, error: 'altText required' });
+    
+    let score = 50;
+    
+    // Length scoring
+    const len = altText.length;
+    if (len >= 70 && len <= 125) score += 20;
+    else if (len >= 50 && len < 70) score += 10;
+    else if (len > 125 && len <= 150) score += 5;
+    
+    // Word count
+    const words = altText.split(/\\s+/).length;
+    if (words >= 8 && words <= 18) score += 15;
+    
+    // Descriptive words
+    const descriptive = (altText.match(/\\b(material|color|pattern|style|angle|view|detail|feature|quality)\\b/gi) || []).length;
+    score += Math.min(10, descriptive * 3);
+    
+    // Product title alignment
+    if (productTitle) {
+      const titleWords = new Set(productTitle.toLowerCase().split(/\\s+/).filter(w => w.length > 3));
+      const altWords = altText.toLowerCase().split(/\\s+/);
+      const overlap = altWords.filter(w => titleWords.has(w)).length;
+      score += Math.min(10, overlap * 2);
+    }
+    
+    // Penalties
+    if (/^(image|picture|photo)\\s/i.test(altText)) score -= 10;
+    if (/\\.(jpg|png|gif)$/i.test(altText)) score -= 15;
+    if ((altText.match(/[A-Z]/g) || []).length > altText.length * 0.4) score -= 5;
+    
+    const predicted = Math.max(0, Math.min(100, Math.round(score)));
+    const grade = predicted >= 90 ? 'A' : predicted >= 80 ? 'B' : predicted >= 70 ? 'C' : predicted >= 60 ? 'D' : 'F';
+    
+    res.json({ ok: true, predictedScore: predicted, grade, factors: { length: len, words, descriptive } });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Conversion prediction
+router.post('/ml/predict-conversion', async (req, res) => {
+  try {
+    const { altText, productType, price } = req.body;
+    if (!altText) return res.status(400).json({ ok: false, error: 'altText required' });
+    
+    // Simple heuristic model (would be ML in production)
+    let conversionScore = 0.5;
+    
+    // Alt quality factor
+    const len = altText.length;
+    if (len >= 70 && len <= 125) conversionScore += 0.15;
+    
+    // Specificity factor
+    const specific = (altText.match(/\\b(premium|handmade|organic|certified|guaranteed|limited)\\b/gi) || []).length;
+    conversionScore += Math.min(0.2, specific * 0.05);
+    
+    // Trust signals
+    if (/\\b(money.?back|guarantee|certified|authentic|official)\\b/i.test(altText)) conversionScore += 0.1;
+    
+    const predicted = Math.max(0, Math.min(1, conversionScore));
+    const likelihood = predicted >= 0.7 ? 'high' : predicted >= 0.4 ? 'medium' : 'low';
+    
+    res.json({ ok: true, conversionProbability: (predicted * 100).toFixed(1) + '%', likelihood });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Click-through rate predictor
+router.post('/ml/predict-ctr', async (req, res) => {
+  try {
+    const { altText, position } = req.body;
+    if (!altText) return res.status(400).json({ ok: false, error: 'altText required' });
+    
+    let baseCTR = 0.03; // 3% baseline
+    
+    // Position factor
+    const pos = Number(position) || 1;
+    if (pos === 1) baseCTR *= 1.5;
+    else if (pos <= 3) baseCTR *= 1.2;
+    else if (pos > 10) baseCTR *= 0.7;
+    
+    // Alt quality factor
+    const len = altText.length;
+    if (len >= 60 && len <= 120) baseCTR *= 1.2;
+    
+    // Action words boost
+    if (/\\b(discover|explore|shop|view|see|find|get)\\b/i.test(altText)) baseCTR *= 1.1;
+    
+    const predicted = Math.min(0.25, baseCTR);
+    
+    res.json({ ok: true, predictedCTR: (predicted * 100).toFixed(2) + '%', baseline: '3%' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Sentiment analysis
+router.post('/analysis/sentiment', async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ ok: false, error: 'text required' });
+    
+    const positive = ['beautiful', 'premium', 'quality', 'excellent', 'perfect', 'amazing', 'stunning', 'gorgeous'];
+    const negative = ['cheap', 'poor', 'bad', 'damaged', 'broken', 'worn', 'faded'];
+    const neutral = ['standard', 'basic', 'regular', 'typical', 'normal'];
+    
+    const lower = text.toLowerCase();
+    const posCount = positive.filter(w => lower.includes(w)).length;
+    const negCount = negative.filter(w => lower.includes(w)).length;
+    const neuCount = neutral.filter(w => lower.includes(w)).length;
+    
+    let sentiment = 'neutral';
+    let score = 0;
+    
+    if (posCount > negCount) {\n      sentiment = 'positive';
+      score = Math.min(1, (posCount / (posCount + negCount + neuCount + 1)) * 2);
+    } else if (negCount > posCount) {
+      sentiment = 'negative';
+      score = -Math.min(1, (negCount / (posCount + negCount + neuCount + 1)) * 2);
+    }
+    
+    res.json({ ok: true, sentiment, score: score.toFixed(2), breakdown: { positive: posCount, negative: negCount, neutral: neuCount } });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Topic modeling/categorization
+router.post('/analysis/topics', async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ ok: false, error: 'text required' });
+    
+    const topics = {
+      fashion: ['clothing', 'shirt', 'dress', 'pants', 'jacket', 'style', 'wear', 'outfit'],
+      electronics: ['phone', 'laptop', 'computer', 'device', 'screen', 'battery', 'tech', 'digital'],
+      home: ['furniture', 'decor', 'room', 'house', 'kitchen', 'bathroom', 'living', 'bedroom'],
+      beauty: ['cosmetic', 'makeup', 'skincare', 'beauty', 'cream', 'lotion', 'hair', 'nail'],
+      food: ['organic', 'food', 'snack', 'ingredient', 'recipe', 'cook', 'eat', 'taste']
+    };
+    
+    const lower = text.toLowerCase();
+    const scores = {};
+    
+    Object.entries(topics).forEach(([topic, keywords]) => {
+      const matches = keywords.filter(kw => lower.includes(kw)).length;
+      scores[topic] = matches;
+    });
+    
+    const detected = Object.entries(scores).sort(([, a], [, b]) => b - a)[0];
+    
+    res.json({ ok: true, primaryTopic: detected[0], confidence: detected[1] / 5, allScores: scores });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Keyword extraction
+router.post('/analysis/keywords', async (req, res) => {
+  try {
+    const { text, limit = 10 } = req.body;
+    if (!text) return res.status(400).json({ ok: false, error: 'text required' });
+    
+    const stopWords = new Set(['the', 'and', 'for', 'with', 'this', 'that', 'from', 'was', 'are', 'have', 'has']);
+    const words = text.toLowerCase().match(/\\b[a-z]{3,}\\b/g) || [];
+    const freq = {};
+    
+    words.forEach(word => {
+      if (!stopWords.has(word)) {
+        freq[word] = (freq[word] || 0) + 1;
+      }
+    });
+    
+    const keywords = Object.entries(freq)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, limit)
+      .map(([word, count]) => ({ word, frequency: count }));
+    
+    res.json({ ok: true, keywords, totalWords: words.length, uniqueWords: Object.keys(freq).length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Reading level analyzer
+router.post('/analysis/reading-level', async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ ok: false, error: 'text required' });
+    
+    const sentences = text.split(/[.!?]+/).filter(Boolean).length || 1;
+    const words = text.split(/\\s+/).length;
+    const syllables = text.split(/[aeiouy]+/i).length - 1;
+    
+    // Simple Flesch Reading Ease approximation
+    const avgWordsPerSentence = words / sentences;
+    const avgSyllablesPerWord = syllables / words;
+    const fleschScore = 206.835 - (1.015 * avgWordsPerSentence) - (84.6 * avgSyllablesPerWord);
+    
+    let level = 'college';
+    let grade = 13;
+    
+    if (fleschScore >= 90) { level = 'very easy'; grade = 5; }
+    else if (fleschScore >= 80) { level = 'easy'; grade = 6; }
+    else if (fleschScore >= 70) { level = 'fairly easy'; grade = 7; }
+    else if (fleschScore >= 60) { level = 'standard'; grade = 8; }
+    else if (fleschScore >= 50) { level = 'fairly difficult'; grade = 10; }
+    else if (fleschScore >= 30) { level = 'difficult'; grade = 12; }
+    
+    res.json({ ok: true, fleschScore: Math.round(fleschScore), level, grade, stats: { sentences, words, syllables } });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Cohort analysis
+router.get('/analytics/cohorts', async (req, res) => {
+  try {
+    const images = await db.list();
+    const daysBack = clampInt(req.query.days || 30, 1, 90);
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+    
+    const cohorts = [];
+    for (let i = 0; i < daysBack; i += 7) {
+      const weekStart = now - (i + 7) * dayMs;
+      const weekEnd = now - i * dayMs;
+      
+      const weekImages = images.filter(img => {
+        const created = new Date(img.createdAt).getTime();
+        return created >= weekStart && created < weekEnd;
+      });
+      
+      cohorts.push({
+        week: `Week ${Math.floor(i / 7) + 1}`,
+        startDate: new Date(weekStart).toISOString().split('T')[0],
+        totalImages: weekImages.length,
+        withAlt: weekImages.filter(img => img.altText && img.altText.length > 0).length,
+        avgLength: weekImages.length > 0 ? Math.round(weekImages.reduce((sum, img) => sum + (img.altText || '').length, 0) / weekImages.length) : 0
+      });
+    }
+    
+    res.json({ ok: true, cohorts: cohorts.reverse(), daysBack });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // OpenAI health (config presence only; avoids live call to stay cheap)
 router.get('/health/openai', (req, res) => {
   const configured = Boolean(process.env.OPENAI_API_KEY);
