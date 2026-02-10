@@ -845,12 +845,13 @@ router.post('/images/import-shopify', requireWriter, async (req, res) => {
         }
         seenUrls.add(key);
         const altText = normalizeStr(image.alt || image.alt_text || '', MAX_ALT_LEN);
-        toCreate.push({ 
-          url, 
+        toCreate.push({
+          url,
           altText,
           productTitle: product.title || null,
           productHandle: product.handle || null,
-          productId: String(product.id || '')
+          productId: String(product.id || ''),
+          imageId: String(image.id || ''),
         });
       }
       if (toCreate.length >= maxImages) break;
@@ -2286,12 +2287,17 @@ router.post('/advanced/exif', async (req, res) => {
 router.post('/shopify/push', async (req, res) => {
   try {
     console.log('📤 Shopify push request received');
-    const { shop, adminToken } = resolveShopContext(req);
-    console.log('🏪 Shop context:', { shop: shop || 'none', hasToken: !!adminToken });
+    const { shop, token: adminToken, tokenSource } = resolveShopContext(req);
+    console.log('🏪 Shop context:', { shop: shop || 'none', hasToken: !!adminToken, tokenSource });
     
     if (!shop) {
       console.error('❌ No shop domain found');
       return res.status(400).json({ ok: false, error: 'Shop domain required' });
+    }
+
+    if (!adminToken) {
+      console.error('❌ No admin token available');
+      return res.status(401).json({ ok: false, error: 'No Shopify admin token available for this shop', tokenSource });
     }
     
     const { imageIds } = req.body;
@@ -2305,6 +2311,44 @@ router.post('/shopify/push', async (req, res) => {
     // Fetch images from DB
     const images = await Promise.all(imageIds.map(id => db.get(id)));
     console.log('📦 Fetched images from DB:', images.map(i => i ? { id: i.id, productId: i.productId, imageId: i.imageId, altText: i.altText?.substring(0, 50) } : null));
+
+    // Backfill missing product/image IDs from Shopify by matching URLs
+    const missingMeta = images.filter(img => img && (!img.productId || !img.imageId) && img.url);
+    if (missingMeta.length) {
+      try {
+        const maxProducts = clampInt(req.body?.productLimit || req.query?.productLimit || 400, 50, 2000);
+        const { items: products } = await shopifyFetchPaginated(
+          shop,
+          'products.json',
+          { limit: 250, fields: 'id,images' },
+          adminToken,
+          {
+            maxPages: Math.ceil(maxProducts / 250),
+            rateLimitThreshold: 0.75,
+            rateLimitSleepMs: 900,
+          }
+        );
+
+        const imageMap = new Map();
+        products.forEach(p => {
+          (p.images || []).forEach(img => {
+            const url = normalizeStr(img.src || img.original_src || '', MAX_URL_LEN);
+            if (url) imageMap.set(url.toLowerCase(), { productId: p.id, imageId: img.id });
+          });
+        });
+
+        for (const img of missingMeta) {
+          const mapping = imageMap.get((img.url || '').toLowerCase());
+          if (mapping) {
+            img.productId = String(mapping.productId || '');
+            img.imageId = String(mapping.imageId || '');
+            await db.upsertByUrl({ url: img.url, altText: img.altText || '', productId: img.productId, imageId: img.imageId });
+          }
+        }
+      } catch (err) {
+        console.warn('⚠️ Shopify ID backfill failed:', err.message);
+      }
+    }
     
     const validImages = images.filter(img => img && img.productId && img.imageId);
     console.log('✅ Valid images for Shopify push:', validImages.length);
