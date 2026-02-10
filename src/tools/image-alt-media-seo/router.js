@@ -4091,4 +4091,531 @@ router.get('/tags/images/:tagId', async (req, res) => {
   }
 });
 
+// ==================== BATCH 4: User Prefs, Filters, Accessibility, Reporting ====================
+
+// User Preferences
+router.post('/preferences/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const preferences = req.body; // {theme, language, notifications, defaultView, etc}
+    const allPrefs = await storageJson.load('user-preferences.json') || {};
+    allPrefs[userId] = { ...allPrefs[userId], ...preferences, updatedAt: new Date().toISOString() };
+    await storageJson.save('user-preferences.json', allPrefs);
+    res.json({ ok: true, preferences: allPrefs[userId] });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/preferences/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const allPrefs = await storageJson.load('user-preferences.json') || {};
+    res.json({ ok: true, preferences: allPrefs[userId] || {} });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Saved Searches & Filters
+router.post('/saved-searches', async (req, res) => {
+  try {
+    const { userId, name, filters, isPublic } = req.body;
+    const searches = await storageJson.load('saved-searches.json') || [];
+    const search = {
+      id: Date.now(),
+      userId,
+      name,
+      filters, // {minQuality, tags, dateRange, etc}
+      isPublic: isPublic || false,
+      usageCount: 0,
+      createdAt: new Date().toISOString()
+    };
+    searches.push(search);
+    await storageJson.save('saved-searches.json', searches);
+    res.json({ ok: true, search });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/saved-searches/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const searches = (await storageJson.load('saved-searches.json') || [])
+      .filter(s => s.userId === userId || s.isPublic);
+    res.json({ ok: true, searches });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/saved-searches/:searchId/use', async (req, res) => {
+  try {
+    const { searchId } = req.params;
+    const searches = await storageJson.load('saved-searches.json') || [];
+    const search = searches.find(s => s.id == searchId);
+    if (!search) return res.status(404).json({ ok: false, error: 'Search not found' });
+    search.usageCount = (search.usageCount || 0) + 1;
+    search.lastUsedAt = new Date().toISOString();
+    await storageJson.save('saved-searches.json', searches);
+    res.json({ ok: true, filters: search.filters });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Keyboard Shortcuts Config
+router.post('/shortcuts/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const shortcuts = req.body; // {action: keybinding}
+    const allShortcuts = await storageJson.load('keyboard-shortcuts.json') || {};
+    allShortcuts[userId] = shortcuts;
+    await storageJson.save('keyboard-shortcuts.json', allShortcuts);
+    res.json({ ok: true, shortcuts });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/shortcuts/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const allShortcuts = await storageJson.load('keyboard-shortcuts.json') || {};
+    const defaults = {
+      generate: 'ctrl+g',
+      save: 'ctrl+s',
+      push: 'ctrl+shift+p',
+      nextImage: 'ctrl+right',
+      prevImage: 'ctrl+left'
+    };
+    res.json({ ok: true, shortcuts: { ...defaults, ...allShortcuts[userId] } });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Accessibility Enhancements
+router.post('/accessibility/scan', async (req, res) => {
+  try {
+    const { imageId, altText, context } = req.body;
+    const issues = [];
+    
+    // Screen reader compatibility
+    if (!altText || altText.trim().length === 0) {
+      issues.push({ severity: 'error', message: 'Missing alt text', rule: 'WCAG 1.1.1' });
+    }
+    if (altText && altText.trim().length > 250) {
+      issues.push({ severity: 'warning', message: 'Alt text too long for screen readers', rule: 'Best Practice' });
+    }
+    if (altText && /^(image|picture|photo) (of|showing)/.test(altText.toLowerCase())) {
+      issues.push({ severity: 'info', message: 'Redundant descriptor (image of, picture of)', rule: 'Best Practice' });
+    }
+    if (altText && /\.(jpg|png|gif|webp)$/i.test(altText)) {
+      issues.push({ severity: 'warning', message: 'Contains file extension', rule: 'Best Practice' });
+    }
+    
+    // Context-aware checks
+    if (context === 'decorative' && altText && altText.trim().length > 0) {
+      issues.push({ severity: 'info', message: 'Decorative images should have empty alt', rule: 'WCAG 1.1.1' });
+    }
+    
+    const score = Math.max(0, 100 - issues.length * 20);
+    res.json({ ok: true, issues, score, compliant: issues.filter(i => i.severity === 'error').length === 0 });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/accessibility/report', async (req, res) => {
+  try {
+    const images = await db.list();
+    let totalIssues = 0;
+    let compliantCount = 0;
+    
+    for (const img of images) {
+      const issues = [];
+      if (!img.altText || img.altText.trim().length === 0) issues.push('missing');
+      if (img.altText && img.altText.trim().length > 250) issues.push('too-long');
+      
+      if (issues.length === 0) compliantCount++;
+      totalIssues += issues.length;
+    }
+    
+    res.json({
+      ok: true,
+      total: images.length,
+      compliant: compliantCount,
+      complianceRate: images.length > 0 ? (compliantCount / images.length * 100).toFixed(1) : 0,
+      totalIssues
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Image Optimization Suggestions
+router.post('/optimization/analyze', async (req, res) => {
+  try {
+    const { imageUrl, altText } = req.body;
+    const suggestions = [];
+    
+    // Analyze alt text quality
+    if (!altText || altText.length < 20) {
+      suggestions.push({ type: 'alt-text', priority: 'high', message: 'Alt text is too short or missing' });
+    }
+    if (altText && altText.length > 125) {
+      suggestions.push({ type: 'alt-text', priority: 'medium', message: 'Consider shortening alt text for better UX' });
+    }
+    
+    // URL-based suggestions
+    if (imageUrl && !imageUrl.includes('cdn')) {
+      suggestions.push({ type: 'cdn', priority: 'medium', message: 'Consider using a CDN for faster loading' });
+    }
+    if (imageUrl && imageUrl.includes('.png') && !imageUrl.includes('logo')) {
+      suggestions.push({ type: 'format', priority: 'low', message: 'For photos, WebP/JPG may have better compression than PNG' });
+    }
+    
+    res.json({ ok: true, suggestions, optimizationScore: Math.max(0, 100 - suggestions.length * 15) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Brand Voice Analysis
+router.post('/brand-voice/analyze', async (req, res) => {
+  try {
+    const { altText, brandGuidelines } = req.body;
+    const guidelines = brandGuidelines || { tone: 'professional', vocabulary: [], forbiddenWords: [] };
+    const issues = [];
+    
+    // Tone check (simple keyword-based)
+    const casualWords = ['awesome', 'cool', 'rad', 'dope', 'sick'];
+    const formalWords = ['optimal', 'strategic', 'comprehensive', 'innovative'];
+    
+    if (guidelines.tone === 'professional') {
+      casualWords.forEach(word => {
+        if (altText.toLowerCase().includes(word)) {
+          issues.push({ type: 'tone', message: `Word "${word}" may be too casual` });
+        }
+      });
+    }
+    
+    // Forbidden words
+    (guidelines.forbiddenWords || []).forEach(word => {
+      if (altText.toLowerCase().includes(word.toLowerCase())) {
+        issues.push({ type: 'forbidden', message: `Contains forbidden word: "${word}"` });
+      }
+    });
+    
+    // Required vocabulary
+    let vocabularyScore = 0;
+    (guidelines.vocabulary || []).forEach(word => {
+      if (altText.toLowerCase().includes(word.toLowerCase())) vocabularyScore += 10;
+    });
+    
+    const alignment = Math.max(0, 100 - issues.length * 20 + vocabularyScore);
+    res.json({ ok: true, issues, alignment, compliant: issues.length === 0 });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/brand-voice/guidelines', async (req, res) => {
+  try {
+    const { name, tone, vocabulary, forbiddenWords, examples } = req.body;
+    const guidelines = await storageJson.load('brand-guidelines.json') || [];
+    const guideline = {
+      id: Date.now(),
+      name,
+      tone,
+      vocabulary: vocabulary || [],
+      forbiddenWords: forbiddenWords || [],
+      examples: examples || [],
+      createdAt: new Date().toISOString()
+    };
+    guidelines.push(guideline);
+    await storageJson.save('brand-guidelines.json', guidelines);
+    res.json({ ok: true, guideline });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/brand-voice/guidelines', async (req, res) => {
+  try {
+    const guidelines = await storageJson.load('brand-guidelines.json') || [];
+    res.json({ ok: true, guidelines });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Competitor Benchmarking
+router.post('/competitors/track', async (req, res) => {
+  try {
+    const { name, domain, category } = req.body;
+    const competitors = await storageJson.load('competitors.json') || [];
+    const competitor = {
+      id: Date.now(),
+      name,
+      domain,
+      category: category || 'general',
+      lastScannedAt: null,
+      imageCount: 0,
+      avgAltLength: 0,
+      createdAt: new Date().toISOString()
+    };
+    competitors.push(competitor);
+    await storageJson.save('competitors.json', competitors);
+    res.json({ ok: true, competitor });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/competitors', async (req, res) => {
+  try {
+    const competitors = await storageJson.load('competitors.json') || [];
+    res.json({ ok: true, competitors });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/competitors/:competitorId/scan', async (req, res) => {
+  try {
+    const { competitorId } = req.params;
+    const competitors = await storageJson.load('competitors.json') || [];
+    const competitor = competitors.find(c => c.id == competitorId);
+    if (!competitor) return res.status(404).json({ ok: false, error: 'Competitor not found' });
+    
+    // Placeholder: In production, would scrape competitor site
+    competitor.lastScannedAt = new Date().toISOString();
+    competitor.imageCount = Math.floor(Math.random() * 100) + 50;
+    competitor.avgAltLength = Math.floor(Math.random() * 50) + 40;
+    competitor.missingAltCount = Math.floor(Math.random() * 20);
+    
+    await storageJson.save('competitors.json', competitors);
+    res.json({ ok: true, competitor });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/competitors/benchmark', async (req, res) => {
+  try {
+    const competitors = await storageJson.load('competitors.json') || [];
+    const images = await db.list();
+    
+    const ourStats = {
+      imageCount: images.length,
+      avgAltLength: images.reduce((sum, img) => sum + (img.altText?.length || 0), 0) / (images.length || 1),
+      missingAltCount: images.filter(img => !img.altText || img.altText.trim().length === 0).length
+    };
+    
+    const benchmark = {
+      ours: ourStats,
+      competitors: competitors.map(c => ({
+        name: c.name,
+        imageCount: c.imageCount,
+        avgAltLength: c.avgAltLength,
+        missingAltCount: c.missingAltCount
+      })),
+      ranking: 'N/A' // Would calculate based on scores
+    };
+    
+    res.json({ ok: true, benchmark });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Social Media Integration
+router.post('/social/optimize', async (req, res) => {
+  try {
+    const { altText, platform } = req.body; // platform: twitter, facebook, instagram, linkedin
+    const limits = {
+      twitter: 1000,
+      facebook: 500,
+      instagram: 150,
+      linkedin: 1200
+    };
+    
+    const limit = limits[platform] || 200;
+    let optimized = altText;
+    const changes = [];
+    
+    if (altText.length > limit) {
+      optimized = altText.substring(0, limit - 3) + '...';
+      changes.push({ type: 'truncate', message: `Truncated to ${limit} chars for ${platform}` });
+    }
+    
+    // Platform-specific suggestions
+    if (platform === 'instagram' && !altText.match(/#\w+/)) {
+      changes.push({ type: 'suggestion', message: 'Consider adding hashtags for Instagram' });
+    }
+    
+    res.json({ ok: true, original: altText, optimized, changes, platform });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/social/schedule', async (req, res) => {
+  try {
+    const { imageId, platform, scheduledFor, caption } = req.body;
+    const posts = await storageJson.load('social-posts.json') || [];
+    const post = {
+      id: Date.now(),
+      imageId,
+      platform,
+      scheduledFor,
+      caption,
+      status: 'scheduled',
+      createdAt: new Date().toISOString()
+    };
+    posts.push(post);
+    await storageJson.save('social-posts.json', posts);
+    res.json({ ok: true, post });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/social/schedule', async (req, res) => {
+  try {
+    const { status } = req.query;
+    let posts = await storageJson.load('social-posts.json') || [];
+    if (status) posts = posts.filter(p => p.status === status);
+    res.json({ ok: true, posts });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Advanced Export Formats
+router.get('/export/sitemap', async (req, res) => {
+  try {
+    const images = await db.list();
+    const sitemap = images.map(img => ({
+      loc: img.imageUrl,
+      lastmod: img.updatedAt || img.createdAt,
+      'image:image': {
+        'image:loc': img.imageUrl,
+        'image:caption': img.altText || ''
+      }
+    }));
+    res.json({ ok: true, sitemap, format: 'xml-compatible' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/export/pdf-report', async (req, res) => {
+  try {
+    const images = await db.list();
+    const stats = {
+      totalImages: images.length,
+      withAlt: images.filter(img => img.altText && img.altText.trim().length > 0).length,
+      avgQuality: images.reduce((sum, img) => sum + (img.qualityScore || 0), 0) / (images.length || 1),
+      topImages: images.sort((a, b) => (b.qualityScore || 0) - (a.qualityScore || 0)).slice(0, 10)
+    };
+    
+    // In production, would generate actual PDF
+    res.json({ ok: true, reportData: stats, format: 'pdf-placeholder' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/export/google-sheets', async (req, res) => {
+  try {
+    const images = await db.list();
+    const rows = images.map(img => [
+      img.imageUrl,
+      img.altText || '',
+      img.qualityScore || 0,
+      img.productId || '',
+      img.updatedAt || img.createdAt
+    ]);
+    
+    // In production, would integrate with Google Sheets API
+    res.json({ ok: true, headers: ['URL', 'Alt Text', 'Quality', 'Product ID', 'Updated'], rows, format: 'google-sheets-compatible' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Content Insights
+router.get('/insights/keywords', async (req, res) => {
+  try {
+    const images = await db.list();
+    const wordFreq = {};
+    
+    images.forEach(img => {
+      if (!img.altText) return;
+      const words = img.altText.toLowerCase().match(/\b\w+\b/g) || [];
+      words.forEach(word => {
+        if (word.length > 3) { // Ignore short words
+          wordFreq[word] = (wordFreq[word] || 0) + 1;
+        }
+      });
+    });
+    
+    const topKeywords = Object.entries(wordFreq)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 50)
+      .map(([word, count]) => ({ word, count, frequency: count / images.length }));
+    
+    res.json({ ok: true, keywords: topKeywords, totalUniqueWords: Object.keys(wordFreq).length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/insights/themes', async (req, res) => {
+  try {
+    const images = await db.list();
+    
+    // Simple theme detection based on keywords
+    const themes = {
+      fashion: 0,
+      technology: 0,
+      nature: 0,
+      food: 0,
+      people: 0,
+      abstract: 0
+    };
+    
+    const themeKeywords = {
+      fashion: ['dress', 'shirt', 'clothing', 'fashion', 'style', 'outfit'],
+      technology: ['computer', 'phone', 'tech', 'digital', 'screen', 'device'],
+      nature: ['tree', 'flower', 'plant', 'landscape', 'outdoor', 'nature'],
+      food: ['food', 'meal', 'dish', 'restaurant', 'cooking', 'kitchen'],
+      people: ['person', 'people', 'man', 'woman', 'child', 'face'],
+      abstract: ['pattern', 'design', 'art', 'abstract', 'texture', 'geometric']
+    };
+    
+    images.forEach(img => {
+      if (!img.altText) return;
+      const text = img.altText.toLowerCase();
+      Object.keys(themeKeywords).forEach(theme => {
+        if (themeKeywords[theme].some(keyword => text.includes(keyword))) {
+          themes[theme]++;
+        }
+      });
+    });
+    
+    const themeList = Object.entries(themes)
+      .map(([theme, count]) => ({ theme, count, percentage: (count / images.length * 100).toFixed(1) }))
+      .sort((a, b) => b.count - a.count);
+    
+    res.json({ ok: true, themes: themeList });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
