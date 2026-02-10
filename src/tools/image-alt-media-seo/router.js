@@ -2350,12 +2350,16 @@ router.post('/shopify/push', async (req, res) => {
       }
     }
     
-    const validImages = images.filter(img => img && img.productId && img.imageId);
+    const validImages = images.filter(img => {
+      const hasIds = img && img.productId && img.imageId;
+      const hasAlt = typeof img?.altText === 'string' && img.altText.trim().length > 0;
+      return hasIds && hasAlt;
+    });
     console.log('✅ Valid images for Shopify push:', validImages.length);
     
     if (validImages.length === 0) {
-      console.error('❌ No valid images with Shopify IDs');
-      return res.status(400).json({ ok: false, error: 'No valid images with Shopify product/image IDs' });
+      console.error('❌ No valid images with Shopify IDs and alt text');
+      return res.status(400).json({ ok: false, error: 'No valid images with Shopify IDs and non-empty alt text' });
     }
     
     const results = [];
