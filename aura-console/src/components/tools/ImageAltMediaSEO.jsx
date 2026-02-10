@@ -1180,9 +1180,15 @@ export default function ImageAltMediaSEO() {
     
     if (count === 0) return null;
     
+    const handleClick = () => {
+      if (hasShopifyImages && roleCanApply && !shopifyPushProgress.show) {
+        handlePushToShopify();
+      }
+    };
+    
     return (
       <div 
-        onClick={hasShopifyImages && roleCanApply && !shopifyPushProgress.show ? () => handlePushToShopify() : null}
+        onClick={handleClick}
         style={{ 
           position: "fixed", 
           bottom: 180, 
@@ -8802,31 +8808,60 @@ export default function ImageAltMediaSEO() {
                           );
                         })()}
                       </div>
-                      <button
-                        onClick={() => handleAiRewriteSingle(img)}
-                        disabled={rewritingId === img.id || loading}
-                        style={{
-                          background: rewritingId === img.id ? "#475569" : "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: 10,
-                          padding: "8px 14px",
-                          fontWeight: 700,
-                          fontSize: 12,
-                          cursor: rewritingId === img.id || loading ? "wait" : "pointer",
-                          boxShadow: rewritingId === img.id ? "none" : "0 4px 12px rgba(139, 92, 246, 0.3)",
-                          transition: "all 0.2s",
-                          transform: "translateY(0)"
-                        }}
-                        onMouseEnter={e => {
-                          if (rewritingId !== img.id && !loading) e.target.style.transform = "translateY(-2px)";
-                        }}
-                        onMouseLeave={e => {
-                          e.target.style.transform = "translateY(0)";
-                        }}
-                      >
-                        {rewritingId === img.id ? "Rewriting…" : "AI rewrite"}
-                      </button>
+                      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                        <button
+                          onClick={() => handleAiRewriteSingle(img)}
+                          disabled={rewritingId === img.id || loading}
+                          style={{
+                            background: rewritingId === img.id ? "#475569" : "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: 10,
+                            padding: "8px 14px",
+                            fontWeight: 700,
+                            fontSize: 12,
+                            cursor: rewritingId === img.id || loading ? "wait" : "pointer",
+                            boxShadow: rewritingId === img.id ? "none" : "0 4px 12px rgba(139, 92, 246, 0.3)",
+                            transition: "all 0.2s",
+                            transform: "translateY(0)"
+                          }}
+                          onMouseEnter={e => {
+                            if (rewritingId !== img.id && !loading) e.target.style.transform = "translateY(-2px)";
+                          }}
+                          onMouseLeave={e => {
+                            e.target.style.transform = "translateY(0)";
+                          }}
+                        >
+                          {rewritingId === img.id ? "Rewriting…" : "AI rewrite"}
+                        </button>
+                        {img.productId && img.imageId && (
+                          <button
+                            onClick={() => handlePushToShopify([img.id])}
+                            disabled={shopifyPushProgress.show}
+                            style={{
+                              background: shopifyPushProgress.show ? "#475569" : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: 10,
+                              padding: "8px 14px",
+                              fontWeight: 700,
+                              fontSize: 12,
+                              cursor: shopifyPushProgress.show ? "wait" : "pointer",
+                              boxShadow: shopifyPushProgress.show ? "none" : "0 4px 12px rgba(16, 185, 129, 0.3)",
+                              transition: "all 0.2s",
+                              transform: "translateY(0)"
+                            }}
+                            onMouseEnter={e => {
+                              if (!shopifyPushProgress.show) e.target.style.transform = "translateY(-2px)";
+                            }}
+                            onMouseLeave={e => {
+                              e.target.style.transform = "translateY(0)";
+                            }}
+                          >
+                            {shopifyPushProgress.show ? "Pushing…" : "Push to Shopify"}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </li>
