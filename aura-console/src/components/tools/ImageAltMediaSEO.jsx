@@ -1302,8 +1302,6 @@ export default function ImageAltMediaSEO() {
       ? Math.round(scoresAvailable.reduce((sum, item) => sum + item.seoScore, 0) / scoresAvailable.length)
       : null;
     
-    console.log('✅ Rendering AIResultsModal with avgScore:', avgScore);
-    
     return (
       <div onClick={() => setAiResults({ show: false, success: 0, failed: 0, items: [] })} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s" }}>
         <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #22c55e", animation: "scaleIn 0.3s ease-out" }}>
@@ -2801,7 +2799,9 @@ export default function ImageAltMediaSEO() {
       });
       
       if (data.pushed > 0) {
-        showToast(`✓ Pushed ${data.pushed} image${data.pushed !== 1 ? 's' : ''} to Shopify`, 3000);
+        const idPreview = ids.slice(0, 5).join(', ');
+        const suffix = ids.length > 5 ? '…' : '';
+        showToast(`✓ Pushed ${data.pushed} image${data.pushed !== 1 ? 's' : ''} to Shopify${idPreview ? ` (IDs: ${idPreview}${suffix})` : ''}`, 3200);
       }
       if (data.failed > 0) {
         setError(`Failed to push ${data.failed} image${data.failed !== 1 ? 's' : ''}`);
