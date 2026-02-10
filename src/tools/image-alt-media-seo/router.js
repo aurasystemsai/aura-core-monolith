@@ -2308,9 +2308,34 @@ router.post('/shopify/push', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'imageIds array required' });
     }
     
+    // Optional per-image overrides from request body (alt/url)
+    const overrides = Array.isArray(req.body?.items) ? req.body.items : [];
+    const overrideMap = new Map();
+    overrides.forEach(item => {
+      const idNum = Number(item?.id);
+      if (Number.isNaN(idNum)) return;
+      const altText = normalizeStr(item.altText || item.alt || '', MAX_ALT_LEN);
+      const url = normalizeStr(item.url || '', MAX_URL_LEN);
+      overrideMap.set(idNum, { altText, url });
+    });
+
     // Fetch images from DB
-    const images = await Promise.all(imageIds.map(id => db.get(id)));
+    const dbImages = await Promise.all(imageIds.map(id => db.get(id)));
+    const images = dbImages.map((img, idx) => {
+      const id = Number(imageIds[idx]);
+      const override = overrideMap.get(id);
+      const altText = override?.altText || img?.altText || '';
+      const url = override?.url || img?.url || '';
+      return { ...(img || {}), id: img?.id || id, altText, url };
+    });
     console.log('📦 Fetched images from DB:', images.map(i => i ? { id: i.id, productId: i.productId, imageId: i.imageId, altText: i.altText?.substring(0, 50) } : null));
+
+    // Persist override alt text into DB for consistency
+    for (const img of images) {
+      if (img?.id && img.altText) {
+        await db.update(img.id, { altText: img.altText });
+      }
+    }
 
     // Backfill missing product/image IDs from Shopify by matching URLs
     const missingMeta = images.filter(img => img && (!img.productId || !img.imageId) && img.url);
