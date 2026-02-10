@@ -152,7 +152,12 @@ export default function ImageAltMediaSEO() {
     "advanced-image-seo": "Advanced image-specific SEO tools including schema, social, performance analysis",
     automation: "Set up automated workflows and scheduling",
     collaboration: "Team permissions, approvals, and integrations",
-    platform: "Platform-specific settings and configurations"
+    platform: "Platform-specific settings and configurations",
+    templates: "Create and manage alt text templates",
+    "advanced-analytics": "ML predictions, sentiment analysis, cohort analytics",
+    "collaboration-advanced": "Comments, assignments, team management, workflows",
+    "seo-advanced": "Sitemap generation, schema markup, performance optimization",
+    integrations: "Connect with Shopify, WordPress, Zapier, and more"
   };
   
   // Tab grouping for navigation (used by header and keyboard shortcuts)
@@ -160,13 +165,20 @@ export default function ImageAltMediaSEO() {
     manage: [
       { id: "images", label: "Images" },
       { id: "generate", label: "Generate & Batch" },
-      { id: "analytics", label: "Analytics" }
+      { id: "analytics", label: "Analytics" },
+      { id: "templates", label: "Templates" }
     ],
     optimize: [
       { id: "seo", label: "SEO" },
       { id: "accessibility", label: "Accessibility" },
       { id: "quality-validation", label: "Quality" },
-      { id: "advanced-image-seo", label: "Advanced Image SEO" }
+      { id: "advanced-image-seo", label: "Advanced Image SEO" },
+      { id: "seo-advanced", label: "SEO Tools" }
+    ],
+    advanced: [
+      { id: "advanced-analytics", label: "Advanced Analytics" },
+      { id: "collaboration-advanced", label: "Collaboration" },
+      { id: "integrations", label: "Integrations" }
     ],
     settings: [
       { id: "automation", label: "Automation" },
@@ -11301,6 +11313,362 @@ export default function ImageAltMediaSEO() {
               </ul>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ========== NEW UI SECTIONS: TEMPLATES, ANALYTICS, COLLABORATION ========== */}
+      
+      {/* Templates Management Section */}
+      {activeTab === "templates" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Alt Text Templates</h2>
+          
+          <button
+            onClick={async () => {
+              const name = prompt("Template name:");
+              const pattern = prompt("Alt text pattern (use {{title}}, {{color}}, etc):");
+              if (!name || !pattern) return;
+              const res = await fetch("/api/image-alt-media-seo/templates", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, pattern, category: "product" })
+              });
+              const data = await res.json();
+              if (data.ok) {
+                setNotifications([...notifications, { text: `Template "${name}" created`, type: "success" }]);
+                // Refresh templates list
+              }
+            }}
+            style={{ padding: "12px 24px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
+          >
+            + Create Template
+          </button>
+          
+          <div style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+            {sharedTemplates.map(template => (
+              <div key={template.id} style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 20, border: "1px solid #334155" }}>
+                <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{template.name}</h3>
+                <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 12 }}>{template.pattern}</p>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button style={{ flex: 1, padding: "8px", background: accentColor, color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
+                    Use Template
+                  </button>
+                  <button style={{ padding: "8px 12px", background: "#ef4444", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Advanced Analytics Dashboard */}
+      {activeTab === "advanced-analytics" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Advanced Analytics</h2>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20, marginBottom: 32 }}>
+            <div style={{ background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", borderRadius: 16, padding: 24, color: "#fff" }}>
+              <div style={{ fontSize: 14, opacity: 0.9, marginBottom: 8 }}>Quality Trends</div>
+              <div style={{ fontSize: 36, fontWeight: 700 }}>↑ 12%</div>
+              <button
+                onClick={async () => {
+                  const res = await fetch(`/api/image-alt-media-seo/analytics/quality-trends?days=30`);
+                  const data = await res.json();
+                  setQualityCharts(data);
+                }}
+                style={{ marginTop: 12, padding: "8px 16px", background: "rgba(255,255,255,0.2)", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" }}
+              >
+                View Details
+              </button>
+            </div>
+            
+            <div style={{ background: "linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)", borderRadius: 16, padding: 24, color: "#fff" }}>
+              <div style={{ fontSize: 14, opacity: 0.9, marginBottom: 8 }}>Cohort Analysis</div>
+              <div style={{ fontSize: 36, fontWeight: 700 }}>8 Cohorts</div>
+              <button
+                onClick={async () => {
+                  const res = await fetch(`/api/image-alt-media-seo/analytics/cohorts?daysBack=90`);
+                  const data = await res.json();
+                  console.log("Cohorts:", data);
+                }}
+                style={{ marginTop: 12, padding: "8px 16px", background: "rgba(255,255,255,0.2)", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" }}
+              >
+                Analyze
+              </button>
+            </div>
+            
+            <div style={{ background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)", borderRadius: 16, padding: 24, color: "#fff" }}>
+              <div style={{ fontSize: 14, opacity: 0.9, marginBottom: 8 }}>Sentiment Score</div>
+              <div style={{ fontSize: 36, fontWeight: 700 }}>8.4/10</div>
+              <button
+                onClick={async () => {
+                  const res = await fetch(`/api/image-alt-media-seo/analysis/sentiment`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ imageIds: selectedImageIds })
+                  });
+                  const data = await res.json();
+                  setSentimentScores(data);
+                }}
+                style={{ marginTop: 12, padding: "8px 16px", background: "rgba(255,255,255,0.2)", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" }}
+              >
+                Analyze Sentiment
+              </button>
+            </div>
+            
+            <div style={{ background: "linear-gradient(135deg, #ec4899 0%, #db2777 100%)", borderRadius: 16, padding: 24, color: "#fff" }}>
+              <div style={{ fontSize: 14, opacity: 0.9, marginBottom: 8 }}>ML Predictions</div>
+              <div style={{ fontSize: 36, fontWeight: 700 }}>94% Acc</div>
+              <button
+                onClick={async () => {
+                  const res = await fetch(`/api/image-alt-media-seo/ml/predict-quality`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ imageIds: selectedImageIds })
+                  });
+                  const data = await res.json();
+                  console.log("ML Predictions:", data);
+                }}
+                style={{ marginTop: 12, padding: "8px 16px", background: "rgba(255,255,255,0.2)", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" }}
+              >
+                Run ML Model
+              </button>
+            </div>
+          </div>
+          
+          {qualityCharts && (
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24, marginBottom: 24 }}>
+              <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Quality Trends (Last 30 Days)</h3>
+              <div style={{ height: 300, display: "flex", alignItems: "flex-end", gap: 8 }}>
+                {qualityCharts.data?.map((point, idx) => (
+                  <div key={idx} style={{ flex: 1, background: accentColor, height: `${point.avgQuality}%`, borderRadius: "4px 4px 0 0", opacity: 0.8 + idx * 0.02 }} title={`Day ${idx + 1}: ${point.avgQuality}%`} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Collaboration & Team Management */}
+      {activeTab === "collaboration-advanced" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Collaboration & Teams</h2>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+            {/* Comments Section */}
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+              <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Image Comments</h3>
+              {selectedImageIds.length === 1 && (
+                <div>
+                  <textarea
+                    placeholder="Add a comment..."
+                    style={{ width: "100%", minHeight: 80, padding: 12, background: theme === "dark" ? "#0f172a" : "#fff", color: theme === "dark" ? "#e2e8f0" : "#0f172a", border: "1px solid #334155", borderRadius: 8, marginBottom: 12 }}
+                  />
+                  <button
+                    onClick={async () => {
+                      const text = prompt("Comment:");
+                      if (!text) return;
+                      const res = await fetch("/api/image-alt-media-seo/comments", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ imageId: selectedImageIds[0], userId: "user123", userName: "Current User", text })
+                      });
+                      const data = await res.json();
+                      if (data.ok) setNotifications([...notifications, { text: "Comment added", type: "success" }]);
+                    }}
+                    style={{ padding: "10px 20px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
+                  >
+                    Post Comment
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* Assignments Section */}
+            <div style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+              <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Assignments</h3>
+              <button
+                onClick={async () => {
+                  if (selectedImageIds.length === 0) return alert("Select images first");
+                  const assignedTo = prompt("Assign to user ID:");
+                  if (!assignedTo) return;
+                  
+                  for (const imageId of selectedImageIds) {
+                    await fetch("/api/image-alt-media-seo/assignments", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ imageId, assignedTo, assignedBy: "admin", priority: "medium" })
+                    });
+                  }
+                  setNotifications([...notifications, { text: `Assigned ${selectedImageIds.length} images`, type: "success" }]);
+                }}
+                style={{ padding: "10px 20px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
+              >
+                Assign Selected Images
+              </button>
+            </div>
+          </div>
+          
+          {/* Team Management */}
+          <div style={{ marginTop: 32, background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Team Management</h3>
+            <button
+              onClick={async () => {
+                const name = prompt("Team name:");
+                if (!name) return;
+                const res = await fetch("/api/image-alt-media-seo/teams", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ name, members: [], permissions: {} })
+                });
+                const data = await res.json();
+                if (data.ok) setNotifications([...notifications, { text: `Team "${name}" created`, type: "success" }]);
+              }}
+              style={{ padding: "10px 20px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
+            >
+              + Create Team
+            </button>
+          </div>
+          
+          {/* Workflow Automation */}
+          <div style={{ marginTop: 32, background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Workflow Automation</h3>
+            <p style={{ fontSize: 14, color: "#94a3b8", marginBottom: 16 }}>Create automated workflows triggered by events</p>
+            <button
+              onClick={async () => {
+                const res = await fetch("/api/image-alt-media-seo/workflows", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    name: "Auto-assign low quality images",
+                    trigger: "quality_low",
+                    conditions: [{ field: "qualityScore", operator: "lt", value: 50 }],
+                    actions: [{ type: "assign", params: { userId: "reviewer1", priority: "high" } }],
+                    enabled: true
+                  })
+                });
+                const data = await res.json();
+                if (data.ok) setNotifications([...notifications, { text: "Workflow created", type: "success" }]);
+              }}
+              style={{ padding: "10px 20px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
+            >
+              Create Auto-Assign Workflow
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* SEO Tools Section */}
+      {activeTab === "seo-advanced" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Advanced SEO Tools</h2>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20 }}>
+            <button
+              onClick={async () => {
+                const res = await fetch("/api/image-alt-media-seo/seo/sitemap-images");
+                const data = await res.json();
+                console.log("Sitemap entries:", data);
+                setNotifications([...notifications, { text: `Generated ${data.count} sitemap entries`, type: "success" }]);
+              }}
+              style={{ padding: 24, background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", color: "#fff", border: "none", borderRadius: 16, cursor: "pointer", textAlign: "left" }}
+            >
+              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>📍 Generate Image Sitemap</div>
+              <div style={{ fontSize: 13, opacity: 0.9 }}>Create SEO-optimized XML sitemap</div>
+            </button>
+            
+            <button
+              onClick={async () => {
+                const res = await fetch("/api/image-alt-media-seo/schema/generate", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ imageUrl: images[0]?.imageUrl, altText: images[0]?.altText, context: "product" })
+                });
+                const data = await res.json();
+                console.log("Schema markup:", data.schema);
+                setNotifications([...notifications, { text: "Schema markup generated", type: "success" }]);
+              }}
+              style={{ padding: 24, background: "linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)", color: "#fff", border: "none", borderRadius: 16, cursor: "pointer", textAlign: "left" }}
+            >
+              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>🏷️ Generate Schema Markup</div>
+              <div style={{ fontSize: 13, opacity: 0.9 }}>Create structured data for images</div>
+            </button>
+            
+            <button
+              onClick={async () => {
+                const res = await fetch("/api/image-alt-media-seo/seo/analyze", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ pageUrl: window.location.href, images: images.slice(0, 20) })
+                });
+                const data = await res.json();
+                console.log("SEO Analysis:", data);
+                alert(`SEO Score: ${data.seoScore}/100\nRecommendations: ${data.recommendations.length}`);
+              }}
+              style={{ padding: 24, background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)", color: "#fff", border: "none", borderRadius: 16, cursor: "pointer", textAlign: "left" }}
+            >
+              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>🔍 SEO Analysis</div>
+              <div style={{ fontSize: 13, opacity: 0.9 }}>Analyze page SEO performance</div>
+            </button>
+            
+            <button
+              onClick={async () => {
+                const res = await fetch("/api/image-alt-media-seo/performance/analyze", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ imageUrl: images[0]?.imageUrl, fileSize: 150000, dimensions: { width: 1200, height: 800 } })
+                });
+                const data = await res.json();
+                console.log("Performance suggestions:", data.suggestions);
+              }}
+              style={{ padding: 24, background: "linear-gradient(135deg, #ec4899 0%, #db2777 100%)", color: "#fff", border: "none", borderRadius: 16, cursor: "pointer", textAlign: "left" }}
+            >
+              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>⚡ Performance Analysis</div>
+              <div style={{ fontSize: 13, opacity: 0.9 }}>Optimize image loading speed</div>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Integration Marketplace */}
+      {activeTab === "integrations" && (
+        <div style={{ padding: 40, background: theme === "dark" ? "#0f172a" : "#fff" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Integration Marketplace</h2>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 16 }}>
+            {[
+              { id: 'shopify', name: 'Shopify', icon: '🛍️', status: 'active' },
+              { id: 'wordpress', name: 'WordPress', icon: '📝', status: 'available' },
+              { id: 'wix', name: 'Wix', icon: '🎨', status: 'available' },
+              { id: 'zapier', name: 'Zapier', icon: '⚡', status: 'available' },
+              { id: 'slack', name: 'Slack', icon: '💬', status: 'available' },
+              { id: 'google-analytics', name: 'Google Analytics', icon: '📊', status: 'available' }
+            ].map(integration => (
+              <div key={integration.id} style={{ background: theme === "dark" ? "#1e293b" : "#f8fafc", borderRadius: 12, padding: 20, border: `2px solid ${integration.status === 'active' ? '#10b981' : '#334155'}` }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>{integration.icon}</div>
+                <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{integration.name}</h3>
+                <div style={{ fontSize: 12, color: integration.status === 'active' ? '#10b981' : '#94a3b8', marginBottom: 12, textTransform: 'uppercase', fontWeight: 600 }}>
+                  {integration.status}
+                </div>
+                <button
+                  onClick={async () => {
+                    const res = await fetch(`/api/image-alt-media-seo/integrations/${integration.id}/connect`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ userId: "user123", credentials: {} })
+                    });
+                    const data = await res.json();
+                    if (data.ok) setNotifications([...notifications, { text: `${integration.name} connected`, type: "success" }]);
+                  }}
+                  style={{ width: "100%", padding: "10px", background: integration.status === 'active' ? '#6b7280' : accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
+                >
+                  {integration.status === 'active' ? 'Connected' : 'Connect'}
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
