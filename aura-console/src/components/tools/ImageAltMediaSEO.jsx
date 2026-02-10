@@ -2788,7 +2788,7 @@ export default function ImageAltMediaSEO() {
       const { data } = await fetchJson("/api/image-alt-media-seo/shopify/push", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageIds: ids, shop })
+        body: JSON.stringify({ imageIds: ids, shop, items: itemsWithAlt })
       });
       
       console.log('✅ Shopify push response:', data);
