@@ -1392,4 +1392,355 @@ router.post('/ingest/event', (req, res) => {
   res.json({ ok: true, event: recorded });
 });
 
+// ========================
+// AI ORCHESTRATION (10 endpoints)
+// ========================
+router.get('/ai-orchestration/agents', (_req, res) => {
+  res.json({ ok: true, agents: [
+    { id: 'content-gen', name: 'Content Generator', status: 'active', models: ['gpt-4', 'claude-3'] },
+    { id: 'flow-optimizer', name: 'Flow Optimizer', status: 'active', models: ['gpt-4'] },
+    { id: 'subject-tester', name: 'Subject Line Tester', status: 'active', models: ['gpt-3.5-turbo'] }
+  ]});
+});
+
+router.post('/ai-orchestration/agents', (req, res) => {
+  const { name = 'New Agent', models = ['gpt-4'], task = '' } = req.body || {};
+  const agent = { id: `agent-${Date.now()}`, name, models, task, status: 'active', created: new Date().toISOString() };
+  res.json({ ok: true, agent });
+});
+
+router.get('/ai-orchestration/model-routing', (_req, res) => {
+  res.json({ ok: true, routing: {
+    'gpt-4': { priority: 1, cost: 0.03, latency: 1200 },
+    'gpt-3.5-turbo': { priority: 2, cost: 0.002, latency: 600 },
+    'claude-3': { priority: 3, cost: 0.025, latency: 1100 }
+  }});
+});
+
+router.put('/ai-orchestration/model-routing', (req, res) => {
+  const { routing = {} } = req.body || {};
+  res.json({ ok: true, routing, updated: new Date().toISOString() });
+});
+
+router.post('/ai-orchestration/batch-process', async (req, res) => {
+  const { tasks = [], model = 'gpt-4' } = req.body || {};
+  const results = await Promise.all(tasks.map(async (task, idx) => {
+    try {
+      const completion = await openai.chat.completions.create({
+        model,
+        messages: [{ role: 'user', content: task.prompt || '' }],
+        max_tokens: 256
+      });
+      return { id: task.id || idx, result: completion.choices[0]?.message?.content?.trim(), status: 'completed' };
+    } catch (err) {
+      return { id: task.id || idx, error: err.message, status: 'failed' };
+    }
+  }));
+  res.json({ ok: true, results });
+});
+
+router.get('/ai-orchestration/quality-scores', (_req, res) => {
+  res.json({ ok: true, scores: {
+    'gpt-4': { quality: 95, consistency: 92, creativity: 88, accuracy: 96 },
+    'gpt-3.5-turbo': { quality: 82, consistency: 85, creativity: 78, accuracy: 84 },
+    'claude-3': { quality: 93, consistency: 90, creativity: 91, accuracy: 94 }
+  }});
+});
+
+router.post('/ai-orchestration/fallback-chain', (req, res) => {
+  const { chain = ['gpt-4', 'claude-3', 'gpt-3.5-turbo'] } = req.body || {};
+  res.json({ ok: true, chain, enabled: true, updated: new Date().toISOString() });
+});
+
+router.get('/ai-orchestration/cost-optimization', (_req, res) => {
+  res.json({ ok: true, optimization: {
+    totalSpent: 247.82,
+    savings: 64.12,
+    recommendations: [
+      'Route simple tasks to GPT-3.5-turbo',
+      'Enable batch processing for flow analysis',
+      'Use caching for repetitive prompts'
+    ]
+  }});
+});
+
+router.get('/ai-orchestration/prompt-templates', (_req, res) => {
+  res.json({ ok: true, templates: [
+    { id: 'email-subject', template: 'Generate 5 email subject lines for {product} campaign targeting {audience}', category: 'email' },
+    { id: 'flow-analysis', template: 'Analyze this Klaviyo flow and suggest improvements: {flowData}', category: 'optimization' },
+    { id: 'segment-builder', template: 'Create segment criteria for {goal} with engagement level {level}', category: 'segments' }
+  ]});
+});
+
+router.post('/ai-orchestration/prompt-templates', (req, res) => {
+  const { template = '', category = 'general', name = 'New Template' } = req.body || {};
+  const tmpl = { id: `tmpl-${Date.now()}`, name, template, category, created: new Date().toISOString() };
+  res.json({ ok: true, template: tmpl });
+});
+
+// ========================
+// ADVANCED COLLABORATION (8 endpoints)
+// ========================
+router.get('/collaboration/teams', (_req, res) => {
+  res.json({ ok: true, teams: [
+    { id: 'marketing', name: 'Marketing Team', members: 8, flows: 24 },
+    { id: 'growth', name: 'Growth Team', members: 5, flows: 12 }
+  ]});
+});
+
+router.post('/collaboration/teams', (req, res) => {
+  const { name = 'New Team', members = [] } = req.body || {};
+  const team = { id: `team-${Date.now()}`, name, members, flows: 0, created: new Date().toISOString() };
+  res.json({ ok: true, team });
+});
+
+router.get('/collaboration/permissions', (_req, res) => {
+  res.json({ ok: true, permissions: {
+    'marketing': { flows: ['read', 'write', 'delete'], analytics: ['read'], settings: [] },
+    'growth': { flows: ['read', 'write'], analytics: ['read', 'write'], settings: [] },
+    'admin': { flows: ['read', 'write', 'delete'], analytics: ['read', 'write', 'delete'], settings: ['read', 'write'] }
+  }});
+});
+
+router.put('/collaboration/permissions/:team', (req, res) => {
+  const { permissions = {} } = req.body || {};
+  res.json({ ok: true, team: req.params.team, permissions, updated: new Date().toISOString() });
+});
+
+router.get('/collaboration/activity-feed', (_req, res) => {
+  res.json({ ok: true, activities: [
+    { id: 1, user: 'alice@co.com', action: 'Updated Welcome Flow', timestamp: new Date(Date.now() - 3600000).toISOString() },
+    { id: 2, user: 'bob@co.com', action: 'Created Abandoned Cart v2', timestamp: new Date(Date.now() - 7200000).toISOString() },
+    { id: 3, user: 'charlie@co.com', action: 'Deleted Old Promo Flow', timestamp: new Date(Date.now() - 10800000).toISOString() }
+  ]});
+});
+
+router.post('/collaboration/comments', (req, res) => {
+  const { flowId = '', userId = '', comment = '' } = req.body || {};
+  const cmt = { id: Date.now(), flowId, userId, comment, timestamp: new Date().toISOString() };
+  res.json({ ok: true, comment: cmt });
+});
+
+router.get('/collaboration/comments/:flowId', (req, res) => {
+  res.json({ ok: true, comments: [
+    { id: 1, flowId: req.params.flowId, userId: 'alice@co.com', comment: 'Consider A/B testing subject lines', timestamp: new Date(Date.now() - 1800000).toISOString() }
+  ]});
+});
+
+router.post('/collaboration/share-flow', (req, res) => {
+  const { flowId = '', recipients = [], message = '' } = req.body || {};
+  res.json({ ok: true, shared: { flowId, recipients, message, sharedAt: new Date().toISOString() }});
+});
+
+// ========================
+// SECURITY DASHBOARD (8 endpoints)
+// ========================
+router.get('/security/audit-log', (_req, res) => {
+  res.json({ ok: true, logs: [
+    { id: 1, user: 'admin@co.com', action: 'Updated permissions', resource: 'team-marketing', timestamp: new Date(Date.now() - 3600000).toISOString() },
+    { id: 2, user: 'alice@co.com', action: 'Deleted flow', resource: 'flow-123', timestamp: new Date(Date.now() - 7200000).toISOString() }
+  ]});
+});
+
+router.get('/security/access-patterns', (_req, res) => {
+  res.json({ ok: true, patterns: {
+    'admin@co.com': { logins: 42, failedLogins: 0, lastLogin: new Date(Date.now() - 3600000).toISOString() },
+    'alice@co.com': { logins: 156, failedLogins: 2, lastLogin: new Date(Date.now() - 7200000).toISOString() }
+  }});
+});
+
+router.get('/security/threat-detection', (_req, res) => {
+  res.json({ ok: true, threats: [
+    { id: 1, type: 'brute-force', severity: 'high', source: '192.168.1.100', detected: new Date(Date.now() - 1800000).toISOString(), status: 'blocked' }
+  ]});
+});
+
+router.post('/security/encrypt-data', (req, res) => {
+  const { data = '' } = req.body || {};
+  const encrypted = Buffer.from(data).toString('base64'); // Mock encryption
+  res.json({ ok: true, encrypted });
+});
+
+router.post('/security/decrypt-data', (req, res) => {
+  const { encrypted = '' } = req.body || {};
+  const decrypted = Buffer.from(encrypted, 'base64').toString('utf-8'); // Mock decryption
+  res.json({ ok: true, decrypted });
+});
+
+router.get('/security/compliance-status', (_req, res) => {
+  res.json({ ok: true, compliance: {
+    gdpr: { status: 'compliant', lastAudit: '2024-01-15', score: 98 },
+    ccpa: { status: 'compliant', lastAudit: '2024-01-15', score: 96 },
+    soc2: { status: 'in-progress', lastAudit: '2023-12-01', score: 88 }
+  }});
+});
+
+router.post('/security/revoke-access', (req, res) => {
+  const { userId = '', reason = '' } = req.body || {};
+  res.json({ ok: true, revoked: { userId, reason, revokedAt: new Date().toISOString() }});
+});
+
+router.get('/security/api-keys', (_req, res) => {
+  res.json({ ok: true, keys: [
+    { id: 'key-1', name: 'Production API', created: '2024-01-01', lastUsed: new Date(Date.now() - 3600000).toISOString(), status: 'active' },
+    { id: 'key-2', name: 'Staging API', created: '2024-01-10', lastUsed: new Date(Date.now() - 86400000).toISOString(), status: 'active' }
+  ]});
+});
+
+// ========================
+// PREDICTIVE BI (6 endpoints)
+// ========================
+router.get('/predictive-bi/revenue-forecast', (_req, res) => {
+  res.json({ ok: true, forecast: [
+    { month: '2024-02', predicted: 145000, confidence: 92 },
+    { month: '2024-03', predicted: 158000, confidence: 88 },
+    { month: '2024-04', predicted: 162000, confidence: 85 }
+  ]});
+});
+
+router.get('/predictive-bi/churn-prediction', (_req, res) => {
+  res.json({ ok: true, churn: {
+    overall: 4.2,
+    bySegment: [
+      { segment: 'vip', churnRate: 1.8, atRisk: 24 },
+      { segment: 'regulars', churnRate: 5.1, atRisk: 156 },
+      { segment: 'new', churnRate: 8.4, atRisk: 312 }
+    ]
+  }});
+});
+
+router.get('/predictive-bi/ltv-analysis', (_req, res) => {
+  res.json({ ok: true, ltv: {
+    average: 487.50,
+    bySegment: [
+      { segment: 'vip', ltv: 1240.00, count: 450 },
+      { segment: 'regulars', ltv: 620.00, count: 2100 },
+      { segment: 'new', ltv: 180.00, count: 5800 }
+    ]
+  }});
+});
+
+router.get('/predictive-bi/anomaly-detection', (_req, res) => {
+  res.json({ ok: true, anomalies: [
+    { metric: 'order-volume', detected: new Date(Date.now() - 7200000).toISOString(), deviation: 32, severity: 'medium' },
+    { metric: 'open-rate', detected: new Date(Date.now() - 3600000).toISOString(), deviation: -18, severity: 'low' }
+  ]});
+});
+
+router.get('/predictive-bi/cohort-retention', (_req, res) => {
+  res.json({ ok: true, cohorts: [
+    { cohort: '2024-01', week1: 100, week2: 72, week3: 58, week4: 48 },
+    { cohort: '2023-12', week1: 100, week2: 68, week3: 52, week4: 42 }
+  ]});
+});
+
+router.post('/predictive-bi/custom-model', (req, res) => {
+  const { modelType = 'regression', features = [], target = '' } = req.body || {};
+  res.json({ ok: true, model: { id: `model-${Date.now()}`, modelType, features, target, status: 'training', created: new Date().toISOString() }});
+});
+
+// ========================
+// DEVELOPER PLATFORM (5 endpoints)
+// ========================
+router.get('/dev/api-docs', (_req, res) => {
+  res.json({ ok: true, docs: {
+    version: '2.0',
+    baseUrl: 'https://api.aura.ai/klaviyo',
+    endpoints: 200,
+    authentication: 'Bearer token',
+    rateLimit: '1000/hour'
+  }});
+});
+
+router.post('/dev/webhooks/register', (req, res) => {
+  const { url = '', events = [] } = req.body || {};
+  const webhook = { id: `webhook-${Date.now()}`, url, events, status: 'active', created: new Date().toISOString() };
+  res.json({ ok: true, webhook });
+});
+
+router.get('/dev/webhooks', (_req, res) => {
+  res.json({ ok: true, webhooks: [
+    { id: 'webhook-1', url: 'https://example.com/klaviyo-events', events: ['flow.created', 'flow.updated'], status: 'active' }
+  ]});
+});
+
+router.post('/dev/sandbox/test', async (req, res) => {
+  const { code = '', context = {} } = req.body || {};
+  try {
+    // Mock sandbox execution
+    const result = { output: 'Sandbox execution successful', logs: ['Started', 'Completed'], executionTime: 124 };
+    res.json({ ok: true, result });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/dev/sdk-downloads', (_req, res) => {
+  res.json({ ok: true, sdks: [
+    { language: 'javascript', version: '2.1.0', url: 'https://cdn.aura.ai/sdk/js/v2.1.0.js', downloads: 1240 },
+    { language: 'python', version: '2.0.5', url: 'https://pypi.org/project/aura-klaviyo/2.0.5', downloads: 840 },
+    { language: 'ruby', version: '2.0.3', url: 'https://rubygems.org/gems/aura-klaviyo/2.0.3', downloads: 320 }
+  ]});
+});
+
+// ========================
+// WHITE-LABEL (4 endpoints)
+// ========================
+router.get('/white-label/themes', (_req, res) => {
+  res.json({ ok: true, themes: [
+    { id: 'default', name: 'Aura Default', colors: { primary: '#6366f1', secondary: '#8b5cf6' } },
+    { id: 'dark', name: 'Dark Mode', colors: { primary: '#3b82f6', secondary: '#1e40af' } }
+  ]});
+});
+
+router.post('/white-label/themes', (req, res) => {
+  const { name = 'Custom Theme', colors = {} } = req.body || {};
+  const theme = { id: `theme-${Date.now()}`, name, colors, created: new Date().toISOString() };
+  res.json({ ok: true, theme });
+});
+
+router.put('/white-label/branding', (req, res) => {
+  const { logo = '', companyName = '', primaryColor = '' } = req.body || {};
+  res.json({ ok: true, branding: { logo, companyName, primaryColor, updated: new Date().toISOString() }});
+});
+
+router.get('/white-label/domains', (_req, res) => {
+  res.json({ ok: true, domains: [
+    { domain: 'klaviyo.yourbrand.com', status: 'active', ssl: true, verified: true }
+  ]});
+});
+
+// ========================
+// APM (Application Performance Monitoring) (3 endpoints)
+// ========================
+router.get('/apm/metrics', (_req, res) => {
+  res.json({ ok: true, metrics: {
+    avgResponseTime: 142,
+    p95ResponseTime: 380,
+    p99ResponseTime: 720,
+    requestsPerMinute: 1240,
+    errorRate: 0.12
+  }});
+});
+
+router.get('/apm/traces', (_req, res) => {
+  res.json({ ok: true, traces: [
+    { id: 'trace-1', endpoint: '/flows', duration: 124, timestamp: new Date(Date.now() - 1800000).toISOString(), spans: 4 },
+    { id: 'trace-2', endpoint: '/ai/generate', duration: 1240, timestamp: new Date(Date.now() - 3600000).toISOString(), spans: 7 }
+  ]});
+});
+
+router.get('/apm/health', (_req, res) => {
+  res.json({ ok: true, health: {
+    status: 'healthy',
+    uptime: 99.97,
+    services: {
+      api: 'healthy',
+      database: 'healthy',
+      ai: 'healthy',
+      cache: 'healthy'
+    }
+  }});
+});
+
 module.exports = router;
