@@ -14,11 +14,11 @@
  * - All 9 world-class features (from ImageAltMediaSEO)
  */
 
-import express from 'express';
-import db from '../../core/db.js';
-import storageJson from '../../core/storageJson.js';
-import shopifyApi from '../../core/makeClient.js';
-import OpenAI from 'openai';
+const express = require('express');
+const db = require('../../core/db.js');
+const storageJson = require('../../core/storageJson.js');
+const shopifyApi = require('../../core/makeClient.js');
+const OpenAI = require('openai');
 
 const router = express.Router();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -2591,6 +2591,4 @@ function generateOpenAPISchemas() {
   return {};
 }
 
-export default router;
-// Support CommonJS require for server.js
 module.exports = router;
