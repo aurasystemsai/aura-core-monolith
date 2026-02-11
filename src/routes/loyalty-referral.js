@@ -1550,7 +1550,7 @@ router.post('/ai/advocacy-score', async (req, res) => {
       customerId,
       npsScore: nps,
       category,
-      likelihood ToRecommend: 9, // 0-10 scale
+      likelihoodToRecommend: 9, // 0-10 scale
       advocacyMetrics: {
         referralActivity: 0.85,
         reviewsWritten: 4,
