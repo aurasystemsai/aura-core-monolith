@@ -6,6 +6,7 @@
 // Unified and deduplicated tool meta registry
 const toolsMeta = [
   { id: "main-suite", name: "Main Suite", description: "Unified entry point with grouped modules (workflows, analytics, SEO, personalization, lifecycle).", category: "Platform" },
+  { id: "seo-master-suite", name: "SEO Master Suite", description: "Unified SEO platform consolidating 8 tools: keyword research, content analysis, schema markup, local SEO, entity explorer, on-page optimization, content scoring, and topic clustering. World-class enterprise features.", category: "SEO" },
   { id: "abandoned-checkout-winback", name: "Abandoned Checkout Winback", description: "Generates abandoned checkout winback flows.", category: "Email / Automation" },
   { id: "ab-testing-suite", name: "A/B Testing Suite", description: "A/B test creation, management, and analytics.", category: "Analytics" },
   { id: "ad-creative-optimizer", name: "Ad Creative Optimizer", description: "Generate and iterate ad creatives with AI.", category: "Ads / Marketing" },

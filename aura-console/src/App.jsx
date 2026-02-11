@@ -25,6 +25,7 @@ const ProductSeoEngine = lazy(() => import("./components/ProductSeoEngine"));
 const InternalLinkOptimizer = lazy(() => import("./components/InternalLinkOptimizer"));
 const Dashboard = lazy(() => import("./dashboard/Dashboard.jsx"));
 const MainSuite = lazy(() => import("./components/tools/MainSuite.jsx"));
+const SeoMasterSuite = lazy(() => import("./components/tools/SeoMasterSuite.jsx"));
 const FixQueue = lazy(() => import("./components/FixQueue"));
 const Auth = lazy(() => import("./auth/Auth.jsx"));
 const Onboarding = lazy(() => import("./onboarding/Onboarding.jsx"));
@@ -464,6 +465,7 @@ function App() {
                 {activeSection === "dashboard" && !project && <div style={{color:'#ff0',background:'#232336',padding:16}}>DEBUG: No project found, dashboard not rendered</div>}
                 {activeSection === "dashboard" && project && <Dashboard setActiveSection={setActiveSection} />}
                 {activeSection === "main-suite" && <MainSuite setActiveSection={setActiveSection} />}
+                {activeSection === "seo-master-suite" && <SeoMasterSuite />}
               </Suspense>
               <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading…</div>}>
                 {activeSection === "pricing" && <PricingPage />}
@@ -516,6 +518,7 @@ function App() {
                 {toolsMeta.map(tool => {
                   if (activeSection === tool.id) {
                     if (tool.id === "main-suite") return null; // main suite handled by top-level render
+                    if (tool.id === "seo-master-suite") return null; // seo master suite handled by top-level render
                     switch (tool.id) {
                       case "abandoned-checkout-winback": return <AbandonedCheckoutWinback key={tool.id} />;
                       case "customer-data-platform": return <CustomerDataPlatform key={tool.id} />;

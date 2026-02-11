@@ -1,0 +1,2667 @@
+{
+  "research_1770792194829": {
+    "seedKeywords": [
+      "test"
+    ],
+    "platform": "shopify",
+    "location": "us",
+    "language": "en",
+    "keywords": [
+      {
+        "keyword": "test",
+        "searchVolume": 1812,
+        "cpc": "3.53",
+        "competition": 0.8595444470775379,
+        "difficulty": 52,
+        "trend": "rising",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1151
+        }
+      },
+      {
+        "keyword": "test online",
+        "searchVolume": 4957,
+        "cpc": "3.66",
+        "competition": 0.5604137566829208,
+        "difficulty": 39,
+        "trend": "rising",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1275
+        }
+      },
+      {
+        "keyword": "best test",
+        "searchVolume": 6935,
+        "cpc": "0.53",
+        "competition": 0.4489097433680671,
+        "difficulty": 9,
+        "trend": "stable",
+        "intent": "navigational",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2885
+        }
+      },
+      {
+        "keyword": "test for sale",
+        "searchVolume": 3647,
+        "cpc": "4.58",
+        "competition": 0.2161684914048948,
+        "difficulty": 44,
+        "trend": "stable",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2411
+        }
+      },
+      {
+        "keyword": "test review",
+        "searchVolume": 5132,
+        "cpc": "3.77",
+        "competition": 0.773494587135869,
+        "difficulty": 62,
+        "trend": "stable",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1265
+        }
+      },
+      {
+        "keyword": "buy test",
+        "searchVolume": 9028,
+        "cpc": "2.99",
+        "competition": 0.8777250626985788,
+        "difficulty": 31,
+        "trend": "rising",
+        "intent": "navigational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1209
+        }
+      },
+      {
+        "keyword": "test near me",
+        "searchVolume": 8277,
+        "cpc": "2.67",
+        "competition": 0.6316396138109762,
+        "difficulty": 79,
+        "trend": "stable",
+        "intent": "navigational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1539
+        }
+      },
+      {
+        "keyword": "affordable test",
+        "searchVolume": 5108,
+        "cpc": "1.20",
+        "competition": 0.30481838333716327,
+        "difficulty": 26,
+        "trend": "rising",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2507
+        }
+      },
+      {
+        "keyword": "test guide",
+        "searchVolume": 9787,
+        "cpc": "2.82",
+        "competition": 0.4036741143452913,
+        "difficulty": 34,
+        "trend": "rising",
+        "intent": "transactional",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1925
+        }
+      },
+      {
+        "keyword": "how to test",
+        "searchVolume": 3130,
+        "cpc": "1.35",
+        "competition": 0.006716299551792315,
+        "difficulty": 77,
+        "trend": "rising",
+        "intent": "transactional",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2106
+        }
+      }
+    ],
+    "clusters": [
+      {
+        "topic": "product-info",
+        "keywords": [
+          {
+            "keyword": "test",
+            "searchVolume": 1812,
+            "cpc": "3.53",
+            "competition": 0.8595444470775379,
+            "difficulty": 52,
+            "trend": "rising",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1151
+            }
+          },
+          {
+            "keyword": "best test",
+            "searchVolume": 6935,
+            "cpc": "0.53",
+            "competition": 0.4489097433680671,
+            "difficulty": 9,
+            "trend": "stable",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2885
+            }
+          },
+          {
+            "keyword": "test for sale",
+            "searchVolume": 3647,
+            "cpc": "4.58",
+            "competition": 0.2161684914048948,
+            "difficulty": 44,
+            "trend": "stable",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2411
+            }
+          },
+          {
+            "keyword": "test review",
+            "searchVolume": 5132,
+            "cpc": "3.77",
+            "competition": 0.773494587135869,
+            "difficulty": 62,
+            "trend": "stable",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1265
+            }
+          },
+          {
+            "keyword": "test near me",
+            "searchVolume": 8277,
+            "cpc": "2.67",
+            "competition": 0.6316396138109762,
+            "difficulty": 79,
+            "trend": "stable",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1539
+            }
+          }
+        ]
+      },
+      {
+        "topic": "purchasing",
+        "keywords": [
+          {
+            "keyword": "best test",
+            "searchVolume": 6935,
+            "cpc": "0.53",
+            "competition": 0.4489097433680671,
+            "difficulty": 9,
+            "trend": "stable",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2885
+            }
+          },
+          {
+            "keyword": "affordable test",
+            "searchVolume": 5108,
+            "cpc": "1.20",
+            "competition": 0.30481838333716327,
+            "difficulty": 26,
+            "trend": "rising",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2507
+            }
+          }
+        ]
+      },
+      {
+        "topic": "reviews",
+        "keywords": [
+          {
+            "keyword": "affordable test",
+            "searchVolume": 5108,
+            "cpc": "1.20",
+            "competition": 0.30481838333716327,
+            "difficulty": 26,
+            "trend": "rising",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2507
+            }
+          },
+          {
+            "keyword": "test guide",
+            "searchVolume": 9787,
+            "cpc": "2.82",
+            "competition": 0.4036741143452913,
+            "difficulty": 34,
+            "trend": "rising",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1925
+            }
+          }
+        ]
+      },
+      {
+        "topic": "comparisons",
+        "keywords": [
+          {
+            "keyword": "best test",
+            "searchVolume": 6935,
+            "cpc": "0.53",
+            "competition": 0.4489097433680671,
+            "difficulty": 9,
+            "trend": "stable",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2885
+            }
+          },
+          {
+            "keyword": "affordable test",
+            "searchVolume": 5108,
+            "cpc": "1.20",
+            "competition": 0.30481838333716327,
+            "difficulty": 26,
+            "trend": "rising",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2507
+            }
+          }
+        ]
+      },
+      {
+        "topic": "guides",
+        "keywords": [
+          {
+            "keyword": "test online",
+            "searchVolume": 4957,
+            "cpc": "3.66",
+            "competition": 0.5604137566829208,
+            "difficulty": 39,
+            "trend": "rising",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1275
+            }
+          },
+          {
+            "keyword": "test for sale",
+            "searchVolume": 3647,
+            "cpc": "4.58",
+            "competition": 0.2161684914048948,
+            "difficulty": 44,
+            "trend": "stable",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2411
+            }
+          },
+          {
+            "keyword": "buy test",
+            "searchVolume": 9028,
+            "cpc": "2.99",
+            "competition": 0.8777250626985788,
+            "difficulty": 31,
+            "trend": "rising",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1209
+            }
+          },
+          {
+            "keyword": "how to test",
+            "searchVolume": 3130,
+            "cpc": "1.35",
+            "competition": 0.006716299551792315,
+            "difficulty": 77,
+            "trend": "rising",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2106
+            }
+          }
+        ]
+      }
+    ],
+    "totalFound": 10,
+    "createdAt": "2026-02-11T06:43:14.829Z"
+  },
+  "research_1770792378685": {
+    "seedKeywords": [
+      "test"
+    ],
+    "platform": "shopify",
+    "location": "us",
+    "language": "en",
+    "keywords": [
+      {
+        "keyword": "test",
+        "searchVolume": 9894,
+        "cpc": "1.09",
+        "competition": 0.5637968129818205,
+        "difficulty": 29,
+        "trend": "stable",
+        "intent": "navigational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1485
+        }
+      },
+      {
+        "keyword": "test online",
+        "searchVolume": 9333,
+        "cpc": "1.01",
+        "competition": 0.3923075881280662,
+        "difficulty": 24,
+        "trend": "stable",
+        "intent": "transactional",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1987
+        }
+      },
+      {
+        "keyword": "best test",
+        "searchVolume": 1388,
+        "cpc": "1.25",
+        "competition": 0.1524268545136862,
+        "difficulty": 99,
+        "trend": "stable",
+        "intent": "transactional",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1155
+        }
+      },
+      {
+        "keyword": "test for sale",
+        "searchVolume": 4542,
+        "cpc": "1.89",
+        "competition": 0.3902295032534697,
+        "difficulty": 63,
+        "trend": "stable",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1391
+        }
+      },
+      {
+        "keyword": "test review",
+        "searchVolume": 5022,
+        "cpc": "4.51",
+        "competition": 0.6144201970407225,
+        "difficulty": 87,
+        "trend": "stable",
+        "intent": "transactional",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1626
+        }
+      },
+      {
+        "keyword": "buy test",
+        "searchVolume": 3305,
+        "cpc": "4.36",
+        "competition": 0.5833057177305647,
+        "difficulty": 35,
+        "trend": "rising",
+        "intent": "navigational",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2478
+        }
+      },
+      {
+        "keyword": "test near me",
+        "searchVolume": 4763,
+        "cpc": "1.10",
+        "competition": 0.4191812288686635,
+        "difficulty": 50,
+        "trend": "stable",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2904
+        }
+      },
+      {
+        "keyword": "affordable test",
+        "searchVolume": 9986,
+        "cpc": "3.14",
+        "competition": 0.6094964622943221,
+        "difficulty": 94,
+        "trend": "stable",
+        "intent": "transactional",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2751
+        }
+      },
+      {
+        "keyword": "test guide",
+        "searchVolume": 1713,
+        "cpc": "1.58",
+        "competition": 0.09051692909124076,
+        "difficulty": 44,
+        "trend": "rising",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1035
+        }
+      },
+      {
+        "keyword": "how to test",
+        "searchVolume": 4819,
+        "cpc": "4.51",
+        "competition": 0.9045968438386836,
+        "difficulty": 54,
+        "trend": "stable",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2629
+        }
+      }
+    ],
+    "clusters": [
+      {
+        "topic": "product-info",
+        "keywords": [
+          {
+            "keyword": "test",
+            "searchVolume": 9894,
+            "cpc": "1.09",
+            "competition": 0.5637968129818205,
+            "difficulty": 29,
+            "trend": "stable",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1485
+            }
+          },
+          {
+            "keyword": "test near me",
+            "searchVolume": 4763,
+            "cpc": "1.10",
+            "competition": 0.4191812288686635,
+            "difficulty": 50,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2904
+            }
+          },
+          {
+            "keyword": "test guide",
+            "searchVolume": 1713,
+            "cpc": "1.58",
+            "competition": 0.09051692909124076,
+            "difficulty": 44,
+            "trend": "rising",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1035
+            }
+          }
+        ]
+      },
+      {
+        "topic": "purchasing",
+        "keywords": [
+          {
+            "keyword": "test for sale",
+            "searchVolume": 4542,
+            "cpc": "1.89",
+            "competition": 0.3902295032534697,
+            "difficulty": 63,
+            "trend": "stable",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1391
+            }
+          },
+          {
+            "keyword": "test near me",
+            "searchVolume": 4763,
+            "cpc": "1.10",
+            "competition": 0.4191812288686635,
+            "difficulty": 50,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2904
+            }
+          }
+        ]
+      },
+      {
+        "topic": "reviews",
+        "keywords": [
+          {
+            "keyword": "test",
+            "searchVolume": 9894,
+            "cpc": "1.09",
+            "competition": 0.5637968129818205,
+            "difficulty": 29,
+            "trend": "stable",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1485
+            }
+          },
+          {
+            "keyword": "test for sale",
+            "searchVolume": 4542,
+            "cpc": "1.89",
+            "competition": 0.3902295032534697,
+            "difficulty": 63,
+            "trend": "stable",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1391
+            }
+          },
+          {
+            "keyword": "test review",
+            "searchVolume": 5022,
+            "cpc": "4.51",
+            "competition": 0.6144201970407225,
+            "difficulty": 87,
+            "trend": "stable",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1626
+            }
+          },
+          {
+            "keyword": "buy test",
+            "searchVolume": 3305,
+            "cpc": "4.36",
+            "competition": 0.5833057177305647,
+            "difficulty": 35,
+            "trend": "rising",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2478
+            }
+          },
+          {
+            "keyword": "how to test",
+            "searchVolume": 4819,
+            "cpc": "4.51",
+            "competition": 0.9045968438386836,
+            "difficulty": 54,
+            "trend": "stable",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2629
+            }
+          }
+        ]
+      },
+      {
+        "topic": "comparisons",
+        "keywords": [
+          {
+            "keyword": "best test",
+            "searchVolume": 1388,
+            "cpc": "1.25",
+            "competition": 0.1524268545136862,
+            "difficulty": 99,
+            "trend": "stable",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1155
+            }
+          }
+        ]
+      },
+      {
+        "topic": "guides",
+        "keywords": [
+          {
+            "keyword": "test online",
+            "searchVolume": 9333,
+            "cpc": "1.01",
+            "competition": 0.3923075881280662,
+            "difficulty": 24,
+            "trend": "stable",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1987
+            }
+          },
+          {
+            "keyword": "best test",
+            "searchVolume": 1388,
+            "cpc": "1.25",
+            "competition": 0.1524268545136862,
+            "difficulty": 99,
+            "trend": "stable",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1155
+            }
+          },
+          {
+            "keyword": "affordable test",
+            "searchVolume": 9986,
+            "cpc": "3.14",
+            "competition": 0.6094964622943221,
+            "difficulty": 94,
+            "trend": "stable",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2751
+            }
+          },
+          {
+            "keyword": "how to test",
+            "searchVolume": 4819,
+            "cpc": "4.51",
+            "competition": 0.9045968438386836,
+            "difficulty": 54,
+            "trend": "stable",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2629
+            }
+          }
+        ]
+      }
+    ],
+    "totalFound": 10,
+    "createdAt": "2026-02-11T06:46:18.685Z"
+  },
+  "research_1770792401210": {
+    "seedKeywords": [
+      "test"
+    ],
+    "platform": "shopify",
+    "location": "us",
+    "language": "en",
+    "keywords": [
+      {
+        "keyword": "test",
+        "searchVolume": 7322,
+        "cpc": "4.59",
+        "competition": 0.8608477962488231,
+        "difficulty": 77,
+        "trend": "rising",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2882
+        }
+      },
+      {
+        "keyword": "test online",
+        "searchVolume": 9607,
+        "cpc": "2.71",
+        "competition": 0.46626603101171094,
+        "difficulty": 18,
+        "trend": "rising",
+        "intent": "navigational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2068
+        }
+      },
+      {
+        "keyword": "best test",
+        "searchVolume": 4020,
+        "cpc": "4.96",
+        "competition": 0.6628824667143216,
+        "difficulty": 64,
+        "trend": "stable",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1423
+        }
+      },
+      {
+        "keyword": "test for sale",
+        "searchVolume": 583,
+        "cpc": "4.90",
+        "competition": 0.06323194373258723,
+        "difficulty": 4,
+        "trend": "rising",
+        "intent": "transactional",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2240
+        }
+      },
+      {
+        "keyword": "test review",
+        "searchVolume": 3960,
+        "cpc": "4.76",
+        "competition": 0.12116988197214551,
+        "difficulty": 87,
+        "trend": "stable",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1144
+        }
+      },
+      {
+        "keyword": "buy test",
+        "searchVolume": 2980,
+        "cpc": "2.63",
+        "competition": 0.9497653059648509,
+        "difficulty": 10,
+        "trend": "stable",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1435
+        }
+      },
+      {
+        "keyword": "test near me",
+        "searchVolume": 6262,
+        "cpc": "5.47",
+        "competition": 0.0452669151979187,
+        "difficulty": 78,
+        "trend": "stable",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1218
+        }
+      },
+      {
+        "keyword": "affordable test",
+        "searchVolume": 419,
+        "cpc": "5.10",
+        "competition": 0.5505891365291218,
+        "difficulty": 43,
+        "trend": "stable",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2047
+        }
+      },
+      {
+        "keyword": "test guide",
+        "searchVolume": 3598,
+        "cpc": "3.36",
+        "competition": 0.24588167158881735,
+        "difficulty": 47,
+        "trend": "stable",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2780
+        }
+      },
+      {
+        "keyword": "how to test",
+        "searchVolume": 8066,
+        "cpc": "4.72",
+        "competition": 0.04620362435817982,
+        "difficulty": 37,
+        "trend": "rising",
+        "intent": "navigational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2876
+        }
+      }
+    ],
+    "clusters": [
+      {
+        "topic": "product-info",
+        "keywords": [
+          {
+            "keyword": "test",
+            "searchVolume": 7322,
+            "cpc": "4.59",
+            "competition": 0.8608477962488231,
+            "difficulty": 77,
+            "trend": "rising",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2882
+            }
+          },
+          {
+            "keyword": "test for sale",
+            "searchVolume": 583,
+            "cpc": "4.90",
+            "competition": 0.06323194373258723,
+            "difficulty": 4,
+            "trend": "rising",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2240
+            }
+          },
+          {
+            "keyword": "test near me",
+            "searchVolume": 6262,
+            "cpc": "5.47",
+            "competition": 0.0452669151979187,
+            "difficulty": 78,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1218
+            }
+          },
+          {
+            "keyword": "how to test",
+            "searchVolume": 8066,
+            "cpc": "4.72",
+            "competition": 0.04620362435817982,
+            "difficulty": 37,
+            "trend": "rising",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2876
+            }
+          }
+        ]
+      },
+      {
+        "topic": "purchasing",
+        "keywords": [
+          {
+            "keyword": "best test",
+            "searchVolume": 4020,
+            "cpc": "4.96",
+            "competition": 0.6628824667143216,
+            "difficulty": 64,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1423
+            }
+          },
+          {
+            "keyword": "buy test",
+            "searchVolume": 2980,
+            "cpc": "2.63",
+            "competition": 0.9497653059648509,
+            "difficulty": 10,
+            "trend": "stable",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1435
+            }
+          }
+        ]
+      },
+      {
+        "topic": "reviews",
+        "keywords": [
+          {
+            "keyword": "test online",
+            "searchVolume": 9607,
+            "cpc": "2.71",
+            "competition": 0.46626603101171094,
+            "difficulty": 18,
+            "trend": "rising",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2068
+            }
+          },
+          {
+            "keyword": "test for sale",
+            "searchVolume": 583,
+            "cpc": "4.90",
+            "competition": 0.06323194373258723,
+            "difficulty": 4,
+            "trend": "rising",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2240
+            }
+          },
+          {
+            "keyword": "test review",
+            "searchVolume": 3960,
+            "cpc": "4.76",
+            "competition": 0.12116988197214551,
+            "difficulty": 87,
+            "trend": "stable",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1144
+            }
+          }
+        ]
+      },
+      {
+        "topic": "comparisons",
+        "keywords": [
+          {
+            "keyword": "test",
+            "searchVolume": 7322,
+            "cpc": "4.59",
+            "competition": 0.8608477962488231,
+            "difficulty": 77,
+            "trend": "rising",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2882
+            }
+          },
+          {
+            "keyword": "best test",
+            "searchVolume": 4020,
+            "cpc": "4.96",
+            "competition": 0.6628824667143216,
+            "difficulty": 64,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1423
+            }
+          },
+          {
+            "keyword": "test near me",
+            "searchVolume": 6262,
+            "cpc": "5.47",
+            "competition": 0.0452669151979187,
+            "difficulty": 78,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1218
+            }
+          },
+          {
+            "keyword": "test guide",
+            "searchVolume": 3598,
+            "cpc": "3.36",
+            "competition": 0.24588167158881735,
+            "difficulty": 47,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2780
+            }
+          },
+          {
+            "keyword": "how to test",
+            "searchVolume": 8066,
+            "cpc": "4.72",
+            "competition": 0.04620362435817982,
+            "difficulty": 37,
+            "trend": "rising",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2876
+            }
+          }
+        ]
+      },
+      {
+        "topic": "guides",
+        "keywords": [
+          {
+            "keyword": "test",
+            "searchVolume": 7322,
+            "cpc": "4.59",
+            "competition": 0.8608477962488231,
+            "difficulty": 77,
+            "trend": "rising",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2882
+            }
+          },
+          {
+            "keyword": "test online",
+            "searchVolume": 9607,
+            "cpc": "2.71",
+            "competition": 0.46626603101171094,
+            "difficulty": 18,
+            "trend": "rising",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2068
+            }
+          },
+          {
+            "keyword": "test near me",
+            "searchVolume": 6262,
+            "cpc": "5.47",
+            "competition": 0.0452669151979187,
+            "difficulty": 78,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1218
+            }
+          }
+        ]
+      }
+    ],
+    "totalFound": 10,
+    "createdAt": "2026-02-11T06:46:41.210Z"
+  },
+  "research_1770796184743": {
+    "seedKeywords": [
+      "test"
+    ],
+    "platform": "shopify",
+    "location": "us",
+    "language": "en",
+    "keywords": [
+      {
+        "keyword": "test",
+        "searchVolume": 8787,
+        "cpc": "2.91",
+        "competition": 0.18873555467447656,
+        "difficulty": 87,
+        "trend": "stable",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1314
+        }
+      },
+      {
+        "keyword": "test online",
+        "searchVolume": 7158,
+        "cpc": "4.61",
+        "competition": 0.8601920282619085,
+        "difficulty": 36,
+        "trend": "stable",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1634
+        }
+      },
+      {
+        "keyword": "best test",
+        "searchVolume": 3472,
+        "cpc": "2.48",
+        "competition": 0.06965924925048916,
+        "difficulty": 20,
+        "trend": "stable",
+        "intent": "navigational",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1779
+        }
+      },
+      {
+        "keyword": "test for sale",
+        "searchVolume": 2308,
+        "cpc": "0.83",
+        "competition": 0.04235650715583095,
+        "difficulty": 52,
+        "trend": "stable",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1567
+        }
+      },
+      {
+        "keyword": "test review",
+        "searchVolume": 4113,
+        "cpc": "1.82",
+        "competition": 0.5557536684148832,
+        "difficulty": 19,
+        "trend": "stable",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1546
+        }
+      },
+      {
+        "keyword": "buy test",
+        "searchVolume": 9191,
+        "cpc": "0.52",
+        "competition": 0.12416851126215289,
+        "difficulty": 79,
+        "trend": "rising",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1148
+        }
+      },
+      {
+        "keyword": "test near me",
+        "searchVolume": 643,
+        "cpc": "2.79",
+        "competition": 0.9023791102259079,
+        "difficulty": 60,
+        "trend": "rising",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1285
+        }
+      },
+      {
+        "keyword": "affordable test",
+        "searchVolume": 2974,
+        "cpc": "2.75",
+        "competition": 0.48610785921998534,
+        "difficulty": 50,
+        "trend": "stable",
+        "intent": "transactional",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1645
+        }
+      },
+      {
+        "keyword": "test guide",
+        "searchVolume": 6788,
+        "cpc": "5.14",
+        "competition": 0.38702382402729263,
+        "difficulty": 56,
+        "trend": "rising",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2602
+        }
+      },
+      {
+        "keyword": "how to test",
+        "searchVolume": 6431,
+        "cpc": "0.62",
+        "competition": 0.46380231666468796,
+        "difficulty": 16,
+        "trend": "rising",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2541
+        }
+      }
+    ],
+    "clusters": [
+      {
+        "topic": "product-info",
+        "keywords": [
+          {
+            "keyword": "best test",
+            "searchVolume": 3472,
+            "cpc": "2.48",
+            "competition": 0.06965924925048916,
+            "difficulty": 20,
+            "trend": "stable",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1779
+            }
+          },
+          {
+            "keyword": "test near me",
+            "searchVolume": 643,
+            "cpc": "2.79",
+            "competition": 0.9023791102259079,
+            "difficulty": 60,
+            "trend": "rising",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1285
+            }
+          },
+          {
+            "keyword": "affordable test",
+            "searchVolume": 2974,
+            "cpc": "2.75",
+            "competition": 0.48610785921998534,
+            "difficulty": 50,
+            "trend": "stable",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1645
+            }
+          }
+        ]
+      },
+      {
+        "topic": "purchasing",
+        "keywords": [
+          {
+            "keyword": "best test",
+            "searchVolume": 3472,
+            "cpc": "2.48",
+            "competition": 0.06965924925048916,
+            "difficulty": 20,
+            "trend": "stable",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1779
+            }
+          },
+          {
+            "keyword": "test near me",
+            "searchVolume": 643,
+            "cpc": "2.79",
+            "competition": 0.9023791102259079,
+            "difficulty": 60,
+            "trend": "rising",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1285
+            }
+          },
+          {
+            "keyword": "affordable test",
+            "searchVolume": 2974,
+            "cpc": "2.75",
+            "competition": 0.48610785921998534,
+            "difficulty": 50,
+            "trend": "stable",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1645
+            }
+          },
+          {
+            "keyword": "how to test",
+            "searchVolume": 6431,
+            "cpc": "0.62",
+            "competition": 0.46380231666468796,
+            "difficulty": 16,
+            "trend": "rising",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2541
+            }
+          }
+        ]
+      },
+      {
+        "topic": "reviews",
+        "keywords": [
+          {
+            "keyword": "test",
+            "searchVolume": 8787,
+            "cpc": "2.91",
+            "competition": 0.18873555467447656,
+            "difficulty": 87,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1314
+            }
+          },
+          {
+            "keyword": "test online",
+            "searchVolume": 7158,
+            "cpc": "4.61",
+            "competition": 0.8601920282619085,
+            "difficulty": 36,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1634
+            }
+          },
+          {
+            "keyword": "test review",
+            "searchVolume": 4113,
+            "cpc": "1.82",
+            "competition": 0.5557536684148832,
+            "difficulty": 19,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1546
+            }
+          },
+          {
+            "keyword": "buy test",
+            "searchVolume": 9191,
+            "cpc": "0.52",
+            "competition": 0.12416851126215289,
+            "difficulty": 79,
+            "trend": "rising",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1148
+            }
+          }
+        ]
+      },
+      {
+        "topic": "comparisons",
+        "keywords": [
+          {
+            "keyword": "test",
+            "searchVolume": 8787,
+            "cpc": "2.91",
+            "competition": 0.18873555467447656,
+            "difficulty": 87,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1314
+            }
+          },
+          {
+            "keyword": "test online",
+            "searchVolume": 7158,
+            "cpc": "4.61",
+            "competition": 0.8601920282619085,
+            "difficulty": 36,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1634
+            }
+          },
+          {
+            "keyword": "test for sale",
+            "searchVolume": 2308,
+            "cpc": "0.83",
+            "competition": 0.04235650715583095,
+            "difficulty": 52,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1567
+            }
+          },
+          {
+            "keyword": "affordable test",
+            "searchVolume": 2974,
+            "cpc": "2.75",
+            "competition": 0.48610785921998534,
+            "difficulty": 50,
+            "trend": "stable",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1645
+            }
+          }
+        ]
+      },
+      {
+        "topic": "guides",
+        "keywords": [
+          {
+            "keyword": "test",
+            "searchVolume": 8787,
+            "cpc": "2.91",
+            "competition": 0.18873555467447656,
+            "difficulty": 87,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1314
+            }
+          },
+          {
+            "keyword": "test online",
+            "searchVolume": 7158,
+            "cpc": "4.61",
+            "competition": 0.8601920282619085,
+            "difficulty": 36,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1634
+            }
+          },
+          {
+            "keyword": "best test",
+            "searchVolume": 3472,
+            "cpc": "2.48",
+            "competition": 0.06965924925048916,
+            "difficulty": 20,
+            "trend": "stable",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1779
+            }
+          }
+        ]
+      }
+    ],
+    "totalFound": 10,
+    "createdAt": "2026-02-11T07:49:44.743Z"
+  },
+  "research_1770796205947": {
+    "seedKeywords": [
+      "test"
+    ],
+    "platform": "shopify",
+    "location": "us",
+    "language": "en",
+    "keywords": [
+      {
+        "keyword": "test",
+        "searchVolume": 987,
+        "cpc": "0.83",
+        "competition": 0.922285308149257,
+        "difficulty": 43,
+        "trend": "stable",
+        "intent": "navigational",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1789
+        }
+      },
+      {
+        "keyword": "test online",
+        "searchVolume": 5926,
+        "cpc": "2.15",
+        "competition": 0.8373959172329745,
+        "difficulty": 3,
+        "trend": "rising",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2831
+        }
+      },
+      {
+        "keyword": "best test",
+        "searchVolume": 2063,
+        "cpc": "4.93",
+        "competition": 0.3567693884575408,
+        "difficulty": 63,
+        "trend": "rising",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2868
+        }
+      },
+      {
+        "keyword": "test for sale",
+        "searchVolume": 4731,
+        "cpc": "0.79",
+        "competition": 0.9783276934075402,
+        "difficulty": 3,
+        "trend": "stable",
+        "intent": "transactional",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1993
+        }
+      },
+      {
+        "keyword": "test review",
+        "searchVolume": 9217,
+        "cpc": "2.03",
+        "competition": 0.9169636135027143,
+        "difficulty": 86,
+        "trend": "stable",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2337
+        }
+      },
+      {
+        "keyword": "buy test",
+        "searchVolume": 7215,
+        "cpc": "2.50",
+        "competition": 0.9348695573194666,
+        "difficulty": 7,
+        "trend": "rising",
+        "intent": "transactional",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1200
+        }
+      },
+      {
+        "keyword": "test near me",
+        "searchVolume": 1520,
+        "cpc": "3.49",
+        "competition": 0.9213253663400905,
+        "difficulty": 56,
+        "trend": "rising",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1310
+        }
+      },
+      {
+        "keyword": "affordable test",
+        "searchVolume": 7210,
+        "cpc": "1.89",
+        "competition": 0.28321525155956995,
+        "difficulty": 49,
+        "trend": "stable",
+        "intent": "commercial",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1971
+        }
+      },
+      {
+        "keyword": "test guide",
+        "searchVolume": 4965,
+        "cpc": "0.78",
+        "competition": 0.01757174289056307,
+        "difficulty": 68,
+        "trend": "rising",
+        "intent": "informational",
+        "serp": {
+          "featuredSnippet": false,
+          "peopleAlsoAsk": true,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 1047
+        }
+      },
+      {
+        "keyword": "how to test",
+        "searchVolume": 9071,
+        "cpc": "1.52",
+        "competition": 0.09279725254269788,
+        "difficulty": 7,
+        "trend": "rising",
+        "intent": "navigational",
+        "serp": {
+          "featuredSnippet": true,
+          "peopleAlsoAsk": false,
+          "relatedSearches": [
+            "search 1",
+            "search 2",
+            "search 3"
+          ],
+          "avgContentLength": 2852
+        }
+      }
+    ],
+    "clusters": [
+      {
+        "topic": "product-info",
+        "keywords": [
+          {
+            "keyword": "test",
+            "searchVolume": 987,
+            "cpc": "0.83",
+            "competition": 0.922285308149257,
+            "difficulty": 43,
+            "trend": "stable",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1789
+            }
+          },
+          {
+            "keyword": "best test",
+            "searchVolume": 2063,
+            "cpc": "4.93",
+            "competition": 0.3567693884575408,
+            "difficulty": 63,
+            "trend": "rising",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2868
+            }
+          },
+          {
+            "keyword": "test for sale",
+            "searchVolume": 4731,
+            "cpc": "0.79",
+            "competition": 0.9783276934075402,
+            "difficulty": 3,
+            "trend": "stable",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1993
+            }
+          },
+          {
+            "keyword": "affordable test",
+            "searchVolume": 7210,
+            "cpc": "1.89",
+            "competition": 0.28321525155956995,
+            "difficulty": 49,
+            "trend": "stable",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1971
+            }
+          }
+        ]
+      },
+      {
+        "topic": "purchasing",
+        "keywords": [
+          {
+            "keyword": "test",
+            "searchVolume": 987,
+            "cpc": "0.83",
+            "competition": 0.922285308149257,
+            "difficulty": 43,
+            "trend": "stable",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1789
+            }
+          },
+          {
+            "keyword": "best test",
+            "searchVolume": 2063,
+            "cpc": "4.93",
+            "competition": 0.3567693884575408,
+            "difficulty": 63,
+            "trend": "rising",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2868
+            }
+          },
+          {
+            "keyword": "buy test",
+            "searchVolume": 7215,
+            "cpc": "2.50",
+            "competition": 0.9348695573194666,
+            "difficulty": 7,
+            "trend": "rising",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1200
+            }
+          }
+        ]
+      },
+      {
+        "topic": "reviews",
+        "keywords": [
+          {
+            "keyword": "test",
+            "searchVolume": 987,
+            "cpc": "0.83",
+            "competition": 0.922285308149257,
+            "difficulty": 43,
+            "trend": "stable",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1789
+            }
+          },
+          {
+            "keyword": "test near me",
+            "searchVolume": 1520,
+            "cpc": "3.49",
+            "competition": 0.9213253663400905,
+            "difficulty": 56,
+            "trend": "rising",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1310
+            }
+          },
+          {
+            "keyword": "how to test",
+            "searchVolume": 9071,
+            "cpc": "1.52",
+            "competition": 0.09279725254269788,
+            "difficulty": 7,
+            "trend": "rising",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2852
+            }
+          }
+        ]
+      },
+      {
+        "topic": "comparisons",
+        "keywords": [
+          {
+            "keyword": "test",
+            "searchVolume": 987,
+            "cpc": "0.83",
+            "competition": 0.922285308149257,
+            "difficulty": 43,
+            "trend": "stable",
+            "intent": "navigational",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1789
+            }
+          },
+          {
+            "keyword": "test online",
+            "searchVolume": 5926,
+            "cpc": "2.15",
+            "competition": 0.8373959172329745,
+            "difficulty": 3,
+            "trend": "rising",
+            "intent": "commercial",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2831
+            }
+          },
+          {
+            "keyword": "test for sale",
+            "searchVolume": 4731,
+            "cpc": "0.79",
+            "competition": 0.9783276934075402,
+            "difficulty": 3,
+            "trend": "stable",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": true,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1993
+            }
+          },
+          {
+            "keyword": "buy test",
+            "searchVolume": 7215,
+            "cpc": "2.50",
+            "competition": 0.9348695573194666,
+            "difficulty": 7,
+            "trend": "rising",
+            "intent": "transactional",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": true,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 1200
+            }
+          }
+        ]
+      },
+      {
+        "topic": "guides",
+        "keywords": [
+          {
+            "keyword": "test review",
+            "searchVolume": 9217,
+            "cpc": "2.03",
+            "competition": 0.9169636135027143,
+            "difficulty": 86,
+            "trend": "stable",
+            "intent": "informational",
+            "serp": {
+              "featuredSnippet": false,
+              "peopleAlsoAsk": false,
+              "relatedSearches": [
+                "search 1",
+                "search 2",
+                "search 3"
+              ],
+              "avgContentLength": 2337
+            }
+          }
+        ]
+      }
+    ],
+    "totalFound": 10,
+    "createdAt": "2026-02-11T07:50:05.947Z"
+  }
+}

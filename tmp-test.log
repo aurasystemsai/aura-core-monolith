@@ -1,0 +1,64 @@
+
+> aura-core-monolith@1.0.0 test
+> jest --runInBand --colors=false
+
+PASS src/tools/klaviyo-flow-automation/klaviyo-flow-automation.test.js
+PASS src/tools/product-seo/product-seo.test.js
+PASS src/__tests__/predictive-analytics-widgets.test.js
+FAIL src/__tests__/seo-master-suite.test.js
+  ● Console
+
+    console.error
+      Keyword research error: TypeError: (0 , _db.storageJson) is not a function
+          at C:\Users\darre\OneDrive\Desktop\aura-core-monolith-main\src\tools\seo-master-suite\router.js:102:38
+          at Generator.call (C:\Users\darre\OneDrive\Desktop\aura-core-monolith-main\src\tools\seo-master-suite\router.js:2:1)
+          at Generator._invoke [as next] (C:\Users\darre\OneDrive\Desktop\aura-core-monolith-main\src\tools\seo-master-suite\router.js:2:1)
+          at asyncGeneratorStep (C:\Users\darre\OneDrive\Desktop\aura-core-monolith-main\src\tools\seo-master-suite\router.js:2:1)
+          at asyncGeneratorStep (C:\Users\darre\OneDrive\Desktop\aura-core-monolith-main\src\tools\seo-master-suite\router.js:2:1)
+          at processTicksAndRejections (node:internal/process/task_queues:103:5)
+
+    [0m [90m 127 |[39m     })[33m;[39m
+     [90m 128 |[39m   } [36mcatch[39m (error) {
+    [31m[1m>[22m[39m[90m 129 |[39m     console[33m.[39merror([32m'Keyword research error:'[39m[33m,[39m error)[33m;[39m
+     [90m     |[39m             [31m[1m^[22m[39m
+     [90m 130 |[39m     res[33m.[39mstatus([35m500[39m)[33m.[39mjson({ success[33m:[39m [36mfalse[39m[33m,[39m error[33m:[39m error[33m.[39mmessage })[33m;[39m
+     [90m 131 |[39m   }
+     [90m 132 |[39m })[33m;[39m[0m
+
+      at error (src/tools/seo-master-suite/router.js:129:13)
+      at Generator.call (src/tools/seo-master-suite/router.js:2:1)
+      at Generator._invoke [as next] (src/tools/seo-master-suite/router.js:2:1)
+      at asyncGeneratorStep (src/tools/seo-master-suite/router.js:2:1)
+      at asyncGeneratorStep (src/tools/seo-master-suite/router.js:2:1)
+
+  ● SEO Master Suite (smoke) › POST /api/seo-master-suite/keywords/research returns results
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+    [0m [90m 17 |[39m       [33m.[39mpost([32m'/api/seo-master-suite/keywords/research'[39m)
+     [90m 18 |[39m       [33m.[39msend({ seedKeywords[33m:[39m [[32m'test'[39m][33m,[39m platform[33m:[39m [32m'shopify'[39m[33m,[39m location[33m:[39m [32m'us'[39m[33m,[39m language[33m:[39m [32m'en'[39m })[33m;[39m
+    [31m[1m>[22m[39m[90m 19 |[39m     expect(res[33m.[39mstatusCode)[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m    |[39m                            [31m[1m^[22m[39m
+     [90m 20 |[39m     expect(res[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+     [90m 21 |[39m     expect([33mArray[39m[33m.[39misArray(res[33m.[39mbody[33m.[39mkeywords))[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+     [90m 22 |[39m   })[33m;[39m[0m
+
+      at toBe (src/__tests__/seo-master-suite.test.js:19:28)
+      at Generator.call (src/__tests__/seo-master-suite.test.js:2:1)
+      at Generator._invoke [as next] (src/__tests__/seo-master-suite.test.js:2:1)
+      at asyncGeneratorStep (src/__tests__/seo-master-suite.test.js:2:1)
+      at asyncGeneratorStep (src/__tests__/seo-master-suite.test.js:2:1)
+
+PASS src/__tests__/image-alt-media-seo.test.js
+PASS src/__tests__/automation-api.test.js
+PASS src/__tests__/api.test.js
+PASS src/__tests__/advanced-ai.test.js
+
+Test Suites: 1 failed, 7 passed, 8 total
+Tests:       1 failed, 40 passed, 41 total
+Snapshots:   0 total
+Time:        9.356 s
+Ran all test suites.
