@@ -361,7 +361,7 @@ router.post('/optimize/products/bulk', async (req, res) => {
       });
 
       // Generate optimized versions
-      const optimized = await optimizeProduct SEO({
+      const optimized = await optimizeProductSEO({
         product,
         analysis,
         rules
@@ -1491,7 +1491,7 @@ router.get('/security/compliance/certifications', async (req, res) => {
 // Revenue forecast from SEO
 router.post('/bi/predictive/revenue-forecast', async (req, res) => {
   try {
-    const { historicalData, forecast Period = 12 } = req.body;
+    const { historicalData, forecastPeriod = 12 } = req.body;
 
     // Use Prophet for time series forecasting
     const forecast = await runProphetForecast(historicalData, forecastPeriod);
@@ -1532,7 +1532,7 @@ router.post('/bi/anomaly-detection', async (req, res) => {
     const { metrics, sensitivity = 'medium' } = req.body;
 
     // Use Isolation Forest
-    const isolationForestAnomalies = await detectAnomalies IsolationForest(metrics, sensitivity);
+    const isolationForestAnomalies = await detectAnomaliesIsolationForest(metrics, sensitivity);
 
     // Use LSTM for time-series anomalies
     const lstmAnomalies = await detectAnomaliesLSTM(metrics);
