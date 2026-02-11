@@ -63,6 +63,7 @@ const toolsMeta = [
   { id: "klaviyo-flow-automation", name: "Klaviyo Flow Automation", description: "Blueprints for Klaviyo automation flows.", category: "Email / Automation" },
   { id: "link-intersect-outreach", name: "Link Intersect & Outreach", description: "Find link opportunities and automate outreach.", category: "SEO" },
   { id: "local-seo-toolkit", name: "Local SEO Toolkit", description: "Local SEO optimization tools.", category: "SEO" },
+  { id: "loyalty-referral-programs", name: "Loyalty & Referral Programs", description: "World-class loyalty and referral platform with 201 endpoints, 44 tabs across 7 categories. AI-powered optimization, predictive analytics, real-time monitoring.", category: "Marketing / Loyalty" },
   { id: "ltv-churn-predictor", name: "LTV / Churn Predictor", description: "Predicts lifetime value and churn risk.", category: "Analytics" },
   { id: "multi-channel-optimizer", name: "Multi-Channel Optimizer", description: "Splits marketing budget across multiple channels.", category: "Marketing" },
   { id: "omnichannel-campaign-builder", name: "Omnichannel Campaign Builder", description: "Orchestrate email, SMS, and ads in one flow.", category: "Marketing / Automation" },
