@@ -3131,7 +3131,10 @@ router.get('/ab-test/:id/results', async (req, res) => {
       cvr: v.clicks > 0 ? ((v.conversions / v.clicks) * 100).toFixed(2) + '%' : '0%'
     }));
     
-    const winner = results.reduce((best, current) => \n      current.conversions > best.conversions ? current : best\n    , results[0]);
+    const winner = results.reduce(
+      (best, current) => (current.conversions > best.conversions ? current : best),
+      results[0]
+    );
     
     res.json({ ok: true, test, results, winner });
   } catch (err) {
@@ -3373,7 +3376,8 @@ router.post('/analysis/sentiment', async (req, res) => {
     let sentiment = 'neutral';
     let score = 0;
     
-    if (posCount > negCount) {\n      sentiment = 'positive';
+    if (posCount > negCount) {
+      sentiment = 'positive';
       score = Math.min(1, (posCount / (posCount + negCount + neuCount + 1)) * 2);
     } else if (negCount > posCount) {
       sentiment = 'negative';

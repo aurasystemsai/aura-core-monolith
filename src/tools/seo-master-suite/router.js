@@ -16,12 +16,17 @@
 
 import express from 'express';
 import db from '../../core/db.js';
-import { storageJson } from '../../core/db.js';
+import storageJson from '../../core/storageJson.js';
 import shopifyApi from '../../core/makeClient.js';
-import { OpenAI } from 'openai';
+import OpenAI from 'openai';
 
 const router = express.Router();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Simple helpers to normalize our storage keys and use storageJson get/set
+const normalizeKey = (fileName) => fileName.replace(/\.json$/i, '');
+const storageRead = (fileName, fallback = {}) => storageJson.get(normalizeKey(fileName), fallback);
+const storageWrite = (fileName, value) => storageJson.set(normalizeKey(fileName), value);
 
 // ============================================================================
 // DATA MODELS
@@ -99,7 +104,7 @@ router.post('/keywords/research', async (req, res) => {
     const clusters = await clusterKeywordsByTopic(keywords);
 
     // Store results
-    const storage = await storageJson(SEO_STORAGE.keywords);
+    const storage = await storageRead(SEO_STORAGE.keywords);
     const researchId = `research_${Date.now()}`;
     storage[researchId] = {
       seedKeywords,
@@ -111,7 +116,7 @@ router.post('/keywords/research', async (req, res) => {
       totalFound: keywords.length,
       createdAt: new Date().toISOString()
     };
-    await storageJson(SEO_STORAGE.keywords, storage);
+    await storageWrite(SEO_STORAGE.keywords, storage);
 
     res.json({
       success: true,
@@ -228,7 +233,7 @@ router.post('/keywords/track', async (req, res) => {
     );
 
     // Store in tracking history
-    const storage = await storageJson(SEO_STORAGE.keywords);
+    const storage = await storageRead(SEO_STORAGE.keywords);
     if (!storage.tracking) storage.tracking = {};
     if (!storage.tracking[domain]) storage.tracking[domain] = [];
     
@@ -236,7 +241,7 @@ router.post('/keywords/track', async (req, res) => {
       date: new Date().toISOString(),
       rankings
     });
-    await storageJson(SEO_STORAGE.keywords, storage);
+    await storageWrite(SEO_STORAGE.keywords, storage);
 
     res.json({
       success: true,
@@ -307,7 +312,7 @@ router.post('/analyze/:type', async (req, res) => {
     });
 
     // Store analysis
-    const storage = await storageJson(SEO_STORAGE.contentAnalysis);
+    const storage = await storageRead(SEO_STORAGE.contentAnalysis);
     const analysisId = `analysis_${Date.now()}`;
     storage[analysisId] = {
       type,
@@ -317,7 +322,7 @@ router.post('/analyze/:type', async (req, res) => {
       recommendations,
       analyzedAt: new Date().toISOString()
     };
-    await storageJson(SEO_STORAGE.contentAnalysis, storage);
+    await storageWrite(SEO_STORAGE.contentAnalysis, storage);
 
     res.json({
       success: true,
@@ -506,7 +511,7 @@ router.post('/schema/generate', async (req, res) => {
     }
 
     // Store schema
-    const storage = await storageJson(SEO_STORAGE.schemas);
+    const storage = await storageRead(SEO_STORAGE.schemas);
     const schemaId = `schema_${Date.now()}`;
     storage[schemaId] = {
       type,
@@ -516,7 +521,7 @@ router.post('/schema/generate', async (req, res) => {
       autoPublish,
       createdAt: new Date().toISOString()
     };
-    await storageJson(SEO_STORAGE.schemas, storage);
+    await storageWrite(SEO_STORAGE.schemas, storage);
 
     res.json({
       success: true,
@@ -613,7 +618,7 @@ router.post('/local/gmb/profile', async (req, res) => {
   try {
     const { action, profileData } = req.body;
 
-    const storage = await storageJson(SEO_STORAGE.localSEO);
+    const storage = await storageRead(SEO_STORAGE.localSEO);
     if (!storage.gmb) storage.gmb = {};
 
     if (action === 'create') {
@@ -624,7 +629,7 @@ router.post('/local/gmb/profile', async (req, res) => {
         createdAt: new Date().toISOString(),
         lastSynced: null
       };
-      await storageJson(SEO_STORAGE.localSEO, storage);
+      await storageWrite(SEO_STORAGE.localSEO, storage);
 
       // Generate GMB optimization suggestions
       const suggestions = generateGMBSuggestions(profileData);
@@ -642,7 +647,7 @@ router.post('/local/gmb/profile', async (req, res) => {
         ...updates,
         lastUpdated: new Date().toISOString()
       };
-      await storageJson(SEO_STORAGE.localSEO, storage);
+      await storageWrite(SEO_STORAGE.localSEO, storage);
 
       res.json({
         success: true,
@@ -1270,7 +1275,7 @@ router.post('/collab/session/create', async (req, res) => {
     const { projectName, projectType, invitedUsers = [] } = req.body;
 
     const sessionId = `session_${Date.now()}`;
-    const storage = await storageJson(SEO_STORAGE.collaborationSessions);
+    const storage = await storageRead(SEO_STORAGE.collaborationSessions);
     
     storage[sessionId] = {
       id: sessionId,
@@ -1291,7 +1296,7 @@ router.post('/collab/session/create', async (req, res) => {
       createdAt: new Date().toISOString(),
       lastActivity: new Date().toISOString()
     };
-    await storageJson(SEO_STORAGE.collaborationSessions, storage);
+    await storageWrite(SEO_STORAGE.collaborationSessions, storage);
 
     res.json({
       success: true,
@@ -1309,7 +1314,7 @@ router.post('/collab/presence/update', async (req, res) => {
   try {
     const { sessionId, userId, cursor, selection, status = 'active' } = req.body;
 
-    const storage = await storageJson(SEO_STORAGE.collaborationSessions);
+    const storage = await storageRead(SEO_STORAGE.collaborationSessions);
     const session = storage[sessionId];
     if (!session) {
       return res.status(404).json({ success: false, error: 'Session not found' });
@@ -1329,7 +1334,7 @@ router.post('/collab/presence/update', async (req, res) => {
     }
 
     session.lastActivity = new Date().toISOString();
-    await storageJson(SEO_STORAGE.collaborationSessions, storage);
+    await storageWrite(SEO_STORAGE.collaborationSessions, storage);
 
     res.json({
       success: true,
@@ -1349,7 +1354,7 @@ router.post('/collab/live-edit', async (req, res) => {
   try {
     const { sessionId, userId, operation, documentId } = req.body;
 
-    const storage = await storageJson(SEO_STORAGE.collaborationSessions);
+    const storage = await storageRead(SEO_STORAGE.collaborationSessions);
     const session = storage[sessionId];
 
     // Apply operational transformation to handle concurrent edits
@@ -1372,7 +1377,7 @@ router.post('/collab/live-edit', async (req, res) => {
       transformed
     );
 
-    await storageJson(SEO_STORAGE.collaborationSessions, storage);
+    await storageWrite(SEO_STORAGE.collaborationSessions, storage);
 
     res.json({
       success: true,
@@ -1393,13 +1398,13 @@ router.post('/security/sso/configure', async (req, res) => {
   try {
     const { provider, config } = req.body; // okta, auth0, azure-ad, google
 
-    const storage = await storageJson(SEO_STORAGE.ssoConfig);
+    const storage = await storageRead(SEO_STORAGE.ssoConfig);
     storage[provider] = {
       ...config,
       enabled: true,
       configuredAt: new Date().toISOString()
     };
-    await storageJson(SEO_STORAGE.ssoConfig, storage);
+    await storageWrite(SEO_STORAGE.ssoConfig, storage);
 
     res.json({
       success: true,
@@ -1640,10 +1645,10 @@ router.post('/developer/sdk/generate', async (req, res) => {
       authentication: 'api-key'
     });
 
-    const storage = await storageJson(SEO_STORAGE.sdkUsage);
+    const storage = await storageRead(SEO_STORAGE.sdkUsage);
     if (!storage.downloads) storage.downloads = {};
     storage.downloads[language] = (storage.downloads[language] || 0) + 1;
-    await storageJson(SEO_STORAGE.sdkUsage, storage);
+    await storageWrite(SEO_STORAGE.sdkUsage, storage);
 
     res.json({
       success: true,
@@ -1717,7 +1722,7 @@ router.post('/tenants/create', async (req, res) => {
     const { name, domain, branding, limits } = req.body;
 
     const tenantId = `tenant_${Date.now()}`;
-    const storage = await storageJson(SEO_STORAGE.tenants);
+    const storage = await storageRead(SEO_STORAGE.tenants);
     
     storage[tenantId] = {
       id: tenantId,
@@ -1744,7 +1749,7 @@ router.post('/tenants/create', async (req, res) => {
       status: 'active',
       createdAt: new Date().toISOString()
     };
-    await storageJson(SEO_STORAGE.tenants, storage);
+    await storageWrite(SEO_STORAGE.tenants, storage);
 
     res.json({
       success: true,
@@ -1760,7 +1765,7 @@ router.post('/tenants/create', async (req, res) => {
 router.get('/tenants/:tenantId/usage', async (req, res) => {
   try {
     const { tenantId } = req.params;
-    const storage = await storageJson(SEO_STORAGE.tenants);
+    const storage = await storageRead(SEO_STORAGE.tenants);
     const tenant = storage[tenantId];
 
     if (!tenant) {
@@ -1816,7 +1821,7 @@ router.get('/tenants/:tenantId/usage', async (req, res) => {
 router.get('/monitoring/apm/trace/:traceId', async (req, res) => {
   try {
     const { traceId } = req.params;
-    const storage = await storageJson(SEO_STORAGE.apmTraces);
+    const storage = await storageRead(SEO_STORAGE.apmTraces);
     
     const trace = storage[traceId] || {
       traceId,
@@ -1888,7 +1893,7 @@ router.post('/edge/deploy', async (req, res) => {
   try {
     const { regions = ['us-east', 'us-west', 'eu-west', 'ap-south', 'all'] } = req.body;
 
-    const storage = await storageJson(SEO_STORAGE.edgeNodes);
+    const storage = await storageRead(SEO_STORAGE.edgeNodes);
     const deploymentId = `deploy_${Date.now()}`;
     
     const deployment = {
@@ -1901,7 +1906,7 @@ router.post('/edge/deploy', async (req, res) => {
 
     storage.deployments = storage.deployments || [];
     storage.deployments.push(deployment);
-    await storageJson(SEO_STORAGE.edgeNodes, storage);
+    await storageWrite(SEO_STORAGE.edgeNodes, storage);
 
     res.json({
       success: true,
@@ -2587,3 +2592,5 @@ function generateOpenAPISchemas() {
 }
 
 export default router;
+// Support CommonJS require for server.js
+module.exports = router;

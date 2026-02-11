@@ -2,98 +2,92 @@ import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch } from "./api";
 import "./App.css";
 
-import ProjectSetup from "./ProjectSetup";
-import PricingPage from "./components/PricingPage";
-import ProjectSwitcher from "./ProjectSwitcher";
-import SystemHealthPanel from "./components/SystemHealthPanel";
-import DraftLibrary from "./components/DraftLibrary";
-import ContentIngestor from "./components/ContentIngestor";
-import ProductsList from "./components/ProductsList.jsx";
-// ...existing code...
-import ToolScaffold from "./components/tools/ToolScaffold.jsx";
-import AbandonedCheckoutWinback from "./components/tools/AbandonedCheckoutWinback.jsx";
-import CustomerDataPlatform from "./components/tools/CustomerDataPlatform.jsx";
-import VisualWorkflowBuilder from "./components/tools/VisualWorkflowBuilder.jsx";
-import SelfServicePortal from "./components/tools/SelfServicePortal.jsx";
-import AdvancedPersonalizationEngine from "./components/tools/AdvancedPersonalizationEngine.jsx";
-import ABTestingSuite from "./components/tools/ABTestingSuite.jsx";
-import DataWarehouseConnector from "./components/tools/DataWarehouseConnector.jsx";
-import ConsentPrivacyManagement from "./components/tools/ConsentPrivacyManagement.jsx";
-import EntityTopicExplorer from "./components/tools/EntityTopicExplorer.jsx";
-import InternalLinkingSuggestions from "./components/tools/InternalLinkingSuggestions.jsx";
-import AIContentBriefGenerator from "./components/tools/AIContentBriefGenerator.jsx";
-import BrandMentionTracker from "./components/tools/BrandMentionTracker.jsx";
-import LocalSEOToolkit from "./components/tools/LocalSEOToolkit.jsx";
-import AutomationTemplates from "./components/tools/AutomationTemplates.jsx";
-import ConditionalLogicAutomation from "./components/tools/ConditionalLogicAutomation.jsx";
-import WebhookApiTriggers from "./components/tools/WebhookApiTriggers.jsx";
-import ReportingIntegrations from "./components/tools/ReportingIntegrations.jsx";
-import CustomDashboardBuilder from "./components/tools/CustomDashboardBuilder.jsx";
-import MainSuite from "./components/tools/MainSuite.jsx";
-import WorkflowAutomationBuilder from "./components/tools/WorkflowAutomationBuilder.jsx";
-import ScheduledExport from "./components/tools/ScheduledExport.jsx";
-import SelfServiceAnalytics from "./components/tools/SelfServiceAnalytics.jsx";
-import ChurnPredictionPlaybooks from "./components/tools/ChurnPredictionPlaybooks.jsx";
-import UpsellCrossSellEngine from "./components/tools/UpsellCrossSellEngine.jsx";
-import InventoryForecasting from "./components/tools/InventoryForecasting.jsx";
 import toolsMeta from "./toolMeta";
-import BlogDraftEngine from "./components/tools/BlogDraftEngine.jsx";
-import BlogSEO from "./components/tools/BlogSEO.jsx";
-import WeeklyBlogContentEngine from "./components/tools/WeeklyBlogContentEngine.jsx";
-import OnPageSEOEngine from "./components/tools/OnPageSEOEngine.jsx";
-import TechnicalSEOAuditor from "./components/tools/TechnicalSEOAuditor.jsx";
-import SERPTracker from "./components/tools/SERPTracker.jsx";
-import SEOSiteCrawler from "./components/tools/SEOSiteCrawler.jsx";
-import SocialSchedulerContentEngine from "./components/tools/SocialSchedulerContentEngine.jsx";
-import SocialMediaAnalyticsListening from "./components/tools/SocialMediaAnalyticsListening.jsx";
-import SiteAuditHealth from "./components/tools/SiteAuditHealth.jsx";
-import SchemaRichResultsEngine from "./components/tools/SchemaRichResultsEngine.jsx";
-import ReviewUGCEngine from "./components/tools/ReviewUGCEngine.jsx";
-import ReturnsRMAAutomation from "./components/tools/ReturnsRMAAutomation.jsx";
-import RankVisibilityTracker from "./components/tools/RankVisibilityTracker.jsx";
-import MultiChannelOptimizer from "./components/tools/MultiChannelOptimizer.jsx";
-import LTVChurnPredictor from "./components/tools/LTVChurnPredictor.jsx";
-import KlaviyoFlowAutomation from "./components/tools/KlaviyoFlowAutomation.jsx";
-import InventorySupplierSync from "./components/tools/InventorySupplierSync.jsx";
-import InboxReplyAssistant from "./components/tools/InboxReplyAssistant.jsx";
-import InboxAssistant from "./components/tools/InboxAssistant.jsx";
-import ImageAltMediaSEO from "./components/tools/ImageAltMediaSEO.jsx";
-import FinanceAutopilot from "./components/tools/FinanceAutopilot.jsx";
-import EmailAutomationBuilder from "./components/tools/EmailAutomationBuilder.jsx";
-import DynamicPricingEngine from "./components/tools/DynamicPricingEngine.jsx";
-import CustomerSupportAI from "./components/tools/CustomerSupportAI.jsx";
-import CreativeAutomationEngine from "./components/tools/CreativeAutomationEngine.jsx";
-import BrandIntelligenceLayer from "./components/tools/BrandIntelligenceLayer.jsx";
-import AutoInsights from "./components/tools/AutoInsights.jsx";
-import AuraOperationsAI from "./components/tools/AuraOperationsAI.jsx";
-import AuraAPISDK from "./components/tools/AuraAPISDK.jsx";
-import AiSupportAssistant from "./components/tools/AISupportAssistant.jsx";
-import AiLaunchPlanner from "./components/tools/AILaunchPlanner.jsx";
-import AdvancedAnalyticsAttribution from "./components/tools/AdvancedAnalyticsAttribution.jsx";
-import PredictiveAnalyticsWidgets from "./components/tools/PredictiveAnalyticsWidgets.jsx";
-// import AiAltTextEngine from "./components/tools/AiAltTextEngine.jsx";
+import AiChatbot from "./components/AiChatbot.jsx";
 import ChangelogModal from "./components/ChangelogModal.jsx";
 import Toast from "./components/Toast.jsx";
-import DashboardHome from "./components/DashboardHome";
-import FixQueue from "./components/FixQueue";
-import Auth from "./auth/Auth.jsx";
-import Onboarding from "./onboarding/Onboarding.jsx";
 import OnboardingModal from "./components/OnboardingModal.jsx";
-// import OnboardingChecklist from "./onboarding/OnboardingChecklist.jsx";
-import Credits from "./credits/Credits.jsx";
-import Dashboard from "./dashboard/Dashboard.jsx";
 import ShopifyReconnectButton from "./components/ShopifyReconnectButton.jsx";
 
-// Lazy-load only large or rarely-used tool components
+const PricingPage = lazy(() => import("./components/PricingPage"));
+const ProjectSwitcher = lazy(() => import("./ProjectSwitcher"));
+const SystemHealthPanel = lazy(() => import("./components/SystemHealthPanel"));
+const DraftLibrary = lazy(() => import("./components/DraftLibrary"));
+const ContentIngestor = lazy(() => import("./components/ContentIngestor"));
+const ProductsList = lazy(() => import("./components/ProductsList.jsx"));
+const ToolsList = lazy(() => import("./components/ToolsList.jsx"));
 const ContentHealthAuditor = lazy(() => import("./components/ContentHealthAuditor"));
 const UserManagement = lazy(() => import("./components/UserManagement.jsx"));
 const AutomationScheduler = lazy(() => import("./components/AutomationScheduler.jsx"));
 const Reports = lazy(() => import("./components/Reports.jsx"));
 const WorkflowOrchestrator = lazy(() => import("./components/tools/WorkflowOrchestrator.jsx"));
 const ProductSeoEngine = lazy(() => import("./components/ProductSeoEngine"));
-// const AiAltTextEngine = lazy(() => import("./components/AiAltTextEngine"));
 const InternalLinkOptimizer = lazy(() => import("./components/InternalLinkOptimizer"));
-import AiChatbot from "./components/AiChatbot.jsx";
+const Dashboard = lazy(() => import("./dashboard/Dashboard.jsx"));
+const MainSuite = lazy(() => import("./components/tools/MainSuite.jsx"));
+const FixQueue = lazy(() => import("./components/FixQueue"));
+const Auth = lazy(() => import("./auth/Auth.jsx"));
+const Onboarding = lazy(() => import("./onboarding/Onboarding.jsx"));
+const Credits = lazy(() => import("./credits/Credits.jsx"));
+const AbandonedCheckoutWinback = lazy(() => import("./components/tools/AbandonedCheckoutWinback.jsx"));
+const CustomerDataPlatform = lazy(() => import("./components/tools/CustomerDataPlatform.jsx"));
+const VisualWorkflowBuilder = lazy(() => import("./components/tools/VisualWorkflowBuilder.jsx"));
+const SelfServicePortal = lazy(() => import("./components/tools/SelfServicePortal.jsx"));
+const AdvancedPersonalizationEngine = lazy(() => import("./components/tools/AdvancedPersonalizationEngine.jsx"));
+const ABTestingSuite = lazy(() => import("./components/tools/ABTestingSuite.jsx"));
+const DataWarehouseConnector = lazy(() => import("./components/tools/DataWarehouseConnector.jsx"));
+const ConsentPrivacyManagement = lazy(() => import("./components/tools/ConsentPrivacyManagement.jsx"));
+const EntityTopicExplorer = lazy(() => import("./components/tools/EntityTopicExplorer.jsx"));
+const InternalLinkingSuggestions = lazy(() => import("./components/tools/InternalLinkingSuggestions.jsx"));
+const AIContentBriefGenerator = lazy(() => import("./components/tools/AIContentBriefGenerator.jsx"));
+const BrandMentionTracker = lazy(() => import("./components/tools/BrandMentionTracker.jsx"));
+const LocalSEOToolkit = lazy(() => import("./components/tools/LocalSEOToolkit.jsx"));
+const AutomationTemplates = lazy(() => import("./components/tools/AutomationTemplates.jsx"));
+const ConditionalLogicAutomation = lazy(() => import("./components/tools/ConditionalLogicAutomation.jsx"));
+const WebhookApiTriggers = lazy(() => import("./components/tools/WebhookApiTriggers.jsx"));
+const ReportingIntegrations = lazy(() => import("./components/tools/ReportingIntegrations.jsx"));
+const CustomDashboardBuilder = lazy(() => import("./components/tools/CustomDashboardBuilder.jsx"));
+const WorkflowAutomationBuilder = lazy(() => import("./components/tools/WorkflowAutomationBuilder.jsx"));
+const ScheduledExport = lazy(() => import("./components/tools/ScheduledExport.jsx"));
+const SelfServiceAnalytics = lazy(() => import("./components/tools/SelfServiceAnalytics.jsx"));
+const ChurnPredictionPlaybooks = lazy(() => import("./components/tools/ChurnPredictionPlaybooks.jsx"));
+const UpsellCrossSellEngine = lazy(() => import("./components/tools/UpsellCrossSellEngine.jsx"));
+const InventoryForecasting = lazy(() => import("./components/tools/InventoryForecasting.jsx"));
+const BlogDraftEngine = lazy(() => import("./components/tools/BlogDraftEngine.jsx"));
+const BlogSEO = lazy(() => import("./components/tools/BlogSEO.jsx"));
+const WeeklyBlogContentEngine = lazy(() => import("./components/tools/WeeklyBlogContentEngine.jsx"));
+const OnPageSEOEngine = lazy(() => import("./components/tools/OnPageSEOEngine.jsx"));
+const TechnicalSEOAuditor = lazy(() => import("./components/tools/TechnicalSEOAuditor.jsx"));
+const SERPTracker = lazy(() => import("./components/tools/SERPTracker.jsx"));
+const SEOSiteCrawler = lazy(() => import("./components/tools/SEOSiteCrawler.jsx"));
+const SocialSchedulerContentEngine = lazy(() => import("./components/tools/SocialSchedulerContentEngine.jsx"));
+const SocialMediaAnalyticsListening = lazy(() => import("./components/tools/SocialMediaAnalyticsListening.jsx"));
+const SiteAuditHealth = lazy(() => import("./components/tools/SiteAuditHealth.jsx"));
+const SchemaRichResultsEngine = lazy(() => import("./components/tools/SchemaRichResultsEngine.jsx"));
+const ReviewUGCEngine = lazy(() => import("./components/tools/ReviewUGCEngine.jsx"));
+const ReturnsRMAAutomation = lazy(() => import("./components/tools/ReturnsRMAAutomation.jsx"));
+const RankVisibilityTracker = lazy(() => import("./components/tools/RankVisibilityTracker.jsx"));
+const MultiChannelOptimizer = lazy(() => import("./components/tools/MultiChannelOptimizer.jsx"));
+const LTVChurnPredictor = lazy(() => import("./components/tools/LTVChurnPredictor.jsx"));
+const KlaviyoFlowAutomation = lazy(() => import("./components/tools/KlaviyoFlowAutomation.jsx"));
+const InventorySupplierSync = lazy(() => import("./components/tools/InventorySupplierSync.jsx"));
+const InboxReplyAssistant = lazy(() => import("./components/tools/InboxReplyAssistant.jsx"));
+const InboxAssistant = lazy(() => import("./components/tools/InboxAssistant.jsx"));
+const ImageAltMediaSEO = lazy(() => import("./components/tools/ImageAltMediaSEO.jsx"));
+const FinanceAutopilot = lazy(() => import("./components/tools/FinanceAutopilot.jsx"));
+const EmailAutomationBuilder = lazy(() => import("./components/tools/EmailAutomationBuilder.jsx"));
+const DynamicPricingEngine = lazy(() => import("./components/tools/DynamicPricingEngine.jsx"));
+const CustomerSupportAI = lazy(() => import("./components/tools/CustomerSupportAI.jsx"));
+const CreativeAutomationEngine = lazy(() => import("./components/tools/CreativeAutomationEngine.jsx"));
+const BrandIntelligenceLayer = lazy(() => import("./components/tools/BrandIntelligenceLayer.jsx"));
+const AutoInsights = lazy(() => import("./components/tools/AutoInsights.jsx"));
+const AuraOperationsAI = lazy(() => import("./components/tools/AuraOperationsAI.jsx"));
+const AuraAPISDK = lazy(() => import("./components/tools/AuraAPISDK.jsx"));
+const AiSupportAssistant = lazy(() => import("./components/tools/AISupportAssistant.jsx"));
+const AiLaunchPlanner = lazy(() => import("./components/tools/AILaunchPlanner.jsx"));
+const AdvancedAnalyticsAttribution = lazy(() => import("./components/tools/AdvancedAnalyticsAttribution.jsx"));
+const PredictiveAnalyticsWidgets = lazy(() => import("./components/tools/PredictiveAnalyticsWidgets.jsx"));
+const ToolScaffold = lazy(() => import("./components/tools/ToolScaffold.jsx"));
 
 const MAIN_SUITE_PREF_KEY = "main-suite-prefs";
 
@@ -466,9 +460,11 @@ function App() {
           <div className="page-frame fade-in">
             <section className="tool-section">
               {/* DEBUG: dashboard render path */}
+              <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading…</div>}>
                 {activeSection === "dashboard" && !project && <div style={{color:'#ff0',background:'#232336',padding:16}}>DEBUG: No project found, dashboard not rendered</div>}
                 {activeSection === "dashboard" && project && <Dashboard setActiveSection={setActiveSection} />}
                 {activeSection === "main-suite" && <MainSuite setActiveSection={setActiveSection} />}
+              </Suspense>
               <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading…</div>}>
                 {activeSection === "pricing" && <PricingPage />}
                 {activeSection === "automation-scheduler" && <AutomationScheduler />}

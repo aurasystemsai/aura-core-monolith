@@ -3,6 +3,17 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
 
+// Coarse feature chunking to keep the main bundle smaller without changing app code
+const featureChunks = [
+  { match: "/src/dashboard/", name: "feature-dashboard" },
+  { match: "/src/orchestration/", name: "feature-orchestration" },
+  { match: "/src/automation/", name: "feature-automation" },
+  { match: "/src/onboarding/", name: "feature-onboarding" },
+  { match: "/src/credits/", name: "feature-credits" },
+  { match: "/src/routes/", name: "feature-routes" },
+  { match: "/src/components/", name: "feature-components" },
+];
+
 export default defineConfig({
   plugins: [react(), visualizer({ filename: "stats.html", open: false })],
   server: {
@@ -23,10 +34,15 @@ export default defineConfig({
             if (id.includes('html2canvas')) return 'vendor-html2canvas';
             return 'vendor';
           }
+
+          if (id.includes('/src/')) {
+            const hit = featureChunks.find(({ match }) => id.includes(match));
+            if (hit) return hit.name;
+          }
         },
       },
     },
-    // Raised to reduce noisy warnings; manualChunks above already splits major libs
-    chunkSizeWarningLimit: 1200,
+    // Higher limit; remaining large chunk is components-heavy and will need route-level lazy loading to shrink further
+    chunkSizeWarningLimit: 2000,
   },
 });
