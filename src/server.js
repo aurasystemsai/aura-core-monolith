@@ -46,6 +46,9 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // const lusca = require('lusca');
 const PORT = process.env.PORT || 10000;
 
+// Consolidated suites
+const seoMasterSuiteRouter = require('./tools/seo-master-suite/router');
+
 const express = require('express');
 const app = express();
 // Dynamic CORS for embedded Shopify app
@@ -637,6 +640,9 @@ app.use("/automation", automationRoutes);
 // AI Alt-Text Engine API
 const aiAltTextEngineRouter = require('./tools/ai-alt-text-engine/router');
 app.use('/api/ai-alt-text-engine', aiAltTextEngineRouter);
+
+// SEO Master Suite API (consolidated SEO tool)
+app.use('/api/seo-master-suite', seoMasterSuiteRouter);
 
 // ---------- HEALTH CHECK ----------
 
