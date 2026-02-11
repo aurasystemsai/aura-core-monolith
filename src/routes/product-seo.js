@@ -1,9 +1,9 @@
 // ================================================================
 // PRODUCT SEO ENGINE - WORLD-CLASS ENTERPRISE BACKEND
 // ================================================================
-// Version: 2.0 (Upgraded from 218 lines to 5,500+ lines)
+// Version: 2.1 (Upgraded from 218 lines to 5,511+ lines)
 // Created: February 11, 2026
-// Total Endpoints: 200 (Part 1: 106 endpoints, Categories 1-4)
+// Total Endpoints: 200 (Categories 1-8, Week 2 + Week 3 complete)
 // Reference: Loyalty & Referral Programs (4,777 lines, 201 endpoints)
 // ================================================================
 
@@ -3194,7 +3194,9 @@ router.post('/schema/:productId/generate', (req, res) => {
     
     // Save schema to product
     product.schema = schema;
+    product.updatedAt = new Date().toISOString();
     productsStore.set(productId, product);
+    logAudit('schema_generated', 'user', productId, { schemaType: 'Product' });
     
     res.json({ ok: true, schema });
   } catch (err) {
@@ -3602,11 +3604,13 @@ router.post('/schema/bulk-generate', (req, res) => {
       };
       
       product.schema = schema;
+      product.updatedAt = new Date().toISOString();
       productsStore.set(id, product);
       
       return { id, success: true, schema };
     });
     
+    logAudit('schema_bulk_generated', 'user', null, { count: results.filter(r => r.success).length });
     res.json({ ok: true, results, total: productIds.length });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -5351,6 +5355,7 @@ router.post('/users', (req, res) => {
       lastActive: null
     };
     
+    logAudit('user_created', 'user', null, { name, role });
     res.status(201).json({ ok: true, user });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -5381,6 +5386,7 @@ router.delete('/users/:id', (req, res) => {
   try {
     const { id } = req.params;
     
+    logAudit('user_deleted', 'user', null, { userId: id });
     res.json({ ok: true, message: `User ${id} removed successfully` });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });

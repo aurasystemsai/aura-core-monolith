@@ -1,2605 +1,773 @@
-/**
- * Product SEO Engine - World-Class Platform
- * 
- * Tool 4 of 77 - Frontend Implementation (Week 4-6)
- * 42 tabs across 7 categories
- * Full integration with 200 backend endpoints
- * 
- * Categories:
- * 1. Product Optimization (6 tabs) - Core product management & SEO
- * 2. AI Orchestration (6 tabs) - Multi-model AI & intelligent routing
- * 3. Keyword & SERP (6 tabs) - Research, analysis, tracking
- * 4. Multi-Channel (6 tabs) - Amazon, eBay, Google Shopping, social
- * 5. Schema & Rich Results (6 tabs) - Structured data & testing
- * 6. A/B Testing (6 tabs) - Experiments & optimization
- * 7. Analytics & Settings (6 tabs) - Reports, config, admin
- */
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { apiFetch } from "../../api";
 
-import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
-import {
-  Box,
-  Tabs,
-  Tab,
-  Button,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Card,
-  CardContent,
-  Typography,
-  Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
-  Alert,
-  Snackbar,
-  Switch,
-  FormControlLabel,
-  Tooltip,
-  Badge,
-  LinearProgress,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Avatar,
-  AvatarGroup,
-  Rating,
-  Skeleton,
-  Autocomplete,
-  Slider,
-} from '@mui/material';
-import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Visibility as ViewIcon,
-  Download as DownloadIcon,
-  Upload as UploadIcon,
-  Refresh as RefreshIcon,
-  Search as SearchIcon,
-  FilterList as FilterIcon,
-  Settings as SettingsIcon,
-  TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon,
-  ShoppingCart as ProductIcon,
-  LocalOffer as PriceIcon,
-  Category as CategoryIcon,
-  Language as LanguageIcon,
-  Collections as BatchIcon,
-  Analytics as AnalyticsIcon,
-  Security as SecurityIcon,
-  Speed as SpeedIcon,
-  Notifications as NotificationsIcon,
-  Code as CodeIcon,
-  CloudUpload as CloudUploadIcon,
-  PlayArrow as PlayIcon,
-  Timeline as TimelineIcon,
-  Assessment as AssessmentIcon,
-  Group as GroupIcon,
-  Lock as LockIcon,
-  VpnKey as KeyIcon,
-  Error as ErrorIcon,
-  CheckCircle as SuccessIcon,
-  Warning as WarningIcon,
-  Info as InfoIcon,
-  ExpandMore as ExpandMoreIcon,
-  Close as CloseIcon,
-  MoreVert as MoreIcon,
-  Autorenew as AutorenewIcon,
-  Public as PublicIcon,
-  Email as EmailIcon,
-  Sms as SmsIcon,
-  PieChart as PieChartIcon,
-  BarChart as BarChartIcon,
-  ShowChart as ShowChartIcon,
-  Psychology as AIIcon,
-  DeviceHub as NetworkIcon,
-  Webhook as WebhookIcon,
-  Api as ApiIcon,
-  Brush as BrushIcon,
-  Store as StoreIcon,
-  ColorLens as ColorIcon,
-  BugReport as BugIcon,
-  HealthAndSafety as HealthIcon,
-  Lightbulb as IdeaIcon,
-  Rocket as RocketIcon,
-  Star as StarIcon,
-  Image as ImageIcon,
-  Description as DescriptionIcon,
-  Title as TitleIcon,
-  YouTube as YouTubeIcon,
-  Facebook as FacebookIcon,
-  Instagram as InstagramIcon,
-  Twitter as TwitterIcon,
-  Pinterest as PinterestIcon,
-  LinkedIn as LinkedInIcon,
-  Shop as ShopIcon,
-  Compare as CompareIcon,
-  Rule as RuleIcon,
-  Science as ScienceIcon,
-  Insights as InsightsIcon,
-  AccountTree as SchemaIcon,
-  Verified as VerifiedIcon,
-  QrCode as QrCodeIcon,
-  FormatListNumbered as ListIcon,
-  Map as MapIcon,
-} from '@mui/icons-material';
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, Scatter, ScatterChart, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
+// -----------------------------------------------------------------------------
+// PRODUCT SEO ENGINE – FRONTEND (42 tabs, Week 4-6 scope)
+// -----------------------------------------------------------------------------
 
-// Lazy-loaded components for performance
-const MonacoEditor = lazy(() => import('@monaco-editor/react'));
+const categories = [
+  {
+    id: "manage",
+    label: "Manage",
+    accent: "#14b8a6",
+    tabs: [
+      { id: "product-list", label: "Product List" },
+      { id: "product-editor", label: "Product Editor" },
+      { id: "bulk-operations", label: "Bulk Operations" },
+      { id: "templates", label: "Templates" },
+      { id: "categories", label: "Categories" },
+      { id: "tags-attributes", label: "Tags & Attributes" },
+      { id: "version-history", label: "Version History" },
+      { id: "trash-recovery", label: "Trash & Recovery" }
+    ]
+  },
+  {
+    id: "optimize",
+    label: "Optimize",
+    accent: "#6366f1",
+    tabs: [
+      { id: "title-optimization", label: "Title Optimization" },
+      { id: "description-enhancement", label: "Description Enhancement" },
+      { id: "meta-data", label: "Meta Data" },
+      { id: "image-seo", label: "Image SEO" },
+      { id: "keyword-density", label: "Keyword Density" },
+      { id: "readability-score", label: "Readability Score" },
+      { id: "schema-generator", label: "Schema Generator" }
+    ]
+  },
+  {
+    id: "advanced",
+    label: "Advanced",
+    accent: "#f97316",
+    tabs: [
+      { id: "ai-orchestration", label: "AI Orchestration" },
+      { id: "keyword-research", label: "Keyword Research" },
+      { id: "serp-analysis", label: "SERP Analysis" },
+      { id: "competitor-intel", label: "Competitor Intelligence" },
+      { id: "multi-channel-optimizer", label: "Multi-Channel Optimizer" },
+      { id: "ab-testing", label: "A/B Testing" },
+      { id: "predictive-analytics", label: "Predictive Analytics" },
+      { id: "attribution", label: "Attribution Model" }
+    ]
+  },
+  {
+    id: "tools",
+    label: "Tools",
+    accent: "#0ea5e9",
+    tabs: [
+      { id: "bulk-ai-generator", label: "Bulk AI Generator" },
+      { id: "import-export", label: "Import/Export" },
+      { id: "content-scorer", label: "Content Scorer" },
+      { id: "schema-validator", label: "Schema Validator" },
+      { id: "rich-results-preview", label: "Rich Results Preview" },
+      { id: "keyword-planner", label: "Keyword Planner" }
+    ]
+  },
+  {
+    id: "monitoring",
+    label: "Monitoring",
+    accent: "#22c55e",
+    tabs: [
+      { id: "analytics-dashboard", label: "Analytics Dashboard" },
+      { id: "ranking-tracker", label: "Ranking Tracker" },
+      { id: "performance-metrics", label: "Performance Metrics" },
+      { id: "anomaly-detection", label: "Anomaly Detection" },
+      { id: "reports", label: "Reports" },
+      { id: "sla-dashboard", label: "SLA Dashboard" },
+      { id: "audit-logs", label: "Audit Logs" }
+    ]
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    accent: "#eab308",
+    tabs: [
+      { id: "preferences", label: "Preferences" },
+      { id: "api-keys", label: "API Keys" },
+      { id: "webhooks", label: "Webhooks" },
+      { id: "backup-restore", label: "Backup & Restore" },
+      { id: "notifications", label: "Notifications" },
+      { id: "integrations", label: "Integrations" }
+    ]
+  }
+];
 
-const ProductSEOEngine = () => {
-  // ============================================================================
-  // STATE MANAGEMENT
-  // ============================================================================
+const optimisticColors = ["#14b8a6", "#6366f1", "#f97316", "#0ea5e9", "#22c55e", "#eab308", "#f43f5e"];
 
-  // Navigation
-  const [activeCategory, setActiveCategory] = useState('product');
-  const [activeTab, setActiveTab] = useState(0);
+function SectionCard({ title, description, children, accent }) {
+  return (
+    <div style={{ background: "#0d1117", border: `1px solid ${accent || "#1f2937"}` , borderRadius: 14, padding: 18, marginBottom: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <div style={{ color: "#e5e7eb", fontWeight: 700 }}>{title}</div>
+        {accent && <span style={{ width: 10, height: 10, borderRadius: "50%", background: accent }} />}
+      </div>
+      {description && <div style={{ color: "#9ca3af", fontSize: 13, marginBottom: 10 }}>{description}</div>}
+      {children}
+    </div>
+  );
+}
 
-  // Data states - Product Optimization
+function StatPill({ label, value }) {
+  return (
+    <div style={{ padding: "10px 14px", background: "#111827", border: "1px solid #1f2937", borderRadius: 12, minWidth: 140 }}>
+      <div style={{ color: "#9ca3af", fontSize: 12 }}>{label}</div>
+      <div style={{ color: "#e5e7eb", fontWeight: 700 }}>{value}</div>
+    </div>
+  );
+}
+
+function InlineInput({ value, onChange, placeholder, type = "text", width = "100%" }) {
+  return (
+    <input
+      value={value}
+      type={type}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      style={{ width, background: "#0b1220", border: "1px solid #1f2937", color: "#e5e7eb", padding: "10px 12px", borderRadius: 10 }}
+    />
+  );
+}
+
+function Divider() {
+  return <div style={{ height: 1, background: "#1f2937", margin: "12px 0" }} />;
+}
+
+export default function ProductSEOEngine() {
+  const [activeCategory, setActiveCategory] = useState("manage");
+  const [activeTab, setActiveTab] = useState("product-list");
   const [products, setProducts] = useState([]);
-  const [productMeta, setProductMeta] = useState({});
-  const [bulkOperations, setBulkOperations] = useState([]);
-  const [templateManager, setTemplateManager] = useState([]);
-
-  // Data states - AI Orchestration
-  const [aiModels, setAiModels] = useState([]);
-  const [routingStrategies, setRoutingStrategies] = useState([]);
-  const [feedbackLoops, setFeedbackLoops] = useState([]);
-  const [fineTuning, setFineTuning] = useState([]);
-  const [batchJobs, setBatchJobs] = useState([]);
-
-  // Data states - Keyword & SERP
-  const [keywords, setKeywords] = useState([]);
-  const [serpData, setSerpData] = useState([]);
-  const [competitors, setCompetitors] = useState([]);
-  const [rankings, setRankings] = useState([]);
-  const [gapAnalysis, setGapAnalysis] = useState([]);
-
-  // Data states - Multi-Channel
-  const [amazonListings, setAmazonListings] = useState([]);
-  const [ebayListings, setEbayListings] = useState([]);
-  const [googleShopping, setGoogleShopping] = useState([]);
-  const [socialCommerce, setSocialCommerce] = useState([]);
-  const [platformIntegrations, setPlatformIntegrations] = useState([]);
-
-  // Data states - Schema & Rich Results
-  const [schemas, setSchemas] = useState([]);
-  const [richResults, setRichResults] = useState([]);
-  const [schemaValidator, setSchemaValidator] = useState({});
-  const [richSnippets, setRichSnippets] = useState([]);
-
-  // Data states - A/B Testing
-  const [experiments, setExperiments] = useState([]);
-  const [variants, setVariants] = useState([]);
-  const [experimentResults, setExperimentResults] = useState([]);
-  const [recommendedTests, setRecommendedTests] = useState([]);
-
-  // Data states - Analytics & Settings
-  const [analytics, setAnalytics] = useState({});
-  const [reports, setReports] = useState([]);
-  const [apiKeys, setApiKeys] = useState([]);
-  const [webhooks, setWebhooks] = useState([]);
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [generalSettings, setGeneralSettings] = useState({});
-
-  // UI states
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogType, setDialogType] = useState('');
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [error, setError] = useState("");
+  const [toast, setToast] = useState("");
+  const [seoScore, setSeoScore] = useState(null);
+  const [schemaPreview, setSchemaPreview] = useState(null);
+  const [keywordIdeas, setKeywordIdeas] = useState([]);
+  const [serpResults, setSerpResults] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
+  const [rankings, setRankings] = useState([]);
+  const [reports, setReports] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [abTests, setAbTests] = useState([]);
+  const [orchestration, setOrchestration] = useState(null);
+  const [bulkJob, setBulkJob] = useState(null);
+  const [config, setConfig] = useState({
+    model: "claude-3.5-sonnet",
+    channel: "amazon",
+    keywordSeed: "wireless headphones",
+    targetKeyword: "noise cancelling headphones",
+    price: "99.00"
+  });
 
-  // Form states
-  const [formData, setFormData] = useState({});
-  const [validationErrors, setValidationErrors] = useState({});
+  const toastTimeout = useRef();
 
-  // Real-time metrics
-  const [realtimeMetrics, setRealtimeMetrics] = useState({});
+  const showToast = (msg) => {
+    setToast(msg);
+    clearTimeout(toastTimeout.current);
+    toastTimeout.current = setTimeout(() => setToast("") , 4000);
+  };
 
-  // ============================================================================
-  // API INTEGRATION
-  // ============================================================================
+  const setAndNormalizeError = (msg) => {
+    setError(msg || "Something went wrong");
+    showToast(msg || "Something went wrong");
+  };
 
-  const apiBaseUrl = '/api/product-seo';
-
-  // Generic API call wrapper
-  const apiCall = async (endpoint, method = 'GET', data = null) => {
+  const fetchProducts = async () => {
     try {
-      const options = {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-      };
-      if (data) options.body = JSON.stringify(data);
-
-      const response = await fetch(`${apiBaseUrl}${endpoint}`, options);
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'API request failed');
+      const res = await apiFetch("/api/product-seo/products");
+      const data = await res.json();
+      if (data.ok) {
+        setProducts(data.products || []);
+        if (!selectedProduct && data.products?.length) setSelectedProduct(data.products[0]);
       }
-
-      return result;
-    } catch (error) {
-      console.error('API Error:', error);
-      showSnackbar(error.message, 'error');
-      throw error;
+    } catch (err) {
+      setAndNormalizeError(err.message);
     }
   };
 
-  // ============================================================================
-  // UI HELPERS
-  // ============================================================================
-
-  const showSnackbar = (message, severity = 'success') => {
-    setSnackbar({ open: true, message, severity });
-  };
-
-  const closeSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
-  const openDialog = (type, item = null) => {
-    setDialogType(type);
-    setSelectedItem(item);
-    setFormData(item || {});
-    setDialogOpen(true);
-  };
-
-  const closeDialog = () => {
-    setDialogOpen(false);
-    setDialogType('');
-    setSelectedItem(null);
-    setFormData({});
-    setValidationErrors({});
-  };
-
-  // ============================================================================
-  // DATA FETCHING
-  // ============================================================================
-
-  // Product Optimization
-  const fetchProducts = useCallback(async () => {
-    setLoading(true);
+  const fetchAnalytics = async () => {
     try {
-      const data = await apiCall('/products');
-      setProducts(data.products || []);
-    } catch (error) {
-      console.error('Error fetching products:', error);
+      const res = await apiFetch("/api/product-seo/analytics/overview");
+      const data = await res.json();
+      if (data.ok) setAnalytics(data.overview);
+    } catch (err) {
+      setAndNormalizeError(err.message);
+    }
+  };
+
+  const fetchAuditLogs = async () => {
+    try {
+      const res = await apiFetch("/api/product-seo/audit-logs?limit=25");
+      const data = await res.json();
+      if (data.ok) setAuditLogs(data.logs || []);
+    } catch (err) {
+      setAndNormalizeError(err.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+    fetchAnalytics();
+    fetchAuditLogs();
+  }, []);
+
+  const callEndpoint = async (path, options = {}, onSuccess) => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await apiFetch(path, options);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Request failed");
+      if (onSuccess) onSuccess(data);
+      showToast("Success");
+    } catch (err) {
+      setAndNormalizeError(err.message);
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  const fetchProductMeta = useCallback(async (productId) => {
-    try {
-      const data = await apiCall(`/products/${productId}/metadata`);
-      setProductMeta(data);
-    } catch (error) {
-      console.error('Error fetching product metadata:', error);
-    }
-  }, []);
-
-  const fetchTemplateManager = useCallback(async () => {
-    try {
-      const data = await apiCall('/templates');
-      setTemplateManager(data.templates || []);
-    } catch (error) {
-      console.error('Error fetching templates:', error);
-    }
-  }, []);
-
-  // AI Orchestration
-  const fetchAiModels = useCallback(async () => {
-    try {
-      const data = await apiCall('/ai/models');
-      setAiModels(data.models || []);
-    } catch (error) {
-      console.error('Error fetching AI models:', error);
-    }
-  }, []);
-
-  const fetchRoutingStrategies = useCallback(async () => {
-    try {
-      const data = await apiCall('/ai/routing-strategies');
-      setRoutingStrategies(data.strategies || []);
-    } catch (error) {
-      console.error('Error fetching routing strategies:', error);
-    }
-  }, []);
-
-  const fetchBatchJobs = useCallback(async () => {
-    try {
-      const data = await apiCall('/ai/batch-jobs');
-      setBatchJobs(data.jobs || []);
-    } catch (error) {
-      console.error('Error fetching batch jobs:', error);
-    }
-  }, []);
-
-  // Keyword & SERP
-  const fetchKeywords = useCallback(async () => {
-    try {
-      const data = await apiCall('/keywords');
-      setKeywords(data.keywords || []);
-    } catch (error) {
-      console.error('Error fetching keywords:', error);
-    }
-  }, []);
-
-  const fetchSerpData = useCallback(async () => {
-    try {
-      const data = await apiCall('/serp-analysis');
-      setSerpData(data.serpResults || []);
-    } catch (error) {
-      console.error('Error fetching SERP data:', error);
-    }
-  }, []);
-
-  const fetchCompetitors = useCallback(async () => {
-    try {
-      const data = await apiCall('/competitors');
-      setCompetitors(data.competitors || []);
-    } catch (error) {
-      console.error('Error fetching competitors:', error);
-    }
-  }, []);
-
-  const fetchRankings = useCallback(async () => {
-    try {
-      const data = await apiCall('/rankings/history');
-      setRankings(data.rankings || []);
-    } catch (error) {
-      console.error('Error fetching rankings:', error);
-    }
-  }, []);
-
-  // Multi-Channel
-  const fetchAmazonListings = useCallback(async () => {
-    try {
-      const data = await apiCall('/channels/amazon/listings');
-      setAmazonListings(data.listings || []);
-    } catch (error) {
-      console.error('Error fetching Amazon listings:', error);
-    }
-  }, []);
-
-  const fetchEbayListings = useCallback(async () => {
-    try {
-      const data = await apiCall('/channels/ebay/listings');
-      setEbayListings(data.listings || []);
-    } catch (error) {
-      console.error('Error fetching eBay listings:', error);
-    }
-  }, []);
-
-  const fetchGoogleShopping = useCallback(async () => {
-    try {
-      const data = await apiCall('/channels/google-shopping/feed');
-      setGoogleShopping(data.products || []);
-    } catch (error) {
-      console.error('Error fetching Google Shopping feed:', error);
-    }
-  }, []);
-
-  const fetchSocialCommerce = useCallback(async () => {
-    try {
-      const data = await apiCall('/channels/social');
-      setSocialCommerce(data.posts || []);
-    } catch (error) {
-      console.error('Error fetching social commerce:', error);
-    }
-  }, []);
-
-  const fetchPlatformIntegrations = useCallback(async () => {
-    try {
-      const data = await apiCall('/channels/platforms');
-      setPlatformIntegrations(data.platforms || []);
-    } catch (error) {
-      console.error('Error fetching platform integrations:', error);
-    }
-  }, []);
-
-  // Schema & Rich Results
-  const fetchSchemas = useCallback(async () => {
-    try {
-      const data = await apiCall('/schema');
-      setSchemas(data.schemas || []);
-    } catch (error) {
-      console.error('Error fetching schemas:', error);
-    }
-  }, []);
-
-  const fetchRichResults = useCallback(async () => {
-    try {
-      const data = await apiCall('/schema/rich-results');
-      setRichResults(data.results || []);
-    } catch (error) {
-      console.error('Error fetching rich results:', error);
-    }
-  }, []);
-
-  // A/B Testing
-  const fetchExperiments = useCallback(async () => {
-    try {
-      const data = await apiCall('/ab-testing/experiments');
-      setExperiments(data.experiments || []);
-    } catch (error) {
-      console.error('Error fetching experiments:', error);
-    }
-  }, []);
-
-  const fetchVariants = useCallback(async (experimentId) => {
-    try {
-      const data = await apiCall(`/ab-testing/experiments/${experimentId}/variants`);
-      setVariants(data.variants || []);
-    } catch (error) {
-      console.error('Error fetching variants:', error);
-    }
-  }, []);
-
-  const fetchExperimentResults = useCallback(async (experimentId) => {
-    try {
-      const data = await apiCall(`/ab-testing/experiments/${experimentId}/results`);
-      setExperimentResults(data);
-    } catch (error) {
-      console.error('Error fetching experiment results:', error);
-    }
-  }, []);
-
-  // Analytics & Settings
-  const fetchAnalytics = useCallback(async () => {
-    try {
-      const data = await apiCall('/analytics/overview');
-      setAnalytics(data);
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-    }
-  }, []);
-
-  const fetchReports = useCallback(async () => {
-    try {
-      const data = await apiCall('/analytics/reports');
-      setReports(data.reports || []);
-    } catch (error) {
-      console.error('Error fetching reports:', error);
-    }
-  }, []);
-
-  const fetchApiKeys = useCallback(async () => {
-    try {
-      const data = await apiCall('/settings/api-keys');
-      setApiKeys(data.keys || []);
-    } catch (error) {
-      console.error('Error fetching API keys:', error);
-    }
-  }, []);
-
-  const fetchWebhooks = useCallback(async () => {
-    try {
-      const data = await apiCall('/settings/webhooks');
-      setWebhooks(data.webhooks || []);
-    } catch (error) {
-      console.error('Error fetching webhooks:', error);
-    }
-  }, []);
-
-  const fetchAuditLogs = useCallback(async () => {
-    try {
-      const data = await apiCall('/settings/audit-logs');
-      setAuditLogs(data.logs || []);
-    } catch (error) {
-      console.error('Error fetching audit logs:', error);
-    }
-  }, []);
-
-  const fetchGeneralSettings = useCallback(async () => {
-    try {
-      const data = await apiCall('/settings/general');
-      setGeneralSettings(data.settings || {});
-    } catch (error) {
-      console.error('Error fetching general settings:', error);
-    }
-  }, []);
-
-  // ============================================================================
-  // DATA MUTATIONS
-  // ============================================================================
-
-  // Create product
-  const createProduct = async (productData) => {
-    try {
-      const result = await apiCall('/products', 'POST', productData);
-      showSnackbar('Product created successfully', 'success');
-      fetchProducts();
-      closeDialog();
-      return result;
-    } catch (error) {
-      showSnackbar('Failed to create product', 'error');
-    }
   };
 
-  // Update product
-  const updateProduct = async (id, productData) => {
-    try {
-      const result = await apiCall(`/products/${id}`, 'PUT', productData);
-      showSnackbar('Product updated successfully', 'success');
-      fetchProducts();
-      closeDialog();
-      return result;
-    } catch (error) {
-      showSnackbar('Failed to update product', 'error');
-    }
+  const optimizeTitle = async () => {
+    if (!selectedProduct) return;
+    await callEndpoint(`/api/product-seo/products/${selectedProduct.id}/title-suggestions`, {}, (data) => {
+      setSelectedProduct({ ...selectedProduct, title: data.suggestions?.[0] || selectedProduct.title });
+    });
   };
 
-  // Delete product
-  const deleteProduct = async (id) => {
-    try {
-      await apiCall(`/products/${id}`, 'DELETE');
-      showSnackbar('Product deleted successfully', 'success');
-      fetchProducts();
-    } catch (error) {
-      showSnackbar('Failed to delete product', 'error');
-    }
+  const runKeywordResearch = async () => {
+    await callEndpoint("/api/product-seo/keywords/research", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ seed: config.keywordSeed, count: 20 })
+    }, (data) => setKeywordIdeas(data.keywords || []));
   };
 
-  // Generate AI suggestions
-  const generateAiSuggestions = async (productId, type) => {
-    try {
-      const result = await apiCall(`/products/${productId}/ai/${type}`, 'POST');
-      showSnackbar(`AI ${type} generated successfully`, 'success');
-      return result;
-    } catch (error) {
-      showSnackbar(`Failed to generate AI ${type}`, 'error');
-    }
+  const runSerp = async () => {
+    await callEndpoint(`/api/product-seo/serp/${encodeURIComponent(config.targetKeyword)}`, {}, (data) => setSerpResults(data.serp));
   };
 
-  // Create experiment
-  const createExperiment = async (experimentData) => {
-    try {
-      const result = await apiCall('/ab-testing/experiments', 'POST', experimentData);
-      showSnackbar('Experiment created successfully', 'success');
-      fetchExperiments();
-      closeDialog();
-      return result;
-    } catch (error) {
-      showSnackbar('Failed to create experiment', 'error');
-    }
+  const fetchScore = async () => {
+    if (!selectedProduct) return;
+    await callEndpoint(`/api/product-seo/products/${selectedProduct.id}/score`, {}, (data) => setSeoScore({ score: data.score, breakdown: data.breakdown, grade: data.grade }));
   };
 
-  // Create API key
-  const createApiKey = async (keyData) => {
-    try {
-      const result = await apiCall('/settings/api-keys', 'POST', keyData);
-      showSnackbar('API key created successfully', 'success');
-      fetchApiKeys();
-      closeDialog();
-      return result;
-    } catch (error) {
-      showSnackbar('Failed to create API key', 'error');
-    }
+  const generateSchema = async () => {
+    if (!selectedProduct) return;
+    await callEndpoint(`/api/product-seo/schema/${selectedProduct.id}/generate`, { method: "POST" }, (data) => setSchemaPreview(data.schema));
   };
 
-  // Create webhook
-  const createWebhook = async (webhookData) => {
-    try {
-      const result = await apiCall('/settings/webhooks', 'POST', webhookData);
-      showSnackbar('Webhook created successfully', 'success');
-      fetchWebhooks();
-      closeDialog();
-      return result;
-    } catch (error) {
-      showSnackbar('Failed to create webhook', 'error');
-    }
+  const runOrchestration = async () => {
+    await callEndpoint("/api/product-seo/ai/orchestration/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: `Improve SEO for ${config.targetKeyword}`, models: ["gpt-4", "claude-3.5-sonnet"], strategy: "best-of-n" })
+    }, (data) => setOrchestration(data.result));
   };
 
-  // ============================================================================
-  // LIFECYCLE & EFFECTS
-  // ============================================================================
-
-  // Load data based on active category
-  useEffect(() => {
-    switch (activeCategory) {
-      case 'product':
-        fetchProducts();
-        fetchTemplateManager();
-        break;
-      case 'ai':
-        fetchAiModels();
-        fetchRoutingStrategies();
-        fetchBatchJobs();
-        break;
-      case 'keyword':
-        fetchKeywords();
-        fetchSerpData();
-        fetchCompetitors();
-        fetchRankings();
-        break;
-      case 'channel':
-        fetchAmazonListings();
-        fetchEbayListings();
-        fetchGoogleShopping();
-        fetchSocialCommerce();
-        fetchPlatformIntegrations();
-        break;
-      case 'schema':
-        fetchSchemas();
-        fetchRichResults();
-        break;
-      case 'testing':
-        fetchExperiments();
-        break;
-      case 'analytics':
-        fetchAnalytics();
-        fetchReports();
-        fetchApiKeys();
-        fetchWebhooks();
-        fetchAuditLogs();
-        fetchGeneralSettings();
-        break;
-      default:
-        break;
-    }
-  }, [activeCategory]);
-
-  // Real-time metrics polling (for monitoring tab)
-  useEffect(() => {
-    if (activeCategory === 'analytics' && activeTab === 0) {
-      const interval = setInterval(async () => {
-        const data = await apiCall('/analytics/realtime').catch(() => ({}));
-        setRealtimeMetrics(data);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [activeCategory, activeTab]);
-
-  // ============================================================================
-  // CATEGORY CONFIGURATIONS
-  // ============================================================================
-
-  const categories = [
-    { id: 'product', label: 'Product', icon: <ProductIcon />, tabs: 6 },
-    { id: 'ai', label: 'AI', icon: <AIIcon />, tabs: 6 },
-    { id: 'keyword', label: 'Keywords', icon: <SearchIcon />, tabs: 6 },
-    { id: 'channel', label: 'Channels', icon: <PublicIcon />, tabs: 6 },
-    { id: 'schema', label: 'Schema', icon: <SchemaIcon />, tabs: 6 },
-    { id: 'testing', label: 'Testing', icon: <ScienceIcon />, tabs: 6 },
-    { id: 'analytics', label: 'Analytics', icon: <AnalyticsIcon />, tabs: 6 },
-  ];
-
-  const tabConfigurations = {
-    product: [
-      { label: 'Products', icon: <ProductIcon /> },
-      { label: 'AI Suggestions', icon: <AIIcon /> },
-      { label: 'Metadata Editor', icon: <EditIcon /> },
-      { label: 'Bulk Operations', icon: <BatchIcon /> },
-      { label: 'Template Manager', icon: <DescriptionIcon /> },
-      { label: 'Quality Score', icon: <StarIcon /> },
-    ],
-    ai: [
-      { label: 'Model Management', icon: <AIIcon /> },
-      { label: 'Routing Strategies', icon: <NetworkIcon /> },
-      { label: 'Fine-tuning', icon: <SettingsIcon /> },
-      { label: 'Feedback Loops', icon: <AutorenewIcon /> },
-      { label: 'Batch Processing', icon: <BatchIcon /> },
-      { label: 'Performance', icon: <SpeedIcon /> },
-    ],
-    keyword: [
-      { label: 'Keyword Research', icon: <SearchIcon /> },
-      { label: 'SERP Analysis', icon: <AssessmentIcon /> },
-      { label: 'Competitor Tracking', icon: <CompareIcon /> },
-      { label: 'Ranking History', icon: <TimelineIcon /> },
-      { label: 'Gap Analysis', icon: <InsightsIcon /> },
-      { label: 'Opportunities', icon: <LightbulbIcon /> },
-    ],
-    channel: [
-      { label: 'Amazon A9', icon: <StoreIcon /> },
-      { label: 'eBay Cassini', icon: <ShopIcon /> },
-      { label: 'Google Shopping', icon: <PublicIcon /> },
-      { label: 'Social Commerce', icon: <FacebookIcon /> },
-      { label: 'Platform Integrations', icon: <ApiIcon /> },
-      { label: 'Cross-Channel', icon: <NetworkIcon /> },
-    ],
-    schema: [
-      { label: 'Schema Generator', icon: <SchemaIcon /> },
-      { label: 'Rich Results Test', icon: <VerifiedIcon /> },
-      { label: 'Validator', icon: <RuleIcon /> },
-      { label: 'Rich Snippets', icon: <StarIcon /> },
-      { label: 'Preview Tool', icon: <ViewIcon /> },
-      { label: 'Schema Library', icon: <ListIcon /> },
-    ],
-    testing: [
-      { label: 'Experiments', icon: <ScienceIcon /> },
-      { label: 'Variants', icon: <CompareIcon /> },
-      { label: 'Results', icon: <AssessmentIcon /> },
-      { label: 'Statistical Analysis', icon: <ShowChartIcon /> },
-      { label: 'Recommendations', icon: <IdeaIcon /> },
-      { label: 'History', icon: <TimelineIcon /> },
-    ],
-    analytics: [
-      { label: 'Overview', icon: <AnalyticsIcon /> },
-      { label: 'Performance', icon: <SpeedIcon /> },
-      { label: 'Reports', icon: <AssessmentIcon /> },
-      { label: 'Settings', icon: <SettingsIcon /> },
-      { label: 'API Keys', icon: <KeyIcon /> },
-      { label: 'Audit Logs', icon: <TimelineIcon /> },
-    ],
+  const startBulk = async () => {
+    const productIds = products.slice(0, 5).map(p => p.id);
+    await callEndpoint("/api/product-seo/ai/batch-process", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productIds, operation: "regenerate", model: config.model })
+    }, (data) => setBulkJob(data.batch));
   };
 
-  // ============================================================================
-  // TAB CONTENT RENDERERS
-  // ============================================================================
+  const fetchRankings = async () => {
+    await callEndpoint("/api/product-seo/rankings/summary", {}, (data) => setRankings(data.summary ? [data.summary] : []));
+  };
 
-  // CATEGORY 1: PRODUCT OPTIMIZATION - Tab 1: Products
-  const renderProducts = () => (
-    <Box>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h5">Product Management</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => openDialog('createProduct')}
-        >
-          Add Product
-        </Button>
-      </Box>
+  const fetchReports = async () => {
+    await callEndpoint("/api/product-seo/analytics/scheduled-reports", {}, (data) => setReports(data.reports || []));
+  };
 
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h4">{products.length}</Typography>
-              <Typography color="textSecondary">Total Products</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h4">{products.filter(p => p.optimized).length}</Typography>
-              <Typography color="textSecondary">Optimized</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h4">{products.filter(p => !p.optimized).length}</Typography>
-              <Typography color="textSecondary">Needs Optimization</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+  const fetchAbTests = async () => {
+    await callEndpoint("/api/product-seo/ab-tests", {}, (data) => setAbTests(data.tests || []));
+  };
 
-      <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
-        <TextField
-          placeholder="Search products..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          size="small"
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-          }}
-          sx={{ flexGrow: 1 }}
-        />
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Status</InputLabel>
-          <Select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            label="Status"
-          >
-            <MenuItem value="all">All</MenuItem>
-            <MenuItem value="optimized">Optimized</MenuItem>
-            <MenuItem value="pending">Pending</MenuItem>
-          </Select>
-        </FormControl>
-        <IconButton onClick={fetchProducts}>
-          <RefreshIcon />
-        </IconButton>
-      </Box>
+  const createAbTest = async () => {
+    if (!selectedProduct) return;
+    await callEndpoint("/api/product-seo/ab-tests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: `Title Test for ${selectedProduct.title}`,
+        productId: selectedProduct.id,
+        variants: [
+          { name: "Variant A", content: `${selectedProduct.title} | Official"` },
+          { name: "Variant B", content: `${selectedProduct.title} | Free Shipping` }
+        ],
+        metric: "ctr"
+      })
+    }, fetchAbTests);
+  };
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Title</TableCell>
-              <TableCell>SKU</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Quality Score</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={7} align="center">
-                  <CircularProgress />
-                </TableCell>
-              </TableRow>
-            ) : products.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} align="center">
-                  No products found. Add your first product to get started.
-                </TableCell>
-              </TableRow>
+  const activeCategoryTabs = useMemo(() => categories.find(c => c.id === activeCategory)?.tabs || [], [activeCategory]);
+
+  const renderList = (items, key) => (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
+      {items.map((item, idx) => (
+        <div key={idx} style={{ padding: 12, borderRadius: 10, background: "#0b1220", border: "1px solid #1f2937" }}>
+          <pre style={{ margin: 0, color: "#e5e7eb", fontSize: 12, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{JSON.stringify(item, null, 2)}</pre>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderTab = () => {
+    switch (activeTab) {
+      case "product-list":
+        return (
+          <SectionCard title="Product List" description="Browse and select products. Uses /api/product-seo/products.">
+            <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+              <button onClick={fetchProducts} disabled={loading} className="btn">Refresh</button>
+              <button onClick={fetchScore} disabled={loading || !selectedProduct} className="btn">Score Selected</button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
+              {products.map(p => (
+                <div key={p.id} style={{ border: `1px solid ${selectedProduct?.id === p.id ? "#6366f1" : "#1f2937"}`, background: "#0b1220", borderRadius: 12, padding: 12 }}>
+                  <div style={{ color: "#e5e7eb", fontWeight: 700 }}>{p.title}</div>
+                  <div style={{ color: "#9ca3af", fontSize: 12 }}>{p.slug}</div>
+                  <Divider />
+                  <div style={{ color: "#9ca3af", fontSize: 12 }}>Price: ${p.price || "-"}</div>
+                  <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                    <button onClick={() => setSelectedProduct(p)} className="btn-secondary">Select</button>
+                    <button onClick={() => optimizeTitle()} className="btn-tertiary">AI Title</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        );
+      case "product-editor":
+        return (
+          <SectionCard title="Product Editor" description="Edit product fields and save via /api/product-seo/products/:id">
+            {selectedProduct ? (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 12 }}>
+                <InlineInput value={selectedProduct.title || ""} onChange={(v) => setSelectedProduct({ ...selectedProduct, title: v })} placeholder="Title" />
+                <InlineInput value={selectedProduct.price || ""} onChange={(v) => setSelectedProduct({ ...selectedProduct, price: v })} placeholder="Price" />
+                <InlineInput value={selectedProduct.slug || ""} onChange={(v) => setSelectedProduct({ ...selectedProduct, slug: v })} placeholder="Slug" />
+                <textarea
+                  value={selectedProduct.description || ""}
+                  onChange={e => setSelectedProduct({ ...selectedProduct, description: e.target.value })}
+                  rows={4}
+                  style={{ width: "100%", background: "#0b1220", border: "1px solid #1f2937", color: "#e5e7eb", padding: 10, borderRadius: 10 }}
+                  placeholder="Description"
+                />
+                <button
+                  onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(selectedProduct)
+                  }, fetchProducts)}
+                  className="btn"
+                  disabled={loading}
+                >
+                  Save Product
+                </button>
+              </div>
             ) : (
-              products
-                .filter(p => p.title?.toLowerCase().includes(searchTerm.toLowerCase()))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>{product.id}</TableCell>
-                    <TableCell>{product.title}</TableCell>
-                    <TableCell>{product.sku}</TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LinearProgress
-                          variant="determinate"
-                          value={product.qualityScore || 0}
-                          sx={{ width: 60 }}
-                        />
-                        <Typography variant="body2">{product.qualityScore || 0}%</Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={product.optimized ? 'Optimized' : 'Pending'}
-                        color={product.optimized ? 'success' : 'warning'}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <IconButton size="small" onClick={() => openDialog('viewProduct', product)}>
-                        <ViewIcon />
-                      </IconButton>
-                      <IconButton size="small" onClick={() => openDialog('editProduct', product)}>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton size="small" onClick={() => deleteProduct(product.id)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))
+              <div style={{ color: "#9ca3af" }}>Select a product from Product List.</div>
             )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
-  );
-
-  // CATEGORY 1: PRODUCT OPTIMIZATION - Tab 2: AI Suggestions
-  const renderAiSuggestions = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>AI-Powered Suggestions</Typography>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <TitleIcon sx={{ mr: 1, fontSize: 32, color: 'primary.main' }} />
-                <Typography variant="h6">Title Optimization</Typography>
-              </Box>
-              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                Generate SEO-optimized product titles with AI
-              </Typography>
-              <Autocomplete
-                options={products}
-                getOptionLabel={(option) => option.title || ''}
-                renderInput={(params) => <TextField {...params} label="Select Product" />}
-                onChange={(e, value) => value && generateAiSuggestions(value.id, 'title')}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <DescriptionIcon sx={{ mr: 1, fontSize: 32, color: 'secondary.main' }} />
-                <Typography variant="h6">Description Enhancement</Typography>
-              </Box>
-              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                Create compelling product descriptions optimized for conversions
-              </Typography>
-              <Autocomplete
-                options={products}
-                getOptionLabel={(option) => option.title || ''}
-                renderInput={(params) => <TextField {...params} label="Select Product" />}
-                onChange={(e, value) => value && generateAiSuggestions(value.id, 'description')}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <SearchIcon sx={{ mr: 1, fontSize: 32, color: 'success.main' }} />
-                <Typography variant="h6">Meta Tags</Typography>
-              </Box>
-              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                Generate optimized meta titles and descriptions
-              </Typography>
-              <Autocomplete
-                options={products}
-                getOptionLabel={(option) => option.title || ''}
-                renderInput={(params) => <TextField {...params} label="Select Product" />}
-                onChange={(e, value) => value && generateAiSuggestions(value.id, 'meta')}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <StarIcon sx={{ mr: 1, fontSize: 32, color: 'warning.main' }} />
-                <Typography variant="h6">Bullet Points</Typography>
-              </Box>
-              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                Create impactful bullet points highlighting key features
-              </Typography>
-              <Autocomplete
-                options={products}
-                getOptionLabel={(option) => option.title || ''}
-                renderInput={(params) => <TextField {...params} label="Select Product" />}
-                onChange={(e, value) => value && generateAiSuggestions(value.id, 'bullets')}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Recent AI Suggestions</Typography>
-              <List>
-                {[1, 2, 3].map((item) => (
-                  <ListItem key={item} divider>
-                    <ListItemIcon>
-                      <AIIcon color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={`Suggestion ${item}`}
-                      secondary="AI-generated content for product optimization"
-                    />
-                    <Button size="small">Apply</Button>
-                  </ListItem>
-                ))}
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
-  );
-
-  // CATEGORY 1: PRODUCT OPTIMIZATION - Tab 3: Metadata Editor
-  const renderMetadataEditor = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Metadata Editor</Typography>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Select Product</Typography>
-              <Autocomplete
-                options={products}
-                getOptionLabel={(option) => option.title || ''}
-                renderInput={(params) => <TextField {...params} label="Product" />}
-                onChange={(e, value) => value && fetchProductMeta(value.id)}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Metadata Fields</Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField fullWidth label="Meta Title" defaultValue={productMeta.metaTitle} />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Meta Description"
-                    multiline
-                    rows={3}
-                    defaultValue={productMeta.metaDescription}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField fullWidth label="Focus Keyword" defaultValue={productMeta.focusKeyword} />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField fullWidth label="Canonical URL" defaultValue={productMeta.canonicalUrl} />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField fullWidth label="Alt Text (Images)" defaultValue={productMeta.altText} />
-                </Grid>
-                <Grid item xs={12}>
-                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                    <Button variant="outlined">Reset</Button>
-                    <Button variant="contained" startIcon={<AIIcon />}>
-                      Generate with AI
-                    </Button>
-                    <Button variant="contained" color="success">
-                      Save Changes
-                    </Button>
-                  </Box>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>SEO Preview</Typography>
-              <Paper sx={{ p: 2, bgcolor: 'grey.100' }}>
-                <Typography variant="body1" color="primary" sx={{ mb: 0.5, fontWeight: 'bold' }}>
-                  {productMeta.metaTitle || 'Your meta title will appear here'}
-                </Typography>
-                <Typography variant="caption" color="success.main">
-                  https://yourstore.com/products/sample-product
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  {productMeta.metaDescription || 'Your meta description will appear here...'}
-                </Typography>
-              </Paper>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
-  );
-
-  // CATEGORY 1: PRODUCT OPTIMIZATION - Tab 4: Bulk Operations
-  const renderBulkOperations = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Bulk Operations</Typography>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <CloudUploadIcon sx={{ mr: 1, fontSize: 40, color: 'primary.main' }} />
-                <Typography variant="h6">Bulk Upload</Typography>
-              </Box>
-              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                Import multiple products via CSV/Excel
-              </Typography>
-              <Button variant="contained" fullWidth startIcon={<UploadIcon />}>
-                Upload File
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <EditIcon sx={{ mr: 1, fontSize: 40, color: 'secondary.main' }} />
-                <Typography variant="h6">Bulk Edit</Typography>
-              </Box>
-              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                Edit multiple products simultaneously
-              </Typography>
-              <Button variant="contained" fullWidth startIcon={<EditIcon />}>
-                Start Bulk Edit
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <AIIcon sx={{ mr: 1, fontSize: 40, color: 'success.main' }} />
-                <Typography variant="h6">Bulk AI Optimize</Typography>
-              </Box>
-              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                AI-optimize multiple products at once
-              </Typography>
-              <Button variant="contained" fullWidth startIcon={<AIIcon />}>
-                Optimize All
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Operation History</Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Operation</TableCell>
-                      <TableCell>Products</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Started</TableCell>
-                      <TableCell>Completed</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {[1, 2, 3].map((op) => (
-                      <TableRow key={op}>
-                        <TableCell>Bulk Upload</TableCell>
-                        <TableCell>125</TableCell>
-                        <TableCell>
-                          <Chip label="Completed" color="success" size="small" />
-                        </TableCell>
-                        <TableCell>2 hours ago</TableCell>
-                        <TableCell>1 hour ago</TableCell>
-                        <TableCell>
-                          <IconButton size="small">
-                            <ViewIcon />
-                          </IconButton>
-                          <IconButton size="small">
-                            <DownloadIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
-  );
-
-  // CATEGORY 1: PRODUCT OPTIMIZATION - Tab 5: Template Manager
-  const renderTemplateManager = () => (
-    <Box>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h5">Template Manager</Typography>
-        <Button variant="contained" startIcon={<AddIcon />}>
-          Create Template
-        </Button>
-      </Box>
-
-      <Grid container spacing={3}>
-        {[
-          { name: 'Product Title Template', icon: <TitleIcon />, color: 'primary' },
-          { name: 'Description Template', icon: <DescriptionIcon />, color: 'secondary' },
-          { name: 'Meta Tags Template', icon: <SearchIcon />, color: 'success' },
-          { name: 'Bullet Points Template', icon: <ListIcon />, color: 'warning' },
-        ].map((template, idx) => (
-          <Grid item xs={12} md={6} key={idx}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  {React.cloneElement(template.icon, { sx: { mr: 1, fontSize: 32, color: `${template.color}.main` } })}
-                  <Typography variant="h6">{template.name}</Typography>
-                </Box>
-                <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                  Dynamic template with AI placeholders and conditional logic
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button size="small" variant="outlined" startIcon={<EditIcon />}>
-                    Edit
-                  </Button>
-                  <Button size="small" variant="outlined" startIcon={<ViewIcon />}>
-                    Preview
-                  </Button>
-                  <Button size="small" variant="outlined" startIcon={<DeleteIcon />} color="error">
-                    Delete
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
-  );
-
-  // CATEGORY 1: PRODUCT OPTIMIZATION - Tab 6: Quality Score
-  const renderQualityScore = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>SEO Quality Score</Typography>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Overall Quality Distribution</Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={[
-                  { range: '0-20', count: 5 },
-                  { range: '21-40', count: 12 },
-                  { range: '41-60', count: 28 },
-                  { range: '61-80', count: 42 },
-                  { range: '81-100', count: 18 },
-                ]}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="range" />
-                  <YAxis />
-                  <RechartsTooltip />
-                  <Bar dataKey="count" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Quality Metrics</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box>
-                  <Typography variant="body2" color="textSecondary">Average Score</Typography>
-                  <Typography variant="h4" color="primary">68%</Typography>
-                </Box>
-                <Divider />
-                <Box>
-                  <Typography variant="body2" color="textSecondary">High Quality (80+)</Typography>
-                  <Typography variant="h5">18 products</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2" color="textSecondary">Needs Improvement (&lt;60)</Typography>
-                  <Typography variant="h5" color="warning.main">45 products</Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Products by Quality Score</Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Product</TableCell>
-                      <TableCell>Title Score</TableCell>
-                      <TableCell>Description Score</TableCell>
-                      <TableCell>Meta Score</TableCell>
-                      <TableCell>Image Score</TableCell>
-                      <TableCell>Overall</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {products.slice(0, 10).map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell>{product.title}</TableCell>
-                        <TableCell>
-                          <Chip label={`${Math.floor(Math.random() * 40 + 60)}%`} size="small" />
-                        </TableCell>
-                        <TableCell>
-                          <Chip label={`${Math.floor(Math.random() * 40 + 60)}%`} size="small" />
-                        </TableCell>
-                        <TableCell>
-                          <Chip label={`${Math.floor(Math.random() * 40 + 60)}%`} size="small" />
-                        </TableCell>
-                        <TableCell>
-                          <Chip label={`${Math.floor(Math.random() * 40 + 60)}%`} size="small" />
-                        </TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <CircularProgress
-                              variant="determinate"
-                              value={product.qualityScore || 0}
-                              size={30}
-                            />
-                            <Typography>{product.qualityScore || 0}%</Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          <Button size="small" variant="outlined">
-                            Optimize
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
-  );
-
-  // CATEGORY 2: AI ORCHESTRATION - Tab 1: Model Management
-  const renderModelManagement = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>AI Model Management</Typography>
-
-      <Grid container spacing={3}>
-        {[
-          { name: 'GPT-4', provider: 'OpenAI', status: 'active', requests: 1240, latency: '450ms' },
-          { name: 'Claude 3.5 Sonnet', provider: 'Anthropic', status: 'active', requests: 980, latency: '520ms' },
-          { name: 'Gemini Pro', provider: 'Google', status: 'active', requests: 760, latency: '380ms' },
-        ].map((model, idx) => (
-          <Grid item xs={12} md={4} key={idx}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                  <Box>
-                    <Typography variant="h6">{model.name}</Typography>
-                    <Typography variant="body2" color="textSecondary">{model.provider}</Typography>
-                  </Box>
-                  <Chip
-                    label={model.status}
-                    color="success"
-                    size="small"
-                    icon={<CheckCircle />}
-                  />
-                </Box>
-                <Divider sx={{ my: 2 }} />
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2" color="textSecondary">Requests (24h)</Typography>
-                    <Typography variant="body2" fontWeight="bold">{model.requests}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2" color="textSecondary">Avg Latency</Typography>
-                    <Typography variant="body2" fontWeight="bold">{model.latency}</Typography>
-                  </Box>
-                </Box>
-                <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-                  <Button size="small" variant="outlined" fullWidth>
-                    Configure
-                  </Button>
-                  <IconButton size="small">
-                    <MoreIcon />
-                  </IconButton>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-
-      <Card sx={{ mt: 3 }}>
-        <CardContent>
-          <Typography variant="h6" sx={{ mb: 2 }}>Model Performance Comparison</Typography>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={[
-              { time: '00:00', gpt4: 420, claude: 510, gemini: 350 },
-              { time: '04:00', gpt4: 445, claude: 525, gemini: 375 },
-              { time: '08:00', gpt4: 460, claude: 530, gemini: 390 },
-              { time: '12:00', gpt4: 450, claude: 520, gemini: 380 },
-              { time: '16:00', gpt4: 455, claude: 515, gemini: 385 },
-              { time: '20:00', gpt4: 448, claude: 518, gemini: 378 },
-            ]}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis label={{ value: 'Latency (ms)', angle: -90, position: 'insideLeft' }} />
-              <RechartsTooltip />
-              <Legend />
-              <Line type="monotone" dataKey="gpt4" stroke="#8884d8" name="GPT-4" />
-              <Line type="monotone" dataKey="claude" stroke="#82ca9d" name="Claude" />
-              <Line type="monotone" dataKey="gemini" stroke="#ffc658" name="Gemini" />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  // CATEGORY 2: AI ORCHESTRATION - Tab 2: Routing Strategies
-  const renderRoutingStrategies = () => (
-    <Box>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h5">Routing Strategies</Typography>
-        <Button variant="contained" startIcon={<AddIcon />}>
-          Create Strategy
-        </Button>
-      </Box>
-
-      <Grid container spacing={3}>
-        {[
-          { name: 'Best-of-N', description: 'Generate N responses and select best', active: true, usage: 1250 },
-          { name: 'Ensemble Voting', description: 'Combine outputs from multiple models', active: true, usage: 890 },
-          { name: 'Cascade Fallback', description: 'Try models sequentially until success', active: true, usage: 620 },
-          { name: 'Load Balancing', description: 'Distribute requests based on cost/latency', active: false, usage: 0 },
-        ].map((strategy, idx) => (
-          <Grid item xs={12} md={6} key={idx}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                  <Typography variant="h6">{strategy.name}</Typography>
-                  <Switch checked={strategy.active} />
-                </Box>
-                <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                  {strategy.description}
-                </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Chip
-                    icon={<NetworkIcon />}
-                    label={`${strategy.usage} requests`}
-                    size="small"
-                    variant="outlined"
-                  />
-                  <Button size="small" startIcon={<SettingsIcon />}>
-                    Configure
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-
-      <Card sx={{ mt: 3 }}>
-        <CardContent>
-          <Typography variant="h6" sx={{ mb: 2 }}>Strategy Performance</Typography>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={[
-              { strategy: 'Best-of-N', quality: 92, cost: 180 },
-              { strategy: 'Ensemble', quality: 88, cost: 250 },
-              { strategy: 'Cascade', quality: 85, cost: 120 },
-            ]}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="strategy" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <RechartsTooltip />
-              <Legend />
-              <Bar yAxisId="left" dataKey="quality" fill="#8884d8" name="Quality Score" />
-              <Bar yAxisId="right" dataKey="cost" fill="#82ca9d" name="Cost ($)" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  // CATEGORY 2: AI ORCHESTRATION - Tab 3: Fine-tuning
-  const renderFineTuning = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Model Fine-tuning</Typography>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Create Fine-tuning Job</Typography>
-              <TextField fullWidth label="Job Name" sx={{ mb: 2 }} />
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Base Model</InputLabel>
-                <Select label="Base Model">
-                  <MenuItem value="gpt4">GPT-4</MenuItem>
-                  <MenuItem value="claude">Claude 3.5</MenuItem>
-                  <MenuItem value="gemini">Gemini Pro</MenuItem>
-                </Select>
-              </FormControl>
-              <TextField fullWidth label="Training Dataset URL" sx={{ mb: 2 }} />
-              <TextField fullWidth label="Validation Dataset URL" sx={{ mb: 2 }} />
-              <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
-                Epochs: 3
-              </Typography>
-              <Slider defaultValue={3} min={1} max={10} marks step={1} sx={{ mb: 2 }} />
-              <Button variant="contained" fullWidth startIcon={<PlayIcon />}>
-                Start Fine-tuning
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Fine-tuning Jobs</Typography>
-              <List>
-                {[
-                  { name: 'Product Titles v2', status: 'completed', accuracy: '94%' },
-                  { name: 'Descriptions v1', status: 'running', progress: 68 },
-                  { name: 'Meta Tags Opt', status: 'queued', accuracy: '-' },
-                ].map((job, idx) => (
-                  <ListItem key={idx} divider>
-                    <ListItemText
-                      primary={job.name}
-                      secondary={
-                        job.status === 'running'
-                          ? `Running - ${job.progress}% complete`
-                          : job.status === 'completed'
-                          ? `Completed - Accuracy: ${job.accuracy}`
-                          : 'Queued'
-                      }
-                    />
-                    <Chip
-                      label={job.status}
-                      color={job.status === 'completed' ? 'success' : job.status === 'running' ? 'primary' : 'default'}
-                      size="small"
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
-  );
-
-  // CATEGORY 2: AI ORCHESTRATION - Tab 4: Feedback Loops
-  const renderFeedbackLoops = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>RLHF Feedback Loops</Typography>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Feedback Statistics</Typography>
-              <Grid container spacing={2} sx={{ mb: 3 }}>
-                <Grid item xs={4}>
-                  <Paper sx={{ p: 2, textAlign: 'center' }}>
-                    <Typography variant="h3" color="success.main">342</Typography>
-                    <Typography variant="body2" color="textSecondary">Positive</Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={4}>
-                  <Paper sx={{ p: 2, textAlign: 'center' }}>
-                    <Typography variant="h3" color="warning.main">89</Typography>
-                    <Typography variant="body2" color="textSecondary">Neutral</Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={4}>
-                  <Paper sx={{ p: 2, textAlign: 'center' }}>
-                    <Typography variant="h3" color="error.main">23</Typography>
-                    <Typography variant="body2" color="textSecondary">Negative</Typography>
-                  </Paper>
-                </Grid>
-              </Grid>
-              <ResponsiveContainer width="100%" height={200}>
-                <AreaChart data={[
-                  { date: 'Mon', positive: 48, neutral: 15, negative: 4 },
-                  { date: 'Tue', positive: 52, neutral: 12, negative: 3 },
-                  { date: 'Wed', positive: 59, neutral: 18, negative: 5 },
-                  { date: 'Thu', positive: 61, neutral: 14, negative: 2 },
-                  { date: 'Fri', positive: 55, neutral: 16, negative: 6 },
-                  { date: 'Sat', positive: 34, neutral: 8, negative: 2 },
-                  { date: 'Sun', positive: 33, neutral: 6, negative: 1 },
-                ]}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <RechartsTooltip />
-                  <Area type="monotone" dataKey="positive" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
-                  <Area type="monotone" dataKey="neutral" stackId="1" stroke="#ffc658" fill="#ffc658" />
-                  <Area type="monotone" dataKey="negative" stackId="1" stroke="#ff8042" fill="#ff8042" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Submit Feedback</Typography>
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Output ID</InputLabel>
-                <Select label="Output ID">
-                  <MenuItem value="1">Output #12345</MenuItem>
-                  <MenuItem value="2">Output #12344</MenuItem>
-                </Select>
-              </FormControl>
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Rating</InputLabel>
-                <Select label="Rating">
-                  <MenuItem value="positive">👍 Positive</MenuItem>
-                  <MenuItem value="neutral">😐 Neutral</MenuItem>
-                  <MenuItem value="negative">👎 Negative</MenuItem>
-                </Select>
-              </FormControl>
-              <TextField
-                fullWidth
-                label="Comments"
-                multiline
-                rows={3}
-                sx={{ mb: 2 }}
-              />
-              <Button variant="contained" fullWidth>
-                Submit Feedback
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
-  );
-
-  // CATEGORY 2: AI ORCHESTRATION - Tab 5: Batch Processing
-  const renderBatchProcessing = () => (
-    <Box>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h5">Batch Processing</Typography>
-        <Button variant="contained" startIcon={<AddIcon />}>
-          Create Batch Job
-        </Button>
-      </Box>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Active Batch Jobs</Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Job ID</TableCell>
-                      <TableCell>Type</TableCell>
-                      <TableCell>Products</TableCell>
-                      <TableCell>Progress</TableCell>
-                      <TableCell>Started</TableCell>
-                      <TableCell>ETA</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {[
-                      { id: 'batch-001', type: 'Title Optimization', products: 500, progress: 68, started: '2h ago', eta: '1h 15m' },
-                      { id: 'batch-002', type: 'Description Gen', products: 250, progress: 42, started: '45m ago', eta: '38m' },
-                      { id: 'batch-003', type: 'Meta Tags', products: 800, progress: 12, started: '15m ago', eta: '2h 20m' },
-                    ].map((job) => (
-                      <TableRow key={job.id}>
-                        <TableCell>{job.id}</TableCell>
-                        <TableCell>{job.type}</TableCell>
-                        <TableCell>{job.products}</TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <LinearProgress
-                              variant="determinate"
-                              value={job.progress}
-                              sx={{ flexGrow: 1 }}
-                            />
-                            <Typography variant="body2">{job.progress}%</Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell>{job.started}</TableCell>
-                        <TableCell>{job.eta}</TableCell>
-                        <TableCell>
-                          <IconButton size="small">
-                            <ViewIcon />
-                          </IconButton>
-                          <IconButton size="small" color="error">
-                            <CloseIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Batch Job Statistics</Typography>
-              <List>
-                <ListItem>
-                  <ListItemText primary="Total Jobs Today" secondary="12" />
-                </ListItem>
-                <ListItem>
-                  <ListItemText primary="Products Processed" secondary="3,450" />
-                </ListItem>
-                <ListItem>
-                  <ListItemText primary="Success Rate" secondary="98.5%" />
-                </ListItem>
-                <ListItem>
-                  <ListItemText primary="Avg Processing Time" secondary="2.3s per product" />
-                </ListItem>
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Cost Optimization</Typography>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'GPT-4', value: 45 },
-                      { name: 'Claude', value: 30 },
-                      { name: 'Gemini', value: 25 },
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label
-                  >
-                    {['#8884d8', '#82ca9d', '#ffc658'].map((color, index) => (
-                      <Cell key={`cell-${index}`} fill={color} />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
-  );
-
-  // CATEGORY 2: AI ORCHESTRATION - Tab 6: Performance
-  const renderAiPerformance = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>AI Performance Metrics</Typography>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" color="primary">Requests/Day</Typography>
-              <Typography variant="h3">2,760</Typography>
-              <Typography variant="body2" color="success.main">↑ 12% vs yesterday</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" color="primary">Avg Latency</Typography>
-              <Typography variant="h3">450ms</Typography>
-              <Typography variant="body2" color="success.main">↓ 8% vs yesterday</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" color="primary">Success Rate</Typography>
-              <Typography variant="h3">99.2%</Typography>
-              <Typography variant="body2" color="textSecondary">Within SLA</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" color="primary">Cost/Request</Typography>
-              <Typography variant="h3">$0.08</Typography>
-              <Typography variant="body2" color="warning.main">↑ 3% vs yesterday</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Request Volume (24h)</Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={Array.from({ length: 24 }, (_, i) => ({
-                  hour: `${i}:00`,
-                  requests: Math.floor(Math.random() * 200 + 50),
-                }))}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="hour" />
-                  <YAxis />
-                  <RechartsTooltip />
-                  <Area type="monotone" dataKey="requests" stroke="#8884d8" fill="#8884d8" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Model Distribution</Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'GPT-4', value: 48 },
-                      { name: 'Claude', value: 32 },
-                      { name: 'Gemini', value: 20 },
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {['#8884d8', '#82ca9d', '#ffc658'].map((color, index) => (
-                      <Cell key={`cell-${index}`} fill={color} />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
-  );
-
-  // Implementing remaining 36 tabs following the same pattern...
-  // For brevity, I'll create placeholder renderers that demonstrate the structure
-
-  // CATEGORY 3: KEYWORD & SERP - All 6 tabs
-  const renderKeywordResearch = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Keyword Research</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Advanced keyword research interface with volume, CPC, competition data</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderSerpAnalysis = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>SERP Analysis</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Real-time SERP feature analysis and ranking opportunities</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderCompetitorTracking = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Competitor Tracking</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Monitor competitor rankings, strategies, and keyword gaps</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderRankingHistory = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Ranking History</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Historical ranking data with trend analysis and forecasting</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderGapAnalysis = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Gap Analysis</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Identify keyword opportunities your competitors rank for</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderOpportunities = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Opportunities</Typography>
-      <Card>
-        <CardContent>
-          <Typography>AI-recommended SEO opportunities based on data analysis</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  // CATEGORY 4: MULTI-CHANNEL - All 6 tabs
-  const renderAmazonA9 = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Amazon A9 Optimization</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Optimize product listings for Amazon's A9 algorithm</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderEbayCassini = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>eBay Cassini Optimization</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Optimize listings for eBay's Cassini search engine</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderGoogleShoppingTab = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Google Shopping Feed</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Generate and optimize Google Shopping product feeds</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderSocialCommerceTab = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Social Commerce</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Optimize for Instagram, TikTok, Pinterest shopping</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderPlatformIntegrationsTab = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Platform Integrations</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Connect Shopify, WooCommerce, BigCommerce platforms</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderCrossChannel = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Cross-Channel Optimization</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Unified optimization across all sales channels</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  // CATEGORY 5: SCHEMA & RICH RESULTS - All 6 tabs
-  const renderSchemaGenerator = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Schema Generator</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Generate schema.org markup for products, reviews, FAQs</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderRichResultsTest = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Rich Results Test</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Test structured data with Google Rich Results API</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderSchemaValidator = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Schema Validator</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Validate schema markup for errors and warnings</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderRichSnippetsTab = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Rich Snippets</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Preview and optimize rich snippet appearance</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderSchemaPreview = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Schema Preview</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Visual preview of schema in search results</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderSchemaLibrary = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Schema Library</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Pre-built schema templates for common e-commerce types</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  // CATEGORY 6: A/B TESTING - All 6 tabs
-  const renderExperimentsTab = () => (
-    <Box>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h5">A/B Testing Experiments</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => openDialog('createExperiment')}>
-          Create Experiment
-        </Button>
-      </Box>
-      <Card>
-        <CardContent>
-          <Typography>Create and manage SEO A/B tests for titles, descriptions, meta tags</Typography>
-          <TableContainer sx={{ mt: 2 }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Experiment</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Variants</TableCell>
-                  <TableCell>Traffic Split</TableCell>
-                  <TableCell>Started</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {experiments.slice(0, 5).map((exp) => (
-                  <TableRow key={exp.id}>
-                    <TableCell>{exp.name}</TableCell>
-                    <TableCell>
-                      <Chip label={exp.status} color={exp.status === 'running' ? 'success' : 'default'} size="small" />
-                    </TableCell>
-                    <TableCell>{exp.variants?.length || 2}</TableCell>
-                    <TableCell>50/50</TableCell>
-                    <TableCell>{exp.startedAt}</TableCell>
-                    <TableCell>
-                      <IconButton size="small"><ViewIcon /></IconButton>
-                      <IconButton size="small"><EditIcon /></IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderVariantsTab = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Test Variants</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Compare variant performance with statistical significance</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderTestResults = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Experiment Results</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Detailed results with conversion rates, CTR, revenue impact</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderStatisticalAnalysis = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Statistical Analysis</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Chi-square tests, confidence intervals, p-values</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderTestRecommendations = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>AI Recommendations</Typography>
-      <Card>
-        <CardContent>
-          <Typography>AI-suggested tests based on performance data</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderTestHistory = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Test History</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Historical test results and learnings</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  // CATEGORY 7: ANALYTICS & SETTINGS - All 6 tabs
-  const renderAnalyticsOverview = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Analytics Overview</Typography>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Total Products</Typography>
-              <Typography variant="h3">{products.length}</Typography>
-              <Typography variant="body2" color="success.main">↑ 8% this month</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Optimized</Typography>
-              <Typography variant="h3">{products.filter(p => p.optimized).length}</Typography>
-              <Typography variant="body2" color="textSecondary">
-                {Math.round((products.filter(p => p.optimized).length / products.length) * 100)}% coverage
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Avg Quality Score</Typography>
-              <Typography variant="h3">72%</Typography>
-              <Typography variant="body2" color="success.main">↑ 5% this week</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Active Tests</Typography>
-              <Typography variant="h3">{experiments.filter(e => e.status === 'running').length}</Typography>
-              <Typography variant="body2" color="textSecondary">A/B experiments</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>SEO Performance Trend</Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={Array.from({ length: 30 }, (_, i) => ({
-                  day: i + 1,
-                  score: Math.floor(Math.random() * 20 + 60),
-                  traffic: Math.floor(Math.random() * 500 + 1000),
-                }))}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" label={{ value: 'Days', position: 'insideBottom', offset: -5 }} />
-                  <YAxis yAxisId="left" />
-                  <YAxis yAxisId="right" orientation="right" />
-                  <RechartsTooltip />
-                  <Legend />
-                  <Line yAxisId="left" type="monotone" dataKey="score" stroke="#8884d8" name="Quality Score" />
-                  <Line yAxisId="right" type="monotone" dataKey="traffic" stroke="#82ca9d" name="Traffic" />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Channel Distribution</Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Web', value: 45 },
-                      { name: 'Amazon', value: 25 },
-                      { name: 'eBay', value: 15 },
-                      { name: 'Social', value: 15 },
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {['#8884d8', '#82ca9d', '#ffc658', '#ff8042'].map((color, index) => (
-                      <Cell key={`cell-${index}`} fill={color} />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
-  );
-
-  const renderPerformanceMetrics = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Performance Metrics</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Detailed performance metrics for all SEO activities</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderReportsTab = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Reports</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Custom reports, scheduled exports, executive summaries</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderSettingsTab = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>General Settings</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Configure defaults, preferences, and system settings</Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderApiKeysTab = () => (
-    <Box>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h5">API Keys</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => openDialog('createApiKey')}>
-          Create API Key
-        </Button>
-      </Box>
-      <Card>
-        <CardContent>
-          <Typography sx={{ mb: 2 }}>Manage API keys for programmatic access</Typography>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Key</TableCell>
-                  <TableCell>Created</TableCell>
-                  <TableCell>Last Used</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {apiKeys.slice(0, 5).map((key) => (
-                  <TableRow key={key.id}>
-                    <TableCell>{key.name}</TableCell>
-                    <TableCell>
-                      <code>{key.key?.substring(0, 20)}...</code>
-                    </TableCell>
-                    <TableCell>{key.createdAt}</TableCell>
-                    <TableCell>{key.lastUsed || 'Never'}</TableCell>
-                    <TableCell>
-                      <IconButton size="small"><EditIcon /></IconButton>
-                      <IconButton size="small" color="error"><DeleteIcon /></IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  const renderAuditLogsTab = () => (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3 }}>Audit Logs</Typography>
-      <Card>
-        <CardContent>
-          <Typography>Complete audit trail of all system activities</Typography>
-          <TableContainer sx={{ mt: 2 }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Timestamp</TableCell>
-                  <TableCell>User</TableCell>
-                  <TableCell>Action</TableCell>
-                  <TableCell>Resource</TableCell>
-                  <TableCell>Details</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {auditLogs.slice(0, 10).map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell>{log.timestamp}</TableCell>
-                    <TableCell>{log.user}</TableCell>
-                    <TableCell>{log.action}</TableCell>
-                    <TableCell>{log.resource}</TableCell>
-                    <TableCell>{log.details}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
-    </Box>
-  );
-
-  // ============================================================================
-  // MAIN RENDER LOGIC
-  // ============================================================================
-
-  const renderActiveTab = () => {
-    const tabIndex = activeTab;
-
-    switch (activeCategory) {
-      case 'product':
-        switch (tabIndex) {
-          case 0: return renderProducts();
-          case 1: return renderAiSuggestions();
-          case 2: return renderMetadataEditor();
-          case 3: return renderBulkOperations();
-          case 4: return renderTemplateManager();
-          case 5: return renderQualityScore();
-          default: return <Typography>Tab not implemented</Typography>;
-        }
-      case 'ai':
-        switch (tabIndex) {
-          case 0: return renderModelManagement();
-          case 1: return renderRoutingStrategies();
-          case 2: return renderFineTuning();
-          case 3: return renderFeedbackLoops();
-          case 4: return renderBatchProcessing();
-          case 5: return renderAiPerformance();
-          default: return <Typography>Tab not implemented</Typography>;
-        }
-      case 'keyword':
-        switch (tabIndex) {
-          case 0: return renderKeywordResearch();
-          case 1: return renderSerpAnalysis();
-          case 2: return renderCompetitorTracking();
-          case 3: return renderRankingHistory();
-          case 4: return renderGapAnalysis();
-          case 5: return renderOpportunities();
-          default: return <Typography>Tab not implemented</Typography>;
-        }
-      case 'channel':
-        switch (tabIndex) {
-          case 0: return renderAmazonA9();
-          case 1: return renderEbayCassini();
-          case 2: return renderGoogleShoppingTab();
-          case 3: return renderSocialCommerceTab();
-          case 4: return renderPlatformIntegrationsTab();
-          case 5: return renderCrossChannel();
-          default: return <Typography>Tab not implemented</Typography>;
-        }
-      case 'schema':
-        switch (tabIndex) {
-          case 0: return renderSchemaGenerator();
-          case 1: return renderRichResultsTest();
-          case 2: return renderSchemaValidator();
-          case 3: return renderRichSnippetsTab();
-          case 4: return renderSchemaPreview();
-          case 5: return renderSchemaLibrary();
-          default: return <Typography>Tab not implemented</Typography>;
-        }
-      case 'testing':
-        switch (tabIndex) {
-          case 0: return renderExperimentsTab();
-          case 1: return renderVariantsTab();
-          case 2: return renderTestResults();
-          case 3: return renderStatisticalAnalysis();
-          case 4: return renderTestRecommendations();
-          case 5: return renderTestHistory();
-          default: return <Typography>Tab not implemented</Typography>;
-        }
-      case 'analytics':
-        switch (tabIndex) {
-          case 0: return renderAnalyticsOverview();
-          case 1: return renderPerformanceMetrics();
-          case 2: return renderReportsTab();
-          case 3: return renderSettingsTab();
-          case 4: return renderApiKeysTab();
-          case 5: return renderAuditLogsTab();
-          default: return <Typography>Tab not implemented</Typography>;
-        }
+          </SectionCard>
+        );
+      case "bulk-operations":
+        return (
+          <SectionCard title="Bulk Operations" description="Bulk regenerate SEO using /ai/batch-process" accent="#6366f1">
+            <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12 }}>
+              <InlineInput value={config.model} onChange={(v) => setConfig({ ...config, model: v })} width="220px" placeholder="Model (e.g., claude-3.5-sonnet)" />
+              <button onClick={startBulk} disabled={loading || !products.length} className="btn">Start Bulk</button>
+            </div>
+            {bulkJob && <pre className="code-block">{JSON.stringify(bulkJob, null, 2)}</pre>}
+          </SectionCard>
+        );
+      case "templates":
+        return (
+          <SectionCard title="Templates" description="Prompt templates powered by /ai/prompts">
+            <button onClick={() => callEndpoint("/api/product-seo/ai/prompts") } className="btn" disabled={loading}>Load Templates</button>
+            <Divider />
+            <div style={{ color: "#9ca3af", fontSize: 12 }}>Use prompt templates to accelerate optimization workflows.</div>
+          </SectionCard>
+        );
+      case "categories":
+        return (
+          <SectionCard title="Categories" description="Assign categories to products with smart suggestions." accent="#14b8a6">
+            <InlineInput value={config.targetKeyword} onChange={(v) => setConfig({ ...config, targetKeyword: v })} placeholder="Category hint" width="260px" />
+            <Divider />
+            <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/category-suggestions`)} className="btn" disabled={loading}>Suggest Categories</button>
+          </SectionCard>
+        );
+      case "tags-attributes":
+        return (
+          <SectionCard title="Tags & Attributes" description="Extract attributes via /attribute-extraction" accent="#14b8a6">
+            <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/attribute-extraction`, {}, (data) => setKeywordIdeas([data.attributes]))} className="btn" disabled={loading}>Extract Attributes</button>
+            {keywordIdeas.length > 0 && renderList(keywordIdeas, "attributes")}
+          </SectionCard>
+        );
+      case "version-history":
+        return (
+          <SectionCard title="Version History" description="Audit trail via /products/:id/history" accent="#14b8a6">
+            <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/history`, {}, (data) => setAuditLogs(data.history || []))} className="btn" disabled={loading}>Load History</button>
+            {auditLogs.length > 0 && renderList(auditLogs, "history")}
+          </SectionCard>
+        );
+      case "trash-recovery":
+        return (
+          <SectionCard title="Trash & Recovery" description="Placeholder for soft-delete flows.">
+            <div style={{ color: "#9ca3af" }}>Soft-delete and restore actions can be wired to bulk-delete and rollback endpoints.</div>
+          </SectionCard>
+        );
+      case "title-optimization":
+        return (
+          <SectionCard title="Title Optimization" description="Call /title-suggestions and apply best title." accent="#6366f1">
+            <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
+              <InlineInput value={selectedProduct?.title || ""} onChange={(v) => setSelectedProduct({ ...selectedProduct, title: v })} width="320px" placeholder="Current title" />
+              <button onClick={optimizeTitle} disabled={loading || !selectedProduct} className="btn">AI Suggest</button>
+            </div>
+            {selectedProduct?.title && <div style={{ color: "#9ca3af", fontSize: 13 }}>Preview: {selectedProduct.title}</div>}
+          </SectionCard>
+        );
+      case "description-enhancement":
+        return (
+          <SectionCard title="Description Enhancement" description="Use /description-suggestions to enrich copy." accent="#6366f1">
+            <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/description-suggestions`, {}, (data) => setSelectedProduct({ ...selectedProduct, description: data.suggestions?.[0] }))} className="btn" disabled={loading || !selectedProduct}>Generate Descriptions</button>
+            <Divider />
+            <textarea value={selectedProduct?.description || ""} onChange={e => setSelectedProduct({ ...selectedProduct, description: e.target.value })} rows={6} className="text-area" />
+          </SectionCard>
+        );
+      case "meta-data":
+        return (
+          <SectionCard title="Meta Data" description="Generate meta descriptions and slugs." accent="#6366f1">
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/meta-suggestions`)} className="btn" disabled={loading}>Meta Suggestions</button>
+              <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/slug-suggestions`)} className="btn-secondary" disabled={loading}>Slug Suggestions</button>
+            </div>
+          </SectionCard>
+        );
+      case "image-seo":
+        return (
+          <SectionCard title="Image SEO" description="Bulk alt text via /bulk-images-alt" accent="#6366f1">
+            <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/bulk-images-alt`, { method: "POST" })} className="btn" disabled={loading}>Generate Alt Text</button>
+          </SectionCard>
+        );
+      case "keyword-density":
+        return (
+          <SectionCard title="Keyword Density" description="Analyze keyword density for selected product." accent="#6366f1">
+            <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/keyword-density`)} className="btn" disabled={loading}>Analyze Density</button>
+          </SectionCard>
+        );
+      case "readability-score":
+        return (
+          <SectionCard title="Readability Score" description="Compute readability via /readability-score">
+            <button onClick={() => callEndpoint(`/api/product-seo/products/${selectedProduct?.id || 1}/readability-score`)} className="btn" disabled={loading}>Calculate Readability</button>
+          </SectionCard>
+        );
+      case "schema-generator":
+        return (
+          <SectionCard title="Schema Generator" description="Generate structured data via /schema/:id/generate" accent="#6366f1">
+            <button onClick={generateSchema} className="btn" disabled={loading || !selectedProduct}>Generate Schema</button>
+            {schemaPreview && <pre className="code-block">{JSON.stringify(schemaPreview, null, 2)}</pre>}
+          </SectionCard>
+        );
+      case "ai-orchestration":
+        return (
+          <SectionCard title="AI Orchestration" description="Run best-of-n orchestration." accent="#f97316">
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <InlineInput value={config.targetKeyword} onChange={(v) => setConfig({ ...config, targetKeyword: v })} width="320px" placeholder="Prompt keyword" />
+              <button onClick={runOrchestration} className="btn" disabled={loading}>Run</button>
+            </div>
+            {orchestration && <pre className="code-block">{JSON.stringify(orchestration, null, 2)}</pre>}
+          </SectionCard>
+        );
+      case "keyword-research":
+        return (
+          <SectionCard title="Keyword Research" description="Powered by /keywords/research" accent="#f97316">
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+              <InlineInput value={config.keywordSeed} onChange={(v) => setConfig({ ...config, keywordSeed: v })} width="260px" placeholder="Seed keyword" />
+              <button onClick={runKeywordResearch} className="btn" disabled={loading}>Research</button>
+            </div>
+            {keywordIdeas.length > 0 && renderList(keywordIdeas, "keywords")}
+          </SectionCard>
+        );
+      case "serp-analysis":
+        return (
+          <SectionCard title="SERP Analysis" description="Real-time SERP snapshot." accent="#f97316">
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <InlineInput value={config.targetKeyword} onChange={(v) => setConfig({ ...config, targetKeyword: v })} width="260px" placeholder="Keyword" />
+              <button onClick={runSerp} className="btn" disabled={loading}>Analyze SERP</button>
+            </div>
+            {serpResults && <pre className="code-block">{JSON.stringify(serpResults, null, 2)}</pre>}
+          </SectionCard>
+        );
+      case "competitor-intel":
+        return (
+          <SectionCard title="Competitor Intelligence" description="Gap analysis and competitor stats." accent="#f97316">
+            <button onClick={() => callEndpoint("/api/product-seo/competitors/list", {}, (data) => setKeywordIdeas(data.competitors || []))} className="btn" disabled={loading}>Load Competitors</button>
+            {keywordIdeas.length > 0 && renderList(keywordIdeas, "competitors")}
+          </SectionCard>
+        );
+      case "multi-channel-optimizer":
+        return (
+          <SectionCard title="Multi-Channel Optimizer" description="Optimize content per channel." accent="#f97316">
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+              <InlineInput value={config.channel} onChange={(v) => setConfig({ ...config, channel: v })} width="200px" placeholder="Channel (amazon/ebay)" />
+              <button onClick={() => callEndpoint(`/api/product-seo/channels/${selectedProduct?.id || 1}/optimize`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ channel: config.channel })
+              })} className="btn" disabled={loading}>Optimize Channel</button>
+            </div>
+          </SectionCard>
+        );
+      case "ab-testing":
+        return (
+          <SectionCard title="A/B Testing" description="Create and monitor SEO experiments." accent="#f97316">
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <button onClick={createAbTest} className="btn" disabled={loading || !selectedProduct}>Create Title Test</button>
+              <button onClick={fetchAbTests} className="btn-secondary" disabled={loading}>Refresh Tests</button>
+            </div>
+            {abTests.length > 0 && renderList(abTests, "tests")}
+          </SectionCard>
+        );
+      case "predictive-analytics":
+        return (
+          <SectionCard title="Predictive Analytics" description="Forecast trends via /analytics/predictive" accent="#f97316">
+            <button onClick={() => callEndpoint("/api/product-seo/analytics/predictive", {}, (data) => setAnalytics({ ...analytics, predictive: data.predictive }))} className="btn" disabled={loading}>Forecast</button>
+            {analytics?.predictive && <pre className="code-block">{JSON.stringify(analytics.predictive, null, 2)}</pre>}
+          </SectionCard>
+        );
+      case "attribution":
+        return (
+          <SectionCard title="Attribution Model" description="Multi-touch attribution snapshot." accent="#f97316">
+            <button onClick={() => callEndpoint("/api/product-seo/analytics/attribution", {}, (data) => setAnalytics({ ...analytics, attribution: data.attribution }))} className="btn" disabled={loading}>Load Attribution</button>
+            {analytics?.attribution && <pre className="code-block">{JSON.stringify(analytics.attribution, null, 2)}</pre>}
+          </SectionCard>
+        );
+      case "bulk-ai-generator":
+        return (
+          <SectionCard title="Bulk AI Generator" description="Queue AI jobs via /ai/batch-process" accent="#0ea5e9">
+            <button onClick={startBulk} className="btn" disabled={loading}>Start Batch</button>
+            {bulkJob && <pre className="code-block">{JSON.stringify(bulkJob, null, 2)}</pre>}
+          </SectionCard>
+        );
+      case "import-export":
+        return (
+          <SectionCard title="Import/Export" description="Call /products/import and /products/export" accent="#0ea5e9">
+            <button onClick={() => callEndpoint("/api/product-seo/products/export", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ format: "json" }) })} className="btn" disabled={loading}>Export JSON</button>
+            <button onClick={() => callEndpoint("/api/product-seo/products/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ data: [] }) })} className="btn-secondary" disabled={loading}>Import Sample</button>
+          </SectionCard>
+        );
+      case "content-scorer":
+        return (
+          <SectionCard title="Content Scorer" description="SEO score breakdown." accent="#0ea5e9">
+            <button onClick={fetchScore} className="btn" disabled={loading || !selectedProduct}>Compute Score</button>
+            {seoScore && (
+              <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
+                <StatPill label="Score" value={seoScore.score} />
+                <StatPill label="Grade" value={seoScore.grade} />
+                <pre className="code-block" style={{ minWidth: 240 }}>{JSON.stringify(seoScore.breakdown, null, 2)}</pre>
+              </div>
+            )}
+          </SectionCard>
+        );
+      case "schema-validator":
+        return (
+          <SectionCard title="Schema Validator" description="Validate structured data." accent="#0ea5e9">
+            <button onClick={() => callEndpoint(`/api/product-seo/schema/${selectedProduct?.id || 1}/validate`)} className="btn" disabled={loading}>Validate</button>
+            <button onClick={() => callEndpoint(`/api/product-seo/schema/errors`)} className="btn-secondary" disabled={loading}>List Errors</button>
+          </SectionCard>
+        );
+      case "rich-results-preview":
+        return (
+          <SectionCard title="Rich Results Preview" description="Preview and eligibility." accent="#0ea5e9">
+            <button onClick={() => callEndpoint(`/api/product-seo/rich-results/${selectedProduct?.id || 1}/preview`)} className="btn" disabled={loading}>Preview</button>
+            <button onClick={() => callEndpoint(`/api/product-seo/rich-results/${selectedProduct?.id || 1}/eligibility`)} className="btn-secondary" disabled={loading}>Eligibility</button>
+          </SectionCard>
+        );
+      case "keyword-planner":
+        return (
+          <SectionCard title="Keyword Planner" description="Intent mapping and opportunities." accent="#0ea5e9">
+            <button onClick={() => callEndpoint("/api/product-seo/opportunity-finder", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) })} className="btn" disabled={loading}>Find Opportunities</button>
+            <button onClick={() => callEndpoint("/api/product-seo/intent-mapping", {}, (data) => setKeywordIdeas(data.mapping || []))} className="btn-secondary" disabled={loading}>Intent Map</button>
+            {keywordIdeas.length > 0 && renderList(keywordIdeas, "intent")}
+          </SectionCard>
+        );
+      case "analytics-dashboard":
+        return (
+          <SectionCard title="Analytics Dashboard" description="Overview metrics." accent="#22c55e">
+            <button onClick={fetchAnalytics} className="btn" disabled={loading}>Refresh Overview</button>
+            {analytics && (
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
+                <StatPill label="Total Products" value={analytics.totalProducts} />
+                <StatPill label="Avg SEO Score" value={analytics.avgSeoScore} />
+                <StatPill label="Impressions" value={analytics.totalImpressions} />
+                <StatPill label="CTR" value={analytics.avgCtr} />
+              </div>
+            )}
+          </SectionCard>
+        );
+      case "ranking-tracker":
+        return (
+          <SectionCard title="Ranking Tracker" description="Monitor keyword rankings." accent="#22c55e">
+            <button onClick={fetchRankings} className="btn" disabled={loading}>Refresh Rankings</button>
+            {rankings.length > 0 && renderList(rankings, "rankings")}
+          </SectionCard>
+        );
+      case "performance-metrics":
+        return (
+          <SectionCard title="Performance Metrics" description="Core Web Vitals snapshot." accent="#22c55e">
+            <button onClick={() => callEndpoint("/api/product-seo/analytics/performance", {}, (data) => setAnalytics({ ...analytics, performance: data.performance }))} className="btn" disabled={loading}>Load Performance</button>
+            {analytics?.performance && <pre className="code-block">{JSON.stringify(analytics.performance, null, 2)}</pre>}
+          </SectionCard>
+        );
+      case "anomaly-detection":
+        return (
+          <SectionCard title="Anomaly Detection" description="Spot anomalies in traffic and conversions." accent="#22c55e">
+            <button onClick={() => callEndpoint("/api/product-seo/analytics/anomalies", {}, (data) => setAnalytics({ ...analytics, anomalies: data.anomalies }))} className="btn" disabled={loading}>Detect</button>
+            {analytics?.anomalies && renderList(analytics.anomalies, "anomalies")}
+          </SectionCard>
+        );
+      case "reports":
+        return (
+          <SectionCard title="Reports" description="Scheduled reports overview." accent="#22c55e">
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={fetchReports} className="btn" disabled={loading}>Load Reports</button>
+              <button onClick={() => callEndpoint("/api/product-seo/reports/export", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reportType: "executive" }) })} className="btn-secondary" disabled={loading}>Export Executive</button>
+            </div>
+            {reports.length > 0 && renderList(reports, "reports")}
+          </SectionCard>
+        );
+      case "sla-dashboard":
+        return (
+          <SectionCard title="SLA Dashboard" description="Health and uptime from /health" accent="#22c55e">
+            <button onClick={() => callEndpoint("/api/product-seo/health", {}, (data) => setAnalytics({ ...analytics, health: data.health }))} className="btn" disabled={loading}>Check Health</button>
+            {analytics?.health && <pre className="code-block">{JSON.stringify(analytics.health, null, 2)}</pre>}
+          </SectionCard>
+        );
+      case "audit-logs":
+        return (
+          <SectionCard title="Audit Logs" description="System-wide audit trail." accent="#22c55e">
+            <button onClick={fetchAuditLogs} className="btn" disabled={loading}>Refresh Logs</button>
+            {auditLogs.length > 0 && renderList(auditLogs, "logs")}
+          </SectionCard>
+        );
+      case "preferences":
+        return (
+          <SectionCard title="Preferences" description="Load and tweak defaults." accent="#eab308">
+            <button onClick={() => callEndpoint("/api/product-seo/settings", {}, (data) => setConfig({ ...config, model: data.settings?.ai?.defaultModel || config.model }))} className="btn" disabled={loading}>Load Settings</button>
+          </SectionCard>
+        );
+      case "api-keys":
+        return (
+          <SectionCard title="API Keys" description="Manage API keys." accent="#eab308">
+            <button onClick={() => callEndpoint("/api/product-seo/api-keys", {}, (data) => setKeywordIdeas(data.apiKeys || []))} className="btn" disabled={loading}>List Keys</button>
+            <button onClick={() => callEndpoint("/api/product-seo/api-keys", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: "Frontend Key" }) })} className="btn-secondary" disabled={loading}>Create Key</button>
+            {keywordIdeas.length > 0 && renderList(keywordIdeas, "apiKeys")}
+          </SectionCard>
+        );
+      case "webhooks":
+        return (
+          <SectionCard title="Webhooks" description="Manage webhook targets." accent="#eab308">
+            <button onClick={() => callEndpoint("/api/product-seo/webhooks", {}, (data) => setKeywordIdeas(data.webhooks || []))} className="btn" disabled={loading}>List Webhooks</button>
+            <button onClick={() => callEndpoint("/api/product-seo/webhooks", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: "https://example.com/webhook", events: ["product.updated"] }) })} className="btn-secondary" disabled={loading}>Create Webhook</button>
+            {keywordIdeas.length > 0 && renderList(keywordIdeas, "webhooks")}
+          </SectionCard>
+        );
+      case "backup-restore":
+        return (
+          <SectionCard title="Backup & Restore" description="On-demand backup/restore." accent="#eab308">
+            <button onClick={() => callEndpoint("/api/product-seo/backup", {}, (data) => setBulkJob(data.backup))} className="btn" disabled={loading}>Create Backup</button>
+            <button onClick={() => callEndpoint("/api/product-seo/restore", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ backupId: "latest" }) })} className="btn-secondary" disabled={loading}>Restore Latest</button>
+            {bulkJob && <pre className="code-block">{JSON.stringify(bulkJob, null, 2)}</pre>}
+          </SectionCard>
+        );
+      case "notifications":
+        return (
+          <SectionCard title="Notifications" description="Notification preferences." accent="#eab308">
+            <div style={{ color: "#9ca3af" }}>Configure weekly digests, anomaly alerts, and webhook events.</div>
+          </SectionCard>
+        );
+      case "integrations":
+        return (
+          <SectionCard title="Integrations" description="Shopify/WooCommerce sync." accent="#eab308">
+            <button onClick={() => callEndpoint("/api/product-seo/shopify/products", {}, (data) => setProducts(data.products || []))} className="btn" disabled={loading}>Pull Shopify</button>
+            <button onClick={() => callEndpoint("/api/product-seo/woocommerce/products", {}, (data) => setProducts(data.products || []))} className="btn-secondary" disabled={loading}>Pull WooCommerce</button>
+          </SectionCard>
+        );
       default:
-        return <Typography>Category not found</Typography>;
+        return <div style={{ color: "#9ca3af" }}>Tab not implemented yet.</div>;
     }
   };
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
-      {/* Header */}
-      <Box sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider', px: 3, py: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box>
-            <Typography variant="h4" fontWeight="bold">
-              Product SEO Engine
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              World-class platform with 200 endpoints across 7 categories
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-            <Badge badgeContent={0} color="error">
-              <IconButton>
-                <NotificationsIcon />
-              </IconButton>
-            </Badge>
-            <IconButton onClick={() => window.location.reload()}>
-              <RefreshIcon />
-            </IconButton>
-          </Box>
-        </Box>
-      </Box>
+    <div style={{ background: "#05080f", minHeight: "100%", padding: 20, color: "#e5e7eb", fontFamily: "Inter, system-ui, sans-serif" }}>
+      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div>
+          <div style={{ fontSize: 26, fontWeight: 800 }}>Product SEO Engine</div>
+          <div style={{ color: "#9ca3af" }}>42-tab enterprise console · Backed by 200 endpoints</div>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <StatPill label="Active Tab" value={activeTab} />
+          {seoScore?.score && <StatPill label="SEO Score" value={seoScore.score} />}
+          {analytics?.avgSeoScore && <StatPill label="Avg Score" value={analytics.avgSeoScore} />}
+        </div>
+      </header>
 
-      {/* Category Navigation */}
-      <Box sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider', px: 3 }}>
-        <Tabs
-          value={activeCategory}
-          onChange={(e, newValue) => {
-            setActiveCategory(newValue);
-            setActiveTab(0);
-          }}
-          variant="scrollable"
-          scrollButtons="auto"
-        >
-          {categories.map((cat) => (
-            <Tab
-              key={cat.id}
-              value={cat.id}
-              label={cat.label}
-              icon={cat.icon}
-              iconPosition="start"
-            />
+      <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 14 }}>
+        <div style={{ background: "#0b1220", border: "1px solid #111827", borderRadius: 14, padding: 12, maxHeight: "82vh", overflow: "auto" }}>
+          {categories.map(cat => (
+            <div key={cat.id} style={{ marginBottom: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => { setActiveCategory(cat.id); setActiveTab(cat.tabs[0].id); }}>
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: cat.accent }} />
+                <div style={{ fontWeight: 700 }}>{cat.label}</div>
+              </div>
+              <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+                {cat.tabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => { setActiveCategory(cat.id); setActiveTab(tab.id); }}
+                    style={{
+                      textAlign: "left",
+                      padding: "9px 10px",
+                      borderRadius: 10,
+                      border: "1px solid #111827",
+                      background: activeTab === tab.id ? cat.accent + "22" : "#0b1220",
+                      color: "#e5e7eb",
+                      cursor: "pointer"
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
-        </Tabs>
-      </Box>
+        </div>
 
-      {/* Sub-tab Navigation */}
-      <Box sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider', px: 3 }}>
-        <Tabs
-          value={activeTab}
-          onChange={(e, newValue) => setActiveTab(newValue)}
-          variant="scrollable"
-          scrollButtons="auto"
-        >
-          {tabConfigurations[activeCategory]?.map((tab, index) => (
-            <Tab
-              key={index}
-              label={tab.label}
-              icon={tab.icon}
-              iconPosition="start"
-            />
-          ))}
-        </Tabs>
-      </Box>
+        <div style={{ background: "#0b1220", border: "1px solid #111827", borderRadius: 14, padding: 16, minHeight: "80vh" }}>
+          {renderTab()}
+        </div>
+      </div>
 
-      {/* Main Content */}
-      <Box sx={{ flexGrow: 1, overflow: 'auto', p: 3 }}>
-        {loading && <LinearProgress sx={{ mb: 2 }} />}
-        {renderActiveTab()}
-      </Box>
+      {error && (
+        <div style={{ position: "fixed", bottom: 20, right: 20, background: "#7f1d1d", color: "#fecdd3", padding: "12px 16px", borderRadius: 10, border: "1px solid #b91c1c" }}>
+          {error}
+        </div>
+      )}
+      {toast && (
+        <div style={{ position: "fixed", bottom: 20, left: 20, background: "#111827", color: "#e5e7eb", padding: "10px 14px", borderRadius: 10, border: "1px solid #1f2937" }}>
+          {toast}
+        </div>
+      )}
 
-      {/* Snackbar for notifications */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={closeSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert onClose={closeSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-
-      {/* Generic Dialog (for forms, confirmations, etc.) */}
-      <Dialog
-        open={dialogOpen}
-        onClose={closeDialog}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          {dialogType.includes('create') ? 'Create' : dialogType.includes('edit') ? 'Edit' : 'View'}
-          {' '}
-          {dialogType.replace('create', '').replace('edit', '').replace('view', '')}
-          <IconButton
-            onClick={closeDialog}
-            sx={{ position: 'absolute', right: 8, top: 8 }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers>
-          <Typography variant="body2" color="text.secondary">
-            Form content for: {dialogType}
-          </Typography>
-          {/* Dynamic form fields based on dialogType would go here */}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={closeDialog}>Cancel</Button>
-          <Button variant="contained" onClick={closeDialog}>
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+      <style>{`
+        .btn { background: #2563eb; border: 1px solid #1d4ed8; color: #fff; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        .btn-secondary { background: #0f172a; border: 1px solid #1f2937; color: #e5e7eb; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        .btn-tertiary { background: #0b1220; border: 1px dashed #334155; color: #e5e7eb; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        .text-area { width: 100%; background: #0b1220; border: 1px solid #1f2937; color: #e5e7eb; padding: 10px; border-radius: 10px; }
+        .code-block { background: #05080f; border: 1px solid #1f2937; color: #e5e7eb; padding: 12px; border-radius: 10px; margin-top: 10px; white-space: pre-wrap; word-break: break-word; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+      `}</style>
+    </div>
   );
-};
-
-export default ProductSEOEngine;
+}
