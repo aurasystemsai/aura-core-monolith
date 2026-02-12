@@ -15,5 +15,17 @@ module.exports = {
       return true;
     });
   },
+  summary: () => {
+    const counts = events.reduce((acc, evt) => {
+      const type = evt.type || 'unknown';
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      total: events.length,
+      counts
+    };
+  },
   clear: () => { events = []; }
 };
