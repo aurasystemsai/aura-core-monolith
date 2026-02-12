@@ -1,22 +1,7 @@
-import React, { useState } from "react";
-import { FiDownload, FiUpload, FiBarChart2, FiBell, FiSettings, FiHelpCircle } from "react-icons/fi";
+import React, { useState, useEffect } from 'react';
+import './CustomerDataPlatform.css';
 
-function FeedbackModal({ open, onClose, onSubmit }) {
-  const [feedback, setFeedback] = useState("");
-  if (!open) return null;
-  return (
-    <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "#0008", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ background: "#232336", borderRadius: 12, padding: 32, minWidth: 340, color: '#e5e7eb' }}>
-        <h3 style={{ marginBottom: 12 }}>Send Feedback</h3>
-        <textarea value={feedback} onChange={e => setFeedback(e.target.value)} style={{ width: "100%", minHeight: 80, borderRadius: 8, border: "1px solid #ccc", marginBottom: 18 }} placeholder="Your feedback..." />
-        <div style={{ display: "flex", gap: 12 }}>
-          <button onClick={() => onSubmit(feedback)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, cursor: "pointer" }}>Submit</button>
-          <button onClick={onClose} style={{ background: "#e5e7eb", color: "#23263a", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, cursor: "pointer" }}>Cancel</button>
-        </div>
-      </div>
-    </div>
-  );
-}
+// Main CDP Component
 
 export default function CustomerDataPlatform() {
   const [query, setQuery] = useState("");
