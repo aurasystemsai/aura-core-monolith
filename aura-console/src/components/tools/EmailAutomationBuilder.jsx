@@ -1,1682 +1,1154 @@
-// ================================================================
-// EMAIL AUTOMATION BUILDER - ENTERPRISE FRONTEND
-// ================================================================
-// Version: 2.0
-// Tabs: 42 (across 7 categories)
-// Line Target: ~3,500 lines
-// ================================================================
+import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../../api';
 
-import React, { useState, useEffect, useRef } from "react";
-
+// Main Email Automation Builder Component with 8-Category, 42-Tab Enterprise Structure
 export default function EmailAutomationBuilder() {
-  // Core state
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-  
-  // Data state
-  const [campaigns, setCampaigns] = useState([]);
-  const [templates, setTemplates] = useState([]);
-  const [contacts, setContacts] = useState([]);
-  const [segments, setSegments] = useState([]);
-  const [lists, setLists] = useState([]);
-  const [workflows, setWorkflows] = useState([]);
-  const [abTests, setAbTests] = useState([]);
-  const [analytics, setAnalytics] = useState(null);
-  
-  // UI state
-  const [activeTab, setActiveTab] = useState(0);
-  const [selectedCampaign, setSelectedCampaign] = useState(null);
-  const [modalActive, setModalActive] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const fileInputRef = useRef();
+  // Top-level navigation state (8 categories)
+  const [activeCategory, setActiveCategory] = useState('campaigns');
+  const [activeTab, setActiveTab] = useState('overview');
 
-  // Form state
-  const [campaignForm, setCampaignForm] = useState({
-    name: '', subject: '', preheader: '', fromName: '', fromEmail: '', replyTo: '', body: '', type: 'regular'
-  });
+  // 8 Enterprise Categories
+  const categories = [
+    { id: 'campaigns', label: 'Campaigns', icon: '📧', count: 6 },
+    { id: 'ai-orchestration', label: 'AI Orchestration', icon: '🤖', count: 6 },
+    { id: 'workflows', label: 'Workflows', icon: '⚡', count: 6 },
+    { id: 'multichannel', label: 'Multi-Channel', icon: '📱', count: 5 },
+    { id: 'analytics', label: 'Analytics', icon: '📊', count: 6 },
+    { id: 'testing', label: 'Testing & Optimization', icon: '🎯', count: 6 },
+    { id: 'settings', label: 'Settings & Admin', icon: '⚙️', count: 4 },
+    { id: 'advanced', label: 'Advanced', icon: '🚀', count: 3 },
+  ];
 
-  // API helper
-  const api = async (endpoint, options = {}) => {
-    const res = await fetch(`/api/email-automation${endpoint}`, {
-      headers: { 'Content-Type': 'application/json' },
-      ...options
-    });
-    if (!res.ok) throw new Error('API error');
-    return res.json();
+  // 42 Tabs organized by category
+  const tabs = {
+    campaigns: [
+      { id: 'overview', label: 'Campaign Overview', description: 'View and manage all campaigns' },
+      { id: 'create', label: 'Create Campaign', description: 'Build new email campaigns' },
+      { id: 'templates', label: 'Email Templates', description: 'Template library' },
+      { id: 'sequences', label: 'Email Sequences', description: 'Multi-email sequences' },
+      { id: 'segments', label: 'Audience Segments', description: 'Customer segmentation' },
+      { id: 'personalization', label: 'Personalization', description: 'Dynamic content engine' },
+    ],
+    'ai-orchestration': [
+      { id: 'smart-send', label: 'Smart Send Time', description: 'AI-optimized send times' },
+      { id: 'content-gen', label: 'Content Generation', description: 'AI copywriting' },
+      { id: 'subject-opt', label: 'Subject Line Optimizer', description: 'AI subject lines' },
+      { id: 'predictive', label: 'Predictive Analytics', description: 'Engagement predictions' },
+      { id: 'auto-optimize', label: 'Auto-Optimization', description: 'Self-tuning campaigns' },
+      { id: 'recommendations', label: 'AI Recommendations', description: 'Strategy suggestions' },
+    ],
+    workflows: [
+      { id: 'builder', label: 'Workflow Builder', description: 'Visual workflow designer' },
+      { id: 'triggers', label: 'Triggers & Events', description: 'Automation triggers' },
+      { id: 'conditions', label: 'Conditional Logic', description: 'Smart branching' },
+      { id: 'actions', label: 'Actions Library', description: 'Available actions' },
+      { id: 'monitoring', label: 'Workflow Monitoring', description: 'Live workflow status' },
+      { id: 'history', label: 'Execution History', description: 'Past runs and logs' },
+    ],
+    multichannel: [
+      { id: 'sms', label: 'SMS Campaigns', description: 'Text message automation' },
+      { id: 'push', label: 'Push Notifications', description: 'Mobile push' },
+      { id: 'webhooks', label: 'Webhooks', description: 'External integrations' },
+      { id: 'orchestration', label: 'Channel Orchestration', description: 'Multi-channel flows' },
+      { id: 'preferences', label: 'Channel Preferences', description: 'Customer preferences' },
+    ],
+    analytics: [
+      { id: 'dashboard', label: 'Analytics Dashboard', description: 'Real-time metrics' },
+      { id: 'reports', label: 'Campaign Reports', description: 'Detailed reports' },
+      { id: 'revenue', label: 'Revenue Attribution', description: 'Revenue tracking' },
+      { id: 'engagement', label: 'Engagement Metrics', description: 'Open/click analytics' },
+      { id: 'deliverability', label: 'Deliverability', description: 'Inbox placement' },
+      { id: 'export', label: 'Data Export', description: 'Export analytics data' },
+    ],
+    testing: [
+      { id: 'abtests', label: 'A/B Testing', description: 'Split testing' },
+      { id: 'multivariate', label: 'Multivariate Testing', description: 'Multi-variant tests' },
+      { id: 'experiments', label: 'Experiments', description: 'Experiment management' },
+      { id: 'frequency', label: 'Frequency Optimization', description: 'Send frequency' },
+      { id: 'content-testing', label: 'Content Testing', description: 'Content variants' },
+      { id: 'results', label: 'Test Results', description: 'Test performance' },
+    ],
+    settings: [
+      { id: 'general', label: 'General Settings', description: 'Basic configuration' },
+      { id: 'team', label: 'Team & Permissions', description: 'User management' },
+      { id: 'compliance', label: 'Compliance & GDPR', description: 'Legal compliance' },
+      { id: 'integrations', label: 'Integrations', description: 'Third-party apps' },
+    ],
+    advanced: [
+      { id: 'api', label: 'API & Developer', description: 'API access' },
+      { id: 'custom-fields', label: 'Custom Fields', description: 'Custom data fields' },
+      { id: 'automation-rules', label: 'Custom Automation', description: 'Advanced rules' },
+    ],
   };
 
-  // Load data
+  // Shared state for data
+  const [campaigns, setCampaigns] = useState([]);
+  const [workflows, setWorkflows] = useState([]);
+  const [segments, setSegments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Load initial data
   useEffect(() => {
-    loadData();
+    loadInitialData();
   }, []);
 
-  const loadData = async () => {
+  const loadInitialData = async () => {
     setLoading(true);
+    setError('');
     try {
-      const [c, t, s, w] = await Promise.all([
-        api('/campaigns'),
-        api('/templates'),
-        api('/segments'),
-        api('/workflows')
+      const [campaignsRes, workflowsRes, segmentsRes] = await Promise.all([
+        apiFetch('/api/email-automation-builder/campaigns'),
+        apiFetch('/api/email-automation-builder/workflows/list'),
+        apiFetch('/api/email-automation-builder/campaigns/segments'),
       ]);
-      setCampaigns(c.campaigns || []);
-      setTemplates(t.templates || []);
-      setSegments(s.segments || []);
-      setWorkflows(w.workflows || []);
-    } catch (err) {
-      setError(err.message);
+      
+      if (campaignsRes.ok) {
+        const data = await campaignsRes.json();
+        setCampaigns(data.campaigns || []);
+      }
+      if (workflowsRes.ok) {
+        const data = await workflowsRes.json();
+        setWorkflows(data.workflows || []);
+      }
+      if (segmentsRes.ok) {
+        const data = await segmentsRes.json();
+        setSegments(data.segments || []);
+      }
+    } catch (e) {
+      setError(e.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // ================================================================
-  // CATEGORY 1: MANAGE (8 tabs)
-  // ================================================================
-
-  const CampaignListTab = () => {
-    const filtered = campaigns.filter(c => 
-      (!searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-
-    return (
-      <div style={styles.card}>
-        <div style={styles.cardHeader}>
-          <h3 style={styles.cardTitle}>Campaigns</h3>
-          <div style={styles.actions}>
-            <input
-              type="text"
-              placeholder="Search campaigns..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={styles.searchInput}
-            />
-            <button onClick={() => setModalActive(true)} style={styles.primaryBtn}>
-              Create Campaign
-            </button>
-          </div>
-        </div>
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Status</th>
-              <th>Type</th>
-              <th>Sent</th>
-              <th>Open Rate</th>
-              <th>Click Rate</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map(c => (
-              <tr key={c.id}>
-                <td>{c.name}</td>
-                <td><span style={getBadgeStyle(c.status)}>{c.status}</span></td>
-                <td>{c.type}</td>
-                <td>{c.stats.sent.toLocaleString()}</td>
-                <td>{((c.stats.opens / c.stats.sent) * 100 || 0).toFixed(1)}%</td>
-                <td>{((c.stats.clicks / c.stats.sent) * 100 || 0).toFixed(1)}%</td>
-                <td>
-                  <button onClick={() => handleViewCampaign(c.id)} style={styles.secondaryBtn}>View</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-
-  const CampaignDetailsTab = () => {
-    if (!selectedCampaign) {
-      return (
-        <div style={styles.emptyState}>
-          <h3>No campaign selected</h3>
-          <p>Select a campaign from the list to view details</p>
-          <button onClick={() => setActiveTab(0)} style={styles.primaryBtn}>View Campaigns</button>
-        </div>
-      );
-    }
-
-    return (
-      <div style={styles.grid}>
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Campaign Information</h3>
-          <div style={styles.detailsGrid}>
-            <div><strong>Name:</strong> {selectedCampaign.name}</div>
-            <div><strong>Subject:</strong> {selectedCampaign.subject}</div>
-            <div><strong>From:</strong> {selectedCampaign.fromName} &lt;{selectedCampaign.fromEmail}&gt;</div>
-            <div><strong>Status:</strong> <span style={getBadgeStyle(selectedCampaign.status)}>{selectedCampaign.status}</span></div>
-          </div>
-        </div>
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Performance</h3>
-          <div style={styles.statsGrid}>
-            <div style={styles.statCard}>
-              <div style={styles.statValue}>{selectedCampaign.stats.sent.toLocaleString()}</div>
-              <div style={styles.statLabel}>Sent</div>
-            </div>
-            <div style={styles.statCard}>
-              <div style={styles.statValue}>{selectedCampaign.stats.opens.toLocaleString()}</div>
-              <div style={styles.statLabel}>Opens</div>
-            </div>
-            <div style={styles.statCard}>
-              <div style={styles.statValue}>{selectedCampaign.stats.clicks.toLocaleString()}</div>
-              <div style={styles.statLabel}>Clicks</div>
-            </div>
-            <div style={styles.statCard}>
-              <div style={styles.statValue}>{((selectedCampaign.stats.opens / selectedCampaign.stats.sent) * 100 || 0).toFixed(1)}%</div>
-              <div style={styles.statLabel}>Open Rate</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const TemplatesTab = () => (
-    <div style={styles.card}>
-      <div style={styles.cardHeader}>
-        <h3 style={styles.cardTitle}>Email Templates</h3>
-        <button style={styles.primaryBtn}>Create Template</button>
-      </div>
-      <div style={styles.grid}>
-        {templates.map(t => (
-          <div key={t.id} style={styles.templateCard}>
-            <h4>{t.name}</h4>
-            <p style={styles.muted}>{t.category}</p>
-            <div style={styles.cardActions}>
-              <button style={styles.secondaryBtn}>Use</button>
-              <button style={styles.secondaryBtn}>Edit</button>
-            </div>
-          </div>
-        ))}
-      </div>
+  // Render category navigation bar
+  const renderCategoryNav = () => (
+    <div style={{ display: 'flex', gap: 12, marginBottom: 24, borderBottom: '2px solid #e5e7eb', paddingBottom: 12 }}>
+      {categories.map(cat => (
+        <button
+          key={cat.id}
+          onClick={() => {
+            setActiveCategory(cat.id);
+            setActiveTab(tabs[cat.id][0].id);
+          }}
+          style={{
+            background: activeCategory === cat.id ? '#6366f1' : '#f3f4f6',
+            color: activeCategory === cat.id ? '#fff' : '#1f2937',
+            border: 'none',
+            borderRadius: 8,
+            padding: '10px 18px',
+            fontWeight: 700,
+            fontSize: 15,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          <span>{cat.icon}</span>
+          <span>{cat.label}</span>
+          <span style={{ 
+            background: activeCategory === cat.id ? '#4f46e5' : '#e5e7eb',
+            borderRadius: 12,
+            padding: '2px 8px',
+            fontSize: 12,
+            fontWeight: 600,
+          }}>{cat.count}</span>
+        </button>
+      ))}
     </div>
   );
 
-  const ContactsTab = () => (
-    <div style={styles.card}>
-      <div style={styles.cardHeader}>
-        <h3 style={styles.cardTitle}>Contacts</h3>
-        <button style={styles.primaryBtn}>Add Contact</button>
+  // Render tab navigation
+  const renderTabNav = () => (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 24 }}>
+      {tabs[activeCategory].map(tab => (
+        <button
+          key={tab.id}
+          onClick={() => setActiveTab(tab.id)}
+          style={{
+            background: activeTab === tab.id ? '#ede9fe' : '#fff',
+            color: '#1f2937',
+            border: activeTab === tab.id ? '2px solid #6366f1' : '1px solid #e5e7eb',
+            borderRadius: 10,
+            padding: 16,
+            fontWeight: activeTab === tab.id ? 700 : 500,
+            fontSize: 15,
+            cursor: 'pointer',
+            textAlign: 'left',
+            transition: 'all 0.2s',
+          }}
+        >
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>{tab.label}</div>
+          <div style={{ fontSize: 13, color: '#6b7280' }}>{tab.description}</div>
+        </button>
+      ))}
+    </div>
+  );
+
+  // Render active tab content
+  const renderTabContent = () => {
+    // Campaign tabs
+    if (activeCategory === 'campaigns' && activeTab === 'overview') return <CampaignOverviewTab campaigns={campaigns} setCampaigns={setCampaigns} />;
+    if (activeCategory === 'campaigns' && activeTab === 'create') return <CreateCampaignTab />;
+    if (activeCategory === 'campaigns' && activeTab === 'templates') return <EmailTemplatesTab />;
+    if (activeCategory === 'campaigns' && activeTab === 'sequences') return <EmailSequencesTab />;
+    if (activeCategory === 'campaigns' && activeTab === 'segments') return <AudienceSegmentsTab segments={segments} setSegments={setSegments} />;
+    if (activeCategory === 'campaigns' && activeTab === 'personalization') return <PersonalizationTab />;
+    
+    // AI Orchestration tabs
+    if (activeCategory === 'ai-orchestration' && activeTab === 'smart-send') return <SmartSendTimeTab />;
+    if (activeCategory === 'ai-orchestration' && activeTab === 'content-gen') return <ContentGenerationTab />;
+    if (activeCategory === 'ai-orchestration' && activeTab === 'subject-opt') return <SubjectLineOptimizerTab />;
+    if (activeCategory === 'ai-orchestration' && activeTab === 'predictive') return <PredictiveAnalyticsTab />;
+    if (activeCategory === 'ai-orchestration' && activeTab === 'auto-optimize') return <AutoOptimizationTab />;
+    if (activeCategory === 'ai-orchestration' && activeTab === 'recommendations') return <AIRecommendationsTab />;
+    
+    // Workflow tabs
+    if (activeCategory === 'workflows' && activeTab === 'builder') return <WorkflowBuilderTab workflows={workflows} setWorkflows={setWorkflows} />;
+    if (activeCategory === 'workflows' && activeTab === 'triggers') return <TriggersEventsTab />;
+    if (activeCategory === 'workflows' && activeTab === 'conditions') return <ConditionalLogicTab />;
+    if (activeCategory === 'workflows' && activeTab === 'actions') return <ActionsLibraryTab />;
+    if (activeCategory === 'workflows' && activeTab === 'monitoring') return <WorkflowMonitoringTab />;
+    if (activeCategory === 'workflows' && activeTab === 'history') return <ExecutionHistoryTab />;
+    
+    // Multi-channel tabs
+    if (activeCategory === 'multichannel' && activeTab === 'sms') return <SMSCampaignsTab />;
+    if (activeCategory === 'multichannel' && activeTab === 'push') return <PushNotificationsTab />;
+    if (activeCategory === 'multichannel' && activeTab === 'webhooks') return <WebhooksTab />;
+    if (activeCategory === 'multichannel' && activeTab === 'orchestration') return <ChannelOrchestrationTab />;
+    if (activeCategory === 'multichannel' && activeTab === 'preferences') return <ChannelPreferencesTab />;
+    
+    // Analytics tabs
+    if (activeCategory === 'analytics' && activeTab === 'dashboard') return <AnalyticsDashboardTab />;
+    if (activeCategory === 'analytics' && activeTab === 'reports') return <CampaignReportsTab />;
+    if (activeCategory === 'analytics' && activeTab === 'revenue') return <RevenueAttributionTab />;
+    if (activeCategory === 'analytics' && activeTab === 'engagement') return <EngagementMetricsTab />;
+    if (activeCategory === 'analytics' && activeTab === 'deliverability') return <DeliverabilityTab />;
+    if (activeCategory === 'analytics' && activeTab === 'export') return <DataExportTab />;
+    
+    // Testing tabs
+    if (activeCategory === 'testing' && activeTab === 'abtests') return <ABTestingTab />;
+    if (activeCategory === 'testing' && activeTab === 'multivariate') return <MultivariateTestingTab />;
+    if (activeCategory === 'testing' && activeTab === 'experiments') return <ExperimentsTab />;
+    if (activeCategory === 'testing' && activeTab === 'frequency') return <FrequencyOptimizationTab />;
+    if (activeCategory === 'testing' && activeTab === 'content-testing') return <ContentTestingTab />;
+    if (activeCategory === 'testing' && activeTab === 'results') return <TestResultsTab />;
+    
+    // Settings tabs
+    if (activeCategory === 'settings' && activeTab === 'general') return <GeneralSettingsTab />;
+    if (activeCategory === 'settings' && activeTab === 'team') return <TeamPermissionsTab />;
+    if (activeCategory === 'settings' && activeTab === 'compliance') return <ComplianceGDPRTab />;
+    if (activeCategory === 'settings' && activeTab === 'integrations') return <IntegrationsTab />;
+    
+    // Advanced tabs
+    if (activeCategory === 'advanced' && activeTab === 'api') return <APIDeveloperTab />;
+    if (activeCategory === 'advanced' && activeTab === 'custom-fields') return <CustomFieldsTab />;
+    if (activeCategory === 'advanced' && activeTab === 'automation-rules') return <CustomAutomationTab />;
+    
+    return <div style={{ color: '#6b7280', padding: 32, textAlign: 'center' }}>Tab content coming soon...</div>;
+  };
+
+  return (
+    <div style={{ padding: 32, background: '#f9fafb', minHeight: '100vh' }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{ marginBottom: 32 }}>
+          <h1 style={{ fontSize: 32, fontWeight: 800, color: '#1f2937', marginBottom: 8 }}>📧 Email Automation Builder</h1>
+          <p style={{ fontSize: 16, color: '#6b7280' }}>Enterprise email marketing automation platform with AI orchestration, workflows, and multi-channel delivery</p>
+        </div>
+
+        {/* Category Navigation */}
+        {renderCategoryNav()}
+
+        {/* Tab Navigation */}
+        {renderTabNav()}
+
+        {/* Loading & Error States */}
+        {loading && <div style={{ color: '#6b7280', padding: 24, textAlign: 'center' }}>Loading...</div>}
+        {error && <div style={{ color: '#dc2626', padding: 24, textAlign: 'center', background: '#fee2e2', borderRadius: 8, marginBottom: 24 }}>Error: {error}</div>}
+
+        {/* Tab Content */}
+        <div style={{ background: '#fff', borderRadius: 12, padding: 32, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+          {renderTabContent()}
+        </div>
       </div>
-      <table style={styles.table}>
+    </div>
+  );
+}
+
+// ========================================
+// CATEGORY 1: CAMPAIGNS (6 tabs)
+// ========================================
+
+function CampaignOverviewTab({ campaigns, setCampaigns }) {
+  const [showModal, setShowModal] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
+
+  useEffect(() => {
+    if (campaigns.length === 0) {
+      // Add sample data
+      setCampaigns([
+        { id: 1, name: 'Welcome Series', status: 'active', sent: 12543, openRate: 42.3, clickRate: 8.7, revenue: 45231, created: '2026-01-15' },
+        { id: 2, name: 'Weekly Newsletter', status: 'active', sent: 8965, openRate: 38.1, clickRate: 6.2, revenue: 12450, created: '2026-01-20' },
+        { id: 3, name: 'Product Launch', status: 'scheduled', sent: 0, openRate: 0, clickRate: 0, revenue: 0, created: '2026-02-10' },
+      ]);
+    }
+  }, [campaigns, setCampaigns]);
+
+  const handleDelete = (id) => {
+    if (window.confirm('Delete this campaign?')) {
+      setCampaigns(campaigns.filter(c => c.id !== id));
+    }
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 700 }}>Campaign Overview</h2>
+        <button onClick={() => setShowModal(true)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer' }}>+ New Campaign</button>
+      </div>
+
+      {/* Stats Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
+        <div style={{ background: '#ede9fe', borderRadius: 10, padding: 20 }}>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>Total Campaigns</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: '#6366f1' }}>{campaigns.length}</div>
+        </div>
+        <div style={{ background: '#dbeafe', borderRadius: 10, padding: 20 }}>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>Emails Sent</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: '#2563eb' }}>{campaigns.reduce((sum, c) => sum + c.sent, 0).toLocaleString()}</div>
+        </div>
+        <div style={{ background: '#d1fae5', borderRadius: 10, padding: 20 }}>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>Avg Open Rate</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: '#059669' }}>{(campaigns.reduce((sum, c) => sum + c.openRate, 0) / (campaigns.length || 1)).toFixed(1)}%</div>
+        </div>
+        <div style={{ background: '#fef3c7', borderRadius: 10, padding: 20 }}>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>Total Revenue</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>${campaigns.reduce((sum, c) => sum + c.revenue, 0).toLocaleString()}</div>
+        </div>
+      </div>
+
+      {/* Campaigns Table */}
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
-          <tr>
-            <th>Email</th>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Engagement Score</th>
-            <th>Actions</th>
+          <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#6b7280' }}>Campaign Name</th>
+            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#6b7280' }}>Status</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#6b7280' }}>Sent</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#6b7280' }}>Open Rate</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#6b7280' }}>Click Rate</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#6b7280' }}>Revenue</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#6b7280' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {contacts.map(c => (
-            <tr key={c.id}>
-              <td>{c.email}</td>
-              <td>{c.firstName} {c.lastName}</td>
-              <td><span style={getBadgeStyle(c.status)}>{c.status}</span></td>
-              <td>{c.engagementScore}/100</td>
-              <td><button style={styles.secondaryBtn}>Edit</button></td>
+          {campaigns.map(campaign => (
+            <tr key={campaign.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+              <td style={{ padding: 12, fontWeight: 500 }}>{campaign.name}</td>
+              <td style={{ padding: 12 }}>
+                <span style={{ 
+                  background: campaign.status === 'active' ? '#d1fae5' : campaign.status === 'scheduled' ? '#dbeafe' : '#fee2e2',
+                  color: campaign.status === 'active' ? '#059669' : campaign.status === 'scheduled' ? '#2563eb' : '#dc2626',
+                  padding: '4px 12px',
+                  borderRadius: 12,
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}>{campaign.status}</span>
+              </td>
+              <td style={{ padding: 12, textAlign: 'right' }}>{campaign.sent.toLocaleString()}</td>
+              <td style={{ padding: 12, textAlign: 'right' }}>{campaign.openRate}%</td>
+              <td style={{ padding: 12, textAlign: 'right' }}>{campaign.clickRate}%</td>
+              <td style={{ padding: 12, textAlign: 'right' }}>${campaign.revenue.toLocaleString()}</td>
+              <td style={{ padding: 12, textAlign: 'right' }}>
+                <button onClick={() => setSelectedCampaign(campaign)} style={{ background: '#f3f4f6', border: 'none', borderRadius: 6, padding: '6px 12px', marginRight: 8, cursor: 'pointer' }}>Edit</button>
+                <button onClick={() => handleDelete(campaign.id)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer' }}>Delete</button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   );
+}
 
-  const SegmentsTab = () => (
-    <div style={styles.card}>
-      <div style={styles.cardHeader}>
-        <h3 style={styles.cardTitle}>Audience Segments</h3>
-        <button style={styles.primaryBtn}>Create Segment</button>
-      </div>
-      <div style={styles.listContainer}>
-        {segments.map(s => (
-          <div key={s.id} style={styles.listItem}>
-            <div>
-              <h4>{s.name}</h4>
-              <p style={styles.muted}>{s.type} • {s.contactCount || 0} contacts</p>
-            </div>
-            <button style={styles.secondaryBtn}>Manage</button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+function CreateCampaignTab() {
+  const [formData, setFormData] = useState({
+    name: '',
+    subject: '',
+    from: '',
+    segment: '',
+    template: '',
+  });
 
-  const ListsTab = () => (
-    <div style={styles.card}>
-      <div style={styles.cardHeader}>
-        <h3 style={styles.cardTitle}>Contact Lists</h3>
-        <button style={styles.primaryBtn}>Create List</button>
-      </div>
-      <div style={styles.listContainer}>
-        {lists.map(l => (
-          <div key={l.id} style={styles.listItem}>
-            <div>
-              <h4>{l.name}</h4>
-              <p style={styles.muted}>{l.contactCount || 0} contacts</p>
-            </div>
-            <button style={styles.secondaryBtn}>Manage</button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const ScheduledTab = () => {
-    const scheduled = campaigns.filter(c => c.status === 'scheduled');
-    return (
-      <div style={styles.card}>
-        <h3 style={styles.cardTitle}>Scheduled Campaigns</h3>
-        {scheduled.length === 0 ? (
-          <div style={styles.emptyState}>
-            <p>No scheduled campaigns</p>
-          </div>
-        ) : (
-          <div style={styles.listContainer}>
-            {scheduled.map(c => (
-              <div key={c.id} style={styles.listItem}>
-                <div>
-                  <h4>{c.name}</h4>
-                  <p style={styles.muted}>Scheduled for: {new Date(c.scheduledAt).toLocaleString()}</p>
-                </div>
-                <button style={styles.dangerBtn}>Cancel</button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const ActivityTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Recent Activity</h3>
-      <div style={styles.listContainer}>
-        <div style={styles.listItem}>
-          <div>
-            <strong>Campaign sent</strong>
-            <p style={styles.muted}>by user@example.com • 2 hours ago</p>
-          </div>
-        </div>
-        <div style={styles.listItem}>
-          <div>
-            <strong>Template created</strong>
-            <p style={styles.muted}>by user@example.com • 1 day ago</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  // ================================================================
-  // CATEGORY 2: CREATE (6 tabs)
-  // ================================================================
-
-  const CampaignBuilderTab = () => {
-    const handleFieldChange = (field, value) => {
-      setCampaignForm({ ...campaignForm, [field]: value });
-    };
-
-    const handleSave = async () => {
-      setLoading(true);
-      try {
-        const res = await api('/campaigns', { method: 'POST', body: JSON.stringify(campaignForm) });
-        setCampaigns([...campaigns, res.campaign]);
-        setSuccess('Campaign created successfully');
-        setCampaignForm({ name: '', subject: '', preheader: '', fromName: '', fromEmail: '', replyTo: '', body: '', type: 'regular' });
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    return (
-      <div style={styles.grid}>
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Create Campaign</h3>
-          <div style={styles.form}>
-            <input
-              type="text"
-              placeholder="Campaign Name"
-              value={campaignForm.name}
-              onChange={(e) => handleFieldChange('name', e.target.value)}
-              style={styles.input}
-            />
-            <input
-              type="text"
-              placeholder="Subject Line"
-              value={campaignForm.subject}
-              onChange={(e) => handleFieldChange('subject', e.target.value)}
-              style={styles.input}
-            />
-            <input
-              type="text"
-              placeholder="Preheader Text"
-              value={campaignForm.preheader}
-              onChange={(e) => handleFieldChange('preheader', e.target.value)}
-              style={styles.input}
-            />
-            <div style={styles.formRow}>
-              <input
-                type="text"
-                placeholder="From Name"
-                value={campaignForm.fromName}
-                onChange={(e) => handleFieldChange('fromName', e.target.value)}
-                style={styles.input}
-              />
-              <input
-                type="email"
-                placeholder="From Email"
-                value={campaignForm.fromEmail}
-                onChange={(e) => handleFieldChange('fromEmail', e.target.value)}
-                style={styles.input}
-              />
-            </div>
-            <textarea
-              placeholder="Email Body (HTML)"
-              value={campaignForm.body}
-              onChange={(e) => handleFieldChange('body', e.target.value)}
-              style={{...styles.input, minHeight: '120px'}}
-            />
-            <button onClick={handleSave} disabled={loading} style={styles.primaryBtn}>
-              {loading ? 'Saving...' : 'Save Campaign'}
-            </button>
-          </div>
-        </div>
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Tips</h3>
-          <ul style={styles.tipsList}>
-            <li>Keep subject lines under 50 characters</li>
-            <li>Use personalization tokens like {'{firstName}'}</li>
-            <li>Test your email before sending</li>
-            <li>Check spam score</li>
-          </ul>
-        </div>
-      </div>
-    );
-  };
-
-  const EmailDesignerTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Email Designer</h3>
-      <div style={styles.banner}>Drag-and-drop email builder (Coming soon)</div>
-      <textarea
-        placeholder="Enter HTML..."
-        style={{...styles.input, minHeight: '300px', fontFamily: 'monospace'}}
-      />
-      <button style={styles.primaryBtn}>Save Design</button>
-    </div>
-  );
-
-  const AIContentTab = () => {
-    const [aiPrompt, setAiPrompt] = useState('');
-    const [aiResults, setAiResults] = useState([]);
-    const [generating, setGenerating] = useState(false);
-
-    const handleGenerate = async () => {
-      setGenerating(true);
-      try {
-        const res = await api('/ai/subject-lines/generate', {
-          method: 'POST',
-          body: JSON.stringify({ campaignGoal: aiPrompt, count: 5 })
-        });
-        setAiResults(res.suggestions || []);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setGenerating(false);
-      }
-    };
-
-    return (
-      <div style={styles.card}>
-        <h3 style={styles.cardTitle}>AI Content Generator</h3>
-        <div style={styles.form}>
-          <textarea
-            placeholder="Describe your campaign..."
-            value={aiPrompt}
-            onChange={(e) => setAiPrompt(e.target.value)}
-            style={{...styles.input, minHeight: '100px'}}
-          />
-          <button onClick={handleGenerate} disabled={generating} style={styles.primaryBtn}>
-            {generating ? 'Generating...' : 'Generate Subject Lines'}
-          </button>
-          {aiResults.length > 0 && (
-            <div style={styles.resultsContainer}>
-              <h4>Generated Subject Lines:</h4>
-              {aiResults.map((r, i) => (
-                <div key={i} style={styles.resultCard}>
-                  <div style={styles.resultText}>{r.subject}</div>
-                  <div style={styles.resultMeta}>
-                    Open Rate: {(r.predictedOpenRate * 100).toFixed(1)}% | 
-                    Score: {(r.score * 100).toFixed(0)}/100 |
-                    Spam: {r.spamScore}/100
-                  </div>
-                  <button style={styles.secondaryBtn}>Use This</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  const TemplateEditorTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Template Editor</h3>
-      <div style={styles.form}>
-        <input type="text" placeholder="Template Name" style={styles.input} />
-        <select style={styles.input}>
-          <option>Custom</option>
-          <option>Promotional</option>
-          <option>Transactional</option>
-          <option>Newsletter</option>
-        </select>
-        <textarea placeholder="HTML..." style={{...styles.input, minHeight: '200px', fontFamily: 'monospace'}} />
-        <button style={styles.primaryBtn}>Save Template</button>
-      </div>
-    </div>
-  );
-
-  const ImportExportTab = () => {
-    const handleExport = () => {
-      const data = JSON.stringify(campaigns, null, 2);
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'campaigns.json';
-      a.click();
-    };
-
-    return (
-      <div style={styles.grid}>
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Import Contacts</h3>
-          <input type="file" accept=".csv" ref={fileInputRef} style={{ display: 'none' }} />
-          <button onClick={() => fileInputRef.current?.click()} style={styles.primaryBtn}>
-            Choose CSV File
-          </button>
-        </div>
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Export Data</h3>
-          <button onClick={handleExport} style={styles.primaryBtn}>Export Campaigns</button>
-        </div>
-      </div>
-    );
-  };
-
-  const QuickSendTab = () => {
-    const [quickEmail, setQuickEmail] = useState({ to: '', subject: '', body: '' });
-
-    const handleQuickSend = async () => {
-      try {
-        await api('/send/email', { method: 'POST', body: JSON.stringify(quickEmail) });
-        setSuccess('Email sent!');
-        setQuickEmail({ to: '', subject: '', body: '' });
-      } catch (err) {
-        setError(err.message);
-      }
-    };
-
-    return (
-      <div style={styles.card}>
-        <h3 style={styles.cardTitle}>Quick Send</h3>
-        <div style={styles.form}>
-          <input
-            type="email"
-            placeholder="To"
-            value={quickEmail.to}
-            onChange={(e) => setQuickEmail({...quickEmail, to: e.target.value})}
-            style={styles.input}
-          />
-          <input
-            type="text"
-            placeholder="Subject"
-            value={quickEmail.subject}
-            onChange={(e) => setQuickEmail({...quickEmail, subject: e.target.value})}
-            style={styles.input}
-          />
-          <textarea
-            placeholder="Message"
-            value={quickEmail.body}
-            onChange={(e) => setQuickEmail({...quickEmail, body: e.target.value})}
-            style={{...styles.input, minHeight: '150px'}}
-          />
-          <button onClick={handleQuickSend} style={styles.primaryBtn}>Send Now</button>
-        </div>
-      </div>
-    );
-  };
-
-  // ================================================================
-  // CATEGORY 3: AUTOMATE (7 tabs)
-  // ================================================================
-
-  const WorkflowsTab = () => (
-    <div style={styles.card}>
-      <div style={styles.cardHeader}>
-        <h3 style={styles.cardTitle}>Automation Workflows</h3>
-        <button style={styles.primaryBtn}>Create Workflow</button>
-      </div>
-      <div style={styles.listContainer}>
-        {workflows.map(w => (
-          <div key={w.id} style={styles.listItem}>
-            <div>
-              <h4>{w.name}</h4>
-              <p style={styles.muted}>
-                <span style={getBadgeStyle(w.status)}>{w.status}</span> • 
-                {w.executionCount || 0} executions
-              </p>
-            </div>
-            <div style={styles.cardActions}>
-              <button style={styles.secondaryBtn}>Edit</button>
-              <button style={styles.secondaryBtn}>Analytics</button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const WorkflowBuilderTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Visual Workflow Builder</h3>
-      <div style={styles.banner}>React Flow workflow canvas (Coming soon)</div>
-      <div style={styles.canvasPlaceholder}>
-        <h3>Workflow Canvas</h3>
-        <p>Visual drag-and-drop builder will render here</p>
-        <button style={styles.primaryBtn}>Add Trigger</button>
-      </div>
-    </div>
-  );
-
-  const TriggersTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Workflow Triggers</h3>
-      <div style={styles.grid}>
-        {['Contact Created', 'Email Opened', 'Link Clicked', 'Purchase Completed', 'Cart Abandoned'].map((trigger, i) => (
-          <div key={i} style={styles.triggerCard}>
-            <h4>{trigger}</h4>
-            <button style={styles.secondaryBtn}>Use Trigger</button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const ActionsTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Workflow Actions</h3>
-      <div style={styles.grid}>
-        {['Send Email', 'Send SMS', 'Add to Segment', 'Update Field', 'Wait', 'Webhook'].map((action, i) => (
-          <div key={i} style={styles.triggerCard}>
-            <h4>{action}</h4>
-            <button style={styles.secondaryBtn}>Add Action</button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const WorkflowTemplatesTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Workflow Templates</h3>
-      <div style={styles.grid}>
-        {[
-          { name: 'Welcome Series', desc: '3-email onboarding sequence' },
-          { name: 'Abandoned Cart', desc: 'Multi-channel cart recovery' },
-          { name: 'Win-Back', desc: 'Re-engage inactive subscribers' }
-        ].map((template, i) => (
-          <div key={i} style={styles.templateCard}>
-            <h4>{template.name}</h4>
-            <p style={styles.muted}>{template.desc}</p>
-            <button style={styles.primaryBtn}>Use Template</button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const JourneyBuilderTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Cross-Channel Journey Builder</h3>
-      <div style={styles.banner}>Create multi-channel customer journeys</div>
-      <div style={styles.form}>
-        <input type="text" placeholder="Journey Name" style={styles.input} />
-        <div style={styles.channelBadges}>
-          <span style={styles.badge}>📧 Email</span>
-          <span style={styles.badge}>📱 SMS</span>
-          <span style={styles.badge}>🔔 Push</span>
-          <span style={styles.badge}>💬 WhatsApp</span>
-        </div>
-        <button style={styles.primaryBtn}>Build Journey</button>
-      </div>
-    </div>
-  );
-
-  const AutomationAnalyticsTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Automation Performance</h3>
-      <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>12,456</div>
-          <div style={styles.statLabel}>Total Executions</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>95.3%</div>
-          <div style={styles.statLabel}>Success Rate</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>3.4s</div>
-          <div style={styles.statLabel}>Avg Duration</div>
-        </div>
-      </div>
-    </div>
-  );
-
-  // ================================================================
-  // CATEGORY 4: OPTIMIZE (6 tabs)
-  // ================================================================
-
-  const ABTestingTab = () => (
-    <div style={styles.card}>
-      <div style={styles.cardHeader}>
-        <h3 style={styles.cardTitle}>A/B Testing</h3>
-        <button style={styles.primaryBtn}>Create Test</button>
-      </div>
-      <div style={styles.listContainer}>
-        {abTests.map(test => (
-          <div key={test.id} style={styles.listItem}>
-            <div>
-              <h4>{test.name}</h4>
-              <p style={styles.muted}>{test.testType} • {test.variants?.length || 0} variants</p>
-            </div>
-            <button style={styles.secondaryBtn}>View Results</button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const SendTimeOptTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Send Time Optimization</h3>
-      <div style={styles.banner}>AI-powered optimal send time analysis</div>
-      <div style={styles.listContainer}>
-        {[
-          { day: 'Tuesday', hour: 10, rate: 28.5 },
-          { day: 'Wednesday', hour: 14, rate: 26.7 },
-          { day: 'Thursday', hour: 9, rate: 25.3 }
-        ].map((time, i) => (
-          <div key={i} style={styles.listItem}>
-            <div>
-              <strong>{time.day} at {time.hour}:00</strong>
-              <p style={styles.muted}>Predicted Open Rate: {time.rate}%</p>
-            </div>
-            <button style={styles.secondaryBtn}>Use This Time</button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const FrequencyCapTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Frequency Capping</h3>
-      <div style={styles.form}>
-        <input type="number" placeholder="Max Emails" style={styles.input} />
-        <select style={styles.input}>
-          <option>Per Day</option>
-          <option>Per Week</option>
-          <option>Per Month</option>
-        </select>
-        <button style={styles.primaryBtn}>Save Frequency Cap</button>
-      </div>
-    </div>
-  );
-
-  const SpamScoreTab = () => {
-    const [spamCheck, setSpamCheck] = useState({ subject: '', body: '' });
-    const [spamResult, setSpamResult] = useState(null);
-
-    const checkSpam = async () => {
-      try {
-        const res = await api('/ai/spam-score', { method: 'POST', body: JSON.stringify(spamCheck) });
-        setSpamResult(res);
-      } catch (err) {
-        setError(err.message);
-      }
-    };
-
-    return (
-      <div style={styles.card}>
-        <h3 style={styles.cardTitle}>Spam Score Checker</h3>
-        <div style={styles.form}>
-          <input
-            type="text"
-            placeholder="Subject Line"
-            value={spamCheck.subject}
-            onChange={(e) => setSpamCheck({...spamCheck, subject: e.target.value})}
-            style={styles.input}
-          />
-          <textarea
-            placeholder="Email Body"
-            value={spamCheck.body}
-            onChange={(e) => setSpamCheck({...spamCheck, body: e.target.value})}
-            style={{...styles.input, minHeight: '120px'}}
-          />
-          <button onClick={checkSpam} style={styles.primaryBtn}>Check Spam Score</button>
-          {spamResult && (
-            <div style={styles.resultCard}>
-              <strong>Spam Score: {spamResult.spamScore}/100</strong>
-              <p>{spamResult.recommendation}</p>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  const DeliverabilityTab = () => (
-    <div style={styles.grid}>
-      <div style={styles.card}>
-        <h3 style={styles.cardTitle}>Domain Authentication</h3>
-        <div style={styles.detailsGrid}>
-          <div><strong>SPF:</strong> <span style={styles.successBadge}>Verified</span></div>
-          <div><strong>DKIM:</strong> <span style={styles.successBadge}>Verified</span></div>
-          <div><strong>DMARC:</strong> <span style={styles.warningBadge}>Pending</span></div>
-        </div>
-      </div>
-      <div style={styles.card}>
-        <h3 style={styles.cardTitle}>Sender Reputation</h3>
-        <div style={styles.statValue}>95/100</div>
-        <div style={styles.progressBar}>
-          <div style={{...styles.progressFill, width: '95%'}}></div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const ContentOptTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Content Optimization</h3>
-      <div style={styles.listContainer}>
-        <div style={styles.recommendationCard}>
-          <div style={styles.highPriority}>High Priority</div>
-          <strong>Add personalization to subject line</strong>
-          <p style={styles.muted}>Estimated impact: +15% open rate</p>
-        </div>
-        <div style={styles.recommendationCard}>
-          <div style={styles.mediumPriority}>Medium Priority</div>
-          <strong>Shorten email body</strong>
-          <p style={styles.muted}>Current: 450 words, Recommended: 250-300 words</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  // ================================================================
-  // CATEGORY 5: ANALYZE (7 tabs)
-  // ================================================================
-
-  const CampaignAnalyticsTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Campaign Analytics</h3>
-      <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>10,000</div>
-          <div style={styles.statLabel}>Sent</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>2,450</div>
-          <div style={styles.statLabel}>Opens</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>735</div>
-          <div style={styles.statLabel}>Clicks</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>21.4%</div>
-          <div style={styles.statLabel}>Open Rate</div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const EngagementTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Engagement Metrics</h3>
-      <div style={styles.banner}>30-day engagement overview</div>
-      <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>22.5%</div>
-          <div style={styles.statLabel}>Avg Open Rate</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>6.8%</div>
-          <div style={styles.statLabel}>Avg Click Rate</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>78</div>
-          <div style={styles.statLabel}>Engagement Score</div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const RevenueTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Revenue Attribution</h3>
-      <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>$234,567</div>
-          <div style={styles.statLabel}>Total Revenue</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>5,234</div>
-          <div style={styles.statLabel}>Orders</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>$44.82</div>
-          <div style={styles.statLabel}>Avg Order Value</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>5.2x</div>
-          <div style={styles.statLabel}>ROI</div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const PredictiveTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Predictive Analytics</h3>
-      <div style={styles.listContainer}>
-        <div style={styles.listItem}>
-          <div>
-            <strong>Churn Prediction</strong>
-            <p style={styles.muted}>1,250 contacts at high risk</p>
-          </div>
-          <button style={styles.secondaryBtn}>View</button>
-        </div>
-        <div style={styles.listItem}>
-          <div>
-            <strong>LTV Prediction</strong>
-            <p style={styles.muted}>Avg predicted: $456.78</p>
-          </div>
-          <button style={styles.secondaryBtn}>View</button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const CohortsTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Cohort Analysis</h3>
-      <div style={styles.banner}>Retention analysis by cohort</div>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>Cohort</th>
-            <th>Size</th>
-            <th>Week 1</th>
-            <th>Week 2</th>
-            <th>Week 3</th>
-            <th>Week 4</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>2024-01</td>
-            <td>1,250</td>
-            <td>100%</td>
-            <td>85.2%</td>
-            <td>76.8%</td>
-            <td>68.5%</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
-
-  const RealtimeTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Real-Time Dashboard</h3>
-      <div style={styles.banner}>Live activity in the last 60 seconds</div>
-      <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>47</div>
-          <div style={styles.statLabel}>Opens</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>12</div>
-          <div style={styles.statLabel}>Clicks</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statValue}>2</div>
-          <div style={styles.statLabel}>Bounces</div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const ReportsTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Custom Reports</h3>
-      <div style={styles.form}>
-        <select style={styles.input}>
-          <option>Campaign Performance</option>
-          <option>Engagement Trends</option>
-          <option>Revenue Attribution</option>
-        </select>
-        <select style={styles.input}>
-          <option>Last 7 days</option>
-          <option>Last 30 days</option>
-          <option>Last 90 days</option>
-        </select>
-        <button style={styles.primaryBtn}>Generate Report</button>
-      </div>
-    </div>
-  );
-
-  // ================================================================
-  // CATEGORY 6: TOOLS (6 tabs)
-  // ================================================================
-
-  const ESPTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>ESP Integrations</h3>
-      <div style={styles.listContainer}>
-        {[
-          { name: 'SendGrid', status: 'active', usage: '12,457/100,000' },
-          { name: 'AWS SES', status: 'active', usage: '5,234/50,000' },
-          { name: 'Mailgun', status: 'inactive', usage: '0/10,000' }
-        ].map((esp, i) => (
-          <div key={i} style={styles.listItem}>
-            <div>
-              <h4>{esp.name}</h4>
-              <p style={styles.muted}>
-                <span style={esp.status === 'active' ? styles.successBadge : styles.mutedBadge}>{esp.status}</span> • 
-                {esp.usage} daily quota
-              </p>
-            </div>
-            <button style={styles.secondaryBtn}>Configure</button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const SMSTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>SMS Provider</h3>
-      <div style={styles.listContainer}>
-        {[
-          { name: 'Twilio', status: 'active', balance: '$487.23' },
-          { name: 'Plivo', status: 'inactive', balance: '$0.00' }
-        ].map((provider, i) => (
-          <div key={i} style={styles.listItem}>
-            <div>
-              <h4>{provider.name}</h4>
-              <p style={styles.muted}>Balance: {provider.balance}</p>
-            </div>
-            <button style={styles.secondaryBtn}>Configure</button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const WebhooksTab = () => (
-    <div style={styles.card}>
-      <div style={styles.cardHeader}>
-        <h3 style={styles.cardTitle}>Webhooks</h3>
-        <button style={styles.primaryBtn}>Add Webhook</button>
-      </div>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>URL</th>
-            <th>Events</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>https://api.example.com/webhook</td>
-            <td>email.opened, email.clicked</td>
-            <td><span style={styles.successBadge}>active</span></td>
-            <td><button style={styles.secondaryBtn}>Edit</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
-
-  const APIKeysTab = () => (
-    <div style={styles.card}>
-      <div style={styles.cardHeader}>
-        <h3 style={styles.cardTitle}>API Keys</h3>
-        <button style={styles.primaryBtn}>Create Key</button>
-      </div>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Key</th>
-            <th>Permissions</th>
-            <th>Last Used</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Production Key</td>
-            <td>ea_1234...****</td>
-            <td>read, write</td>
-            <td>2 hours ago</td>
-            <td><button style={styles.dangerBtn}>Delete</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
-
-  const AuditLogTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Audit Log</h3>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>Action</th>
-            <th>User</th>
-            <th>Resource</th>
-            <th>Timestamp</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>campaign_sent</td>
-            <td>user@example.com</td>
-            <td>Campaign #123</td>
-            <td>2 hours ago</td>
-          </tr>
-          <tr>
-            <td>template_created</td>
-            <td>user@example.com</td>
-            <td>Template #45</td>
-            <td>1 day ago</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
-
-  const ComplianceTab = () => (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>Compliance</h3>
-      <div style={styles.listContainer}>
-        <div style={styles.listItem}>
-          <div>
-            <strong>GDPR Data Export</strong>
-            <p style={styles.muted}>Export contact data per GDPR requirements</p>
-          </div>
-          <button style={styles.secondaryBtn}>Export</button>
-        </div>
-        <div style={styles.listItem}>
-          <div>
-            <strong>CAN-SPAM Compliance</strong>
-            <p style={styles.muted}>Unsubscribe link required in all emails</p>
-          </div>
-          <span style={styles.successBadge}>Compliant</span>
-        </div>
-      </div>
-    </div>
-  );
-
-  // ================================================================
-  // CATEGORY 7: SETTINGS (2 tabs)
-  // ================================================================
-
-  const SenderProfilesTab = () => (
-    <div style={styles.card}>
-      <div style={styles.cardHeader}>
-        <h3 style={styles.cardTitle}>Sender Profiles</h3>
-        <button style={styles.primaryBtn}>Add Profile</button>
-      </div>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>From Email</th>
-            <th>Reply-To</th>
-            <th>Verified</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Support Team</td>
-            <td>support@example.com</td>
-            <td>support@example.com</td>
-            <td><span style={styles.successBadge}>verified</span></td>
-            <td><button style={styles.secondaryBtn}>Edit</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
-
-  const DomainsTab = () => (
-    <div style={styles.card}>
-      <div style={styles.cardHeader}>
-        <h3 style={styles.cardTitle}>Domain Authentication</h3>
-        <button style={styles.primaryBtn}>Add Domain</button>
-      </div>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>Domain</th>
-            <th>SPF</th>
-            <th>DKIM</th>
-            <th>DMARC</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>example.com</td>
-            <td><span style={styles.successBadge}>verified</span></td>
-            <td><span style={styles.successBadge}>verified</span></td>
-            <td><span style={styles.warningBadge}>pending</span></td>
-            <td><button style={styles.secondaryBtn}>Verify</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
-
-  // ================================================================
-  // TAB CONFIGURATION
-  // ================================================================
-
-  const tabs = [
-    // MANAGE (8 tabs)
-    { id: 'campaigns', title: 'Campaigns', component: CampaignListTab },
-    { id: 'details', title: 'Campaign Details', component: CampaignDetailsTab },
-    { id: 'templates', title: 'Templates', component: TemplatesTab },
-    { id: 'contacts', title: 'Contacts', component: ContactsTab },
-    { id: 'segments', title: 'Segments', component: SegmentsTab },
-    { id: 'lists', title: 'Lists', component: ListsTab },
-    { id: 'scheduled', title: 'Scheduled', component: ScheduledTab },
-    { id: 'activity', title: 'Activity', component: ActivityTab },
-    // CREATE (6 tabs)
-    { id: 'builder', title: 'Campaign Builder', component: CampaignBuilderTab },
-    { id: 'designer', title: 'Email Designer', component: EmailDesignerTab },
-    { id: 'ai-content', title: 'AI Content', component: AIContentTab },
-    { id: 'template-editor', title: 'Template Editor', component: TemplateEditorTab },
-    { id: 'import-export', title: 'Import/Export', component: ImportExportTab },
-    { id: 'quick-send', title: 'Quick Send', component: QuickSendTab },
-    // AUTOMATE (7 tabs)
-    { id: 'workflows', title: 'Workflows', component: WorkflowsTab },
-    { id: 'workflow-builder', title: 'Workflow Builder', component: WorkflowBuilderTab },
-    { id: 'triggers', title: 'Triggers', component: TriggersTab },
-    { id: 'actions', title: 'Actions', component: ActionsTab },
-    { id: 'workflow-templates', title: 'Workflow Templates', component: WorkflowTemplatesTab },
-    { id: 'journeys', title: 'Journey Builder', component: JourneyBuilderTab },
-    { id: 'automation-analytics', title: 'Automation Analytics', component: AutomationAnalyticsTab },
-    // OPTIMIZE (6 tabs)
-    { id: 'ab-testing', title: 'A/B Testing', component: ABTestingTab },
-    { id: 'send-time', title: 'Send Time Optimization', component: SendTimeOptTab },
-    { id: 'frequency', title: 'Frequency Capping', component: FrequencyCapTab },
-    { id: 'spam', title: 'Spam Score', component: SpamScoreTab },
-    { id: 'deliverability', title: 'Deliverability', component: DeliverabilityTab },
-    { id: 'content-opt', title: 'Content Optimization', component: ContentOptTab },
-    // ANALYZE (7 tabs)
-    { id: 'campaign-analytics', title: 'Campaign Analytics', component: CampaignAnalyticsTab },
-    { id: 'engagement', title: 'Engagement', component: EngagementTab },
-    { id: 'revenue', title: 'Revenue', component: RevenueTab },
-    { id: 'predictive', title: 'Predictive', component: PredictiveTab },
-    { id: 'cohorts', title: 'Cohorts', component: CohortsTab },
-    { id: 'realtime', title: 'Real-Time', component: RealtimeTab },
-    { id: 'reports', title: 'Reports', component: ReportsTab },
-    // TOOLS (6 tabs)
-    { id: 'esp', title: 'ESP', component: ESPTab },
-    { id: 'sms', title: 'SMS', component: SMSTab },
-    { id: 'webhooks', title: 'Webhooks', component: WebhooksTab },
-    { id: 'api-keys', title: 'API Keys', component: APIKeysTab },
-    { id: 'audit', title: 'Audit Log', component: AuditLogTab },
-    { id: 'compliance', title: 'Compliance', component: ComplianceTab },
-    // SETTINGS (2 tabs)
-    { id: 'sender-profiles', title: 'Sender Profiles', component: SenderProfilesTab },
-    { id: 'domains', title: 'Domains', component: DomainsTab }
-  ];
-
-  const tabCategories = [
-    { name: 'Manage', count: 8 },
-    { name: 'Create', count: 6 },
-    { name: 'Automate', count: 7 },
-    { name: 'Optimize', count: 6 },
-    { name: 'Analyze', count: 7 },
-    { name: 'Tools', count: 6 },
-    { name: 'Settings', count: 2 }
-  ];
-
-  // Helper functions
-  const handleViewCampaign = async (id) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const res = await api(`/campaigns/${id}`);
-      setSelectedCampaign(res.campaign);
-      setActiveTab(1);
+      const res = await apiFetch('/api/email-automation-builder/campaigns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (res.ok) {
+        alert('Campaign created successfully!');
+        setFormData({ name: '', subject: '', from: '', segment: '', template: '' });
+      }
     } catch (err) {
-      setError(err.message);
+      alert('Error creating campaign');
     }
   };
-
-  const getBadgeStyle = (status) => {
-    const baseStyle = { ...styles.badge };
-    if (status === 'active' || status === 'sent' || status === 'subscribed' || status === 'success') {
-      return { ...baseStyle, ...styles.successBadge };
-    } else if (status === 'scheduled' || status === 'running' || status === 'pending') {
-      return { ...baseStyle, ...styles.warningBadge };
-    } else if (status === 'draft' || status === 'inactive') {
-      return { ...baseStyle, ...styles.mutedBadge };
-    }
-    return baseStyle;
-  };
-
-  // Styles
-  const styles = {
-    container: {
-      maxWidth: '1400px',
-      margin: '0 auto',
-      padding: '24px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
-    },
-    header: {
-      marginBottom: '24px'
-    },
-    title: {
-      fontSize: '32px',
-      fontWeight: '700',
-      margin: '0 0 8px 0',
-      color: '#111827'
-    },
-    subtitle: {
-      fontSize: '16px',
-      color: '#6B7280',
-      margin: 0
-    },
-    notifications: {
-      marginBottom: '16px'
-    },
-    banner: {
-      padding: '12px 16px',
-      borderRadius: '8px',
-      marginBottom: '16px',
-      background: '#EFF6FF',
-      color: '#1E40AF',
-      border: '1px solid #BFDBFE'
-    },
-    tabNav: {
-      display: 'flex',
-      gap: '8px',
-      marginBottom: '24px',
-      overflowX: 'auto',
-      padding: '8px 0',
-      borderBottom: '2px solid #E5E7EB'
-    },
-    tab: {
-      padding: '8px 16px',
-      background: 'none',
-      border: 'none',
-      borderRadius: '6px',
-      cursor: 'pointer',
-      fontSize: '14px',
-      fontWeight: '500',
-      color: '#6B7280',
-      whiteSpace: 'nowrap',
-      transition: 'all 0.2s'
-    },
-    activeTab: {
-      background: '#3B82F6',
-      color: '#FFFFFF'
-    },
-    card: {
-      background: '#FFFFFF',
-      borderRadius: '12px',
-      padding: '24px',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-      marginBottom: '16px'
-    },
-    cardHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: '20px'
-    },
-    cardTitle: {
-      fontSize: '20px',
-      fontWeight: '600',
-      margin: 0,
-      color: '#111827'
-    },
-    cardActions: {
-      display: 'flex',
-      gap: '8px'
-    },
-    grid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-      gap: '16px'
-    },
-    statsGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-      gap: '16px'
-    },
-    statCard: {
-      background: '#F9FAFB',
-      padding: '20px',
-      borderRadius: '8px',
-      textAlign: 'center'
-    },
-    statValue: {
-      fontSize: '28px',
-      fontWeight: '700',
-      color: '#111827',
-      marginBottom: '4px'
-    },
-    statLabel: {
-      fontSize: '14px',
-      color: '#6B7280'
-    },
-    table: {
-      width: '100%',
-      borderCollapse: 'collapse'
-    },
-    listContainer: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '12px'
-    },
-    listItem: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '16px',
-      background: '#F9FAFB',
-      borderRadius: '8px'
-    },
-    templateCard: {
-      background: '#F9FAFB',
-      padding: '20px',
-      borderRadius: '8px'
-    },
-    triggerCard: {
-      background: '#F9FAFB',
-      padding: '20px',
-      borderRadius: '8px',
-      textAlign: 'center'
-    },
-    form: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '16px'
-    },
-    formRow: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      gap: '16px'
-    },
-    input: {
-      padding: '10px 12px',
-      border: '1px solid #D1D5DB',
-      borderRadius: '6px',
-      fontSize: '14px',
-      width: '100%',
-      boxSizing: 'border-box'
-    },
-    searchInput: {
-      padding: '8px 12px',
-      border: '1px solid #D1D5DB',
-      borderRadius: '6px',
-      fontSize: '14px',
-      width: '300px'
-    },
-    primaryBtn: {
-      padding: '10px 20px',
-      background: '#3B82F6',
-      color: '#FFFFFF',
-      border: 'none',
-      borderRadius: '6px',
-      fontSize: '14px',
-      fontWeight: '600',
-      cursor: 'pointer',
-      transition: 'background 0.2s'
-    },
-    secondaryBtn: {
-      padding: '8px 16px',
-      background: '#FFFFFF',
-      color: '#374151',
-      border: '1px solid #D1D5DB',
-      borderRadius: '6px',
-      fontSize: '14px',
-      fontWeight: '500',
-      cursor: 'pointer'
-    },
-    dangerBtn: {
-      padding: '8px 16px',
-      background: '#EF4444',
-      color: '#FFFFFF',
-      border: 'none',
-      borderRadius: '6px',
-      fontSize: '14px',
-      fontWeight: '500',
-      cursor: 'pointer'
-    },
-    badge: {
-      padding: '4px 12px',
-      borderRadius: '12px',
-      fontSize: '12px',
-      fontWeight: '600',
-      display: 'inline-block'
-    },
-    successBadge: {
-      background: '#D1FAE5',
-      color: '#065F46'
-    },
-    warningBadge: {
-      background: '#FEF3C7',
-      color: '#92400E'
-    },
-    mutedBadge: {
-      background: '#E5E7EB',
-      color: '#4B5563'
-    },
-    emptyState: {
-      textAlign: 'center',
-      padding: '60px 20px',
-      color: '#6B7280'
-    },
-    detailsGrid: {
-      display: 'grid',
-      gap: '12px'
-    },
-    actions: {
-      display: 'flex',
-      gap: '12px',
-      alignItems: 'center'
-    },
-    resultsContainer: {
-      marginTop: '20px'
-    },
-    resultCard: {
-      background: '#F9FAFB',
-      padding: '16px',
-      borderRadius: '8px',
-      marginBottom: '12px'
-    },
-    resultText: {
-      fontSize: '16px',
-      fontWeight: '600',
-      marginBottom: '8px'
-    },
-    resultMeta: {
-      fontSize: '13px',
-      color: '#6B7280',
-      marginBottom: '12px'
-    },
-    muted: {
-      color: '#6B7280',
-      fontSize: '13px',
-      margin: '4px 0 0 0'
-    },
-    tipsList: {
-      margin: 0,
-      paddingLeft: '20px'
-    },
-    channelBadges: {
-      display: 'flex',
-      gap: '8px',
-      flexWrap: 'wrap'
-    },
-    canvasPlaceholder: {
-      height: '400px',
-      border: '2px dashed #D1D5DB',
-      borderRadius: '8px',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: '#6B7280'
-    },
-    recommendationCard: {
-      background: '#F9FAFB',
-      padding: '16px',
-      borderRadius: '8px',
-      position: 'relative'
-    },
-    highPriority: {
-      position: 'absolute',
-      top: '12px',
-      right: '12px',
-      padding: '4px 8px',
-      background: '#FEE2E2',
-      color: '#991B1B',
-      borderRadius: '4px',
-      fontSize: '11px',
-      fontWeight: '600'
-    },
-    mediumPriority: {
-      position: 'absolute',
-      top: '12px',
-      right: '12px',
-      padding: '4px 8px',
-      background: '#FEF3C7',
-      color: '#92400E',
-      borderRadius: '4px',
-      fontSize: '11px',
-      fontWeight: '600'
-    },
-    progressBar: {
-      width: '100%',
-      height: '8px',
-      background: '#E5E7EB',
-      borderRadius: '4px',
-      overflow: 'hidden',
-      marginTop: '8px'
-    },
-    progressFill: {
-      height: '100%',
-      background: '#10B981',
-      transition: 'width 0.3s'
-    }
-  };
-
-  const CurrentTabComponent = tabs[activeTab]?.component || null;
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>Email Automation Builder</h1>
-        <p style={styles.subtitle}>Enterprise email marketing with AI-powered optimization</p>
-      </div>
-
-      {error && (
-        <div style={{...styles.banner, background: '#FEE2E2', color: '#991B1B', border: '1px solid #FECACA'}}>
-          {error} <button onClick={() => setError(null)} style={{...styles.secondaryBtn, marginLeft: '12px'}}>Dismiss</button>
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Create New Campaign</h2>
+      <form onSubmit={handleSubmit} style={{ maxWidth: 600 }}>
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: 8 }}>Campaign Name</label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={e => setFormData({ ...formData, name: e.target.value })}
+            style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 15 }}
+            required
+          />
         </div>
-      )}
-
-      {success && (
-        <div style={{...styles.banner, background: '#D1FAE5', color: '#065F46', border: '1px solid #A7F3D0'}}>
-          {success} <button onClick={() => setSuccess(null)} style={{...styles.secondaryBtn, marginLeft: '12px'}}>Dismiss</button>
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: 8 }}>Subject Line</label>
+          <input
+            type="text"
+            value={formData.subject}
+            onChange={e => setFormData({ ...formData, subject: e.target.value })}
+            style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 15 }}
+            required
+          />
         </div>
-      )}
-
-      <div style={styles.tabNav}>
-        {tabs.map((tab, index) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(index)}
-            style={{
-              ...styles.tab,
-              ...(activeTab === index && styles.activeTab)
-            }}
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: 8 }}>From Address</label>
+          <input
+            type="email"
+            value={formData.from}
+            onChange={e => setFormData({ ...formData, from: e.target.value })}
+            style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 15 }}
+            required
+          />
+        </div>
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: 8 }}>Audience Segment</label>
+          <select
+            value={formData.segment}
+            onChange={e => setFormData({ ...formData, segment: e.target.value })}
+            style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 15 }}
+            required
           >
-            {tab.title}
-          </button>
-        ))}
+            <option value="">Select segment</option>
+            <option value="all">All Subscribers</option>
+            <option value="engaged">Engaged Users</option>
+            <option value="vip">VIP Customers</option>
+          </select>
+        </div>
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: 8 }}>Email Template</label>
+          <select
+            value={formData.template}
+            onChange={e => setFormData({ ...formData, template: e.target.value })}
+            style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 15 }}
+            required
+          >
+            <option value="">Select template</option>
+            <option value="welcome">Welcome Email</option>
+            <option value="newsletter">Newsletter</option>
+            <option value="promotion">Promotional</option>
+          </select>
+        </div>
+        <button type="submit" style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 24px', fontWeight: 600, cursor: 'pointer', fontSize: 16 }}>Create Campaign</button>
+      </form>
+    </div>
+  );
+}
+
+function EmailTemplatesTab() {
+  const [templates, setTemplates] = useState([
+    { id: 1, name: 'Welcome Email', category: 'Onboarding', lastModified: '2026-02-10' },
+    { id: 2, name: 'Weekly Newsletter', category: 'Newsletter', lastModified: '2026-02-08' },
+    { id: 3, name: 'Product Launch', category: 'Promotional', lastModified: '2026-02-05' },
+  ]);
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 700 }}>Email Templates</h2>
+        <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer' }}>+ New Template</button>
       </div>
-
-      {loading && <div style={{textAlign: 'center', padding: '40px'}}>Loading...</div>}
-      
-      {!loading && CurrentTabComponent && <CurrentTabComponent />}
-
-      {modalActive && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: '#FFFFFF',
-            borderRadius: '12px',
-            padding: '32px',
-            maxWidth: '500px',
-            width: '90%'
-          }}>
-            <h3>Create Campaign</h3>
-            <p>Ready to create a new email campaign?</p>
-            <div style={{display: 'flex', gap: '12px', marginTop: '24px'}}>
-              <button onClick={() => { setModalActive(false); setActiveTab(8); }} style={styles.primaryBtn}>
-                Get Started
-              </button>
-              <button onClick={() => setModalActive(false)} style={styles.secondaryBtn}>
-                Cancel
-              </button>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+        {templates.map(template => (
+          <div key={template.id} style={{ background: '#f9fafb', borderRadius: 10, padding: 20, border: '1px solid #e5e7eb' }}>
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{template.name}</div>
+            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 12 }}>{template.category}</div>
+            <div style={{ fontSize: 13, color: '#9ca3af', marginBottom: 16 }}>Modified: {template.lastModified}</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button style={{ flex: 1, background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px', cursor: 'pointer' }}>Edit</button>
+              <button style={{ flex: 1, background: '#f3f4f6', border: 'none', borderRadius: 6, padding: '8px', cursor: 'pointer' }}>Preview</button>
             </div>
           </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EmailSequencesTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Email Sequences</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Create multi-email sequences with automated timing and triggers.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Email sequence builder coming soon...
+      </div>
+    </div>
+  );
+}
+
+function AudienceSegmentsTab({ segments, setSegments }) {
+  useEffect(() => {
+    if (segments.length === 0) {
+      setSegments([
+        { id: 1, name: 'Engaged Users', rule: 'Opened email in last 30 days', count: 15234 },
+        { id: 2, name: 'VIP Customers', rule: 'Total spend > $1000', count: 892 },
+        { id: 3, name: 'Inactive', rule: 'No activity in 90 days', count: 4521 },
+      ]);
+    }
+  }, [segments, setSegments]);
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 700 }}>Audience Segments</h2>
+        <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer' }}>+ New Segment</button>
+      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#6b7280' }}>Segment Name</th>
+            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#6b7280' }}>Rule</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#6b7280' }}>Count</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#6b7280' }}>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {segments.map(segment => (
+            <tr key={segment.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+              <td style={{ padding: 12, fontWeight: 500 }}>{segment.name}</td>
+              <td style={{ padding: 12, color: '#6b7280' }}>{segment.rule}</td>
+              <td style={{ padding: 12, textAlign: 'right' }}>{segment.count.toLocaleString()}</td>
+              <td style={{ padding: 12, textAlign: 'right' }}>
+                <button style={{ background: '#f3f4f6', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer' }}>Edit</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function PersonalizationTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Personalization Engine</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Dynamic content and personalization tokens for hyper-targeted emails.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Personalization engine coming soon...
+      </div>
+    </div>
+  );
+}
+
+// ========================================
+// CATEGORY 2: AI ORCHESTRATION (6 tabs)
+// ========================================
+
+function SmartSendTimeTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Smart Send Time Optimization</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>AI-powered optimal send time prediction for each subscriber.</p>
+      <div style={{ background: '#ede9fe', borderRadius: 10, padding: 24, marginBottom: 20 }}>
+        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>🤖 AI Send Time Recommendations</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+          <div style={{ background: '#fff', borderRadius: 8, padding: 16 }}>
+            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>Optimal Hour</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: '#6366f1' }}>2:00 PM</div>
+          </div>
+          <div style={{ background: '#fff', borderRadius: 8, padding: 16 }}>
+            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>Predicted Open Rate</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: '#059669' }}>46.2%</div>
+          </div>
+          <div style={{ background: '#fff', borderRadius: 8, padding: 16 }}>
+            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>Timezone</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: '#2563eb' }}>EST</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ContentGenerationTab() {
+  const [prompt, setPrompt] = useState('');
+  const [generatedContent, setGeneratedContent] = useState('');
+  const [generating, setGenerating] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!prompt.trim()) return;
+    setGenerating(true);
+    try {
+      const res = await apiFetch('/api/email-automation-builder/ai/content-generation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+      setGeneratedContent(data.content || 'Generated content will appear here...');
+    } catch (err) {
+      setGeneratedContent('Error generating content');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>AI Content Generation</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Generate email copy using AI.</p>
+      <div style={{ marginBottom: 20 }}>
+        <label style={{ display: 'block', fontWeight: 600, marginBottom: 8 }}>Describe your email</label>
+        <textarea
+          value={prompt}
+          onChange={e => setPrompt(e.target.value)}
+          placeholder="E.g., Write a welcome email for new subscribers..."
+          style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 15, minHeight: 100 }}
+        />
+      </div>
+      <button onClick={handleGenerate} disabled={generating} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer', marginBottom: 20 }}>
+        {generating ? 'Generating...' : 'Generate Content'}
+      </button>
+      {generatedContent && (
+        <div style={{ background: '#f9fafb', borderRadius: 10, padding: 20, whiteSpace: 'pre-wrap' }}>
+          {generatedContent}
         </div>
       )}
+    </div>
+  );
+}
+
+function SubjectLineOptimizerTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Subject Line Optimizer</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>AI-powered subject line analysis and suggestions.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Subject line optimizer coming soon...
+      </div>
+    </div>
+  );
+}
+
+function PredictiveAnalyticsTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Predictive Analytics</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Predict engagement, churn risk, and conversion probability.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Predictive analytics dashboard coming soon...
+      </div>
+    </div>
+  );
+}
+
+function AutoOptimizationTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Auto-Optimization</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Self-tuning campaigns that automatically optimize for performance.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Auto-optimization settings coming soon...
+      </div>
+    </div>
+  );
+}
+
+function AIRecommendationsTab() {
+  const recommendations = [
+    { id: 1, type: 'Send Time', recommendation: 'Send emails at 2:00 PM EST for best open rates', impact: '+12% open rate' },
+    { id: 2, type: 'Subject Line', recommendation: 'Use personalization in subject lines', impact: '+8% open rate' },
+    { id: 3, type: 'Frequency', recommendation: 'Reduce send frequency to 2x per week', impact: '-15% unsubscribes' },
+  ];
+
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>AI Recommendations</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Actionable insights to improve your email performance.</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {recommendations.map(rec => (
+          <div key={rec.id} style={{ background: '#f9fafb', borderRadius: 10, padding: 20, border: '1px solid #e5e7eb' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 8 }}>
+              <span style={{ background: '#ede9fe', color: '#6366f1', padding: '4px 12px', borderRadius: 12, fontSize: 13, fontWeight: 600 }}>{rec.type}</span>
+              <span style={{ background: '#d1fae5', color: '#059669', padding: '4px 12px', borderRadius: 12, fontSize: 13, fontWeight: 600 }}>{rec.impact}</span>
+            </div>
+            <div style={{ fontSize: 15, color: '#1f2937', marginBottom: 12 }}>{rec.recommendation}</div>
+            <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', cursor: 'pointer', fontSize: 14 }}>Apply</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ========================================
+// CATEGORY 3: WORKFLOWS (6 tabs)
+// ========================================
+
+function WorkflowBuilderTab({ workflows, setWorkflows }) {
+  useEffect(() => {
+    if (workflows.length === 0) {
+      setWorkflows([
+        { id: 1, name: 'Welcome Series', trigger: 'User signs up', status: 'active', runs: 1523 },
+        { id: 2, name: 'Abandoned Cart', trigger: 'Cart abandoned', status: 'active', runs: 892 },
+        { id: 3, name: 'Re-engagement', trigger: 'Inactive 30 days', status: 'paused', runs: 234 },
+      ]);
+    }
+  }, [workflows, setWorkflows]);
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 700 }}>Workflow Builder</h2>
+        <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer' }}>+ New Workflow</button>
+      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#6b7280' }}>Workflow Name</th>
+            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#6b7280' }}>Trigger</th>
+            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#6b7280' }}>Status</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#6b7280' }}>Total Runs</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#6b7280' }}>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {workflows.map(workflow => (
+            <tr key={workflow.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+              <td style={{ padding: 12, fontWeight: 500 }}>{workflow.name}</td>
+              <td style={{ padding: 12, color: '#6b7280' }}>{workflow.trigger}</td>
+              <td style={{ padding: 12 }}>
+                <span style={{ 
+                  background: workflow.status === 'active' ? '#d1fae5' : '#fee2e2',
+                  color: workflow.status === 'active' ? '#059669' : '#dc2626',
+                  padding: '4px 12px',
+                  borderRadius: 12,
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}>{workflow.status}</span>
+              </td>
+              <td style={{ padding: 12, textAlign: 'right' }}>{workflow.runs.toLocaleString()}</td>
+              <td style={{ padding: 12, textAlign: 'right' }}>
+                <button style={{ background: '#f3f4f6', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer' }}>Edit</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function TriggersEventsTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Triggers & Events</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Configure automation triggers based on user behavior and events.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Trigger configuration coming soon...
+      </div>
+    </div>
+  );
+}
+
+function ConditionalLogicTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Conditional Logic</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Add smart branching and decision points to workflows.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Conditional logic builder coming soon...
+      </div>
+    </div>
+  );
+}
+
+function ActionsLibraryTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Actions Library</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Browse available actions for your workflows.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Actions library coming soon...
+      </div>
+    </div>
+  );
+}
+
+function WorkflowMonitoringTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Workflow Monitoring</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Monitor active workflows and execution status in real-time.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Workflow monitoring dashboard coming soon...
+      </div>
+    </div>
+  );
+}
+
+function ExecutionHistoryTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Execution History</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>View past workflow executions and debug logs.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Execution history coming soon...
+      </div>
+    </div>
+  );
+}
+
+// ========================================
+// CATEGORY 4: MULTI-CHANNEL (5 tabs)
+// ========================================
+
+function SMSCampaignsTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>SMS Campaigns</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Create and manage SMS text message campaigns.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        SMS campaign builder coming soon...
+      </div>
+    </div>
+  );
+}
+
+function PushNotificationsTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Push Notifications</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Send mobile and web push notifications.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Push notification builder coming soon...
+      </div>
+    </div>
+  );
+}
+
+function WebhooksTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Webhooks</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Configure webhooks for external integrations.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Webhook configuration coming soon...
+      </div>
+    </div>
+  );
+}
+
+function ChannelOrchestrationTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Channel Orchestration</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Coordinate campaigns across email, SMS, and push.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Multi-channel orchestration coming soon...
+      </div>
+    </div>
+  );
+}
+
+function ChannelPreferencesTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Channel Preferences</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Manage customer communication channel preferences.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Channel preference center coming soon...
+      </div>
+    </div>
+  );
+}
+
+// ========================================
+// CATEGORY 5: ANALYTICS (6 tabs)
+// ========================================
+
+function AnalyticsDashboardTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Analytics Dashboard</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Real-time email marketing performance metrics.</p>
+      
+      {/* Key Metrics */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
+        <div style={{ background: '#ede9fe', borderRadius: 10, padding: 20 }}>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>Open Rate</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: '#6366f1' }}>42.3%</div>
+          <div style={{ fontSize: 12, color: '#059669', marginTop: 4 }}>↑ 5.2% from last month</div>
+        </div>
+        <div style={{ background: '#dbeafe', borderRadius: 10, padding: 20 }}>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>Click Rate</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: '#2563eb' }}>8.7%</div>
+          <div style={{ fontSize: 12, color: '#059669', marginTop: 4 }}>↑ 2.1% from last month</div>
+        </div>
+        <div style={{ background: '#d1fae5', borderRadius: 10, padding: 20 }}>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>Conversion Rate</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: '#059669' }}>3.2%</div>
+          <div style={{ fontSize: 12, color: '#dc2626', marginTop: 4 }}>↓ 0.4% from last month</div>
+        </div>
+        <div style={{ background: '#fef3c7', borderRadius: 10, padding: 20 }}>
+          <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>Revenue</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>$57,681</div>
+          <div style={{ fontSize: 12, color: '#059669', marginTop: 4 }}>↑ 12.3% from last month</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CampaignReportsTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Campaign Reports</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Detailed performance reports for each campaign.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Campaign reports coming soon...
+      </div>
+    </div>
+  );
+}
+
+function RevenueAttributionTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Revenue Attribution</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Track revenue generated by email campaigns.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Revenue attribution dashboard coming soon...
+      </div>
+    </div>
+  );
+}
+
+function EngagementMetricsTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Engagement Metrics</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Analyze opens, clicks, and engagement trends.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Engagement analytics coming soon...
+      </div>
+    </div>
+  );
+}
+
+function DeliverabilityTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Deliverability</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Monitor inbox placement and deliverability metrics.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Deliverability dashboard coming soon...
+      </div>
+    </div>
+  );
+}
+
+function DataExportTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Data Export</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Export analytics data in various formats.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Data export tools coming soon...
+      </div>
+    </div>
+  );
+}
+
+// ========================================
+// CATEGORY 6: TESTING & OPTIMIZATION (6 tabs)
+// ========================================
+
+function ABTestingTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>A/B Testing</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Run split tests to optimize email performance.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        A/B testing interface coming soon...
+      </div>
+    </div>
+  );
+}
+
+function MultivariateTestingTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Multivariate Testing</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Test multiple variables simultaneously.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Multivariate testing coming soon...
+      </div>
+    </div>
+  );
+}
+
+function ExperimentsTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Experiments</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Manage all active and past experiments.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Experiment management coming soon...
+      </div>
+    </div>
+  );
+}
+
+function FrequencyOptimizationTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Frequency Optimization</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Find the optimal send frequency for your audience.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Frequency optimizer coming soon...
+      </div>
+    </div>
+  );
+}
+
+function ContentTestingTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Content Testing</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Test different content variations.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Content testing tools coming soon...
+      </div>
+    </div>
+  );
+}
+
+function TestResultsTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Test Results</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>View results and insights from all tests.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Test results dashboard coming soon...
+      </div>
+    </div>
+  );
+}
+
+// ========================================
+// CATEGORY 7: SETTINGS & ADMIN (4 tabs)
+// ========================================
+
+function GeneralSettingsTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>General Settings</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Configure basic email automation settings.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        General settings coming soon...
+      </div>
+    </div>
+  );
+}
+
+function TeamPermissionsTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Team & Permissions</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Manage team members and role-based access control.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Team management coming soon...
+      </div>
+    </div>
+  );
+}
+
+function ComplianceGDPRTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Compliance & GDPR</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Legal compliance, consent management, and GDPR tools.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Compliance tools coming soon...
+      </div>
+    </div>
+  );
+}
+
+function IntegrationsTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Integrations</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Connect third-party apps and services.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Integrations marketplace coming soon...
+      </div>
+    </div>
+  );
+}
+
+// ========================================
+// CATEGORY 8: ADVANCED (3 tabs)
+// ========================================
+
+function APIDeveloperTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>API & Developer</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>API documentation, keys, and developer tools.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Developer portal coming soon...
+      </div>
+    </div>
+  );
+}
+
+function CustomFieldsTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Custom Fields</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Create and manage custom data fields for subscribers.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Custom fields manager coming soon...
+      </div>
+    </div>
+  );
+}
+
+function CustomAutomationTab() {
+  return (
+    <div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Custom Automation Rules</h2>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>Build advanced custom automation logic.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#6b7280' }}>
+        Custom automation builder coming soon...
+      </div>
     </div>
   );
 }
