@@ -1,11 +1,13 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { apiFetch } from '../../api';
+import WinbackFeatureCard from './WinbackFeatureCard';
+import WinbackAnalyticsChart from './WinbackAnalyticsChart';
 
 // Lazy load sub-components for performance
 const ToolScaffold = lazy(() => import('./ToolScaffold'));
 
 // Main Abandoned Checkout Winback Component with 7-Category, 44-Tab World-Class Structure
-export default function AbandonedCheckoutWinback() {
+function AbandonedCheckoutWinbackLegacy() {
   // Top-level navigation state (7 categories)
   const [activeCategory, setActiveCategory] = useState('manage');
   const [activeTab, setActiveTab] = useState('campaigns');
@@ -1771,30 +1773,6 @@ function CustomerLifecycleBar({ segments, onFilter, selectedStage }) {
     </div>
   );
 }
-import React, { useState, useEffect } from 'react';
-// --- Main Abandoned Checkout Winback Component (add guide button) ---
-function AbandonedCheckoutWinbackMain(props) {
-  const [showGuide, setShowGuide] = useState(false);
-  // ...existing code...
-  return (
-    <>
-      <OnboardingBanner />
-      <button onClick={() => setShowGuide(true)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 18 }}>User Guide</button>
-      <UserGuideModal open={showGuide} onClose={() => setShowGuide(false)} />
-      {/* ...rest of the tool UI... */}
-    </>
-  );
-}
-import { exportCampaignPDF } from './WinbackExportPDF';
-import { apiFetch } from '../../api';
-
-import WinbackFeatureCard from './WinbackFeatureCard';
-import WinbackAnalyticsChart from './WinbackAnalyticsChart';
-import WinbackAnomalyBanner from './WinbackAnomalyBanner';
-
-import useWinbackSocket from './AbandonedCheckoutWinbackSocket';
-import ToolScaffold from './ToolScaffold';
-
 // --- Notifications state and logic (API-integrated) ---
 function NotificationsSection() {
   const [notificationsList, setNotificationsList] = useState([]);
