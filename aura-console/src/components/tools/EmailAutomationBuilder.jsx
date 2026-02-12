@@ -394,7 +394,7 @@ export default function EmailAutomationBuilder() {
           <h3 style={styles.cardTitle}>Tips</h3>
           <ul style={styles.tipsList}>
             <li>Keep subject lines under 50 characters</li>
-            <li>Use personalization tokens like {'{'}'{'}firstName{'}'}{'}'}  </li>
+            <li>Use personalization tokens like {'{firstName}'}</li>
             <li>Test your email before sending</li>
             <li>Check spam score</li>
           </ul>
