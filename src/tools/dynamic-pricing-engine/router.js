@@ -14,6 +14,7 @@ const { validateRule } = require('./validation');
 const signalsStore = require('./signalsStore');
 const experiments = require('./experiments');
 const versioning = require('./versioning');
+const approvals = require('./approvals');
 
 const router = express.Router();
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
@@ -262,6 +263,81 @@ router.get('/versions/recent', (req, res) => {
 router.get('/versions/summary', (req, res) => {
 	const summary = versioning.getAllRulesVersionCounts();
 	res.json({ ok: true, summary });
+});
+
+// Approval workflow endpoints
+router.post('/approvals', (req, res) => {
+	const { ruleId, ruleData, requestedBy, context } = req.body;
+	if (!ruleId || !ruleData || !requestedBy) {
+		return res.status(400).json({ ok: false, error: 'ruleId, ruleData, and requestedBy required' });
+	}
+	
+	const request = approvals.createApprovalRequest(ruleId, ruleData, requestedBy, context);
+	res.json({ ok: true, request });
+});
+
+router.get('/approvals', (req, res) => {
+	const requests = approvals.listRequests(req.query);
+	res.json({ ok: true, requests });
+});
+
+router.get('/approvals/stats', (req, res) => {
+	const stats = approvals.getStats();
+	res.json({ ok: true, stats });
+});
+
+router.get('/approvals/pending/:userId', (req, res) => {
+	const pending = approvals.getPendingApprovals(req.params.userId);
+	res.json({ ok: true, pending });
+});
+
+router.get('/approvals/:id', (req, res) => {
+	const request = approvals.getRequest(Number(req.params.id));
+	if (!request) return res.status(404).json({ ok: false, error: 'Approval request not found' });
+	res.json({ ok: true, request });
+});
+
+router.post('/approvals/:id/approve', (req, res) => {
+	const { approvedBy, comment } = req.body;
+	if (!approvedBy) return res.status(400).json({ ok: false, error: 'approvedBy required' });
+	
+	const result = approvals.approve(Number(req.params.id), approvedBy, comment);
+	if (result.error) return res.status(400).json({ ok: false, error: result.error });
+	
+	// If fully approved, auto-publish the rule
+	if (result.request.status === 'approved') {
+		db.publish(result.request.ruleId, approvedBy);
+	}
+	
+	res.json({ ok: true, request: result.request });
+});
+
+router.post('/approvals/:id/reject', (req, res) => {
+	const { rejectedBy, comment } = req.body;
+	if (!rejectedBy) return res.status(400).json({ ok: false, error: 'rejectedBy required' });
+	
+	const result = approvals.reject(Number(req.params.id), rejectedBy, comment);
+	if (result.error) return res.status(400).json({ ok: false, error: result.error });
+	
+	res.json({ ok: true, request: result.request });
+});
+
+router.post('/approvals/:id/cancel', (req, res) => {
+	const { cancelledBy, reason } = req.body;
+	if (!cancelledBy) return res.status(400).json({ ok: false, error: 'cancelledBy required' });
+	
+	const result = approvals.cancel(Number(req.params.id), cancelledBy, reason);
+	if (result.error) return res.status(400).json({ ok: false, error: result.error });
+	
+	res.json({ ok: true, request: result.request });
+});
+
+router.post('/rules/:id/check-approval', (req, res) => {
+	const rule = db.get(Number(req.params.id));
+	if (!rule) return res.status(404).json({ ok: false, error: 'Rule not found' });
+	
+	const check = approvals.requiresApproval(rule, req.body?.context || {});
+	res.json({ ok: true, ...check });
 });
 
 // Experiments endpoints

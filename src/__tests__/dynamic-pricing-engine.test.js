@@ -6,6 +6,7 @@ const db = require('../tools/dynamic-pricing-engine/db');
 const analyticsModel = require('../tools/dynamic-pricing-engine/analyticsModel');
 const signalsStore = require('../tools/dynamic-pricing-engine/signalsStore');
 const experiments = require('../tools/dynamic-pricing-engine/experiments');
+const approvals = require('../tools/dynamic-pricing-engine/approvals');
 const { sampleRule, sampleSignals, priceRequest } = require('../tools/dynamic-pricing-engine/fixtures');
 
 describe('Dynamic Pricing Engine API', () => {
@@ -14,6 +15,7 @@ describe('Dynamic Pricing Engine API', () => {
     analyticsModel.clear();
     signalsStore.clear();
     experiments.clear();
+    approvals.clear();
   });
 
   it('validates rules on create', async () => {
@@ -555,6 +557,164 @@ describe('Dynamic Pricing Engine API', () => {
       expect(summary.body.summary.length).toBeGreaterThan(0);
       expect(summary.body.summary[0]).toHaveProperty('versionCount');
       expect(summary.body.summary[0]).toHaveProperty('currentVersion');
+    });
+  });
+
+  describe('Approval Workflows', () => {
+    it('creates approval request for global scope rule', async () => {
+      const create = await request(app)
+        .post('/api/dynamic-pricing-engine/approvals')
+        .send({
+          ruleId: 1,
+          ruleData: { ...sampleRule, scope: 'global' },
+          requestedBy: 'user123',
+          context: {}
+        });
+      expect(create.statusCode).toBe(200);
+      expect(create.body.ok).toBe(true);
+      expect(create.body.request.status).toBe('pending');
+      expect(create.body.request.reasons.length).toBeGreaterThan(0);
+      expect(create.body.request.reasons[0].type).toBe('global_scope');
+    });
+
+    it('checks if rule requires approval', async () => {
+      const create = await request(app)
+        .post('/api/dynamic-pricing-engine/rules')
+        .send({ ...sampleRule, scope: 'global' });
+      const ruleId = create.body.rule.id;
+
+      const check = await request(app)
+        .post(`/api/dynamic-pricing-engine/rules/${ruleId}/check-approval`)
+        .send({ context: {} });
+      
+      expect(check.statusCode).toBe(200);
+      expect(check.body.required).toBe(true);
+      expect(check.body.reasons.length).toBeGreaterThan(0);
+    });
+
+    it('requires dual approval (2 approvers)', async () => {
+      const create = await request(app)
+        .post('/api/dynamic-pricing-engine/approvals')
+        .send({
+          ruleId: 1,
+          ruleData: { ...sampleRule, scope: 'global' },
+          requestedBy: 'user1'
+        });
+      const requestId = create.body.request.id;
+
+      // First approval
+      const approve1 = await request(app)
+        .post(`/api/dynamic-pricing-engine/approvals/${requestId}/approve`)
+        .send({ approvedBy: 'approver1', comment: 'Looks good' });
+      expect(approve1.body.request.status).toBe('pending'); // Still pending after 1 approval
+      expect(approve1.body.request.approvals.length).toBe(1);
+
+      // Second approval - should fully approve
+      const approve2 = await request(app)
+        .post(`/api/dynamic-pricing-engine/approvals/${requestId}/approve`)
+        .send({ approvedBy: 'approver2', comment: 'Approved' });
+      expect(approve2.body.request.status).toBe('approved'); // Fully approved
+      expect(approve2.body.request.approvals.length).toBe(2);
+    });
+
+    it('rejects approval request', async () => {
+      const create = await request(app)
+        .post('/api/dynamic-pricing-engine/approvals')
+        .send({
+          ruleId: 1,
+          ruleData: { ...sampleRule, scope: 'global' },
+          requestedBy: 'user1'
+        });
+      const requestId = create.body.request.id;
+
+      const reject = await request(app)
+        .post(`/api/dynamic-pricing-engine/approvals/${requestId}/reject`)
+        .send({ rejectedBy: 'approver1', comment: 'Price change too aggressive' });
+      
+      expect(reject.statusCode).toBe(200);
+      expect(reject.body.request.status).toBe('rejected');
+      expect(reject.body.request.rejections.length).toBe(1);
+      expect(reject.body.request.comments.length).toBe(1);
+    });
+
+    it('cancels approval request', async () => {
+      const create = await request(app)
+        .post('/api/dynamic-pricing-engine/approvals')
+        .send({
+          ruleId: 1,
+          ruleData: { ...sampleRule, scope: 'global' },
+          requestedBy: 'user1'
+        });
+      const requestId = create.body.request.id;
+
+      const cancel = await request(app)
+        .post(`/api/dynamic-pricing-engine/approvals/${requestId}/cancel`)
+        .send({ cancelledBy: 'user1', reason: 'Changed my mind' });
+      
+      expect(cancel.statusCode).toBe(200);
+      expect(cancel.body.request.status).toBe('cancelled');
+    });
+
+    it('lists approval requests with filters', async () => {
+      await request(app)
+        .post('/api/dynamic-pricing-engine/approvals')
+        .send({ ruleId: 1, ruleData: sampleRule, requestedBy: 'user1' });
+      
+      await request(app)
+        .post('/api/dynamic-pricing-engine/approvals')
+        .send({ ruleId: 2, ruleData: { ...sampleRule, scope: 'global' }, requestedBy: 'user2' });
+
+      const all = await request(app).get('/api/dynamic-pricing-engine/approvals');
+      expect(all.body.requests.length).toBeGreaterThanOrEqual(2);
+
+      const pending = await request(app)
+        .get('/api/dynamic-pricing-engine/approvals?status=pending');
+      expect(pending.body.requests.every(r => r.status === 'pending')).toBe(true);
+
+      const byUser = await request(app)
+        .get('/api/dynamic-pricing-engine/approvals?requestedBy=user1');
+      expect(byUser.body.requests.every(r => r.requestedBy === 'user1')).toBe(true);
+    });
+
+    it('retrieves pending approvals for a user', async () => {
+      await request(app)
+        .post('/api/dynamic-pricing-engine/approvals')
+        .send({ ruleId: 1, ruleData: sampleRule, requestedBy: 'user1' });
+
+      const pending = await request(app)
+        .get('/api/dynamic-pricing-engine/approvals/pending/approver1');
+      expect(pending.statusCode).toBe(200);
+      expect(pending.body.pending.length).toBeGreaterThan(0);
+    });
+
+    it('retrieves approval statistics', async () => {
+      await request(app)
+        .post('/api/dynamic-pricing-engine/approvals')
+        .send({ ruleId: 1, ruleData: sampleRule, requestedBy: 'user1' });
+
+      const stats = await request(app).get('/api/dynamic-pricing-engine/approvals/stats');
+      expect(stats.statusCode).toBe(200);
+      expect(stats.body.stats).toHaveProperty('total');
+      expect(stats.body.stats).toHaveProperty('pendingCount');
+      expect(stats.body.stats).toHaveProperty('byStatus');
+    });
+
+    it('prevents duplicate approval from same user', async () => {
+      const create = await request(app)
+        .post('/api/dynamic-pricing-engine/approvals')
+        .send({ ruleId: 1, ruleData: sampleRule, requestedBy: 'user1' });
+      const requestId = create.body.request.id;
+
+      await request(app)
+        .post(`/api/dynamic-pricing-engine/approvals/${requestId}/approve`)
+        .send({ approvedBy: 'approver1' });
+
+      const duplicate = await request(app)
+        .post(`/api/dynamic-pricing-engine/approvals/${requestId}/approve`)
+        .send({ approvedBy: 'approver1' });
+      
+      expect(duplicate.statusCode).toBe(400);
+      expect(duplicate.body.error).toContain('already approved');
     });
   });
 });
