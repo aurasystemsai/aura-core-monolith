@@ -467,7 +467,7 @@ function QuickActionsTab() {
           <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontWeight: 600, cursor: 'pointer' }}>Send Now</button>
         </div>
         <div style={{ background: '#232336', padding: 24, borderRadius: 10 }}>
-          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Email Abandoned <24h</h3>
+          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Email Abandoned &lt;24h</h3>
           <p style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 12 }}>Target recent abandoners</p>
           <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontWeight: 600, cursor: 'pointer' }}>Send Now</button>
         </div>
