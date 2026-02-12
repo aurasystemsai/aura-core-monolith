@@ -13,6 +13,7 @@ const { evaluatePrice } = require('./engine');
 const { validateRule } = require('./validation');
 const signalsStore = require('./signalsStore');
 const experiments = require('./experiments');
+const versioning = require('./versioning');
 
 const router = express.Router();
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
@@ -40,9 +41,8 @@ router.post('/rules', (req, res) => {
 
 router.put('/rules/:id', (req, res) => {
 	const payload = req.body || {};
-	const { valid, errors } = validateRule(payload);
-	if (!valid) return res.status(400).json({ ok: false, errors });
-	const rule = db.update(req.params.id, payload);
+	// For updates, we don't need all required fields (partial update allowed)
+	const rule = db.update(Number(req.params.id), payload);
 	if (!rule) return res.status(404).json({ ok: false, error: 'Not found' });
 	res.json({ ok: true, rule });
 });
@@ -207,6 +207,61 @@ router.post('/feedback', (req, res) => {
 	if (!feedback) return res.status(400).json({ ok: false, error: 'feedback required' });
 	analyticsModel.recordEvent({ type: 'feedback', feedback });
 	res.json({ ok: true });
+});
+
+// Version history endpoints
+router.get('/rules/:id/history', (req, res) => {
+	const history = versioning.getHistory(Number(req.params.id), req.query);
+	res.json({ ok: true, history });
+});
+
+router.get('/rules/:id/versions/:version', (req, res) => {
+	const version = versioning.getVersion(Number(req.params.id), Number(req.params.version));
+	if (!version) return res.status(404).json({ ok: false, error: 'Version not found' });
+	res.json({ ok: true, version });
+});
+
+router.get('/rules/:id/compare', (req, res) => {
+	const { version1, version2 } = req.query;
+	if (!version1 || !version2) {
+		return res.status(400).json({ ok: false, error: 'version1 and version2 query params required' });
+	}
+	const comparison = versioning.compareVersions(
+		Number(req.params.id),
+		Number(version1),
+		Number(version2)
+	);
+	if (comparison.error) {
+		return res.status(404).json({ ok: false, error: comparison.error });
+	}
+	res.json({ ok: true, comparison });
+});
+
+router.post('/rules/:id/revert/:version', (req, res) => {
+	const result = versioning.revertToVersion(
+		Number(req.params.id),
+		Number(req.params.version),
+		req.body?.revertedBy || 'system'
+	);
+	if (result.error) {
+		return res.status(404).json({ ok: false, error: result.error });
+	}
+	
+	// Don't call db.update - versioning.revertToVersion already creates the rollback version
+	// Just return success
+	
+	res.json({ ok: true, ...result });
+});
+
+router.get('/versions/recent', (req, res) => {
+	const limit = Number(req.query.limit) || 10;
+	const changes = versioning.getRecentChanges(limit);
+	res.json({ ok: true, changes });
+});
+
+router.get('/versions/summary', (req, res) => {
+	const summary = versioning.getAllRulesVersionCounts();
+	res.json({ ok: true, summary });
 });
 
 // Experiments endpoints

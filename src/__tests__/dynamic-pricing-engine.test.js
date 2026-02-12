@@ -450,4 +450,111 @@ describe('Dynamic Pricing Engine API', () => {
       expect(running.body.experiments[0].status).toBe('running');
     });
   });
+
+  describe('Rule Versioning & History', () => {
+    it('tracks version history on rule creation', async () => {
+      const create = await request(app)
+        .post('/api/dynamic-pricing-engine/rules')
+        .send(sampleRule);
+      const ruleId = create.body.rule.id;
+
+      const history = await request(app)
+        .get(`/api/dynamic-pricing-engine/rules/${ruleId}/history`);
+      expect(history.statusCode).toBe(200);
+      expect(history.body.ok).toBe(true);
+      expect(history.body.history.length).toBe(1);
+      expect(history.body.history[0].changeType).toBe('create');
+    });
+
+    it('tracks version history on rule update', async () => {
+      const create = await request(app)
+        .post('/api/dynamic-pricing-engine/rules')
+        .send(sampleRule);
+      const ruleId = create.body.rule.id;
+
+      await request(app)
+        .put(`/api/dynamic-pricing-engine/rules/${ruleId}`)
+        .send({ name: 'Updated Rule Name' });
+
+      const history = await request(app)
+        .get(`/api/dynamic-pricing-engine/rules/${ruleId}/history`);
+      expect(history.body.history.length).toBe(2);
+      expect(history.body.history[1].changeType).toBe('update');
+      expect(history.body.history[1].changes.length).toBeGreaterThan(0);
+    });
+
+    it('retrieves specific version', async () => {
+      const create = await request(app)
+        .post('/api/dynamic-pricing-engine/rules')
+        .send(sampleRule);
+      const ruleId = create.body.rule.id;
+
+      const version = await request(app)
+        .get(`/api/dynamic-pricing-engine/rules/${ruleId}/versions/1`);
+      expect(version.statusCode).toBe(200);
+      expect(version.body.version.version).toBe(1);
+      expect(version.body.version.snapshot).toHaveProperty('name');
+    });
+
+    it('compares two versions and shows diff', async () => {
+      const create = await request(app)
+        .post('/api/dynamic-pricing-engine/rules')
+        .send(sampleRule);
+      const ruleId = create.body.rule.id;
+
+      await request(app)
+        .put(`/api/dynamic-pricing-engine/rules/${ruleId}`)
+        .send({ name: 'Modified Name', priority: 20 });
+
+      const compare = await request(app)
+        .get(`/api/dynamic-pricing-engine/rules/${ruleId}/compare?version1=1&version2=2`);
+      expect(compare.statusCode).toBe(200);
+      expect(compare.body.comparison.diff.length).toBeGreaterThan(0);
+      expect(compare.body.comparison.diff.some(d => d.field === 'name')).toBe(true);
+    });
+
+    it('reverts rule to previous version', async () => {
+      const create = await request(app)
+        .post('/api/dynamic-pricing-engine/rules')
+        .send({ ...sampleRule, name: 'Original Name' });
+      const ruleId = create.body.rule.id;
+
+      await request(app)
+        .put(`/api/dynamic-pricing-engine/rules/${ruleId}`)
+        .send({ name: 'Changed Name' });
+
+      const revert = await request(app)
+        .post(`/api/dynamic-pricing-engine/rules/${ruleId}/revert/1`)
+        .send({ revertedBy: 'admin' });
+      expect(revert.statusCode).toBe(200);
+      expect(revert.body.ok).toBe(true);
+      expect(revert.body.revertedTo).toBe(1);
+
+      const history = await request(app)
+        .get(`/api/dynamic-pricing-engine/rules/${ruleId}/history`);
+      expect(history.body.history.length).toBe(3); // create, update, rollback
+      expect(history.body.history[2].changeType).toBe('rollback');
+    });
+
+    it('retrieves recent changes across all rules', async () => {
+      await request(app).post('/api/dynamic-pricing-engine/rules').send(sampleRule);
+      await request(app).post('/api/dynamic-pricing-engine/rules').send({ ...sampleRule, name: 'Another Rule' });
+
+      const recent = await request(app).get('/api/dynamic-pricing-engine/versions/recent?limit=5');
+      expect(recent.statusCode).toBe(200);
+      expect(recent.body.changes.length).toBeGreaterThan(0);
+      expect(recent.body.changes[0]).toHaveProperty('changeType');
+      expect(recent.body.changes[0]).toHaveProperty('changedAt');
+    });
+
+    it('retrieves version summary for all rules', async () => {
+      await request(app).post('/api/dynamic-pricing-engine/rules').send(sampleRule);
+      
+      const summary = await request(app).get('/api/dynamic-pricing-engine/versions/summary');
+      expect(summary.statusCode).toBe(200);
+      expect(summary.body.summary.length).toBeGreaterThan(0);
+      expect(summary.body.summary[0]).toHaveProperty('versionCount');
+      expect(summary.body.summary[0]).toHaveProperty('currentVersion');
+    });
+  });
 });
