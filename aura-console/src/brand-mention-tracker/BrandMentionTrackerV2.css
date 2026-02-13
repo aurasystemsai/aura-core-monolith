@@ -1,0 +1,660 @@
+/* Brand Mention Tracker V2 - Enterprise Styling */
+
+/* Stats Grid */
+.bmtv2-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .bmtv2-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .bmtv2-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bmtv2-stat-card {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.bmtv2-stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bmtv2-stat-value.sentiment {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bmtv2-stat-value.crisis {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bmtv2-stat-change {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.bmtv2-stat-change.positive {
+  color: #2e7d32;
+}
+
+.bmtv2-stat-change.negative {
+  color: #c62828;
+}
+
+.bmtv2-stat-change.neutral {
+  color: #757575;
+}
+
+.bmtv2-stat-label {
+  font-size: 0.875rem;
+  color: #757575;
+  margin-top: 0.25rem;
+}
+
+/* Mention Cards */
+.bmtv2-mention-card {
+  border-left: 4px solid #e0e0e0;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.bmtv2-mention-card:hover {
+  border-left-color: #667eea;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bmtv2-mention-card.positive {
+  border-left-color: #4caf50;
+}
+
+.bmtv2-mention-card.negative {
+  border-left-color: #f44336;
+}
+
+.bmtv2-mention-card.neutral {
+  border-left-color: #9e9e9e;
+}
+
+.bmtv2-source-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+.bmtv2-source-icon.twitter {
+  color: #1da1f2;
+}
+
+.bmtv2-source-icon.facebook {
+  color: #4267b2;
+}
+
+.bmtv2-source-icon.instagram {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bmtv2-source-icon.linkedin {
+  color: #0077b5;
+}
+
+.bmtv2-source-icon.youtube {
+  color: #ff0000;
+}
+
+/* Credibility Badges */
+.bmtv2-credibility-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.bmtv2-credibility-badge.high {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.bmtv2-credibility-badge.medium {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.bmtv2-credibility-badge.low {
+  background: #e0e0e0;
+  color: #424242;
+}
+
+/* Sentiment Gauge */
+.bmtv2-sentiment-gauge {
+  padding: 2rem;
+  text-align: center;
+}
+
+.bmtv2-gauge-container {
+  margin: 2rem 0;
+}
+
+.bmtv2-gauge-value {
+  font-size: 4rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1rem;
+}
+
+.bmtv2-sentiment-breakdown {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Sentiment Visualizations */
+.bmtv2-sentiment-chart {
+  height: 300px;
+  position: relative;
+}
+
+.bmtv2-emotion-pie {
+  height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bmtv2-tone-radar {
+  height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bmtv2-word-cloud {
+  height: 500px;
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  border-radius: 8px;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bmtv2-trend-line {
+  height: 300px;
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+/* Competitor Charts */
+.bmtv2-sov-pie {
+  height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bmtv2-sentiment-compare {
+  height: 350px;
+  padding: 1rem;
+}
+
+.bmtv2-positioning-matrix {
+  height: 500px;
+  position: relative;
+}
+
+.bmtv2-feature-heatmap {
+  min-height: 300px;
+}
+
+/* Influencer Cards */
+.bmtv2-influencer-card {
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.bmtv2-influencer-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  transform: translateY(-2px);
+}
+
+.bmtv2-authority-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.bmtv2-authority-badge.legendary {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #000;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+}
+
+.bmtv2-authority-badge.epic {
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  color: white;
+}
+
+.bmtv2-authority-badge.rare {
+  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+  color: white;
+}
+
+.bmtv2-authority-badge.common {
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  color: white;
+}
+
+.bmtv2-relationship-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.bmtv2-relationship-status.advocate {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.bmtv2-relationship-status.neutral {
+  background: #f5f5f5;
+  color: #757575;
+}
+
+.bmtv2-relationship-status.critic {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.bmtv2-engagement-gauge {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Crisis Indicators */
+.bmtv2-crisis-card {
+  border-left: 4px solid #f44336;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #fff5f5;
+}
+
+.bmtv2-severity-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+}
+
+.bmtv2-severity-badge.critical {
+  background: #f44336;
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+.bmtv2-severity-badge.high {
+  background: #ff9800;
+  color: white;
+}
+
+.bmtv2-severity-badge.medium {
+  background: #ffc107;
+  color: #000;
+}
+
+.bmtv2-severity-badge.low {
+  background: #9e9e9e;
+  color: white;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.bmtv2-volume-spike {
+  height: 150px;
+  background: linear-gradient(135deg, #ff6b6b15 0%, #ee5a6f15 100%);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bmtv2-viral-animation {
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bmtv2-crisis-timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.bmtv2-crisis-timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, #f44336, #ff9800, #ffc107);
+}
+
+.bmtv2-timeline-item {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.bmtv2-timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -0.5rem;
+  top: 0.25rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #667eea;
+  border: 2px solid white;
+  box-shadow: 0 0 0 2px #667eea;
+}
+
+/* Alert Styles */
+.bmtv2-alert-rule {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.bmtv2-channel-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.bmtv2-channel-badge.email {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.bmtv2-channel-badge.sms {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.bmtv2-channel-badge.slack {
+  background: #e8eaf6;
+  color: #5c6bc0;
+}
+
+.bmtv2-channel-badge.webhook {
+  background: #e0f2f1;
+  color: #00897b;
+}
+
+.bmtv2-priority-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.bmtv2-priority-badge.urgent {
+  background: #f44336;
+  color: white;
+}
+
+.bmtv2-priority-badge.high {
+  background: #ff9800;
+  color: white;
+}
+
+.bmtv2-priority-badge.medium {
+  background: #2196f3;
+  color: white;
+}
+
+.bmtv2-priority-badge.low {
+  background: #9e9e9e;
+  color: white;
+}
+
+.bmtv2-quiet-hours-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #fff3e0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+/* Response Queue */
+.bmtv2-response-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.bmtv2-response-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bmtv2-status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.bmtv2-status-badge.pending {
+  background: #e0e0e0;
+  color: #424242;
+}
+
+.bmtv2-status-badge.assigned {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.bmtv2-status-badge.responded {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.bmtv2-status-badge.ignored {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.bmtv2-status-badge.escalated {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.bmtv2-response-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #757575;
+}
+
+.bmtv2-response-time.fast {
+  color: #2e7d32;
+}
+
+.bmtv2-response-time.slow {
+  color: #c62828;
+}
+
+.bmtv2-sla-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.bmtv2-sla-indicator.good {
+  background: #4caf50;
+}
+
+.bmtv2-sla-indicator.warning {
+  background: #ff9800;
+}
+
+.bmtv2-sla-indicator.critical {
+  background: #f44336;
+}
+
+.bmtv2-collaboration-mention {
+  color: #667eea;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bmtv2-collaboration-mention:hover {
+  text-decoration: underline;
+}
+
+/* Chart Placeholder */
+.bmtv2-chart-placeholder {
+  height: 300px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #757575;
+  font-style: italic;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .bmtv2-mention-card,
+  .bmtv2-influencer-card,
+  .bmtv2-alert-rule,
+  .bmtv2-response-card {
+    background: #1e1e1e;
+    border-color: #333;
+  }
+
+  .bmtv2-chart-placeholder,
+  .bmtv2-word-cloud,
+  .bmtv2-volume-spike {
+    background: #2a2a2a;
+  }
+
+  .bmtv2-crisis-card {
+    background: #331111;
+  }
+}
+
+/* Accessibility */
+.bmtv2-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+*:focus-visible {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bmtv2-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Loading States */
+.bmtv2-loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
