@@ -138,7 +138,7 @@ function saveAsTemplate(workflowId, templateData) {
   const template = {
     id: uuidv4(),
     name: templateData.name || `${workflow.name} Template`,
-    description: template Data.description || workflow.description,
+    description: templateData.description || workflow.description,
     category: templateData.category || 'custom',
     triggers: workflow.triggers,
     steps: workflow.steps,

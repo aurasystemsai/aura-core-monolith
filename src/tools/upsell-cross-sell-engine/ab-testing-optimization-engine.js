@@ -417,7 +417,7 @@ function epsilonGreedy(arms, epsilon) {
   }
   
   // Exploit: choose best arm
-  let best Arm = null;
+  let bestArm = null;
   let maxReward = -Infinity;
   
   Object.keys(arms).forEach(armId => {

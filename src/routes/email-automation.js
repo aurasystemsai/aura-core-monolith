@@ -122,7 +122,7 @@ function calculateContentScore(content) {
   // Simplified scoring: length, word count, sentiment indicators
   const wordCount = content.split(/\s+/).length;
   const hasCallToAction = /click|buy|shop|get|try|download/i.test(content);
-  const hasPersonalization = /\{\{|\[\[/test(content);
+  const hasPersonalization = /\{\{|\[\[/.test(content);
   
   let score = 0.5;
   if (wordCount >= 50 && wordCount <= 200) score += 0.2;

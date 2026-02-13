@@ -345,7 +345,7 @@ function trainConversionModel(trainingData) {
 /**
  * Predict conversion probability for user
  */
-function predictConversion(modelId, user Features) {
+function predictConversion(modelId, userFeatures) {
   const model = aiModels.get(modelId);
   if (!model) throw new Error('Model not found');
   
@@ -633,17 +633,23 @@ function normalInverse(p) {
   
   if (p < p_low) {
     q = Math.sqrt(-2 * Math.log(p));
-    return (((((a1 * q + a2) * q + a3) * q + a4) * q + a5) * q + a6) /
-           ((((b1 * q + b2) * q + b3) * q + b4) * q + b5) * q + 1);
+    return (
+      (((((a1 * q + a2) * q + a3) * q + a4) * q + a5) * q + a6) /
+      (((((b1 * q + b2) * q + b3) * q + b4) * q + b5) * q + 1)
+    );
   } else if (p <= p_high) {
     q = p - 0.5;
     r = q * q;
-    return (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * q /
-           (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1);
+    return (
+      (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * q /
+      (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1)
+    );
   } else {
     q = Math.sqrt(-2 * Math.log(1 - p));
-    return -(((((a1 * q + a2) * q + a3) * q + a4) * q + a5) * q + a6) /
-            ((((b1 * q + b2) * q + b3) * q + b4) * q + b5) * q + 1);
+    return -(
+      (((((a1 * q + a2) * q + a3) * q + a4) * q + a5) * q + a6) /
+      (((((b1 * q + b2) * q + b3) * q + b4) * q + b5) * q + 1)
+    );
   }
 }
 

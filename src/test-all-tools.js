@@ -61,7 +61,6 @@ async function main() {
   const results = [];
   for (const id of toolIds) {
     // run sequentially so logs are readable
-    // eslint-disable-next-line no-await-in-loop
     const r = await testTool(id);
     results.push(r);
   }

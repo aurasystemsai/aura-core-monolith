@@ -64,7 +64,6 @@ async function runOnce(limit = 10) {
   const results = [];
 
   for (const item of items) {
-    // eslint-disable-next-line no-await-in-loop
     const r = await processOne(item);
     results.push(r);
   }

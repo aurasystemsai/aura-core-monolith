@@ -20,7 +20,7 @@ function createVersion({ entityType, entityId, data, changes = [], createdBy }) 
   const id = `v_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   
   // Get previous version
-  const entity Key = `${entityType}:${entityId}`;
+  const entityKey = `${entityType}:${entityId}`;
   const previousVersions = Array.from(versions.values())
     .filter(v => v.entityType === entityType && v.entityId === entityId)
     .sort((a, b) => b.versionNumber - a.versionNumber);

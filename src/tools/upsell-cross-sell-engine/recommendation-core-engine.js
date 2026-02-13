@@ -290,7 +290,7 @@ function realTimeRecommendation({ userId, sessionData, limit = 10 }) {
   const signals = [];
   
   // 1. Similar to browsed products
-  browsed Products.forEach(productId => {
+  browsedProducts.forEach(productId => {
     const similar = contentBasedFiltering({ productId, limit: 5 });
     signals.push({ items: similar.items, weight: 0.3 });
   });

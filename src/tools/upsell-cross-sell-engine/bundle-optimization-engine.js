@@ -542,7 +542,7 @@ function getBundlePerformance(bundleId) {
   };
 }
 
-function compareBundle Performance({ bundleIds }) {
+function compareBundlePerformance({ bundleIds }) {
   const comparisons = bundleIds.map(id => {
     const perf = getBundlePerformance(id);
     const bundle = bundles.get(id);

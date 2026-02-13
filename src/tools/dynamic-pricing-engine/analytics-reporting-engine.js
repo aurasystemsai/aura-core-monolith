@@ -379,7 +379,8 @@ function createExportJob(exportConfig) {
   
   exportJobs.push(job);
   
-  // Simulate export processing  setTimeout(() => {
+  // Simulate export processing
+  setTimeout(() => {
     job.status = 'processing';
     job.progress = 30;
   }, 500);

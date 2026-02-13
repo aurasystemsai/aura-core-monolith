@@ -21,7 +21,7 @@ let complianceIdCounter = 1;
 let apiKeyIdCounter = 1;
 
 // Initialize default settings
-general Settings.set('global', {
+generalSettings.set('global', {
   currency: 'USD',
   timezone: 'America/New_York',
   language: 'en',

@@ -465,7 +465,7 @@ async function expandContent(content) {
     task: 'expand',
     temperature: 0.7,
     maxTokens: 800
-  };
+  });
   
   return {
     original: content,

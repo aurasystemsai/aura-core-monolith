@@ -631,7 +631,7 @@ const ABTestingSuiteV2 = () => {
     <Card sectioned>
       <Stack vertical>
         <Text variant="headingMd">Bot Detection</Text>
-        <Banner>Scoring: User agent +50, Request rate >60/min +30, Behavior +40</Banner>
+        <Banner>Scoring: User agent +50, Request rate &gt;60/min +30, Behavior +40</Banner>
         <TextField label="User Agent" multiline={2} />
         <Button primary>Detect Bot</Button>
         <Button>Filter Bot Traffic from Experiment</Button>

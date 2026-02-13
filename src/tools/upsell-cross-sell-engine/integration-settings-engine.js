@@ -259,7 +259,7 @@ function performSync(integration, resource, direction, sync) {
 // WEBHOOK MANAGEMENT
 // ================================================================
 
-function createWebhook({ event, url, integration Id, config = {} }) {
+function createWebhook({ event, url, integrationId, config = {} }) {
   const id = `webhook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   
   const webhook = {
