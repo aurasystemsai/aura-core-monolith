@@ -1,0 +1,855 @@
+/**
+ * Loyalty & Referral Program V2 - Enterprise Styling
+ * Comprehensive CSS with gradient cards, tier badges, gamification, and responsive design
+ */
+
+/* ============================================================================
+   DASHBOARD & STATS GRID
+   ============================================================================ */
+
+.loyalty-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.stat-card h2 {
+  color: white !important;
+  margin-top: 0.5rem;
+  font-weight: 700;
+  font-size: 2.5rem;
+}
+
+/* ============================================================================
+   POINTS BALANCE CARDS
+   ============================================================================ */
+
+.points-balance-card {
+  position: relative;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.points-balance-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.points-balance-amount {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin: 1rem 0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.points-balance-label {
+  font-size: 1.1rem;
+  opacity: 0.95;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ============================================================================
+   TIER PROGRESS BARS
+   ============================================================================ */
+
+.tier-progress-container {
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.tier-level-indicator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.tier-badge.bronze {
+  background: linear-gradient(135deg, #cd7f32 0%, #8b5a2b 100%);
+  color: white;
+}
+
+.tier-badge.silver {
+  background: linear-gradient(135deg, #c0c0c0 0%, #808080 100%);
+  color: white;
+}
+
+.tier-badge.gold {
+  background: linear-gradient(135deg, #ffd700 0%, #daa520 100%);
+  color: #333;
+}
+
+.tier-badge.platinum {
+  background: linear-gradient(135deg, #e5e4e2 0%, #b8b5b1 100%);
+  color: #333;
+}
+
+.tier-badge.diamond {
+  background: linear-gradient(135deg, #b9f2ff 0%, #76a9fa 100%);
+  color: white;
+}
+
+.tier-progress-bar {
+  position: relative;
+  height: 12px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.tier-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+  position: relative;
+}
+
+.tier-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.tier-progress-text {
+  text-align: center;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* ============================================================================
+   REWARD CARDS
+   ============================================================================ */
+
+.reward-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  background: white;
+}
+
+.reward-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  border-color: #667eea;
+}
+
+.reward-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.reward-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.reward-points-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.8rem;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.reward-stock-indicator {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.stock-available {
+  color: #22c55e;
+}
+
+.stock-low {
+  color: #f59e0b;
+}
+
+.stock-out {
+  color: #ef4444;
+}
+
+/* ============================================================================
+   REDEMPTION HISTORY
+   ============================================================================ */
+
+.redemption-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #f9fafb;
+  margin-bottom: 0.75rem;
+}
+
+.redemption-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.redemption-status.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.redemption-status.fulfilled {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.redemption-status.cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.redemption-code {
+  font-family: 'Courier New', monospace;
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px dashed #d1d5db;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+/* ============================================================================
+   REFERRAL DASHBOARD
+   ============================================================================ */
+
+.referral-code-display {
+  text-align: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+}
+
+.referral-code-value {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: 4px;
+  margin: 1rem 0;
+  font-family: 'Courier New', monospace;
+}
+
+.share-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.share-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #333;
+  text-decoration: none;
+}
+
+.share-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.share-button.email { background: #ea4335; color: white; }
+.share-button.facebook { background: #1877f2; color: white; }
+.share-button.twitter { background: #1da1f2; color: white; }
+.share-button.whatsapp { background: #25d366; color: white; }
+.share-button.linkedin { background: #0077b5; color: white; }
+.share-button.copy { background: #6366f1; color: white; }
+
+.referral-tracking-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+}
+
+.referral-tracking-table th,
+.referral-tracking-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.referral-tracking-table th {
+  background: #f9fafb;
+  font-weight: 600;
+}
+
+.referral-funnel {
+  display: flex;
+  justify-content: space-between;
+  margin: 2rem 0;
+}
+
+.funnel-stage {
+  flex: 1;
+  text-align: center;
+  padding: 1rem;
+  position: relative;
+}
+
+.funnel-stage::after {
+  content: '→';
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  color: #d1d5db;
+}
+
+.funnel-stage:last-child::after {
+  display: none;
+}
+
+.funnel-count {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.funnel-label {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+/* ============================================================================
+   BADGE COLLECTION
+   ============================================================================ */
+
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.badge-item {
+  text-align: center;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.badge-item.unlocked {
+  border-color: #fbbf24;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.badge-item.locked {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+.badge-icon {
+  font-size: 4rem;
+  margin-bottom: 0.5rem;
+}
+
+.badge-name {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.badge-description {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.badge-unlock-animation {
+  animation: badgeUnlock 0.6s ease-out;
+}
+
+@keyframes badgeUnlock {
+  0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+  60% { transform: scale(1.2) rotate(10deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* ============================================================================
+   CHALLENGE CARDS
+   ============================================================================ */
+
+.challenge-card {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.challenge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.challenge-difficulty {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.challenge-difficulty.easy { background: #d1fae5; color: #065f46; }
+.challenge-difficulty.medium { background: #fef3c7; color: #92400e; }
+.challenge-difficulty.hard { background: #fed7aa; color: #9a3412; }
+.challenge-difficulty.expert { background: #fee2e2; color: #991b1b; }
+
+.challenge-progress-circle {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 1rem auto;
+}
+
+.challenge-progress-svg {
+  transform: rotate(-90deg);
+}
+
+.challenge-progress-bg {
+  fill: none;
+  stroke: #e5e7eb;
+  stroke-width: 8;
+}
+
+.challenge-progress-bar {
+  fill: none;
+  stroke: #667eea;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.challenge-progress-percentage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+/* ============================================================================
+   STREAK COUNTER
+   ============================================================================ */
+
+.streak-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+  color: white;
+  border-radius: 16px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.streak-flame-icon {
+  font-size: 2rem;
+  animation: flicker 2s infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.streak-count {
+  font-size: 2rem;
+}
+
+/* ============================================================================
+   LEADERBOARD
+   ============================================================================ */
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.leaderboard-row {
+  transition: background 0.2s ease;
+}
+
+.leaderboard-row:hover {
+  background: #f9fafb;
+}
+
+.leaderboard-rank {
+  width: 60px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.leaderboard-rank.top-1 { color: #fbbf24; }
+.leaderboard-rank.top-2 { color: #c0c0c0; }
+.leaderboard-rank.top-3 { color: #cd7f32; }
+
+.rank-medal {
+  font-size: 1.5rem;
+}
+
+.leaderboard-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 0.75rem;
+}
+
+.leaderboard-name {
+  font-weight: 600;
+}
+
+.leaderboard-score {
+  font-weight: 700;
+  color: #667eea;
+}
+
+/* ============================================================================
+   CAMPAIGN CARDS
+   ============================================================================ */
+
+.campaign-card {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 1rem;
+}
+
+.campaign-status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.campaign-status-badge.active { background: #d1fae5; color: #065f46; }
+.campaign-status-badge.paused { background: #fef3c7; color: #92400e; }
+.campaign-status-badge.ended { background: #e5e7eb; color: #374151; }
+
+.campaign-flow-diagram {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.flow-step {
+  flex: 1;
+  text-align: center;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+}
+
+.flow-arrow {
+  font-size: 1.5rem;
+  color: #9ca3af;
+}
+
+/* ============================================================================
+   ANALYTICS CHARTS
+   ============================================================================ */
+
+.analytics-chart-container {
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 2rem;
+}
+
+.chart-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.metric-comparison {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.metric-box {
+  padding: 1.5rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #667eea;
+  margin: 0.5rem 0;
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.metric-change {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.metric-change.positive { color: #22c55e; }
+.metric-change.negative { color: #ef4444; }
+
+/* ============================================================================
+   INTEGRATION PLATFORM CARDS
+   ============================================================================ */
+
+.integration-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.integration-platform-card {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.integration-platform-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.integration-platform-card.connected {
+  border-color: #22c55e;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.integration-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.integration-sync-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.integration-sync-status.synced { background: #d1fae5; color: #065f46; }
+.integration-sync-status.syncing { background: #fef3c7; color: #92400e; }
+.integration-sync-status.error { background: #fee2e2; color: #991b1b; }
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .loyalty-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .share-buttons-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .badge-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  
+  .referral-code-value {
+    font-size: 2rem;
+  }
+  
+  .points-balance-amount {
+    font-size: 2.5rem;
+  }
+  
+  .integration-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .share-buttons-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .funnel-stage::after {
+    content: '↓';
+    right: auto;
+    top: auto;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .referral-funnel {
+    flex-direction: column;
+  }
+}
+
+/* ============================================================================
+   DARK MODE SUPPORT
+   ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  .reward-card,
+  .challenge-card,
+  .campaign-card,
+  .analytics-chart-container,
+  .tier-progress-container {
+    background: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+  }
+  
+  .metric-box {
+    background: #374151;
+    color: #e5e7eb;
+  }
+  
+  .leaderboard-row:hover {
+    background: #374151;
+  }
+}
+
+/* ============================================================================
+   ACCESSIBILITY
+   ============================================================================ */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+*:focus-visible {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+
+@media print {
+  .stat-card,
+  .points-balance-card,
+  .referral-code-display,
+  .tier-badge {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  
+  .share-buttons-grid,
+  button {
+    display: none !important;
+  }
+}
