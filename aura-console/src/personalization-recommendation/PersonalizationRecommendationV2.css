@@ -1,0 +1,738 @@
+/* ============================================================================
+   PERSONALIZATION & RECOMMENDATION ENGINE V2 - ENTERPRISE STYLESHEET
+   Responsive design with dark mode support and accessibility features
+   ============================================================================ */
+
+/* Layout & Grid System */
+.pers-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+}
+
+.stat-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+}
+
+.stat-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0;
+}
+
+.stat-title {
+  font-size: 14px;
+  color: #6d7175;
+  margin: 0;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s ease;
+}
+
+/* Tabs & Navigation */
+.pers-tabs-wrapper {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.Polaris-Tabs {
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.Polaris-Tabs__TabContainer {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #c4cdd5 #f4f6f8;
+}
+
+.Polaris-Tabs__TabContainer::-webkit-scrollbar {
+  height: 6px;
+}
+
+.Polaris-Tabs__TabContainer::-webkit-scrollbar-track {
+  background: #f4f6f8;
+}
+
+.Polaris-Tabs__TabContainer::-webkit-scrollbar-thumb {
+  background: #c4cdd5;
+  border-radius: 3px;
+}
+
+.Polaris-Tabs__Tab {
+  font-size: 14px;
+  padding: 12px 16px;
+  white-space: nowrap;
+}
+
+.Polaris-Tabs__Tab:hover {
+  background-color: #f9fafb;
+}
+
+.Polaris-Tabs__Tab--selected {
+  color: #5c6ac4;
+  border-bottom-color: #5c6ac4;
+}
+
+/* Data Tables */
+.pers-table-container {
+  overflow-x: auto;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+}
+
+.Polaris-DataTable {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.Polaris-DataTable__Cell {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.Polaris-DataTable__Cell--header {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #202223;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.Polaris-DataTable__Cell:first-child {
+  padding-left: 20px;
+}
+
+.Polaris-DataTable__Cell:last-child {
+  padding-right: 20px;
+}
+
+.Polaris-DataTable tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Recommendation Cards */
+.pers-rec-card {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 16px;
+  transition: all 0.2s ease;
+}
+
+.pers-rec-card:hover {
+  border-color: #5c6ac4;
+  box-shadow: 0 2px 8px rgba(92, 106, 196, 0.1);
+  transform: translateY(-1px);
+}
+
+.pers-rec-thumbnail {
+  width: 80px;
+  height: 80px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #f4f6f8;
+}
+
+.pers-rec-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pers-rec-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0;
+}
+
+.pers-rec-meta {
+  font-size: 14px;
+  color: #6d7175;
+  display: flex;
+  gap: 12px;
+}
+
+.pers-rec-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #bbe5b3;
+  color: #108043;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Profile Cards */
+.pers-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.pers-profile-card {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 20px;
+  background: #fff;
+  transition: box-shadow 0.2s ease;
+}
+
+.pers-profile-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.pers-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pers-profile-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.pers-profile-info {
+  flex: 1;
+}
+
+.pers-profile-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0 0 4px 0;
+}
+
+.pers-profile-email {
+  font-size: 14px;
+  color: #6d7175;
+  margin: 0;
+}
+
+.pers-profile-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e1e3e5;
+}
+
+.pers-profile-stat {
+  text-align: center;
+}
+
+.pers-profile-stat-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0 0 4px 0;
+}
+
+.pers-profile-stat-label {
+  font-size: 12px;
+  color: #6d7175;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+/* Campaign Cards */
+.pers-campaign-card {
+  border-left: 4px solid #5c6ac4;
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.pers-campaign-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.pers-campaign-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0 0 6px 0;
+}
+
+.pers-campaign-type {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #b4e1fa;
+  color: #084e8a;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.pers-campaign-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.pers-campaign-metric {
+  text-align: center;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+
+.pers-campaign-metric-value {
+  font-size: 22px;
+  font-weight: 600;
+  color: #5c6ac4;
+  margin: 0 0 4px 0;
+}
+
+.pers-campaign-metric-label {
+  font-size: 12px;
+  color: #6d7175;
+  margin: 0;
+}
+
+/* Forms & Inputs */
+.pers-form-section {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.pers-form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.Polaris-TextField__Input {
+  border-radius: 4px;
+  border: 1px solid #c4cdd5;
+  padding: 10px 12px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.Polaris-TextField__Input:focus {
+  border-color: #5c6ac4;
+  box-shadow: 0 0 0 1px #5c6ac4;
+  outline: none;
+}
+
+.Polaris-Select__Input {
+  border-radius: 4px;
+  border: 1px solid #c4cdd5;
+  padding: 10px 36px 10px 12px;
+  font-size: 14px;
+}
+
+/* Buttons */
+.Polaris-Button {
+  border-radius: 4px;
+  font-weight: 500;
+  padding: 10px 16px;
+  transition: all 0.2s ease;
+}
+
+.Polaris-Button--primary {
+  background-color: #5c6ac4;
+  color: #fff;
+}
+
+.Polaris-Button--primary:hover {
+  background-color: #4959bd;
+}
+
+.Polaris-Button--primary:active {
+  background-color: #3f4eae;
+}
+
+.Polaris-Button--destructive {
+  background-color: #de3618;
+  color: #fff;
+}
+
+.Polaris-Button--destructive:hover {
+  background-color: #c5260f;
+}
+
+/* Badges */
+.Polaris-Badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Polaris-Badge--success {
+  background-color: #bbe5b3;
+  color: #108043;
+}
+
+.Polaris-Badge--info {
+  background-color: #b4e1fa;
+  color: #084e8a;
+}
+
+.Polaris-Badge--warning {
+  background-color: #ffea8a;
+  color: #6f4400;
+}
+
+.Polaris-Badge--critical {
+  background-color: #fead9a;
+  color: #bf0711;
+}
+
+/* Progress Bars */
+.pers-progress-container {
+  margin: 20px 0;
+}
+
+.pers-progress-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #202223;
+}
+
+.Polaris-ProgressBar {
+  height: 8px;
+  border-radius: 4px;
+  background-color: #e1e3e5;
+  overflow: hidden;
+}
+
+.Polaris-ProgressBar__Indicator {
+  height: 100%;
+  background: linear-gradient(90deg, #5c6ac4 0%, #667eea 100%);
+  transition: width 0.3s ease;
+}
+
+/* Charts & Visualizations */
+.pers-chart-container {
+  background: #fff;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.pers-chart-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0 0 16px 0;
+}
+
+.pers-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.pers-metric-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.pers-metric-value {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.pers-metric-label {
+  font-size: 14px;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.pers-metric-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+/* Loading States */
+.pers-skeleton {
+  background: linear-gradient(90deg, #f4f6f8 25%, #e1e3e5 50%, #f4f6f8 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.pers-spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+}
+
+/* Empty States */
+.pers-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.pers-empty-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  opacity: 0.3;
+}
+
+.pers-empty-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #202223;
+  margin: 0 0 8px 0;
+}
+
+.pers-empty-description {
+  font-size: 14px;
+  color: #6d7175;
+  margin: 0 0 24px 0;
+}
+
+/* Modals */
+.Polaris-Modal-Dialog {
+  border-radius: 8px;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.Polaris-Modal-Header {
+  padding: 20px;
+  border-bottom: 1px solid #e1e3e5;
+}
+
+.Polaris-Modal-Header__Title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #202223;
+}
+
+.Polaris-Modal-Section {
+  padding: 20px;
+}
+
+.Polaris-Modal-Footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e1e3e5;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Banners */
+.Polaris-Banner {
+  border-radius: 8px;
+  padding: 16px;
+  border-left: 4px solid;
+}
+
+.Polaris-Banner--success {
+  background-color: #f1f8f5;
+  border-left-color: #108043;
+}
+
+.Polaris-Banner--info {
+  background-color: #f4f6f8;
+  border-left-color: #5c6ac4;
+}
+
+.Polaris-Banner--warning {
+  background-color: #fffbea;
+  border-left-color: #eec200;
+}
+
+.Polaris-Banner--critical {
+  background-color: #fef3f2;
+  border-left-color: #de3618;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .pers-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pers-form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .pers-profile-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pers-campaign-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .pers-metric-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-value {
+    font-size: 24px;
+  }
+  
+  .pers-rec-card {
+    flex-direction: column;
+  }
+  
+  .pers-campaign-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .pers-tabs-wrapper,
+  .pers-profile-card,
+  .pers-campaign-card,
+  .pers-chart-container {
+    background: #1a1a1a;
+    border-color: #3a3a3a;
+  }
+  
+  .stat-value,
+  .pers-rec-title,
+  .pers-profile-name,
+  .pers-campaign-title,
+  .pers-chart-title {
+    color: #e1e3e5;
+  }
+  
+  .stat-title,
+  .pers-rec-meta,
+  .pers-profile-email,
+  .pers-campaign-metric-label {
+    color: #b5b5b5;
+  }
+  
+  .Polaris-DataTable__Cell--header {
+    background-color: #2a2a2a;
+  }
+  
+  .Polaris-TextField__Input,
+  .Polaris-Select__Input {
+    background-color: #1a1a1a;
+    border-color: #3a3a3a;
+    color: #e1e3e5;
+  }
+}
+
+/* Accessibility */
+.pers-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+*:focus {
+  outline: 2px solid #5c6ac4;
+  outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+  .Polaris-Page-Header,
+  .Polaris-Button,
+  .Polaris-Tabs {
+    display: none;
+  }
+  
+  .pers-stats-grid,
+  .pers-profile-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .pers-campaign-card,
+  .pers-chart-container {
+    box-shadow: none;
+    border: 1px solid #e1e3e5;
+    page-break-inside: avoid;
+  }
+}
