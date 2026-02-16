@@ -31,7 +31,6 @@ const stoppable = require('stoppable');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const fs = require('fs');
-const productSeoRouter = require('./tools/product-seo/router');
 const contentCore = require('./core/content');
 const verifyShopifySession = require('./middleware/verifyShopifySession');
 const shopTokens = require('./core/shopTokens');

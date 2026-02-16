@@ -20,11 +20,22 @@ async function init() {
 async function create(data) {
   await init();
   const { product_id, title, meta_description, slug, keywords } = data;
-  const result = await db.query(
-    `INSERT INTO ${TABLE} (product_id, title, meta_description, slug, keywords) VALUES (?, ?, ?, ?, ?)`,
-    [product_id, title, meta_description, slug, keywords]
-  );
-  return { id: result.lastID, ...data };
+  
+  if (db.type === 'postgres') {
+    // PostgreSQL: use RETURNING clause
+    const result = await db.query(
+      `INSERT INTO ${TABLE} (product_id, title, meta_description, slug, keywords) VALUES (?, ?, ?, ?, ?) RETURNING id`,
+      [product_id, title, meta_description, slug, keywords]
+    );
+    return { id: result.rows[0].id, ...data };
+  } else {
+    // SQLite: use lastID
+    const result = await db.query(
+      `INSERT INTO ${TABLE} (product_id, title, meta_description, slug, keywords) VALUES (?, ?, ?, ?, ?)`,
+      [product_id, title, meta_description, slug, keywords]
+    );
+    return { id: result.lastID, ...data };
+  }
 }
 
 async function getAll() {
