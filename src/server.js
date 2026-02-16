@@ -114,6 +114,10 @@ app.use(session({
 const billingRouter = require('./routes/billing');
 app.use('/api/billing', billingRouter);
 
+// --- Plan Access Control ---
+const planAccessControl = require('./core/planAccessControl');
+app.get('/api/access/check', planAccessControl.checkAccess);
+
 // --- Shopify session token verification for all /api routes ---
 app.use('/api', verifyShopifySession);
 
@@ -131,52 +135,64 @@ app.use('/api/paw-telemetry', require('./routes/paw-telemetry'));
 // --- Register advanced AI suite (copilot, realtime, attribution, compliance, HITL, webhooks) ---
 app.use('/api/advanced-ai', require('./routes/advanced-ai'));
 // --- Register all tool routers (auto-generated, advanced features) ---
+// Apply plan-based access control middleware to premium tools
+const { requireTool } = planAccessControl;
+
 const toolRouters = [
+  // Free tier tools - no middleware
   { path: '/api/product-seo', router: require('./tools/product-seo/router') },
-  { path: '/api/ai-alt-text-engine', router: require('./tools/ai-alt-text-engine/router') },
-  { path: '/api/ai-content-brief-generator', router: require('./tools/ai-content-brief-generator/router') },
-  { path: '/api/advanced-analytics-attribution', router: require('./tools/advanced-analytics-attribution/router') },
-  { path: '/api/creative-automation-engine', router: require('./tools/creative-automation-engine/router') },
-  { path: '/api/weekly-blog-content-engine', router: require('./tools/weekly-blog-content-engine/router') },
-  { path: '/api/workflow-orchestrator', router: require('./tools/workflow-orchestrator/router') },
-  { path: '/api/technical-seo-auditor', router: require('./tools/technical-seo-auditor/router') },
-  { path: '/api/schema-rich-results-engine', router: require('./tools/schema-rich-results-engine/router') },
-  { path: '/api/social-scheduler-content-engine', router: require('./tools/social-scheduler-content-engine/router') },
-  { path: '/api/review-ugc-engine', router: require('./tools/review-ugc-engine/router') },
-  { path: '/api/rank-visibility-tracker', router: require('./tools/rank-visibility-tracker/router') },
-  { path: '/api/on-page-seo-engine', router: require('./tools/on-page-seo-engine/router') },
-  { path: '/api/ltv-churn-predictor', router: require('./tools/ltv-churn-predictor/router') },
-  { path: '/api/klaviyo-flow-automation', router: require('./tools/klaviyo-flow-automation/router') },
-  { path: '/api/internal-link-optimizer', router: require('./tools/internal-link-optimizer/router') },
-  { path: '/api/multi-channel-optimizer', router: require('./tools/multi-channel-optimizer/router') },
-  { path: '/api/conditional-logic-automation', router: require('./tools/conditional-logic-automation/router') },
-  { path: '/api/abandoned-checkout-winback', router: require('./tools/abandoned-checkout-winback/router') },
-  { path: '/api/inbox-assistant', router: require('./tools/inbox-assistant/router') },
-  { path: '/api/inbox-reply-assistant', router: require('./tools/inbox-reply-assistant/router') },
-  { path: '/api/inventory-supplier-sync', router: require('./tools/inventory-supplier-sync/router') },
-  { path: '/api/image-alt-media-seo', router: require('./tools/image-alt-media-seo/router') },
-  { path: '/api/email-automation-builder', router: require('./tools/email-automation-builder/router') },
-  { path: '/api/daily-cfo-pack', router: require('./tools/daily-cfo-pack/router') },
-  { path: '/api/dynamic-pricing-engine', router: require('./tools/dynamic-pricing-engine/router') },
-  { path: '/api/customer-support-ai', router: require('./tools/customer-support-ai/router') },
-  { path: '/api/finance-autopilot', router: require('./tools/finance-autopilot/router') },
-  { path: '/api/auto-insights', router: require('./tools/auto-insights/router') },
-  { path: '/api/ai-support-assistant', router: require('./tools/ai-support-assistant/router') },
-  { path: '/api/ai-launch-planner', router: require('./tools/ai-launch-planner/router') },
-  { path: '/api/aura-api-sdk', router: require('./tools/aura-api-sdk/router') },
-  { path: '/api/aura-operations-ai', router: require('./tools/aura-operations-ai/router') },
-  { path: '/api/brand-intelligence-layer', router: require('./tools/brand-intelligence-layer/router') },
-  { path: '/api/blog-draft-engine', router: require('./tools/blog-draft-engine/router') },
   { path: '/api/blog-seo', router: require('./tools/blog-seo/router') },
-  { path: '/api/content-health-auditor', router: require('./tools/content-health-auditor/router') },
-  { path: '/api/main-suite', router: require('./tools/main-suite/router') },
-  { path: '/api/visual-workflow-builder', router: require('./tools/visual-workflow-builder/router') },
-  { path: '/api/webhook-api-triggers', router: require('./tools/webhook-api-triggers/router') },
+  
+  // Professional tier tools - require professional plan
+  { path: '/api/ai-alt-text-engine', router: require('./tools/ai-alt-text-engine/router'), middleware: requireTool('ai-alt-text-engine') },
+  { path: '/api/ai-content-brief-generator', router: require('./tools/ai-content-brief-generator/router'), middleware: requireTool('content-brief-generator') },
+  { path: '/api/weekly-blog-content-engine', router: require('./tools/weekly-blog-content-engine/router'), middleware: requireTool('weekly-blog-content') },
+  { path: '/api/blog-draft-engine', router: require('./tools/blog-draft-engine/router'), middleware: requireTool('blog-draft-engine') },
+  { path: '/api/abandoned-checkout-winback', router: require('./tools/abandoned-checkout-winback/router'), middleware: requireTool('abandoned-checkout') },
+  { path: '/api/review-ugc-engine', router: require('./tools/review-ugc-engine/router'), middleware: requireTool('reviews-ugc') },
+  { path: '/api/email-automation-builder', router: require('./tools/email-automation-builder/router'), middleware: requireTool('email-automation-builder') },
+  { path: '/api/klaviyo-flow-automation', router: require('./tools/klaviyo-flow-automation/router'), middleware: requireTool('klaviyo-flow-automation') },
+  { path: '/api/on-page-seo-engine', router: require('./tools/on-page-seo-engine/router'), middleware: requireTool('on-page-seo') },
+  { path: '/api/internal-link-optimizer', router: require('./tools/internal-link-optimizer/router'), middleware: requireTool('internal-link-optimizer') },
+  { path: '/api/technical-seo-auditor', router: require('./tools/technical-seo-auditor/router'), middleware: requireTool('technical-seo-auditor') },
+  { path: '/api/schema-rich-results-engine', router: require('./tools/schema-rich-results-engine/router'), middleware: requireTool('schema-rich-results') },
+  { path: '/api/rank-visibility-tracker', router: require('./tools/rank-visibility-tracker/router'), middleware: requireTool('rank-visibility-tracker') },
+  { path: '/api/content-health-auditor', router: require('./tools/content-health-auditor/router'), middleware: requireTool('content-health-auditor') },
+  { path: '/api/social-scheduler-content-engine', router: require('./tools/social-scheduler-content-engine/router'), middleware: requireTool('social-scheduler') },
+  { path: '/api/inbox-assistant', router: require('./tools/inbox-assistant/router'), middleware: requireTool('inbox-assistant') },
+  { path: '/api/inbox-reply-assistant', router: require('./tools/inbox-reply-assistant/router'), middleware: requireTool('inbox-reply-assistant') },
+  
+  // Enterprise tier tools - require enterprise plan
+  { path: '/api/ai-support-assistant', router: require('./tools/ai-support-assistant/router'), middleware: requireTool('ai-support-assistant') },
+  { path: '/api/advanced-analytics-attribution', router: require('./tools/advanced-analytics-attribution/router'), middleware: requireTool('advanced-analytics-attribution') },
+  { path: '/api/creative-automation-engine', router: require('./tools/creative-automation-engine/router'), middleware: requireTool('creative-automation-engine') },
+  { path: '/api/workflow-orchestrator', router: require('./tools/workflow-orchestrator/router'), middleware: requireTool('workflow-orchestrator') },
+  { path: '/api/multi-channel-optimizer', router: require('./tools/multi-channel-optimizer/router'), middleware: requireTool('multi-channel-optimizer') },
+  { path: '/api/conditional-logic-automation', router: require('./tools/conditional-logic-automation/router'), middleware: requireTool('conditional-logic-automation') },
+  { path: '/api/ltv-churn-predictor', router: require('./tools/ltv-churn-predictor/router'), middleware: requireTool('ltv-churn-predictor') },
+  { path: '/api/inventory-supplier-sync', router: require('./tools/inventory-supplier-sync/router'), middleware: requireTool('inventory-supplier-sync') },
+  { path: '/api/image-alt-media-seo', router: require('./tools/image-alt-media-seo/router'), middleware: requireTool('image-alt-media-seo') },
+  { path: '/api/daily-cfo-pack', router: require('./tools/daily-cfo-pack/router'), middleware: requireTool('daily-cfo-pack') },
+  { path: '/api/dynamic-pricing-engine', router: require('./tools/dynamic-pricing-engine/router'), middleware: requireTool('dynamic-pricing-engine') },
+  { path: '/api/customer-support-ai', router: require('./tools/customer-support-ai/router'), middleware: requireTool('customer-support-ai') },
+  { path: '/api/finance-autopilot', router: require('./tools/finance-autopilot/router'), middleware: requireTool('finance-autopilot') },
+  { path: '/api/auto-insights', router: require('./tools/auto-insights/router'), middleware: requireTool('auto-insights') },
+  { path: '/api/ai-launch-planner', router: require('./tools/ai-launch-planner/router'), middleware: requireTool('ai-launch-planner') },
+  { path: '/api/aura-api-sdk', router: require('./tools/aura-api-sdk/router'), middleware: requireTool('white-label-api') },
+  { path: '/api/aura-operations-ai', router: require('./tools/aura-operations-ai/router'), middleware: requireTool('aura-operations-ai') },
+  { path: '/api/brand-intelligence-layer', router: require('./tools/brand-intelligence-layer/router'), middleware: requireTool('brand-intelligence-layer') },
+  { path: '/api/main-suite', router: require('./tools/main-suite/router'), middleware: requireTool('main-suite') },
+  { path: '/api/visual-workflow-builder', router: require('./tools/visual-workflow-builder/router'), middleware: requireTool('visual-workflow-builder') },
+  { path: '/api/webhook-api-triggers', router: require('./tools/webhook-api-triggers/router'), middleware: requireTool('webhook-api-triggers') },
 ];
-toolRouters.forEach(({ path, router }) => {
+toolRouters.forEach(({ path, router, middleware }) => {
   try {
     console.log(`[Router Registration] ${path}:`, typeof router, Array.isArray(router), router && router.stack ? 'Express Router' : typeof router);
-    app.use(path, router);
+    if (middleware) {
+      app.use(path, middleware, router);
+    } else {
+      app.use(path, router);
+    }
   } catch (err) {
     console.error(`Error registering router for path ${path}:`, {
       type: typeof router,
