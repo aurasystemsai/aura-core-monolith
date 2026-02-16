@@ -47,7 +47,9 @@ function refreshCluster(id) {
   const updated = {
     ...existing,
     updatedAt: new Date().toISOString(),
-    opportunities: existing.opportunities.map((o) => ({ ...o, difficulty: Math.max(25, Math.min(100, o.difficulty + 1))) }),
+    opportunities: existing.opportunities.map((o) => {
+      return { ...o, difficulty: Math.max(25, Math.min(100, o.difficulty + 1)) };
+    }),
   };
   clusterStore.set(id, updated);
   return updated;
