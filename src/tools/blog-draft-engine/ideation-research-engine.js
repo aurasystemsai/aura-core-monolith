@@ -62,7 +62,7 @@ function createIdea({
   idea.score = computeOverallIdeaScore(idea);
   
   ideas.set(ideaId, idea);
-  
+      trafficPotential: null,
   return idea;
 }
 
