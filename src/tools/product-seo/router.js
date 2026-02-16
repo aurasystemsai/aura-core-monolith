@@ -188,20 +188,11 @@ router.get('/i18n', (req, res) => {
 });
 
 // Shopify products endpoint (guarded to avoid 500s)
-router.get('/shopify-products', async (req, res) => {
-  // This endpoint normally lives in server.js; add a safe guard here so /:id does not catch it.
-  try {
-    // If a token is not provided, return a helpful 400 instead of falling through to /:id
-    const shop = req.query.shop || req.session?.shop || null;
-    const token = req.query.token || null;
-    if (!shop || !token) {
-      return res.status(400).json({ ok: false, error: 'Missing shop or token. Please connect Shopify.' });
-    }
-    // If implemented elsewhere, respond with 501 to indicate not implemented here
-    return res.status(501).json({ ok: false, error: 'Use server-level shopify-products endpoint' });
-  } catch (err) {
-    return res.status(500).json({ ok: false, error: err.message });
-  }
+router.get('/shopify-products', (req, res, next) => {
+  // Let the server-level /api/product-seo/shopify-products route handle this request.
+  // Calling next('router') skips the rest of this router (avoids /:id capture) and
+  // allows the app-level handler to resolve with session-backed Shopify credentials.
+  return next('router');
 });
 
 

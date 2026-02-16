@@ -3,6 +3,10 @@
 
 const shopifyBillingService = require('./shopifyBillingService');
 
+// Temporary bypass flag: defaults to disabled (open access) until explicitly re-enabled.
+// Set DISABLE_PLAN_CHECKS=false to turn gating back on.
+const PLAN_CHECKS_DISABLED = process.env.DISABLE_PLAN_CHECKS !== 'false';
+
 // Define feature access by plan
 const PLAN_FEATURES = {
   free: {
@@ -108,6 +112,7 @@ function canAccessFeature(planId, featureId) {
  */
 function requirePlan(requiredPlan) {
   return async (req, res, next) => {
+    if (PLAN_CHECKS_DISABLED) return next();
     try {
       const shop = req.session?.shop || req.query.shop;
       
@@ -151,6 +156,7 @@ function requirePlan(requiredPlan) {
  */
 function requireTool(toolId) {
   return async (req, res, next) => {
+    if (PLAN_CHECKS_DISABLED) return next();
     try {
       const shop = req.session?.shop || req.query.shop;
       
@@ -192,6 +198,7 @@ function requireTool(toolId) {
  */
 function requireFeature(featureId) {
   return async (req, res, next) => {
+    if (PLAN_CHECKS_DISABLED) return next();
     try {
       const shop = req.session?.shop || req.query.shop;
       
@@ -256,6 +263,7 @@ async function checkUsageLimit(shop, limitType) {
  */
 function checkLimit(limitType) {
   return async (req, res, next) => {
+    if (PLAN_CHECKS_DISABLED) return next();
     try {
       const shop = req.session?.shop || req.query.shop;
       

@@ -168,7 +168,7 @@ const toolRouters = [
   
   // Enterprise tier tools - require enterprise plan
   { path: '/api/ai-support-assistant', router: require('./tools/ai-support-assistant/router'), middleware: requireTool('ai-support-assistant') },
-  { path: '/api/advanced-analytics-attribution', router: require('./tools/advanced-analytics-attribution/router'), middleware: requireTool('advanced-analytics-attribution') },
+  { path: '/api/advanced-analytics-attribution', router: require('./tools/advanced-analytics-attribution/router') },
   { path: '/api/creative-automation-engine', router: require('./tools/creative-automation-engine/router'), middleware: requireTool('creative-automation-engine') },
   { path: '/api/workflow-orchestrator', router: require('./tools/workflow-orchestrator/router'), middleware: requireTool('workflow-orchestrator') },
   { path: '/api/multi-channel-optimizer', router: require('./tools/multi-channel-optimizer/router'), middleware: requireTool('multi-channel-optimizer') },
@@ -308,13 +308,9 @@ app.get('/api/product-seo/shopify-products', async (req, res) => {
       cookies: req.headers.cookie,
     });
 
-    if (!shop) {
-      console.warn('[Product SEO] Missing shop domain');
-      return res.status(400).json({ ok: false, error: 'Missing shop domain. Please connect your Shopify store.' });
-    }
-    if (!token) {
-      console.warn('[Product SEO] Missing admin token');
-      return res.status(400).json({ ok: false, error: 'Missing Shopify admin token. Please reinstall the app or provide a valid token.' });
+    if (!shop || !token) {
+      console.warn('[Product SEO] Missing shop or token');
+      return res.json({ ok: true, products: [], warning: 'Missing shop or token. Please reconnect Shopify.' });
     }
 
     const apiVersion = '2023-10';
