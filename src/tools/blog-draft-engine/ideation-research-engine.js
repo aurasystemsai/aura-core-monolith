@@ -44,7 +44,7 @@ function createIdea({
     icpScore: null,
     competitiveGap: null,
     keywordDifficulty: null,
-    traffic Potential: null,
+    trafficPotential: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -60,9 +60,7 @@ function createIdea({
   idea.icpScore = icpResult.score;
   idea.competitiveGap = competitiveResult.gap;
   idea.score = computeOverallIdeaScore(idea);
-  
   ideas.set(ideaId, idea);
-      trafficPotential: null,
   return idea;
 }
 
