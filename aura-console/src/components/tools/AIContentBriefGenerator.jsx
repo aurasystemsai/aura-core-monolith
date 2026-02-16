@@ -1,166 +1,137 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import BackButton from "./BackButton";
+import "../../content-brief/AIContentBriefGenerator.css";
 
-const THEMES = {
-  dark: {
-    bg: "#0b1220",
-    card: "#0f172a",
-    border: "#1f2937",
-    text: "#e5e7eb",
-    muted: "#9ca3af",
-    accent: "#7c3aed",
-    success: "#22c55e",
-    warning: "#f59e0b",
-    danger: "#ef4444",
-  },
-  light: {
-    bg: "#f8fafc",
-    card: "#ffffff",
-    border: "#dbeafe",
-    text: "#0f172a",
-    muted: "#475569",
-    accent: "#2563eb",
-    success: "#16a34a",
-    warning: "#ea580c",
-    danger: "#dc2626",
-  },
-  audit: {
-    bg: "#0c1a1c",
-    card: "#0f2529",
-    border: "#17424a",
-    text: "#d8f3ff",
-    muted: "#7fb1be",
-    accent: "#38bdf8",
-    success: "#22c55e",
-    warning: "#fbbf24",
-    danger: "#f87171",
-  },
+const TAB_GROUPS = {
+  manage: ["Briefs", "Personas", "Outline", "Tasks", "Comments", "Approvals"],
+  optimize: ["SEO", "Readability", "Distribution", "Links", "Schema", "A/B Tests"],
+  advanced: ["AI Orchestration", "Ensembles", "Providers", "Guardrails", "Routing", "Red Team"],
+  tools: ["Templates", "Snippets", "Assets", "FAQ", "Checklists", "Exports"],
+  monitoring: ["Health", "Audit", "Performance", "SLA", "Alerts", "Versioning"],
+  settings: ["API Keys", "Brand", "Compliance", "Integrations", "Backups", "Access"],
+  "world-class": ["Collaboration", "Security", "Analytics", "BI", "SDK", "White-label"],
 };
 
-const QUICK_PROMPTS = [
-  "Draft a brief for a product launch blog",
-  "Outline a 7-part email nurture series",
-  "SEO brief for comparison page against competitor",
-  "Long-form guide with FAQ and schema",
-  "Localization brief for UK & AU",
-];
-
 const DEFAULT_OUTLINE = [
-  { heading: "Intro", notes: "Set context and problem", wordCount: 120 },
-  { heading: "Core value prop", notes: "Why this solution", wordCount: 200 },
-  { heading: "Proof points", notes: "Data, quotes, customer stories", wordCount: 240 },
-  { heading: "How it works", notes: "Steps + visuals", wordCount: 260 },
+  { heading: "Problem", notes: "State the core challenge", wordCount: 120 },
+  { heading: "Solution", notes: "Explain how we solve it", wordCount: 200 },
+  { heading: "Proof", notes: "Data, quotes, and visuals", wordCount: 180 },
   { heading: "CTA", notes: "Single primary CTA", wordCount: 80 },
 ];
 
-const DEFAULT_SEO = {
-  primaryKeyword: "ai content brief",
-  secondaryKeywords: ["content brief template", "seo outline", "ai content planning"],
-  questions: ["What is a content brief?", "How to create an SEO outline?"],
-  competitors: ["Competitor A guide", "Competitor B template"],
-  schema: "Article",
-};
-
-const DISTRIBUTION = [
-  { channel: "Blog", status: "ready" },
-  { channel: "Email", status: "draft" },
-  { channel: "LinkedIn", status: "queued" },
-  { channel: "Ads", status: "pending" },
+const DEFAULT_CHANNELS = [
+  { channel: "Blog", status: "ready", owner: "Content" },
+  { channel: "Email", status: "in QA", owner: "Lifecycle" },
+  { channel: "LinkedIn", status: "queued", owner: "Social" },
+  { channel: "Ads", status: "pending", owner: "Growth" },
+  { channel: "Partners", status: "draft", owner: "Alliances" },
+  { channel: "Webinar", status: "ready", owner: "Events" },
 ];
 
-const FAQS = [
-  "What keywords should we target?",
-  "Who is the primary audience?",
-  "What CTA do we want?",
-  "Any compliance constraints?",
+const PROVIDERS = [
+  { id: "gpt-4", name: "OpenAI GPT-4", latency: "1.2s", strength: "reasoning" },
+  { id: "claude-3", name: "Claude 3", latency: "1.0s", strength: "context" },
+  { id: "gemini-pro", name: "Gemini Pro", latency: "0.9s", strength: "multimodal" },
 ];
 
 export default function AIContentBriefGenerator() {
-  const [theme, setTheme] = useState("dark");
-  const [showOnboarding, setShowOnboarding] = useState(true);
   const [topic, setTopic] = useState("AI content brief best practices");
-  const [outline, setOutline] = useState(DEFAULT_OUTLINE);
-  const [outlineText, setOutlineText] = useState(JSON.stringify(DEFAULT_OUTLINE, null, 2));
-  const [seo, setSeo] = useState(DEFAULT_SEO);
-  const [analytics, setAnalytics] = useState([]);
-  const [importedName, setImportedName] = useState(null);
-  const [exportUrl, setExportUrl] = useState(null);
-  const [feedback, setFeedback] = useState("");
-  const [error, setError] = useState("");
   const [persona, setPersona] = useState("Demand Gen Manager");
   const [tone, setTone] = useState("Confident & concise");
-  const [readability, setReadability] = useState("Grade 8");
+  const [primaryKeyword, setPrimaryKeyword] = useState("ai content brief");
+  const [secondaryKeywords, setSecondaryKeywords] = useState(["content brief template", "seo outline", "ai content planning"]);
+  const [questions, setQuestions] = useState(["What is the buyer problem?", "Which proof points win?", "Which CTA converts?"]);
+  const [outline, setOutline] = useState(DEFAULT_OUTLINE);
   const [wordCount, setWordCount] = useState(1200);
   const [cta, setCta] = useState("Book a demo");
   const [status, setStatus] = useState("In Review");
-  const [approvals, setApprovals] = useState({ owner: "Content Lead", reviewer: "Legal", due: "2026-02-12" });
-  const [versions, setVersions] = useState([]);
-  const [selectedVersion, setSelectedVersion] = useState(null);
-  const [shareUrl, setShareUrl] = useState("");
-  const [notes, setNotes] = useState("");
-  const [seoScore, setSeoScore] = useState(78);
-  const [plagiarism, setPlagiarism] = useState("Clean");
-  const [links, setLinks] = useState([
-    { type: "Internal", url: "/blog/content-ops", anchor: "content ops" },
-    { type: "External", url: "https://example.com/study", anchor: "recent study" },
-  ]);
+  const [approvals, setApprovals] = useState({ owner: "Content Lead", reviewer: "Legal", due: "2026-02-20" });
+  const [channels, setChannels] = useState(DEFAULT_CHANNELS);
   const [tasks, setTasks] = useState([
     { id: 1, title: "Add customer quote", status: "Open" },
     { id: 2, title: "Insert product screenshot", status: "In Progress" },
-    { id: 3, title: "Tighten CTA", status: "Blocked" },
+    { id: 3, title: "Legal review for claims", status: "Pending" },
   ]);
-  const [images, setImages] = useState([
-    { id: "hero", alt: "Dashboard hero", type: "Hero" },
-    { id: "chart", alt: "Performance chart", type: "Inline" },
+  const [activities, setActivities] = useState([
+    { id: "act-1", text: "Brief created with governance defaults", ts: "10:02" },
+    { id: "act-2", text: "SEO score recalculated", ts: "10:06" },
+    { id: "act-3", text: "Distribution plan updated", ts: "10:12" },
   ]);
-  const [faqs, setFaqs] = useState(FAQS);
-  const [distribution, setDistribution] = useState(DISTRIBUTION);
-  const [qualityChecks, setQualityChecks] = useState({ spelling: true, links: true, tone: true, factCheck: false });
-  const [riskAlerts, setRiskAlerts] = useState([
-    { id: "claims", level: "warning", message: "Claim needs citation" },
-    { id: "accessibility", level: "info", message: "Add alt text for charts" },
-  ]);
-  const [snippet, setSnippet] = useState("AI that drafts briefs faster with governance.");
-  const [primaryKeyword, setPrimaryKeyword] = useState(seo.primaryKeyword);
-  const [secondaryKeywords, setSecondaryKeywords] = useState(seo.secondaryKeywords);
-  const [questions, setQuestions] = useState(seo.questions);
-
+  const [note, setNote] = useState("");
+  const [outlineDraft, setOutlineDraft] = useState(JSON.stringify(DEFAULT_OUTLINE, null, 2));
   const fileInputRef = useRef();
+  
+  // Modal state
+  const [showBriefModal, setShowBriefModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showProviderModal, setShowProviderModal] = useState(false);
+  
+  // Filter and search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterChannel, setFilterChannel] = useState("all");
+  const [sortField, setSortField] = useState("channel");
+  const [sortDirection, setSortDirection] = useState("asc");
+  
+  // New brief form state
+  const [newBriefTopic, setNewBriefTopic] = useState("");
+  const [newBriefAudience, setNewBriefAudience] = useState("");
+  const [newBriefGoal, setNewBriefGoal] = useState("");
+  
+  // New task form state
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskAssignee, setNewTaskAssignee] = useState("");
+  const [newTaskPriority, setNewTaskPriority] = useState("medium");
+  
+  // Advanced features state
+  const [complianceResults, setComplianceResults] = useState([
+    { check: "PII Detection", status: "passed", details: "No PII found" },
+    { check: "Claims Verification", status: "warning", details: "2 citations needed" },
+    { check: "Tone Analysis", status: "passed", details: "On-brand tone" },
+    { check: "Accessibility", status: "passed", details: "WCAG 2.1 AA compliant" },
+  ]);
+  
+  const [performanceData, setPerformanceData] = useState([
+    { metric: "Page Views", current: 12400, previous: 9800, change: 26.5 },
+    { metric: "Engagement Rate", current: 42, previous: 38, change: 10.5 },
+    { metric: "Conversion Rate", current: 8.4, previous: 7.2, change: 16.7 },
+    { metric: "Avg. Time on Page", current: 245, previous: 220, change: 11.4 },
+  ]);
+  
+  const [seoMetrics, setSeoMetrics] = useState({
+    keywordDensity: 1.8,
+    readabilityScore: 68,
+    internalLinks: 6,
+    externalLinks: 4,
+    imageAltTags: 8,
+    metaDescription: "Optimized (156 chars)",
+    h1Count: 1,
+    h2Count: 5,
+  });
+  
+  const [distributionSchedule, setDistributionSchedule] = useState([
+    { date: "2026-02-18", channel: "Blog", time: "10:00 AM", status: "scheduled" },
+    { date: "2026-02-19", channel: "Email", time: "08:00 AM", status: "scheduled" },
+    { date: "2026-02-20", channel: "LinkedIn", time: "12:00 PM", status: "draft" },
+    { date: "2026-02-21", channel: "Twitter", time: "03:00 PM", status: "draft" },
+  ]);
 
-  const palette = useMemo(() => THEMES[theme] || THEMES.dark, [theme]);
+  const seoScore = useMemo(() => 82 + Math.round(Math.random() * 6), [topic, primaryKeyword]);
+  const readinessScore = useMemo(() => {
+    const ready = channels.filter((c) => c.status === "ready").length;
+    return Math.round((ready / Math.max(channels.length, 1)) * 100);
+  }, [channels]);
 
-  useEffect(() => {
-    try {
-      const url = window.location.href.split("#")[0];
-      setShareUrl(`${url}?tool=ai-content-brief-generator`);
-    } catch (_) {}
-  }, []);
-
-  const parsedOutline = useMemo(() => {
-    try {
-      return JSON.parse(outlineText);
-    } catch (_) {
-      return null;
-    }
-  }, [outlineText]);
-
-  useEffect(() => {
-    if (parsedOutline) setOutline(parsedOutline);
-  }, [parsedOutline]);
-
-  const handleImport = (e) => {
-    const file = e.target.files?.[0];
+  const handleImport = (evt) => {
+    const file = evt.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = (e) => {
       try {
-        const importedOutline = JSON.parse(evt.target.result);
-        if (!Array.isArray(importedOutline)) throw new Error("Outline must be an array");
-        setOutline(importedOutline);
-        setOutlineText(JSON.stringify(importedOutline, null, 2));
-        setImportedName(file.name);
+        const parsed = JSON.parse(e.target.result);
+        setOutline(parsed);
+        setOutlineDraft(JSON.stringify(parsed, null, 2));
       } catch (_) {
-        setError("Invalid outline file");
+        setNote("Invalid outline JSON");
       }
     };
     reader.readAsText(file);
@@ -169,367 +140,803 @@ export default function AIContentBriefGenerator() {
   const handleExport = () => {
     const blob = new Blob([JSON.stringify(outline, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    setExportUrl(url);
-    setTimeout(() => URL.revokeObjectURL(url), 12000);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "brief-outline.json";
+    anchor.click();
+    URL.revokeObjectURL(url);
   };
 
-  const handleFeedback = async () => {
-    if (!feedback.trim()) return;
-    setError("");
-    try {
-      await fetch("/api/ai-content-brief-generator/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ feedback }),
-      });
-      setFeedback("");
-    } catch (_) {
-      setError("Failed to send feedback");
-    }
-  };
-
-  const regenerateSeo = () => {
-    const nextSeo = {
-      primaryKeyword,
-      secondaryKeywords,
-      questions,
-      competitors: DEFAULT_SEO.competitors,
-      schema: "Article",
-    };
-    setSeo(nextSeo);
-    setSeoScore(Math.min(100, Math.round(Math.random() * 10) + 80));
+  const updateChannelStatus = (channelName, next) => {
+    setChannels((prev) => prev.map((c) => (c.channel === channelName ? { ...c, status: next } : c)));
   };
 
   const saveVersion = () => {
-    const version = {
-      id: Date.now(),
-      name: `v${versions.length + 1}`,
-      ts: Date.now(),
-      outline,
-      seo,
-      persona,
-      tone,
-      wordCount,
-      cta,
-    };
-    setVersions((v) => [version, ...v].slice(0, 12));
-    setSelectedVersion(version.id);
+    setActivities((prev) => [{ id: `act-${Date.now()}`, text: "Version saved", ts: "now" }, ...prev].slice(0, 8));
+    setStatus("Ready for approval");
   };
 
-  const applyVersion = (id) => {
-    const v = versions.find((x) => x.id === id);
-    if (!v) return;
-    setOutline(v.outline);
-    setOutlineText(JSON.stringify(v.outline, null, 2));
-    setSeo(v.seo);
-    setPersona(v.persona);
-    setTone(v.tone);
-    setWordCount(v.wordCount);
-    setCta(v.cta);
-    setSelectedVersion(id);
+  const addTask = () => {
+    setTasks((prev) => [{ id: Date.now(), title: "New compliance review", status: "Open" }, ...prev]);
   };
 
-  const toggleQuality = (k) => setQualityChecks((q) => ({ ...q, [k]: !q[k] }));
+  const updateOutlineDraft = (value) => {
+    setOutlineDraft(value);
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) setOutline(parsed);
+    } catch (_) {
+      // ignore to allow typing
+    }
+  };
 
-  const paletteCard = {
-    background: palette.card,
-    border: `1px solid ${palette.border}`,
-    borderRadius: 12,
-    padding: 12,
+  const outlineGrade = useMemo(() => {
+    const completeness = Math.min(100, outline.length * 15 + 30);
+    const depth = Math.min(100, Math.round(outline.reduce((acc, s) => acc + (s.wordCount || 0), 0) / 15));
+    const score = Math.round(completeness * 0.5 + depth * 0.5);
+    return { score, grade: score >= 90 ? "A" : score >= 80 ? "B" : "C" };
+  }, [outline]);
+  
+  // Handler functions
+  const handleCreateBrief = () => {
+    if (!newBriefTopic.trim()) return;
+    setTopic(newBriefTopic);
+    setPersona(newBriefAudience);
+    setActivities((prev) => [
+      { id: `act-${Date.now()}`, text: `Created brief: "${newBriefTopic}"`, ts: "now" },
+      ...prev
+    ].slice(0, 8));
+    setShowBriefModal(false);
+    setNewBriefTopic("");
+    setNewBriefAudience("");
+    setNewBriefGoal("");
+  };
+  
+  const handleCreateTask = () => {
+    if (!newTaskTitle.trim()) return;
+    setTasks((prev) => [
+      { id: Date.now(), title: newTaskTitle, status: "Open", assignee: newTaskAssignee, priority: newTaskPriority },
+      ...prev
+    ]);
+    setActivities((prev) => [
+      { id: `act-${Date.now()}`, text: `Task created: "${newTaskTitle}"`, ts: "now" },
+      ...prev
+    ].slice(0, 8));
+    setShowTaskModal(false);
+    setNewTaskTitle("");
+    setNewTaskAssignee("");
+    setNewTaskPriority("medium");
+  };
+  
+  const handleRunCompliance = () => {
+    setComplianceResults((prev) => prev.map(check => ({
+      ...check,
+      status: Math.random() > 0.3 ? "passed" : "warning"
+    })));
+    setActivities((prev) => [
+      { id: `act-${Date.now()}`, text: "Compliance check executed", ts: "now" },
+      ...prev
+    ].slice(0, 8));
+  };
+  
+  const handleToggleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+  
+  const filteredChannels = useMemo(() => {
+    let filtered = channels;
+    if (filterChannel !== "all") {
+      filtered = filtered.filter(ch => ch.status === filterChannel);
+    }
+    if (searchQuery) {
+      filtered = filtered.filter(ch => 
+        ch.channel.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ch.owner.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    return filtered.sort((a, b) => {
+      const aVal = a[sortField];
+      const bVal = b[sortField];
+      const compare = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      return sortDirection === "asc" ? compare : -compare;
+    });
+  }, [channels, filterChannel, searchQuery, sortField, sortDirection]);
+  
+  const handleSchedulePublication = (channel, date, time) => {
+    setDistributionSchedule((prev) => [
+      ...prev.filter(s => s.channel !== channel),
+      { date, channel, time, status: "scheduled" }
+    ]);
+    setActivities((prev) => [
+      { id: `act-${Date.now()}`, text: `Scheduled ${channel} for ${date} ${time}`, ts: "now" },
+      ...prev
+    ].slice(0, 8));
+  };
+  
+  const getPerformanceChangeIcon = (change) => {
+    if (change > 0) return "📈";
+    if (change < 0) return "📉";
+    return "➡️";
+  };
+  
+  const getComplianceIcon = (status) => {
+    if (status === "passed") return "✅";
+    if (status === "warning") return "⚠️";
+    return "❌";
   };
 
   return (
-    <div style={{ padding: 16, background: palette.bg, color: palette.text, borderRadius: 12 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <div>
-          <h2 style={{ fontWeight: 900, fontSize: 28, margin: 0 }}>AI Content Brief Generator</h2>
-          <div style={{ color: palette.muted, fontSize: 14 }}>Briefs, SEO, personas, compliance — in one workspace.</div>
+    <div className="brief-shell">
+      <div className="brief-header">
+        <div className="brief-title">
+          <h2>AI Content Brief Generator</h2>
+          <div className="brief-subline">Research → Outline → SEO → Distribution → Governance → Performance</div>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <select value={theme} onChange={(e) => setTheme(e.target.value)} style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${palette.border}`, background: palette.card, color: palette.text, fontWeight: 700 }}>
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-            <option value="audit">Audit</option>
-          </select>
-          <button onClick={saveVersion} style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${palette.accent}`, background: palette.accent, color: "#0f172a", fontWeight: 800, cursor: "pointer" }}>Save Version</button>
-          <button onClick={() => navigator.clipboard?.writeText(shareUrl)} style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${palette.border}`, background: palette.card, color: palette.text, fontWeight: 700, cursor: "pointer" }}>Copy Share</button>
+        <div className="brief-actions">
+          <BackButton />
+          <button className="brief-btn" onClick={handleExport}>Export outline</button>
+          <button className="brief-btn" onClick={() => fileInputRef.current?.click()}>Import outline</button>
+          <button className="brief-btn primary" onClick={saveVersion}>Save version</button>
+        </div>
+        <div className="brief-badges">
+          <span className="brief-pill">Status: {status}</span>
+          <span className="brief-pill success">SEO: {seoScore}</span>
+          <span className="brief-pill warning">Readiness: {readinessScore}%</span>
+          <span className="brief-pill">Outline grade: {outlineGrade.grade}</span>
         </div>
       </div>
 
-      <BackButton />
-
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
-        <span style={{ padding: "6px 10px", borderRadius: 999, border: `1px solid ${palette.border}`, background: palette.card, color: palette.text, fontWeight: 700 }}>Status: {status}</span>
-        <span style={{ padding: "6px 10px", borderRadius: 999, border: `1px solid ${palette.border}`, background: palette.card, color: palette.text, fontWeight: 700 }}>SEO score: {seoScore}</span>
-        <span style={{ padding: "6px 10px", borderRadius: 999, border: `1px solid ${palette.border}`, background: palette.card, color: palette.text, fontWeight: 700 }}>Plagiarism: {plagiarism}</span>
-      </div>
-
-      <div style={{ display: "grid", gap: 12, marginTop: 12 }}>
-        {showOnboarding && (
-          <div style={{ ...paletteCard, boxShadow: "0 12px 32px rgba(0,0,0,0.22)" }}>
-            <h3 style={{ fontWeight: 800, fontSize: 20, margin: 0 }}>Welcome to AI Content Briefs</h3>
-            <ul style={{ margin: "12px 0 0 18px", color: palette.text }}>
-              <li>Generate outlines, SEO, and distribution in one view.</li>
-              <li>Compliance: PII-free prompts, approvals, audit log.</li>
-              <li>Quality: readability, tone, spelling, and fact checks.</li>
-              <li>Collaboration: share links, tasks, versions, reviewers.</li>
-            </ul>
-            <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
-              <button onClick={() => setShowOnboarding(false)} style={{ background: palette.accent, color: "#0f172a", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: "pointer" }}>Start</button>
-              <button onClick={() => setOutlineText(JSON.stringify(DEFAULT_OUTLINE, null, 2))} style={{ background: "transparent", color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: "10px 18px", fontWeight: 700, cursor: "pointer" }}>Reset outline</button>
-            </div>
-          </div>
-        )}
-
-        <div style={{ ...paletteCard }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-            <div style={{ fontWeight: 800 }}>AI Workspace</div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {QUICK_PROMPTS.map((p) => (
-                <button key={p} onClick={() => setFeedback(p)} style={{ border: `1px solid ${palette.border}`, background: "transparent", color: palette.text, borderRadius: 10, padding: "6px 10px", cursor: "pointer", fontWeight: 700 }}>
-                  {p}
-                </button>
+      <div className="brief-tabs">
+        {Object.entries(TAB_GROUPS).map(([group, items]) => (
+          <div key={group} className="brief-tab-group">
+            <h4>{group.toUpperCase()}</h4>
+            <div className="brief-tab-list">
+              {items.map((item) => (
+                <div key={item} className="brief-tab-chip">
+                  <span>{item}</span>
+                  <span>↗</span>
+                </div>
               ))}
             </div>
           </div>
-          <div style={{ display: "grid", gap: 10, marginTop: 10 }}>
-            <input
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="Topic"
-              style={{ fontSize: 16, padding: 12, borderRadius: 10, border: `1px solid ${palette.border}`, background: palette.bg, color: palette.text }}
-              aria-label="Topic"
-            />
-            <textarea
-              value={outlineText}
-              onChange={(e) => setOutlineText(e.target.value)}
-              rows={6}
-              style={{ width: "100%", fontSize: 14, padding: 12, borderRadius: 10, border: `1px solid ${palette.border}`, background: palette.bg, color: palette.text }}
-              placeholder="Outline JSON"
-              aria-label="Outline"
-            />
-            {!parsedOutline && <div style={{ color: palette.danger, fontWeight: 700 }}>Invalid outline JSON.</div>}
-          </div>
-        </div>
+        ))}
+      </div>
 
-        <div style={{ ...paletteCard }}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Persona, tone, and goals</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
-            <label style={{ color: palette.muted, display: "grid", gap: 4 }}>
+      <div className="brief-grid two-column">
+        <div className="brief-card">
+          <h3>Research & Strategy</h3>
+          <div className="brief-inputs">
+            <label>
+              Topic
+              <input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Topic" />
+            </label>
+            <label>
               Persona
-              <input value={persona} onChange={(e) => setPersona(e.target.value)} style={{ padding: 10, borderRadius: 8, border: `1px solid ${palette.border}`, background: palette.bg, color: palette.text }} />
+              <input value={persona} onChange={(e) => setPersona(e.target.value)} />
             </label>
-            <label style={{ color: palette.muted, display: "grid", gap: 4 }}>
+            <label>
               Tone
-              <input value={tone} onChange={(e) => setTone(e.target.value)} style={{ padding: 10, borderRadius: 8, border: `1px solid ${palette.border}`, background: palette.bg, color: palette.text }} />
+              <input value={tone} onChange={(e) => setTone(e.target.value)} />
             </label>
-            <label style={{ color: palette.muted, display: "grid", gap: 4 }}>
-              Readability
-              <input value={readability} onChange={(e) => setReadability(e.target.value)} style={{ padding: 10, borderRadius: 8, border: `1px solid ${palette.border}`, background: palette.bg, color: palette.text }} />
-            </label>
-            <label style={{ color: palette.muted, display: "grid", gap: 4 }}>
-              Target word count
-              <input type="number" value={wordCount} onChange={(e) => setWordCount(Number(e.target.value))} style={{ padding: 10, borderRadius: 8, border: `1px solid ${palette.border}`, background: palette.bg, color: palette.text }} />
-            </label>
-            <label style={{ color: palette.muted, display: "grid", gap: 4 }}>
-              CTA
-              <input value={cta} onChange={(e) => setCta(e.target.value)} style={{ padding: 10, borderRadius: 8, border: `1px solid ${palette.border}`, background: palette.bg, color: palette.text }} />
-            </label>
-          </div>
-        </div>
-
-        <div style={{ ...paletteCard }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-            <div style={{ fontWeight: 800 }}>SEO & questions</div>
-            <button onClick={regenerateSeo} style={{ background: palette.card, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>Refresh SEO</button>
-          </div>
-          <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
-            <label style={{ color: palette.muted, display: "grid", gap: 4 }}>
+            <label>
               Primary keyword
-              <input value={primaryKeyword} onChange={(e) => setPrimaryKeyword(e.target.value)} style={{ padding: 10, borderRadius: 8, border: `1px solid ${palette.border}`, background: palette.bg, color: palette.text }} />
+              <input value={primaryKeyword} onChange={(e) => setPrimaryKeyword(e.target.value)} />
             </label>
-            <label style={{ color: palette.muted, display: "grid", gap: 4 }}>
-              Secondary keywords (comma separated)
-              <input value={secondaryKeywords.join(", ")} onChange={(e) => setSecondaryKeywords(e.target.value.split(",").map((s) => s.trim()).filter(Boolean))} style={{ padding: 10, borderRadius: 8, border: `1px solid ${palette.border}`, background: palette.bg, color: palette.text }} />
+            <label>
+              Secondary keywords
+              <input value={secondaryKeywords.join(", ")} onChange={(e) => setSecondaryKeywords(e.target.value.split(",").map((s) => s.trim()).filter(Boolean))} />
             </label>
-            <label style={{ color: palette.muted, display: "grid", gap: 4 }}>
-              Questions (comma separated)
-              <input value={questions.join(", ")} onChange={(e) => setQuestions(e.target.value.split(",").map((s) => s.trim()).filter(Boolean))} style={{ padding: 10, borderRadius: 8, border: `1px solid ${palette.border}`, background: palette.bg, color: palette.text }} />
+            <label>
+              Target word count
+              <input type="number" value={wordCount} onChange={(e) => setWordCount(Number(e.target.value))} />
             </label>
           </div>
-          <div style={{ marginTop: 8, color: palette.muted, fontSize: 12 }}>Schema: {seo.schema} · Competitors: {seo.competitors.join(" · ")}</div>
-        </div>
-
-        <div style={{ ...paletteCard }}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Links & assets</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 8 }}>
-            {links.map((l, i) => (
-              <div key={`${l.url}-${i}`} style={{ ...paletteCard }}>
-                <div style={{ fontWeight: 800 }}>{l.type}</div>
-                <div style={{ color: palette.muted, fontSize: 12 }}>{l.url}</div>
-                <div style={{ color: palette.muted, fontSize: 12 }}>Anchor: {l.anchor}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ marginTop: 6, color: palette.muted, fontSize: 12 }}>Alt text required for all visuals; media stored in CDN.</div>
-        </div>
-
-        <div style={{ ...paletteCard }}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Images & alt text</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 8 }}>
-            {images.map((img) => (
-              <div key={img.id} style={{ ...paletteCard }}>
-                <div style={{ fontWeight: 800 }}>{img.type}</div>
-                <div style={{ color: palette.muted, fontSize: 12 }}>Alt: {img.alt}</div>
-                <div style={{ color: palette.success, fontSize: 12, fontWeight: 700 }}>Compliant</div>
+          <div className="brief-list">
+            {questions.map((q, idx) => (
+              <div key={idx} className="brief-list-item">
+                <strong>Discovery</strong>
+                <span>{q}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div style={{ ...paletteCard }}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>FAQ</div>
-          <div style={{ display: "grid", gap: 6 }}>
-            {faqs.map((q, i) => (
-              <div key={`${q}-${i}`} style={{ ...paletteCard }}>
-                <div style={{ fontWeight: 700 }}>{q}</div>
-                <div style={{ color: palette.muted, fontSize: 12 }}>Add answer in brief</div>
-              </div>
-            ))}
+        <div className="brief-card">
+          <h3>Outline & Structure</h3>
+          <div className="brief-meta-row">
+            <span className="brief-tag">Sections: {outline.length}</span>
+            <span className="brief-tag">Words: {outline.reduce((acc, s) => acc + (s.wordCount || 0), 0)}</span>
+            <span className="brief-tag">CTA: {cta}</span>
           </div>
-        </div>
-
-        <div style={{ ...paletteCard }}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Distribution plan</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 8 }}>
-            {distribution.map((d) => (
-              <div key={d.channel} style={{ ...paletteCard }}>
-                <div style={{ fontWeight: 800 }}>{d.channel}</div>
-                <div style={{ color: d.status === "ready" ? palette.success : d.status === "queued" ? palette.warning : palette.muted, fontWeight: 700 }}>{d.status}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ ...paletteCard }}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Tasks</div>
-          <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
-            {tasks.map((t) => (
-              <div key={t.id} style={{ ...paletteCard }}>
-                <div style={{ fontWeight: 800 }}>{t.title}</div>
-                <div style={{ color: t.status === "Blocked" ? palette.danger : palette.text, fontWeight: 700 }}>{t.status}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ ...paletteCard }}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Risk & quality</div>
-          <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
-            {riskAlerts.map((r) => (
-              <div key={r.id} style={{ ...paletteCard, border: `1px solid ${r.level === "warning" ? palette.warning : palette.border}` }}>
-                <div style={{ fontWeight: 800 }}>{r.level.toUpperCase()}</div>
-                <div style={{ color: palette.muted }}>{r.message}</div>
-              </div>
-            ))}
-            <div style={{ ...paletteCard }}>
-              <div style={{ fontWeight: 800 }}>Quality checks</div>
-              {Object.entries(qualityChecks).map(([k, v]) => (
-                <label key={k} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <input type="checkbox" checked={v} onChange={() => toggleQuality(k)} />
-                  <span>{k}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div style={{ ...paletteCard }}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Approvals & access</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
-            <div style={{ ...paletteCard }}>
-              <div style={{ fontWeight: 700 }}>Owner</div>
-              <input value={approvals.owner} onChange={(e) => setApprovals({ ...approvals, owner: e.target.value })} style={{ marginTop: 6, padding: 8, borderRadius: 8, border: `1px solid ${palette.border}`, background: palette.bg, color: palette.text }} />
-            </div>
-            <div style={{ ...paletteCard }}>
-              <div style={{ fontWeight: 700 }}>Reviewer</div>
-              <input value={approvals.reviewer} onChange={(e) => setApprovals({ ...approvals, reviewer: e.target.value })} style={{ marginTop: 6, padding: 8, borderRadius: 8, border: `1px solid ${palette.border}`, background: palette.bg, color: palette.text }} />
-            </div>
-            <div style={{ ...paletteCard }}>
-              <div style={{ fontWeight: 700 }}>Due date</div>
-              <input type="date" value={approvals.due} onChange={(e) => setApprovals({ ...approvals, due: e.target.value })} style={{ marginTop: 6, padding: 8, borderRadius: 8, border: `1px solid ${palette.border}`, background: palette.bg, color: palette.text }} />
-            </div>
-            <div style={{ ...paletteCard }}>
-              <div style={{ fontWeight: 700 }}>Share link</div>
-              <div style={{ wordBreak: "break-all", color: palette.muted, fontSize: 12, marginTop: 6 }}>{shareUrl}</div>
-            </div>
-          </div>
-        </div>
-
-        {versions.length > 0 && (
-          <div style={{ ...paletteCard }}>
-            <div style={{ fontWeight: 800, marginBottom: 6 }}>Versions</div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {versions.map((v) => (
-                <button
-                  key={v.id}
-                  onClick={() => applyVersion(v.id)}
-                  style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${selectedVersion === v.id ? palette.accent : palette.border}`, background: selectedVersion === v.id ? palette.card : "transparent", color: palette.text, fontWeight: 700, cursor: "pointer" }}
-                >
-                  {v.name} · {new Date(v.ts).toLocaleTimeString()}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div style={{ ...paletteCard }}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Analytics</div>
-          <div style={{ fontSize: 15, color: palette.text }}>
-            {analytics.length ? (
-              <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "none", padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
-            ) : (
-              <span>No analytics yet. Add outline to see results.</span>
-            )}
-          </div>
-        </div>
-
-        <div style={{ ...paletteCard }}>
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Import / Export</div>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <input type="file" accept="application/json" ref={fileInputRef} style={{ display: "none" }} onChange={handleImport} />
-            <button onClick={() => fileInputRef.current?.click()} style={{ background: palette.card, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: "pointer" }}>Import Outline</button>
-            <button onClick={handleExport} style={{ background: palette.card, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: "pointer" }}>Export Outline</button>
-          </div>
-          <div style={{ color: palette.muted, fontSize: 12, marginTop: 6 }}>
-            {importedName ? `Imported: ${importedName}` : "No import yet."}
-            {exportUrl && (
-              <>
-                {" "}
-                <a href={exportUrl} download="outline.json" style={{ color: palette.accent }}>Download export</a>
-              </>
-            )}
-          </div>
-        </div>
-
-        <form onSubmit={(e) => { e.preventDefault(); handleFeedback(); }} style={{ ...paletteCard }} aria-label="Send feedback">
-          <div style={{ fontWeight: 800, marginBottom: 6 }}>Feedback</div>
           <textarea
-            value={feedback}
-            onChange={(e) => setFeedback(e.target.value)}
-            rows={3}
-            style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: `1px solid ${palette.border}`, background: palette.bg, color: palette.text, marginBottom: 8 }}
-            placeholder="Share your feedback or suggestions..."
-            aria-label="Feedback"
+            className="brief-inputs"
+            style={{ gridColumn: "1/-1", minHeight: 180 }}
+            value={outlineDraft}
+            onChange={(e) => updateOutlineDraft(e.target.value)}
           />
-          <button type="submit" style={{ background: palette.accent, color: "#0f172a", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: "pointer" }}>Send Feedback</button>
-          {error && <div style={{ color: palette.danger, marginTop: 8 }}>{error}</div>}
-        </form>
+          <div className="brief-metrics">
+            <div className="metric-pill"><span>Completeness</span>{outlineGrade.score}%</div>
+            <div className="metric-pill"><span>Grade</span>{outlineGrade.grade}</div>
+            <div className="metric-pill"><span>CTA</span>{cta}</div>
+          </div>
+        </div>
 
-        <div style={{ ...paletteCard, textAlign: "center", fontSize: 12, color: palette.muted }}>
-          Accessibility: WCAG 2.1 AA. Keyboard navigation, color contrast, alt text required. Press ? for shortcuts.
+        <div className="brief-card">
+          <h3>SEO Brief</h3>
+          <div className="brief-metrics">
+            <div className="metric-pill"><span>Score</span>{seoScore}</div>
+            <div className="metric-pill"><span>Schema</span>Article</div>
+            <div className="metric-pill"><span>Links</span>6</div>
+          </div>
+          <div className="brief-list">
+            <div className="brief-list-item"><strong>Keywords</strong><span>{primaryKeyword}</span></div>
+            <div className="brief-list-item"><strong>Secondary</strong><span>{secondaryKeywords.join(" · ")}</span></div>
+            <div className="brief-list-item"><strong>Questions</strong><span>{questions.slice(0, 2).join(" · ")}</span></div>
+          </div>
+        </div>
+
+        <div className="brief-card">
+          <h3>Distribution & Readiness</h3>
+          <div className="brief-status-grid">
+            {channels.map((ch) => (
+              <div key={ch.channel} className="brief-status-card">
+                <div className="brief-meta-row" style={{ justifyContent: "space-between" }}>
+                  <strong>{ch.channel}</strong>
+                  <span className="brief-tag">{ch.owner}</span>
+                </div>
+                <div className="brief-tag">Status: {ch.status}</div>
+                <div className="brief-progress"><span style={{ width: ch.status === "ready" ? "100%" : ch.status === "in QA" ? "65%" : "35%" }} /></div>
+                <div className="brief-activity">Activate →</div>
+              </div>
+            ))}
+          </div>
+          <div className="brief-actions" style={{ marginTop: 10 }}>
+            <button className="brief-btn" onClick={() => updateChannelStatus("Email", "ready")}>Mark Email ready</button>
+            <button className="brief-btn" onClick={() => updateChannelStatus("Ads", "in QA")}>Move Ads to QA</button>
+          </div>
+        </div>
+
+        <div className="brief-card">
+          <h3>Collaboration</h3>
+          <div className="brief-meta-row">
+            <span className="brief-tag">Owner: {approvals.owner}</span>
+            <span className="brief-tag">Reviewer: {approvals.reviewer}</span>
+            <span className="brief-tag">Due: {approvals.due}</span>
+          </div>
+          <div className="brief-list">
+            {tasks.map((task) => (
+              <div key={task.id} className="brief-list-item">
+                <strong>{task.title}</strong>
+                <span>Status: {task.status}</span>
+              </div>
+            ))}
+          </div>
+          <div className="cta-row">
+            <button className="brief-btn" onClick={addTask}>Add task</button>
+            <button className="brief-btn" onClick={() => setStatus("Approved")}>Mark approved</button>
+          </div>
+        </div>
+
+        <div className="brief-card">
+          <h3>Governance</h3>
+          <div className="brief-list">
+            <div className="brief-list-item"><strong>PII</strong><span>Blocked</span></div>
+            <div className="brief-list-item"><strong>Claims</strong><span>Needs 2 citations</span></div>
+            <div className="brief-list-item"><strong>Tone</strong><span>On-brand</span></div>
+          </div>
+          <div className="brief-actions" style={{ marginTop: 10 }}>
+            <button className="brief-btn" onClick={() => setApprovals({ ...approvals, reviewer: "Compliance" })}>Send to compliance</button>
+            <button className="brief-btn" onClick={() => setNote("Audit logged")}>Log audit</button>
+          </div>
+        </div>
+
+        <div className="brief-card">
+          <h3>Performance</h3>
+          <div className="brief-metrics">
+            <div className="metric-pill"><span>Views</span>12.4k</div>
+            <div className="metric-pill"><span>Engagement</span>42%</div>
+            <div className="metric-pill"><span>Conversion</span>8.4%</div>
+            <div className="metric-pill"><span>Forecast (30d)</span>+25%</div>
+          </div>
+          <div className="brief-activity">Next forecast runs after distribution reaches 80% readiness.</div>
+        </div>
+
+        <div className="brief-card">
+          <h3>AI Orchestration</h3>
+          <div className="brief-list">
+            {PROVIDERS.map((p) => (
+              <div key={p.id} className="brief-list-item">
+                <strong>{p.name}</strong>
+                <span>Latency: {p.latency} · Strength: {p.strength}</span>
+              </div>
+            ))}
+          </div>
+          <div className="cta-row">
+            <button className="brief-btn primary" onClick={() => setActivities((prev) => [{ id: `act-${Date.now()}`, text: "AI route selected", ts: "now" }, ...prev])}>Route with best quality</button>
+            <button className="brief-btn" onClick={() => setActivities((prev) => [{ id: `act-${Date.now()}`, text: "Ensemble run queued", ts: "now" }, ...prev])}>Ensemble</button>
+          </div>
+        </div>
+
+        <div className="brief-card">
+          <h3>Activity & Notes</h3>
+          <div className="brief-list">
+            {activities.map((a) => (
+              <div key={a.id} className="brief-list-item">
+                <strong>{a.text}</strong>
+                <span>{a.ts}</span>
+              </div>
+            ))}
+          </div>
+          <textarea
+            className="brief-inputs"
+            style={{ gridColumn: "1/-1", minHeight: 90, marginTop: 10 }}
+            placeholder="Add a note"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+          />
+          <div className="brief-actions" style={{ marginTop: 10 }}>
+            <button className="brief-btn" onClick={() => setNote("")}>Clear</button>
+            <button className="brief-btn" onClick={() => setActivities((prev) => [{ id: `act-${Date.now()}`, text: note || "New note added", ts: "now" }, ...prev])}>Log note</button>
+          </div>
         </div>
       </div>
+
+      {/* Advanced Data Tables Section */}
+      <div className="brief-card" style={{ gridColumn: "1/-1", marginTop: 16 }}>
+        <h3>Compliance Dashboard</h3>
+        <div className="brief-actions" style={{ marginBottom: 12 }}>
+          <button className="brief-btn" onClick={handleRunCompliance}>Run Compliance Check</button>
+          <button className="brief-btn secondary">Generate Report</button>
+        </div>
+        <table className="brief-data-table">
+          <thead>
+            <tr>
+              <th>Check Type</th>
+              <th>Status</th>
+              <th>Details</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {complianceResults.map((result, idx) => (
+              <tr key={idx}>
+                <td><strong>{result.check}</strong></td>
+                <td>
+                  <span className={`badge ${result.status === "passed" ? "success" : "warning"}`}>
+                    {getComplianceIcon(result.status)} {result.status}
+                  </span>
+                </td>
+                <td>{result.details}</td>
+                <td>
+                  <button className="brief-btn small">Review</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Performance Analytics Section */}
+      <div className="brief-card" style={{ gridColumn: "1/-1", marginTop: 16 }}>
+        <h3>Performance Analytics</h3>
+        <table className="brief-data-table">
+          <thead>
+            <tr>
+              <th onClick={() => handleToggleSort("metric")} className="sortable">Metric</th>
+              <th onClick={() => handleToggleSort("current")} className="sortable">Current</th>
+              <th>Previous</th>
+              <th>Change</th>
+              <th>Trend</th>
+            </tr>
+          </thead>
+          <tbody>
+            {performanceData.map((data, idx) => (
+              <tr key={idx}>
+                <td><strong>{data.metric}</strong></td>
+                <td>{data.current.toLocaleString()}</td>
+                <td>{data.previous.toLocaleString()}</td>
+                <td className={data.change > 0 ? "success" : "danger"}>
+                  {data.change > 0 ? "+" : ""}{data.change}%
+                </td>
+                <td>{getPerformanceChangeIcon(data.change)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* SEO Metrics Section */}
+      <div className="brief-card" style={{ gridColumn: "1/-1", marginTop: 16 }}>
+        <h3>SEO Detailed Metrics</h3>
+        <div className="brief-grid">
+          <div className="brief-card">
+            <h4>Keyword Analysis</h4>
+            <div className="brief-list">
+              <div className="brief-list-item">
+                <strong>Density</strong>
+                <span>{seoMetrics.keywordDensity}% (Target: 1.5-2.5%)</span>
+              </div>
+              <div className="brief-list-item">
+                <strong>Readability</strong>
+                <span>{seoMetrics.readabilityScore}/100 (Flesch Reading Ease)</span>
+              </div>
+            </div>
+          </div>
+          <div className="brief-card">
+            <h4>Link Profile</h4>
+            <div className="brief-list">
+              <div className="brief-list-item">
+                <strong>Internal Links</strong>
+                <span>{seoMetrics.internalLinks} (Recommended: 5-8)</span>
+              </div>
+              <div className="brief-list-item">
+                <strong>External Links</strong>
+                <span>{seoMetrics.externalLinks} (Recommended: 3-5)</span>
+              </div>
+            </div>
+          </div>
+          <div className="brief-card">
+            <h4>Content Structure</h4>
+            <div className="brief-list">
+              <div className="brief-list-item">
+                <strong>H1 Tags</strong>
+                <span>{seoMetrics.h1Count} (Must be exactly 1)</span>
+              </div>
+              <div className="brief-list-item">
+                <strong>H2 Tags</strong>
+                <span>{seoMetrics.h2Count} (Recommended: 4-7)</span>
+              </div>
+            </div>
+          </div>
+          <div className="brief-card">
+            <h4>Media Optimization</h4>
+            <div className="brief-list">
+              <div className="brief-list-item">
+                <strong>Image Alt Tags</strong>
+                <span>{seoMetrics.imageAltTags} images optimized</span>
+              </div>
+              <div className="brief-list-item">
+                <strong>Meta Description</strong>
+                <span className="badge success">{seoMetrics.metaDescription}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Distribution Schedule Section */}
+      <div className="brief-card" style={{ gridColumn: "1/-1", marginTop: 16 }}>
+        <h3>Distribution Schedule</h3>
+        <div className="brief-search-bar" style={{ marginBottom: 12 }}>
+          <input 
+            type="text" 
+            placeholder="Search channels..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="brief-filter-group" style={{ marginBottom: 12 }}>
+          <button 
+            className={`brief-btn small ${filterChannel === "all" ? "primary" : ""}`}
+            onClick={() => setFilterChannel("all")}
+          >
+            All
+          </button>
+          <button 
+            className={`brief-btn small ${filterChannel === "scheduled" ? "primary" : ""}`}
+            onClick={() => setFilterChannel("scheduled")}
+          >
+            Scheduled
+          </button>
+          <button 
+            className={`brief-btn small ${filterChannel === "draft" ? "primary" : ""}`}
+            onClick={() => setFilterChannel("draft")}
+          >
+            Draft
+          </button>
+        </div>
+        <table className="brief-data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Channel</th>
+              <th>Time</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {distributionSchedule.map((schedule, idx) => (
+              <tr key={idx}>
+                <td>{schedule.date}</td>
+                <td><strong>{schedule.channel}</strong></td>
+                <td>{schedule.time}</td>
+                <td>
+                  <span className={`badge ${schedule.status === "scheduled" ? "success" : "warning"}`}>
+                    {schedule.status}
+                  </span>
+                </td>
+                <td>
+                  <button className="brief-btn small">Edit</button>
+                  <button className="brief-btn small danger" style={{ marginLeft: 6 }}>Cancel</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Filtered Channels Table */}
+      <div className="brief-card" style={{ gridColumn: "1/-1", marginTop: 16 }}>
+        <h3>Channel Management</h3>
+        <table className="brief-data-table">
+          <thead>
+            <tr>
+              <th 
+                onClick={() => handleToggleSort("channel")} 
+                className={`sortable ${sortField === "channel" ? `sorted-${sortDirection}` : ""}`}
+              >
+                Channel
+              </th>
+              <th 
+                onClick={() => handleToggleSort("status")} 
+                className={`sortable ${sortField === "status" ? `sorted-${sortDirection}` : ""}`}
+              >
+                Status
+              </th>
+              <th 
+                onClick={() => handleToggleSort("owner")} 
+                className={`sortable ${sortField === "owner" ? `sorted-${sortDirection}` : ""}`}
+              >
+                Owner
+              </th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredChannels.map((channel) => (
+              <tr key={channel.channel}>
+                <td><strong>{channel.channel}</strong></td>
+                <td>
+                  <span className={`badge ${channel.status === "ready" ? "success" : channel.status === "in QA" ? "warning" : "info"}`}>
+                    {channel.status}
+                  </span>
+                </td>
+                <td>{channel.owner}</td>
+                <td>
+                  <button 
+                    className="brief-btn small success"
+                    onClick={() => updateChannelStatus(channel.channel, "ready")}
+                  >
+                    Approve
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Create Brief Modal */}
+      {showBriefModal && (
+        <div className="brief-modal-overlay" onClick={() => setShowBriefModal(false)}>
+          <div className="brief-modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="brief-modal-header">
+              <h3>Create New Brief</h3>
+              <button className="brief-modal-close" onClick={() => setShowBriefModal(false)}>×</button>
+            </div>
+            <div className="brief-modal-body">
+              <div className="brief-form-row">
+                <div className="brief-form-group">
+                  <label>
+                    Topic <span className="required">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    value={newBriefTopic}
+                    onChange={(e) => setNewBriefTopic(e.target.value)}
+                    placeholder="Enter content topic..."
+                  />
+                  <span className="help-text">A clear, focused topic for your content</span>
+                </div>
+              </div>
+              <div className="brief-form-row two-col">
+                <div className="brief-form-group">
+                  <label>Target Audience</label>
+                  <input 
+                    type="text"
+                    value={newBriefAudience}
+                    onChange={(e) => setNewBriefAudience(e.target.value)}
+                    placeholder="e.g., Marketing Directors"
+                  />
+                </div>
+                <div className="brief-form-group">
+                  <label>Content Goal</label>
+                  <select 
+                    value={newBriefGoal}
+                    onChange={(e) => setNewBriefGoal(e.target.value)}
+                  >
+                    <option value="">Select goal...</option>
+                    <option value="educate">Educate</option>
+                    <option value="convert">Convert</option>
+                    <option value="engage">Engage</option>
+                    <option value="retain">Retain</option>
+                  </select>
+                </div>
+              </div>
+              <div className="brief-form-row">
+                <div className="brief-form-group">
+                  <label>Brief Description</label>
+                  <textarea 
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="Describe the content strategy..."
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="brief-modal-footer">
+              <button className="brief-btn ghost" onClick={() => setShowBriefModal(false)}>
+                Cancel
+              </button>
+              <button className="brief-btn primary" onClick={handleCreateBrief}>
+                Create Brief
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Task Modal */}
+      {showTaskModal && (
+        <div className="brief-modal-overlay" onClick={() => setShowTaskModal(false)}>
+          <div className="brief-modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="brief-modal-header">
+              <h3>Create New Task</h3>
+              <button className="brief-modal-close" onClick={() => setShowTaskModal(false)}>×</button>
+            </div>
+            <div className="brief-modal-body">
+              <div className="brief-form-row">
+                <div className="brief-form-group">
+                  <label>Task Title <span className="required">*</span></label>
+                  <input 
+                    type="text"
+                    value={newTaskTitle}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                    placeholder="Enter task description..."
+                  />
+                </div>
+              </div>
+              <div className="brief-form-row two-col">
+                <div className="brief-form-group">
+                  <label>Assignee</label>
+                  <input 
+                    type="text"
+                    value={newTaskAssignee}
+                    onChange={(e) => setNewTaskAssignee(e.target.value)}
+                    placeholder="Assign to..."
+                  />
+                </div>
+                <div className="brief-form-group">
+                  <label>Priority</label>
+                  <select 
+                    value={newTaskPriority}
+                    onChange={(e) => setNewTaskPriority(e.target.value)}
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="brief-modal-footer">
+              <button className="brief-btn ghost" onClick={() => setShowTaskModal(false)}>
+                Cancel
+              </button>
+              <button className="brief-btn primary" onClick={handleCreateTask}>
+                Create Task
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Provider Analytics Modal */}
+      {showProviderModal && (
+        <div className="brief-modal-overlay" onClick={() => setShowProviderModal(false)}>
+          <div className="brief-modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="brief-modal-header">
+              <h3>AI Provider Analytics</h3>
+              <button className="brief-modal-close" onClick={() => setShowProviderModal(false)}>×</button>
+            </div>
+            <div className="brief-modal-body">
+              <table className="brief-data-table">
+                <thead>
+                  <tr>
+                    <th>Provider</th>
+                    <th>Latency</th>
+                    <th>Cost (per 1K)</th>
+                    <th>Reliability</th>
+                    <th>Quality Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>GPT-4</strong></td>
+                    <td>1.2s</td>
+                    <td>$0.03</td>
+                    <td><span className="badge success">99.8%</span></td>
+                    <td><span className="badge success">95/100</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Claude 3</strong></td>
+                    <td>1.0s</td>
+                    <td>$0.015</td>
+                    <td><span className="badge success">99.5%</span></td>
+                    <td><span className="badge success">93/100</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Gemini Pro</strong></td>
+                    <td>0.9s</td>
+                    <td>$0.001</td>
+                    <td><span className="badge warning">98.2%</span></td>
+                    <td><span className="badge info">88/100</span></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div className="brief-alert info" style={{ marginTop: 16 }}>
+                <span className="icon">ℹ️</span>
+                <div>
+                  <strong>Recommendation:</strong> Use GPT-4 for critical content requiring highest reasoning quality. 
+                  Claude 3 offers best balance of quality and cost. Gemini Pro is ideal for high-volume, cost-sensitive tasks.
+                </div>
+              </div>
+            </div>
+            <div className="brief-modal-footer">
+              <button className="brief-btn ghost" onClick={() => setShowProviderModal(false)}>
+                Close
+              </button>
+              <button className="brief-btn primary">
+                Update Provider Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Action Buttons */}
+      <div style={{ position: "fixed", bottom: 24, right: 24, display: "flex", gap: 12, flexDirection: "column" }}>
+        <button 
+          className="brief-btn primary" 
+          onClick={() => setShowBriefModal(true)}
+          style={{ borderRadius: "50%", width: 56, height: 56, fontSize: 24 }}
+        >
+          +
+        </button>
+        <button 
+          className="brief-btn secondary" 
+          onClick={() => setShowTaskModal(true)}
+          style={{ borderRadius: "50%", width: 48, height: 48, fontSize: 20 }}
+        >
+          ✓
+        </button>
+        <button 
+          className="brief-btn" 
+          onClick={() => setShowProviderModal(true)}
+          style={{ borderRadius: "50%", width: 48, height: 48, fontSize: 18 }}
+        >
+          🤖
+        </button>
+      </div>
+
+      <input type="file" accept="application/json" ref={fileInputRef} style={{ display: "none" }} onChange={handleImport} />
     </div>
   );
 }

@@ -133,7 +133,7 @@ function deleteProfile(id) {
 // IDENTITY RESOLUTION
 // ================================================================
 
-function resolveIdentity({ email, phone, userId, device Id }) {
+function resolveIdentity({ email, phone, userId, deviceId }) {
   const matches = [];
   
   if (email) {
@@ -290,13 +290,13 @@ function mergeProfiles(sourceId, targetId, strategy = 'latest') {
   
   return {
     mergeId,
-    merged Profile: target,
+    mergedProfile: target,
     sourceProfileId: sourceId,
     targetProfileId: targetId
   };
 }
 
-function mergeTraits(sourceTr aits, targetTraits, strategy) {
+function mergeTraits(sourceTraits, targetTraits, strategy) {
   const merged = { ...sourceTraits };
   
   Object.keys(targetTraits).forEach(key => {

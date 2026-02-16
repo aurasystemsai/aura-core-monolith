@@ -30,6 +30,8 @@ const FixQueue = lazy(() => import("./components/FixQueue"));
 const Auth = lazy(() => import("./auth/Auth.jsx"));
 const Onboarding = lazy(() => import("./onboarding/Onboarding.jsx"));
 const Credits = lazy(() => import("./credits/Credits.jsx"));
+const Settings = lazy(() => import("./components/Settings.jsx"));
+const Billing = lazy(() => import("./components/Billing.jsx"));
 const AbandonedCheckoutWinback = lazy(() => import("./components/tools/AbandonedCheckoutWinback.jsx"));
 const CustomerDataPlatform = lazy(() => import("./components/tools/CustomerDataPlatform.jsx"));
 const VisualWorkflowBuilder = lazy(() => import("./components/tools/VisualWorkflowBuilder.jsx"));
@@ -405,6 +407,14 @@ function App() {
               className={activeSection === 'ai-chatbot' ? 'tab-active' : ''}
               onClick={() => setActiveSection('ai-chatbot')}
             >AI Chatbot</button>
+            <button
+              className={activeSection === 'settings' ? 'tab-active' : ''}
+              onClick={() => setActiveSection('settings')}
+            >Settings</button>
+            <button
+              className={activeSection === 'billing' ? 'tab-active' : ''}
+              onClick={() => setActiveSection('billing')}
+            >Billing</button>
           </div>
           <div
             className="mega-menu"
@@ -471,6 +481,8 @@ function App() {
                 {activeSection === "pricing" && <PricingPage />}
                 {activeSection === "automation-scheduler" && <AutomationScheduler />}
                 {activeSection === "reports" && <Reports />}
+                {activeSection === "settings" && <Settings />}
+                {activeSection === "billing" && <Billing />}
                 {activeSection === "auth" && <Auth />}
                 {activeSection === "user-management" && <UserManagement coreUrl={coreUrl} />}
                 {activeSection === "onboarding" && <Onboarding />}

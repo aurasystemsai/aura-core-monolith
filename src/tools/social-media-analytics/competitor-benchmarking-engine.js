@@ -65,7 +65,7 @@ function trackCompetitorMetrics(competitorId, { platform, followers, following, 
     },
     reach: {
       total: reach?.total || 0,
-      avg PerPost: posts > 0 ? (reach?.total || 0) / posts : 0
+      avgPerPost: posts > 0 ? (reach?.total || 0) / posts : 0
     },
     growthRate: growthRate || 0,
     postingFrequency: {

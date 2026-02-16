@@ -70,7 +70,7 @@ function createResponseTactic({ accountId, triggerType, responseTemplate, priori
     responseGuidelines: {
       maxResponseTime: priority === 'urgent' ? 15 : priority === 'high' ? 60 : 240, // minutes
       tone: 'friendly',
-      personaliz ation: true,
+      personalization: true,
       includeEmoji: triggerType !== 'complaint'
     },
     keywords: extractKeywords(triggerType),
@@ -333,7 +333,7 @@ function trackCommunityMetrics(accountId, { activeMembers, contentCreators, advo
     averageEngagement: averageEngagement || 0,
     sentimentScore: sentimentScore || 0, // -1 to 1
     communityHealth: 0,
-    engagement Distribution: {
+    engagementDistribution: {
       superFans: 0, // Top 1%
       highlyEngaged: 0, // Top 10%
       occasionalEngagers: 0, // 10-50%

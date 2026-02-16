@@ -17,12 +17,32 @@ if (DB_TYPE === 'postgres') {
   // --- Postgres mode ---
   const { Pool } = require('pg');
   const pgConfig = {
-    connectionString: process.env.AURA_PG_URL || 'postgres://postgres:postgres@localhost:5432/aura',
-    max: 10,
-    idleTimeoutMillis: 30000,
+    connectionString: process.env.DATABASE_URL || process.env.AURA_PG_URL || 'postgres://postgres:postgres@localhost:5432/aura',
+    max: parseInt(process.env.DB_POOL_MAX || '20', 10),
+    min: parseInt(process.env.DB_POOL_MIN || '2', 10),
+    idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10),
+    connectionTimeoutMillis: parseInt(process.env.DB_CONNECT_TIMEOUT || '2000', 10),
+    ssl: process.env.NODE_ENV === 'production' ? {
+      rejectUnauthorized: false,
+    } : false,
   };
   pgPool = new Pool(pgConfig);
-  console.log('[Core] Using Postgres at', pgConfig.connectionString);
+  
+  // Pool event handlers
+  pgPool.on('connect', () => console.log('[DB] Client connected'));
+  pgPool.on('error', (err) => {
+    console.error('[DB] Unexpected pool error:', err);
+    process.exit(-1);
+  });
+  
+  // Graceful shutdown
+  process.on('SIGTERM', async () => {
+    console.log('[DB] SIGTERM received, closing pool...');
+    await pgPool.end();
+    process.exit(0);
+  });
+  
+  console.log('[Core] Using Postgres at', pgConfig.connectionString.split('@')[1]);
 
   function transformSqlForPostgres(text) {
     let sql = text;

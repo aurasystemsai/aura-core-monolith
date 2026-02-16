@@ -309,7 +309,7 @@ function generateBehaviorInsights(activeHours, activeDays) {
 /**
  * Segment audience by growth
  */
-function segmentAudienceByGrowth(accountId, { newFollowers, churned Followers, consistentEngagers, reactivatedFollowers }) {
+function segmentAudienceByGrowth(accountId, { newFollowers, churnedFollowers, consistentEngagers, reactivatedFollowers }) {
   const segment = {
     id: segmentIdCounter++,
     accountId,

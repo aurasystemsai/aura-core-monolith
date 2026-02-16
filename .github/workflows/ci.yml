@@ -21,6 +21,8 @@ jobs:
           npm install
       - name: Run backend tests
         run: npm test
+      - name: Run weekly blog enterprise smoke
+        run: npm test -- src/__tests__/weekly-blog-content-engine.test.js
       - name: Run frontend tests
         run: |
           cd aura-console

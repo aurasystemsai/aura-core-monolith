@@ -349,7 +349,7 @@ function getAgentInsights(agentId, sessionId) {
     sessionId,
     currentWorkload: Math.floor(Math.random() * 10) + 1,
     avgResponseTime: (Math.random() * 5 + 1).toFixed(1) + ' minutes',
-    resolution Rate: (Math.random() * 20 + 75).toFixed(1) + '%',
+    resolutionRate: (Math.random() * 20 + 75).toFixed(1) + '%',
     suggestionsAccepted: Math.floor(Math.random() * 20) + 5,
     customerSatisfaction: (Math.random() * 1 + 4).toFixed(1),
     recommendations: [

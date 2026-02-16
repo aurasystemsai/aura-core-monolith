@@ -1,203 +1,130 @@
 // src/tools/weekly-blog-content-engine/index.js
 // ------------------------------------------------------
-// Weekly Blog Content Engine for AURA Core
-// Generates a simple weekly content plan (summary + posts[])
-// Designed to be consumed by the SEO Command Centre console.
+// Weekly Blog Content Engine (deterministic, offline)
+// Generates a weekly content plan with SEO-ready post metadata.
 // ------------------------------------------------------
 
 "use strict";
-
-const OpenAI = require("openai");
-
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 exports.meta = {
   id: "weekly-blog-content-engine",
   name: "Weekly Blog Content Engine",
   category: "SEO / Content",
   description:
-    "Generate a simple weekly content plan with SEO-ready blog titles, meta descriptions, slugs and primary keywords.",
-  version: "1.0.0",
+    "Generate a deterministic weekly content plan with SEO-ready blog titles, meta descriptions, slugs and primary keywords without external APIs.",
+  version: "2.0.0",
 };
 
-/**
- * Call OpenAI once and parse JSON.
- */
-async function generatePlanOnce(payload) {
-  const {
-    brand,
-    niche,
-    audience,
-    cadence,
-    themes,
-    tone,
-    market,
-  } = payload;
+const SAMPLE_TOPICS = [
+  "Scaling content velocity",
+  "Optimising blog distribution",
+  "Revenue-focused storytelling",
+  "Data-backed SEO experiments",
+  "Thought leadership flywheels",
+  "Channel attribution for content",
+];
 
-  const prompt = `
-You are an ecommerce and content marketing strategist.
+const SAMPLE_ANGLES = [
+  "Playbook",
+  "Benchmark",
+  "Checklist",
+  "Case study",
+  "Tactical guide",
+  "Retro",
+];
 
-Your job is to create a simple, realistic weekly blog content plan
-for a brand, with **SEO-ready** titles and meta descriptions in clear UK English.
+const SAMPLE_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-The plan should be easy for beginners to plug directly into their CMS.
-
-INPUT
-------
-Brand / site: ${brand || "N/A"}
-Niche / topic: ${niche || "N/A"}
-Target audience: ${audience || "N/A"}
-Cadence: ${cadence || "N/A"}
-Main themes / angles: ${themes || "N/A"}
-Primary market: ${market || "Worldwide"}
-Tone of voice: ${tone || "Elevated, modern, UK English"}
-
-REQUIREMENTS
-------------
-- Create between 3 and 6 posts for one batch (e.g. one week or two weeks).
-- Titles must be natural, non-clickbait, and optimised for search.
-- Meta descriptions should be 130–155 characters where possible.
-- Slugs should be URL-safe (lowercase, hyphens, no special characters).
-- Primary keyword should be a realistic search term, not a full sentence.
-- SuggestedDate can be simple (e.g. "Monday", "Wednesday", or "Week 1, Post 1").
-
-OUTPUT FORMAT
--------------
-Return STRICT JSON ONLY in exactly this shape:
-
-{
-  "summary": "Short paragraph describing the focus of this week's content plan.",
-  "posts": [
-    {
-      "title": "SEO-ready blog post title",
-      "metaDescription": "Meta description of 130–155 characters.",
-      "slug": "url-friendly-slug-here",
-      "primaryKeyword": "primary keyword phrase",
-      "angle": "short line on the main angle or story",
-      "suggestedDate": "e.g. Monday, Week 1"
-    }
-  ]
+function seededRandom(seed) {
+  let hash = (seed || "weekly-blog").split("").reduce((acc, ch) => (acc * 31 + ch.charCodeAt(0)) >>> 0, 42);
+  return () => {
+    hash = (hash * 1664525 + 1013904223) % 4294967296;
+    return hash / 4294967296;
+  };
 }
 
-Do not include any extra commentary before or after the JSON.
-  `.trim();
+function pick(list, rand) {
+  const idx = Math.floor(rand() * list.length);
+  return list[idx];
+}
 
-  const response = await client.responses.create({
-    model: "gpt-4.1-mini",
-    input: prompt,
-    temperature: 0.25,
-  });
+function toSlug(text) {
+  return String(text || "").toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-").replace(/-+/g, "-");
+}
 
-  const text = response.output_text && response.output_text.trim();
-  if (!text) {
-    throw new Error("OpenAI response missing text payload");
-  }
+function buildPost(seedFn, base, index) {
+  const topic = pick(SAMPLE_TOPICS, seedFn);
+  const angle = pick(SAMPLE_ANGLES, seedFn);
+  const day = SAMPLE_DAYS[index % SAMPLE_DAYS.length];
+  const title = `${base.brand || base.niche || "Weekly"}: ${topic} (${angle})`;
+  const primaryKeyword = `${base.niche || base.brand || "blog"} ${angle}`.toLowerCase();
+  const metaDescription = `${title} — practical steps, examples, and metrics to execute a ${base.cadence} cadence for ${base.audience}.`.slice(0, 150);
+  return {
+    title,
+    metaDescription,
+    slug: toSlug(title),
+    primaryKeyword,
+    angle,
+    suggestedDate: `${day}, Week ${base.weekNumber}`,
+  };
+}
 
-  // In case the model wraps JSON in explanation text, strip to { ... }.
-  let jsonText = text;
-  if (!jsonText.startsWith("{")) {
-    const first = jsonText.indexOf("{");
-    const last = jsonText.lastIndexOf("}");
-    if (first !== -1 && last !== -1 && last > first) {
-      jsonText = jsonText.slice(first, last + 1);
-    }
-  }
+function buildPlan(payload) {
+  const base = {
+    brand: payload.brand || "",
+    niche: payload.niche || "",
+    audience: payload.audience || "Marketing teams",
+    cadence: payload.cadence || "weekly",
+    themes: payload.themes || "SEO + distribution",
+    tone: payload.tone || "Confident, concise",
+    market: payload.market || "Worldwide",
+    weekNumber: payload.weekNumber || 1,
+  };
 
-  let parsed;
-  try {
-    parsed = JSON.parse(jsonText);
-  } catch (err) {
-    console.error("Failed to parse JSON from OpenAI weekly plan:", text);
-    throw new Error("Failed to parse JSON from OpenAI weekly plan");
-  }
+  const rand = seededRandom(`${base.brand}-${base.niche}-${base.cadence}`);
+  const postCount = 4;
+  const posts = Array.from({ length: postCount }).map((_, idx) => buildPost(rand, base, idx));
+  const focus = base.brand || base.niche || "the program";
 
-  return parsed;
+  return {
+    summary: `Weekly plan for ${focus}: ${base.themes}. Tone: ${base.tone}. Market: ${base.market}.`,
+    posts,
+  };
 }
 
 exports.run = async function run(input = {}, ctx = {}) {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error(
-      "OPENAI_API_KEY is not set. Add it in your Render environment."
-    );
-  }
-
   const {
     brand = "",
     niche = "",
     audience = "",
-    cadence = "",
-    themes = "",
-    tone = "",
+    cadence = "weekly",
+    themes = "SEO and distribution",
+    tone = "Confident, concise",
     market = "Worldwide",
+    weekNumber = 1,
   } = input || {};
 
   if (!brand && !niche) {
-    throw new Error(
-      "At least brand or niche is required for Weekly Blog Content Engine"
-    );
+    throw new Error("At least brand or niche is required for Weekly Blog Content Engine");
   }
 
-  const payload = {
-    brand,
-    niche,
-    audience,
-    cadence,
-    themes,
-    tone,
-    market,
-  };
-
-  // Single attempt is usually enough here – we do not need strict length perfect.
-  const plan = await generatePlanOnce(payload);
-
-  const posts = Array.isArray(plan.posts) ? plan.posts : [];
-
-  // Normalise posts fields so the React console can rely on them.
-  const normalisedPosts = posts.map((p, idx) => {
-    const title = String(p.title || "").trim();
-    const metaDescription = String(p.metaDescription || p.description || "").trim();
-    const slug = String(p.slug || p.handle || "").trim();
-    const primaryKeyword = String(
-      p.primaryKeyword || p.keyword || ""
-    ).trim();
-    const angle = String(p.angle || p.summary || "").trim();
-    const suggestedDate = String(
-      p.suggestedDate || p.date || `Post ${idx + 1}`
-    ).trim();
-
-    return {
-      title,
-      metaDescription,
-      slug,
-      primaryKeyword,
-      angle,
-      suggestedDate,
-    };
-  });
-
-  // Basic scoring metrics for the console (average lengths)
-  const titleLens = normalisedPosts.map((p) => p.title.length);
-  const metaLens = normalisedPosts.map((p) => p.metaDescription.length);
-  const avg = (arr) =>
-    arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
-
-  const avgTitleLen = avg(titleLens);
-  const avgMetaLen = avg(metaLens);
+  const plan = buildPlan({ brand, niche, audience, cadence, themes, tone, market, weekNumber });
+  const titleLens = plan.posts.map((p) => p.title.length);
+  const metaLens = plan.posts.map((p) => p.metaDescription.length);
+  const avg = (arr) => (arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0);
 
   return {
     input,
     output: {
-      summary: plan.summary || "",
-      posts: normalisedPosts,
+      summary: plan.summary,
+      posts: plan.posts,
       stats: {
-        avgTitleLength: avgTitleLen,
-        avgMetaLength: avgMetaLen,
-        postCount: normalisedPosts.length,
+        avgTitleLength: avg(titleLens),
+        avgMetaLength: avg(metaLens),
+        postCount: plan.posts.length,
       },
     },
-    model: "gpt-4.1-mini",
-    environment: ctx.environment || "unknown",
+    model: "deterministic-offline",
+    environment: ctx.environment || "offline",
   };
 };

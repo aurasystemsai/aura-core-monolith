@@ -110,7 +110,9 @@ app.use(session({
   }
 }));
 
-
+// --- Billing & Subscription Management ---
+const billingRouter = require('./routes/billing');
+app.use('/api/billing', billingRouter);
 
 // --- Shopify session token verification for all /api routes ---
 app.use('/api', verifyShopifySession);
@@ -132,6 +134,7 @@ app.use('/api/advanced-ai', require('./routes/advanced-ai'));
 const toolRouters = [
   { path: '/api/product-seo', router: require('./tools/product-seo/router') },
   { path: '/api/ai-alt-text-engine', router: require('./tools/ai-alt-text-engine/router') },
+  { path: '/api/ai-content-brief-generator', router: require('./tools/ai-content-brief-generator/router') },
   { path: '/api/advanced-analytics-attribution', router: require('./tools/advanced-analytics-attribution/router') },
   { path: '/api/creative-automation-engine', router: require('./tools/creative-automation-engine/router') },
   { path: '/api/weekly-blog-content-engine', router: require('./tools/weekly-blog-content-engine/router') },

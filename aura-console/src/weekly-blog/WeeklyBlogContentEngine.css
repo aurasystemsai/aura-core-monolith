@@ -1,0 +1,300 @@
+.wbe-shell {
+  background: radial-gradient(circle at 20% 20%, rgba(64, 224, 208, 0.12), transparent 35%),
+    radial-gradient(circle at 80% 0%, rgba(59, 130, 246, 0.14), transparent 36%),
+    linear-gradient(135deg, #0a0f1c 0%, #0c1b2a 45%, #0f2535 100%);
+  color: #e8f1f7;
+  border-radius: 20px;
+  padding: 26px;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: "Space Grotesk", "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+}
+
+.wbe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.wbe-header h2 {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+}
+
+.wbe-subtitle {
+  color: #8fd3ff;
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.wbe-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.wbe-btn {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e8f1f7;
+  padding: 9px 16px;
+  border-radius: 11px;
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: all 0.18s ease;
+}
+
+.wbe-btn.primary {
+  background: linear-gradient(120deg, #22d3ee, #f59e0b);
+  color: #0a0f1c;
+  border: none;
+}
+
+.wbe-btn.secondary {
+  background: rgba(59, 130, 246, 0.16);
+  border-color: rgba(59, 130, 246, 0.45);
+  color: #c9e6ff;
+}
+
+.wbe-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.2);
+}
+
+.wbe-badges {
+  display: flex;
+  gap: 10px;
+  margin: 18px 0;
+  flex-wrap: wrap;
+}
+
+.wbe-pill {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+  color: #dce7ef;
+}
+
+.wbe-pill.success { background: rgba(34, 211, 238, 0.12); color: #86e9f7; border-color: rgba(34, 211, 238, 0.4); }
+.wbe-pill.warning { background: rgba(245, 158, 11, 0.14); color: #ffd493; border-color: rgba(245, 158, 11, 0.32); }
+.wbe-pill.info { background: rgba(125, 211, 252, 0.12); color: #b6e5ff; border-color: rgba(125, 211, 252, 0.28); }
+.wbe-pill.muted { background: rgba(255, 255, 255, 0.04); color: #b4c5d8; }
+
+.wbe-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.wbe-tab-group {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.wbe-tab-group h4 {
+  margin: 0 0 8px;
+  color: #86c9f7;
+  letter-spacing: 0.02em;
+  font-size: 13px;
+}
+
+.wbe-tab-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wbe-tab-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 11px;
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 120px;
+  font-weight: 700;
+  color: #dce7ef;
+}
+
+.wbe-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.wbe-grid.two-column {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.wbe-card {
+  background: rgba(6, 12, 20, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
+}
+
+.wbe-card h3 {
+  margin: 0 0 10px;
+}
+
+.wbe-inputs {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.wbe-inputs label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #b6d0e5;
+}
+
+.wbe-inputs input,
+.wbe-inputs textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #e8f1f7;
+  font-size: 14px;
+}
+
+.wbe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.wbe-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #dce7ef;
+}
+
+.wbe-list-item.active {
+  border-color: rgba(34, 211, 238, 0.34);
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.wbe-meta-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: #b6d0e5;
+}
+
+.wbe-tag {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+  color: #dce7ef;
+}
+
+.wbe-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.metric-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #dce7ef;
+  font-weight: 700;
+}
+
+.wbe-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.wbe-status-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.wbe-outline-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wbe-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 7px 10px;
+  font-weight: 700;
+}
+
+.wbe-tasks {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wbe-task {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+.wbe-activity {
+  margin-top: 10px;
+  color: #8fd3ff;
+  font-weight: 700;
+}
+
+.wbe-error {
+  background: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fecdd3;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 720px) {
+  .wbe-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .wbe-grid.two-column {
+    grid-template-columns: 1fr;
+  }
+}
