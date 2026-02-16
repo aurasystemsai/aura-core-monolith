@@ -5,16 +5,29 @@ const db = require('../../core/db');
 const TABLE = 'product_seo';
 
 async function init() {
-  await db.query(`CREATE TABLE IF NOT EXISTS ${TABLE} (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_id TEXT,
-    title TEXT,
-    meta_description TEXT,
-    slug TEXT,
-    keywords TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
+  if (db.type === 'postgres') {
+    await db.query(`CREATE TABLE IF NOT EXISTS ${TABLE} (
+      id BIGSERIAL PRIMARY KEY,
+      product_id TEXT,
+      title TEXT,
+      meta_description TEXT,
+      slug TEXT,
+      keywords TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+  } else {
+    await db.query(`CREATE TABLE IF NOT EXISTS ${TABLE} (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id TEXT,
+      title TEXT,
+      meta_description TEXT,
+      slug TEXT,
+      keywords TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+  }
 }
 
 async function create(data) {
