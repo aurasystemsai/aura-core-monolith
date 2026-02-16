@@ -423,7 +423,7 @@ class SEOOptimizationEngine {
    * Helper methods
    */
   calculateKeywordDensity(content, keyword) {
-    const total Words = content.split(/\s+/).length;
+    const totalWords = content.split(/\s+/).length;
     const keywordMatches = (content.match(new RegExp(keyword, 'gi')) || []).length;
     return ((keywordMatches / totalWords) * 100).toFixed(2);
   }
