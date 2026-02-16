@@ -114,6 +114,11 @@ app.use(session({
 const billingRouter = require('./routes/billing');
 app.use('/api/billing', billingRouter);
 
+// --- Public healthcheck (no auth) ---
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime(), timestamp: Date.now() });
+});
+
 // --- Plan Access Control ---
 const planAccessControl = require('./core/planAccessControl');
 app.get('/api/access/check', planAccessControl.checkAccess);
