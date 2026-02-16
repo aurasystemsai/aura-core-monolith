@@ -14,7 +14,11 @@
     "test": "jest",
     "test:node22": "set PATH=.\\.tools\\node22\\node-v22.22.0-win-x64;%PATH%&& npm test",
     "test:node22:direct": ".\\.tools\\node22\\node-v22.22.0-win-x64\\node.exe .\\.tools\\node22\\node-v22.22.0-win-x64\\node_modules\\npm\\bin\\npm-cli.js test",
-    "test:node22:direct:local": "set OPENAI_API_KEY=test-key&& .\\.tools\\node22\\node-v22.22.0-win-x64\\node.exe .\\.tools\\node22\\node-v22.22.0-win-x64\\node_modules\\npm\\bin\\npm-cli.js test"
+    "test:node22:direct:local": "set OPENAI_API_KEY=test-key&& .\\.tools\\node22\\node-v22.22.0-win-x64\\node.exe .\\.tools\\node22\\node-v22.22.0-win-x64\\node_modules\\npm\\bin\\npm-cli.js test",
+    "test:bot": "node scripts/automated-test-bot.js",
+    "test:bot:local": "node scripts/automated-test-bot.js --env=local",
+    "test:bot:verbose": "node scripts/automated-test-bot.js --verbose",
+    "smoke-test": "node scripts/quick-smoke-test.js"
   },
   "engines": {
     "node": ">=22.0.0 <25.0.0"
