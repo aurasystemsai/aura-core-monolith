@@ -91,9 +91,7 @@ for (let i = 1; i <= 25; i++) {
   });
 }
 
-//
-
- Additional Research & Strategy Endpoints
+// Additional Research & Strategy Endpoints
 router.post('/research/competitor/analyze', (req, res) => {
   const result = researchEngine.analyzeCompetitor(req.body?.briefId, req.body?.competitorData || {});
   res.status(201).json({ success: true, data: result });
