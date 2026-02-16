@@ -177,7 +177,7 @@ router.get('/reviews/statistics', (req, res) => {
     const { productId, startDate, endDate } = req.query;
     const stats = reviewEngine.getReviewStatistics({
       productId,
-      date Range: startDate && endDate ? { startDate, endDate } : null,
+      dateRange: startDate && endDate ? { startDate, endDate } : null,
     });
     res.json(stats);
   } catch (error) {
@@ -1425,7 +1425,7 @@ router.get('/statistics', (req, res) => {
       collection: ugcEngine.getCollectionStatistics(),
       moderation: moderationEngine.getModerationStatistics(),
       sentiment: sentimentEngine.getSentimentStatistics(),
-      socialProof: socialProofEngine.get OptimizationStatistics(),
+      socialProof: socialProofEngine.getOptimizationStatistics(),
       display: displayEngine.getDisplayStatistics(),
       analytics: analyticsEngine.getAnalyticsStatistics(),
       integrations: integrationEngine.getIntegrationStatistics(),
