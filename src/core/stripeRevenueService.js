@@ -6,9 +6,24 @@ const db = require('./db');
 
 class StripeRevenueService {
   constructor() {
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2023-10-16'
-    });
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    
+    if (!stripeKey || stripeKey === 'sk_test_your_key_here') {
+      console.warn('[Stripe] Warning: STRIPE_SECRET_KEY not configured. Billing features disabled.');
+      this.stripe = null;
+      this.enabled = false;
+    } else {
+      this.stripe = new Stripe(stripeKey, {
+        apiVersion: '2023-10-16'
+      });
+      this.enabled = true;
+    }
+  }
+  
+  _checkEnabled() {
+    if (!this.enabled) {
+      throw new Error('Stripe not configured. Set STRIPE_SECRET_KEY environment variable.');
+    }
   }
 
   // ============================================
@@ -16,6 +31,7 @@ class StripeRevenueService {
   // ============================================
 
   async createCustomer(user) {
+    this._checkEnabled();
     try {
       const customer = await this.stripe.customers.create({
         email: user.email,

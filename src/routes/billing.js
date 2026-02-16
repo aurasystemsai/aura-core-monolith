@@ -17,11 +17,17 @@ router.get('/subscription', async (req, res) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
+    // If Stripe not configured, return free plan
+    if (!stripeRevenueService.enabled) {
+      return res.json({ plan_id: 'free', status: 'active' });
+    }
+
     const subscription = await stripeRevenueService.getCustomerSubscription(userId);
     res.json(subscription || { plan_id: 'free', status: 'active' });
   } catch (error) {
     console.error('Get subscription error:', error);
-    res.status(500).json({ error: 'Failed to get subscription' });
+    // Fallback to free plan on error
+    res.json({ plan_id: 'free', status: 'active' });
   }
 });
 
@@ -37,11 +43,15 @@ router.get('/payment-method', async (req, res) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
+    if (!stripeRevenueService.enabled) {
+      return res.json(null);
+    }
+
     const paymentMethod = await stripeRevenueService.getCustomerPaymentMethod(userId);
     res.json(paymentMethod);
   } catch (error) {
     console.error('Get payment method error:', error);
-    res.status(500).json({ error: 'Failed to get payment method' });
+    res.json(null);
   }
 });
 
@@ -57,11 +67,15 @@ router.get('/invoices', async (req, res) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
+    if (!stripeRevenueService.enabled) {
+      return res.json([]);
+    }
+
     const invoices = await stripeRevenueService.getCustomerInvoices(userId);
     res.json(invoices);
   } catch (error) {
     console.error('Get invoices error:', error);
-    res.status(500).json({ error: 'Failed to get invoices' });
+    res.json([]);
   }
 });
 
@@ -77,11 +91,15 @@ router.get('/usage', async (req, res) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
+    if (!stripeRevenueService.enabled) {
+      return res.json({ ai_runs: 0, products: 0, team_members: 1 });
+    }
+
     const usage = await stripeRevenueService.getUsageStats(userId);
     res.json(usage);
   } catch (error) {
     console.error('Get usage error:', error);
-    res.status(500).json({ error: 'Failed to get usage' });
+    res.json({ ai_runs: 0, products: 0, team_members: 1 });
   }
 });
 
@@ -100,6 +118,10 @@ router.post('/subscribe', async (req, res) => {
 
     if (!planId) {
       return res.status(400).json({ error: 'Plan ID required' });
+    }
+
+    if (!stripeRevenueService.enabled) {
+      return res.status(503).json({ error: 'Billing not configured. Contact support.' });
     }
 
     const result = await stripeRevenueService.createOrUpdateSubscription(userId, planId);
@@ -122,6 +144,10 @@ router.post('/cancel', async (req, res) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
+    if (!stripeRevenueService.enabled) {
+      return res.json({ success: true, message: 'No active subscription' });
+    }
+
     await stripeRevenueService.cancelSubscription(userId);
     res.json({ success: true, message: 'Subscription cancelled' });
   } catch (error) {
@@ -141,6 +167,10 @@ router.get('/invoices/:invoiceId/pdf', async (req, res) => {
     
     if (!userId) {
       return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    if (!stripeRevenueService.enabled) {
+      return res.status(503).json({ error: 'Billing not configured' });
     }
 
     const pdfBuffer = await stripeRevenueService.generateInvoicePDF(invoiceId);
