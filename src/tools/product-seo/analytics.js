@@ -11,6 +11,7 @@ function save(payload) {
   storage.set(STORAGE_KEY, payload);
 }
 
+// Track a single event
 function track(event, data = {}) {
   const now = new Date().toISOString();
   const current = load();
@@ -20,9 +21,23 @@ function track(event, data = {}) {
   return { event, at: now };
 }
 
+// Record event from arbitrary payloads (backward compatible)
+function recordEvent(payload = {}) {
+  const eventName = payload.event || payload.type || 'event';
+  const data = payload.data || payload;
+  return track(eventName, data);
+}
+
+// List events with optional type filter
 function list(limit = 50) {
   const current = load();
   return current.events.slice(0, limit);
 }
 
-module.exports = { track, list };
+function listEvents({ type, limit = 50 } = {}) {
+  const events = list(limit);
+  if (!type) return events;
+  return events.filter(e => e.event === type).slice(0, limit);
+}
+
+module.exports = { track, list, recordEvent, listEvents };

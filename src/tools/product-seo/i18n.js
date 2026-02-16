@@ -22,4 +22,8 @@ function t(key, locale = "en") {
   return dict[key] || dictionaries.en[key] || key;
 }
 
-module.exports = { t, dictionaries };
+function getAll() {
+  return dictionaries;
+}
+
+module.exports = { t, dictionaries, getAll };
