@@ -179,12 +179,29 @@ router.get('/rbac/check', (req, res) => {
 
 // Docs endpoint
 router.get('/docs', (req, res) => {
-  res.json({ ok: true, docs: 'Product SEO Engine API. Endpoints: /, /:id, /generate, /bulk-generate, /import, /export, /analytics, /shopify/import, /shopify/export, /notify, /rbac/check, /docs, /i18n' });
+  res.json({ ok: true, docs: 'Product SEO Engine API. Endpoints: /, /:id, /generate, /bulk-generate, /import, /export, /analytics, /shopify/import, /shopify/export, /shopify-products, /notify, /rbac/check, /docs, /i18n' });
 });
 
 // i18n endpoint
 router.get('/i18n', (req, res) => {
   res.json({ ok: true, i18n: i18n.getAll() });
+});
+
+// Shopify products endpoint (guarded to avoid 500s)
+router.get('/shopify-products', async (req, res) => {
+  // This endpoint normally lives in server.js; add a safe guard here so /:id does not catch it.
+  try {
+    // If a token is not provided, return a helpful 400 instead of falling through to /:id
+    const shop = req.query.shop || req.session?.shop || null;
+    const token = req.query.token || null;
+    if (!shop || !token) {
+      return res.status(400).json({ ok: false, error: 'Missing shop or token. Please connect Shopify.' });
+    }
+    // If implemented elsewhere, respond with 501 to indicate not implemented here
+    return res.status(501).json({ ok: false, error: 'Use server-level shopify-products endpoint' });
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 

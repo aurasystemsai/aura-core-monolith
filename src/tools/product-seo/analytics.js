@@ -31,7 +31,8 @@ function recordEvent(payload = {}) {
 // List events with optional type filter
 function list(limit = 50) {
   const current = load();
-  return current.events.slice(0, limit);
+  const events = Array.isArray(current.events) ? current.events : [];
+  return events.slice(0, limit);
 }
 
 function listEvents({ type, limit = 50 } = {}) {
