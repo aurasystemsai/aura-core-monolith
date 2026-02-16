@@ -1,49 +1,28 @@
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
 
 export default function ProductSeoEngine() {
   const [products, setProducts] = useState([]);
   const [shopifyProducts, setShopifyProducts] = useState([]);
-  const [form, setForm] = useState({ product_id: '', title: '', meta_description: '', slug: '', keywords: '' });
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [aiInput, setAiInput] = useState({ productName: '', productDescription: '' });
   const [aiResult, setAiResult] = useState('');
-  const [bulkAIInput, setBulkAIInput] = useState('');
-  const [bulkAIResults, setBulkAIResults] = useState([]);
-  const [importData, setImportData] = useState('');
-  const [importFormat, setImportFormat] = useState('csv');
-  const [exportFormat, setExportFormat] = useState('csv');
-  const [analytics, setAnalytics] = useState([]);
-  const [shopifyShop, setShopifyShop] = useState('');
-  const [shopifyToken, setShopifyToken] = useState('');
-  const [notifications, setNotifications] = useState([]);
-  const [rbacUser, setRbacUser] = useState('');
-  const [rbacAction, setRbacAction] = useState('');
-  const [rbacAllowed, setRbacAllowed] = useState(null);
-  const [docs, setDocs] = useState('');
-  const [i18n, setI18n] = useState({});
-  const [lang, setLang] = useState('en');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  // Removed CSRF token logic (not needed)
-
+  const [success, setSuccess] = useState('');
 
 
   useEffect(() => {
     fetchProducts();
     fetchShopifyProducts();
-    fetchAnalytics();
-    fetchDocs();
-    fetchI18n();
   }, []);
 
   async function fetchShopifyProducts() {
     try {
       const res = await axios.get('/api/product-seo/shopify-products', { withCredentials: true });
+      if (res.data.warning) {
+        setError(res.data.warning);
+      }
       setShopifyProducts(res.data.products || []);
     } catch (err) {
       const msg = err.response?.data?.error || err.message || 'Failed to load Shopify products.';
@@ -52,433 +31,311 @@ export default function ProductSeoEngine() {
     }
   }
 
-  const reconnectShopify = () => {
-    const url = new URL(window.location.href);
-    const shop = url.searchParams.get('shop') || '';
-    const target = shop ? `/shopify/auth?shop=${encodeURIComponent(shop)}` : '/connect-shopify';
-    if (window.top) window.top.location.href = target; else window.location.href = target;
-  };
-      <section>
-        <h3>Shopify Products</h3>
-        {error && shopifyProducts.length === 0 ? (
-          <div style={{ color: 'red', marginBottom: 8 }}>
-            {error}
-            <div style={{ marginTop: 8 }}>
-              <button onClick={reconnectShopify}>Reconnect Shopify</button>
-            </div>
-          </div>
-        ) : null}
-        {shopifyProducts.length === 0 && !error ? <div>No Shopify products found.</div> : null}
-        {shopifyProducts.length > 0 && (
-          <ul>
-            {shopifyProducts.map(p => (
-              <li key={p.id}>
-                <b>{p.title}</b> <span style={{ color: '#888' }}>({p.handle})</span>
-                {p.image && <img src={p.image} alt={p.title} style={{ height: 32, marginLeft: 8, verticalAlign: 'middle' }} />}
-                <div style={{ fontSize: 12, color: '#888' }}>ID: {p.id} | Vendor: {p.vendor} | Status: {p.status}</div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-
   async function fetchProducts() {
     try {
       const res = await axios.get('/api/product-seo');
       setProducts(res.data.data || []);
     } catch (err) {
-      setError('Failed to load products');
+      console.error('Failed to load SEO records', err);
     }
   }
 
-    async function handleManualFetch(e) {
-      e.preventDefault();
-      setManualLoading(true);
-      setError('');
-      try {
-        const params = new URLSearchParams({
-          shop: manualShop,
-          token: manualToken,
-          limit: 50
-        });
-        const res = await fetch(`/api/shopify/products?${params.toString()}`);
-        const data = await res.json();
-        if (!data.ok) throw new Error(data.error || 'Failed to load products');
-        setProducts(data.products || []);
-      } catch (err) {
-        setError(err.message || 'Failed to load products');
-      } finally {
-        setManualLoading(false);
-      }
-    }
-  async function fetchAnalytics() {
-    try {
-      const res = await axios.get('/api/product-seo/analytics');
-      setAnalytics(res.data.events || []);
-    } catch (err) {}
-  }
-
-  async function fetchDocs() {
-    try {
-      const res = await axios.get('/api/product-seo/docs');
-      setDocs(res.data.docs || '');
-    } catch (err) {}
-  }
-
-  async function fetchI18n() {
-    try {
-      const res = await axios.get('/api/product-seo/i18n');
-      setI18n(res.data.i18n || {});
-    } catch (err) {}
-  }
-
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-      await axios.post('/api/product-seo', form);
-      setForm({ product_id: '', title: '', meta_description: '', slug: '', keywords: '' });
-      fetchProducts();
-    } catch (err) {
-      setError('Failed to save');
-    }
-    setLoading(false);
-  }
-
-  async function handleBulkAIGenerate(e) {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    setBulkAIResults([]);
-    try {
-      // Expecting bulkAIInput as JSON array of { productName, productDescription }
-      const products = JSON.parse(bulkAIInput);
-      const res = await axios.post('/api/product-seo/bulk-generate', { products });
-      setBulkAIResults(res.data.results || []);
-    } catch (err) {
-            <form onSubmit={handleManualFetch} style={{ marginBottom: 8 }}>
-              <input
-                type="text"
-                placeholder="yourshop.myshopify.com"
-                value={manualShop}
-                onChange={e => setManualShop(e.target.value)}
-                required
-              />
-              <input
-                type="text"
-                placeholder="Admin API Token"
-                value={manualToken}
-                onChange={e => setManualToken(e.target.value)}
-                required
-              />
-              <button type="submit" disabled={manualLoading}>
-                {manualLoading ? 'Loading...' : 'Fetch Products'}
-              </button>
-            </form>
-      setError('Bulk AI generation failed');
-    }
-    setLoading(false);
-  }
-
-  async function handleImport(e) {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-      await axios.post('/api/product-seo/import', { data: importData, format: importFormat });
-      setImportData('');
-      fetchProducts();
-    } catch (err) {
-      setError('Import failed');
-    }
-    setLoading(false);
-  }
-
-  async function handleExport() {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await axios.get(`/api/product-seo/export?format=${exportFormat}`);
-      if (exportFormat === 'csv') {
-        const blob = new Blob([res.data], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'product-seo.csv';
-        a.click();
-      } else {
-        const blob = new Blob([JSON.stringify(res.data.data, null, 2)], { type: 'application/json' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'product-seo.json';
-        a.click();
-      }
-    } catch (err) {
-      setError('Export failed');
-    }
-    setLoading(false);
-  }
-
-  async function handleShopifyImport(e) {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-      await axios.post('/api/product-seo/shopify/import', { shop: shopifyShop, token: shopifyToken }, { headers: { 'csrf-token': csrfToken } });
-      fetchProducts();
-    } catch (err) {
-      setError('Shopify import failed');
-    }
-    setLoading(false);
-  }
-
-  async function handleShopifyExport(e) {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-      await axios.post('/api/product-seo/shopify/export', { shop: shopifyShop, token: shopifyToken, products });
-    } catch (err) {
-      setError('Shopify export failed');
-    }
-    setLoading(false);
-  }
-
-  async function handleNotify() {
-    setLoading(true);
-    setError('');
-    try {
-      await axios.post('/api/product-seo/notify', { message: 'SEO update', time: new Date().toISOString() });
-      setNotifications([...notifications, { message: 'SEO update', time: new Date().toISOString() }]);
-    } catch (err) {
-      setError('Notification failed');
-    }
-    setLoading(false);
-  }
-
-  async function handleRBACCheck() {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await axios.get(`/api/product-seo/rbac/check?user=${rbacUser}&action=${rbacAction}`);
-      setRbacAllowed(res.data.allowed);
-    } catch (err) {
-      setError('RBAC check failed');
-    }
-    setLoading(false);
-  }
+  const reconnectShopify = () => {
+    const url = new URL(window.location.href);
+    const shop = url.searchParams.get('shop') || '';
+    const target = shop ? `/shopify/auth?shop=${encodeURIComponent(shop)}` : '/shopify/auth';
+    if (window.top) window.top.location.href = target; else window.location.href = target;
+  };
 
   async function handleAIGenerate(e) {
     e.preventDefault();
     setLoading(true);
     setError('');
     setAiResult('');
+    setSuccess('');
     try {
       const res = await axios.post('/api/product-seo/generate', aiInput);
       setAiResult(res.data.result || 'No result');
     } catch (err) {
-      setError('AI generation failed');
+      setError(err.response?.data?.error || 'AI generation failed');
     }
     setLoading(false);
   }
 
+  function selectProductForGeneration(product) {
+    setSelectedProduct(product);
+    setAiInput({
+      productName: product.title,
+      productDescription: product.title // In a real app, fetch full description
+    });
+    setAiResult('');
+    setError('');
+    setSuccess('');
+  }
 
   return (
-    <div className="product-seo-engine">
-      <h2>Product SEO Engine</h2>
-      <section style={{ marginBottom: 32 }}>
-        <h3>What is this?</h3>
-        <p>
-          {i18n[lang]?.description || 'The Product SEO Engine uses AI to generate SEO-optimized titles, meta descriptions, slugs, and keyword sets for your products. You can generate suggestions with AI, then save and manage SEO records for your catalog.'}
+    <div className="product-seo-engine" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
+      <div style={{ 
+        background: 'linear-gradient(120deg, #232b3b 60%, #23284a 100%)', 
+        borderRadius: 16, 
+        padding: '32px 36px', 
+        marginBottom: 32,
+        boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
+      }}>
+        <h2 style={{ fontSize: 28, fontWeight: 800, color: '#7fffd4', marginBottom: 8 }}>
+          Product SEO Engine
+        </h2>
+        <p style={{ color: '#b3c2e0', fontSize: 16, marginBottom: 0, lineHeight: 1.6 }}>
+          Generate AI-powered SEO titles, meta descriptions, slugs, and keywords for your products.
         </p>
-        <div>
-          <label>Language: </label>
-          <select value={lang} onChange={e => setLang(e.target.value)}>
-            {Object.keys(i18n).map(l => <option key={l} value={l}>{l}</option>)}
-          </select>
+      </div>
+
+      {error && (
+        <div style={{ 
+          background: '#ff4d4f15', 
+          border: '1px solid #ff4d4f', 
+          borderRadius: 12, 
+          padding: 16, 
+          marginBottom: 24,
+          color: '#ff4d4f'
+        }}>
+          {error}
+          {shopifyProducts.length === 0 && (
+            <button 
+              onClick={reconnectShopify}
+              style={{
+                marginTop: 12,
+                background: '#ff4d4f',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '8px 16px',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              Connect Shopify
+            </button>
+          )}
         </div>
-      </section>
-      <section>
-        <h3>Generate SEO with AI</h3>
-        <form onSubmit={handleAIGenerate} style={{ marginBottom: 16 }}>
-          <input
-            type="text"
-            placeholder="Product Name"
-            value={aiInput.productName}
-            onChange={e => setAiInput({ ...aiInput, productName: e.target.value })}
-            required
-          />
-          <textarea
-            placeholder="Product Description"
-            value={aiInput.productDescription}
-            onChange={e => setAiInput({ ...aiInput, productDescription: e.target.value })}
-            required
-          />
-          <button type="submit" disabled={loading}>Generate</button>
-        </form>
-        {aiResult && <pre className="ai-result">{aiResult}</pre>}
-      </section>
-      <section>
-        <h3>Bulk AI Generation</h3>
-        <form onSubmit={handleBulkAIGenerate} style={{ marginBottom: 16 }}>
-          <textarea
-            placeholder='Paste JSON array: [{ "productName": "...", "productDescription": "..." }, ...]'
-            value={bulkAIInput}
-            onChange={e => setBulkAIInput(e.target.value)}
-            rows={4}
-            style={{ width: '100%' }}
-          />
-          <button type="submit" disabled={loading}>Bulk Generate</button>
-        </form>
-        {bulkAIResults.length > 0 && (
-          <div>
-            <h4>Results</h4>
-            <ul>
-              {bulkAIResults.map((r, i) => <li key={i}><pre>{JSON.stringify(r, null, 2)}</pre></li>)}
-            </ul>
+      )}
+
+      {success && (
+        <div style={{ 
+          background: '#22d37f15', 
+          border: '1px solid #22d37f', 
+          borderRadius: 12, 
+          padding: 16, 
+          marginBottom: 24,
+          color: '#22d37f'
+        }}>
+          {success}
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 32 }}>
+        {/* Shopify Products Panel */}
+        <div style={{ 
+          background: '#232b3b', 
+          borderRadius: 16, 
+          padding: 24,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+        }}>
+          <h3 style={{ fontSize: 20, fontWeight: 700, color: '#7fffd4', marginBottom: 16 }}>
+            Your Shopify Products
+          </h3>
+          
+          {shopifyProducts.length === 0 ? (
+            <div style={{ color: '#9ca3c7', textAlign: 'center', padding: '32px 0' }}>
+              No products found. Please connect your Shopify store.
+            </div>
+          ) : (
+            <div style={{ maxHeight: 500, overflowY: 'auto' }}>
+              {shopifyProducts.map(p => (
+                <div 
+                  key={p.id}
+                  onClick={() => selectProductForGeneration(p)}
+                  style={{
+                    background: selectedProduct?.id === p.id ? '#7fffd415' : '#1f2436',
+                    border: selectedProduct?.id === p.id ? '2px solid #7fffd4' : '1px solid #2f3650',
+                    borderRadius: 12,
+                    padding: 12,
+                    marginBottom: 12,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12
+                  }}
+                >
+                  {p.image && (
+                    <img 
+                      src={p.image} 
+                      alt={p.title} 
+                      style={{ 
+                        width: 48, 
+                        height: 48, 
+                        objectFit: 'cover', 
+                        borderRadius: 8 
+                      }} 
+                    />
+                  )}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: '#e8f2ff', fontWeight: 700, marginBottom: 4 }}>
+                      {p.title}
+                    </div>
+                    <div style={{ fontSize: 12, color: '#9ca3c7' }}>
+                      {p.handle} • {p.vendor} • {p.status}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* AI Generation Panel */}
+        <div style={{ 
+          background: '#232b3b', 
+          borderRadius: 16, 
+          padding: 24,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+        }}>
+          <h3 style={{ fontSize: 20, fontWeight: 700, color: '#7fffd4', marginBottom: 16 }}>
+            Generate SEO with AI
+          </h3>
+          
+          <form onSubmit={handleAIGenerate}>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', color: '#b3c2e0', marginBottom: 8, fontWeight: 600 }}>
+                Product Name
+              </label>
+              <input
+                type="text"
+                placeholder="Enter product name"
+                value={aiInput.productName}
+                onChange={e => setAiInput({ ...aiInput, productName: e.target.value })}
+                required
+                style={{
+                  width: '100%',
+                  borderRadius: 8,
+                  padding: '10px 12px',
+                  border: '1px solid #2f3650',
+                  background: '#0f1324',
+                  color: '#e8f2ff',
+                  fontSize: 14
+                }}
+              />
+            </div>
+            
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', color: '#b3c2e0', marginBottom: 8, fontWeight: 600 }}>
+                Product Description
+              </label>
+              <textarea
+                placeholder="Enter product description"
+                value={aiInput.productDescription}
+                onChange={e => setAiInput({ ...aiInput, productDescription: e.target.value })}
+                required
+                rows={4}
+                style={{
+                  width: '100%',
+                  borderRadius: 8,
+                  padding: '10px 12px',
+                  border: '1px solid #2f3650',
+                  background: '#0f1324',
+                  color: '#e8f2ff',
+                  fontSize: 14,
+                  resize: 'vertical'
+                }}
+              />
+            </div>
+            
+            <button 
+              type="submit" 
+              disabled={loading}
+              style={{
+                width: '100%',
+                background: loading ? '#3a3f55' : '#7fffd4',
+                color: '#0f1324',
+                border: 'none',
+                borderRadius: 8,
+                fontWeight: 800,
+                padding: '12px 16px',
+                cursor: loading ? 'wait' : 'pointer',
+                fontSize: 15
+              }}
+            >
+              {loading ? 'Generating...' : 'Generate SEO'}
+            </button>
+          </form>
+
+          {aiResult && (
+            <div style={{ 
+              marginTop: 16, 
+              background: '#0f1324', 
+              border: '1px solid #2f3650',
+              borderRadius: 12,
+              padding: 16,
+              color: '#e8f2ff',
+              fontSize: 14,
+              lineHeight: 1.6,
+              maxHeight: 300,
+              overflowY: 'auto'
+            }}>
+              <div style={{ fontWeight: 700, color: '#7fffd4', marginBottom: 8 }}>
+                AI Generated SEO:
+              </div>
+              <pre style={{ whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'inherit' }}>
+                {aiResult}
+              </pre>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* SEO Records Table */}
+      <div style={{ 
+        background: '#232b3b', 
+        borderRadius: 16, 
+        padding: 24,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+      }}>
+        <h3 style={{ fontSize: 20, fontWeight: 700, color: '#7fffd4', marginBottom: 16 }}>
+          Saved SEO Records
+        </h3>
+        
+        {products.length === 0 ? (
+          <div style={{ color: '#9ca3c7', textAlign: 'center', padding: '32px 0' }}>
+            No SEO records yet. Generate some SEO content above to get started.
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', padding: 12, color: '#7fffd4', borderBottom: '2px solid #2f3650' }}>Product ID</th>
+                  <th style={{ textAlign: 'left', padding: 12, color: '#7fffd4', borderBottom: '2px solid #2f3650' }}>Title</th>
+                  <th style={{ textAlign: 'left', padding: 12, color: '#7fffd4', borderBottom: '2px solid #2f3650' }}>Meta Description</th>
+                  <th style={{ textAlign: 'left', padding: 12, color: '#7fffd4', borderBottom: '2px solid #2f3650' }}>Slug</th>
+                  <th style={{ textAlign: 'left', padding: 12, color: '#7fffd4', borderBottom: '2px solid #2f3650' }}>Keywords</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map(p => (
+                  <tr key={p.id} style={{ borderBottom: '1px solid #2f3650' }}>
+                    <td style={{ padding: 12, color: '#e8f2ff' }}>{p.product_id}</td>
+                    <td style={{ padding: 12, color: '#e8f2ff' }}>{p.title}</td>
+                    <td style={{ padding: 12, color: '#9ca3c7', fontSize: 13 }}>{p.meta_description}</td>
+                    <td style={{ padding: 12, color: '#9ca3c7', fontSize: 13 }}>{p.slug}</td>
+                    <td style={{ padding: 12, color: '#9ca3c7', fontSize: 13 }}>{p.keywords}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-      </section>
-      <section>
-        <h3>Import/Export</h3>
-        <form onSubmit={handleImport} style={{ marginBottom: 8 }}>
-          <textarea
-            placeholder="Paste CSV or JSON data"
-            value={importData}
-            onChange={e => setImportData(e.target.value)}
-            rows={3}
-            style={{ width: '100%' }}
-          />
-          <select value={importFormat} onChange={e => setImportFormat(e.target.value)}>
-            <option value="csv">CSV</option>
-            <option value="json">JSON</option>
-          </select>
-          <button type="submit" disabled={loading}>Import</button>
-        </form>
-        <div>
-          <select value={exportFormat} onChange={e => setExportFormat(e.target.value)}>
-            <option value="csv">CSV</option>
-            <option value="json">JSON</option>
-          </select>
-          <button onClick={handleExport} disabled={loading}>Export</button>
-        </div>
-      </section>
-      <section>
-        <h3>Shopify Sync</h3>
-        <form onSubmit={handleShopifyImport} style={{ marginBottom: 8 }}>
-          <input type="text" placeholder="Shop Domain" value={shopifyShop} onChange={e => setShopifyShop(e.target.value)} />
-          <input type="text" placeholder="Admin Token" value={shopifyToken} onChange={e => setShopifyToken(e.target.value)} />
-          <button type="submit" disabled={loading}>Import from Shopify</button>
-        </form>
-        <form onSubmit={handleShopifyExport}>
-          <button type="submit" disabled={loading}>Export to Shopify</button>
-        </form>
-      </section>
-      <section>
-        <h3>Add Product SEO Record</h3>
-        <form onSubmit={handleSubmit} style={{ marginBottom: 16 }}>
-          <input
-            type="text"
-            placeholder="Product ID"
-            value={form.product_id}
-            onChange={e => setForm({ ...form, product_id: e.target.value })}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Title"
-            value={form.title}
-            onChange={e => setForm({ ...form, title: e.target.value })}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Meta Description"
-            value={form.meta_description}
-            onChange={e => setForm({ ...form, meta_description: e.target.value })}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Slug"
-            value={form.slug}
-            onChange={e => setForm({ ...form, slug: e.target.value })}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Keywords"
-            value={form.keywords}
-            onChange={e => setForm({ ...form, keywords: e.target.value })}
-            required
-          />
-          <button type="submit" disabled={loading}>Save</button>
-        </form>
-      </section>
-      <section>
-        <h3>SEO Records</h3>
-        {products.length === 0 ? <div>No records yet.</div> : (
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Product ID</th>
-                <th>Title</th>
-                <th>Meta Description</th>
-                <th>Slug</th>
-                <th>Keywords</th>
-                <th>Created</th>
-                <th>Updated</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map(p => (
-                <tr key={p.id}>
-                  <td>{p.id}</td>
-                  <td>{p.product_id}</td>
-                  <td>{p.title}</td>
-                  <td>{p.meta_description}</td>
-                  <td>{p.slug}</td>
-                  <td>{p.keywords}</td>
-                  <td>{p.created_at}</td>
-                  <td>{p.updated_at}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
-      <section>
-        <h3>Analytics</h3>
-        {analytics.length === 0 ? <div>No analytics yet.</div> : (
-          <ul>
-            {analytics.map((a, i) => <li key={i}>{JSON.stringify(a)}</li>)}
-          </ul>
-        )}
-      </section>
-      <section>
-        <h3>Notifications</h3>
-        <button onClick={handleNotify} disabled={loading}>Send Notification</button>
-        <ul>
-          {notifications.map((n, i) => <li key={i}>{n.message} ({n.time})</li>)}
-        </ul>
-      </section>
-      <section>
-        <h3>RBAC</h3>
-        <input type="text" placeholder="User" value={rbacUser} onChange={e => setRbacUser(e.target.value)} />
-        <input type="text" placeholder="Action" value={rbacAction} onChange={e => setRbacAction(e.target.value)} />
-        <button onClick={handleRBACCheck} disabled={loading}>Check Permission</button>
-        {rbacAllowed !== null && <span>Allowed: {String(rbacAllowed)}</span>}
-      </section>
-      <section>
-        <h3>Docs</h3>
-        <pre>{docs}</pre>
-      </section>
-      {error && <div className="error">{error}</div>}
+      </div>
     </div>
   );
 }
