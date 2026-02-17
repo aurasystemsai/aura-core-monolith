@@ -91,6 +91,9 @@ const AiLaunchPlanner = lazy(() => import("./components/tools/AILaunchPlanner.js
 const AdvancedAnalyticsAttribution = lazy(() => import("./components/tools/AdvancedAnalyticsAttribution.jsx"));
 const PredictiveAnalyticsWidgets = lazy(() => import("./components/tools/PredictiveAnalyticsWidgets.jsx"));
 const ToolScaffold = lazy(() => import("./components/tools/ToolScaffold.jsx"));
+const LoyaltyReferralPrograms = lazy(() => import("./components/tools/LoyaltyReferralPrograms.jsx"));
+const PersonalizationRecommendationEngine = lazy(() => import("./components/tools/PersonalizationRecommendationEngine.jsx"));
+const ContentScoringOptimization = lazy(() => import("./components/tools/ContentScoringOptimization.jsx"));
 
 const MAIN_SUITE_PREF_KEY = "main-suite-prefs";
 
@@ -590,6 +593,10 @@ function App() {
                       case "ai-launch-planner": return <AiLaunchPlanner key={tool.id} />;
                       case "advanced-analytics-attribution": return <AdvancedAnalyticsAttribution key={tool.id} />;
                       case "ai-alt-text-engine": return <ImageAltMediaSEO key={tool.id} />;
+                      case "loyalty-referral-programs": return <LoyaltyReferralPrograms key={tool.id} />;
+                      case "loyalty-referral-program-v2": return <LoyaltyReferralPrograms key={tool.id} />;
+                      case "personalization-recommendation-engine": return <PersonalizationRecommendationEngine key={tool.id} />;
+                      case "content-scoring-optimization": return <ContentScoringOptimization key={tool.id} />;
                       case "workflow-orchestrator":
                         return null; // custom UI rendered earlier; skip scaffold duplicate
                       case "google-ads-integration":
