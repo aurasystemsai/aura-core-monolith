@@ -345,6 +345,8 @@ const Settings = () => {
           padding: 32px;
           max-width: 1200px;
           margin: 0 auto;
+          background: #0f172a;
+          min-height: 100vh;
         }
 
         .settings-header {
@@ -355,17 +357,18 @@ const Settings = () => {
           font-size: 32px;
           font-weight: 700;
           margin: 0 0 8px 0;
+          color: #e5e7eb;
         }
 
         .settings-header p {
-          color: #666;
+          color: #94a3b8;
           margin: 0;
         }
 
         .settings-tabs {
           display: flex;
           gap: 8px;
-          border-bottom: 2px solid #e0e0e0;
+          border-bottom: 2px solid #2f3650;
           margin-bottom: 32px;
         }
 
@@ -377,12 +380,12 @@ const Settings = () => {
           cursor: pointer;
           font-size: 16px;
           font-weight: 500;
-          color: #666;
+          color: #94a3b8;
           transition: all 0.2s;
         }
 
         .settings-tabs .tab:hover {
-          color: #333;
+          color: #e5e7eb;
         }
 
         .settings-tabs .tab.active {
@@ -391,10 +394,15 @@ const Settings = () => {
         }
 
         .settings-section {
-          background: white;
+          background: #1a1d2e;
           padding: 32px;
           border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          border: 1px solid #2f3650;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .settings-section h2 {
+          color: #e5e7eb;
         }
 
         .connect-shopify-card {
@@ -405,13 +413,21 @@ const Settings = () => {
         .icon-circle {
           width: 80px;
           height: 80px;
-          background: #f0f0f0;
+          background: #2f3650;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 40px;
           margin: 0 auto 24px;
+        }
+
+        .connect-shopify-card h2 {
+          color: #e5e7eb;
+        }
+
+        .connect-shopify-card p {
+          color: #cbd5e1;
         }
 
         .input-group {
@@ -426,14 +442,22 @@ const Settings = () => {
           display: block;
           margin-bottom: 8px;
           font-weight: 500;
+          color: #e5e7eb;
         }
 
         .shop-domain-input {
           width: 100%;
           padding: 12px;
-          border: 2px solid #e0e0e0;
+          border: 2px solid #2f3650;
           border-radius: 8px;
           font-size: 16px;
+          background: #0f1324;
+          color: #e5e7eb;
+        }
+
+        .shop-domain-input:focus {
+          outline: none;
+          border-color: #7fffd4;
         }
 
         .btn-primary {
@@ -469,8 +493,14 @@ const Settings = () => {
           margin-left: auto;
           margin-right: auto;
           padding: 16px;
-          background: #f9f9f9;
+          background: #0f1324;
+          border: 1px solid #2f3650;
           border-radius: 8px;
+          color: #cbd5e1;
+        }
+
+        .help-text strong {
+          color: #e5e7eb;
         }
 
         .help-text ul {
@@ -485,7 +515,11 @@ const Settings = () => {
         .connection-status {
           text-align: center;
           padding-bottom: 24px;
-          border-bottom: 1px solid #e0e0e0;
+          border-bottom: 1px solid #2f3650;
+        }
+
+        .connected-shopify-card h3 {
+          color: #e5e7eb;
         }
 
         .status-badge {
@@ -510,15 +544,25 @@ const Settings = () => {
           display: flex;
           justify-content: space-between;
           padding: 12px 0;
-          border-bottom: 1px solid #f0f0f0;
+          border-bottom: 1px solid #2f3650;
+          color: #cbd5e1;
         }
 
         .detail-row .label {
           font-weight: 500;
+          color: #94a3b8;
+        }
+
+        .detail-row .value {
+          color: #e5e7eb;
         }
 
         .sync-actions {
           margin: 32px 0;
+        }
+
+        .sync-actions h4 {
+          color: #e5e7eb;
         }
 
         .sync-buttons {
@@ -530,22 +574,31 @@ const Settings = () => {
 
         .sync-buttons button {
           padding: 12px 24px;
-          background: #f0f0f0;
+          background: #2f3650;
           border: none;
           border-radius: 8px;
           cursor: pointer;
           font-weight: 500;
+          color: #e5e7eb;
           transition: all 0.2s;
         }
 
         .sync-buttons button:hover {
-          background: #e0e0e0;
+          background: #3a4565;
         }
 
         .danger-zone {
           margin-top: 48px;
           padding-top: 24px;
-          border-top: 2px solid #fee;
+          border-top: 2px solid #5a2a2a;
+        }
+
+        .danger-zone h4 {
+          color: #fca5a5;
+        }
+
+        .danger-zone p {
+          color: #cbd5e1;
         }
 
         .btn-danger {
@@ -572,7 +625,11 @@ const Settings = () => {
           align-items: center;
           gap: 16px;
           padding-bottom: 24px;
-          border-bottom: 1px solid #e0e0e0;
+          border-bottom: 1px solid #2f3650;
+        }
+
+        .subscription-card h3 {
+          color: #e5e7eb;
         }
 
         .plan-info h3 {
@@ -593,18 +650,32 @@ const Settings = () => {
         }
 
         .btn-secondary {
-          background: #f0f0f0;
+          background: #2f3650;
+          color: #e5e7eb;
           padding: 12px 24px;
           border: none;
           border-radius: 8px;
           cursor: pointer;
           font-weight: 500;
+          transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+          background: #3a4565;
         }
 
         .setting-group {
           margin: 24px 0;
           padding: 24px 0;
-          border-bottom: 1px solid #e0e0e0;
+          border-bottom: 1px solid #2f3650;
+        }
+
+        .setting-group h3 {
+          color: #e5e7eb;
+        }
+
+        .setting-group p {
+          color: #cbd5e1;
         }
 
         .setting-group:last-child {
@@ -615,6 +686,7 @@ const Settings = () => {
           display: block;
           margin: 12px 0;
           cursor: pointer;
+          color: #cbd5e1;
         }
 
         .checkbox-label input {
@@ -623,6 +695,10 @@ const Settings = () => {
 
         .api-key-display {
           margin-top: 16px;
+        }
+
+        .api-key-display label {
+          color: #e5e7eb;
         }
 
         .api-key-input {
@@ -635,18 +711,25 @@ const Settings = () => {
         .api-key-input code {
           flex: 1;
           padding: 12px;
-          background: #f9f9f9;
-          border: 1px solid #e0e0e0;
+          background: #0f1324;
+          border: 1px solid #2f3650;
           border-radius: 6px;
+          color: #e5e7eb;
         }
 
         .btn-small {
           padding: 8px 16px;
-          background: #f0f0f0;
+          background: #2f3650;
           border: none;
           border-radius: 6px;
           cursor: pointer;
           font-size: 14px;
+          color: #e5e7eb;
+          transition: all 0.2s;
+        }
+
+        .btn-small:hover {
+          background: #3a4565;
         }
       `}</style>
     </div>
