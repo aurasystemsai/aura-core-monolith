@@ -92,6 +92,49 @@ const Settings = () => {
     }
   }
 
+  function updatePaymentMethod() {
+    // Redirect to Stripe customer portal for payment method management
+    window.open('/api/billing/customer-portal', '_blank');
+  }
+
+  function viewBillingHistory() {
+    // Navigate to full billing page
+    window.location.href = '/billing';
+  }
+
+  function changePlan() {
+    // Navigate to full billing page with plans modal
+    window.location.href = '/billing?action=change-plan';
+  }
+
+  async function cancelSubscription() {
+    if (!confirm('Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.')) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await apiFetch('/billing/cancel', { method: 'POST' });
+      alert('Subscription cancelled. You will retain access until the end of your billing period.');
+      await loadSettings();
+    } catch (error) {
+      alert('Failed to cancel: ' + error.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function formatDate(dateString) {
+    if (!dateString) return 'Not set';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Not set';
+      return date.toLocaleDateString();
+    } catch {
+      return 'Not set';
+    }
+  }
+
   if (loading) {
     return (
       <div className="settings-page">
@@ -237,12 +280,12 @@ const Settings = () => {
             {subscription ? (
               <div className="subscription-card">
                 <div className="plan-info">
-                  <h3>{subscription.plan_name}</h3>
+                  <h3>{subscription.plan_name || 'Free'}</h3>
                   <div className="price">
-                    ${subscription.price}/month
+                    ${subscription.price || 0}/month
                   </div>
                   <div className="status-badge success">
-                    {subscription.status}
+                    {subscription.status || 'active'}
                   </div>
                 </div>
 
@@ -250,37 +293,52 @@ const Settings = () => {
                   <div className="detail-row">
                     <span className="label">Billing Period:</span>
                     <span className="value">
-                      {new Date(subscription.current_period_start).toLocaleDateString()} - 
-                      {new Date(subscription.current_period_end).toLocaleDateString()}
+                      {formatDate(subscription.current_period_start)} - {formatDate(subscription.current_period_end)}
                     </span>
                   </div>
                   <div className="detail-row">
                     <span className="label">Next Billing Date:</span>
                     <span className="value">
-                      {new Date(subscription.current_period_end).toLocaleDateString()}
+                      {formatDate(subscription.current_period_end)}
                     </span>
                   </div>
                   {subscription.trial_ends_at && (
                     <div className="detail-row">
                       <span className="label">Trial Ends:</span>
                       <span className="value">
-                        {new Date(subscription.trial_ends_at).toLocaleDateString()}
+                        {formatDate(subscription.trial_ends_at)}
                       </span>
                     </div>
                   )}
                 </div>
 
                 <div className="subscription-actions">
-                  <button className="btn-secondary">
+                  <button 
+                    className="btn-secondary"
+                    onClick={updatePaymentMethod}
+                    disabled={saving}
+                  >
                     Update Payment Method
                   </button>
-                  <button className="btn-secondary">
+                  <button 
+                    className="btn-secondary"
+                    onClick={viewBillingHistory}
+                    disabled={saving}
+                  >
                     View Billing History
                   </button>
-                  <button className="btn-secondary">
+                  <button 
+                    className="btn-secondary"
+                    onClick={changePlan}
+                    disabled={saving}
+                  >
                     Change Plan
                   </button>
-                  <button className="btn-danger">
+                  <button 
+                    className="btn-danger"
+                    onClick={cancelSubscription}
+                    disabled={saving}
+                  >
                     Cancel Subscription
                   </button>
                 </div>
@@ -289,7 +347,10 @@ const Settings = () => {
               <div className="no-subscription-card">
                 <h3>No Active Subscription</h3>
                 <p>Choose a plan to get started</p>
-                <button className="btn-primary btn-large">
+                <button 
+                  className="btn-primary btn-large"
+                  onClick={changePlan}
+                >
                   View Plans
                 </button>
               </div>
@@ -662,6 +723,40 @@ const Settings = () => {
 
         .btn-secondary:hover {
           background: #3a4565;
+        }
+
+        .btn-secondary:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .btn-danger:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .btn-primary:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .subscription-details {
+          margin-top: 24px;
+        }
+
+        .no-subscription-card {
+          text-align: center;
+          padding: 48px;
+        }
+
+        .no-subscription-card h3 {
+          color: #e5e7eb;
+          margin-bottom: 16px;
+        }
+
+        .no-subscription-card p {
+          color: #cbd5e1;
+          margin-bottom: 24px;
         }
 
         .setting-group {
