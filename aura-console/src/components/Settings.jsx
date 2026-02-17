@@ -1,5 +1,5 @@
-// Settings Page - Shopify + Stripe Configuration
-// Complete settings management UI for the platform
+// Settings Page - Shopify Integration
+// Platform configuration and integrations management
 
 import React, { useState, useEffect } from 'react';
 import { apiFetch } from '../api';
@@ -9,7 +9,6 @@ const Settings = () => {
   const [shopifyConnected, setShopifyConnected] = useState(false);
   const [shopDomain, setShopDomain] = useState('');
   const [shopInfo, setShopInfo] = useState(null);
-  const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -29,10 +28,6 @@ const Settings = () => {
         const shopDetails = await apiFetch(`/shopify/shop/${shopifyStatus.shop}`);
         setShopInfo(shopDetails);
       }
-
-      // Load subscription info
-      const subInfo = await apiFetch('/billing/subscription');
-      setSubscription(subInfo);
     } catch (error) {
       console.error('Failed to load settings:', error);
     } finally {
@@ -92,44 +87,6 @@ const Settings = () => {
     }
   }
 
-  function viewBillingHistory() {
-    // Navigate to billing page which shows usage and plan details
-    window.location.href = '/billing';
-  }
-
-  async function changePlan() {
-    // Navigate to billing page with plans
-    window.location.href = '/billing';
-  }
-
-  async function cancelSubscription() {
-    if (!confirm('Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.')) {
-      return;
-    }
-
-    setSaving(true);
-    try {
-      await apiFetch('/billing/cancel', { method: 'POST' });
-      alert('Subscription cancelled. You will retain access until the end of your billing period.');
-      await loadSettings();
-    } catch (error) {
-      alert('Failed to cancel: ' + error.message);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  function formatDate(dateString) {
-    if (!dateString) return 'Not set';
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Not set';
-      return date.toLocaleDateString();
-    } catch {
-      return 'Not set';
-    }
-  }
-
   if (loading) {
     return (
       <div className="settings-page">
@@ -151,12 +108,6 @@ const Settings = () => {
           onClick={() => setActiveTab('shopify')}
         >
           Shopify Integration
-        </button>
-        <button 
-          className={`tab ${activeTab === 'billing' ? 'active' : ''}`}
-          onClick={() => setActiveTab('billing')}
-        >
-          Billing & Subscription
         </button>
         <button 
           className={`tab ${activeTab === 'general' ? 'active' : ''}`}
@@ -263,84 +214,6 @@ const Settings = () => {
                     Disconnect Shopify Store
                   </button>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'billing' && (
-          <div className="settings-section">
-            <h2>Billing & Subscription</h2>
-            
-            {subscription ? (
-              <div className="subscription-card">
-                <div className="plan-info">
-                  <h3>{subscription.plan_name || 'Free'}</h3>
-                  <div className="price">
-                    ${subscription.price || 0}/month
-                  </div>
-                  <div className="status-badge success">
-                    {subscription.status || 'active'}
-                  </div>
-                </div>
-
-                <div className="subscription-details">
-                  <div className="detail-row">
-                    <span className="label">Billing Period:</span>
-                    <span className="value">
-                      {formatDate(subscription.current_period_start)} - {formatDate(subscription.current_period_end)}
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Next Billing Date:</span>
-                    <span className="value">
-                      {formatDate(subscription.current_period_end)}
-                    </span>
-                  </div>
-                  {subscription.trial_ends_at && (
-                    <div className="detail-row">
-                      <span className="label">Trial Ends:</span>
-                      <span className="value">
-                        {formatDate(subscription.trial_ends_at)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="subscription-actions">
-                  <button 
-                    className="btn-secondary"
-                    onClick={viewBillingHistory}
-                    disabled={saving}
-                  >
-                    View Billing History
-                  </button>
-                  <button 
-                    className="btn-secondary"
-                    onClick={changePlan}
-                    disabled={saving}
-                  >
-                    Change Plan
-                  </button>
-                  <button 
-                    className="btn-danger"
-                    onClick={cancelSubscription}
-                    disabled={saving}
-                  >
-                    Cancel Subscription
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="no-subscription-card">
-                <h3>No Active Subscription</h3>
-                <p>Choose a plan to get started</p>
-                <button 
-                  className="btn-primary btn-large"
-                  onClick={changePlan}
-                >
-                  View Plans
-                </button>
               </div>
             )}
           </div>
@@ -663,88 +536,6 @@ const Settings = () => {
 
         .btn-danger:hover {
           background: #c82333;
-        }
-
-        .subscription-card {
-          padding: 24px;
-        }
-
-        .plan-info {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          padding-bottom: 24px;
-          border-bottom: 1px solid #2f3650;
-        }
-
-        .subscription-card h3 {
-          color: #e5e7eb;
-        }
-
-        .plan-info h3 {
-          margin: 0;
-          font-size: 24px;
-        }
-
-        .price {
-          font-size: 20px;
-          font-weight: 600;
-          color: #7fffd4;
-        }
-
-        .subscription-actions {
-          display: flex;
-          gap: 12px;
-          margin-top: 24px;
-        }
-
-        .btn-secondary {
-          background: #2f3650;
-          color: #e5e7eb;
-          padding: 12px 24px;
-          border: none;
-          border-radius: 8px;
-          cursor: pointer;
-          font-weight: 500;
-          transition: all 0.2s;
-        }
-
-        .btn-secondary:hover {
-          background: #3a4565;
-        }
-
-        .btn-secondary:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .btn-danger:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .btn-primary:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .subscription-details {
-          margin-top: 24px;
-        }
-
-        .no-subscription-card {
-          text-align: center;
-          padding: 48px;
-        }
-
-        .no-subscription-card h3 {
-          color: #e5e7eb;
-          margin-bottom: 16px;
-        }
-
-        .no-subscription-card p {
-          color: #cbd5e1;
-          margin-bottom: 24px;
         }
 
         .setting-group {

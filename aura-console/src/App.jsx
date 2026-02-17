@@ -32,7 +32,6 @@ const Auth = lazy(() => import("./auth/Auth.jsx"));
 const Onboarding = lazy(() => import("./onboarding/Onboarding.jsx"));
 const Credits = lazy(() => import("./credits/Credits.jsx"));
 const Settings = lazy(() => import("./components/Settings.jsx"));
-const Billing = lazy(() => import("./components/Billing.jsx"));
 const AbandonedCheckoutWinback = lazy(() => import("./components/tools/AbandonedCheckoutWinback.jsx"));
 const CustomerDataPlatform = lazy(() => import("./components/tools/CustomerDataPlatform.jsx"));
 const VisualWorkflowBuilder = lazy(() => import("./components/tools/VisualWorkflowBuilder.jsx"));
@@ -412,13 +411,6 @@ function App() {
               <span className="nav-icon">⚙️</span>
               Settings
             </button>
-            <button
-              className={activeSection === 'billing' ? 'nav-link-active' : 'nav-link'}
-              onClick={() => setActiveSection('billing')}
-            >
-              <span className="nav-icon">💳</span>
-              Billing
-            </button>
           </div>
           <div className="nav-actions">
             {project?.name && (
@@ -438,9 +430,8 @@ function App() {
                 {activeSection === "all-tools" && <AllTools setActiveSection={setActiveSection} />}
                 {activeSection === "main-suite" && <MainSuite setActiveSection={setActiveSection} />}
                 {activeSection === "settings" && <Settings />}
-                {activeSection === "billing" && <Billing />}
 
-                {/* Legacy sections - only accessible via direct navigation */}
+                {/* Legacy sections - only accessible via direct navigation */
                 {activeSection === "seo-master-suite" && <SeoMasterSuite />}
                 {activeSection === "pricing" && <PricingPage />}
                 {activeSection === "automation-scheduler" && <AutomationScheduler />}
