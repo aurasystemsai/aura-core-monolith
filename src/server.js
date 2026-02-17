@@ -146,6 +146,7 @@ const toolRouters = [
   // Free tier tools - no middleware
   { path: '/api/product-seo', router: require('./tools/product-seo/router') },
   { path: '/api/blog-seo', router: require('./tools/blog-seo/router') },
+  { path: '/api/tools/seo-site-crawler', router: require('./tools/seo-site-crawler/router') },
   
   // Professional tier tools - require professional plan
   { path: '/api/ai-alt-text-engine', router: require('./tools/ai-alt-text-engine/router'), middleware: requireTool('ai-alt-text-engine') },
