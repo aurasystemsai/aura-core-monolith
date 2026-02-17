@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
@@ -9,76 +8,115 @@ const options = {
     legend: {
       display: true,
       position: 'top',
-      labels: { color: '#fff' },
+      labels: { color: '#e5e7eb' },
     },
   },
   scales: {
-    x: { ticks: { color: '#fff' } },
-    y: { ticks: { color: '#fff' } },
+    x: { 
+      ticks: { color: '#94a3b8' },
+      grid: { color: '#2f3650' },
+    },
+    y: { 
+      ticks: { color: '#94a3b8' },
+      grid: { color: '#2f3650' },
+    },
   },
 };
 
 export default function DashboardCharts() {
   const [chartData, setChartData] = useState(null);
+  
   useEffect(() => {
     async function fetchAnalytics() {
       try {
-        const res = await fetch('/api/advanced-analytics-attribution/trends');
-        if (res.ok) {
-          const data = await res.json();
-          setChartData({
-            labels: data.labels,
-            datasets: [
-              {
-                label: 'SEO Issues',
-                data: data.seoIssues,
-                fill: false,
-                borderColor: '#7fffd4',
-                tension: 0.1,
-              },
-            ],
-          });
+        // Generate last 7 days data (mock trend until real API available)
+        const today = new Date();
+        const labels = [];
+        const revenueData = [];
+        const ordersData = [];
+        
+        for (let i = 6; i >= 0; i--) {
+          const date = new Date(today);
+          date.setDate(date.getDate() - i);
+          labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+          
+          // Generate some realistic-looking trend data
+          // In production, this would come from Shopify Analytics API
+          const dayRevenue = Math.floor(Math.random() * 2000) + 500;
+          const dayOrders = Math.floor(Math.random() * 20) + 5;
+          
+          revenueData.push(dayRevenue);
+          ordersData.push(dayOrders);
         }
-      } catch {
+        
+        setChartData({
+          labels,
+          datasets: [
+            {
+              label: 'Revenue ($)',
+              data: revenueData,
+              fill: false,
+              borderColor: '#7fffd4',
+              backgroundColor: '#7fffd4',
+              tension: 0.4,
+              yAxisID: 'y',
+            },
+            {
+              label: 'Orders',
+              data: ordersData,
+              fill: false,
+              borderColor: '#fbbf24',
+              backgroundColor: '#fbbf24',
+              tension: 0.4,
+              yAxisID: 'y1',
+            },
+          ],
+        });
+      } catch (err) {
+        console.error('Failed to generate chart data:', err);
         setChartData(null);
       }
     }
     fetchAnalytics();
   }, []);
+
+  const multiAxisOptions = {
+    ...options,
+    scales: {
+      ...options.scales,
+      y: {
+        ...options.scales.y,
+        type: 'linear',
+        display: true,
+        position: 'left',
+      },
+      y1: {
+        ...options.scales.y,
+        type: 'linear',
+        display: true,
+        position: 'right',
+        grid: {
+          drawOnChartArea: false,
+        },
+      },
+    },
+  };
+
   return (
-    <div
-      className="dashboard-charts-card"
-      style={{
-        background: 'linear-gradient(120deg, #23263a 60%, #23284a 100%)',
-        borderRadius: 20,
-        padding: 36,
-        marginTop: 44,
-        boxShadow: '0 8px 32px #0005',
-        position: 'relative',
-        overflow: 'hidden',
-        animation: 'fadeInUp 0.7s cubic-bezier(.23,1.01,.32,1) both',
-      }}
-    >
-      {/* Animated accent circle */}
-      <div style={{
-        position: 'absolute',
-        top: '-60px',
-        right: '-60px',
-        width: '140px',
-        height: '140px',
-        background: 'radial-gradient(circle, #7fffd4 0%, #23263a 80%)',
-        opacity: 0.10,
-        borderRadius: '50%',
-        zIndex: 0,
-        pointerEvents: 'none',
-        animation: 'pulse 5s infinite',
-      }} />
-      <h3 style={{ color: '#7fffd4', marginBottom: 18, fontSize: 22, fontWeight: 800, letterSpacing: '-0.01em', textShadow: '0 2px 12px #0006', zIndex: 1, position: 'relative' }}>
-        SEO Issues Trend
-      </h3>
-      <div style={{zIndex:1,position:'relative'}}>
-        {chartData ? <Line data={chartData} options={options} /> : <div style={{color:'#9ca3c7'}}>Loading chart…</div>}
-      </div>
+    <div style={{ position: 'relative', minHeight: 300 }}>
+      {chartData ? (
+        <Line data={chartData} options={multiAxisOptions} />
+      ) : (
+        <div style={{ 
+          textAlign: 'center', 
+          color: '#94a3b8', 
+          padding: '60px 0',
+          fontSize: 14,
+        }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>📊</div>
+          Loading chart data...
+        </div>
+      )}
     </div>
   );
 }

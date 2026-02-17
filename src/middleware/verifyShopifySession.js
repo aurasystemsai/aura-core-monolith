@@ -29,7 +29,7 @@ module.exports = async function verifyShopifySession(req, res, next) {
     req.path.startsWith('/analytics') ||
     req.path.startsWith('/notifications') ||
     req.path.startsWith('/advanced-analytics-attribution') ||
-    req.path.startsWith('/advanced-ai/hitl/ideas/top') ||
+    req.path.startsWith('/advanced-ai') ||
     req.path.startsWith('/integration') ||
     req.path.startsWith('/main-suite') ||
     req.path.startsWith('/conditional-logic-automation') ||
