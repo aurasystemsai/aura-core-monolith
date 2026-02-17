@@ -510,6 +510,22 @@ const Dashboard = ({ setActiveSection }) => {
 				body: JSON.stringify({ url: shopUrl })
 			});
 			
+			// Handle non-200 responses
+			if (!response.ok) {
+				let errorMsg = 'Unknown error';
+				try {
+					const errorData = await response.json();
+					errorMsg = errorData.error || errorMsg;
+				} catch {
+					// Response isn't JSON, use status text
+					errorMsg = response.statusText || `HTTP ${response.status}`;
+				}
+				alert('⚠️ Scan failed: ' + errorMsg);
+				setScanningInProgress(false);
+				setScanRemainingTime(0);
+				return;
+			}
+			
 			const result = await response.json();
 			
 			if (result.ok) {
