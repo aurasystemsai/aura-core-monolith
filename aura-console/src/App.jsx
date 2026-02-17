@@ -24,6 +24,7 @@ const WorkflowOrchestrator = lazy(() => import("./components/tools/WorkflowOrche
 const ProductSeoEngine = lazy(() => import("./components/ProductSeoEngine"));
 const InternalLinkOptimizer = lazy(() => import("./components/InternalLinkOptimizer"));
 const Dashboard = lazy(() => import("./dashboard/Dashboard.jsx"));
+const AllTools = lazy(() => import("./components/AllTools.jsx"));
 const MainSuite = lazy(() => import("./components/tools/MainSuite.jsx"));
 const SeoMasterSuite = lazy(() => import("./components/tools/SeoMasterSuite.jsx"));
 const FixQueue = lazy(() => import("./components/FixQueue"));
@@ -398,8 +399,8 @@ function App() {
               Dashboard
             </button>
             <button
-              className={activeSection === 'main-suite' || activeSection.includes('suite') ? 'nav-link-active' : 'nav-link'}
-              onClick={() => setActiveSection('main-suite')}
+              className={activeSection === 'all-tools' || activeSection === 'main-suite' || activeSection.includes('suite') ? 'nav-link-active' : 'nav-link'}
+              onClick={() => setActiveSection('all-tools')}
             >
               <span className="nav-icon">🚀</span>
               Tools
@@ -434,6 +435,7 @@ function App() {
               <Suspense fallback={<div className="loading-spinner"><div className="spinner"></div><p>Loading…</p></div>}>
                 {/* Core sections */}
                 {activeSection === "dashboard" && <Dashboard setActiveSection={setActiveSection} />}
+                {activeSection === "all-tools" && <AllTools setActiveSection={setActiveSection} />}
                 {activeSection === "main-suite" && <MainSuite setActiveSection={setActiveSection} />}
                 {activeSection === "settings" && <Settings />}
                 {activeSection === "billing" && <Billing />}
