@@ -16,6 +16,18 @@ const featureChunks = [
 
 export default defineConfig({
   plugins: [react(), visualizer({ filename: "stats.html", open: false })],
+  optimizeDeps: {
+    include: [
+      '@mui/material',
+      '@mui/icons-material',
+      '@mui/system',
+      '@emotion/react',
+      '@emotion/styled',
+      'recharts',
+      'react',
+      'react-dom',
+    ],
+  },
   server: {
     port: 5173,
   },
