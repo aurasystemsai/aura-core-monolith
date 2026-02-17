@@ -49,7 +49,7 @@ const QuickActionCard = ({ icon, title, description, onClick, color = "#7fffd4" 
 );
 
 // Stat card component
-const StatCard = ({ label, value, change, icon, trend = "up" }) => (
+const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, upgradeRequired = false }) => (
 	<div
 		style={{
 			background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
@@ -68,13 +68,40 @@ const StatCard = ({ label, value, change, icon, trend = "up" }) => (
 				<div style={{ fontSize: 13, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
 					{label}
 				</div>
-				<div style={{ fontSize: 36, fontWeight: 900, color: "#e5e7eb", marginTop: 8 }}>{value}</div>
-				{change && (
+				<div style={{ fontSize: upgradeRequired ? 18 : 36, fontWeight: 900, color: upgradeRequired ? "#ff9800" : "#e5e7eb", marginTop: 8 }}>
+					{value}
+				</div>
+				{subtitle && (
+					<div style={{ fontSize: 11, color: "#64748b", marginTop: 4, lineHeight: 1.4 }}>
+						{subtitle}
+					</div>
+				)}
+				{change && !upgradeRequired && (
 					<div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
 						<span style={{ color: trend === "up" ? "#22d37f" : "#ff4d4f", fontSize: 14, fontWeight: 700 }}>
 							{trend === "up" ? "↑" : "↓"} {change}
 						</span>
 						<span style={{ fontSize: 12, color: "#64748b" }}>vs last period</span>
+					</div>
+				)}
+				{upgradeRequired && (
+					<div style={{ marginTop: 8 }}>
+						<a 
+							href="https://www.shopify.com/pricing" 
+							target="_blank" 
+							rel="noopener noreferrer"
+							style={{ 
+								fontSize: 12, 
+								color: "#7fffd4", 
+								textDecoration: "none",
+								fontWeight: 600,
+								display: "inline-flex",
+								alignItems: "center",
+								gap: 4
+							}}
+						>
+							Upgrade to Shopify Plus →
+						</a>
 					</div>
 				)}
 			</div>
@@ -134,6 +161,7 @@ const Dashboard = ({ setActiveSection }) => {
 		orders: null,
 		conversion: null,
 		visitors: null,
+		visitorsUpgradeRequired: false,
 	});
 	const [loading, setLoading] = useState(true);
 	const [copilotInput, setCopilotInput] = useState("");
@@ -192,23 +220,40 @@ const Dashboard = ({ setActiveSection }) => {
 						newStats.orders = ordersRes.value;
 					}
 
-					// Customers count (for visitors estimate)
-					const customersRes = await apiFetch("/api/analytics/customers");
-					if (customersRes.value !== null && customersRes.value !== undefined) {
-						// Estimate visitors as 5x customers (industry avg: 20% conversion to customer)
-						const estimatedVisitors = customersRes.value * 5;
-						newStats.visitors = estimatedVisitors >= 1000 
-							? `${(estimatedVisitors / 1000).toFixed(1)}K` 
-							: estimatedVisitors;
+					// Try to fetch actual traffic/visitor data (only available on Shopify Plus/Advanced)
+					const trafficRes = await apiFetch("/api/analytics/traffic");
+					if (trafficRes.value !== null && trafficRes.value !== undefined) {
+						// Real traffic data available
+						newStats.visitors = trafficRes.value >= 1000 
+							? `${(trafficRes.value / 1000).toFixed(1)}K` 
+							: trafficRes.value;
+						newStats.visitorsUpgradeRequired = false;
+					} else if (trafficRes.error && trafficRes.error.toLowerCase().includes('plus')) {
+						// Traffic data requires Shopify Plus/Advanced plan
+						newStats.visitors = "Upgrade Required";
+						newStats.visitorsUpgradeRequired = true;
+					} else {
+						// Fallback: estimate from customers if traffic API not available
+						const customersRes = await apiFetch("/api/analytics/customers");
+						if (customersRes.value !== null && customersRes.value !== undefined) {
+							const estimatedVisitors = customersRes.value * 5;
+							newStats.visitors = estimatedVisitors >= 1000 
+								? `~${(estimatedVisitors / 1000).toFixed(1)}K*` 
+								: `~${estimatedVisitors}*`;
+							newStats.visitorsUpgradeRequired = false;
+						}
 					}
 
-					// Calculate conversion rate (orders / estimated visitors)
-					if (newStats.orders && newStats.visitors) {
-						const visitors = typeof newStats.visitors === 'string' && newStats.visitors.includes('K')
-							? parseFloat(newStats.visitors) * 1000
-							: newStats.visitors;
-						const conversionRate = (newStats.orders / visitors) * 100;
-						newStats.conversion = `${conversionRate.toFixed(1)}%`;
+					// Calculate conversion rate (orders / visitors)
+					if (newStats.orders && newStats.visitors && !newStats.visitorsUpgradeRequired) {
+						const visitorsStr = String(newStats.visitors).replace('~', '').replace('*', '');
+						const visitors = visitorsStr.includes('K')
+							? parseFloat(visitorsStr) * 1000
+							: parseFloat(visitorsStr);
+						if (!isNaN(visitors) && visitors > 0) {
+							const conversionRate = (newStats.orders / visitors) * 100;
+							newStats.conversion = `${conversionRate.toFixed(1)}%`;
+						}
 					}
 				} catch (analyticsError) {
 					console.warn("Failed to fetch Shopify analytics:", analyticsError);
@@ -395,7 +440,19 @@ const Dashboard = ({ setActiveSection }) => {
 				<StatCard label="Total Revenue" value={stats.revenue || "—"} icon="💰" />
 				<StatCard label="Orders" value={stats.orders !== null && stats.orders !== undefined ? stats.orders : "—"} icon="📦" />
 				<StatCard label="Conversion Rate" value={stats.conversion || "—"} icon="📈" />
-				<StatCard label="Visitors" value={stats.visitors || "—"} icon="👥" />
+				<StatCard 
+					label="Visitors" 
+					value={stats.visitors || "—"} 
+					icon="👥" 
+					upgradeRequired={stats.visitorsUpgradeRequired}
+					subtitle={
+						stats.visitorsUpgradeRequired 
+							? "Traffic analytics requires Shopify Advanced or Plus" 
+							: (stats.visitors && stats.visitors.toString().includes('*')) 
+								? "* Estimated from customer data" 
+								: null
+					}
+				/>
 				<StatCard label="Products" value={stats.products !== null ? stats.products : "—"} icon="🛍️" />
 				<StatCard label="SEO Issues" value={stats.seoIssues !== null ? stats.seoIssues : "—"} icon="🔍" />
 			</div>
