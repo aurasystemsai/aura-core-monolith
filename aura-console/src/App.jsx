@@ -430,7 +430,7 @@ function App() {
                 {activeSection === "all-tools" && <AllTools setActiveSection={setActiveSection} />}
                 {activeSection === "main-suite" && <MainSuite setActiveSection={setActiveSection} />}
                 {activeSection === "settings" && <Settings />}
-
+                
                 {/* Legacy sections - only accessible via direct navigation */
                 {activeSection === "seo-master-suite" && <SeoMasterSuite />}
                 {activeSection === "pricing" && <PricingPage />}
