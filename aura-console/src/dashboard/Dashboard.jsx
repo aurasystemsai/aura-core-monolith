@@ -153,30 +153,71 @@ const Dashboard = ({ setActiveSection }) => {
 			setLoading(true);
 			try {
 				const projectId = localStorage.getItem("auraProjectId");
-				let products = null,
-					seoIssues = null;
+				
+				// Initialize stats object
+				const newStats = {
+					products: null,
+					seoIssues: null,
+					revenue: null,
+					orders: null,
+					conversion: null,
+					visitors: null,
+				};
+
+				// Fetch products count
 				if (projectId) {
 					const prodRes = await fetch(`${API_BASE}/projects/${projectId}/drafts`);
 					if (prodRes.ok) {
 						const prodData = await prodRes.json();
-						products = Array.isArray(prodData) ? prodData.length : prodData.items ? prodData.items.length : null;
+						newStats.products = Array.isArray(prodData) ? prodData.length : prodData.items ? prodData.items.length : null;
 					}
 					const fixRes = await fetch(`${API_BASE}/projects/${projectId}/fix-queue`);
 					if (fixRes.ok) {
 						const fixData = await fixRes.json();
-						seoIssues = fixData.counts && fixData.counts.open ? fixData.counts.open : 0;
+						newStats.seoIssues = fixData.counts && fixData.counts.open ? fixData.counts.open : 0;
 					}
 				}
-				// Mock additional stats for now - can be replaced with real API calls
-				setStats({
-					products,
-					seoIssues,
-					revenue: "$12,450",
-					orders: 143,
-					conversion: "3.2%",
-					visitors: "4.5K",
-				});
+
+				// Fetch real Shopify analytics data
+				try {
+					// Revenue
+					const revenueRes = await apiFetch("/api/analytics/revenue");
+					if (revenueRes.value !== null && revenueRes.value !== undefined) {
+						newStats.revenue = `$${Number(revenueRes.value).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+					}
+
+					// Orders count
+					const ordersRes = await apiFetch("/api/analytics/orders");
+					if (ordersRes.value !== null && ordersRes.value !== undefined) {
+						newStats.orders = ordersRes.value;
+					}
+
+					// Customers count (for visitors estimate)
+					const customersRes = await apiFetch("/api/analytics/customers");
+					if (customersRes.value !== null && customersRes.value !== undefined) {
+						// Estimate visitors as 5x customers (industry avg: 20% conversion to customer)
+						const estimatedVisitors = customersRes.value * 5;
+						newStats.visitors = estimatedVisitors >= 1000 
+							? `${(estimatedVisitors / 1000).toFixed(1)}K` 
+							: estimatedVisitors;
+					}
+
+					// Calculate conversion rate (orders / estimated visitors)
+					if (newStats.orders && newStats.visitors) {
+						const visitors = typeof newStats.visitors === 'string' && newStats.visitors.includes('K')
+							? parseFloat(newStats.visitors) * 1000
+							: newStats.visitors;
+						const conversionRate = (newStats.orders / visitors) * 100;
+						newStats.conversion = `${conversionRate.toFixed(1)}%`;
+					}
+				} catch (analyticsError) {
+					console.warn("Failed to fetch Shopify analytics:", analyticsError);
+					// Leave null if analytics fail
+				}
+
+				setStats(newStats);
 			} catch (e) {
+				console.error("Failed to fetch dashboard stats:", e);
 				setStats({
 					products: "—",
 					seoIssues: "—",
@@ -351,10 +392,10 @@ const Dashboard = ({ setActiveSection }) => {
 					marginBottom: 32,
 				}}
 			>
-				<StatCard label="Total Revenue" value={stats.revenue} change="+12.5%" trend="up" icon="💰" />
-				<StatCard label="Orders" value={stats.orders} change="+8.3%" trend="up" icon="📦" />
-				<StatCard label="Conversion Rate" value={stats.conversion} change="+0.4%" trend="up" icon="📈" />
-				<StatCard label="Visitors" value={stats.visitors} change="-2.1%" trend="down" icon="👥" />
+				<StatCard label="Total Revenue" value={stats.revenue || "—"} icon="💰" />
+				<StatCard label="Orders" value={stats.orders !== null && stats.orders !== undefined ? stats.orders : "—"} icon="📦" />
+				<StatCard label="Conversion Rate" value={stats.conversion || "—"} icon="📈" />
+				<StatCard label="Visitors" value={stats.visitors || "—"} icon="👥" />
 				<StatCard label="Products" value={stats.products !== null ? stats.products : "—"} icon="🛍️" />
 				<StatCard label="SEO Issues" value={stats.seoIssues !== null ? stats.seoIssues : "—"} icon="🔍" />
 			</div>
