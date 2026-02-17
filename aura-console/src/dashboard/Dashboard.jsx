@@ -185,6 +185,7 @@ const Dashboard = ({ setActiveSection }) => {
 		return saved ? JSON.parse(saved) : { revenue: 10000, orders: 100, conversion: 5 };
 	});
 	const [alerts, setAlerts] = useState([]);
+	const [toasts, setToasts] = useState([]);
 	const [scanningInProgress, setScanningInProgress] = useState(false);
 	const [lastScanTime, setLastScanTime] = useState(null);
 	const [scanEstimatedTime, setScanEstimatedTime] = useState(0); // in seconds
@@ -461,6 +462,12 @@ const Dashboard = ({ setActiveSection }) => {
 		URL.revokeObjectURL(url);
 	};
 
+	const showToast = (message, type = 'success') => {
+		const id = Date.now();
+		setToasts(prev => [...prev, { id, message, type }]);
+		setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 5000);
+	};
+
 	const runSeoScan = async () => {
 		if (scanningInProgress) return;
 		
@@ -471,7 +478,7 @@ const Dashboard = ({ setActiveSection }) => {
 			const session = await sessionRes.json();
 			
 			if (!session.ok || !session.shop) {
-				alert('Unable to determine shop URL. Please connect your Shopify store in Settings.');
+				showToast('Unable to determine shop URL. Please connect your Shopify store in Settings.', 'error');
 				setScanningInProgress(false);
 				return;
 			}
@@ -520,7 +527,7 @@ const Dashboard = ({ setActiveSection }) => {
 					// Response isn't JSON, use status text
 					errorMsg = response.statusText || `HTTP ${response.status}`;
 				}
-				alert('⚠️ Scan failed: ' + errorMsg);
+				showToast('Scan failed: ' + errorMsg, 'error');
 				setScanningInProgress(false);
 				setScanRemainingTime(0);
 				return;
@@ -531,15 +538,15 @@ const Dashboard = ({ setActiveSection }) => {
 			if (result.ok) {
 				setLastScanTime(new Date().toLocaleTimeString());
 				const minutes = Math.ceil(estimatedSeconds / 60);
-				alert(`✅ SEO scan started! Scanning ${productCount} products. Estimated time: ~${minutes} minute${minutes > 1 ? 's' : ''}. Progress shown on dashboard.`);
+				showToast(`SEO scan started! Scanning ${productCount} products — estimated ~${minutes} minute${minutes > 1 ? 's' : ''}.`, 'success');
 			} else {
-				alert('⚠️ Scan failed: ' + (result.error || 'Unknown error'));
+				showToast('Scan failed: ' + (result.error || 'Unknown error'), 'error');
 				setScanningInProgress(false);
 				setScanRemainingTime(0);
 			}
 		} catch (error) {
 			console.error('SEO scan error:', error);
-			alert('❌ Failed to start SEO scan. Please try again.');
+			showToast('Failed to start SEO scan. Please try again.', 'error');
 			setScanningInProgress(false);
 			setScanRemainingTime(0);
 		}
@@ -745,7 +752,34 @@ const Dashboard = ({ setActiveSection }) => {
 						font-size: 28px !important;
 					}
 				}
+				.aura-toast { animation: toastIn 0.3s ease; }
+				@keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
 			`}</style>
+
+			{/* Toast Notifications */}
+			<div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 9999, display: "flex", flexDirection: "column", gap: 10 }}>
+				{toasts.map(toast => (
+					<div key={toast.id} className="aura-toast" style={{
+						background: toast.type === 'error' ? "#2d1515" : "#0f2d24",
+						border: `1px solid ${toast.type === 'error' ? '#e53e3e' : '#7fffd4'}`,
+						borderRadius: 12,
+						padding: "14px 20px",
+						color: toast.type === 'error' ? '#fc8181' : '#7fffd4',
+						fontSize: 14,
+						fontWeight: 500,
+						maxWidth: 360,
+						boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+						display: "flex",
+						alignItems: "center",
+						gap: 10,
+					}}>
+						<span style={{ fontSize: 18 }}>{toast.type === 'error' ? '⚠️' : '✅'}</span>
+						<span>{toast.message}</span>
+						<button onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
+							style={{ marginLeft: "auto", background: "none", border: "none", color: "inherit", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 0 0 8px", opacity: 0.7 }}>×</button>
+					</div>
+				))}
+			</div>
 
 			{/* Header */}
 			<div style={{ marginBottom: 32 }}>
