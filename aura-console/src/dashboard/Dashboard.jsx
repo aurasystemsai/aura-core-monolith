@@ -185,6 +185,8 @@ const Dashboard = ({ setActiveSection }) => {
 		return saved ? JSON.parse(saved) : { revenue: 10000, orders: 100, conversion: 5 };
 	});
 	const [alerts, setAlerts] = useState([]);
+	const [scanningInProgress, setScanningInProgress] = useState(false);
+	const [lastScanTime, setLastScanTime] = useState(null);
 
 	const fetchStats = async (period = timePeriod) => {
 		setLoading(true);
@@ -455,6 +457,52 @@ const Dashboard = ({ setActiveSection }) => {
 		a.download = `dashboard-stats-${new Date().toISOString().split('T')[0]}.csv`;
 		a.click();
 		URL.revokeObjectURL(url);
+	};
+
+	const runSeoScan = async () => {
+		if (scanningInProgress) return;
+		
+		setScanningInProgress(true);
+		try {
+			// Get shop URL from session
+			const sessionRes = await apiFetch('/api/session');
+			const session = await sessionRes.json();
+			
+			if (!session.ok || !session.shop) {
+				alert('Unable to determine shop URL. Please connect your Shopify store in Settings.');
+				setScanningInProgress(false);
+				return;
+			}
+			
+			const shopUrl = session.shop.includes('http') 
+				? session.shop 
+				: `https://${session.shop}`;
+			
+			// Trigger site crawl
+			const response = await apiFetch('/api/tools/seo-site-crawler/crawl', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ url: shopUrl })
+			});
+			
+			const result = await response.json();
+			
+			if (result.ok) {
+				setLastScanTime(new Date().toLocaleTimeString());
+				alert('✅ SEO scan started! Results will appear in the dashboard in a few moments.');
+				// Refresh stats to show updated SEO issues
+				setTimeout(() => {
+					fetchStats();
+				}, 3000);
+			} else {
+				alert('⚠️ Scan failed: ' + (result.error || 'Unknown error'));
+			}
+		} catch (error) {
+			console.error('SEO scan error:', error);
+			alert('❌ Failed to start SEO scan. Please try again.');
+		} finally {
+			setScanningInProgress(false);
+		}
 	};
 
 	useEffect(() => {
@@ -1240,13 +1288,25 @@ const Dashboard = ({ setActiveSection }) => {
 					}}
 				>
 					<QuickActionCard
+						icon={scanningInProgress ? "⏳" : "🔍"}
+						title={scanningInProgress ? "Scanning..." : "Run SEO Scan"}
+						description={
+							scanningInProgress 
+								? "Analyzing your site for SEO issues..." 
+								: lastScanTime 
+									? `Scan your store for SEO issues • Last: ${lastScanTime}` 
+									: "Scan your entire store for SEO issues"
+						}
+						onClick={runSeoScan}
+					/>
+					<QuickActionCard
 						icon="✍️"
 						title="Generate Content"
 						description="Create AI-powered product descriptions and blog posts"
 						onClick={() => setActiveSection && setActiveSection("tools")}
 					/>
 					<QuickActionCard
-						icon="🔍"
+						icon="🔧"
 						title="Fix SEO Issues"
 						description={`Fix ${stats.seoIssues || 0} SEO issues to improve rankings`}
 						onClick={() => setActiveSection && setActiveSection("seo")}
