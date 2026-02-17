@@ -49,7 +49,7 @@ const QuickActionCard = ({ icon, title, description, onClick, color = "#7fffd4" 
 );
 
 // Stat card component
-const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, upgradeRequired = false }) => (
+const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, upgradeRequired = false, tooltip = null }) => (
 	<div
 		style={{
 			background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
@@ -65,8 +65,11 @@ const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, u
 	>
 		<div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
 			<div style={{ flex: 1 }}>
-				<div style={{ fontSize: 13, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+				<div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
 					{label}
+					{tooltip && (
+						<span title={tooltip} style={{ cursor: "help", fontSize: 12, opacity: 0.7 }}>ℹ️</span>
+					)}
 				</div>
 				<div style={{ fontSize: upgradeRequired ? 18 : 36, fontWeight: 900, color: upgradeRequired ? "#ff9800" : "#e5e7eb", marginTop: 8 }}>
 					{value}
@@ -162,8 +165,11 @@ const Dashboard = ({ setActiveSection }) => {
 		conversion: null,
 		visitors: null,
 		visitorsUpgradeRequired: false,
+		aov: null,
 	});
+	const [previousStats, setPreviousStats] = useState(null);
 	const [loading, setLoading] = useState(true);
+	const [autoRefresh, setAutoRefresh] = useState(true);
 	const [copilotInput, setCopilotInput] = useState("");
 	const [copilotReply, setCopilotReply] = useState("");
 	const [copilotLoading, setCopilotLoading] = useState(false);
@@ -171,7 +177,14 @@ const Dashboard = ({ setActiveSection }) => {
 	const [timePeriod, setTimePeriod] = useState(30); // 7, 30, or 90 days
 	const [recentActivity, setRecentActivity] = useState([]);
 	const [topProducts, setTopProducts] = useState([]);
+	const [underperformingProducts, setUnderperformingProducts] = useState([]);
 	const [healthScore, setHealthScore] = useState(null);
+	const [recommendations, setRecommendations] = useState([]);
+	const [goals, setGoals] = useState(() => {
+		const saved = localStorage.getItem('dashboardGoals');
+		return saved ? JSON.parse(saved) : { revenue: 10000, orders: 100, conversion: 5 };
+	});
+	const [alerts, setAlerts] = useState([]);
 
 	const fetchStats = async (period = timePeriod) => {
 		setLoading(true);
@@ -253,6 +266,12 @@ const Dashboard = ({ setActiveSection }) => {
 					}
 				}
 
+				// Calculate Average Order Value (AOV)
+				if (newStats.revenueRaw && newStats.orders && newStats.orders > 0) {
+					const aovValue = newStats.revenueRaw / newStats.orders;
+					newStats.aov = `$${aovValue.toFixed(2)}`;
+				}
+
 				// Fetch recent orders for activity feed
 				try {
 					const ordersDetailRes = await apiFetch("/api/analytics/orders?limit=5&details=true");
@@ -279,17 +298,27 @@ const Dashboard = ({ setActiveSection }) => {
 					]);
 				}
 
-				// Fetch top products
+				// Fetch top products and find underperforming ones
 				try {
-					const productsRes = await apiFetch("/api/product-seo/shopify-products?limit=5");
+					const productsRes = await apiFetch("/api/product-seo/shopify-products?limit=20");
 					if (productsRes && Array.isArray(productsRes)) {
 						setTopProducts(productsRes.slice(0, 5));
+						// Underperforming: products with low price or missing info
+						const underperforming = productsRes
+							.filter(p => {
+								const price = p.variants?.[0]?.price ? parseFloat(p.variants[0].price) : 0;
+								return price < 10 || !p.images || p.images.length === 0 || !p.body_html;
+							})
+							.slice(0, 5);
+						setUnderperformingProducts(underperforming);
 					} else {
 						setTopProducts([]);
+						setUnderperformingProducts([]);
 					}
 				} catch (prodErr) {
-					console.warn("Failed to fetch top products:", prodErr);
+					console.warn("Failed to fetch products:", prodErr);
 					setTopProducts([]);
+					setUnderperformingProducts([]);
 				}
 
 			} catch (analyticsError) {
@@ -299,6 +328,17 @@ const Dashboard = ({ setActiveSection }) => {
 
 			// Calculate health score
 			calculateHealthScore(newStats);
+
+			// Generate recommendations
+			generateRecommendations(newStats);
+
+			// Check for alerts
+			checkAlerts(newStats);
+
+			// Store for comparison
+			if (!previousStats && newStats.revenue) {
+				setPreviousStats(newStats);
+			}
 
 			setStats(newStats);
 		} catch (e) {
@@ -351,6 +391,47 @@ const Dashboard = ({ setActiveSection }) => {
 		setHealthScore({ score: Math.max(score, 0), grade });
 	};
 
+	const generateRecommendations = (statsData) => {
+		const recs = [];
+		if (statsData.seoIssues > 10) {
+			recs.push({ icon: "🔍", text: "You have " + statsData.seoIssues + " SEO issues. Fix them to improve search rankings.", action: "Fix SEO Issues", link: "seo" });
+		}
+		if (statsData.conversion && parseFloat(statsData.conversion) < 2) {
+			recs.push({ icon: "📈", text: "Low conversion rate. Consider A/B testing your product pages.", action: "Optimize Conversion", link: "tools" });
+		}
+		if (statsData.orders < 10) {
+			recs.push({ icon: "📧", text: "Boost sales with targeted email campaigns to your customers.", action: "Create Campaign", link: "tools" });
+		}
+		if (underperformingProducts.length > 0) {
+			recs.push({ icon: "⚠️", text: underperformingProducts.length + " products need attention (missing images/descriptions).", action: "View Products", link: "products" });
+		}
+		setRecommendations(recs.slice(0, 3));
+	};
+
+	const checkAlerts = (statsData) => {
+		const newAlerts = [];
+		if (previousStats) {
+			if (statsData.revenueRaw && previousStats.revenueRaw && statsData.revenueRaw < previousStats.revenueRaw * 0.8) {
+				newAlerts.push({ type: "warning", message: "Revenue dropped 20%+ vs last check" });
+			}
+			if (statsData.orders && previousStats.orders && statsData.orders < previousStats.orders * 0.7) {
+				newAlerts.push({ type: "danger", message: "Orders dropped 30%+ vs last check" });
+			}
+		}
+		setAlerts(newAlerts);
+	};
+
+	const calculateChange = (current, previous) => {
+		if (!previous || !current || isNaN(parseFloat(current)) || isNaN(parseFloat(previous))) return null;
+		const change = ((parseFloat(current) - parseFloat(previous)) / parseFloat(previous)) * 100;
+		return { value: Math.abs(change).toFixed(1) + "%", trend: change >= 0 ? "up" : "down" };
+	};
+
+	const saveGoals = (newGoals) => {
+		setGoals(newGoals);
+		localStorage.setItem('dashboardGoals', JSON.stringify(newGoals));
+	};
+
 	const exportStats = () => {
 		const csv = [
 			["Metric", "Value"],
@@ -376,6 +457,16 @@ const Dashboard = ({ setActiveSection }) => {
 		fetchStats();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [timePeriod]);
+
+	// Auto-refresh every 30 seconds
+	useEffect(() => {
+		if (!autoRefresh) return;
+		const interval = setInterval(() => {
+			fetchStats();
+		}, 30000);
+		return () => clearInterval(interval);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [autoRefresh, timePeriod]);
 
 	useEffect(() => {
 		async function fetchShop() {
@@ -492,6 +583,50 @@ const Dashboard = ({ setActiveSection }) => {
 					box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 					border-color: #3a4565;
 				}
+				
+				/* Mobile Responsive Styles */
+				@media (max-width: 768px) {
+					.aura-dashboard-shell {
+						padding: 16px !important;
+					}
+					.aura-dashboard-shell h1 {
+						font-size: 24px !important;
+					}
+					.aura-dashboard-shell h2 {
+						font-size: 18px !important;
+					}
+					.aura-dashboard-shell h3 {
+						font-size: 16px !important;
+					}
+					/* Stack header controls vertically on mobile */
+					.aura-dashboard-shell > div:first-child > div:first-child {
+						flex-direction: column !important;
+						align-items: flex-start !important;
+					}
+					/* Make chart grid single column on mobile */
+					.aura-dashboard-shell > div:nth-child(10) {
+						grid-template-columns: 1fr !important;
+					}
+					/* Ensure stat cards are full width on small screens */
+					.stat-card {
+						min-width: 100% !important;
+					}
+				}
+				
+				@media (max-width: 480px) {
+					.aura-dashboard-shell {
+						padding: 12px !important;
+					}
+					.stat-card {
+						padding: 16px !important;
+					}
+					.stat-card > div > div:first-child {
+						font-size: 11px !important;
+					}
+					.stat-card > div > div:nth-child(2) {
+						font-size: 28px !important;
+					}
+				}
 			`}</style>
 
 			{/* Header */}
@@ -508,7 +643,7 @@ const Dashboard = ({ setActiveSection }) => {
 							</p>
 						</div>
 					</div>
-					<div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+					<div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
 						{/* Time Period Selector */}
 						<select
 							value={timePeriod}
@@ -529,6 +664,26 @@ const Dashboard = ({ setActiveSection }) => {
 							<option value={30}>Last 30 Days</option>
 							<option value={90}>Last 90 Days</option>
 						</select>
+						{/* Auto-refresh Toggle */}
+						<button
+							onClick={() => setAutoRefresh(!autoRefresh)}
+							style={{
+								background: autoRefresh ? "#7fffd4" : "#1a1d2e",
+								border: "1px solid #2f3650",
+								borderRadius: 8,
+								padding: "10px 16px",
+								color: autoRefresh ? "#0f172a" : "#7fffd4",
+								fontSize: 14,
+								fontWeight: 600,
+								cursor: "pointer",
+								display: "flex",
+								alignItems: "center",
+								gap: 6,
+							}}
+							title={autoRefresh ? "Auto-refresh ON (30s)" : "Auto-refresh OFF"}
+						>
+							🔄 {autoRefresh ? "ON" : "OFF"}
+						</button>
 						{/* Refresh Button */}
 						<button
 							onClick={() => fetchStats()}
@@ -639,6 +794,85 @@ const Dashboard = ({ setActiveSection }) => {
 				)}
 			</div>
 
+			{/* Alerts Banner */}
+			{alerts.length > 0 && (
+				<div style={{ marginBottom: 24 }}>
+					{alerts.map((alert, idx) => (
+						<div
+							key={idx}
+							style={{
+								background: alert.type === "danger" ? "rgba(239, 68, 68, 0.1)" : "rgba(251, 191, 36, 0.1)",
+								border: `1px solid ${alert.type === "danger" ? "#ef4444" : "#fbbf24"}`,
+								borderRadius: 12,
+								padding: "12px 16px",
+								marginBottom: 12,
+								display: "flex",
+								alignItems: "center",
+								gap: 12,
+							}}
+						>
+							<span style={{ fontSize: 20 }}>{alert.type === "danger" ? "🚨" : "⚠️"}</span>
+							<span style={{ color: "#e5e7eb", fontSize: 14, fontWeight: 600 }}>{alert.message}</span>
+						</div>
+					))}
+				</div>
+			)}
+
+			{/* Recommendations Panel */}
+			{recommendations.length > 0 && (
+				<div
+					style={{
+						background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
+						border: "1px solid #2f3650",
+						borderRadius: 16,
+						padding: 24,
+						marginBottom: 32,
+					}}
+				>
+					<h3 style={{ fontSize: 18, fontWeight: 700, color: "#e5e7eb", margin: "0 0 16px 0" }}>
+						💡 Smart Recommendations
+					</h3>
+					<div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+						{recommendations.map((rec, idx) => (
+							<div
+								key={idx}
+								style={{
+									background: "#0f1324",
+									border: "1px solid #2f3650",
+									borderRadius: 10,
+									padding: 16,
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "space-between",
+									gap: 16,
+								}}
+							>
+								<div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1 }}>
+									<span style={{ fontSize: 24 }}>{rec.icon}</span>
+									<span style={{ color: "#e5e7eb", fontSize: 14 }}>{rec.text}</span>
+								</div>
+								<button
+									onClick={() => setActiveSection && setActiveSection(rec.link)}
+									style={{
+										background: "#7fffd4",
+										color: "#0f172a",
+										border: "none",
+										borderRadius: 8,
+										padding: "8px 16px",
+										fontSize: 13,
+										fontWeight: 700,
+										cursor: "pointer",
+										whiteSpace: "nowrap",
+									}}
+								>
+									{rec.action}
+								</button>
+							</div>
+						))}
+					</div>
+				</div>
+			)}
+
 			{/* Key Metrics Grid */}
 			<div
 				style={{
@@ -652,19 +886,33 @@ const Dashboard = ({ setActiveSection }) => {
 					label="Total Revenue" 
 					value={stats.revenue || (stats.revenue === "$0" ? "$0" : "—")} 
 					icon="💰"
+					tooltip="Total sales revenue for the selected period"
 					subtitle={(!stats.revenue || stats.revenue === "$0" || stats.revenue === "—") ? "No revenue data available" : null}
 				/>
 				<StatCard 
 					label="Orders" 
 					value={stats.orders !== null && stats.orders !== undefined ? stats.orders : "—"} 
 					icon="📦"
+					tooltip="Number of orders placed"
 					subtitle={(stats.orders === 0 || stats.orders === null) ? "No orders yet" : null}
 				/>
-				<StatCard label="Conversion Rate" value={stats.conversion || "—"} icon="📈" />
+				<StatCard 
+					label="Average Order Value" 
+					value={stats.aov || "—"} 
+					icon="💵"
+					tooltip="Average revenue per order (Revenue ÷ Orders)"
+				/>
+				<StatCard 
+					label="Conversion Rate" 
+					value={stats.conversion || "—"} 
+					icon="📈"
+					tooltip="Percentage of visitors who made a purchase"
+				/>
 				<StatCard 
 					label="Visitors" 
 					value={stats.visitors || "—"} 
-					icon="👥" 
+					icon="👥"
+					tooltip="Total store visitors for the selected period"
 					upgradeRequired={stats.visitorsUpgradeRequired}
 					subtitle={
 						stats.visitorsUpgradeRequired 
@@ -674,8 +922,18 @@ const Dashboard = ({ setActiveSection }) => {
 								: null
 					}
 				/>
-				<StatCard label="Products" value={stats.products !== null ? stats.products : "—"} icon="🛍️" />
-				<StatCard label="SEO Issues" value={stats.seoIssues !== null ? stats.seoIssues : "—"} icon="🔍" />
+				<StatCard 
+					label="Products" 
+					value={stats.products !== null ? stats.products : "—"} 
+					icon="🛍️"
+					tooltip="Total number of products in your catalog"
+				/>
+				<StatCard 
+					label="SEO Issues" 
+					value={stats.seoIssues !== null ? stats.seoIssues : "—"} 
+					icon="🔍"
+					tooltip="Number of SEO issues that need attention"
+				/>
 			</div>
 
 			{/* Store Health Score */}
@@ -690,9 +948,11 @@ const Dashboard = ({ setActiveSection }) => {
 						display: "flex",
 						alignItems: "center",
 						justifyContent: "space-between",
+						flexWrap: "wrap",
+						gap: 16,
 					}}
 				>
-					<div>
+					<div style={{ flex: 1, minWidth: 200 }}>
 						<h3 style={{ fontSize: 20, fontWeight: 700, color: "#e5e7eb", margin: "0 0 8px 0" }}>
 							🏆 Store Health Score
 						</h3>
@@ -715,6 +975,74 @@ const Dashboard = ({ setActiveSection }) => {
 					</div>
 				</div>
 			)}
+
+			{/* Goal Tracking */}
+			<div
+				style={{
+					background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
+					border: "1px solid #2f3650",
+					borderRadius: 16,
+					padding: 24,
+					marginBottom: 32,
+				}}
+			>
+				<h3 style={{ fontSize: 18, fontWeight: 700, color: "#e5e7eb", margin: "0 0 20px 0" }}>
+					🎯 Monthly Goals
+				</h3>
+				<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20 }}>
+					{/* Revenue Goal */}
+					<div>
+						<div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+							<span style={{ color: "#94a3b8", fontSize: 13 }}>Revenue Goal</span>
+							<span style={{ color: "#e5e7eb", fontSize: 13, fontWeight: 600 }}>
+								{stats.revenueRaw ? `$${stats.revenueRaw.toFixed(0)}` : "$0"} / ${goals.revenue}
+							</span>
+						</div>
+						<div style={{ background: "#2f3650", height: 8, borderRadius: 4, overflow: "hidden" }}>
+							<div style={{ 
+								background: "#7fffd4", 
+								height: "100%", 
+								width: `${Math.min((stats.revenueRaw / goals.revenue) * 100, 100)}%`,
+								transition: "width 0.3s"
+							}} />
+						</div>
+					</div>
+					{/* Orders Goal */}
+					<div>
+						<div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+							<span style={{ color: "#94a3b8", fontSize: 13 }}>Orders Goal</span>
+							<span style={{ color: "#e5e7eb", fontSize: 13, fontWeight: 600 }}>
+								{stats.orders || 0} / {goals.orders}
+							</span>
+						</div>
+						<div style={{ background: "#2f3650", height: 8, borderRadius: 4, overflow: "hidden" }}>
+							<div style={{ 
+								background: "#4ade80", 
+								height: "100%", 
+								width: `${Math.min((stats.orders / goals.orders) * 100, 100)}%`,
+								transition: "width 0.3s"
+							}} />
+						</div>
+					</div>
+					{/* Conversion Goal */}
+					<div>
+						<div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+							<span style={{ color: "#94a3b8", fontSize: 13 }}>Conversion Goal</span>
+							<span style={{ color: "#e5e7eb", fontSize: 13, fontWeight: 600 }}>
+								{stats.conversion || "0%"} / {goals.conversion}%
+							</span>
+						</div>
+						<div style={{ background: "#2f3650", height: 8, borderRadius: 4, overflow: "hidden" }}>
+							<div style={{ 
+								background: "#fbbf24", 
+								height: "100%", 
+								width: `${Math.min((parseFloat(stats.conversion || 0) / goals.conversion) * 100, 100)}%`,
+								transition: "width 0.3s"
+							}} />
+						</div>
+					</div>
+				</div>
+			</div>
 
 			{/* Integration Health - Moved Higher */}
 			<IntegrationHealthPanel />
@@ -836,6 +1164,64 @@ const Dashboard = ({ setActiveSection }) => {
 							</div>
 						)}
 					</div>
+
+					{/* Underperforming Products */}
+					{underperformingProducts.length > 0 && (
+						<div
+							style={{
+								background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
+								border: "1px solid #fb923c",
+								borderRadius: 16,
+								padding: 24,
+							}}
+						>
+							<h3 style={{ fontSize: 18, fontWeight: 700, color: "#e5e7eb", margin: "0 0 20px 0" }}>
+								⚠️ Needs Attention
+							</h3>
+							<div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+								{underperformingProducts.map((product, idx) => (
+									<div
+										key={product.id || idx}
+										style={{
+											display: "flex",
+											alignItems: "center",
+											gap: 12,
+											padding: 12,
+											background: "#0f1324",
+											border: "1px solid #3a2d1a",
+											borderRadius: 8,
+										}}
+									>
+										<span style={{ fontSize: 20 }}>⚠️</span>
+										<div style={{ flex: 1 }}>
+											<div style={{ fontSize: 14, fontWeight: 600, color: "#e5e7eb", marginBottom: 4 }}>
+												{product.title || "Untitled Product"}
+											</div>
+											<div style={{ fontSize: 12, color: "#fb923c" }}>
+												{!product.images || product.images.length === 0 ? "Missing image" : 
+												 !product.body_html ? "Missing description" : "Low price"}
+											</div>
+										</div>
+										<button
+											onClick={() => setActiveSection && setActiveSection("products")}
+											style={{
+												background: "transparent",
+												border: "1px solid #fb923c",
+												borderRadius: 6,
+												padding: "6px 12px",
+												color: "#fb923c",
+												fontSize: 12,
+												fontWeight: 600,
+												cursor: "pointer",
+											}}
+										>
+											Fix
+										</button>
+									</div>
+								))}
+							</div>
+						</div>
+					)}
 				</div>
 			</div>
 
@@ -857,9 +1243,9 @@ const Dashboard = ({ setActiveSection }) => {
 					/>
 					<QuickActionCard
 						icon="🔍"
-						title="SEO Audit"
-						description="Run comprehensive SEO analysis on your store"
-						onClick={() => setActiveSection && setActiveSection("tools")}
+						title="Fix SEO Issues"
+						description={`Fix ${stats.seoIssues || 0} SEO issues to improve rankings`}
+						onClick={() => setActiveSection && setActiveSection("seo")}
 					/>
 					<QuickActionCard
 						icon="📧"
