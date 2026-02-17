@@ -5,22 +5,12 @@ import React, { useState, useEffect } from 'react';
 import { apiFetch } from '../api';
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState('shopify');
   const [shopifyConnected, setShopifyConnected] = useState(false);
   const [shopDomain, setShopDomain] = useState('');
   const [shopInfo, setShopInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [apiKeyRevealed, setApiKeyRevealed] = useState(false);
-  const [notifications, setNotifications] = useState({
-    emailUpdates: true,
-    weeklySummary: true,
-    smsAlerts: false
-  });
-  const [contactInfo, setContactInfo] = useState({
-    email: '',
-    phone: ''
-  });
 
   useEffect(() => {
     loadSettings();
@@ -97,32 +87,6 @@ const Settings = () => {
     }
   }
 
-  async function saveNotifications() {
-    // Validate email if email notifications are enabled
-    if (notifications.emailUpdates && !contactInfo.email) {
-      alert('Please enter an email address for email notifications');
-      return;
-    }
-    // Validate phone if SMS is enabled
-    if (notifications.smsAlerts && !contactInfo.phone) {
-      alert('Please enter a phone number for SMS alerts');
-      return;
-    }
-    
-    setSaving(true);
-    try {
-      await apiFetch('/settings/notifications', {
-        method: 'POST',
-        body: JSON.stringify({ ...notifications, ...contactInfo })
-      });
-      alert('Notification preferences saved');
-    } catch (error) {
-      alert('Failed to save: ' + error.message);
-    } finally {
-      setSaving(false);
-    }
-  }
-
   function copyApiKey() {
     navigator.clipboard.writeText('aura_live_sk_1234567890abcdef')
       .then(() => alert('API key copied to clipboard'))
@@ -157,28 +121,12 @@ const Settings = () => {
     <div className="settings-page">
       <div className="settings-header">
         <h1>Settings</h1>
-        <p>Manage your integrations and platform configuration</p>
-      </div>
-
-      <div className="settings-tabs">
-        <button 
-          className={`tab ${activeTab === 'shopify' ? 'active' : ''}`}
-          onClick={() => setActiveTab('shopify')}
-        >
-          Shopify Integration
-        </button>
-        <button 
-          className={`tab ${activeTab === 'general' ? 'active' : ''}`}
-          onClick={() => setActiveTab('general')}
-        >
-          General Settings
-        </button>
+        <p>Manage your Shopify integration and API access</p>
       </div>
 
       <div className="settings-content">
-        {activeTab === 'shopify' && (
-          <div className="settings-section">
-            <h2>Shopify Integration</h2>
+        <div className="settings-section">
+          <h2>Shopify Integration</h2>
             
             {!shopifyConnected ? (
               <div className="connect-shopify-card">
@@ -274,96 +222,11 @@ const Settings = () => {
                 </div>
               </div>
             )}
-          </div>
-        )}
+        </div>
 
-        {activeTab === 'general' && (
-          <div className="settings-section">
-            <div className="setting-card">
-              <div className="card-header">
-                <div className="header-icon">🔔</div>
-                <div>
-                  <h3>Notifications</h3>
-                  <p className="card-subtitle">Manage how you receive updates and alerts</p>
-                </div>
-              </div>
-              <div className="card-body">
-                <div className="contact-fields">
-                  <div className="input-field">
-                    <label className="input-label">
-                      📧 Email Address
-                      {notifications.emailUpdates && <span className="required-badge">Required</span>}
-                    </label>
-                    <input
-                      type="email"
-                      placeholder="you@example.com"
-                      value={contactInfo.email}
-                      onChange={(e) => setContactInfo({...contactInfo, email: e.target.value})}
-                      className="text-input"
-                    />
-                    <p className="field-hint">Used for email notifications and account updates</p>
-                  </div>
-
-                  <div className="input-field">
-                    <label className="input-label">
-                      📱 Phone Number
-                      {notifications.smsAlerts && <span className="required-badge">Required</span>}
-                    </label>
-                    <input
-                      type="tel"
-                      placeholder="+1 (555) 123-4567"
-                      value={contactInfo.phone}
-                      onChange={(e) => setContactInfo({...contactInfo, phone: e.target.value})}
-                      className="text-input"
-                    />
-                    <p className="field-hint">Will be used for critical SMS alerts only</p>
-                  </div>
-                </div>
-
-                <div className="divider"></div>
-
-                <label className="modern-checkbox">
-                  <input 
-                    type="checkbox" 
-                    checked={notifications.emailUpdates}
-                    onChange={(e) => setNotifications({...notifications, emailUpdates: e.target.checked})}
-                  />
-                  <div className="checkbox-content">
-                    <span className="checkbox-title">Email notifications</span>
-                    <span className="checkbox-desc">Receive important updates and alerts via email</span>
-                  </div>
-                </label>
-                <label className="modern-checkbox">
-                  <input 
-                    type="checkbox" 
-                    checked={notifications.weeklySummary}
-                    onChange={(e) => setNotifications({...notifications, weeklySummary: e.target.checked})}
-                  />
-                  <div className="checkbox-content">
-                    <span className="checkbox-title">Weekly performance summary</span>
-                    <span className="checkbox-desc">Get a weekly digest of your store's performance metrics</span>
-                  </div>
-                </label>
-                <label className="modern-checkbox">
-                  <input 
-                    type="checkbox" 
-                    checked={notifications.smsAlerts}
-                    onChange={(e) => setNotifications({...notifications, smsAlerts: e.target.checked})}
-                  />
-                  <div className="checkbox-content">
-                    <span className="checkbox-title">SMS alerts</span>
-                    <span className="checkbox-desc">Receive critical alerts via SMS (requires phone verification)</span>
-                  </div>
-                </label>
-                <div className="card-actions">
-                  <button className="btn-primary" onClick={saveNotifications} disabled={saving}>
-                    {saving ? 'Saving...' : 'Save Preferences'}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="setting-card">
+        <div className="settings-section">
+          <h2>Developer Access</h2>
+          <div className="setting-card">
               <div className="card-header">
                 <div className="header-icon">🔑</div>
                 <div>
@@ -406,39 +269,7 @@ const Settings = () => {
                 </div>
               </div>
             </div>
-
-            <div className="setting-card">
-              <div className="card-header">
-                <div className="header-icon">👥</div>
-                <div>
-                  <h3>Team Management</h3>
-                  <p className="card-subtitle">Collaborate with your team members</p>
-                </div>
-              </div>
-              <div className="card-body">
-                <div className="team-info">
-                  <div className="team-stat">
-                    <span className="stat-number">1</span>
-                    <span className="stat-label">Active Member</span>
-                  </div>
-                  <div className="team-stat">
-                    <span className="stat-number">5</span>
-                    <span className="stat-label">Available Seats</span>
-                  </div>
-                </div>
-                <p className="section-description">Invite team members to collaborate on your store. Assign roles and manage permissions.</p>
-                <div className="card-actions">
-                  <button className="btn-primary">
-                    ➕ Invite Team Member
-                  </button>
-                  <button className="btn-secondary-outline">
-                    Manage Permissions
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
 
       <style jsx>{`
@@ -466,40 +297,13 @@ const Settings = () => {
           margin: 0;
         }
 
-        .settings-tabs {
-          display: flex;
-          gap: 8px;
-          border-bottom: 2px solid #2f3650;
-          margin-bottom: 32px;
-        }
-
-        .settings-tabs .tab {
-          padding: 12px 24px;
-          background: none;
-          border: none;
-          border-bottom: 3px solid transparent;
-          cursor: pointer;
-          font-size: 16px;
-          font-weight: 500;
-          color: #94a3b8;
-          transition: all 0.2s;
-        }
-
-        .settings-tabs .tab:hover {
-          color: #e5e7eb;
-        }
-
-        .settings-tabs .tab.active {
-          color: #7fffd4;
-          border-bottom-color: #7fffd4;
-        }
-
         .settings-section {
           background: #1a1d2e;
           padding: 32px;
           border-radius: 12px;
           border: 1px solid #2f3650;
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          margin-bottom: 24px;
         }
 
         .settings-section h2 {
@@ -795,119 +599,6 @@ const Settings = () => {
           border-top: 1px solid #2f3650;
         }
 
-        /* Modern Checkbox */
-        .modern-checkbox {
-          display: flex;
-          align-items: flex-start;
-          gap: 12px;
-          padding: 16px;
-          margin: 8px 0;
-          background: #0f1324;
-          border: 2px solid #2f3650;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .modern-checkbox:hover {
-          border-color: #7fffd4;
-          background: #141829;
-        }
-
-        .modern-checkbox input[type="checkbox"] {
-          width: 20px;
-          height: 20px;
-          margin-top: 2px;
-          cursor: pointer;
-          accent-color: #7fffd4;
-        }
-
-        .checkbox-content {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .checkbox-title {
-          font-weight: 600;
-          color: #e5e7eb;
-          font-size: 15px;
-        }
-
-        .checkbox-desc {
-          font-size: 13px;
-          color: #94a3b8;
-          line-height: 1.4;
-        }
-
-        /* Contact Input Fields */
-        .contact-fields {
-          display: grid;
-          gap: 20px;
-          margin-bottom: 24px;
-        }
-
-        .input-field {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .input-field label {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-weight: 600;
-          color: #e5e7eb;
-          font-size: 14px;
-        }
-
-        .required-badge {
-          background: #7fffd4;
-          color: #0f172a;
-          font-size: 11px;
-          font-weight: 700;
-          padding: 2px 8px;
-          border-radius: 4px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .text-input {
-          width: 100%;
-          padding: 12px 16px;
-          background: #0f1324;
-          border: 2px solid #2f3650;
-          border-radius: 8px;
-          color: #e5e7eb;
-          font-size: 14px;
-          font-family: inherit;
-          transition: all 0.2s;
-        }
-
-        .text-input:focus {
-          outline: none;
-          border-color: #7fffd4;
-          background: #141829;
-        }
-
-        .text-input::placeholder {
-          color: #64748b;
-        }
-
-        .field-hint {
-          font-size: 13px;
-          color: #94a3b8;
-          line-height: 1.4;
-        }
-
-        .divider {
-          height: 1px;
-          background: #2f3650;
-          margin: 24px 0;
-        }
-
         /* API Key Section */
         .api-key-section {
           max-width: 100%;
@@ -988,70 +679,6 @@ const Settings = () => {
           font-size: 13px;
           color: #94a3b8;
           line-height: 1.5;
-        }
-
-        /* Team Management */
-        .team-info {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-          gap: 16px;
-          margin-bottom: 20px;
-        }
-
-        .team-stat {
-          background: #0f1324;
-          border: 1px solid #2f3650;
-          border-radius: 8px;
-          padding: 16px;
-          text-align: center;
-        }
-
-        .stat-number {
-          display: block;
-          font-size: 32px;
-          font-weight: 700;
-          color: #7fffd4;
-          margin-bottom: 4px;
-        }
-
-        .stat-label {
-          display: block;
-          font-size: 13px;
-          color: #94a3b8;
-        }
-
-        .section-description {
-          color: #cbd5e1;
-          line-height: 1.6;
-          margin: 16px 0;
-        }
-
-        .btn-secondary-outline {
-          background: transparent;
-          color: #7fffd4;
-          border: 2px solid #7fffd4;
-          padding: 12px 24px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .btn-secondary-outline:hover {
-          background: #7fffd4;
-          color: #23263a;
-        }
-
-        .checkbox-label {
-          display: block;
-          margin: 12px 0;
-          cursor: pointer;
-          color: #cbd5e1;
-        }
-
-        .checkbox-label input {
-          margin-right: 8px;
         }
       `}</style>
     </div>
