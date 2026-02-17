@@ -489,11 +489,7 @@ const Dashboard = ({ setActiveSection }) => {
 			
 			if (result.ok) {
 				setLastScanTime(new Date().toLocaleTimeString());
-				alert('✅ SEO scan started! Results will appear in the dashboard in a few moments.');
-				// Refresh stats to show updated SEO issues
-				setTimeout(() => {
-					fetchStats();
-				}, 3000);
+				alert('✅ SEO scan started! This will take 2-5 minutes depending on your store size. Results will automatically appear when the scan completes.');
 			} else {
 				alert('⚠️ Scan failed: ' + (result.error || 'Unknown error'));
 			}
