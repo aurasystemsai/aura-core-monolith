@@ -98,6 +98,34 @@ const OnboardingWizard = ({ onComplete }) => {
         })
       });
 
+      // Automatically trigger initial SEO site crawl for first-time users
+      try {
+        const sessionRes = await fetch('/api/session');
+        const session = await sessionRes.json();
+        
+        if (session.ok && session.shop) {
+          // Get the shop URL (convert myshopify domain to full URL)
+          const shopUrl = session.shop.includes('http') 
+            ? session.shop 
+            : `https://${session.shop}`;
+          
+          // Trigger background site crawl
+          console.log('[Onboarding] Starting initial SEO scan for:', shopUrl);
+          fetch('/api/tools/seo-site-crawler/crawl', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: shopUrl })
+          }).then(res => res.json()).then(data => {
+            console.log('[Onboarding] Initial SEO scan started:', data);
+          }).catch(err => {
+            console.warn('[Onboarding] Failed to start initial scan (non-blocking):', err);
+          });
+        }
+      } catch (scanError) {
+        // Non-blocking - don't prevent onboarding from completing
+        console.warn('[Onboarding] Could not auto-start SEO scan:', scanError);
+      }
+
       // Call parent callback
       if (onComplete) {
         onComplete();
@@ -144,7 +172,7 @@ const OnboardingWizard = ({ onComplete }) => {
                 <div className="feature-card">
                   <div className="feature-icon">🤖</div>
                   <h3>AI-Powered Tools</h3>
-                  <p>20+ enterprise tools to automate and optimize your store</p>
+                  <p>20+ enterprise tools including automatic SEO scanning on setup</p>
                 </div>
                 <div className="feature-card">
                   <div className="feature-icon">📊</div>
@@ -163,7 +191,7 @@ const OnboardingWizard = ({ onComplete }) => {
                 </div>
               </div>
 
-              <p className="setup-message">Let's get you set up in just 2 minutes!</p>
+              <p className="setup-message">Let's get you set up in just 2 minutes — we'll automatically scan your site for SEO issues!</p>
             </div>
           )}
 
