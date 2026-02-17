@@ -1,5 +1,5 @@
 // Billing & Subscription Management UI
-// Complete Stripe integration for plan management
+// Shopify App Billing integration for plan management
 
 import React, { useState, useEffect } from 'react';
 import { apiFetch } from '../api';
@@ -115,7 +115,7 @@ const Billing = () => {
       });
 
       if (result.requiresPayment) {
-        // Redirect to Stripe checkout
+        // Redirect to Shopify approval page
         window.location.href = result.checkoutUrl;
       } else {
         setSubscription(result.subscription);
@@ -279,22 +279,10 @@ const Billing = () => {
       {/* Payment Method */}
       <div className="payment-method-card">
         <h3>Payment Method</h3>
-        {paymentMethod ? (
-          <div className="payment-method">
-            <FaCreditCard size={32} />
-            <div className="card-info">
-              <div className="card-brand">{paymentMethod.brand}</div>
-              <div className="card-number">•••• •••• •••• {paymentMethod.last4}</div>
-              <div className="card-expiry">Expires {paymentMethod.exp_month}/{paymentMethod.exp_year}</div>
-            </div>
-            <button className="btn-secondary">Update</button>
-          </div>
-        ) : (
-          <div className="no-payment-method">
-            <p>No payment method on file</p>
-            <button className="btn-secondary">Add Payment Method</button>
-          </div>
-        )}
+        <div className="shopify-payment-info">
+          <p>Your subscription is billed directly through Shopify.</p>
+          <p>Payment methods are managed in your Shopify admin under <strong>Settings → Billing</strong>.</p>
+        </div>
       </div>
 
       {/* Invoices */}
@@ -417,6 +405,15 @@ const Billing = () => {
         .current-plan-card,
         .usage-card,
         .payment-method-card,
+        .invoices-card {
+          background: #1a1d2e;
+          border: 1px solid #2f3650;
+          padding: 24px;
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          margin-bottom: 24px;
+        }
+
         .usage-card h3,
         .payment-method-card h3,
         .invoices-card h3 {
@@ -424,13 +421,21 @@ const Billing = () => {
           margin-top: 0;
         }
 
-        .usage-card {
-          background: #1a1d2e;
-          border: 1px solid #2f3650;
+        .shopify-payment-info {
           padding: 24px;
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-          margin-bottom: 24px;
+          background: #0f1324;
+          border: 1px solid #2f3650;
+          border-radius: 8px;
+        }
+
+        .shopify-payment-info p {
+          color: #cbd5e1;
+          margin: 8px 0;
+          line-height: 1.6;
+        }
+
+        .shopify-payment-info strong {
+          color: #e5e7eb;
         }
 
         .no-invoices {

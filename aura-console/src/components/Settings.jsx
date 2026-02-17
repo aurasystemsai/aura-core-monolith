@@ -93,18 +93,18 @@ const Settings = () => {
   }
 
   function updatePaymentMethod() {
-    // Redirect to Stripe customer portal for payment method management
-    window.open('/api/billing/customer-portal', '_blank');
+    // Shopify manages payment - redirect to Shopify billing settings
+    alert('Payment methods are managed through your Shopify admin. Go to Settings > Account > Billing in Shopify.');
   }
 
   function viewBillingHistory() {
-    // Navigate to full billing page
+    // Navigate to billing page which shows usage and plan details
     window.location.href = '/billing';
   }
 
-  function changePlan() {
-    // Navigate to full billing page with plans modal
-    window.location.href = '/billing?action=change-plan';
+  async function changePlan() {
+    // Navigate to billing page with plans
+    window.location.href = '/billing';
   }
 
   async function cancelSubscription() {
