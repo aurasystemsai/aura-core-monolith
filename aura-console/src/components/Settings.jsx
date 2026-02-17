@@ -17,6 +17,10 @@ const Settings = () => {
     weeklySummary: true,
     smsAlerts: false
   });
+  const [contactInfo, setContactInfo] = useState({
+    email: '',
+    phone: ''
+  });
 
   useEffect(() => {
     loadSettings();
@@ -94,11 +98,22 @@ const Settings = () => {
   }
 
   async function saveNotifications() {
+    // Validate email if email notifications are enabled
+    if (notifications.emailUpdates && !contactInfo.email) {
+      alert('Please enter an email address for email notifications');
+      return;
+    }
+    // Validate phone if SMS is enabled
+    if (notifications.smsAlerts && !contactInfo.phone) {
+      alert('Please enter a phone number for SMS alerts');
+      return;
+    }
+    
     setSaving(true);
     try {
       await apiFetch('/settings/notifications', {
         method: 'POST',
-        body: JSON.stringify(notifications)
+        body: JSON.stringify({ ...notifications, ...contactInfo })
       });
       alert('Notification preferences saved');
     } catch (error) {
@@ -273,6 +288,40 @@ const Settings = () => {
                 </div>
               </div>
               <div className="card-body">
+                <div className="contact-fields">
+                  <div className="input-field">
+                    <label className="input-label">
+                      📧 Email Address
+                      {notifications.emailUpdates && <span className="required-badge">Required</span>}
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={contactInfo.email}
+                      onChange={(e) => setContactInfo({...contactInfo, email: e.target.value})}
+                      className="text-input"
+                    />
+                    <p className="field-hint">Used for email notifications and account updates</p>
+                  </div>
+
+                  <div className="input-field">
+                    <label className="input-label">
+                      📱 Phone Number
+                      {notifications.smsAlerts && <span className="required-badge">Required</span>}
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="+1 (555) 123-4567"
+                      value={contactInfo.phone}
+                      onChange={(e) => setContactInfo({...contactInfo, phone: e.target.value})}
+                      className="text-input"
+                    />
+                    <p className="field-hint">Will be used for critical SMS alerts only</p>
+                  </div>
+                </div>
+
+                <div className="divider"></div>
+
                 <label className="modern-checkbox">
                   <input 
                     type="checkbox" 
@@ -790,6 +839,73 @@ const Settings = () => {
           font-size: 13px;
           color: #94a3b8;
           line-height: 1.4;
+        }
+
+        /* Contact Input Fields */
+        .contact-fields {
+          display: grid;
+          gap: 20px;
+          margin-bottom: 24px;
+        }
+
+        .input-field {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .input-field label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 600;
+          color: #e5e7eb;
+          font-size: 14px;
+        }
+
+        .required-badge {
+          background: #7fffd4;
+          color: #0f172a;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 2px 8px;
+          border-radius: 4px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .text-input {
+          width: 100%;
+          padding: 12px 16px;
+          background: #0f1324;
+          border: 2px solid #2f3650;
+          border-radius: 8px;
+          color: #e5e7eb;
+          font-size: 14px;
+          font-family: inherit;
+          transition: all 0.2s;
+        }
+
+        .text-input:focus {
+          outline: none;
+          border-color: #7fffd4;
+          background: #141829;
+        }
+
+        .text-input::placeholder {
+          color: #64748b;
+        }
+
+        .field-hint {
+          font-size: 13px;
+          color: #94a3b8;
+          line-height: 1.4;
+        }
+
+        .divider {
+          height: 1px;
+          background: #2f3650;
+          margin: 24px 0;
         }
 
         /* API Key Section */
