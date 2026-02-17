@@ -169,7 +169,9 @@ const Billing = () => {
     );
   }
 
-  const currentPlan = subscription ? PLANS.find(p => p.id === subscription.plan_id) : PLANS[0];
+  // Ensure we always have a plan object with limits to avoid runtime errors
+  const currentPlan = subscription ? (PLANS.find(p => p.id === subscription.plan_id) || PLANS[0]) : PLANS[0];
+  const planLimits = currentPlan?.limits || { aiRuns: 0, products: 0, users: 0 };
 
   return (
     <div className="billing-page">
@@ -247,13 +249,13 @@ const Billing = () => {
             <div className="usage-stat">
               <div className="stat-label">AI Tool Runs</div>
               <div className="stat-value">
-                {usage.aiRuns} {currentPlan?.limits.aiRuns !== -1 ? `/ ${currentPlan.limits.aiRuns}` : ''}
+                {usage.aiRuns} {planLimits.aiRuns !== -1 ? `/ ${planLimits.aiRuns}` : ''}
               </div>
-              {currentPlan?.limits.aiRuns !== -1 && (
+              {planLimits.aiRuns !== -1 && planLimits.aiRuns > 0 && (
                 <div className="progress-bar">
                   <div 
                     className="progress-fill"
-                    style={{ width: `${Math.min((usage.aiRuns / currentPlan.limits.aiRuns) * 100, 100)}%` }}
+                    style={{ width: `${Math.min((usage.aiRuns / planLimits.aiRuns) * 100, 100)}%` }}
                   />
                 </div>
               )}
@@ -261,13 +263,13 @@ const Billing = () => {
             <div className="usage-stat">
               <div className="stat-label">Products</div>
               <div className="stat-value">
-                {usage.products} {currentPlan?.limits.products !== -1 ? `/ ${currentPlan.limits.products}` : ''}
+                {usage.products} {planLimits.products !== -1 ? `/ ${planLimits.products}` : ''}
               </div>
             </div>
             <div className="usage-stat">
               <div className="stat-label">Team Members</div>
               <div className="stat-value">
-                {usage.users} {currentPlan?.limits.users !== -1 ? `/ ${currentPlan.limits.users}` : ''}
+                {usage.users} {planLimits.users !== -1 ? `/ ${planLimits.users}` : ''}
               </div>
             </div>
           </div>
