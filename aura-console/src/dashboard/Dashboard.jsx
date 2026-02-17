@@ -393,17 +393,21 @@ const Dashboard = ({ setActiveSection }) => {
 
 	const generateRecommendations = (statsData) => {
 		const recs = [];
-		if (statsData.seoIssues > 10) {
-			recs.push({ icon: "🔍", text: "You have " + statsData.seoIssues + " SEO issues. Fix them to improve search rankings.", action: "Fix SEO Issues", link: "seo" });
+		// SEO Issues - trigger if any issues exist (lowered threshold for dev stores)
+		if (statsData.seoIssues >= 1) {
+			recs.push({ icon: "🔍", text: "You have " + statsData.seoIssues + " SEO issue" + (statsData.seoIssues > 1 ? "s" : "") + ". Fix them to improve search rankings.", action: "Fix SEO Issues", link: "seo" });
 		}
-		if (statsData.conversion && parseFloat(statsData.conversion) < 2) {
-			recs.push({ icon: "📈", text: "Low conversion rate. Consider A/B testing your product pages.", action: "Optimize Conversion", link: "tools" });
+		// Conversion - trigger if 0% or undefined or < 2%
+		if (!statsData.conversion || statsData.conversion === "0%" || parseFloat(statsData.conversion) < 2) {
+			recs.push({ icon: "📈", text: "Low conversion rate. Consider A/B testing your product pages and improving CTAs.", action: "Optimize Conversion", link: "tools" });
 		}
+		// Low orders
 		if (statsData.orders < 10) {
 			recs.push({ icon: "📧", text: "Boost sales with targeted email campaigns to your customers.", action: "Create Campaign", link: "tools" });
 		}
+		// Underperforming products
 		if (underperformingProducts.length > 0) {
-			recs.push({ icon: "⚠️", text: underperformingProducts.length + " products need attention (missing images/descriptions).", action: "View Products", link: "products" });
+			recs.push({ icon: "⚠️", text: underperformingProducts.length + " product" + (underperformingProducts.length > 1 ? "s" : "") + " need attention (low price or missing data).", action: "View Products", link: "products" });
 		}
 		setRecommendations(recs.slice(0, 3));
 	};
