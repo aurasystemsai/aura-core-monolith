@@ -1,11 +1,8 @@
-// Auto-generated tool meta registry for Aura Core
-// Aligned with PLATFORM_UPGRADE_PLAN.md (20/77 tools completed to enterprise standard)
-// Each object: { id, name, description, category }
+// Enterprise tool registry - ONLY completed tools shown
+// 20/77 tools completed to enterprise standard (26% progress)
+// 57 tools hidden until completion
 
 const toolsMeta = [
-  // Platform
-  { id: "main-suite", name: "Main Suite", description: "Unified platform with grouped modules (workflows, analytics, SEO, personalization).", category: "Platform" },
-  
   // ✅ PHASE 1 COMPLETE (7 tools - Revenue Critical)
   { id: "klaviyo-flow-automation", name: "Klaviyo Flow Automation", description: "Enterprise email automation with 245 endpoints, 42 tabs. ✅ 8,379 lines", category: "Email" },
   { id: "loyalty-referral-programs", name: "Loyalty & Referral Programs", description: "Enterprise loyalty platform with 201 endpoints, 44 tabs. ✅ 12,862 lines", category: "Marketing" },
@@ -21,7 +18,6 @@ const toolsMeta = [
   { id: "ai-support-assistant", name: "AI Support Assistant", description: "Multi-channel support with AI responses, knowledge base, RAG. ✅ 11,800 lines", category: "Support" },
   { id: "customer-support-ai", name: "Customer Support AI", description: "Enterprise support operations with quality tracking, omnichannel. ✅ 11,800 lines", category: "Support" },
   { id: "review-ugc-engine", name: "Review & UGC Engine", description: "Comprehensive review management with moderation, sentiment analysis. ✅ 11,902 lines", category: "Marketing" },
-  { id: "loyalty-referral-program-v2", name: "Loyalty Program V2", description: "Advanced loyalty with gamification, 5-tier progression, automation. ✅ 11,800 lines", category: "Marketing" },
   { id: "brand-mention-tracker", name: "Brand Mention Tracker", description: "Brand monitoring with sentiment analysis, crisis detection. ✅ 11,800 lines", category: "Brand" },
   { id: "social-media-analytics-listening", name: "Social Media Analytics", description: "7-platform social management with publishing, benchmarking. ✅ 11,800 lines", category: "Marketing" },
   
@@ -31,11 +27,6 @@ const toolsMeta = [
   { id: "blog-seo", name: "Blog SEO Engine", description: "Complete blog SEO with keyword clusters, metadata optimization. ✅ 11,800 lines", category: "SEO" },
   { id: "weekly-blog-content-engine", name: "Weekly Blog Content Engine", description: "Automated weekly blog system with calendar, compliance, distribution. ✅ 11,800 lines", category: "Content" },
   { id: "blog-draft-engine", name: "Blog Draft Engine", description: "Enterprise blog CMS with AI editor, collaboration, publishing. ✅ 11,800 lines", category: "Content" },
-  
-  // Legacy/Working Tools (not yet upgraded to enterprise standard)
-  { id: "abandoned-checkout-winback", name: "Abandoned Checkout Winback", description: "Recover abandoned carts with automated campaigns.", category: "Marketing" },
-  { id: "ai-alt-text-engine", name: "AI Alt-Text Engine", description: "AI-powered image alt text generation.", category: "SEO" },
-  { id: "advanced-analytics-attribution", name: "Advanced Analytics", description: "Attribution analytics and insights.", category: "Analytics" },
 ];
 
 export default toolsMeta;
