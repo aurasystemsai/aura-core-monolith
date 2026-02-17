@@ -187,6 +187,8 @@ const Dashboard = ({ setActiveSection }) => {
 	const [alerts, setAlerts] = useState([]);
 	const [scanningInProgress, setScanningInProgress] = useState(false);
 	const [lastScanTime, setLastScanTime] = useState(null);
+	const [scanEstimatedTime, setScanEstimatedTime] = useState(0); // in seconds
+	const [scanRemainingTime, setScanRemainingTime] = useState(0); // countdown in seconds
 
 	const fetchStats = async (period = timePeriod) => {
 		setLoading(true);
@@ -478,6 +480,29 @@ const Dashboard = ({ setActiveSection }) => {
 				? session.shop 
 				: `https://${session.shop}`;
 			
+			// Get site size to estimate scan time
+			const projectId = localStorage.getItem("auraProjectId");
+			let productCount = stats.products || 10; // fallback to 10 if not available
+			
+			if (projectId) {
+				try {
+					const projectRes = await apiFetch(`/api/projects/${projectId}/drafts`);
+					if (projectRes.ok) {
+						const projectData = await projectRes.json();
+						if (projectData.drafts && Array.isArray(projectData.drafts)) {
+							productCount = projectData.drafts.length;
+						}
+					}
+				} catch (e) {
+					console.warn('Could not fetch product count for estimation:', e);
+				}
+			}
+			
+			// Calculate estimated time: 30s base + 2.5s per product
+			const estimatedSeconds = Math.max(30, 30 + (productCount * 2.5));
+			setScanEstimatedTime(estimatedSeconds);
+			setScanRemainingTime(estimatedSeconds);
+			
 			// Trigger site crawl
 			const response = await apiFetch('/api/tools/seo-site-crawler/crawl', {
 				method: 'POST',
@@ -489,15 +514,18 @@ const Dashboard = ({ setActiveSection }) => {
 			
 			if (result.ok) {
 				setLastScanTime(new Date().toLocaleTimeString());
-				alert('✅ SEO scan started! This will take 2-5 minutes depending on your store size. Results will automatically appear when the scan completes.');
+				const minutes = Math.ceil(estimatedSeconds / 60);
+				alert(`✅ SEO scan started! Scanning ${productCount} products. Estimated time: ~${minutes} minute${minutes > 1 ? 's' : ''}. Progress shown on dashboard.`);
 			} else {
 				alert('⚠️ Scan failed: ' + (result.error || 'Unknown error'));
+				setScanningInProgress(false);
+				setScanRemainingTime(0);
 			}
 		} catch (error) {
 			console.error('SEO scan error:', error);
 			alert('❌ Failed to start SEO scan. Please try again.');
-		} finally {
 			setScanningInProgress(false);
+			setScanRemainingTime(0);
 		}
 	};
 
@@ -515,6 +543,32 @@ const Dashboard = ({ setActiveSection }) => {
 		return () => clearInterval(interval);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [autoRefresh, timePeriod]);
+
+	// Scan countdown timer
+	useEffect(() => {
+		if (!scanningInProgress || scanRemainingTime <= 0) {
+			if (scanningInProgress && scanRemainingTime <= 0) {
+				// Scan complete
+				setScanningInProgress(false);
+				setScanRemainingTime(0);
+				// Refresh stats to show new SEO issues
+				fetchStats();
+			}
+			return;
+		}
+		
+		const timer = setInterval(() => {
+			setScanRemainingTime(prev => {
+				if (prev <= 1) {
+					return 0;
+				}
+				return prev - 1;
+			});
+		}, 1000);
+		
+		return () => clearInterval(timer);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [scanningInProgress, scanRemainingTime]);
 
 	useEffect(() => {
 		async function fetchShop() {
@@ -1287,11 +1341,13 @@ const Dashboard = ({ setActiveSection }) => {
 						icon={scanningInProgress ? "⏳" : "🔍"}
 						title={scanningInProgress ? "Scanning..." : "Run SEO Scan"}
 						description={
-							scanningInProgress 
-								? "Analyzing your site for SEO issues..." 
-								: lastScanTime 
-									? `Scan your store for SEO issues • Last: ${lastScanTime}` 
-									: "Scan your entire store for SEO issues"
+							scanningInProgress && scanRemainingTime > 0
+								? `Time remaining: ${Math.floor(scanRemainingTime / 60)}:${String(scanRemainingTime % 60).padStart(2, '0')} • Analyzing ${stats.products || '...'} products` 
+								: scanningInProgress 
+									? "Analyzing your site for SEO issues..." 
+									: lastScanTime 
+										? `Scan your store for SEO issues • Last: ${lastScanTime}` 
+										: "Scan your entire store for SEO issues"
 						}
 						onClick={runSeoScan}
 					/>
