@@ -123,7 +123,7 @@ In Render Dashboard → Your Service → Environment:
 \i migrations/001_revenue_infrastructure.sql
 \i migrations/002_shopify_integration.sql
 
-# Verify tables created (should show 23+ tables)
+# Verify tables created (should show 52 tables)
 \dt
 ```
 
@@ -188,7 +188,7 @@ curl https://aura-core-monolith.onrender.com/health
 ```bash
 # In Render shell or local with DATABASE_URL set
 psql $DATABASE_URL -c "\dt"
-# Should show 23+ tables from migrations
+# Should show 52 tables from migrations
 ```
 
 ### Test 4: OpenAI Integration
