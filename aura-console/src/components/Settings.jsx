@@ -11,6 +11,12 @@ const Settings = () => {
   const [shopInfo, setShopInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [apiKeyRevealed, setApiKeyRevealed] = useState(false);
+  const [notifications, setNotifications] = useState({
+    emailUpdates: true,
+    weeklySummary: true,
+    smsAlerts: false
+  });
 
   useEffect(() => {
     loadSettings();
@@ -82,6 +88,43 @@ const Settings = () => {
       alert(`${dataType} sync started successfully`);
     } catch (error) {
       alert('Sync failed: ' + error.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveNotifications() {
+    setSaving(true);
+    try {
+      await apiFetch('/settings/notifications', {
+        method: 'POST',
+        body: JSON.stringify(notifications)
+      });
+      alert('Notification preferences saved');
+    } catch (error) {
+      alert('Failed to save: ' + error.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function copyApiKey() {
+    navigator.clipboard.writeText('aura_live_sk_1234567890abcdef')
+      .then(() => alert('API key copied to clipboard'))
+      .catch(() => alert('Failed to copy'));
+  }
+
+  async function regenerateApiKey() {
+    if (!confirm('Are you sure you want to regenerate your API key? This will invalidate the current key.')) {
+      return;
+    }
+    setSaving(true);
+    try {
+      await apiFetch('/settings/api-key/regenerate', { method: 'POST' });
+      alert('API key regenerated successfully');
+      setApiKeyRevealed(false);
+    } catch (error) {
+      alert('Failed to regenerate: ' + error.message);
     } finally {
       setSaving(false);
     }
@@ -221,42 +264,129 @@ const Settings = () => {
 
         {activeTab === 'general' && (
           <div className="settings-section">
-            <h2>General Settings</h2>
-            
-            <div className="setting-group">
-              <h3>Notifications</h3>
-              <label className="checkbox-label">
-                <input type="checkbox" defaultChecked />
-                Email notifications for important updates
-              </label>
-              <label className="checkbox-label">
-                <input type="checkbox" defaultChecked />
-                Weekly performance summary
-              </label>
-              <label className="checkbox-label">
-                <input type="checkbox" />
-                SMS alerts for critical issues
-              </label>
-            </div>
-
-            <div className="setting-group">
-              <h3>API Access</h3>
-              <div className="api-key-display">
-                <label>Your API Key</label>
-                <div className="api-key-input">
-                  <code>aura_live_••••••••••••••••</code>
-                  <button className="btn-small">Reveal</button>
-                  <button className="btn-small">Regenerate</button>
+            <div className="setting-card">
+              <div className="card-header">
+                <div className="header-icon">🔔</div>
+                <div>
+                  <h3>Notifications</h3>
+                  <p className="card-subtitle">Manage how you receive updates and alerts</p>
+                </div>
+              </div>
+              <div className="card-body">
+                <label className="modern-checkbox">
+                  <input 
+                    type="checkbox" 
+                    checked={notifications.emailUpdates}
+                    onChange={(e) => setNotifications({...notifications, emailUpdates: e.target.checked})}
+                  />
+                  <div className="checkbox-content">
+                    <span className="checkbox-title">Email notifications</span>
+                    <span className="checkbox-desc">Receive important updates and alerts via email</span>
+                  </div>
+                </label>
+                <label className="modern-checkbox">
+                  <input 
+                    type="checkbox" 
+                    checked={notifications.weeklySummary}
+                    onChange={(e) => setNotifications({...notifications, weeklySummary: e.target.checked})}
+                  />
+                  <div className="checkbox-content">
+                    <span className="checkbox-title">Weekly performance summary</span>
+                    <span className="checkbox-desc">Get a weekly digest of your store's performance metrics</span>
+                  </div>
+                </label>
+                <label className="modern-checkbox">
+                  <input 
+                    type="checkbox" 
+                    checked={notifications.smsAlerts}
+                    onChange={(e) => setNotifications({...notifications, smsAlerts: e.target.checked})}
+                  />
+                  <div className="checkbox-content">
+                    <span className="checkbox-title">SMS alerts</span>
+                    <span className="checkbox-desc">Receive critical alerts via SMS (requires phone verification)</span>
+                  </div>
+                </label>
+                <div className="card-actions">
+                  <button className="btn-primary" onClick={saveNotifications} disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Preferences'}
+                  </button>
                 </div>
               </div>
             </div>
 
-            <div className="setting-group">
-              <h3>Team Management</h3>
-              <p>Manage team members and permissions</p>
-              <button className="btn-secondary">
-                Manage Team
-              </button>
+            <div className="setting-card">
+              <div className="card-header">
+                <div className="header-icon">🔑</div>
+                <div>
+                  <h3>API Access</h3>
+                  <p className="card-subtitle">Manage your API keys for programmatic access</p>
+                </div>
+              </div>
+              <div className="card-body">
+                <div className="api-key-section">
+                  <label className="input-label">Your API Key</label>
+                  <div className="api-key-display">
+                    <code className="api-key-code">
+                      {apiKeyRevealed ? 'aura_live_sk_1234567890abcdef' : 'aura_live_••••••••••••••••'}
+                    </code>
+                    <div className="api-key-actions">
+                      <button 
+                        className="btn-icon-action" 
+                        onClick={() => setApiKeyRevealed(!apiKeyRevealed)}
+                        title={apiKeyRevealed ? 'Hide' : 'Reveal'}
+                      >
+                        {apiKeyRevealed ? '👁️' : '👁️‍🗨️'}
+                      </button>
+                      <button 
+                        className="btn-icon-action" 
+                        onClick={copyApiKey}
+                        title="Copy to clipboard"
+                      >
+                        📋
+                      </button>
+                      <button 
+                        className="btn-secondary-small" 
+                        onClick={regenerateApiKey}
+                        disabled={saving}
+                      >
+                        🔄 Regenerate
+                      </button>
+                    </div>
+                  </div>
+                  <p className="help-text-small">Keep your API key secure. Never share it publicly or commit it to version control.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="setting-card">
+              <div className="card-header">
+                <div className="header-icon">👥</div>
+                <div>
+                  <h3>Team Management</h3>
+                  <p className="card-subtitle">Collaborate with your team members</p>
+                </div>
+              </div>
+              <div className="card-body">
+                <div className="team-info">
+                  <div className="team-stat">
+                    <span className="stat-number">1</span>
+                    <span className="stat-label">Active Member</span>
+                  </div>
+                  <div className="team-stat">
+                    <span className="stat-number">5</span>
+                    <span className="stat-label">Available Seats</span>
+                  </div>
+                </div>
+                <p className="section-description">Invite team members to collaborate on your store. Assign roles and manage permissions.</p>
+                <div className="card-actions">
+                  <button className="btn-primary">
+                    ➕ Invite Team Member
+                  </button>
+                  <button className="btn-secondary-outline">
+                    Manage Permissions
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -556,6 +686,247 @@ const Settings = () => {
           border-bottom: none;
         }
 
+        /* Modern Card Styles */
+        .setting-card {
+          background: #1a1d2e;
+          border: 1px solid #2f3650;
+          border-radius: 16px;
+          margin-bottom: 24px;
+          overflow: hidden;
+          transition: all 0.3s;
+        }
+
+        .setting-card:hover {
+          border-color: #3a4565;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .card-header {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 24px;
+          border-bottom: 1px solid #2f3650;
+          background: linear-gradient(135deg, #1a1d2e 0%, #232842 100%);
+        }
+
+        .header-icon {
+          font-size: 32px;
+          width: 56px;
+          height: 56px;
+          background: #2f3650;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .card-header h3 {
+          margin: 0 0 4px 0;
+          font-size: 20px;
+          font-weight: 600;
+          color: #e5e7eb;
+        }
+
+        .card-subtitle {
+          margin: 0;
+          font-size: 14px;
+          color: #94a3b8;
+        }
+
+        .card-body {
+          padding: 24px;
+        }
+
+        .card-actions {
+          display: flex;
+          gap: 12px;
+          margin-top: 24px;
+          padding-top: 24px;
+          border-top: 1px solid #2f3650;
+        }
+
+        /* Modern Checkbox */
+        .modern-checkbox {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 16px;
+          margin: 8px 0;
+          background: #0f1324;
+          border: 2px solid #2f3650;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .modern-checkbox:hover {
+          border-color: #7fffd4;
+          background: #141829;
+        }
+
+        .modern-checkbox input[type="checkbox"] {
+          width: 20px;
+          height: 20px;
+          margin-top: 2px;
+          cursor: pointer;
+          accent-color: #7fffd4;
+        }
+
+        .checkbox-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .checkbox-title {
+          font-weight: 600;
+          color: #e5e7eb;
+          font-size: 15px;
+        }
+
+        .checkbox-desc {
+          font-size: 13px;
+          color: #94a3b8;
+          line-height: 1.4;
+        }
+
+        /* API Key Section */
+        .api-key-section {
+          max-width: 100%;
+        }
+
+        .input-label {
+          display: block;
+          font-weight: 600;
+          color: #e5e7eb;
+          margin-bottom: 12px;
+          font-size: 14px;
+        }
+
+        .api-key-display {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          background: #0f1324;
+          border: 2px solid #2f3650;
+          border-radius: 8px;
+          padding: 16px;
+        }
+
+        .api-key-code {
+          flex: 1;
+          font-family: 'Courier New', monospace;
+          font-size: 14px;
+          color: #7fffd4;
+          background: transparent;
+          border: none;
+          padding: 0;
+        }
+
+        .api-key-actions {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+        }
+
+        .btn-icon-action {
+          background: #2f3650;
+          border: none;
+          border-radius: 6px;
+          padding: 8px 12px;
+          font-size: 18px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .btn-icon-action:hover {
+          background: #3a4565;
+          transform: scale(1.05);
+        }
+
+        .btn-secondary-small {
+          background: #2f3650;
+          color: #e5e7eb;
+          border: none;
+          border-radius: 6px;
+          padding: 8px 16px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .btn-secondary-small:hover {
+          background: #3a4565;
+        }
+
+        .btn-secondary-small:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .help-text-small {
+          margin-top: 12px;
+          font-size: 13px;
+          color: #94a3b8;
+          line-height: 1.5;
+        }
+
+        /* Team Management */
+        .team-info {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 16px;
+          margin-bottom: 20px;
+        }
+
+        .team-stat {
+          background: #0f1324;
+          border: 1px solid #2f3650;
+          border-radius: 8px;
+          padding: 16px;
+          text-align: center;
+        }
+
+        .stat-number {
+          display: block;
+          font-size: 32px;
+          font-weight: 700;
+          color: #7fffd4;
+          margin-bottom: 4px;
+        }
+
+        .stat-label {
+          display: block;
+          font-size: 13px;
+          color: #94a3b8;
+        }
+
+        .section-description {
+          color: #cbd5e1;
+          line-height: 1.6;
+          margin: 16px 0;
+        }
+
+        .btn-secondary-outline {
+          background: transparent;
+          color: #7fffd4;
+          border: 2px solid #7fffd4;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .btn-secondary-outline:hover {
+          background: #7fffd4;
+          color: #23263a;
+        }
+
         .checkbox-label {
           display: block;
           margin: 12px 0;
@@ -565,45 +936,6 @@ const Settings = () => {
 
         .checkbox-label input {
           margin-right: 8px;
-        }
-
-        .api-key-display {
-          margin-top: 16px;
-        }
-
-        .api-key-display label {
-          color: #e5e7eb;
-        }
-
-        .api-key-input {
-          display: flex;
-          gap: 8px;
-          align-items: center;
-          margin-top: 8px;
-        }
-
-        .api-key-input code {
-          flex: 1;
-          padding: 12px;
-          background: #0f1324;
-          border: 1px solid #2f3650;
-          border-radius: 6px;
-          color: #e5e7eb;
-        }
-
-        .btn-small {
-          padding: 8px 16px;
-          background: #2f3650;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 14px;
-          color: #e5e7eb;
-          transition: all 0.2s;
-        }
-
-        .btn-small:hover {
-          background: #3a4565;
         }
       `}</style>
     </div>
