@@ -92,11 +92,6 @@ const Settings = () => {
     }
   }
 
-  function updatePaymentMethod() {
-    // Shopify manages payment - redirect to Shopify billing settings
-    alert('Payment methods are managed through your Shopify admin. Go to Settings > Account > Billing in Shopify.');
-  }
-
   function viewBillingHistory() {
     // Navigate to billing page which shows usage and plan details
     window.location.href = '/billing';
@@ -313,13 +308,6 @@ const Settings = () => {
                 </div>
 
                 <div className="subscription-actions">
-                  <button 
-                    className="btn-secondary"
-                    onClick={updatePaymentMethod}
-                    disabled={saving}
-                  >
-                    Update Payment Method
-                  </button>
                   <button 
                     className="btn-secondary"
                     onClick={viewBillingHistory}
