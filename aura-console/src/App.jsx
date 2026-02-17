@@ -383,89 +383,46 @@ function App() {
       <ChangelogModal open={showChangelog} onClose={() => setShowChangelog(false)} />
       <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
       <div className="app-shell">
-        {/* Top tab navigation */}
-        <nav className="top-tabs-nav">
-          <div className="tab-group tab-group-main">
-            <button
-              className={activeSection === 'dashboard' ? 'tab-active' : ''}
-              onClick={() => setActiveSection('dashboard')}
-            >Dashboard</button>
-            <button
-              className={activeSection === 'main-suite' ? 'tab-active' : ''}
-              onClick={() => setActiveSection('main-suite')}
-            >Main Suite</button>
-            <button
-              className={activeSection === 'pricing' ? 'tab-active' : ''}
-              onClick={() => setActiveSection('pricing')}
-            >Pricing</button>
-            <button
-              className={activeSection === 'automation-scheduler' ? 'tab-active' : ''}
-              onClick={() => setActiveSection('automation-scheduler')}
-            >Automation</button>
-            <button
-              className={activeSection === 'user-management' ? 'tab-active' : ''}
-              onClick={() => setActiveSection('user-management')}
-            >User Management</button>
-            <button
-              className={activeSection === 'ai-chatbot' ? 'tab-active' : ''}
-              onClick={() => setActiveSection('ai-chatbot')}
-            >AI Chatbot</button>
-            <button
-              className={activeSection === 'settings' ? 'tab-active' : ''}
-              onClick={() => setActiveSection('settings')}
-            >Settings</button>
-            <button
-              className={activeSection === 'billing' ? 'tab-active' : ''}
-              onClick={() => setActiveSection('billing')}
-            >Billing</button>
+        {/* Simplified top navigation */}
+        <nav className="top-nav-clean">
+          <div className="nav-brand">
+            <img src="/logo-aura.png" alt="AURA" className="nav-logo" />
+            <span className="nav-brand-text">AURA</span>
           </div>
-          <div
-            className="mega-menu"
-            onMouseLeave={() => setShowToolsMenu(false)}
-          >
+          <div className="nav-links">
             <button
-              className="tools-dropdown-btn"
-              onClick={() => setShowToolsMenu((v) => !v)}
-              aria-expanded={showToolsMenu}
+              className={activeSection === 'dashboard' ? 'nav-link-active' : 'nav-link'}
+              onClick={() => setActiveSection('dashboard')}
             >
-              Browse Tools ▾
+              <span className="nav-icon">📊</span>
+              Dashboard
             </button>
-            {showToolsMenu && (
-              <div className="tools-mega-menu-list">
-                <div className="tools-mega-menu-columns">
-                  {(() => {
-                    // Group tools by category
-                    const grouped = toolsMeta.reduce((acc, tool) => {
-                      const cat = tool.category || 'Other';
-                      if (!acc[cat]) acc[cat] = [];
-                      acc[cat].push(tool);
-                      return acc;
-                    }, {});
-                    return Object.entries(grouped).map(([cat, tools]) => (
-                      <div className="tools-mega-menu-col" key={cat}>
-                        <div className="tools-mega-menu-col-label">{cat}</div>
-                        {tools.map(tool => (
-                          <button
-                            key={tool.id}
-                            className={activeSection === tool.id ? 'tab-active' : ''}
-                            onClick={() => {
-                              const targetGroup = toolToMainSuiteGroup[tool.id];
-                              setShowToolsMenu(false);
-                              if (targetGroup || tool.id === 'main-suite') {
-                                navigateToMainSuite(targetGroup);
-                              } else {
-                                setActiveSection(tool.id);
-                              }
-                            }}
-                            title={tool.description}
-                          >
-                            {tool.name}
-                          </button>
-                        ))}
-                      </div>
-                    ));
-                  })()}
-                </div>
+            <button
+              className={activeSection === 'main-suite' || activeSection.includes('suite') ? 'nav-link-active' : 'nav-link'}
+              onClick={() => setActiveSection('main-suite')}
+            >
+              <span className="nav-icon">🚀</span>
+              Tools
+            </button>
+            <button
+              className={activeSection === 'settings' ? 'nav-link-active' : 'nav-link'}
+              onClick={() => setActiveSection('settings')}
+            >
+              <span className="nav-icon">⚙️</span>
+              Settings
+            </button>
+            <button
+              className={activeSection === 'billing' ? 'nav-link-active' : 'nav-link'}
+              onClick={() => setActiveSection('billing')}
+            >
+              <span className="nav-icon">💳</span>
+              Billing
+            </button>
+          </div>
+          <div className="nav-actions">
+            {project?.name && (
+              <div className="nav-shop-info">
+                <span className="shop-name">{project.name}</span>
               </div>
             )}
           </div>
@@ -473,28 +430,31 @@ function App() {
         <main className="app-main">
           <div className="page-frame fade-in">
             <section className="tool-section">
-              {/* DEBUG: dashboard render path */}
-              <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading…</div>}>
-                {activeSection === "dashboard" && !project && <div style={{color:'#ff0',background:'#232336',padding:16}}>DEBUG: No project found, dashboard not rendered</div>}
-                {activeSection === "dashboard" && project && <Dashboard setActiveSection={setActiveSection} />}
+              {/* Main content routing */}
+              <Suspense fallback={<div className="loading-spinner"><div className="spinner"></div><p>Loading…</p></div>}>
+                {/* Core sections */}
+                {activeSection === "dashboard" && <Dashboard setActiveSection={setActiveSection} />}
                 {activeSection === "main-suite" && <MainSuite setActiveSection={setActiveSection} />}
+                {activeSection === "settings" && <Settings />}
+                {activeSection === "billing" && <Billing />}
+
+                {/* Legacy sections - only accessible via direct navigation */}
                 {activeSection === "seo-master-suite" && <SeoMasterSuite />}
-              </Suspense>
-              <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading…</div>}>
                 {activeSection === "pricing" && <PricingPage />}
                 {activeSection === "automation-scheduler" && <AutomationScheduler />}
                 {activeSection === "reports" && <Reports />}
-                {activeSection === "settings" && <Settings />}
-                {activeSection === "billing" && <Billing />}
                 {activeSection === "auth" && <Auth />}
                 {activeSection === "user-management" && <UserManagement coreUrl={coreUrl} />}
                 {activeSection === "onboarding" && <Onboarding />}
                 {activeSection === "credits" && <Credits />}
+                {activeSection === "ai-chatbot" && <AiChatbot coreUrl={coreUrl} />}
+
+                {/* Utility sections */}
                 {(activeSection === "workflow-orchestrator" || activeSection === "orchestration") && <WorkflowOrchestrator />}
                 {activeSection === "products" && (
                   <ProductsList 
                     shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
-                    shopToken={undefined /* rely on backend persisted token; avoid stale local token */}
+                    shopToken={undefined}
                   />
                 )}
                 {activeSection === "content-health" && project && (
@@ -516,227 +476,84 @@ function App() {
                     lastRunAt={lastRunAt}
                   />
                 )}
-                {activeSection === "ai-chatbot" && (
-                  <AiChatbot coreUrl={coreUrl} />
-                )}
+                {/* Individual tool routes - accessed via Main Suite */}
                 {activeSection === "tools" && project && <ToolsList />}
-                {/* Render a ToolScaffold for each tool in toolsMeta (fallback if no custom UI) */}
-                {/* Render ProductSeoEngine with its own Suspense and ErrorBoundary */}
-                {activeSection === "product-seo" && (
-                  <ErrorBoundary>
-                    <Suspense fallback={<div style={{padding: 48, textAlign: 'center'}}>Loading Product SEO Engine…</div>}>
-                      <ProductSeoEngine />
-                    </Suspense>
-                  </ErrorBoundary>
-                )}
-                {/* Other custom UIs and fallback ToolScaffold */}
-                {toolsMeta.map(tool => {
-                  if (activeSection === tool.id) {
-                    if (tool.id === "main-suite") return null; // main suite handled by top-level render
-                    if (tool.id === "seo-master-suite") return null; // seo master suite handled by top-level render
-                    switch (tool.id) {
-                      case "abandoned-checkout-winback": return <AbandonedCheckoutWinback key={tool.id} />;
-                      case "customer-data-platform": return <CustomerDataPlatform key={tool.id} />;
-                      case "visual-workflow-builder": return <VisualWorkflowBuilder key={tool.id} />;
-                      case "self-service-portal": return <SelfServicePortal key={tool.id} />;
-                      case "advanced-personalization-engine": return <AdvancedPersonalizationEngine key={tool.id} />;
-                      case "ab-testing-suite": return <ABTestingSuite key={tool.id} />;
-                      case "data-warehouse-connector": return <DataWarehouseConnector key={tool.id} />;
-                      case "consent-privacy-management": return <ConsentPrivacyManagement key={tool.id} />;
-                      case "entity-topic-explorer": return <EntityTopicExplorer key={tool.id} />;
-                      case "internal-linking-suggestions": return <InternalLinkingSuggestions key={tool.id} />;
-                      case "ai-content-brief-generator": return <AIContentBriefGenerator key={tool.id} />;
-                      case "brand-mention-tracker": return <BrandMentionTracker key={tool.id} />;
-                      case "local-seo-toolkit": return <LocalSEOToolkit key={tool.id} />;
-                      case "automation-templates": return <AutomationTemplates key={tool.id} />;
-                      case "conditional-logic-automation": return <ConditionalLogicAutomation key={tool.id} />;
-                      case "webhook-api-triggers": return <WebhookApiTriggers key={tool.id} />;
-                      case "workflow-automation-builder": return <WorkflowAutomationBuilder key={tool.id} />;
-                      case "reporting-integrations": return <ReportingIntegrations key={tool.id} />;
-                      case "custom-dashboard-builder": return <CustomDashboardBuilder key={tool.id} />;
-                      case "scheduled-export": return <ScheduledExport key={tool.id} />;
-                      case "churn-prediction-playbooks": return <ChurnPredictionPlaybooks key={tool.id} />;
-                      case "upsell-cross-sell-engine": return <UpsellCrossSellEngine key={tool.id} />;
-                      case "inventory-forecasting": return <InventoryForecasting key={tool.id} />;
-                      case "blog-draft-engine": return <BlogDraftEngine key={tool.id} />;
-                      case "blog-seo": return <BlogSEO key={tool.id} />;
-                      case "weekly-blog-content-engine": return <WeeklyBlogContentEngine key={tool.id} />;
-                      case "on-page-seo-engine": return <OnPageSEOEngine key={tool.id} />;
-                      case "technical-seo-auditor": return <TechnicalSEOAuditor key={tool.id} />;
-                      case "serp-tracker": return <SERPTracker key={tool.id} />;
-                      case "seo-site-crawler": return <SEOSiteCrawler key={tool.id} />;
-                      case "social-scheduler-content-engine": return <SocialSchedulerContentEngine key={tool.id} />;
-                      case "social-media-analytics-listening": return <SocialMediaAnalyticsListening key={tool.id} />;
-                      case "site-audit-health": return <SiteAuditHealth key={tool.id} />;
-                      case "schema-rich-results-engine": return <SchemaRichResultsEngine key={tool.id} />;
-                      case "review-ugc-engine": return <ReviewUGCEngine key={tool.id} />;
-                      case "returns-rma-automation": return <ReturnsRMAAutomation key={tool.id} />;
-                      case "rank-visibility-tracker": return <RankVisibilityTracker key={tool.id} />;
-                      case "product-seo": return <ProductSeoEngine key={tool.id} />;
-                      case "multi-channel-optimizer": return <MultiChannelOptimizer key={tool.id} />;
-                      case "ltv-churn-predictor": return <LTVChurnPredictor key={tool.id} />;
-                      case "klaviyo-flow-automation": return <KlaviyoFlowAutomation key={tool.id} />;
-                      case "inventory-supplier-sync": return <InventorySupplierSync key={tool.id} />;
-                      case "inbox-reply-assistant": return <InboxReplyAssistant key={tool.id} />;
-                      case "inbox-assistant": return <InboxAssistant key={tool.id} />;
-                      case "image-alt-media-seo": return <ImageAltMediaSEO key={tool.id} />;
-                      case "finance-autopilot": return <FinanceAutopilot key={tool.id} />;
-                      case "email-automation-builder": return <EmailAutomationBuilder key={tool.id} />;
-                      case "dynamic-pricing-engine": return <DynamicPricingEngine key={tool.id} />;
-                      case "customer-support-ai": return <CustomerSupportAI key={tool.id} />;
-                      case "creative-automation-engine": return <CreativeAutomationEngine key={tool.id} />;
-                      case "brand-intelligence-layer": return <BrandIntelligenceLayer key={tool.id} />;
-                      case "auto-insights": return <AutoInsights key={tool.id} />;
-                      case "aura-operations-ai": return <AuraOperationsAI key={tool.id} />;
-                      case "aura-api-sdk": return <AuraAPISDK key={tool.id} />;
-                      case "ai-support-assistant": return <AiSupportAssistant key={tool.id} />;
-                      case "ai-launch-planner": return <AiLaunchPlanner key={tool.id} />;
-                      case "advanced-analytics-attribution": return <AdvancedAnalyticsAttribution key={tool.id} />;
-                      case "ai-alt-text-engine": return <ImageAltMediaSEO key={tool.id} />;
-                      case "loyalty-referral-programs": return <LoyaltyReferralPrograms key={tool.id} />;
-                      case "loyalty-referral-program-v2": return <LoyaltyReferralPrograms key={tool.id} />;
-                      case "personalization-recommendation-engine": return <PersonalizationRecommendationEngine key={tool.id} />;
-                      case "content-scoring-optimization": return <ContentScoringOptimization key={tool.id} />;
-                      case "workflow-orchestrator":
-                        return null; // custom UI rendered earlier; skip scaffold duplicate
-                      case "google-ads-integration":
-                        return (
-                          <ToolScaffold
-                            key={tool.id}
-                            toolId={tool.id}
-                            toolName={tool.name}
-                            fields={[
-                              { name: "customerId", label: "Google Ads Customer ID", type: "text", required: true },
-                              { name: "developerToken", label: "Developer Token", type: "password", required: true },
-                              { name: "refreshToken", label: "OAuth Refresh Token", type: "password", required: true },
-                              { name: "notes", label: "Notes", type: "textarea" },
-                            ]}
-                          />
-                        );
-                      case "facebook-ads-integration":
-                        return (
-                          <ToolScaffold
-                            key={tool.id}
-                            toolId={tool.id}
-                            toolName={tool.name}
-                            fields={[
-                              { name: "adAccountId", label: "Ad Account ID", type: "text", required: true },
-                              { name: "accessToken", label: "Access Token", type: "password", required: true },
-                              { name: "appId", label: "App ID", type: "text" },
-                              { name: "appSecret", label: "App Secret", type: "password" },
-                            ]}
-                          />
-                        );
-                      case "tiktok-ads-integration":
-                        return (
-                          <ToolScaffold
-                            key={tool.id}
-                            toolId={tool.id}
-                            toolName={tool.name}
-                            fields={[
-                              { name: "advertiserId", label: "Advertiser ID", type: "text", required: true },
-                              { name: "accessToken", label: "Access Token", type: "password", required: true },
-                              { name: "notes", label: "Notes", type: "textarea" },
-                            ]}
-                          />
-                        );
-                      case "ads-anomaly-guard":
-                        return (
-                          <ToolScaffold
-                            key={tool.id}
-                            toolId={tool.id}
-                            toolName={tool.name}
-                            fields={[
-                              { name: "channels", label: "Channels (Google, Meta, TikTok)", type: "text", required: true },
-                              { name: "alertEmails", label: "Alert Emails", type: "text" },
-                              { name: "alertThreshold", label: "Alert Threshold (%)", type: "number", required: true },
-                            ]}
-                          />
-                        );
-                      case "ad-creative-optimizer":
-                        return (
-                          <ToolScaffold
-                            key={tool.id}
-                            toolId={tool.id}
-                            toolName={tool.name}
-                            fields={[
-                              { name: "productOrOffer", label: "Product/Offer", type: "text", required: true },
-                              { name: "targetAudience", label: "Target Audience", type: "textarea" },
-                              { name: "tone", label: "Tone/Voice", type: "text" },
-                              { name: "channels", label: "Channels (Google, Meta, TikTok)", type: "text" },
-                            ]}
-                          />
-                        );
-                      case "omnichannel-campaign-builder":
-                        return (
-                          <ToolScaffold
-                            key={tool.id}
-                            toolId={tool.id}
-                            toolName={tool.name}
-                            fields={[
-                              { name: "campaignName", label: "Campaign Name", type: "text", required: true },
-                              { name: "channels", label: "Channels (Email, SMS, Ads)", type: "text", required: true },
-                              { name: "goal", label: "Goal (Launch, Winback, Retarget)", type: "text" },
-                              { name: "budget", label: "Budget", type: "text" },
-                            ]}
-                          />
-                        );
-                      case "ai-segmentation-engine":
-                        return (
-                          <ToolScaffold
-                            key={tool.id}
-                            toolId={tool.id}
-                            toolName={tool.name}
-                            fields={[
-                              { name: "seedSignals", label: "Seed Signals (events, traits)", type: "textarea" },
-                              { name: "minAudienceSize", label: "Min Audience Size", type: "number" },
-                            ]}
-                          />
-                        );
-                      case "predictive-analytics-widgets":
-                        return (
-                          <PredictiveAnalyticsWidgets key={tool.id} />
-                        );
-                      case "ai-content-image-gen":
-                        return (
-                          <ToolScaffold
-                            key={tool.id}
-                            toolId={tool.id}
-                            toolName={tool.name}
-                            fields={[
-                              { name: "purpose", label: "Purpose (Ad, Email, Landing)", type: "text", required: true },
-                              { name: "productDetails", label: "Product/Offer Details", type: "textarea" },
-                              { name: "tone", label: "Tone/Voice", type: "text" },
-                              { name: "imageStyle", label: "Image Style", type: "text" },
-                            ]}
-                          />
-                        );
-                      case "self-service-analytics":
-                          return <SelfServiceAnalytics key={tool.id} />;
-                      case "compliance-privacy-suite":
-                        return (
-                          <ToolScaffold
-                            key={tool.id}
-                            toolId={tool.id}
-                            toolName={tool.name}
-                            fields={[
-                              { name: "regions", label: "Regions (GDPR/CCPA)", type: "text", required: true },
-                              { name: "dpoEmail", label: "DPO / Compliance Email", type: "text" },
-                              { name: "dataExport", label: "Data Export Requested", type: "checkbox" },
-                              { name: "notes", label: "Notes", type: "textarea" },
-                            ]}
-                          />
-                        );
-                      default:
-                        // Fallback to generic scaffold for any tool not custom-mapped
-                        const defaultFields = [
-                          { name: "input", label: "Input", type: "textarea", required: false }
-                        ];
-                        return <ToolScaffold key={tool.id} toolId={tool.id} toolName={tool.name} fields={defaultFields} />;
-                    }
-                  }
-                  return null;
-                })}
+                
+                {/* Enterprise tools with dedicated UIs */}
+                {activeSection === "product-seo" && <ProductSeoEngine />}
+                {activeSection === "klaviyo-flow-automation" && <KlaviyoFlowAutomation />}
+                {activeSection === "email-automation-builder" && <EmailAutomationBuilder />}
+                {activeSection === "dynamic-pricing-engine" && <DynamicPricingEngine />}
+                {activeSection === "upsell-cross-sell-engine" && <UpsellCrossSellEngine />}
+                {activeSection === "ab-testing-suite" && <ABTestingSuite />}
+                {activeSection === "customer-data-platform" && <CustomerDataPlatform />}
+                {activeSection === "personalization-recommendation-engine" && <PersonalizationRecommendationEngine />}
+                {activeSection === "customer-support-ai" && <CustomerSupportAI />}
+                {activeSection === "ai-support-assistant" && <AiSupportAssistant />}
+                {activeSection === "review-ugc-engine" && <ReviewUGCEngine />}
+                {(activeSection === "loyalty-referral-programs" || activeSection === "loyalty-referral-program-v2") && <LoyaltyReferralPrograms />}
+                {activeSection === "brand-mention-tracker" && <BrandMentionTracker />}
+                {activeSection === "social-media-analytics-listening" && <SocialMediaAnalyticsListening />}
+                {activeSection === "content-scoring-optimization" && <ContentScoringOptimization />}
+                {activeSection === "ai-content-brief-generator" && <AIContentBriefGenerator />}
+                {activeSection === "blog-seo" && <BlogSEO />}
+                {activeSection === "weekly-blog-content-engine" && <WeeklyBlogContentEngine />}
+                {activeSection === "blog-draft-engine" && <BlogDraftEngine />}
+                {activeSection === "predictive-analytics-widgets" && <PredictiveAnalyticsWidgets />}
+                {activeSection === "self-service-analytics" && <SelfServiceAnalytics />}
+                {activeSection === "advanced-analytics-attribution" && <AdvancedAnalyticsAttribution />}
+                
+                {/* Additional tools */}
+                {activeSection === "abandoned-checkout-winback" && <AbandonedCheckoutWinback />}
+                {activeSection === "visual-workflow-builder" && <VisualWorkflowBuilder />}
+                {activeSection === "workflow-automation-builder" && <WorkflowAutomationBuilder />}
+                {(activeSection === "image-alt-media-seo" || activeSection === "ai-alt-text-engine") && <ImageAltMediaSEO />}
+                {activeSection === "ltv-churn-predictor" && <LTVChurnPredictor />}
+                {activeSection === "multi-channel-optimizer" && <MultiChannelOptimizer />}
+                {activeSection === "churn-prediction-playbooks" && <ChurnPredictionPlaybooks />}
+                {activeSection === "inventory-forecasting" && <InventoryForecasting />}
+                {activeSection === "inventory-supplier-sync" && <InventorySupplierSync />}
+                {activeSection === "finance-autopilot" && <FinanceAutopilot />}
+                {activeSection === "inbox-assistant" && <InboxAssistant />}
+                {activeSection === "inbox-reply-assistant" && <InboxReplyAssistant />}
+                {activeSection === "creative-automation-engine" && <CreativeAutomationEngine />}
+                {activeSection === "brand-intelligence-layer" && <BrandIntelligenceLayer />}
+                {activeSection === "auto-insights" && <AutoInsights />}
+                {activeSection === "aura-operations-ai" && <AuraOperationsAI />}
+                {activeSection === "aura-api-sdk" && <AuraAPISDK />}
+                {activeSection === "ai-launch-planner" && <AiLaunchPlanner />}
+                
+                {/* SEO Tools */}
+                {activeSection === "on-page-seo-engine" && <OnPageSEOEngine />}
+                {activeSection === "technical-seo-auditor" && <TechnicalSEOAuditor />}
+                {activeSection === "serp-tracker" && <SERPTracker />}
+                {activeSection === "seo-site-crawler" && <SEOSiteCrawler />}
+                {activeSection === "site-audit-health" && <SiteAuditHealth />}
+                {activeSection === "schema-rich-results-engine" && <SchemaRichResultsEngine />}
+                {activeSection === "rank-visibility-tracker" && <RankVisibilityTracker />}
+                {activeSection === "entity-topic-explorer" && <EntityTopicExplorer />}
+                {activeSection === "internal-linking-suggestions" && <InternalLinkingSuggestions />}
+                {activeSection === "local-seo-toolkit" && <LocalSEOToolkit />}
+                
+                {/* Workflow & Automation */}
+                {activeSection === "automation-templates" && <AutomationTemplates />}
+                {activeSection === "conditional-logic-automation" && <ConditionalLogicAutomation />}
+                {activeSection === "webhook-api-triggers" && <WebhookApiTriggers />}
+                
+                {/* Analytics & Reporting */}
+                {activeSection === "reporting-integrations" && <ReportingIntegrations />}
+                {activeSection === "custom-dashboard-builder" && <CustomDashboardBuilder />}
+                {activeSection === "scheduled-export" && <ScheduledExport />}
+                
+                {/* Social & Content */}
+                {activeSection === "social-scheduler-content-engine" && <SocialSchedulerContentEngine />}
+                {activeSection === "returns-rma-automation" && <ReturnsRMAAutomation />}
+                
+                {/* Data & Integrations */}
+                {activeSection === "data-warehouse-connector" && <DataWarehouseConnector />}
+                {activeSection === "consent-privacy-management" && <ConsentPrivacyManagement />}
+                {activeSection === "self-service-portal" && <SelfServicePortal />}
+                {activeSection === "advanced-personalization-engine" && <AdvancedPersonalizationEngine />}
               </Suspense>
             </section>
           </div>
