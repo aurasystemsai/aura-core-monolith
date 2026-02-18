@@ -1,19 +1,28 @@
-import React from "react";
+import React, { useEffect } from "react";
 
-export default function Toast({ message, type = 'info', onClose }) {
+export default function Toast({ message, type = 'info', onClose, duration = 5000 }) {
   if (!message) return null;
-  let bg = 'var(--toast-bg)', color = 'var(--toast-text)';
-  if (type === 'error') { bg = 'var(--toast-error-bg)'; color = 'var(--toast-error-text)'; }
-  if (type === 'success') { bg = 'var(--toast-success-bg)'; color = 'var(--toast-success-text)'; }
+  let bg = 'var(--toast-bg)', color = 'var(--toast-text)', border = 'transparent';
+  if (type === 'error') { bg = 'var(--toast-error-bg)'; color = 'var(--toast-error-text)'; border = '#f87171'; }
+  if (type === 'success') { bg = '#052e16'; color = '#4ade80'; border = '#16a34a'; }
+
+  useEffect(() => {
+    if (!message || !onClose || !duration) return;
+    const t = setTimeout(onClose, duration);
+    return () => clearTimeout(t);
+  }, [message]);
+
   return (
     <div style={{
-      position: 'fixed', bottom: 32, left: 32, zIndex: 9999,
-      background: bg, color, padding: '16px 32px', borderRadius: 12,
-      fontWeight: 700, fontSize: 16, boxShadow: '0 2px 12px #0008', minWidth: 220, maxWidth: 420
+      position: 'fixed', top: 24, right: 24, zIndex: 9999,
+      background: bg, color, padding: '14px 20px', borderRadius: 12,
+      fontWeight: 700, fontSize: 15, boxShadow: '0 4px 20px #0009',
+      minWidth: 240, maxWidth: 420, display: 'flex', alignItems: 'center', gap: 12,
+      border: `1.5px solid ${border}`
     }}>
-      {message}
+      <span style={{ flex: 1 }}>{message}</span>
       {onClose && (
-        <button onClick={onClose} style={{ marginLeft: 18, background: 'none', color, border: 'none', fontWeight: 700, fontSize: 18, cursor: 'pointer' }} aria-label="Close">✕</button>
+        <button onClick={onClose} style={{ background: 'none', color, border: 'none', fontWeight: 700, fontSize: 18, cursor: 'pointer', lineHeight: 1, padding: 0, flexShrink: 0 }} aria-label="Close">✕</button>
       )}
     </div>
   );
