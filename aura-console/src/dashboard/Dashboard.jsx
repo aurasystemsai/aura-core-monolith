@@ -561,6 +561,7 @@ const Dashboard = ({ setActiveSection }) => {
 			showToast('Failed to start SEO scan. Please try again.', 'error');
 			setScanningInProgress(false);
 			setShowScanModal(false);
+		}
 	};
 
 	useEffect(() => {
