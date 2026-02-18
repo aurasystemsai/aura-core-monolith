@@ -183,11 +183,17 @@ const Settings = () => {
       if (data.error) throw new Error(data.error);
       setSyncStatus(prev => ({ ...prev, [dataType]: 'done' }));
       setSyncResult(prev => ({ ...prev, [dataType]: data.message }));
-      setTimeout(() => setSyncStatus(prev => ({ ...prev, [dataType]: null })), 4000);
+      setTimeout(() => {
+        setSyncStatus(prev => ({ ...prev, [dataType]: null }));
+        setSyncResult(prev => ({ ...prev, [dataType]: null }));
+      }, 4000);
     } catch (error) {
       setSyncStatus(prev => ({ ...prev, [dataType]: 'error' }));
       setSyncResult(prev => ({ ...prev, [dataType]: error.message }));
-      setTimeout(() => setSyncStatus(prev => ({ ...prev, [dataType]: null })), 5000);
+      setTimeout(() => {
+        setSyncStatus(prev => ({ ...prev, [dataType]: null }));
+        setSyncResult(prev => ({ ...prev, [dataType]: null }));
+      }, 5000);
     }
   }
 
@@ -317,7 +323,7 @@ const Settings = () => {
                           >
                             {st === 'loading' ? `Syncing ${type}…` : st === 'done' ? `✓ ${type}` : st === 'error' ? `✗ ${type}` : `Sync ${type}`}
                           </button>
-                          {msg && st !== 'loading' && (
+                          {msg && st && st !== 'loading' && (
                             <div style={{ fontSize: 11, color: st === 'done' ? '#4ade80' : '#f87171', marginTop: 3 }}>{msg}</div>
                           )}
                         </div>
