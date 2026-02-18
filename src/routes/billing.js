@@ -11,7 +11,7 @@ const shopifyBillingService = require('../core/shopifyBillingService');
  */
 router.get('/subscription', async (req, res) => {
   try {
-    const shop = req.session?.shop || req.query.shop;
+    const shop = req.session?.shop || req.query.shop || req.headers['x-shopify-shop-domain'];
     
     if (!shop) {
       return res.json({ plan_id: 'free', status: 'active' });
@@ -49,7 +49,7 @@ router.get('/invoices', async (req, res) => {
  */
 router.get('/usage', async (req, res) => {
   try {
-    const shop = req.session?.shop || req.query.shop;
+    const shop = req.session?.shop || req.query.shop || req.headers['x-shopify-shop-domain'];
     const usage = await shopifyBillingService.getUsageStats(shop);
     res.json(usage);
   } catch (error) {
@@ -64,7 +64,7 @@ router.get('/usage', async (req, res) => {
  */
 router.post('/subscribe', async (req, res) => {
   try {
-    const shop = req.session?.shop || req.body.shop;
+    const shop = req.session?.shop || req.body.shop || req.headers['x-shopify-shop-domain'];
     const { planId } = req.body;
     
     if (!shop) {
@@ -89,7 +89,7 @@ router.post('/subscribe', async (req, res) => {
  */
 router.post('/cancel', async (req, res) => {
   try {
-    const shop = req.session?.shop || req.body.shop;
+    const shop = req.session?.shop || req.body.shop || req.headers['x-shopify-shop-domain'];
     const { subscriptionId } = req.body;
     
     if (!shop) {

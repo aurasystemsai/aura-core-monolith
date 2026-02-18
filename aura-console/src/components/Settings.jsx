@@ -62,11 +62,16 @@ const Settings = () => {
     if (planId === subscription?.plan_id) return;
     setBillingError('');
     setUpgrading(planId);
+    // Resolve shop — from state, URL params, or localStorage
+    const shop = shopDomain
+      || new URLSearchParams(window.location.search).get('shop')
+      || localStorage.getItem('shopDomain')
+      || '';
     try {
       const res = await apiFetch('/api/billing/subscribe', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId }),
+        headers: { 'Content-Type': 'application/json', ...(shop ? { 'x-shopify-shop-domain': shop } : {}) },
+        body: JSON.stringify({ planId, shop }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -86,12 +91,14 @@ const Settings = () => {
     setLoading(true);
     try {
       // Check Shopify connection
-      const shopifyStatus = await apiFetch('/shopify/status');
-      setShopifyConnected(shopifyStatus.connected);
+      const statusRes = await apiFetch('/shopify/status');
+      const shopifyStatus = await statusRes.json().catch(() => ({}));
+      setShopifyConnected(!!shopifyStatus.connected);
       if (shopifyStatus.shop) {
         setShopDomain(shopifyStatus.shop);
         // Load shop details
-        const shopDetails = await apiFetch(`/shopify/shop/${shopifyStatus.shop}`);
+        const detailsRes = await apiFetch(`/shopify/shop/${shopifyStatus.shop}`);
+        const shopDetails = await detailsRes.json().catch(() => null);
         setShopInfo(shopDetails);
       }
     } catch (error) {
