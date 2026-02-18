@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { apiFetch } from "../api";
+import usePlan, { canUseTool, requiredPlanFor, PLAN_LABEL, PLAN_PRICE, PLAN_COLOUR } from "../hooks/usePlan";
 
 export default function AllTools({ setActiveSection }) {
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("category");
+  const { plan, planLoading } = usePlan();
 
   useEffect(() => {
     async function loadModules() {
@@ -59,7 +61,11 @@ export default function AllTools({ setActiveSection }) {
   };
 
   const handleToolClick = (moduleId, categoryId) => {
-    // Store preference to open Main Suite with this group active
+    if (!canUseTool(plan, moduleId)) {
+      // Send to Settings billing section
+      setActiveSection("settings");
+      return;
+    }
     try {
       const prefs = JSON.parse(localStorage.getItem("main-suite-prefs") || "{}");
       localStorage.setItem(
@@ -67,8 +73,6 @@ export default function AllTools({ setActiveSection }) {
         JSON.stringify({ ...prefs, activeGroup: categoryId })
       );
     } catch (e) {}
-    
-    // Navigate to the specific tool
     setActiveSection(moduleId);
   };
 
@@ -120,12 +124,23 @@ export default function AllTools({ setActiveSection }) {
       <div className="all-tools-grid">
         {sortedModules.map((mod) => {
           const tag = getCategoryTag(mod.categoryId);
+          const locked = !planLoading && !canUseTool(plan, mod.id);
+          const reqPlan = requiredPlanFor(mod.id);
           return (
             <div
               key={mod.id}
               className="tool-card"
               onClick={() => handleToolClick(mod.id, mod.categoryId)}
+              style={locked ? { opacity: 0.72, position: "relative", cursor: "pointer" } : { position: "relative" }}
             >
+              {locked && (
+                <div style={{ position: "absolute", inset: 0, borderRadius: "inherit", background: "rgba(15,23,42,0.82)", backdropFilter: "blur(2px)", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: 12, textAlign: "center" }}>
+                  <span style={{ fontSize: 28 }}>🔒</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: PLAN_COLOUR[reqPlan] }}>{PLAN_LABEL[reqPlan]} Plan</span>
+                  <span style={{ fontSize: 11, color: "#94a3b8" }}>from {PLAN_PRICE[reqPlan]}</span>
+                  <span style={{ fontSize: 11, color: "#7fffd4", fontWeight: 700, marginTop: 2 }}>Click to upgrade →</span>
+                </div>
+              )}
               <div className="tool-card-header">
                 <h3>{mod.name}</h3>
                 <span

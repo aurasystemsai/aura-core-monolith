@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch } from "./api";
 import "./App.css";
+import usePlan, { canUseTool } from "./hooks/usePlan";
 
 import toolsMeta from "./toolMeta";
 import AiChatbot from "./components/AiChatbot.jsx";
@@ -241,8 +242,20 @@ function App() {
       }, []);
     // Debug banner removed
   // Main navigation state
-  const [activeSection, setActiveSection] = useState('dashboard');
+  const [activeSection, setActiveSectionRaw] = useState('dashboard');
+  const { plan } = usePlan();
   const [toolInitUrl, setToolInitUrl] = useState(null);
+
+  // Gate navigation — locked tools redirect to Settings
+  function setActiveSection(section, url) {
+    if (url) setToolInitUrl(url);
+    if (!canUseTool(plan, section)) {
+      setActiveSectionRaw('settings');
+      return;
+    }
+    setActiveSectionRaw(section);
+  }
+
   const [sectionHistory, setSectionHistory] = useState([]);
   const sectionHistoryRef = React.useRef([]);
   const navModeRef = React.useRef(null);

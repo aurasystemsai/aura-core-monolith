@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../api";
 import Toast from "../Toast";
+import usePlan, { canUseTool, requiredPlanFor, PLAN_LABEL, PLAN_PRICE, PLAN_COLOUR } from "../../hooks/usePlan";
 
 const PREF_KEY = "main-suite-prefs";
 
@@ -14,6 +15,7 @@ export default function MainSuite({ setActiveSection }) {
   const [darkMode, setDarkMode] = useState(true);
   const [sortKey, setSortKey] = useState("az");
   const [preflightStatuses, setPreflightStatuses] = useState({});
+  const { plan, planLoading } = usePlan();
 
   const STATUS_KEYS = {
     "visual-workflow-builder": "suite:status:visual-workflow-builder",
@@ -308,27 +310,46 @@ export default function MainSuite({ setActiveSection }) {
           </div>
           {!collapsed && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, transition: "opacity 200ms ease", opacity: collapsed ? 0 : 1 }}>
-            {(sortedModules || []).map((m) => (
+            {(sortedModules || []).map((m) => {
+              const locked = !planLoading && !canUseTool(plan, m.id);
+              const reqPlan = requiredPlanFor(m.id);
+              return (
               <div
                 key={m.id}
                 style={{
                   background: palette.card,
-                  border: `1px solid ${palette.border}`,
+                  border: `1px solid ${locked ? "#374151" : palette.border}`,
                   borderRadius: 12,
                   padding: 12,
                   display: "flex",
                   flexDirection: "column",
                   gap: 6,
                   minHeight: 120,
-                  cursor: setActiveSection ? "pointer" : "default",
+                  cursor: "pointer",
                   transition: "transform 160ms ease, box-shadow 160ms ease",
+                  position: "relative",
+                  opacity: locked ? 0.75 : 1,
                 }}
-                onClick={() => setActiveSection && setActiveSection(m.id)}
+                onClick={() => {
+                  if (locked) { setActiveSection && setActiveSection("settings"); return; }
+                  setActiveSection && setActiveSection(m.id);
+                }}
                 onKeyDown={(e) => {
-                  if ((e.key === "Enter" || e.key === " ") && setActiveSection) setActiveSection(m.id);
+                  if (e.key === "Enter" || e.key === " ") {
+                    if (locked) { setActiveSection && setActiveSection("settings"); return; }
+                    setActiveSection && setActiveSection(m.id);
+                  }
                 }}
                 tabIndex={0}
               >
+                {locked && (
+                  <div style={{ position: "absolute", inset: 0, borderRadius: 12, background: "rgba(10,16,28,0.85)", backdropFilter: "blur(2px)", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, padding: 10, textAlign: "center" }}>
+                    <span style={{ fontSize: 24 }}>🔒</span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: PLAN_COLOUR[reqPlan] }}>{PLAN_LABEL[reqPlan]} Plan required</span>
+                    <span style={{ fontSize: 11, color: "#64748b" }}>from {PLAN_PRICE[reqPlan]}</span>
+                    <span style={{ fontSize: 11, color: "#7fffd4", fontWeight: 700 }}>Go to Settings to upgrade →</span>
+                  </div>
+                )}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                   <div style={{ fontWeight: 700, color: palette.text }}>{m.name}</div>
                   {m.status && (
@@ -367,7 +388,8 @@ export default function MainSuite({ setActiveSection }) {
                   </a>
                 )}
               </div>
-            ))}
+            );
+            })}
           </div>
           )}
         </div>
