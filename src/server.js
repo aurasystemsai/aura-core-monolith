@@ -605,11 +605,36 @@ app.post('/shopify/sync/:dataType', async (req, res) => {
 
   try {
     const apiVersion = '2024-01';
+
+    // Inventory levels require a location_ids param — fetch locations first
+    if (dataType === 'inventory') {
+      const locRes = await fetch(`https://${shop}/admin/api/${apiVersion}/locations.json`, {
+        headers: { 'X-Shopify-Access-Token': token }
+      });
+      if (!locRes.ok) {
+        const t = await locRes.text();
+        throw new Error(`Shopify returned ${locRes.status} fetching locations: ${t.slice(0, 200)}`);
+      }
+      const locData = await locRes.json();
+      const locationIds = (locData.locations || []).map(l => l.id).join(',');
+      if (!locationIds) return res.json({ success: true, dataType, count: 0, message: 'No locations found', syncedAt: new Date().toISOString() });
+
+      const invRes = await fetch(`https://${shop}/admin/api/${apiVersion}/inventory_levels.json?limit=250&location_ids=${locationIds}`, {
+        headers: { 'X-Shopify-Access-Token': token }
+      });
+      if (!invRes.ok) {
+        const t = await invRes.text();
+        throw new Error(`Shopify returned ${invRes.status}: ${t.slice(0, 200)}`);
+      }
+      const invData = await invRes.json();
+      const items = invData.inventory_levels || [];
+      return res.json({ success: true, dataType, count: items.length, message: `Synced ${items.length} inventory levels from Shopify`, syncedAt: new Date().toISOString() });
+    }
+
     const endpointMap = {
       products:  `https://${shop}/admin/api/${apiVersion}/products.json?limit=250&fields=id,title,status,variants,images`,
       orders:    `https://${shop}/admin/api/${apiVersion}/orders.json?limit=250&status=any&fields=id,name,total_price,financial_status,created_at`,
       customers: `https://${shop}/admin/api/${apiVersion}/customers.json?limit=250&fields=id,email,first_name,last_name,orders_count,total_spent`,
-      inventory: `https://${shop}/admin/api/${apiVersion}/inventory_levels.json?limit=250`,
     };
 
     const response = await fetch(endpointMap[dataType], {
@@ -618,7 +643,15 @@ app.post('/shopify/sync/:dataType', async (req, res) => {
 
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(`Shopify returned ${response.status}: ${text.slice(0, 200)}`);
+      let msg = `Shopify returned ${response.status}: ${text.slice(0, 300)}`;
+      // Surface scope errors clearly
+      try {
+        const errJson = JSON.parse(text);
+        if (errJson.errors && response.status === 403) {
+          msg = `Missing Shopify scope for ${dataType}. Re-install the app to grant access.`;
+        }
+      } catch (_) {}
+      throw new Error(msg);
     }
 
     const data = await response.json();

@@ -278,14 +278,18 @@ function App() {
   const [toast, setToast] = useState({ message: '', type: 'info' });
 
   // Handle ?billing=success redirect back from Shopify approval page
+  // Use sessionStorage so this only fires once even if the URL param persists in the Shopify Admin parent frame
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('billing') === 'success') {
+    const alreadyHandled = sessionStorage.getItem('billingSuccessHandled');
+    if (params.get('billing') === 'success' && !alreadyHandled) {
+      sessionStorage.setItem('billingSuccessHandled', '1');
       setToast({ message: '🎉 Plan upgraded successfully! Your new features are now active.', type: 'success' });
       setActiveSectionRaw('settings');
-      // Clean the URL so reloads don't re-trigger this
-      const clean = window.location.pathname;
-      window.history.replaceState({}, '', clean);
+    }
+    // Clear the flag after 10s so a future genuine upgrade still shows the toast
+    if (alreadyHandled) {
+      setTimeout(() => sessionStorage.removeItem('billingSuccessHandled'), 10000);
     }
   }, []);
 
