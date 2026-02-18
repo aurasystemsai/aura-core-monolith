@@ -11,6 +11,95 @@ const pluginSystem = require('./pluginSystem');
 const complianceModel = require('./complianceModel');
 const router = express.Router();
 
+// ── Page Fetch & Auto-Analyse ─────────────────────────────────────────────────
+// POST /api/on-page-seo-engine/fetch-page
+// Crawls a URL and returns all SEO fields pre-extracted
+router.post('/fetch-page', async (req, res) => {
+  const { url } = req.body || {};
+  if (!url) return res.status(400).json({ ok: false, error: 'url is required' });
+
+  try {
+    const fetch = (...args) => import('node-fetch').then(m => m.default(...args));
+    const response = await fetch(url, {
+      method: 'GET',
+      redirect: 'follow',
+      headers: {
+        'User-Agent': 'AURA SEO Auditor (+https://aurasystemsai.com)',
+        'Accept': 'text/html,application/xhtml+xml',
+      },
+      signal: AbortSignal.timeout ? AbortSignal.timeout(12000) : undefined,
+    });
+
+    if (!response.ok) return res.status(400).json({ ok: false, error: `Page returned HTTP ${response.status}` });
+
+    const html = await response.text();
+    const finalUrl = response.url || url;
+
+    function matchOne(re) { const m = re.exec(html); return m && m[1] ? m[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : null; }
+    function countMatches(re) { return (html.match(re) || []).length; }
+    function decode(s) { return s ? s.replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').trim() : null; }
+
+    const title = decode(matchOne(/<title[^>]*>([\s\S]*?)<\/title>/i));
+    const metaDescription = decode(
+      matchOne(/<meta[^>]+name=["']description["'][^>]+content=["']([\s\S]*?)["']/i) ||
+      matchOne(/<meta[^>]+content=["']([\s\S]*?)["'][^>]+name=["']description["']/i)
+    );
+    const h1 = decode(matchOne(/<h1[^>]*>([\s\S]*?)<\/h1>/i));
+    const h2Count = countMatches(/<h2[\s>]/gi);
+    const h3Count = countMatches(/<h3[\s>]/gi);
+
+    const canonicalMatch = /<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i.exec(html) ||
+                           /<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i.exec(html);
+    const canonicalUrl = canonicalMatch ? canonicalMatch[1] : null;
+
+    const hasSchema = /<script[^>]+type=["']application\/ld\+json["'][^>]*>/i.test(html);
+
+    // Word count from visible text
+    const textContent = html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const wordCount = textContent ? textContent.split(/\s+/).filter(Boolean).length : 0;
+
+    // Links
+    const parsed = new URL(finalUrl);
+    const host = parsed.hostname;
+    const allLinks = [...html.matchAll(/<a[^>]+href=["']([^"'#?][^"']*)["']/gi)].map(m => m[1]);
+    const internalLinks = allLinks.filter(l => {
+      try { return new URL(l, finalUrl).hostname === host; } catch { return l.startsWith('/'); }
+    }).length;
+    const externalLinks = allLinks.filter(l => {
+      try { const u = new URL(l, finalUrl); return u.hostname !== host && u.protocol.startsWith('http'); } catch { return false; }
+    }).length;
+
+    // Images
+    const imgTags = [...html.matchAll(/<img([^>]*)>/gi)].map(m => m[1]);
+    const imageCount = imgTags.length;
+    const imagesWithAlt = imgTags.filter(attrs => /alt=["'][^"']+["']/i.test(attrs)).length;
+
+    // OG tags
+    const ogTitle = matchOne(/<meta[^>]+property=["']og:title["'][^>]+content=["']([\s\S]*?)["']/i);
+    const ogDescription = matchOne(/<meta[^>]+property=["']og:description["'][^>]+content=["']([\s\S]*?)["']/i);
+
+    res.json({
+      ok: true,
+      url: finalUrl,
+      title, metaDescription, h1,
+      h2Count, h3Count,
+      wordCount, canonicalUrl,
+      schemaMarkup: hasSchema ? 'yes' : '',
+      internalLinks, externalLinks,
+      imageCount, imagesWithAlt,
+      ogTitle: decode(ogTitle), ogDescription: decode(ogDescription),
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // CRUD endpoints
 router.get('/items', (req, res) => {
 	res.json({ ok: true, items: db.list() });

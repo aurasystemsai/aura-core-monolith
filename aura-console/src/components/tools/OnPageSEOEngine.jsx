@@ -1,20 +1,21 @@
-﻿import React, { useState, useEffect, useCallback } from "react";
+﻿import React, { useState, useEffect, useCallback, useRef } from "react";
 import { apiFetch } from "../../api";
 
-//  helpers 
-function CharBar({ value = "", min, max, label }) {
-  const len = value.length;
+function CharBar({ value = "", min, max, label, error }) {
+  const len = (value || "").length;
   const ok = len >= min && len <= max;
   const over = len > max;
+  const empty = len === 0;
   const pct = Math.min(100, (len / (max + 20)) * 100);
-  const colour = ok ? "#4ade80" : over ? "#f87171" : len === 0 ? "#374151" : "#fbbf24";
+  const colour = empty ? "#374151" : ok ? "#4ade80" : over ? "#f87171" : "#fbbf24";
+  const hint = empty ? `Required: ${min}${max} chars` : ok ? `Good (${len} chars)` : over ? `Too long  remove ${len - max} chars` : `Too short  add ${min - len} more chars`;
   return (
     <div style={{ marginTop: 5 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-        <span style={{ fontSize: 11, color: "#64748b" }}>{label}</span>
-        <span style={{ fontSize: 11, color: colour, fontWeight: 600 }}>{len} chars</span>
+        <span style={{ fontSize: 11, color: colour, fontWeight: empty ? 400 : 600 }}>{hint}</span>
+        <span style={{ fontSize: 11, color: "#475569" }}>{len} / {max}</span>
       </div>
-      <div style={{ height: 4, background: "#1e2a3a", borderRadius: 2 }}>
+      <div style={{ height: 5, background: "#1e2a3a", borderRadius: 2 }}>
         <div style={{ height: "100%", width: `${pct}%`, background: colour, borderRadius: 2, transition: "width 0.3s" }} />
       </div>
     </div>
@@ -26,11 +27,7 @@ function ScoreRing({ score }) {
   const label = score >= 80 ? "Excellent" : score >= 55 ? "Good" : score >= 35 ? "Needs Work" : "Poor";
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-      <div style={{
-        width: 96, height: 96, borderRadius: "50%",
-        background: `conic-gradient(${colour} ${score * 3.6}deg, #1e2a3a ${score * 3.6}deg)`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
+      <div style={{ width: 96, height: 96, borderRadius: "50%", background: `conic-gradient(${colour} ${score * 3.6}deg, #1e2a3a ${score * 3.6}deg)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ width: 74, height: 74, borderRadius: "50%", background: "#0f172a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <span style={{ color: colour, fontWeight: 900, fontSize: 24, lineHeight: 1 }}>{score}</span>
           <span style={{ color: "#475569", fontSize: 10, fontWeight: 600 }}>/ 100</span>
@@ -44,44 +41,33 @@ function ScoreRing({ score }) {
 function GooglePreview({ title, description, url }) {
   return (
     <div style={{ background: "#fff", borderRadius: 10, padding: "14px 18px", fontFamily: "Arial, sans-serif", border: "1px solid #e5e7eb" }}>
-      <div style={{ fontSize: 12, color: "#006621", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        {url || "yourstore.myshopify.com/pages/page-slug"}
-      </div>
-      <div style={{ fontSize: 18, color: "#1a0dab", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        {title || "Your Page Title"}
-      </div>
-      <div style={{ fontSize: 13, color: "#545454", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-        {description || "Your meta description will appear here  aim for 130165 characters with a clear call-to-action."}
-      </div>
+      <div style={{ fontSize: 12, color: "#006621", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{url || "yourstore.myshopify.com/pages/page-slug"}</div>
+      <div style={{ fontSize: 18, color: "#1a0dab", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title || <span style={{ color: "#999" }}>Your Page Title</span>}</div>
+      <div style={{ fontSize: 13, color: "#545454", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{description || <span style={{ color: "#bbb" }}>Your meta description will appear here</span>}</div>
     </div>
   );
 }
 
 const TABS = ["Analyzer", "History", "AI Assistant", "Analytics"];
+const EMPTY_FORM = { url: "", title: "", metaDescription: "", h1: "", wordCount: "", canonicalUrl: "", schemaMarkup: "", h2Count: "", h3Count: "", internalLinks: "", externalLinks: "", imageCount: "", imagesWithAlt: "", keywords: "" };
 
 export default function OnPageSEOEngine() {
   const [tab, setTab] = useState("Analyzer");
-
-  const [form, setForm] = useState({
-    url: "", title: "", metaDescription: "", h1: "", wordCount: "",
-    canonicalUrl: "", schemaMarkup: "", h2Count: "", h3Count: "",
-    internalLinks: "", externalLinks: "", imageCount: "", imagesWithAlt: "",
-    keywords: "", bodyText: "",
-  });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const [fetchStatus, setFetchStatus] = useState(null); // { ok, msg }
   const [error, setError] = useState("");
   const [toast, setToast] = useState(null);
-
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiReply, setAiReply] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiContext, setAiContext] = useState("general");
-
   const [analyticsData, setAnalyticsData] = useState([]);
+  const fetchTimerRef = useRef(null);
 
   const showToast = useCallback((msg, type = "success") => {
     setToast({ msg, type });
@@ -89,6 +75,49 @@ export default function OnPageSEOEngine() {
   }, []);
 
   useEffect(() => { loadHistory(); loadAnalytics(); }, []);
+
+  // Auto-crawl when URL is entered (debounced 1.5s)
+  useEffect(() => {
+    const url = form.url.trim();
+    if (!url || !url.startsWith("http")) { setFetchStatus(null); return; }
+    clearTimeout(fetchTimerRef.current);
+    fetchTimerRef.current = setTimeout(() => crawlUrl(url), 1500);
+    return () => clearTimeout(fetchTimerRef.current);
+  }, [form.url]);
+
+  async function crawlUrl(url) {
+    setFetching(true);
+    setFetchStatus(null);
+    try {
+      const res = await apiFetch("/api/on-page-seo-engine/fetch-page", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Fetch failed");
+      setForm(f => ({
+        ...f,
+        url: data.url || f.url,
+        title: data.title || f.title,
+        metaDescription: data.metaDescription || f.metaDescription,
+        h1: data.h1 || f.h1,
+        h2Count: data.h2Count != null ? String(data.h2Count) : f.h2Count,
+        h3Count: data.h3Count != null ? String(data.h3Count) : f.h3Count,
+        wordCount: data.wordCount != null ? String(data.wordCount) : f.wordCount,
+        canonicalUrl: data.canonicalUrl || f.canonicalUrl,
+        schemaMarkup: data.schemaMarkup || f.schemaMarkup,
+        internalLinks: data.internalLinks != null ? String(data.internalLinks) : f.internalLinks,
+        externalLinks: data.externalLinks != null ? String(data.externalLinks) : f.externalLinks,
+        imageCount: data.imageCount != null ? String(data.imageCount) : f.imageCount,
+        imagesWithAlt: data.imagesWithAlt != null ? String(data.imagesWithAlt) : f.imagesWithAlt,
+      }));
+      setFetchStatus({ ok: true, msg: ` Page data fetched  all fields auto-filled. Review and run analysis.` });
+    } catch (err) {
+      setFetchStatus({ ok: false, msg: ` Could not fetch page: ${err.message}. Fill fields manually.` });
+    }
+    setFetching(false);
+  }
 
   async function loadHistory() {
     setHistoryLoading(true);
@@ -109,59 +138,47 @@ export default function OnPageSEOEngine() {
   }
 
   async function runAnalysis() {
-    if (!form.title && !form.url) { setError("Enter at least a page URL or title to analyse."); return; }
+    if (!form.title && !form.url) { setError("Enter a page URL  the tool will auto-fill the rest."); return; }
     setLoading(true); setError(""); setResult(null);
     try {
-      const payload = {
-        url: form.url, title: form.title, metaDescription: form.metaDescription,
-        h1: form.h1, wordCount: Number(form.wordCount) || 0,
-        canonicalUrl: form.canonicalUrl, schemaMarkup: form.schemaMarkup,
-        h2Count: Number(form.h2Count) || 0, h3Count: Number(form.h3Count) || 0,
-        internalLinks: Number(form.internalLinks) || 0, externalLinks: Number(form.externalLinks) || 0,
-        imageCount: Number(form.imageCount) || 0, imagesWithAlt: Number(form.imagesWithAlt) || 0,
-        keywords: form.keywords, bodyText: form.bodyText,
-      };
-
       const issues = [];
-      if (!payload.title) issues.push({ field: "title", severity: "high", msg: "Missing page title" });
-      else if (payload.title.length < 45) issues.push({ field: "title", severity: "medium", msg: `Title too short (${payload.title.length} chars  aim 4565)` });
-      else if (payload.title.length > 65) issues.push({ field: "title", severity: "medium", msg: `Title too long (${payload.title.length} chars  aim 4565)` });
+      if (!form.title) issues.push({ field: "title", severity: "high", msg: "Missing page title" });
+      else if (form.title.length < 45) issues.push({ field: "title", severity: "medium", msg: `Title too short  ${form.title.length} chars, need 4565` });
+      else if (form.title.length > 65) issues.push({ field: "title", severity: "medium", msg: `Title too long  ${form.title.length} chars, cut to 65` });
 
-      if (!payload.metaDescription) issues.push({ field: "metaDescription", severity: "high", msg: "Missing meta description" });
-      else if (payload.metaDescription.length < 130) issues.push({ field: "metaDescription", severity: "medium", msg: `Meta description too short (${payload.metaDescription.length} chars  aim 130165)` });
-      else if (payload.metaDescription.length > 165) issues.push({ field: "metaDescription", severity: "medium", msg: `Meta description too long (${payload.metaDescription.length} chars  aim 130165)` });
+      if (!form.metaDescription) issues.push({ field: "metaDescription", severity: "high", msg: "Missing meta description" });
+      else if (form.metaDescription.length < 130) issues.push({ field: "metaDescription", severity: "medium", msg: `Meta description too short  ${form.metaDescription.length} chars, need 130165` });
+      else if (form.metaDescription.length > 165) issues.push({ field: "metaDescription", severity: "medium", msg: `Meta description too long  ${form.metaDescription.length} chars, cut to 165` });
 
-      if (!payload.h1) issues.push({ field: "h1", severity: "high", msg: "Missing H1 heading" });
-      if (payload.wordCount > 0 && payload.wordCount < 300) issues.push({ field: "wordCount", severity: "medium", msg: `Low word count (${payload.wordCount}  aim 300+)` });
-      if (!payload.canonicalUrl) issues.push({ field: "canonicalUrl", severity: "low", msg: "Missing canonical URL tag" });
-      if (!payload.schemaMarkup) issues.push({ field: "schemaMarkup", severity: "low", msg: "No schema / structured data markup" });
-      if (payload.h2Count === 0) issues.push({ field: "h2Count", severity: "low", msg: "No H2 headings found" });
-      if (payload.h3Count > 0 && payload.h2Count === 0) issues.push({ field: "h3Count", severity: "low", msg: "H3 used without any H2  broken heading hierarchy" });
-      if (payload.internalLinks > 0 && payload.internalLinks < 2) issues.push({ field: "internalLinks", severity: "low", msg: `Only ${payload.internalLinks} internal link  aim for 2+` });
-      if (payload.imageCount > 0 && payload.imagesWithAlt < payload.imageCount) {
-        const missing = payload.imageCount - payload.imagesWithAlt;
-        issues.push({ field: "imagesWithAlt", severity: "medium", msg: `${missing} image${missing !== 1 ? "s" : ""} missing alt text` });
+      if (!form.h1) issues.push({ field: "h1", severity: "high", msg: "No H1 heading found on page" });
+      if (Number(form.wordCount) > 0 && Number(form.wordCount) < 300) issues.push({ field: "wordCount", severity: "medium", msg: `Only ${form.wordCount} words  aim for 300+ for SEO impact` });
+      if (!form.canonicalUrl) issues.push({ field: "canonicalUrl", severity: "low", msg: "No canonical URL tag  duplicate content risk" });
+      if (!form.schemaMarkup) issues.push({ field: "schemaMarkup", severity: "low", msg: "No structured data / schema markup detected" });
+      if (Number(form.h2Count) === 0) issues.push({ field: "h2Count", severity: "low", msg: "No H2 headings  add subheadings to structure content" });
+      if (Number(form.h3Count) > 0 && Number(form.h2Count) === 0) issues.push({ field: "h3Count", severity: "low", msg: "H3 used without H2  broken heading hierarchy" });
+      if (Number(form.internalLinks) > 0 && Number(form.internalLinks) < 2) issues.push({ field: "internalLinks", severity: "low", msg: `Only ${form.internalLinks} internal link  add more for crawlability` });
+      if (Number(form.imageCount) > 0 && Number(form.imagesWithAlt) < Number(form.imageCount)) {
+        const missing = Number(form.imageCount) - Number(form.imagesWithAlt);
+        issues.push({ field: "imagesWithAlt", severity: "medium", msg: `${missing} image${missing !== 1 ? "s" : ""} missing alt text  accessibility & SEO issue` });
       }
-      if (payload.keywords) {
-        payload.keywords.split(",").map(k => k.trim().toLowerCase()).filter(Boolean).forEach(kw => {
-          const inTitle = payload.title.toLowerCase().includes(kw);
-          const inDesc = payload.metaDescription.toLowerCase().includes(kw);
-          const inH1 = payload.h1.toLowerCase().includes(kw);
-          if (!inTitle && !inDesc && !inH1) issues.push({ field: "keywords", severity: "low", msg: `Keyword "${kw}" not in title, description, or H1` });
+      if (form.keywords) {
+        form.keywords.split(",").map(k => k.trim().toLowerCase()).filter(Boolean).forEach(kw => {
+          if (!form.title.toLowerCase().includes(kw) && !form.metaDescription.toLowerCase().includes(kw) && !form.h1.toLowerCase().includes(kw))
+            issues.push({ field: "keywords", severity: "low", msg: `Keyword "${kw}" missing from title, description and H1` });
         });
       }
 
       const score = Math.max(0, 100 - issues.filter(i => i.severity === "high").length * 15 - issues.filter(i => i.severity === "medium").length * 8 - issues.filter(i => i.severity === "low").length * 4);
-      const analysisResult = { score, issues, input: payload, ts: new Date().toISOString() };
+      const analysisResult = { score, issues, input: { ...form }, ts: new Date().toISOString() };
       setResult(analysisResult);
 
       try {
-        await apiFetch("/api/on-page-seo-engine/items", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...payload, score, issueCount: issues.length, ts: analysisResult.ts }) });
-        await apiFetch("/api/on-page-seo-engine/analytics", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event: "analysis_run", score, url: payload.url, issueCount: issues.length }) });
+        await apiFetch("/api/on-page-seo-engine/items", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, score, issueCount: issues.length, ts: analysisResult.ts }) });
+        await apiFetch("/api/on-page-seo-engine/analytics", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event: "analysis_run", score, url: form.url, issueCount: issues.length }) });
         loadHistory(); loadAnalytics();
       } catch (_) {}
 
-      showToast("Analysis complete!");
+      showToast(issues.length === 0 ? " Perfect score  no issues found!" : `Analysis complete  ${issues.length} issue${issues.length !== 1 ? "s" : ""} found`);
     } catch (err) { setError("Analysis failed: " + err.message); }
     setLoading(false);
   }
@@ -195,19 +212,20 @@ export default function OnPageSEOEngine() {
   }
 
   function copyText(text) { navigator.clipboard.writeText(text).then(() => showToast("Copied!")); }
-
   function loadFromHistory(item) {
-    setForm(f => ({ ...f, url: item.url || "", title: item.title || "", metaDescription: item.metaDescription || "", h1: item.h1 || "", wordCount: item.wordCount || "", canonicalUrl: item.canonicalUrl || "", schemaMarkup: item.schemaMarkup || "", h2Count: item.h2Count || "", h3Count: item.h3Count || "", internalLinks: item.internalLinks || "", imageCount: item.imageCount || "", imagesWithAlt: item.imagesWithAlt || "", keywords: item.keywords || "" }));
-    setTab("Analyzer"); showToast("Loaded from history");
+    setForm(f => ({ ...f, ...item }));
+    setTab("Analyzer");
+    showToast("Loaded from history  you can re-run the analysis");
   }
 
   const sev = { high: "#f87171", medium: "#fbbf24", low: "#60a5fa" };
+  const issueFields = new Set(result?.issues.map(i => i.field) || []);
 
   return (
     <div style={{ background: "#0f172a", minHeight: "100vh", color: "#e5e7eb", fontFamily: "Inter, system-ui, sans-serif" }}>
 
       {toast && (
-        <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 9999, background: toast.type === "error" ? "#2d1515" : "#0f2d24", border: `1px solid ${toast.type === "error" ? "#f87171" : "#4ade80"}`, borderRadius: 12, padding: "14px 20px", color: toast.type === "error" ? "#f87171" : "#4ade80", fontSize: 14, fontWeight: 500, maxWidth: 360, boxShadow: "0 8px 32px rgba(0,0,0,0.4)", display: "flex", gap: 10, alignItems: "center" }}>
+        <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 9999, background: toast.type === "error" ? "#2d1515" : "#0f2d24", border: `1px solid ${toast.type === "error" ? "#f87171" : "#4ade80"}`, borderRadius: 12, padding: "14px 20px", color: toast.type === "error" ? "#f87171" : "#4ade80", fontSize: 14, fontWeight: 500, maxWidth: 380, boxShadow: "0 8px 32px rgba(0,0,0,0.4)", display: "flex", gap: 10, alignItems: "center" }}>
           <span>{toast.type === "error" ? "" : ""}</span> {toast.msg}
         </div>
       )}
@@ -216,14 +234,10 @@ export default function OnPageSEOEngine() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 900, color: "#7fffd4", margin: 0 }}>On-Page SEO Engine</h1>
-            <p style={{ color: "#64748b", fontSize: 14, margin: "4px 0 0" }}>Analyse, score and optimise every SEO element of any page</p>
+            <p style={{ color: "#64748b", fontSize: 14, margin: "4px 0 0" }}>Paste a URL  every field auto-fills instantly. Then run your analysis.</p>
           </div>
           <div style={{ display: "flex", gap: 12 }}>
-            {[
-              { label: "Analyses Run", value: history.length, color: "#7fffd4" },
-              { label: "Avg Score", value: history.filter(h => h.score).length ? Math.round(history.filter(h => h.score).reduce((s, h) => s + h.score, 0) / history.filter(h => h.score).length) : "", color: "#a78bfa" },
-              { label: "Events", value: analyticsData.length, color: "#fbbf24" },
-            ].map(s => (
+            {[{ label: "Analyses", value: history.length, color: "#7fffd4" }, { label: "Avg Score", value: history.filter(h => h.score).length ? Math.round(history.filter(h => h.score).reduce((s, h) => s + h.score, 0) / history.filter(h => h.score).length) : "", color: "#a78bfa" }, { label: "Events", value: analyticsData.length, color: "#fbbf24" }].map(s => (
               <div key={s.label} style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 10, padding: "10px 18px", textAlign: "center" }}>
                 <div style={{ fontSize: 22, fontWeight: 800, color: s.color }}>{s.value}</div>
                 <div style={{ fontSize: 11, color: "#64748b" }}>{s.label}</div>
@@ -244,71 +258,121 @@ export default function OnPageSEOEngine() {
           <div style={{ display: "grid", gridTemplateColumns: result ? "1fr 400px" : "1fr", gap: 24 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-              <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 20 }}>
-                <label style={{ display: "block", fontWeight: 700, color: "#94a3b8", marginBottom: 8, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>Page URL</label>
-                <input value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} placeholder="https://yourstore.myshopify.com/pages/about"
-                  style={{ width: "100%", background: "#0f172a", border: "1px solid #2f3650", borderRadius: 8, padding: "10px 14px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+              {/* URL  the magic input */}
+              <div style={{ background: "linear-gradient(135deg, #0f2d24, #0f172a)", border: "2px solid #7fffd4", borderRadius: 14, padding: 20 }}>
+                <label style={{ display: "block", fontWeight: 800, color: "#7fffd4", marginBottom: 10, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                   Paste Your Page URL  Everything Auto-Fills
+                </label>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <div style={{ flex: 1, position: "relative" }}>
+                    <input
+                      value={form.url}
+                      onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
+                      placeholder="https://yourstore.myshopify.com/pages/about"
+                      style={{ width: "100%", background: "#0f172a", border: `1px solid ${fetching ? "#fbbf24" : fetchStatus?.ok ? "#4ade80" : "#2f3650"}`, borderRadius: 8, padding: "11px 14px", color: "#e5e7eb", fontSize: 15, outline: "none", boxSizing: "border-box" }}
+                    />
+                    {fetching && <div style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "#fbbf24" }}>Fetching</div>}
+                  </div>
+                  <button onClick={() => form.url.trim() && crawlUrl(form.url.trim())} disabled={fetching || !form.url.trim()}
+                    style={{ background: fetching ? "#374151" : "#7fffd4", border: "none", borderRadius: 8, padding: "11px 18px", color: "#0f172a", fontWeight: 800, cursor: "pointer", fontSize: 14, whiteSpace: "nowrap", opacity: !form.url.trim() ? 0.5 : 1 }}>
+                    {fetching ? "" : " Refetch"}
+                  </button>
+                </div>
+                {fetchStatus && (
+                  <div style={{ marginTop: 10, fontSize: 13, color: fetchStatus.ok ? "#4ade80" : "#fbbf24", fontWeight: 500 }}>{fetchStatus.msg}</div>
+                )}
+                {!form.url && <div style={{ marginTop: 8, fontSize: 12, color: "#475569" }}>Paste any URL above  title, meta, H1, word count, links, images and more are fetched automatically.</div>}
               </div>
 
-              <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
-                <div>
-                  <label style={{ display: "block", fontWeight: 700, color: "#94a3b8", marginBottom: 8, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>Page Title</label>
-                  <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="e.g. Best Ski Wax for Speed | BrandName"
-                    style={{ width: "100%", background: "#0f172a", border: "1px solid #2f3650", borderRadius: 8, padding: "10px 14px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
-                  <CharBar value={form.title} min={45} max={65} label="Recommended: 4565 chars" />
+              {/* Title + Meta */}
+              <div style={{ background: "#1e2a3a", border: `1px solid ${issueFields.has("title") || issueFields.has("metaDescription") ? "#f87171" : "#2f3650"}`, borderRadius: 14, padding: 20, display: "flex", flexDirection: "column", gap: 18 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: -4 }}>
+                  <span style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>Meta Tags</span>
+                  {(issueFields.has("title") || issueFields.has("metaDescription")) && <span style={{ fontSize: 11, background: "#2d1515", color: "#f87171", border: "1px solid #f8717140", borderRadius: 4, padding: "2px 8px", fontWeight: 600 }}>Issues Found</span>}
                 </div>
                 <div>
-                  <label style={{ display: "block", fontWeight: 700, color: "#94a3b8", marginBottom: 8, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>Meta Description</label>
-                  <textarea value={form.metaDescription} onChange={e => setForm(f => ({ ...f, metaDescription: e.target.value }))} rows={3} placeholder="Compelling meta description with your keyword and a CTA..."
-                    style={{ width: "100%", background: "#0f172a", border: "1px solid #2f3650", borderRadius: 8, padding: "10px 14px", color: "#e5e7eb", fontSize: 14, outline: "none", resize: "vertical", lineHeight: 1.5, boxSizing: "border-box" }} />
-                  <CharBar value={form.metaDescription} min={130} max={165} label="Recommended: 130165 chars" />
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <label style={{ fontWeight: 600, color: issueFields.has("title") ? "#f87171" : "#94a3b8", fontSize: 13 }}>
+                      Page Title {issueFields.has("title") && ""}
+                    </label>
+                    <button onClick={() => { setAiPrompt(`Write 5 SEO-optimised titles for this page: ${form.url || form.h1 || form.title}`); setAiContext("title"); setTab("AI Assistant"); }}
+                      style={{ background: "none", border: "1px solid #2f3650", borderRadius: 6, padding: "3px 10px", color: "#a78bfa", cursor: "pointer", fontSize: 11, fontWeight: 600 }}> AI Suggest</button>
+                  </div>
+                  <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                    style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has("title") ? "#f87171" : "#2f3650"}`, borderRadius: 8, padding: "10px 14px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                  <CharBar value={form.title} min={45} max={65} label="4565 chars" />
+                  {result && issueFields.has("title") && <div style={{ marginTop: 6, fontSize: 12, color: "#f87171" }}> {result.issues.find(i => i.field === "title")?.msg}</div>}
+                </div>
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <label style={{ fontWeight: 600, color: issueFields.has("metaDescription") ? "#f87171" : "#94a3b8", fontSize: 13 }}>
+                      Meta Description {issueFields.has("metaDescription") && ""}
+                    </label>
+                    <button onClick={() => { setAiPrompt(`Write 3 meta descriptions for: ${form.title || form.url}`); setAiContext("metaDesc"); setTab("AI Assistant"); }}
+                      style={{ background: "none", border: "1px solid #2f3650", borderRadius: 6, padding: "3px 10px", color: "#a78bfa", cursor: "pointer", fontSize: 11, fontWeight: 600 }}> AI Suggest</button>
+                  </div>
+                  <textarea value={form.metaDescription} onChange={e => setForm(f => ({ ...f, metaDescription: e.target.value }))}
+                    rows={3} style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has("metaDescription") ? "#f87171" : "#2f3650"}`, borderRadius: 8, padding: "10px 14px", color: "#e5e7eb", fontSize: 14, outline: "none", resize: "vertical", lineHeight: 1.5, boxSizing: "border-box" }} />
+                  <CharBar value={form.metaDescription} min={130} max={165} label="130165 chars" />
+                  {result && issueFields.has("metaDescription") && <div style={{ marginTop: 6, fontSize: 12, color: "#f87171" }}> {result.issues.find(i => i.field === "metaDescription")?.msg}</div>}
                 </div>
               </div>
 
-              <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 20 }}>
-                <div style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 14 }}>Heading Structure</div>
+              {/* Heading structure */}
+              <div style={{ background: "#1e2a3a", border: `1px solid ${issueFields.has("h1") || issueFields.has("h2Count") || issueFields.has("h3Count") ? "#f87171" : "#2f3650"}`, borderRadius: 14, padding: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                  <span style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>Heading Structure</span>
+                  {(issueFields.has("h1") || issueFields.has("h2Count")) && <span style={{ fontSize: 11, background: "#2d1515", color: "#f87171", border: "1px solid #f8717140", borderRadius: 4, padding: "2px 8px", fontWeight: 600 }}>Issues Found</span>}
+                </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
                   <div style={{ gridColumn: "span 2" }}>
-                    <label style={{ display: "block", fontSize: 12, color: "#64748b", marginBottom: 5 }}>H1 Text</label>
-                    <input value={form.h1} onChange={e => setForm(f => ({ ...f, h1: e.target.value }))} placeholder="Your main H1 heading"
-                      style={{ width: "100%", background: "#0f172a", border: "1px solid #2f3650", borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                    <label style={{ display: "block", fontSize: 12, color: issueFields.has("h1") ? "#f87171" : "#64748b", marginBottom: 5, fontWeight: issueFields.has("h1") ? 700 : 400 }}>H1 Text {issueFields.has("h1") && ""}</label>
+                    <input value={form.h1} onChange={e => setForm(f => ({ ...f, h1: e.target.value }))}
+                      style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has("h1") ? "#f87171" : "#2f3650"}`, borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                    {result && issueFields.has("h1") && <div style={{ marginTop: 4, fontSize: 11, color: "#f87171" }}> {result.issues.find(i => i.field === "h1")?.msg}</div>}
                   </div>
                   {[{ key: "h2Count", label: "H2 Count" }, { key: "h3Count", label: "H3 Count" }].map(({ key, label }) => (
                     <div key={key}>
-                      <label style={{ display: "block", fontSize: 12, color: "#64748b", marginBottom: 5 }}>{label}</label>
+                      <label style={{ display: "block", fontSize: 12, color: issueFields.has(key) ? "#f87171" : "#64748b", marginBottom: 5 }}>{label} {issueFields.has(key) && ""}</label>
                       <input type="number" value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} placeholder="0"
-                        style={{ width: "100%", background: "#0f172a", border: "1px solid #2f3650", borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                        style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has(key) ? "#f87171" : "#2f3650"}`, borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 20 }}>
+              {/* Content & Links */}
+              <div style={{ background: "#1e2a3a", border: `1px solid ${issueFields.has("wordCount") || issueFields.has("imagesWithAlt") ? "#fbbf24" : "#2f3650"}`, borderRadius: 14, padding: 20 }}>
                 <div style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 14 }}>Content & Links</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
                   {[{ key: "wordCount", label: "Word Count" }, { key: "internalLinks", label: "Internal Links" }, { key: "externalLinks", label: "External Links" }, { key: "imageCount", label: "Images Total" }, { key: "imagesWithAlt", label: "Images w/ Alt" }].map(({ key, label }) => (
                     <div key={key}>
-                      <label style={{ display: "block", fontSize: 12, color: "#64748b", marginBottom: 5 }}>{label}</label>
+                      <label style={{ display: "block", fontSize: 12, color: issueFields.has(key) ? "#fbbf24" : "#64748b", marginBottom: 5, fontWeight: issueFields.has(key) ? 700 : 400 }}>{label} {issueFields.has(key) && ""}</label>
                       <input type="number" value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} placeholder="0"
-                        style={{ width: "100%", background: "#0f172a", border: "1px solid #2f3650", borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                        style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has(key) ? "#fbbf24" : "#2f3650"}`, borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                      {result && issueFields.has(key) && <div style={{ marginTop: 3, fontSize: 10, color: "#fbbf24", lineHeight: 1.3 }}>{result.issues.find(i => i.field === key)?.msg}</div>}
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 20 }}>
+              {/* Technical */}
+              <div style={{ background: "#1e2a3a", border: `1px solid ${issueFields.has("canonicalUrl") || issueFields.has("schemaMarkup") ? "#60a5fa" : "#2f3650"}`, borderRadius: 14, padding: 20 }}>
                 <div style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 14 }}>Technical SEO</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {[{ key: "canonicalUrl", label: "Canonical URL", ph: "https://yourstore.myshopify.com/pages/slug" }, { key: "keywords", label: "Target Keywords (comma-separated)", ph: "ski wax, fast wax, snowboard accessories" }].map(({ key, label, ph }) => (
-                    <div key={key}>
-                      <label style={{ display: "block", fontSize: 12, color: "#64748b", marginBottom: 5 }}>{label}</label>
-                      <input value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} placeholder={ph}
-                        style={{ width: "100%", background: "#0f172a", border: "1px solid #2f3650", borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
-                    </div>
-                  ))}
-                  <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 14, color: "#94a3b8" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 12, color: issueFields.has("canonicalUrl") ? "#60a5fa" : "#64748b", marginBottom: 5, fontWeight: issueFields.has("canonicalUrl") ? 700 : 400 }}>Canonical URL {issueFields.has("canonicalUrl") && " not detected on page"}</label>
+                    <input value={form.canonicalUrl} onChange={e => setForm(f => ({ ...f, canonicalUrl: e.target.value }))} placeholder="https://yourstore.myshopify.com/pages/slug"
+                      style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has("canonicalUrl") ? "#60a5fa" : "#2f3650"}`, borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: 12, color: "#64748b", marginBottom: 5 }}>Target Keywords (comma-separated)</label>
+                    <input value={form.keywords} onChange={e => setForm(f => ({ ...f, keywords: e.target.value }))} placeholder="ski wax, fast wax, snowboard accessories"
+                      style={{ width: "100%", background: "#0f172a", border: "1px solid #2f3650", borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                  </div>
+                  <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 14, color: issueFields.has("schemaMarkup") ? "#60a5fa" : "#94a3b8" }}>
                     <input type="checkbox" checked={!!form.schemaMarkup} onChange={e => setForm(f => ({ ...f, schemaMarkup: e.target.checked ? "yes" : "" }))} style={{ width: 16, height: 16, cursor: "pointer" }} />
-                    Page has Schema / Structured Data markup
+                    Page has Schema / Structured Data markup {issueFields.has("schemaMarkup") && <span style={{ fontSize: 11, color: "#60a5fa" }}> none detected</span>}
                   </label>
                 </div>
               </div>
@@ -316,15 +380,15 @@ export default function OnPageSEOEngine() {
               {error && <div style={{ color: "#f87171", fontSize: 14, padding: "10px 16px", background: "#2d1515", borderRadius: 8, border: "1px solid #f8717140" }}>{error}</div>}
 
               <div style={{ display: "flex", gap: 12 }}>
-                <button onClick={() => { setForm({ url: "", title: "", metaDescription: "", h1: "", wordCount: "", canonicalUrl: "", schemaMarkup: "", h2Count: "", h3Count: "", internalLinks: "", externalLinks: "", imageCount: "", imagesWithAlt: "", keywords: "", bodyText: "" }); setResult(null); setError(""); }}
+                <button onClick={() => { setForm(EMPTY_FORM); setResult(null); setError(""); setFetchStatus(null); }}
                   style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 10, padding: "12px 20px", color: "#94a3b8", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Clear</button>
                 <button onClick={runAnalysis} disabled={loading}
                   style={{ flex: 1, background: loading ? "#374151" : "linear-gradient(135deg, #7fffd4, #22d3ee)", border: "none", borderRadius: 10, padding: "13px", color: "#0f172a", fontWeight: 800, cursor: loading ? "wait" : "pointer", fontSize: 15 }}>
                   {loading ? " Analysing" : " Run SEO Analysis"}
                 </button>
                 {result && (
-                  <button onClick={() => { setAiPrompt(`Give me detailed recommendations to improve this page: ${form.url || form.title}`); setTab("AI Assistant"); }}
-                    style={{ background: "#7c3aed", border: "none", borderRadius: 10, padding: "12px 20px", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 14 }}> AI Fix</button>
+                  <button onClick={() => { setAiPrompt(`Give me specific recommendations to fix these SEO issues on: ${form.url || form.title}\n\nIssues:\n${result.issues.map(i => `- [${i.severity}] ${i.msg}`).join("\n")}`); setTab("AI Assistant"); }}
+                    style={{ background: "#7c3aed", border: "none", borderRadius: 10, padding: "12px 20px", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 14, whiteSpace: "nowrap" }}> Fix with AI</button>
                 )}
               </div>
             </div>
@@ -337,7 +401,7 @@ export default function OnPageSEOEngine() {
                     {["high", "medium", "low"].map(sv => {
                       const count = result.issues.filter(i => i.severity === sv).length;
                       return count > 0 ? (
-                        <div key={sv} style={{ display: "flex", justifyContent: "space-between", padding: "6px 12px", background: "#0f172a", borderRadius: 8 }}>
+                        <div key={sv} style={{ display: "flex", justifyContent: "space-between", padding: "7px 12px", background: "#0f172a", borderRadius: 8, borderLeft: `3px solid ${sev[sv]}` }}>
                           <span style={{ fontSize: 13, color: sev[sv], fontWeight: 600, textTransform: "capitalize" }}>{sv} Priority</span>
                           <span style={{ fontSize: 13, color: sev[sv], fontWeight: 700 }}>{count} issue{count !== 1 ? "s" : ""}</span>
                         </div>
@@ -349,13 +413,13 @@ export default function OnPageSEOEngine() {
 
                 {result.issues.length > 0 && (
                   <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 20 }}>
-                    <div style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Issues to Fix</div>
+                    <div style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>All Issues</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {result.issues.map((issue, i) => (
                         <div key={i} style={{ padding: "10px 14px", background: "#0f172a", borderRadius: 8, borderLeft: `3px solid ${sev[issue.severity]}` }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{ fontSize: 11, padding: "2px 7px", borderRadius: 4, background: `${sev[issue.severity]}20`, color: sev[issue.severity], fontWeight: 700, textTransform: "uppercase", flexShrink: 0 }}>{issue.severity}</span>
-                            <span style={{ fontSize: 13, color: "#e5e7eb" }}>{issue.msg}</span>
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                            <span style={{ fontSize: 11, padding: "2px 7px", borderRadius: 4, background: `${sev[issue.severity]}20`, color: sev[issue.severity], fontWeight: 700, textTransform: "uppercase", flexShrink: 0, marginTop: 1 }}>{issue.severity}</span>
+                            <span style={{ fontSize: 13, color: "#e5e7eb", lineHeight: 1.4 }}>{issue.msg}</span>
                           </div>
                         </div>
                       ))}
@@ -364,26 +428,26 @@ export default function OnPageSEOEngine() {
                 )}
 
                 <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 20 }}>
-                  <div style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Google SERP Preview</div>
+                  <div style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Google Preview</div>
                   <GooglePreview title={form.title} description={form.metaDescription} url={form.url || form.canonicalUrl} />
                 </div>
 
                 <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 20 }}>
-                  <div style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Checks Summary</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Checks</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                     {[
-                      { label: "Title", ok: form.title.length >= 45 && form.title.length <= 65, detail: `${form.title.length} chars` },
-                      { label: "Meta Description", ok: form.metaDescription.length >= 130 && form.metaDescription.length <= 165, detail: `${form.metaDescription.length} chars` },
-                      { label: "H1 Present", ok: !!form.h1, detail: form.h1 ? "" : "Missing" },
-                      { label: "Word Count", ok: Number(form.wordCount) >= 300, detail: form.wordCount ? `${form.wordCount} words` : "Not set" },
-                      { label: "Canonical URL", ok: !!form.canonicalUrl, detail: form.canonicalUrl ? "Set" : "Missing" },
-                      { label: "Schema Markup", ok: !!form.schemaMarkup, detail: form.schemaMarkup ? "Present" : "Missing" },
-                      { label: "Internal Links", ok: Number(form.internalLinks) >= 2, detail: form.internalLinks ? `${form.internalLinks} links` : "Not set" },
-                      { label: "All Images Alt", ok: !form.imageCount || Number(form.imagesWithAlt) >= Number(form.imageCount), detail: form.imageCount ? `${form.imagesWithAlt || 0}/${form.imageCount}` : "Not set" },
+                      { label: "Title length", ok: form.title.length >= 45 && form.title.length <= 65, detail: `${form.title.length} chars` },
+                      { label: "Meta desc length", ok: form.metaDescription.length >= 130 && form.metaDescription.length <= 165, detail: `${form.metaDescription.length} chars` },
+                      { label: "H1 present", ok: !!form.h1, detail: form.h1 ? "" : "Missing" },
+                      { label: "Word count", ok: Number(form.wordCount) >= 300, detail: form.wordCount ? `${form.wordCount}` : "" },
+                      { label: "Canonical", ok: !!form.canonicalUrl, detail: form.canonicalUrl ? "Set" : "Missing" },
+                      { label: "Schema", ok: !!form.schemaMarkup, detail: form.schemaMarkup ? "Present" : "Missing" },
+                      { label: "Internal links", ok: Number(form.internalLinks) >= 2, detail: form.internalLinks || "" },
+                      { label: "Alt text", ok: !form.imageCount || Number(form.imagesWithAlt) >= Number(form.imageCount), detail: form.imageCount ? `${form.imagesWithAlt || 0}/${form.imageCount}` : "" },
                     ].map(c => (
-                      <div key={c.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 12px", background: "#0f172a", borderRadius: 8 }}>
-                        <span style={{ fontSize: 13, color: "#94a3b8" }}>{c.label}</span>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: c.ok ? "#4ade80" : "#f87171" }}>{c.ok ? "" : ""} {c.detail}</span>
+                      <div key={c.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "#0f172a", borderRadius: 7 }}>
+                        <span style={{ fontSize: 12, color: "#94a3b8" }}>{c.label}</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: c.ok ? "#4ade80" : "#f87171" }}>{c.ok ? "" : ""} {c.detail}</span>
                       </div>
                     ))}
                   </div>
@@ -399,9 +463,8 @@ export default function OnPageSEOEngine() {
               <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#e5e7eb" }}>Analysis History</h2>
               <button onClick={loadHistory} style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 10, padding: "8px 16px", color: "#7fffd4", cursor: "pointer", fontSize: 13, fontWeight: 600 }}> Refresh</button>
             </div>
-            {historyLoading ? (
-              <div style={{ color: "#64748b", textAlign: "center", padding: "40px 0" }}>Loading</div>
-            ) : history.length === 0 ? (
+            {historyLoading ? <div style={{ color: "#64748b", textAlign: "center", padding: "40px 0" }}>Loading</div>
+            : history.length === 0 ? (
               <div style={{ textAlign: "center", padding: "64px 0", color: "#64748b" }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}></div>
                 <div style={{ fontSize: 18, fontWeight: 600, color: "#94a3b8" }}>No analyses yet</div>
@@ -410,8 +473,7 @@ export default function OnPageSEOEngine() {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {[...history].reverse().map((item, i) => {
-                  const sc = item.score;
-                  const colour = sc >= 80 ? "#4ade80" : sc >= 55 ? "#fbbf24" : sc > 0 ? "#f87171" : "#475569";
+                  const sc = item.score; const colour = sc >= 80 ? "#4ade80" : sc >= 55 ? "#fbbf24" : sc > 0 ? "#f87171" : "#475569";
                   return (
                     <div key={item.id || i} style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: "18px 22px", display: "flex", alignItems: "center", gap: 18 }}>
                       <div style={{ textAlign: "center", minWidth: 52 }}>
@@ -423,7 +485,7 @@ export default function OnPageSEOEngine() {
                         <div style={{ fontSize: 12, color: "#64748b", marginTop: 3 }}>
                           {item.url && <span style={{ marginRight: 12 }}>{item.url}</span>}
                           {item.issueCount != null && <span style={{ color: item.issueCount > 0 ? "#fbbf24" : "#4ade80" }}>{item.issueCount} issue{item.issueCount !== 1 ? "s" : ""}</span>}
-                          {item.ts && <span style={{ marginLeft: 12, color: "#374151" }}>{new Date(item.ts).toLocaleString()}</span>}
+                          {item.ts && <span style={{ marginLeft: 12 }}>{new Date(item.ts).toLocaleString()}</span>}
                         </div>
                       </div>
                       <div style={{ display: "flex", gap: 8 }}>
@@ -441,20 +503,19 @@ export default function OnPageSEOEngine() {
         {tab === "AI Assistant" && (
           <div style={{ maxWidth: 800 }}>
             <h2 style={{ margin: "0 0 6px", fontSize: 20, fontWeight: 800, color: "#e5e7eb" }}>AI SEO Assistant</h2>
-            <p style={{ margin: "0 0 24px", fontSize: 14, color: "#64748b" }}>Get AI-generated titles, meta descriptions, H1s, schema markup and keyword suggestions.</p>
+            <p style={{ margin: "0 0 24px", fontSize: 14, color: "#64748b" }}>Generate titles, meta descriptions, H1s, schema markup and keyword ideas with AI.</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
-              {[{ key: "general", label: " General Advice" }, { key: "title", label: " Page Titles" }, { key: "metaDesc", label: " Meta Descriptions" }, { key: "h1", label: " H1 Headings" }, { key: "schema", label: " Schema Markup" }, { key: "keywords", label: " Keywords" }].map(({ key, label }) => (
+              {[{ key: "general", label: " General" }, { key: "title", label: " Titles" }, { key: "metaDesc", label: " Meta Descs" }, { key: "h1", label: " H1s" }, { key: "schema", label: " Schema" }, { key: "keywords", label: " Keywords" }].map(({ key, label }) => (
                 <button key={key} onClick={() => setAiContext(key)} style={{ background: aiContext === key ? "#7fffd4" : "#1e2a3a", border: `1px solid ${aiContext === key ? "#7fffd4" : "#2f3650"}`, borderRadius: 8, padding: "8px 16px", color: aiContext === key ? "#0f172a" : "#94a3b8", cursor: "pointer", fontSize: 13, fontWeight: aiContext === key ? 700 : 500 }}>{label}</button>
               ))}
             </div>
             {result && (
               <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: 13, color: "#64748b" }}>
-                <span style={{ color: "#7fffd4", fontWeight: 600 }}>Context loaded:</span> {result.input.title || result.input.url}  Score: <span style={{ color: result.score >= 80 ? "#4ade80" : "#fbbf24", fontWeight: 700 }}>{result.score}</span>
+                <span style={{ color: "#7fffd4", fontWeight: 600 }}>Context:</span> {result.input.title || result.input.url}  Score: <span style={{ color: result.score >= 80 ? "#4ade80" : "#fbbf24", fontWeight: 700 }}>{result.score}</span>  {result.issues.length} issues
               </div>
             )}
             <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 20, marginBottom: 16 }}>
-              <textarea value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} rows={4}
-                placeholder={aiContext === "title" ? "Describe your page to generate optimised titles..." : aiContext === "schema" ? "What type of page? (product, article, FAQ...)" : "Ask anything about on-page SEO for this page..."}
+              <textarea value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} rows={4} placeholder="Describe your page or paste specific content for AI to optimise..."
                 style={{ width: "100%", background: "#0f172a", border: "1px solid #2f3650", borderRadius: 8, padding: "10px 14px", color: "#e5e7eb", fontSize: 14, outline: "none", resize: "vertical", lineHeight: 1.5, boxSizing: "border-box" }} />
               <button onClick={runAI} disabled={aiLoading || !aiPrompt.trim()}
                 style={{ marginTop: 12, background: aiLoading ? "#374151" : "linear-gradient(135deg, #7fffd4, #22d3ee)", border: "none", borderRadius: 10, padding: "11px 28px", color: "#0f172a", fontWeight: 800, cursor: aiLoading ? "wait" : "pointer", fontSize: 14, opacity: !aiPrompt.trim() ? 0.5 : 1 }}>
@@ -477,13 +538,7 @@ export default function OnPageSEOEngine() {
           <div>
             <h2 style={{ margin: "0 0 20px", fontSize: 20, fontWeight: 800, color: "#e5e7eb" }}>Analytics</h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16, marginBottom: 28 }}>
-              {[
-                { label: "Total Analyses", value: history.length, color: "#7fffd4" },
-                { label: "Avg SEO Score", value: history.filter(h => h.score).length ? Math.round(history.filter(h => h.score).reduce((s, h) => s + h.score, 0) / history.filter(h => h.score).length) : "", color: "#a78bfa" },
-                { label: "Score  80", value: history.filter(h => h.score >= 80).length, color: "#4ade80" },
-                { label: "Score < 55", value: history.filter(h => h.score > 0 && h.score < 55).length, color: "#f87171" },
-                { label: "Events Logged", value: analyticsData.length, color: "#fbbf24" },
-              ].map(s => (
+              {[{ label: "Total Analyses", value: history.length, color: "#7fffd4" }, { label: "Avg SEO Score", value: history.filter(h => h.score).length ? Math.round(history.filter(h => h.score).reduce((s, h) => s + h.score, 0) / history.filter(h => h.score).length) : "", color: "#a78bfa" }, { label: "Score  80", value: history.filter(h => h.score >= 80).length, color: "#4ade80" }, { label: "Score < 55", value: history.filter(h => h.score > 0 && h.score < 55).length, color: "#f87171" }, { label: "Events", value: analyticsData.length, color: "#fbbf24" }].map(s => (
                 <div key={s.label} style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: "20px 22px" }}>
                   <div style={{ fontSize: 28, fontWeight: 800, color: s.color }}>{s.value}</div>
                   <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>{s.label}</div>
@@ -503,7 +558,7 @@ export default function OnPageSEOEngine() {
                         <span style={{ fontSize: 13, color: band.colour, fontWeight: 600 }}>{count} ({pct}%)</span>
                       </div>
                       <div style={{ height: 8, background: "#0f172a", borderRadius: 4 }}>
-                        <div style={{ height: "100%", width: `${pct}%`, background: band.colour, borderRadius: 4, transition: "width 0.5s" }} />
+                        <div style={{ height: "100%", width: `${pct}%`, background: band.colour, borderRadius: 4 }} />
                       </div>
                     </div>
                   );
@@ -517,8 +572,8 @@ export default function OnPageSEOEngine() {
                   {[...analyticsData].reverse().slice(0, 15).map((ev, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "8px 14px", background: "#0f172a", borderRadius: 8 }}>
                       <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 4, background: "#0f2d24", color: "#4ade80", fontWeight: 600, flexShrink: 0 }}>{ev.event || "event"}</span>
-                      <span style={{ fontSize: 13, color: "#64748b", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.url || ev.page || ""}</span>
-                      {ev.score != null && <span style={{ fontSize: 12, color: ev.score >= 80 ? "#4ade80" : "#fbbf24", fontWeight: 700, flexShrink: 0 }}>Score: {ev.score}</span>}
+                      <span style={{ fontSize: 13, color: "#64748b", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.url || ""}</span>
+                      {ev.score != null && <span style={{ fontSize: 12, color: ev.score >= 80 ? "#4ade80" : "#fbbf24", fontWeight: 700 }}>Score: {ev.score}</span>}
                     </div>
                   ))}
                 </div>
