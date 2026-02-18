@@ -157,7 +157,7 @@ const toolRouters = [
   { path: '/api/review-ugc-engine', router: require('./tools/review-ugc-engine/router'), middleware: requireTool('reviews-ugc') },
   { path: '/api/email-automation-builder', router: require('./tools/email-automation-builder/router'), middleware: requireTool('email-automation-builder') },
   { path: '/api/klaviyo-flow-automation', router: require('./tools/klaviyo-flow-automation/router'), middleware: requireTool('klaviyo-flow-automation') },
-  { path: '/api/on-page-seo-engine', router: require('./tools/on-page-seo-engine/router'), middleware: requireTool('on-page-seo') },
+  { path: '/api/on-page-seo-engine', router: require('./tools/on-page-seo-engine/router') },
   { path: '/api/internal-link-optimizer', router: require('./tools/internal-link-optimizer/router'), middleware: requireTool('internal-link-optimizer') },
   { path: '/api/technical-seo-auditor', router: require('./tools/technical-seo-auditor/router'), middleware: requireTool('technical-seo-auditor') },
   { path: '/api/schema-rich-results-engine', router: require('./tools/schema-rich-results-engine/router'), middleware: requireTool('schema-rich-results') },
