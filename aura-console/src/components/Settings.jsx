@@ -345,9 +345,12 @@ const Settings = () => {
             <div style={{ color: '#64748b', textAlign: 'center', padding: '32px 0' }}>Loading plan info…</div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-              {PLANS.map(plan => {
+              {(() => {
+                const currentPlanIndex = PLANS.findIndex(p => p.id === (subscription?.plan_id || 'free'));
+                return PLANS.map((plan, planIndex) => {
                 const isCurrent = subscription?.plan_id === plan.id;
                 const isUpgrading = upgrading === plan.id;
+                const isDowngrade = planIndex < currentPlanIndex;
                 return (
                   <div key={plan.id} style={{ background: isCurrent ? `${plan.colour}12` : '#0f172a', border: `2px solid ${isCurrent ? plan.colour : '#2f3650'}`, borderRadius: 14, padding: 24, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                     {plan.badge && (
@@ -374,15 +377,16 @@ const Settings = () => {
                         disabled={!!upgrading}
                         style={{ background: isUpgrading ? '#374151' : plan.colour, border: 'none', borderRadius: 8, padding: '11px', color: '#0f172a', fontWeight: 800, cursor: upgrading ? 'wait' : 'pointer', fontSize: 14, opacity: upgrading && !isUpgrading ? 0.5 : 1 }}
                       >
-                        {isUpgrading ? '⏳ Redirecting to Shopify…' : plan.price === 0 ? 'Downgrade to Free' : `Upgrade to ${plan.name} →`}
+                        {isUpgrading ? '⏳ Redirecting to Shopify…' : isDowngrade ? `Downgrade to ${plan.name}` : `Upgrade to ${plan.name} →`}
                       </button>
                     )}
                   </div>
                 );
-              })}
+              });
+              })()}
             </div>
           )}
-          <p style={{ marginTop: 16, fontSize: 12, color: '#475569', textAlign: 'center' }}>Clicking Upgrade takes you to the Shopify billing confirmation page. Your store will not be charged until you confirm.</p>
+          <p style={{ marginTop: 16, fontSize: 12, color: '#475569', textAlign: 'center' }}>Clicking Upgrade or Downgrade takes you to the Shopify billing confirmation page. Your store will not be charged until you confirm.</p>
         </div>
 
         <div className="settings-section">
