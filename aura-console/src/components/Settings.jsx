@@ -4,6 +4,31 @@
 import React, { useState, useEffect } from 'react';
 import { apiFetch } from '../api';
 
+const PLANS = [
+  {
+    id: 'free',
+    name: 'Free',
+    price: 0,
+    colour: '#4ade80',
+    features: ['100 AI runs / month', '50 products', '1 team member', 'Blog SEO + Product SEO', 'Basic support'],
+  },
+  {
+    id: 'professional',
+    name: 'Professional',
+    price: 99,
+    colour: '#7fffd4',
+    badge: 'Most Popular',
+    features: ['10,000 AI runs / month', 'Unlimited products', '5 team members', 'All core SEO tools', 'On-Page SEO Engine', 'Content brief generator', 'Advanced analytics', 'Priority support'],
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: 299,
+    colour: '#a78bfa',
+    features: ['Unlimited AI runs', 'Unlimited products', 'Unlimited team members', 'All tools unlocked', 'Custom integrations', 'Dedicated support', '24/7 uptime SLA', 'White-label options'],
+  },
+];
+
 const Settings = () => {
   const [shopifyConnected, setShopifyConnected] = useState(false);
   const [shopDomain, setShopDomain] = useState('');
@@ -11,10 +36,51 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [apiKeyRevealed, setApiKeyRevealed] = useState(false);
+  const [subscription, setSubscription] = useState(null);
+  const [billingLoading, setBillingLoading] = useState(false);
+  const [upgrading, setUpgrading] = useState(null);
+  const [billingError, setBillingError] = useState('');
 
   useEffect(() => {
     loadSettings();
+    loadBilling();
   }, []);
+
+  async function loadBilling() {
+    setBillingLoading(true);
+    try {
+      const res = await apiFetch('/api/billing/subscription');
+      const data = await res.json();
+      setSubscription(data);
+    } catch (_) {
+      setSubscription({ plan_id: 'free', status: 'active' });
+    }
+    setBillingLoading(false);
+  }
+
+  async function subscribePlan(planId) {
+    if (planId === subscription?.plan_id) return;
+    setBillingError('');
+    setUpgrading(planId);
+    try {
+      const res = await apiFetch('/api/billing/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      // Shopify returns a confirmationUrl — redirect there
+      if (data.confirmationUrl) {
+        window.top.location.href = data.confirmationUrl;
+      } else if (data.plan_id) {
+        setSubscription(data);
+      }
+    } catch (err) {
+      setBillingError(err.message || 'Failed to start upgrade. Please try again.');
+    }
+    setUpgrading(null);
+  }
 
   async function loadSettings() {
     setLoading(true);
@@ -222,6 +288,71 @@ const Settings = () => {
                 </div>
               </div>
             )}
+        </div>
+
+        {/* ── Billing & Plan ── */}
+        <div style={{ background: '#1a1d2e', padding: 32, borderRadius: 12, border: '1px solid #2f3650', marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+            <div>
+              <h2 style={{ margin: 0, color: '#e5e7eb', fontSize: 22, fontWeight: 800 }}>Billing &amp; Plan</h2>
+              <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: 14 }}>Billing is handled securely through Shopify — no card details stored here.</p>
+            </div>
+            {subscription && (
+              <div style={{ background: '#0f172a', border: `2px solid ${PLANS.find(p => p.id === subscription.plan_id)?.colour || '#4ade80'}`, borderRadius: 10, padding: '8px 20px', textAlign: 'center' }}>
+                <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Current Plan</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: PLANS.find(p => p.id === subscription.plan_id)?.colour || '#4ade80', marginTop: 2 }}>
+                  {PLANS.find(p => p.id === subscription.plan_id)?.name || subscription.plan_id}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {billingError && (
+            <div style={{ background: '#2d1515', border: '1px solid #f87171', borderRadius: 8, padding: '10px 16px', color: '#f87171', fontSize: 14, marginBottom: 20 }}>{billingError}</div>
+          )}
+
+          {billingLoading ? (
+            <div style={{ color: '#64748b', textAlign: 'center', padding: '32px 0' }}>Loading plan info…</div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+              {PLANS.map(plan => {
+                const isCurrent = subscription?.plan_id === plan.id;
+                const isUpgrading = upgrading === plan.id;
+                return (
+                  <div key={plan.id} style={{ background: isCurrent ? `${plan.colour}12` : '#0f172a', border: `2px solid ${isCurrent ? plan.colour : '#2f3650'}`, borderRadius: 14, padding: 24, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                    {plan.badge && (
+                      <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: plan.colour, color: '#0f172a', fontSize: 11, fontWeight: 800, padding: '3px 12px', borderRadius: 20, whiteSpace: 'nowrap' }}>{plan.badge}</div>
+                    )}
+                    <div style={{ fontSize: 18, fontWeight: 800, color: plan.colour, marginBottom: 4 }}>{plan.name}</div>
+                    <div style={{ marginBottom: 16 }}>
+                      <span style={{ fontSize: 32, fontWeight: 900, color: '#e5e7eb' }}>${plan.price}</span>
+                      {plan.price > 0 && <span style={{ fontSize: 14, color: '#64748b' }}> / month</span>}
+                      {plan.price === 0 && <span style={{ fontSize: 14, color: '#64748b' }}> forever</span>}
+                    </div>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', flex: 1 }}>
+                      {plan.features.map((f, i) => (
+                        <li key={i} style={{ fontSize: 13, color: '#94a3b8', padding: '4px 0', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                          <span style={{ color: plan.colour, flexShrink: 0 }}>✓</span> {f}
+                        </li>
+                      ))}
+                    </ul>
+                    {isCurrent ? (
+                      <div style={{ textAlign: 'center', padding: '10px', background: `${plan.colour}20`, borderRadius: 8, color: plan.colour, fontWeight: 700, fontSize: 14 }}>✓ Current Plan</div>
+                    ) : (
+                      <button
+                        onClick={() => subscribePlan(plan.id)}
+                        disabled={!!upgrading}
+                        style={{ background: isUpgrading ? '#374151' : plan.colour, border: 'none', borderRadius: 8, padding: '11px', color: '#0f172a', fontWeight: 800, cursor: upgrading ? 'wait' : 'pointer', fontSize: 14, opacity: upgrading && !isUpgrading ? 0.5 : 1 }}
+                      >
+                        {isUpgrading ? '⏳ Redirecting to Shopify…' : plan.price === 0 ? 'Downgrade to Free' : `Upgrade to ${plan.name} →`}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <p style={{ marginTop: 16, fontSize: 12, color: '#475569', textAlign: 'center' }}>Clicking Upgrade takes you to the Shopify billing confirmation page. Your store will not be charged until you confirm.</p>
         </div>
 
         <div className="settings-section">
