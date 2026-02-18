@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch } from "./api";
 import "./App.css";
-import usePlan, { canUseTool } from "./hooks/usePlan";
+import usePlan, { canUseTool, PLAN_LABEL, PLAN_COLOUR } from "./hooks/usePlan";
 
 import toolsMeta from "./toolMeta";
 import AiChatbot from "./components/AiChatbot.jsx";
@@ -443,9 +443,14 @@ function App() {
             </button>
           </div>
           <div className="nav-actions">
+            {plan && plan !== 'free' && (
+              <span style={{ fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 12, background: PLAN_COLOUR[plan] + '22', color: PLAN_COLOUR[plan], border: `1px solid ${PLAN_COLOUR[plan]}55`, marginRight: 8 }}>
+                {PLAN_LABEL[plan]}
+              </span>
+            )}
             {project?.name && (
               <div className="nav-shop-info">
-                <span className="shop-name">{project.name}</span>
+                <span className="shop-name">{String(project.name).replace(/\.myshopify\.com$/i, '')}</span>
               </div>
             )}
           </div>
@@ -626,7 +631,6 @@ function App() {
             </div>
           )}
         </div>
-        <ShopifyReconnectButton shopDomain={project?.domain} />
       </div>
     </ErrorBoundary>
   );

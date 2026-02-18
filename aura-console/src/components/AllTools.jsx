@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { apiFetch } from "../api";
 import usePlan, { canUseTool, requiredPlanFor, PLAN_LABEL, PLAN_PRICE, PLAN_COLOUR } from "../hooks/usePlan";
 
@@ -34,10 +34,19 @@ export default function AllTools({ setActiveSection }) {
     loadModules();
   }, []);
 
-  const filteredModules = modules.filter((mod) =>
-    mod.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    mod.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const categories = useMemo(() => [
+    { id: 'all', label: 'All' },
+    ...Array.from(new Set(modules.map(m => m.categoryId)))
+      .map(id => { const m = modules.find(x => x.categoryId === id); return { id, label: m?.category || id }; })
+  ], [modules]);
+  const [activeCategory, setActiveCategory] = useState('all');
+
+  const filteredModules = modules.filter((mod) => {
+    const matchesSearch = mod.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mod.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCat = activeCategory === 'all' || mod.categoryId === activeCategory;
+    return matchesSearch && matchesCat;
+  });
 
   const sortedModules = [...filteredModules].sort((a, b) => {
     if (sortBy === "category") return a.category.localeCompare(b.category);
@@ -99,7 +108,7 @@ export default function AllTools({ setActiveSection }) {
       <div className="all-tools-controls">
         <input
           type="text"
-          placeholder="Search modules..."
+          placeholder="Search tools..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
@@ -116,11 +125,44 @@ export default function AllTools({ setActiveSection }) {
           onClick={() => setActiveSection("main-suite")}
           className="btn-open-suite"
         >
-          Open Main Suite
+          Open Suite View
         </button>
+      </div>
+      {/* Category filter tabs */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+        {categories.map(cat => (
+          <button
+            key={cat.id}
+            onClick={() => setActiveCategory(cat.id)}
+            style={{
+              padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer',
+              border: `1px solid ${activeCategory === cat.id ? '#7fffd4' : '#2f3650'}`,
+              background: activeCategory === cat.id ? '#7fffd422' : 'transparent',
+              color: activeCategory === cat.id ? '#7fffd4' : '#94a3b8',
+            }}
+          >
+            {cat.label}
+          </button>
+        ))}
+        {(searchTerm || activeCategory !== 'all') && (
+          <button
+            onClick={() => { setSearchTerm(''); setActiveCategory('all'); }}
+            style={{ padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: '1px solid #374151', background: 'transparent', color: '#64748b' }}
+          >
+            Clear filters ✕
+          </button>
+        )}
       </div>
 
       {/* Tool Grid */}
+      {sortedModules.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '80px 20px', color: '#64748b' }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: '#94a3b8', marginBottom: 8 }}>No tools found</div>
+          <div style={{ fontSize: 14 }}>Try a different search term or category</div>
+          <button onClick={() => { setSearchTerm(''); setActiveCategory('all'); }} style={{ marginTop: 20, padding: '8px 20px', borderRadius: 8, border: '1px solid #374151', background: 'transparent', color: '#7fffd4', fontWeight: 700, cursor: 'pointer' }}>Clear filters</button>
+        </div>
+      )}
       <div className="all-tools-grid">
         {sortedModules.map((mod) => {
           const tag = getCategoryTag(mod.categoryId);
@@ -138,7 +180,7 @@ export default function AllTools({ setActiveSection }) {
                   <span style={{ fontSize: 28 }}>🔒</span>
                   <span style={{ fontSize: 13, fontWeight: 800, color: PLAN_COLOUR[reqPlan] }}>{PLAN_LABEL[reqPlan]} Plan</span>
                   <span style={{ fontSize: 11, color: "#94a3b8" }}>from {PLAN_PRICE[reqPlan]}</span>
-                  <span style={{ fontSize: 11, color: "#7fffd4", fontWeight: 700, marginTop: 2 }}>Click to upgrade →</span>
+                  <span style={{ fontSize: 11, color: "#7fffd4", fontWeight: 700, marginTop: 2 }}>Upgrade Plan →</span>
                 </div>
               )}
               <div className="tool-card-header">

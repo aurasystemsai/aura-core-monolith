@@ -217,7 +217,7 @@ export default function MainSuite({ setActiveSection }) {
         </button>
         {setActiveSection && (
           <button
-            onClick={() => setActiveSection("tools")}
+            onClick={() => setActiveSection("all-tools")}
             style={{
               padding: "8px 12px",
               borderRadius: 10,
@@ -228,7 +228,7 @@ export default function MainSuite({ setActiveSection }) {
               cursor: "pointer",
             }}
           >
-            Open All Tools
+            Browse All Tools
           </button>
         )}
       </div>
@@ -347,7 +347,7 @@ export default function MainSuite({ setActiveSection }) {
                     <span style={{ fontSize: 24 }}>🔒</span>
                     <span style={{ fontSize: 12, fontWeight: 800, color: PLAN_COLOUR[reqPlan] }}>{PLAN_LABEL[reqPlan]} Plan required</span>
                     <span style={{ fontSize: 11, color: "#64748b" }}>from {PLAN_PRICE[reqPlan]}</span>
-                    <span style={{ fontSize: 11, color: "#7fffd4", fontWeight: 700 }}>Go to Settings to upgrade →</span>
+                    <span style={{ fontSize: 11, color: "#7fffd4", fontWeight: 700 }}>Upgrade Plan →</span>
                   </div>
                 )}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
@@ -373,20 +373,20 @@ export default function MainSuite({ setActiveSection }) {
                   </div>
                 )}
                 <div style={{ color: palette.muted, fontSize: 13 }}>{m.description}</div>
-                <div style={{ marginTop: "auto", color: palette.primary, fontSize: 12, fontWeight: 700 }}>
-                  Tool ID: {m.id}
+                <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 8 }}>
+                  <span style={{ color: palette.primary, fontSize: 12, fontWeight: 800 }}>Launch →</span>
+                  {m.docUrl && (
+                    <a
+                      href={m.docUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: palette.accent, fontSize: 12, fontWeight: 700 }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Docs ↗
+                    </a>
+                  )}
                 </div>
-                {m.docUrl && (
-                  <a
-                    href={m.docUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ marginTop: 6, color: palette.accent, fontSize: 12, fontWeight: 700 }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Docs ↗
-                  </a>
-                )}
               </div>
             );
             })}
