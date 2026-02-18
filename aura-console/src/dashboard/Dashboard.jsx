@@ -188,8 +188,9 @@ const Dashboard = ({ setActiveSection }) => {
 	const [toasts, setToasts] = useState([]);
 	const [scanningInProgress, setScanningInProgress] = useState(false);
 	const [lastScanTime, setLastScanTime] = useState(null);
-	const [scanEstimatedTime, setScanEstimatedTime] = useState(0); // in seconds
-	const [scanRemainingTime, setScanRemainingTime] = useState(0); // countdown in seconds
+	const [scanEstimatedTime, setScanEstimatedTime] = useState(0);
+	const [scanRemainingTime, setScanRemainingTime] = useState(0);
+	const [crawlResults, setCrawlResults] = useState(null);
 
 	const fetchStats = async (period = timePeriod) => {
 		setLoading(true);
@@ -536,9 +537,14 @@ const Dashboard = ({ setActiveSection }) => {
 			const result = await response.json();
 			
 			if (result.ok) {
+				const scanData = result.result;
 				setLastScanTime(new Date().toLocaleTimeString());
-				const minutes = Math.ceil(estimatedSeconds / 60);
-				showToast(`SEO scan started! Scanning ${productCount} products — estimated ~${minutes} minute${minutes > 1 ? 's' : ''}.`, 'success');
+				setCrawlResults(scanData);
+				// Update SEO issues count in stats immediately
+				setStats(prev => ({ ...prev, seoIssues: scanData.totalIssues || 0 }));
+				setScanningInProgress(false);
+				setScanRemainingTime(0);
+				showToast(`Scan complete! Found ${scanData.totalIssues} issue${scanData.totalIssues !== 1 ? 's' : ''} across ${scanData.pagesScanned} pages.`, scanData.totalIssues > 0 ? 'error' : 'success');
 			} else {
 				showToast('Scan failed: ' + (result.error || 'Unknown error'), 'error');
 				setScanningInProgress(false);
@@ -1087,6 +1093,60 @@ const Dashboard = ({ setActiveSection }) => {
 					tooltip="Number of SEO issues that need attention"
 				/>
 			</div>
+
+			{/* SEO Crawl Results Panel */}
+			{crawlResults && (
+				<div style={{ background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)", border: "1px solid #2f3650", borderRadius: 16, padding: 24, marginBottom: 32 }}>
+					<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+						<div>
+							<h3 style={{ color: "#e5e7eb", fontWeight: 700, fontSize: 18, margin: 0 }}>🔍 SEO Scan Results</h3>
+							<p style={{ color: "#94a3b8", fontSize: 13, margin: "4px 0 0 0" }}>
+								{crawlResults.pagesScanned} pages scanned • Last scan: {lastScanTime}
+							</p>
+						</div>
+						<div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+							<span style={{ background: "#2d1515", border: "1px solid #e53e3e", color: "#fc8181", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
+								🔴 {crawlResults.high} High
+							</span>
+							<span style={{ background: "#2d2210", border: "1px solid #f59e0b", color: "#fbbf24", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
+								🟡 {crawlResults.medium} Medium
+							</span>
+							<span style={{ background: "#1a2315", border: "1px solid #4ade80", color: "#86efac", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
+								🟢 {crawlResults.low} Low
+							</span>
+							<button onClick={() => setCrawlResults(null)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 20, lineHeight: 1 }}>×</button>
+						</div>
+					</div>
+					{crawlResults.totalIssues === 0 ? (
+						<div style={{ textAlign: "center", padding: "32px 0", color: "#7fffd4", fontSize: 16 }}>
+							✅ No SEO issues found — your site looks great!
+						</div>
+					) : (
+						<div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 400, overflowY: "auto" }}>
+							{crawlResults.issues.map((issue, i) => (
+								<div key={i} style={{
+									background: "#0f172a",
+									border: `1px solid ${issue.severity === 'high' ? '#e53e3e' : issue.severity === 'medium' ? '#f59e0b' : '#4ade80'}`,
+									borderRadius: 10,
+									padding: "12px 16px",
+									display: "flex",
+									alignItems: "flex-start",
+									gap: 12,
+								}}>
+									<span style={{ fontSize: 16, marginTop: 1 }}>
+										{issue.severity === 'high' ? '🔴' : issue.severity === 'medium' ? '🟡' : '🟢'}
+									</span>
+									<div style={{ flex: 1, minWidth: 0 }}>
+										<div style={{ color: "#e5e7eb", fontWeight: 600, fontSize: 14 }}>{issue.type}</div>
+										<div style={{ color: "#94a3b8", fontSize: 13, marginTop: 2 }}>{issue.detail}</div>
+										<div style={{ color: "#475569", fontSize: 12, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{issue.page}</div>
+									</div>
+								</div>
+							))}
+						</div>
+					)}
+				</div>
+			)}
 
 			{/* Store Health Score */}
 			{healthScore && (
