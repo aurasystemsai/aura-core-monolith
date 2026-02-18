@@ -405,6 +405,58 @@ router.post('/webhooks/shop/update', verifyWebhook, async (req, res) => {
   res.status(200).send('OK');
 });
 
+/**
+ * Data sync endpoints — pull latest data from Shopify into local cache/DB
+ * POST /shopify/sync/:dataType
+ */
+router.post('/sync/:dataType', async (req, res) => {
+  const { dataType } = req.params;
+  const shop = req.body.shop || req.session?.shop || req.headers['x-shopify-shop-domain'];
+
+  if (!shop) return res.status(400).json({ error: 'Shop required' });
+
+  const validTypes = ['products', 'orders', 'customers', 'inventory'];
+  if (!validTypes.includes(dataType)) {
+    return res.status(400).json({ error: `Invalid data type. Must be one of: ${validTypes.join(', ')}` });
+  }
+
+  try {
+    const token = await getShopToken(shop);
+    if (!token) return res.status(401).json({ error: 'No access token found for this shop. Please reconnect.' });
+
+    const apiVersion = '2024-01';
+    const endpoints = {
+      products:  `https://${shop}/admin/api/${apiVersion}/products.json?limit=250&fields=id,title,status,variants,images`,
+      orders:    `https://${shop}/admin/api/${apiVersion}/orders.json?limit=250&status=any&fields=id,name,total_price,financial_status,created_at`,
+      customers: `https://${shop}/admin/api/${apiVersion}/customers.json?limit=250&fields=id,email,first_name,last_name,orders_count,total_spent`,
+      inventory: `https://${shop}/admin/api/${apiVersion}/inventory_levels.json?limit=250`,
+    };
+
+    const response = await fetch(endpoints[dataType], {
+      headers: { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' }
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Shopify returned ${response.status}: ${text.slice(0, 200)}`);
+    }
+
+    const data = await response.json();
+    const items = data[dataType] || data.inventory_levels || [];
+
+    res.json({
+      success: true,
+      dataType,
+      count: items.length,
+      message: `Synced ${items.length} ${dataType} from Shopify`,
+      syncedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error(`[Sync] ${dataType} error:`, error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Export helper functions for use in other modules
 module.exports = router;
 module.exports.getShopToken = getShopToken;

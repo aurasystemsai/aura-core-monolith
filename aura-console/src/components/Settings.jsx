@@ -40,6 +40,8 @@ const Settings = () => {
   const [billingLoading, setBillingLoading] = useState(false);
   const [upgrading, setUpgrading] = useState(null);
   const [billingError, setBillingError] = useState('');
+  const [syncStatus, setSyncStatus] = useState({});
+  const [syncResult, setSyncResult] = useState({});
 
   useEffect(() => {
     loadSettings();
@@ -168,6 +170,27 @@ const Settings = () => {
     }
   }
 
+  async function syncShopifyData(dataType) {
+    setSyncStatus(prev => ({ ...prev, [dataType]: 'loading' }));
+    try {
+      const shop = shopDomain || localStorage.getItem('auraShop') || '';
+      const res = await apiFetch(`/shopify/sync/${dataType}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shop })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setSyncStatus(prev => ({ ...prev, [dataType]: 'done' }));
+      setSyncResult(prev => ({ ...prev, [dataType]: data.message }));
+      setTimeout(() => setSyncStatus(prev => ({ ...prev, [dataType]: null })), 4000);
+    } catch (error) {
+      setSyncStatus(prev => ({ ...prev, [dataType]: 'error' }));
+      setSyncResult(prev => ({ ...prev, [dataType]: error.message }));
+      setTimeout(() => setSyncStatus(prev => ({ ...prev, [dataType]: null })), 5000);
+    }
+  }
+
   function copyApiKey() {
     navigator.clipboard.writeText('aura_live_sk_1234567890abcdef')
       .then(() => alert('API key copied to clipboard'))
@@ -274,13 +297,42 @@ const Settings = () => {
                 )}
 
                 <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #1e2a3a' }}>
-                  <button
-                    onClick={disconnectShopify}
-                    disabled={saving}
-                    style={{ background: 'none', border: '1px solid #374151', color: '#94a3b8', borderRadius: 8, padding: '8px 16px', fontSize: 13, cursor: 'pointer' }}
-                  >
-                    Disconnect store
-                  </button>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#94a3b8', marginBottom: 10 }}>Data Synchronisation</div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {['products','orders','customers','inventory'].map(type => {
+                      const st = syncStatus[type];
+                      const msg = syncResult[type];
+                      return (
+                        <div key={type}>
+                          <button
+                            onClick={() => syncShopifyData(type)}
+                            disabled={!!st}
+                            style={{
+                              background: st === 'done' ? '#052e16' : st === 'error' ? '#2d1515' : '#1e2a3a',
+                              border: `1px solid ${st === 'done' ? '#16a34a' : st === 'error' ? '#f87171' : '#374151'}`,
+                              color: st === 'done' ? '#4ade80' : st === 'error' ? '#f87171' : '#94a3b8',
+                              borderRadius: 8, padding: '7px 14px', fontSize: 13,
+                              cursor: st ? 'wait' : 'pointer', whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {st === 'loading' ? `Syncing ${type}…` : st === 'done' ? `✓ ${type}` : st === 'error' ? `✗ ${type}` : `Sync ${type}`}
+                          </button>
+                          {msg && st !== 'loading' && (
+                            <div style={{ fontSize: 11, color: st === 'done' ? '#4ade80' : '#f87171', marginTop: 3 }}>{msg}</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{ marginTop: 16 }}>
+                    <button
+                      onClick={disconnectShopify}
+                      disabled={saving}
+                      style={{ background: 'none', border: '1px solid #374151', color: '#64748b', borderRadius: 8, padding: '7px 14px', fontSize: 12, cursor: 'pointer' }}
+                    >
+                      Disconnect store
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
