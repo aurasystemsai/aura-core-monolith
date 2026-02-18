@@ -352,6 +352,84 @@ app.get('/api/product-seo/shopify-products', async (req, res) => {
   }
 });
 
+// --- Product SEO Engine: Push SEO to Shopify ---
+app.post('/api/product-seo/push-to-shopify', async (req, res) => {
+  try {
+    const { productId, title, metaTitle, metaDescription, handle } = req.body;
+    if (!productId) return res.status(400).json({ ok: false, error: 'Missing productId' });
+
+    const allTokens = (shopTokens && shopTokens.loadAll) ? shopTokens.loadAll() : {};
+    let shop = req.query.shop || (req.session && req.session.shop) || process.env.SHOPIFY_STORE_URL;
+    if (!shop && Object.keys(allTokens).length === 1) shop = Object.keys(allTokens)[0];
+
+    let token = (req.session && req.session.shopifyToken) || (shop ? shopTokens.getToken(shop) : null);
+    if (!token && Object.keys(allTokens).length === 1) token = Object.values(allTokens)[0]?.token || null;
+
+    if (!shop || !token) return res.status(400).json({ ok: false, error: 'Not connected to Shopify. Please reconnect.' });
+
+    const apiVersion = '2023-10';
+    const fetchFn = global.fetch || require('node-fetch');
+
+    // Build update payload - only send fields that are provided
+    const updateBody = { product: { id: productId } };
+    if (title) updateBody.product.title = title;
+    if (handle) updateBody.product.handle = handle;
+
+    // Update main product (title + handle)
+    if (title || handle) {
+      const productRes = await fetchFn(`https://${shop}/admin/api/${apiVersion}/products/${productId}.json`, {
+        method: 'PUT',
+        headers: { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateBody),
+      });
+      if (!productRes.ok) {
+        const txt = await productRes.text();
+        return res.status(productRes.status).json({ ok: false, error: `Shopify error: ${txt}` });
+      }
+    }
+
+    // Update SEO (metafields - title_tag and description_tag via metafields endpoint)
+    // Shopify uses these special metafields for the SEO tab
+    if (metaTitle || metaDescription) {
+      const metafieldsToSet = [];
+      if (metaTitle) metafieldsToSet.push({ namespace: 'global', key: 'title_tag', value: metaTitle, type: 'single_line_text_field' });
+      if (metaDescription) metafieldsToSet.push({ namespace: 'global', key: 'description_tag', value: metaDescription, type: 'multi_line_text_field' });
+
+      for (const mf of metafieldsToSet) {
+        // First check if metafield exists
+        const listRes = await fetchFn(`https://${shop}/admin/api/${apiVersion}/products/${productId}/metafields.json?namespace=global&key=${mf.key}`, {
+          headers: { 'X-Shopify-Access-Token': token },
+        });
+        if (listRes.ok) {
+          const listData = await listRes.json();
+          const existing = (listData.metafields || [])[0];
+          if (existing) {
+            // Update existing
+            await fetchFn(`https://${shop}/admin/api/${apiVersion}/metafields/${existing.id}.json`, {
+              method: 'PUT',
+              headers: { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ metafield: { id: existing.id, value: mf.value, type: mf.type } }),
+            });
+          } else {
+            // Create new
+            await fetchFn(`https://${shop}/admin/api/${apiVersion}/products/${productId}/metafields.json`, {
+              method: 'POST',
+              headers: { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ metafield: mf }),
+            });
+          }
+        }
+      }
+    }
+
+    console.log(`[Product SEO] Pushed SEO to Shopify for product ${productId}`);
+    res.json({ ok: true, message: 'SEO data pushed to Shopify successfully' });
+  } catch (err) {
+    console.error('[Product SEO] Push to Shopify error:', err);
+    res.status(500).json({ ok: false, error: err.message || 'Failed to push to Shopify' });
+  }
+});
+
 // --- AI Chatbot API (OpenAI-powered, v4 SDK) ---
 app.post('/api/ai/chatbot', async (req, res) => {
   try {
