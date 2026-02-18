@@ -277,6 +277,18 @@ function App() {
   // Toast state
   const [toast, setToast] = useState({ message: '', type: 'info' });
 
+  // Handle ?billing=success redirect back from Shopify approval page
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('billing') === 'success') {
+      setToast({ message: '🎉 Plan upgraded successfully! Your new features are now active.', type: 'success' });
+      setActiveSectionRaw('settings');
+      // Clean the URL so reloads don't re-trigger this
+      const clean = window.location.pathname;
+      window.history.replaceState({}, '', clean);
+    }
+  }, []);
+
   const navigateToMainSuite = (targetGroupId) => {
     try {
       const prefs = JSON.parse(localStorage.getItem(MAIN_SUITE_PREF_KEY) || "{}") || {};

@@ -125,16 +125,23 @@ router.get('/invoices/:invoiceId/pdf', async (req, res) => {
  * Billing confirmation callback from Shopify
  * GET /api/billing/confirm
  */
-router.get('/confirm', async (req, res) => {
-  const { charge_id } = req.query;
-  const shop = req.session?.shop;
-  
-  if (charge_id) {
-    // Redirect back to console with success message
-    const consoleUrl = process.env.CONSOLE_URL || process.env.HOST_URL || 'http://localhost:5173';
-    return res.redirect(`${consoleUrl}/?billing=success`);
+router.get('/confirm', (req, res) => {
+  const { charge_id, shop: queryShop } = req.query;
+  const shop = queryShop || req.session?.shop || req.headers['x-shopify-shop-domain'];
+
+  if (charge_id && shop) {
+    // Shopify recurring subscriptions auto-activate on merchant approval
+    // Redirect back into the embedded app in Shopify Admin
+    const storeHandle = shop.replace('.myshopify.com', '');
+    const clientId = process.env.SHOPIFY_API_KEY || '98db68ecd4abcd07721d14949514de8a';
+    return res.redirect(`https://admin.shopify.com/store/${storeHandle}/apps/${clientId}?billing=success`);
   }
-  
+
+  // Fallback – no shop context
+  if (charge_id) {
+    return res.redirect('https://admin.shopify.com');
+  }
+
   res.redirect('/');
 });
 
