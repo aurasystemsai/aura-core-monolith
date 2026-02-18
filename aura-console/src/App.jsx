@@ -459,7 +459,7 @@ function App() {
                 {activeSection === "dashboard" && <Dashboard setActiveSection={(section, url) => { if (url) setToolInitUrl(url); setActiveSection(section); }} />}
                 {activeSection === "all-tools" && <AllTools setActiveSection={setActiveSection} />}
                 {activeSection === "main-suite" && <MainSuite setActiveSection={setActiveSection} />}
-                {activeSection === "settings" && <Settings />}
+                {activeSection === "settings" && <Settings setActiveSection={setActiveSection} />}
                 
                 {/* Legacy sections - only accessible via direct navigation */}
                 {activeSection === "seo-master-suite" && <SeoMasterSuite />}

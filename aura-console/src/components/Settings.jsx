@@ -29,7 +29,7 @@ const PLANS = [
   },
 ];
 
-const Settings = () => {
+const Settings = ({ setActiveSection }) => {
   const [shopifyConnected, setShopifyConnected] = useState(false);
   const [shopDomain, setShopDomain] = useState('');
   const [shopInfo, setShopInfo] = useState(null);
@@ -38,6 +38,20 @@ const Settings = () => {
   const [apiKeyRevealed, setApiKeyRevealed] = useState(false);
   const [subscription, setSubscription] = useState(null);
   const [billingLoading, setBillingLoading] = useState(false);
+  const SYNC_TOOL_MAP = {
+    products:  'product-seo',
+    orders:    'dashboard',
+    customers: 'customer-data-platform',
+    inventory: 'product-seo',
+  };
+
+  const SYNC_TOOL_LABEL = {
+    products:  'Product SEO Engine',
+    orders:    'Dashboard',
+    customers: 'Customer Data Platform',
+    inventory: 'Product SEO Engine',
+  };
+
   const [upgrading, setUpgrading] = useState(null);
   const [billingError, setBillingError] = useState('');
   const [syncStatus, setSyncStatus] = useState({});
@@ -324,7 +338,17 @@ const Settings = () => {
                             {st === 'loading' ? `Syncing ${type}…` : st === 'done' ? `✓ ${type}` : st === 'error' ? `✗ ${type}` : `Sync ${type}`}
                           </button>
                           {msg && st && st !== 'loading' && (
-                            <div style={{ fontSize: 11, color: st === 'done' ? '#4ade80' : '#f87171', marginTop: 3 }}>{msg}</div>
+                            <div style={{ fontSize: 11, color: st === 'done' ? '#4ade80' : '#f87171', marginTop: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <span>{msg}</span>
+                              {st === 'done' && setActiveSection && (
+                                <button
+                                  onClick={() => setActiveSection(SYNC_TOOL_MAP[type])}
+                                  style={{ background: 'none', border: 'none', color: '#7fffd4', fontSize: 11, fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                                >
+                                  Open {SYNC_TOOL_LABEL[type]} →
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       );
