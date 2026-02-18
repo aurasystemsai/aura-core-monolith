@@ -51,7 +51,7 @@ function GooglePreview({ title, description, url }) {
 const TABS = ["Analyzer", "History", "AI Assistant", "Analytics"];
 const EMPTY_FORM = { url: "", title: "", metaDescription: "", h1: "", wordCount: "", canonicalUrl: "", schemaMarkup: "", h2Count: "", h3Count: "", internalLinks: "", externalLinks: "", imageCount: "", imagesWithAlt: "", keywords: "" };
 
-export default function OnPageSEOEngine() {
+export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
   const [tab, setTab] = useState("Analyzer");
   const [form, setForm] = useState(EMPTY_FORM);
   const [result, setResult] = useState(null);
@@ -75,6 +75,15 @@ export default function OnPageSEOEngine() {
   }, []);
 
   useEffect(() => { loadHistory(); loadAnalytics(); }, []);
+
+  // If launched from dashboard scan with a URL, pre-fill and crawl immediately
+  useEffect(() => {
+    if (initialUrl) {
+      setForm(f => ({ ...f, url: initialUrl }));
+      crawlUrl(initialUrl);
+      if (onUrlConsumed) onUrlConsumed();
+    }
+  }, [initialUrl]);
 
   // Auto-crawl when URL is entered (debounced 1.5s)
   useEffect(() => {

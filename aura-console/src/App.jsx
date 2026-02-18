@@ -242,6 +242,7 @@ function App() {
     // Debug banner removed
   // Main navigation state
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [toolInitUrl, setToolInitUrl] = useState(null);
   const [sectionHistory, setSectionHistory] = useState([]);
   const sectionHistoryRef = React.useRef([]);
   const navModeRef = React.useRef(null);
@@ -426,7 +427,7 @@ function App() {
               {/* Main content routing */}
               <Suspense fallback={<div className="loading-spinner"><div className="spinner"></div><p>Loading…</p></div>}>
                 {/* Core sections */}
-                {activeSection === "dashboard" && <Dashboard setActiveSection={setActiveSection} />}
+                {activeSection === "dashboard" && <Dashboard setActiveSection={(section, url) => { if (url) setToolInitUrl(url); setActiveSection(section); }} />}
                 {activeSection === "all-tools" && <AllTools setActiveSection={setActiveSection} />}
                 {activeSection === "main-suite" && <MainSuite setActiveSection={setActiveSection} />}
                 {activeSection === "settings" && <Settings />}
@@ -517,7 +518,7 @@ function App() {
                 {activeSection === "ai-launch-planner" && <AiLaunchPlanner />}
                 
                 {/* SEO Tools */}
-                {activeSection === "on-page-seo-engine" && <OnPageSEOEngine />}
+                {activeSection === "on-page-seo-engine" && <OnPageSEOEngine initialUrl={toolInitUrl} onUrlConsumed={() => setToolInitUrl(null)} />}
                 {activeSection === "technical-seo-auditor" && <TechnicalSEOAuditor />}
                 {activeSection === "serp-tracker" && <SERPTracker />}
                 {activeSection === "seo-site-crawler" && <SEOSiteCrawler />}

@@ -841,7 +841,7 @@ const Dashboard = ({ setActiveSection }) => {
 									<div style={{ display:'flex', flexDirection:'column', gap:8 }}>
 										{crawlResults.issues.map((issue, i) => (
 											<div key={i}
-												onClick={() => { if (issue.fix && setActiveSection) { setActiveSection(issue.fix); setShowScanModal(false); } }}
+												onClick={() => { if (issue.fix && setActiveSection) { setActiveSection(issue.fix, issue.page); setShowScanModal(false); } }}
 												className="seo-issue-row"
 												style={{ background:'#0f172a', border:`1px solid ${issue.severity==='high'?'#e53e3e':issue.severity==='medium'?'#f59e0b':'#4ade80'}`, borderRadius:10, padding:'12px 16px', display:'flex', alignItems:'flex-start', gap:12, cursor: issue.fix ? 'pointer' : 'default' }}>
 												<span style={{ fontSize:16, marginTop:1 }}>{issue.severity==='high'?'🔴':issue.severity==='medium'?'🟡':'🟢'}</span>
@@ -1226,7 +1226,7 @@ const Dashboard = ({ setActiveSection }) => {
 						<div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 400, overflowY: "auto" }}>
 							{crawlResults.issues.map((issue, i) => (
 								<div key={i}
-									onClick={() => issue.fix && setActiveSection && setActiveSection(issue.fix)}
+									onClick={() => issue.fix && setActiveSection && setActiveSection(issue.fix, issue.page)}
 									style={{
 										background: "#0f172a",
 										border: `1px solid ${issue.severity === 'high' ? '#e53e3e' : issue.severity === 'medium' ? '#f59e0b' : '#4ade80'}`,
