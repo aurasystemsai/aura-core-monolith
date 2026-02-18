@@ -323,7 +323,7 @@ router.post('/disconnect', async (req, res) => {
  * GET /shopify/status?shop=store.myshopify.com
  */
 router.get('/status', async (req, res) => {
-  const { shop } = req.query;
+  const shop = req.query.shop || req.headers['x-shopify-shop-domain'] || req.session?.shop;
 
   if (!shop) {
     return res.status(400).json({ error: 'Missing shop parameter' });

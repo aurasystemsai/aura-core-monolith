@@ -17,9 +17,14 @@ export async function apiFetch(url, options = {}) {
   }
 
   // Preserve shop domain header for backend multi-tenant logic
-  const shopDomain = new URLSearchParams(window.location.search).get('shop');
-  if (shopDomain && !headers['x-shopify-shop-domain']) {
-    headers['x-shopify-shop-domain'] = shopDomain;
+  const shopDomain = new URLSearchParams(window.location.search).get('shop')
+    || localStorage.getItem('auraShop');
+  if (shopDomain) {
+    // Persist for future requests when the URL param may not be present (embedded)
+    localStorage.setItem('auraShop', shopDomain);
+    if (!headers['x-shopify-shop-domain']) {
+      headers['x-shopify-shop-domain'] = shopDomain;
+    }
   }
 
   const opts = {

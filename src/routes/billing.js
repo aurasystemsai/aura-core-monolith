@@ -4,6 +4,22 @@
 const express = require('express');
 const router = express.Router();
 const shopifyBillingService = require('../core/shopifyBillingService');
+const shopTokens = require('../core/shopTokens');
+
+// Helper: resolve shop from request, falling back to single stored token
+function resolveShop(req) {
+  const explicit = req.session?.shop || req.body?.shop || req.query?.shop || req.headers['x-shopify-shop-domain'];
+  if (explicit) return explicit;
+  // Last resort: if only one shop is installed, use it
+  try {
+    const all = shopTokens.loadAll && shopTokens.loadAll();
+    if (all && typeof all === 'object') {
+      const shops = Object.keys(all);
+      if (shops.length === 1) return shops[0];
+    }
+  } catch (_) {}
+  return process.env.SHOPIFY_STORE_URL || null;
+}
 
 /**
  * Get current subscription
@@ -11,12 +27,10 @@ const shopifyBillingService = require('../core/shopifyBillingService');
  */
 router.get('/subscription', async (req, res) => {
   try {
-    const shop = req.session?.shop || req.query.shop || req.headers['x-shopify-shop-domain'];
-    
+    const shop = resolveShop(req);
     if (!shop) {
       return res.json({ plan_id: 'free', status: 'active' });
     }
-
     const subscription = await shopifyBillingService.getSubscription(shop);
     res.json(subscription);
   } catch (error) {
@@ -64,9 +78,9 @@ router.get('/usage', async (req, res) => {
  */
 router.post('/subscribe', async (req, res) => {
   try {
-    const shop = req.session?.shop || req.body.shop || req.headers['x-shopify-shop-domain'];
+    const shop = resolveShop(req);
     const { planId } = req.body;
-    
+
     if (!shop) {
       return res.status(400).json({ error: 'Shop required. Please reconnect your Shopify store.' });
     }

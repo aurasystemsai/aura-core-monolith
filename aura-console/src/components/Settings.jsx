@@ -65,6 +65,7 @@ const Settings = () => {
     // Resolve shop — from state, URL params, or localStorage
     const shop = shopDomain
       || new URLSearchParams(window.location.search).get('shop')
+      || localStorage.getItem('auraShop')
       || localStorage.getItem('shopDomain')
       || '';
     try {
@@ -96,13 +97,35 @@ const Settings = () => {
       setShopifyConnected(!!shopifyStatus.connected);
       if (shopifyStatus.shop) {
         setShopDomain(shopifyStatus.shop);
+        localStorage.setItem('auraShop', shopifyStatus.shop);
         // Load shop details
         const detailsRes = await apiFetch(`/shopify/shop/${shopifyStatus.shop}`);
         const shopDetails = await detailsRes.json().catch(() => null);
         setShopInfo(shopDetails);
+      } else {
+        // Fallback: ask the server for the shop via session/stored tokens
+        try {
+          const sessionRes = await apiFetch('/api/session');
+          const sessionData = await sessionRes.json().catch(() => ({}));
+          if (sessionData.shop) {
+            setShopDomain(sessionData.shop);
+            setShopifyConnected(true);
+            localStorage.setItem('auraShop', sessionData.shop);
+          }
+        } catch (_) {}
       }
     } catch (error) {
       console.error('Failed to load settings:', error);
+      // Last-resort: try /api/session
+      try {
+        const sessionRes = await apiFetch('/api/session');
+        const sessionData = await sessionRes.json().catch(() => ({}));
+        if (sessionData.shop) {
+          setShopDomain(sessionData.shop);
+          setShopifyConnected(true);
+          localStorage.setItem('auraShop', sessionData.shop);
+        }
+      } catch (_) {}
     } finally {
       setLoading(false);
     }
