@@ -760,6 +760,7 @@ const Dashboard = ({ setActiveSection }) => {
 				}
 				.aura-toast { animation: toastIn 0.3s ease; }
 				@keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+				.seo-issue-row:hover { background: #161d2e !important; transform: translateX(2px); }
 			`}</style>
 
 			{/* Toast Notifications */}
@@ -1124,20 +1125,33 @@ const Dashboard = ({ setActiveSection }) => {
 					) : (
 						<div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 400, overflowY: "auto" }}>
 							{crawlResults.issues.map((issue, i) => (
-								<div key={i} style={{
-									background: "#0f172a",
-									border: `1px solid ${issue.severity === 'high' ? '#e53e3e' : issue.severity === 'medium' ? '#f59e0b' : '#4ade80'}`,
-									borderRadius: 10,
-									padding: "12px 16px",
-									display: "flex",
-									alignItems: "flex-start",
-									gap: 12,
-								}}>
+								<div key={i}
+									onClick={() => issue.fix && setActiveSection && setActiveSection(issue.fix)}
+									style={{
+										background: "#0f172a",
+										border: `1px solid ${issue.severity === 'high' ? '#e53e3e' : issue.severity === 'medium' ? '#f59e0b' : '#4ade80'}`,
+										borderRadius: 10,
+										padding: "12px 16px",
+										display: "flex",
+										alignItems: "flex-start",
+										gap: 12,
+										cursor: issue.fix ? "pointer" : "default",
+										transition: "all 0.15s",
+									}}
+									className="seo-issue-row"
+								>
 									<span style={{ fontSize: 16, marginTop: 1 }}>
 										{issue.severity === 'high' ? '🔴' : issue.severity === 'medium' ? '🟡' : '🟢'}
 									</span>
 									<div style={{ flex: 1, minWidth: 0 }}>
-										<div style={{ color: "#e5e7eb", fontWeight: 600, fontSize: 14 }}>{issue.type}</div>
+										<div style={{ color: "#e5e7eb", fontWeight: 600, fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
+											{issue.type}
+											{issue.fix && (
+												<span style={{ fontSize: 11, color: "#7fffd4", background: "rgba(127,255,212,0.1)", border: "1px solid rgba(127,255,212,0.3)", borderRadius: 4, padding: "1px 7px", fontWeight: 500 }}>
+													Click to fix →
+												</span>
+											)}
+										</div>
 										<div style={{ color: "#94a3b8", fontSize: 13, marginTop: 2 }}>{issue.detail}</div>
 										<div style={{ color: "#475569", fontSize: 12, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{issue.page}</div>
 									</div>
