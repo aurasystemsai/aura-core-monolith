@@ -67,9 +67,11 @@ class ShopifyBillingService {
       }
     `;
 
+    const returnUrl = `${process.env.APP_URL || process.env.HOST_URL || `https://${shop}/admin/apps`}/api/billing/confirm`;
+
     const variables = {
       name: plan.name,
-      returnUrl: `${process.env.APP_URL || process.env.HOST_URL}/billing/confirm`,
+      returnUrl,
       lineItems: [{
         plan: {
           appRecurringPricingDetails: {
@@ -91,14 +93,26 @@ class ShopifyBillingService {
 
       const result = await response.json();
 
-      if (result.data?.appSubscriptionCreate?.userErrors?.length > 0) {
+      // Top-level GraphQL errors (auth failure, bad scope, etc.)
+      if (result.errors && result.errors.length > 0) {
+        const msg = result.errors.map(e => e.message).join('; ');
+        console.error('[Billing] GraphQL top-level errors:', msg);
+        throw new Error(`Shopify API error: ${msg}`);
+      }
+
+      if (!result.data || !result.data.appSubscriptionCreate) {
+        console.error('[Billing] Unexpected response:', JSON.stringify(result));
+        throw new Error('Unexpected response from Shopify billing API. Check app scopes include write_own_subscription_contracts.');
+      }
+
+      if (result.data.appSubscriptionCreate.userErrors?.length > 0) {
         throw new Error(result.data.appSubscriptionCreate.userErrors[0].message);
       }
 
       return {
         success: true,
         confirmationUrl: result.data.appSubscriptionCreate.confirmationUrl,
-        subscriptionId: result.data.appSubscriptionCreate.appSubscription.id,
+        subscriptionId: result.data.appSubscriptionCreate.appSubscription?.id,
         message: 'Please approve the charge in Shopify'
       };
     } catch (error) {
