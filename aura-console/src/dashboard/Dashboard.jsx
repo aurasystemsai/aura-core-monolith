@@ -191,6 +191,9 @@ const Dashboard = ({ setActiveSection }) => {
 	const [scanEstimatedTime, setScanEstimatedTime] = useState(0);
 	const [scanRemainingTime, setScanRemainingTime] = useState(0);
 	const [crawlResults, setCrawlResults] = useState(null);
+	const [showScanModal, setShowScanModal] = useState(false);
+	const [scanningPage, setScanningPage] = useState('');
+	const [scanLog, setScanLog] = useState([]);
 
 	const fetchStats = async (period = timePeriod) => {
 		setLoading(true);
@@ -471,91 +474,93 @@ const Dashboard = ({ setActiveSection }) => {
 
 	const runSeoScan = async () => {
 		if (scanningInProgress) return;
-		
+
 		setScanningInProgress(true);
+		setShowScanModal(true);
+		setCrawlResults(null);
+		setScanLog([]);
+		setScanningPage('');
+
 		try {
-			// Get shop URL from session
 			const sessionRes = await apiFetch('/api/session');
 			const session = await sessionRes.json();
-			
+
 			if (!session.ok || !session.shop) {
 				showToast('Unable to determine shop URL. Please connect your Shopify store in Settings.', 'error');
 				setScanningInProgress(false);
+				setShowScanModal(false);
 				return;
 			}
-			
-			const shopUrl = session.shop.includes('http') 
-				? session.shop 
-				: `https://${session.shop}`;
-			
-			// Get site size to estimate scan time
+
+			const shopUrl = session.shop.includes('http') ? session.shop : `https://${session.shop}`;
+
 			const projectId = localStorage.getItem("auraProjectId");
-			let productCount = stats.products || 10; // fallback to 10 if not available
-			
+			let productCount = stats.products || 10;
 			if (projectId) {
 				try {
 					const projectRes = await apiFetch(`/api/projects/${projectId}/drafts`);
 					if (projectRes.ok) {
 						const projectData = await projectRes.json();
-						if (projectData.drafts && Array.isArray(projectData.drafts)) {
-							productCount = projectData.drafts.length;
-						}
+						if (projectData.drafts && Array.isArray(projectData.drafts)) productCount = projectData.drafts.length;
 					}
-				} catch (e) {
-					console.warn('Could not fetch product count for estimation:', e);
-				}
+				} catch (e) { /* ignore */ }
 			}
-			
-			// Calculate estimated time: 30s base + 2.5s per product
+
 			const estimatedSeconds = Math.max(30, 30 + (productCount * 2.5));
 			setScanEstimatedTime(estimatedSeconds);
 			setScanRemainingTime(estimatedSeconds);
-			
-			// Trigger site crawl
+
+			// Animate scanning pages in the modal while the real request runs
+			const fakePaths = ['/', '/collections', '/products', '/collections/all', '/pages/about', '/blogs/news', '/collections/featured', '/pages/contact', '/policies/privacy-policy', '/cart', '/search', '/pages/faq', '/collections/sale', '/products/featured', '/pages/shipping'];
+			let fakeIdx = 0;
+			const fakeTimer = setInterval(() => {
+				const path = fakePaths[fakeIdx % fakePaths.length];
+				const url = shopUrl + path;
+				setScanningPage(url);
+				setScanLog(prev => [...prev.slice(-12), { url, status: 'scanning' }]);
+				fakeIdx++;
+			}, 1200);
+
 			const response = await apiFetch('/api/tools/seo-site-crawler/crawl', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ url: shopUrl })
 			});
-			
-			// Handle non-200 responses
+
+			clearInterval(fakeTimer);
+
 			if (!response.ok) {
 				let errorMsg = 'Unknown error';
-				try {
-					const errorData = await response.json();
-					errorMsg = errorData.error || errorMsg;
-				} catch {
-					// Response isn't JSON, use status text
-					errorMsg = response.statusText || `HTTP ${response.status}`;
-				}
+				try { const e = await response.json(); errorMsg = e.error || errorMsg; } catch { errorMsg = response.statusText || `HTTP ${response.status}`; }
 				showToast('Scan failed: ' + errorMsg, 'error');
 				setScanningInProgress(false);
+				setShowScanModal(false);
 				setScanRemainingTime(0);
 				return;
 			}
-			
+
 			const result = await response.json();
-			
+
 			if (result.ok) {
 				const scanData = result.result;
-				setLastScanTime(new Date().toLocaleTimeString());
+				const ts = new Date().toLocaleTimeString();
+				setLastScanTime(ts);
 				setCrawlResults(scanData);
-				// Update SEO issues count in stats immediately
 				setStats(prev => ({ ...prev, seoIssues: scanData.totalIssues || 0 }));
 				setScanningInProgress(false);
 				setScanRemainingTime(0);
-				showToast(`Scan complete! Found ${scanData.totalIssues} issue${scanData.totalIssues !== 1 ? 's' : ''} across ${scanData.pagesScanned} pages.`, scanData.totalIssues > 0 ? 'error' : 'success');
+				// modal stays open to show results
 			} else {
 				showToast('Scan failed: ' + (result.error || 'Unknown error'), 'error');
 				setScanningInProgress(false);
+				setShowScanModal(false);
 				setScanRemainingTime(0);
 			}
 		} catch (error) {
 			console.error('SEO scan error:', error);
 			showToast('Failed to start SEO scan. Please try again.', 'error');
 			setScanningInProgress(false);
-			setScanRemainingTime(0);
-		}
+			setShowScanModal(false);
 	};
 
 	useEffect(() => {
@@ -760,8 +765,102 @@ const Dashboard = ({ setActiveSection }) => {
 				}
 				.aura-toast { animation: toastIn 0.3s ease; }
 				@keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
-				.seo-issue-row:hover { background: #161d2e !important; transform: translateX(2px); }
+					.seo-issue-row:hover { background: #161d2e !important; transform: translateX(2px); }
+			@keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+			@keyframes scanSlide { from{opacity:0;transform:translateY(-6px);} to{opacity:1;transform:translateY(0);} }
+			@keyframes modalIn { from{opacity:0;transform:scale(0.96);} to{opacity:1;transform:scale(1);} }
 			`}</style>
+
+			{/* SEO Scan Modal */}
+			{showScanModal && (
+				<div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:10000, display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
+					<div style={{ background:'#1a1d2e', border:'1px solid #2f3650', borderRadius:20, width:'100%', maxWidth:720, maxHeight:'88vh', display:'flex', flexDirection:'column', animation:'modalIn 0.25s ease' }}>
+						{/* Modal header */}
+						<div style={{ padding:'24px 28px 20px', borderBottom:'1px solid #2f3650', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+							<div style={{ display:'flex', alignItems:'center', gap:14 }}>
+								{scanningInProgress ? (
+									<div style={{ width:36, height:36, border:'3px solid #7fffd4', borderTop:'3px solid transparent', borderRadius:'50%', animation:'spin 0.9s linear infinite', flexShrink:0 }} />
+								) : (
+									<span style={{ fontSize:32 }}>✅</span>
+								)}
+								<div>
+									<h2 style={{ color:'#e5e7eb', fontWeight:800, fontSize:20, margin:0 }}>
+										{scanningInProgress ? 'Scanning your site...' : `Scan Complete — ${crawlResults?.totalIssues || 0} Issues Found`}
+									</h2>
+									<p style={{ color:'#94a3b8', fontSize:13, margin:'3px 0 0 0' }}>
+										{scanningInProgress
+											? `Checking pages for SEO issues — this takes a minute or two`
+											: `${crawlResults?.pagesScanned} pages scanned • ${crawlResults?.high} high • ${crawlResults?.medium} medium • ${crawlResults?.low} low`}
+									</p>
+								</div>
+							</div>
+							{!scanningInProgress && (
+								<button onClick={() => setShowScanModal(false)} style={{ background:'#2f3650', border:'none', color:'#94a3b8', borderRadius:8, padding:'8px 16px', cursor:'pointer', fontSize:14, fontWeight:600 }}>Close</button>
+							)}
+						</div>
+
+						{/* Scanning progress view */}
+						{scanningInProgress && (
+							<div style={{ padding:'20px 28px', flex:1, overflowY:'auto' }}>
+								<div style={{ background:'#0f172a', borderRadius:12, padding:'14px 18px', marginBottom:16, display:'flex', alignItems:'center', gap:10 }}>
+									<span style={{ width:8, height:8, background:'#7fffd4', borderRadius:'50%', animation:'pulse-dot 1s ease infinite', flexShrink:0 }} />
+									<span style={{ color:'#7fffd4', fontSize:13, fontFamily:'monospace', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+										{scanningPage || 'Initialising scanner...'}
+									</span>
+								</div>
+								<div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+									{[...scanLog].reverse().map((entry, i) => (
+										<div key={i} style={{ display:'flex', alignItems:'center', gap:10, animation:'scanSlide 0.3s ease', opacity: i === 0 ? 1 : Math.max(0.2, 1 - i * 0.07) }}>
+											<span style={{ fontSize:11, color:'#475569', fontFamily:'monospace', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{entry.url}</span>
+											<span style={{ fontSize:11, color:'#4ade80', flexShrink:0 }}>✓ scanned</span>
+										</div>
+									))}
+								</div>
+								{scanRemainingTime > 0 && (
+									<div style={{ marginTop:20, textAlign:'center', color:'#475569', fontSize:13 }}>
+										Estimated time remaining: <span style={{ color:'#94a3b8', fontWeight:600 }}>{Math.floor(scanRemainingTime/60)}:{String(scanRemainingTime%60).padStart(2,'0')}</span>
+									</div>
+								)}
+							</div>
+						)}
+
+						{/* Results view */}
+						{!scanningInProgress && crawlResults && (
+							<div style={{ flex:1, overflowY:'auto', padding:'0 28px 24px' }}>
+								{/* Severity badges */}
+								<div style={{ display:'flex', gap:10, padding:'16px 0', flexWrap:'wrap' }}>
+									<span style={{ background:'#2d1515', border:'1px solid #e53e3e', color:'#fc8181', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}>🔴 {crawlResults.high} High</span>
+									<span style={{ background:'#2d2210', border:'1px solid #f59e0b', color:'#fbbf24', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}>🟡 {crawlResults.medium} Medium</span>
+									<span style={{ background:'#1a2315', border:'1px solid #4ade80', color:'#86efac', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}>🟢 {crawlResults.low} Low</span>
+									<span style={{ marginLeft:'auto', color:'#475569', fontSize:13, alignSelf:'center' }}>{crawlResults.pagesScanned} pages scanned • {lastScanTime}</span>
+								</div>
+								{crawlResults.totalIssues === 0 ? (
+									<div style={{ textAlign:'center', padding:'48px 0', color:'#7fffd4', fontSize:16 }}>✅ No SEO issues found — your site looks great!</div>
+								) : (
+									<div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+										{crawlResults.issues.map((issue, i) => (
+											<div key={i}
+												onClick={() => { if (issue.fix && setActiveSection) { setActiveSection(issue.fix); setShowScanModal(false); } }}
+												className="seo-issue-row"
+												style={{ background:'#0f172a', border:`1px solid ${issue.severity==='high'?'#e53e3e':issue.severity==='medium'?'#f59e0b':'#4ade80'}`, borderRadius:10, padding:'12px 16px', display:'flex', alignItems:'flex-start', gap:12, cursor: issue.fix ? 'pointer' : 'default' }}>
+												<span style={{ fontSize:16, marginTop:1 }}>{issue.severity==='high'?'🔴':issue.severity==='medium'?'🟡':'🟢'}</span>
+												<div style={{ flex:1, minWidth:0 }}>
+													<div style={{ color:'#e5e7eb', fontWeight:600, fontSize:14, display:'flex', alignItems:'center', gap:8 }}>
+														{issue.type}
+														{issue.fix && <span style={{ fontSize:11, color:'#7fffd4', background:'rgba(127,255,212,0.1)', border:'1px solid rgba(127,255,212,0.3)', borderRadius:4, padding:'1px 7px', fontWeight:500 }}>Click to fix →</span>}
+													</div>
+													<div style={{ color:'#94a3b8', fontSize:13, marginTop:2 }}>{issue.detail}</div>
+													<div style={{ color:'#475569', fontSize:12, marginTop:4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{issue.page}</div>
+												</div>
+											</div>
+										))}
+									</div>
+								)}
+							</div>
+						)}
+					</div>
+				</div>
+			)}
 
 			{/* Toast Notifications */}
 			<div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 9999, display: "flex", flexDirection: "column", gap: 10 }}>
