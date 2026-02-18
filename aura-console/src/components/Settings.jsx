@@ -168,21 +168,6 @@ const Settings = () => {
     }
   }
 
-  async function syncShopifyData(dataType) {
-    setSaving(true);
-    try {
-      await apiFetch(`/shopify/sync/${dataType}`, {
-        method: 'POST',
-        body: JSON.stringify({ shop: shopDomain })
-      });
-      alert(`${dataType} sync started successfully`);
-    } catch (error) {
-      alert('Sync failed: ' + error.message);
-    } finally {
-      setSaving(false);
-    }
-  }
-
   function copyApiKey() {
     navigator.clipboard.writeText('aura_live_sk_1234567890abcdef')
       .then(() => alert('API key copied to clipboard'))
@@ -288,32 +273,13 @@ const Settings = () => {
                   </div>
                 )}
 
-                <div className="sync-actions">
-                  <h4>Data Synchronization</h4>
-                  <div className="sync-buttons">
-                    <button onClick={() => syncShopifyData('products')} disabled={saving}>
-                      Sync Products
-                    </button>
-                    <button onClick={() => syncShopifyData('orders')} disabled={saving}>
-                      Sync Orders
-                    </button>
-                    <button onClick={() => syncShopifyData('customers')} disabled={saving}>
-                      Sync Customers
-                    </button>
-                    <button onClick={() => syncShopifyData('inventory')} disabled={saving}>
-                      Sync Inventory
-                    </button>
-                  </div>
-                </div>
-
-                <div className="danger-zone">
-                  <h4>Danger Zone</h4>
-                  <button 
+                <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #1e2a3a' }}>
+                  <button
                     onClick={disconnectShopify}
-                    className="btn-danger"
                     disabled={saving}
+                    style={{ background: 'none', border: '1px solid #374151', color: '#94a3b8', borderRadius: 8, padding: '8px 16px', fontSize: 13, cursor: 'pointer' }}
                   >
-                    Disconnect Shopify Store
+                    Disconnect store
                   </button>
                 </div>
               </div>
