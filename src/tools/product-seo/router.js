@@ -28,49 +28,58 @@ router.post('/generate', async (req, res) => {
     const kwList = focusKeywords
       ? focusKeywords.split(',').map(k => k.trim()).filter(Boolean)
       : [];
-    // Extract every unique individual word across all keyword phrases
     const allKwWords = kwList.length
       ? [...new Set(kwList.flatMap(k => k.toLowerCase().split(/\s+/)).filter(w => w.length > 2))]
       : [];
-    const kwInstruction = kwList.length
-      ? `\nFOCUS KEYWORDS: ${kwList.join(', ')}\n` +
-        `\nMANDATORY KEYWORD RULES:\n` +
-        `1. seoTitle (30-60 chars): include the 1-2 highest-value keyword PHRASES verbatim\n` +
-        `2. metaDescription (150-200 chars): you MUST ensure ALL of these individual words appear somewhere in the text: ${allKwWords.join(', ')}\n` +
-        `   Write 2-3 short sentences. Distribute the keyword words naturally across all sentences.\n` +
-        `   Every word listed above must appear at least once. Do not skip any.\n` +
-        `3. End metaDescription with: Shop now!\n`
-      : `\nseoTitle: 30-60 chars with main keyword. metaDescription: 150-200 chars with keywords and CTA.\n`;
-    const prompt = `You are a strict e-commerce SEO copywriter. Respond ONLY with valid JSON - no markdown, no explanation.
 
-Product Name: ${productName}
-Product Description: ${productDescription}
-${kwInstruction}
-JSON structure (respond with ONLY this, nothing else):
+    const systemPrompt = `You are an elite e-commerce conversion copywriter and SEO expert who has written for top Shopify brands generating millions in revenue. Your copy is sharp, customer-focused, and built to rank AND sell.
+
+Your philosophy:
+- Lead with the customer benefit and emotional hook, not the product name
+- Use power words: premium, proven, built for, effortless, unleash, dominate, elevate, trusted, top-rated
+- Create urgency and desire without being spammy
+- Every sentence must earn its place - no filler, no keyword-stuffing that reads as robotic
+- SEO titles should be click-worthy, not just a product name + keyword
+- Meta descriptions should make the reader think "that's exactly what I want" and click
+- Respond ONLY with valid JSON, no markdown, no explanation whatsoever`;
+
+    const kwBlock = kwList.length
+      ? `\nTarget Keywords (weave these naturally into your copy - do NOT list them robotically, integrate them into compelling sentences):\n${kwList.map((k, i) => `${i + 1}. ${k}`).join('\n')}\n\nKey words to ensure appear somewhere in the description: ${allKwWords.join(', ')}\n`
+      : '';
+
+    const userPrompt = `Write high-converting SEO copy for this product:
+
+Product: ${productName}
+Details: ${productDescription}
+${kwBlock}
+Requirements:
+- seoTitle: 40-60 characters. Compelling, click-worthy. Include the most important keyword naturally. Think Google ad headline - make them WANT to click.
+- metaDescription: 145-165 characters. Benefit-first, emotionally engaging, naturally includes keywords, ends with a punchy CTA (Shop Now, Get Yours Today, etc.). NO robotic keyword lists.
+- slug: clean URL slug, lowercase, hyphens, keyword-focused
+- keywords: comma-separated list of the target keywords provided
+- altText: vivid, descriptive alt text for the main product image, 10-15 words
+
+Return ONLY this JSON:
 {
   "seoTitle": "...",
   "metaDescription": "...",
   "slug": "...",
   "keywords": "...",
   "altText": "..."
-}
-Other rules:
-- slug: lowercase hyphens only, derived from primary keyword
-- keywords: list all focus keywords exactly as provided
-- altText: product image description including primary keyword`;
+}`;
+
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o',
       messages: [
-        { role: 'system', content: 'You are a strict SEO copywriter. You always follow keyword placement instructions exactly. You never skip or reword provided keywords.' },
-        { role: 'user', content: prompt }
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
       ],
-      max_tokens: 600,
-      temperature: 0.2
+      max_tokens: 800,
+      temperature: 0.75
     });
     const raw = completion.choices[0]?.message?.content?.trim() || '{}';
     let parsed = {};
     try { parsed = JSON.parse(raw); } catch (_) {
-      // fallback: try to extract JSON block from response
       const match = raw.match(/\{[\s\S]*\}/);
       if (match) { try { parsed = JSON.parse(match[0]); } catch (_) {} }
     }
@@ -90,21 +99,25 @@ router.post('/bulk-generate', async (req, res) => {
     if (!openai) {
       return res.status(503).json({ ok: false, error: 'OpenAI not configured' });
     }
+    const bulkSystemPrompt = `You are an elite e-commerce conversion copywriter and SEO expert. Your copy ranks in Google AND converts browsers into buyers. Lead with customer benefits and emotion. Use power words. Make every word earn its place. Never produce robotic keyword lists. Respond ONLY with valid JSON, no markdown.`;
     const results = [];
     for (const p of products) {
       const bKwList = p.focusKeywords ? p.focusKeywords.split(',').map(k => k.trim()).filter(Boolean) : [];
-      const bKwInstruction = bKwList.length
-        ? `\nFocus Keywords: ${bKwList.join(', ')}\nKEYWORD RULES: include the top 1-2 keywords in seoTitle verbatim. Weave ALL of these keywords verbatim into metaDescription: ${bKwList.join(', ')}. Do not paraphrase them.\n`
+      const bAllWords = bKwList.length
+        ? [...new Set(bKwList.flatMap(k => k.toLowerCase().split(/\s+/)).filter(w => w.length > 2))]
+        : [];
+      const bKwBlock = bKwList.length
+        ? `\nTarget Keywords (weave naturally into copy):\n${bKwList.map((k, i) => `${i + 1}. ${k}`).join('\n')}\nKey words to include: ${bAllWords.join(', ')}\n`
         : '';
-      const prompt = `You are a strict SEO copywriter. Generate SEO fields and respond ONLY with valid JSON, no markdown.\n\nProduct Name: ${p.productName}\nProduct Description: ${p.productDescription}${bKwInstruction}\nRespond with ONLY this JSON:\n{\n  "seoTitle": "...",\n  "metaDescription": "...",\n  "slug": "...",\n  "keywords": "...",\n  "altText": "..."\n}\nRules: seoTitle 30-60 chars, metaDescription 120-160 chars with CTA, slug lowercase hyphens only.`;
+      const prompt = `Write high-converting SEO copy for this product:\n\nProduct: ${p.productName}\nDetails: ${p.productDescription}\n${bKwBlock}\nRequirements:\n- seoTitle: 40-60 chars, compelling click-worthy headline with primary keyword\n- metaDescription: 145-165 chars, benefit-first, naturally includes keywords, punchy CTA\n- slug: lowercase hyphens, keyword-focused\n- keywords: comma-separated target keywords\n- altText: vivid 10-15 word product image description\n\nReturn ONLY this JSON:\n{\n  "seoTitle": "...",\n  "metaDescription": "...",\n  "slug": "...",\n  "keywords": "...",\n  "altText": "..."\n}`;
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
-          { role: 'system', content: 'You are a strict SEO copywriter. Always include provided keywords verbatim in the output.' },
+          { role: 'system', content: bulkSystemPrompt },
           { role: 'user', content: prompt }
         ],
-        max_tokens: 600,
-        temperature: 0.2
+        max_tokens: 800,
+        temperature: 0.75
       });
       const raw2 = completion.choices[0]?.message?.content?.trim() || '{}';
       let parsed2 = {};
