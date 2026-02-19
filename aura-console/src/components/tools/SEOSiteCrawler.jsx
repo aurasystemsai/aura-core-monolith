@@ -1,19 +1,139 @@
 import React, { useState, useRef, useEffect } from "react";
 import { apiFetch } from "../../api";
 
+const SEV_COLORS = { high: "#ef4444", medium: "#f59e0b", low: "#22c55e" };
+const SEV_BG = { high: "#3f1315", medium: "#3d2a0a", low: "#0d2218" };
+
+function SeverityBadge({ sev }) {
+  return (
+    <span style={{
+      background: SEV_BG[sev] || "#1e2235",
+      color: SEV_COLORS[sev] || "#94a3b8",
+      border: `1px solid ${SEV_COLORS[sev] || "#374151"}`,
+      borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 700,
+      textTransform: "uppercase", letterSpacing: 0.5,
+    }}>{sev}</span>
+  );
+}
+
+function IssueCard({ issue, pageUrl }) {
+  const [fixing, setFixing] = useState(false);
+  const [suggestion, setSuggestion] = useState("");
+  const [fixErr, setFixErr] = useState("");
+
+  const handleGenerate = async () => {
+    setFixing(true);
+    setFixErr("");
+    setSuggestion("");
+    try {
+      const res = await apiFetch("/api/seo-site-crawler/ai/fix", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ issue, page: pageUrl }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Failed to generate fix");
+      setSuggestion(data.suggestion);
+    } catch (err) {
+      setFixErr(err.message);
+    } finally {
+      setFixing(false);
+    }
+  };
+
+  return (
+    <div style={{ background: SEV_BG[issue.severity] || "#1e2235", borderRadius: 8, padding: "10px 14px", border: `1px solid ${SEV_COLORS[issue.severity] || "#374151"}22`, marginBottom: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        <SeverityBadge sev={issue.severity} />
+        <span style={{ fontWeight: 700, color: "#e2e8f0", fontSize: 13 }}>{issue.type}</span>
+        <button
+          onClick={handleGenerate}
+          disabled={fixing}
+          style={{ marginLeft: "auto", background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 6, padding: "3px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+        >{fixing ? "…" : "Generate Fix"}</button>
+      </div>
+      <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.5 }}>{issue.detail}</div>
+      {issue.fix && (
+        <div style={{ marginTop: 4, fontSize: 12, color: "#0ea5e9" }}>
+          Tool: <span style={{ fontWeight: 600 }}>{issue.fix.replace(/-/g, " ")}</span>
+        </div>
+      )}
+      {suggestion && (
+        <div style={{ marginTop: 8, background: "#1e2235", borderRadius: 6, padding: "8px 12px", border: "1px solid #2f3a50", fontSize: 13, color: "#7fffd4", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+          {suggestion}
+          <button onClick={() => navigator.clipboard?.writeText(suggestion)} style={{ display: "block", marginTop: 6, background: "transparent", border: "1px solid #374151", borderRadius: 5, padding: "2px 10px", color: "#64748b", fontSize: 11, cursor: "pointer" }}>Copy</button>
+        </div>
+      )}
+      {fixErr && <div style={{ color: "#ef4444", fontSize: 12, marginTop: 6 }}>{fixErr}</div>}
+    </div>
+  );
+}
+
+function KeywordPresencePanel({ keywords, keywordPresence }) {
+  if (!keywords || keywords.length === 0) return null;
+  return (
+    <div style={{ background: "#1a1f2e", borderRadius: 8, padding: "10px 14px", marginBottom: 10, border: "1px solid #2f3a50" }}>
+      <div style={{ fontWeight: 700, fontSize: 12, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Keyword Presence Check</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {(keywordPresence || []).map(kp => (
+          <div key={kp.keyword} style={{ background: "#23263a", borderRadius: 8, padding: "6px 12px", border: "1px solid #2f3a50", fontSize: 13 }}>
+            <span style={{ fontWeight: 600, color: "#e2e8f0" }}>{kp.keyword}</span>
+            <span style={{ marginLeft: 8, color: kp.inTitle ? "#22c55e" : "#ef4444", fontSize: 11, fontWeight: 700 }}>Title {kp.inTitle ? "✓" : "✗"}</span>
+            <span style={{ marginLeft: 6, color: kp.inDesc ? "#22c55e" : "#ef4444", fontSize: 11, fontWeight: 700 }}>Desc {kp.inDesc ? "✓" : "✗"}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PageSection({ page, keywords }) {
+  const [open, setOpen] = useState(true);
+  const issues = page.issues || [];
+
+  return (
+    <div style={{ background: "#23263a", borderRadius: 10, border: "1px solid #2f3a50", marginBottom: 12 }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{ width: "100%", background: "none", border: "none", color: "#e2e8f0", padding: "12px 16px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+      >
+        <div>
+          <span style={{ fontWeight: 700, fontSize: 14 }}>{page.title || page.url}</span>
+          <span style={{ marginLeft: 10, fontSize: 12, color: "#64748b" }}>{page.url}</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {issues.filter(i => i.severity === "high").length > 0 && <span style={{ color: "#ef4444", fontWeight: 700, fontSize: 12 }}>{issues.filter(i => i.severity === "high").length} High</span>}
+          {issues.filter(i => i.severity === "medium").length > 0 && <span style={{ color: "#f59e0b", fontWeight: 700, fontSize: 12 }}>{issues.filter(i => i.severity === "medium").length} Med</span>}
+          {issues.filter(i => i.severity === "low").length > 0 && <span style={{ color: "#22c55e", fontWeight: 700, fontSize: 12 }}>{issues.filter(i => i.severity === "low").length} Low</span>}
+          <span style={{ color: "#64748b", fontSize: 16 }}>{open ? "▲" : "▼"}</span>
+        </div>
+      </button>
+      {open && (
+        <div style={{ padding: "0 16px 16px" }}>
+          <KeywordPresencePanel keywords={keywords} keywordPresence={page.keywordPresence} />
+          {issues.length === 0 ? (
+            <div style={{ color: "#22c55e", fontWeight: 600, fontSize: 13 }}>✓ No issues found on this page</div>
+          ) : (
+            issues.map((issue, i) => <IssueCard key={i} issue={issue} pageUrl={page.url} />)
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SEOSiteCrawler() {
   const [input, setInput] = useState("");
-  const [response, setResponse] = useState("");
+  const [keywords, setKeywords] = useState([]);
+  const [kwInput, setKwInput] = useState("");
+  const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [history, setHistory] = useState([]);
   const [analytics, setAnalytics] = useState([]);
-  const [imported, setImported] = useState(null);
   const [exported, setExported] = useState(null);
-  const [feedback, setFeedback] = useState("");
   const fileInputRef = useRef();
 
-  // Fetch history
   const fetchHistory = async () => {
     try {
       const res = await apiFetch("/api/seo-site-crawler/history");
@@ -21,7 +141,6 @@ export default function SEOSiteCrawler() {
       if (data.ok) setHistory(data.history || []);
     } catch {}
   };
-  // Fetch analytics
   const fetchAnalytics = async () => {
     try {
       const res = await apiFetch("/api/seo-site-crawler/analytics");
@@ -30,27 +149,36 @@ export default function SEOSiteCrawler() {
     } catch {}
   };
 
-  // AI Crawl
+  useEffect(() => { fetchHistory(); fetchAnalytics(); }, []);
+
+  // Keywords chip input
+  const addKeyword = () => {
+    const trimmed = kwInput.trim().replace(/,$/, "");
+    if (!trimmed) return;
+    const newKws = trimmed.split(/[,\n]+/).map(k => k.trim()).filter(k => k && !keywords.includes(k.toLowerCase()));
+    if (newKws.length > 0) setKeywords(prev => [...prev, ...newKws.map(k => k.toLowerCase())]);
+    setKwInput("");
+  };
+  const removeKeyword = kw => setKeywords(prev => prev.filter(k => k !== kw));
+  const onKwKeyDown = e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addKeyword(); } };
+
+  // Crawl
   const handleCrawl = async () => {
+    if (!input.trim()) return;
     setLoading(true);
     setError("");
-    setResponse("");
+    setResult(null);
     try {
       const res = await apiFetch("/api/seo-site-crawler/ai/crawl", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ site: input })
+        body: JSON.stringify({ site: input.trim(), keywords }),
       });
       const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Unknown error");
-      setResponse(data.crawlReport || "No report generated");
-      // Save to history
-      await apiFetch("/api/seo-site-crawler/history", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ site: input, report: data.crawlReport })
-      });
+      if (!data.ok) throw new Error(data.error || "Crawl failed");
+      setResult(data.result);
       fetchHistory();
+      fetchAnalytics();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -68,15 +196,12 @@ export default function SEOSiteCrawler() {
         const res = await apiFetch("/api/seo-site-crawler/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: JSON.parse(evt.target.result) })
+          body: JSON.stringify({ data: JSON.parse(evt.target.result) }),
         });
         const data = await res.json();
-        if (!data.ok) throw new Error(data.error || "Unknown error");
-        setImported(file.name);
+        if (!data.ok) throw new Error(data.error || "Import failed");
         fetchHistory();
-      } catch (err) {
-        setError(err.message);
-      }
+      } catch (err) { setError(err.message); }
     };
     reader.readAsText(file);
   };
@@ -87,83 +212,131 @@ export default function SEOSiteCrawler() {
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
-  // Feedback
-  const handleFeedback = async () => {
-    if (!feedback) return;
-    setError("");
-    try {
-      await apiFetch("/api/seo-site-crawler/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ feedback })
-      });
-      setFeedback("");
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  useEffect(() => {
-    fetchHistory();
-    fetchAnalytics();
-  }, []);
+  const pages = result?.pages || [];
+  const totalIssues = result?.totalIssues || 0;
 
   return (
-    <div style={{ background: "#23263a", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
-      <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 8 }}>SEO Site Crawler</h2>
-      <div style={{ marginBottom: 10, color: "#0ea5e9", fontWeight: 600 }}>
-        <span role="img" aria-label="spider">🕷️</span> Crawl, analyze, and export site SEO data with AI and analytics.
+    <div style={{ background: "#23263a", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: "Inter, sans-serif" }}>
+      <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 4 }}>SEO Site Crawler</h2>
+      <div style={{ marginBottom: 20, color: "#0ea5e9", fontWeight: 600 }}>
+        🕷️ Crawl, analyze, and fix site SEO issues with AI-powered suggestions.
       </div>
-      <textarea
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        rows={4}
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#23263a", color: "#f3f4f6" }}
-        placeholder="Type your site or prompt here..."
-        aria-label="Site input"
-      />
-      <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={handleCrawl} disabled={loading || !input} style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Crawling..." : "AI Crawl"}</button>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
-        <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import history" />
-        <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
-        {exported && <a href={exported} download="seo-crawler-history.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
+
+      {/* URL Input */}
+      <div style={{ marginBottom: 14 }}>
+        <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#94a3b8", marginBottom: 6 }}>Website URL</label>
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleCrawl()}
+          style={{ width: "100%", fontSize: 15, padding: "10px 14px", borderRadius: 8, border: "1px solid #374151", background: "#1e2235", color: "#f3f4f6", boxSizing: "border-box" }}
+          placeholder="https://yourstore.myshopify.com"
+          aria-label="Site URL"
+        />
       </div>
-      {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
-      {response && (
-        <div style={{ background: "#1e2235", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #2f3a50" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <span style={{ fontWeight: 700, color: "#7fffd4", fontSize: 14 }}>AI Crawl Report</span>
-            <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #374151", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
+
+      {/* Keywords Input */}
+      <div style={{ marginBottom: 18 }}>
+        <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#94a3b8", marginBottom: 6 }}>
+          Focus Keywords <span style={{ fontWeight: 400, color: "#64748b" }}>(press Enter or comma to add)</span>
+        </label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, background: "#1e2235", borderRadius: 8, border: "1px solid #374151", padding: "8px 10px", minHeight: 44, alignItems: "center" }}>
+          {keywords.map(kw => (
+            <span key={kw} style={{ background: "#2f3a50", color: "#7fffd4", borderRadius: 20, padding: "3px 11px 3px 12px", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+              {kw}
+              <button onClick={() => removeKeyword(kw)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
+            </span>
+          ))}
+          <input
+            value={kwInput}
+            onChange={e => setKwInput(e.target.value)}
+            onKeyDown={onKwKeyDown}
+            onBlur={addKeyword}
+            style={{ flex: 1, minWidth: 140, background: "none", border: "none", color: "#f3f4f6", fontSize: 13, outline: "none" }}
+            placeholder={keywords.length === 0 ? "e.g. snowboard, winter sports…" : "Add another…"}
+          />
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
+        <button onClick={handleCrawl} disabled={loading || !input.trim()} style={{ background: loading ? "#374151" : "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "11px 26px", fontWeight: 700, fontSize: 15, cursor: loading || !input.trim() ? "not-allowed" : "pointer" }}>
+          {loading ? "Crawling…" : "🕷️ Crawl & Analyze"}
+        </button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#23263a", border: "none", borderRadius: 8, padding: "11px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Import</button>
+        <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} />
+        <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "11px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Export</button>
+        {exported && <a href={exported} download="seo-crawler-history.json" style={{ padding: "11px 14px", color: "#0ea5e9", fontWeight: 600, fontSize: 14, textDecoration: "none" }}>↓ Download</a>}
+      </div>
+
+      {error && <div style={{ color: "#ef4444", background: "#3f1315", borderRadius: 8, padding: "10px 14px", marginBottom: 14, fontSize: 14 }}>{error}</div>}
+
+      {/* Results */}
+      {result && (
+        <div style={{ marginBottom: 24 }}>
+          {/* Summary stats */}
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
+            {[
+              { label: "Pages Scanned", value: result.pagesScanned, color: "#0ea5e9" },
+              { label: "Total Issues", value: totalIssues, color: "#94a3b8" },
+              { label: "High", value: result.high, color: "#ef4444" },
+              { label: "Medium", value: result.medium, color: "#f59e0b" },
+              { label: "Low", value: result.low, color: "#22c55e" },
+            ].map(s => (
+              <div key={s.label} style={{ background: "#1e2235", borderRadius: 10, padding: "10px 18px", border: "1px solid #2f3a50", textAlign: "center" }}>
+                <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
+                <div style={{ fontSize: 24, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value ?? 0}</div>
+              </div>
+            ))}
           </div>
-          <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, fontSize: 14, color: "#e2e8f0" }}>{response}</div>
+
+          {/* Per-page sections */}
+          <div style={{ fontWeight: 700, fontSize: 16, color: "#7fffd4", marginBottom: 10 }}>Page-by-Page Analysis</div>
+          {pages.length === 0 ? (
+            <div style={{ color: "#94a3b8", fontSize: 14 }}>No pages analysed.</div>
+          ) : (
+            pages.map((page, i) => <PageSection key={i} page={page} keywords={keywords} />)
+          )}
         </div>
       )}
-      {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      <div style={{ marginTop: 24, background: "#181f2a", borderRadius: 12, padding: 18 }}>
-        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: "#7fffd4" }}>History</div>
-        <ul style={{ paddingLeft: 18 }}>
-          {history.map(h => (
-            <div key={h.id} style={{ background: "#23263a", borderRadius: 8, padding: "12px 16px", border: "1px solid #2f3a50", marginBottom: 8 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
-                <span style={{ fontWeight: 700, color: "#e2e8f0" }}>{h.site}</span>
-                <span style={{ color: "#64748b" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : `#${h.id}`}</span>
+
+      {/* Stats */}
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 20 }}>
+        <div style={{ background: "#1e2235", borderRadius: 10, padding: "10px 18px", border: "1px solid #2f3a50" }}>
+          <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Crawls</div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#7fffd4", marginTop: 2 }}>{history.length}</div>
+        </div>
+        <div style={{ background: "#1e2235", borderRadius: 10, padding: "10px 18px", border: "1px solid #2f3a50" }}>
+          <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#7fffd4", marginTop: 2 }}>{analytics.length}</div>
+        </div>
+      </div>
+
+      {/* History */}
+      {history.length > 0 && (
+        <div style={{ background: "#181f2a", borderRadius: 12, padding: 18 }}>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: "#7fffd4" }}>Crawl History</div>
+          {history.map(h => {
+            const r = h.result || {};
+            return (
+              <div key={h.id} style={{ background: "#23263a", borderRadius: 8, padding: "12px 16px", border: "1px solid #2f3a50", marginBottom: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4, flexWrap: "wrap", gap: 4 }}>
+                  <span style={{ fontWeight: 700, color: "#e2e8f0" }}>{h.site}</span>
+                  <span style={{ color: "#64748b" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : `#${h.id}`}</span>
+                </div>
+                {r.pagesScanned !== undefined && (
+                  <div style={{ display: "flex", gap: 8, fontSize: 12, flexWrap: "wrap" }}>
+                    <span style={{ color: "#0ea5e9" }}>{r.pagesScanned} pages</span>
+                    <span style={{ color: "#ef4444" }}>{r.high || 0} high</span>
+                    <span style={{ color: "#f59e0b" }}>{r.medium || 0} med</span>
+                    <span style={{ color: "#22c55e" }}>{r.low || 0} low</span>
+                  </div>
+                )}
               </div>
-              {h.report && <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.5 }}>{typeof h.report === "string" ? h.report.slice(0, 200) + (h.report.length > 200 ? "…" : "") : ""}</div>}
-            </div>
-          ))}
-        </ul>
-      </div>
-      <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-        <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #2f3a50" }}>
-          <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Crawls</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#7fffd4", marginTop: 2 }}>{history.length}</div>
+            );
+          })}
         </div>
-        <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #2f3a50" }}>
-          <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#7fffd4", marginTop: 2 }}>{analytics.length}</div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
