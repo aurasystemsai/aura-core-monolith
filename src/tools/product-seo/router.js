@@ -57,7 +57,7 @@ Details: ${productDescription}
 ${kwBlock}
 Requirements:
 - seoTitle: 50-60 characters (Google sweet spot - fills the blue link fully). Compelling click-worthy headline. Make the shopper think "that is exactly what I need". Include primary keyword naturally. No keyword stuffing.
-- metaDescription: MUST be 152-158 characters. This is non-negotiable - count every character including spaces. Write 2 punchy sentences: sentence 1 = compelling benefit/hook with keywords woven in naturally; sentence 2 = specific product detail (material, use-case, feature, etc.) + strong CTA. Per Google best practice: be specific, not generic. If draft is under 148 chars, add more specific product details. Aim for 155 chars.
+- metaDescription: TARGET 155 characters (hard floor: 150, hard ceiling: 160). Count every character including spaces before outputting. SELF-CHECK RULE: if your draft is 149 or fewer characters it is a FAILURE - you must expand it by adding specific adjectives, a material detail, a feature, or a shipping/offer note until you reach 150+. Structure: sentence 1 = emotional benefit hook with primary keyword woven in naturally; sentence 2 = specific product detail + strong CTA (Shop now / Order today / Get yours). 149 chars = rejected.
 - ogTitle: Open Graph title for social sharing - same as seoTitle or a slight variation (max 60 chars) 
 - ogDescription: Open Graph description for social sharing - same as metaDescription or a slight variation (max 160 chars)
 - slug: clean URL slug, lowercase, hyphens, primary keyword
@@ -90,6 +90,31 @@ Return ONLY this JSON:
       const match = raw.match(/\{[\s\S]*\}/);
       if (match) { try { parsed = JSON.parse(match[0]); } catch (_) {} }
     }
+
+    // Retry if metaDescription is under 150 chars (model keeps stopping at 149)
+    if (parsed.metaDescription && parsed.metaDescription.length < 150) {
+      const retryCompletion = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+          { role: 'assistant', content: raw },
+          { role: 'user', content: `Your metaDescription is ${parsed.metaDescription.length} characters - that is under the 150 minimum. Expand it to 150-160 characters by adding a specific product detail, adjective, or short offer (e.g. "Free shipping on orders over $50" or a material/feature detail). Return the complete JSON again with the longer metaDescription. Do not change the other fields.` }
+        ],
+        max_tokens: 800,
+        temperature: 0.75
+      });
+      const raw2 = retryCompletion.choices[0]?.message?.content?.trim() || '{}';
+      let parsed2 = {};
+      try { parsed2 = JSON.parse(raw2); } catch (_) {
+        const match2 = raw2.match(/\{[\s\S]*\}/);
+        if (match2) { try { parsed2 = JSON.parse(match2[0]); } catch (_) {} }
+      }
+      if (parsed2.metaDescription && parsed2.metaDescription.length >= 150) {
+        parsed = parsed2;
+      }
+    }
+
     res.json({ ok: true, result: raw, parsed });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message || 'AI error' });
@@ -116,7 +141,7 @@ router.post('/bulk-generate', async (req, res) => {
       const bKwBlock = bKwList.length
         ? `\nTarget Keywords (weave naturally into copy):\n${bKwList.map((k, i) => `${i + 1}. ${k}`).join('\n')}\nKey words to include: ${bAllWords.join(', ')}\n`
         : '';
-      const prompt = `Write high-converting SEO copy for this product:\n\nProduct: ${p.productName}\nDetails: ${p.productDescription}\n${bKwBlock}\nRequirements:\n- seoTitle: 40-60 chars, compelling click-worthy headline with primary keyword (no keyword stuffing)\n- metaDescription: 145-165 chars, benefit-first, specific product details (material/feature/use-case), keywords woven naturally per Google guidelines, punchy CTA\n- ogTitle: Open Graph title for social - same as seoTitle or slight variation (max 60 chars)\n- ogDescription: Open Graph description - same as metaDescription or slight variation (max 160 chars)\n- slug: lowercase hyphens, keyword-focused\n- keywords: comma-separated target keywords (for content strategy - Google ignores meta keywords)\n- altText: vivid 10-15 word product image description\n\nReturn ONLY this JSON:\n{\n  "seoTitle": "...",\n  "metaDescription": "...",\n  "ogTitle": "...",\n  "ogDescription": "...",\n  "slug": "...",\n  "keywords": "...",\n  "altText": "..."\n}`;
+      const prompt = `Write high-converting SEO copy for this product:\n\nProduct: ${p.productName}\nDetails: ${p.productDescription}\n${bKwBlock}\nRequirements:\n- seoTitle: 40-60 chars, compelling click-worthy headline with primary keyword (no keyword stuffing)\n- metaDescription: TARGET 155 chars. Hard floor 150, ceiling 160. Count chars before outputting - if under 150 it is a FAILURE, expand with adjectives/detail/offer until 150+. Benefit-first, specific details, keywords woven naturally, punchy CTA.\n- ogTitle: Open Graph title for social - same as seoTitle or slight variation (max 60 chars)\n- ogDescription: Open Graph description - same as metaDescription or slight variation (max 160 chars)\n- slug: lowercase hyphens, keyword-focused\n- keywords: comma-separated target keywords (for content strategy - Google ignores meta keywords)\n- altText: vivid 10-15 word product image description\n\nReturn ONLY this JSON:\n{\n  "seoTitle": "...",\n  "metaDescription": "...",\n  "ogTitle": "...",\n  "ogDescription": "...",\n  "slug": "...",\n  "keywords": "...",\n  "altText": "..."\n}`;
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [
