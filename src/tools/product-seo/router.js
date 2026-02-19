@@ -18,18 +18,20 @@ const path = require('path');
 // LLM-powered SEO generation endpoint (single)
 router.post('/generate', async (req, res) => {
   try {
-    const { productName, productDescription } = req.body;
+    const { productName, productDescription, focusKeywords } = req.body;
     if (!productName || !productDescription) {
       return res.status(400).json({ ok: false, error: 'Missing productName or productDescription' });
     }
     if (!openai) {
       return res.status(503).json({ ok: false, error: 'OpenAI not configured' });
     }
+    const kwSection = focusKeywords
+      ? `\nFocus Keywords (YOU MUST USE THESE in the seoTitle and metaDescription): ${focusKeywords}\n`
+      : '';
     const prompt = `You are an expert e-commerce SEO assistant. Generate SEO fields for the product below and respond ONLY with valid JSON (no markdown, no extra text).
 
 Product Name: ${productName}
-Product Description: ${productDescription}
-
+Product Description: ${productDescription}${kwSection}
 Respond with this exact JSON structure:
 {
   "seoTitle": "...",
@@ -40,11 +42,12 @@ Respond with this exact JSON structure:
 }
 
 Rules:
-- seoTitle: 30-60 characters, include main keyword
-- metaDescription: 120-160 characters, include CTA
-- slug: lowercase, hyphens only, no special chars
-- keywords: 5-8 comma-separated keywords
-- altText: descriptive alt text for main product image`;
+- seoTitle: 30-60 characters, MUST naturally include the most important focus keyword
+- metaDescription: 120-160 characters, MUST include at least one focus keyword and a call-to-action (Buy, Shop, Get, etc.)
+- slug: lowercase, hyphens only, no special chars, include primary keyword
+- keywords: return the provided focus keywords plus any additional relevant ones, comma-separated
+- altText: descriptive alt text for main product image including primary keyword
+- CRITICAL: the seoTitle and metaDescription must each contain at least one of the focus keywords verbatim`;
     const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [

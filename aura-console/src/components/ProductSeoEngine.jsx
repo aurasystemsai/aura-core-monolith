@@ -201,7 +201,7 @@ export default function ProductSeoEngine() {
     if (!selectedProduct) return;
     setGenerating(true);
     try {
-      const res = await apiFetch('/api/product-seo/generate', { method: 'POST', data: { productName: selectedProduct.title, productDescription: selectedProduct.title + (selectedProduct.tags ? '. Tags: ' + selectedProduct.tags : '') } });
+      const res = await apiFetch('/api/product-seo/generate', { method: 'POST', data: { productName: selectedProduct.title, productDescription: selectedProduct.title + (selectedProduct.tags ? '. Tags: ' + selectedProduct.tags : ''), focusKeywords: editor.keywords || undefined } });
       const p = res.parsed || {};
       const next = { seoTitle: p.seoTitle || selectedProduct.title, seoDescription: p.metaDescription || '', handle: (p.slug || p.seoTitle || selectedProduct.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''), keywords: p.keywords || '', altText: p.altText || '' };
       setEditor(next);
@@ -217,7 +217,7 @@ export default function ProductSeoEngine() {
     if (!selectedProduct) return;
     setFieldGenerating(f => ({ ...f, [field]: true }));
     try {
-      const res = await apiFetch('/api/product-seo/generate', { method: 'POST', data: { productName: selectedProduct.title, productDescription: selectedProduct.title + (selectedProduct.tags ? '. Tags: ' + selectedProduct.tags : '') } });
+      const res = await apiFetch('/api/product-seo/generate', { method: 'POST', data: { productName: selectedProduct.title, productDescription: selectedProduct.title + (selectedProduct.tags ? '. Tags: ' + selectedProduct.tags : ''), focusKeywords: editor.keywords || undefined } });
       const p = res.parsed || {};
       const map = { seoTitle: p.seoTitle || selectedProduct.title, seoDescription: p.metaDescription || '', keywords: p.keywords || '', handle: (p.slug || p.seoTitle || selectedProduct.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''), altText: p.altText || (selectedProduct.title + ' product image') };
       const val = map[field] || '';
@@ -260,7 +260,7 @@ export default function ProductSeoEngine() {
     const results = [];
     for (const p of products.filter(p => bulkSelected.has(p.id))) {
       try {
-        const res = await apiFetch('/api/product-seo/generate', { method: 'POST', data: { productName: p.title, productDescription: p.title + (p.tags ? '. Tags: ' + p.tags : '') } });
+        const res = await apiFetch('/api/product-seo/generate', { method: 'POST', data: { productName: p.title, productDescription: p.title + (p.tags ? '. Tags: ' + p.tags : ''), focusKeywords: (JSON.parse(localStorage.getItem('aura_seo_records') || '{}')[p.id] || {}).keywords || undefined } });
         const parsed = res.parsed || {};
         const fields = { seoTitle: parsed.seoTitle || p.title, seoDescription: parsed.metaDescription || '', keywords: parsed.keywords || '', handle: (parsed.slug || parsed.seoTitle || p.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''), altText: parsed.altText || '' };
         saveLocal(p.id, fields);
