@@ -34,13 +34,16 @@ router.post('/generate', async (req, res) => {
 
     const systemPrompt = `You are an elite e-commerce conversion copywriter and SEO expert who has written for top Shopify brands generating millions in revenue. Your copy is sharp, customer-focused, and built to rank AND sell.
 
-Your philosophy:
+Your philosophy (aligned with Google's official SEO guidelines):
 - Lead with the customer benefit and emotional hook, not the product name
 - Use power words: premium, proven, built for, effortless, unleash, dominate, elevate, trusted, top-rated
 - Create urgency and desire without being spammy
 - Every sentence must earn its place - no filler, no keyword-stuffing that reads as robotic
+- Google explicitly penalises keyword stuffing - weave keywords naturally into compelling sentences
 - SEO titles should be click-worthy, not just a product name + keyword
-- Meta descriptions should make the reader think "that's exactly what I want" and click
+- Meta descriptions should make the reader think "that is exactly what I want" and click
+- Per Google: great descriptions are like a pitch - specific product details, benefits, and a CTA beat generic copy
+- Include specifics where possible: materials, use-case, key feature, shipping/offer if available
 - Respond ONLY with valid JSON, no markdown, no explanation whatsoever`;
 
     const kwBlock = kwList.length
@@ -53,16 +56,20 @@ Product: ${productName}
 Details: ${productDescription}
 ${kwBlock}
 Requirements:
-- seoTitle: 50-60 characters (Google's sweet spot - fills the blue link fully). Compelling click-worthy headline. Make the shopper think "that's exactly what I need". Include primary keyword naturally.
-- metaDescription: MUST be 152-158 characters. This is non-negotiable - count every character including spaces. Write 2 punchy sentences: sentence 1 = compelling benefit/hook with keywords woven in; sentence 2 = supporting detail + strong CTA. Use the full character budget - do not leave space unused. If your draft is under 148 chars, add more specific benefits. Aim for 155 chars.
+- seoTitle: 50-60 characters (Google sweet spot - fills the blue link fully). Compelling click-worthy headline. Make the shopper think "that is exactly what I need". Include primary keyword naturally. No keyword stuffing.
+- metaDescription: MUST be 152-158 characters. This is non-negotiable - count every character including spaces. Write 2 punchy sentences: sentence 1 = compelling benefit/hook with keywords woven in naturally; sentence 2 = specific product detail (material, use-case, feature, etc.) + strong CTA. Per Google best practice: be specific, not generic. If draft is under 148 chars, add more specific product details. Aim for 155 chars.
+- ogTitle: Open Graph title for social sharing - same as seoTitle or a slight variation (max 60 chars) 
+- ogDescription: Open Graph description for social sharing - same as metaDescription or a slight variation (max 160 chars)
 - slug: clean URL slug, lowercase, hyphens, primary keyword
-- keywords: comma-separated list of all target keywords
+- keywords: comma-separated list of all target keywords (for content strategy - Google ignores the meta keywords tag)
 - altText: vivid 12-15 word product image description including primary keyword
 
 Return ONLY this JSON:
 {
   "seoTitle": "...",
   "metaDescription": "...",
+  "ogTitle": "...",
+  "ogDescription": "...",
   "slug": "...",
   "keywords": "...",
   "altText": "..."
@@ -99,7 +106,7 @@ router.post('/bulk-generate', async (req, res) => {
     if (!openai) {
       return res.status(503).json({ ok: false, error: 'OpenAI not configured' });
     }
-    const bulkSystemPrompt = `You are an elite e-commerce conversion copywriter and SEO expert. Your copy ranks in Google AND converts browsers into buyers. Lead with customer benefits and emotion. Use power words. Make every word earn its place. Never produce robotic keyword lists. Respond ONLY with valid JSON, no markdown.`;
+    const bulkSystemPrompt = `You are an elite e-commerce conversion copywriter and SEO expert. Your copy ranks in Google AND converts browsers into buyers. Lead with customer benefits and emotion. Use power words. Make every word earn its place. Per Google: never keyword-stuff - weave keywords naturally and be specific (materials, features, use-case beat generic claims). Respond ONLY with valid JSON, no markdown.`;
     const results = [];
     for (const p of products) {
       const bKwList = p.focusKeywords ? p.focusKeywords.split(',').map(k => k.trim()).filter(Boolean) : [];
@@ -109,7 +116,7 @@ router.post('/bulk-generate', async (req, res) => {
       const bKwBlock = bKwList.length
         ? `\nTarget Keywords (weave naturally into copy):\n${bKwList.map((k, i) => `${i + 1}. ${k}`).join('\n')}\nKey words to include: ${bAllWords.join(', ')}\n`
         : '';
-      const prompt = `Write high-converting SEO copy for this product:\n\nProduct: ${p.productName}\nDetails: ${p.productDescription}\n${bKwBlock}\nRequirements:\n- seoTitle: 40-60 chars, compelling click-worthy headline with primary keyword\n- metaDescription: 145-165 chars, benefit-first, naturally includes keywords, punchy CTA\n- slug: lowercase hyphens, keyword-focused\n- keywords: comma-separated target keywords\n- altText: vivid 10-15 word product image description\n\nReturn ONLY this JSON:\n{\n  "seoTitle": "...",\n  "metaDescription": "...",\n  "slug": "...",\n  "keywords": "...",\n  "altText": "..."\n}`;
+      const prompt = `Write high-converting SEO copy for this product:\n\nProduct: ${p.productName}\nDetails: ${p.productDescription}\n${bKwBlock}\nRequirements:\n- seoTitle: 40-60 chars, compelling click-worthy headline with primary keyword (no keyword stuffing)\n- metaDescription: 145-165 chars, benefit-first, specific product details (material/feature/use-case), keywords woven naturally per Google guidelines, punchy CTA\n- ogTitle: Open Graph title for social - same as seoTitle or slight variation (max 60 chars)\n- ogDescription: Open Graph description - same as metaDescription or slight variation (max 160 chars)\n- slug: lowercase hyphens, keyword-focused\n- keywords: comma-separated target keywords (for content strategy - Google ignores meta keywords)\n- altText: vivid 10-15 word product image description\n\nReturn ONLY this JSON:\n{\n  "seoTitle": "...",\n  "metaDescription": "...",\n  "ogTitle": "...",\n  "ogDescription": "...",\n  "slug": "...",\n  "keywords": "...",\n  "altText": "..."\n}`;
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [

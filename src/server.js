@@ -355,7 +355,7 @@ app.get('/api/product-seo/shopify-products', async (req, res) => {
 // --- Product SEO Engine: Push SEO to Shopify ---
 app.post('/api/product-seo/push-to-shopify', async (req, res) => {
   try {
-    const { productId, title, metaTitle, metaDescription, handle } = req.body;
+    const { productId, title, metaTitle, metaDescription, handle, ogTitle, ogDescription } = req.body;
     if (!productId) return res.status(400).json({ ok: false, error: 'Missing productId' });
 
     const allTokens = (shopTokens && shopTokens.loadAll) ? shopTokens.loadAll() : {};
@@ -418,6 +418,35 @@ app.post('/api/product-seo/push-to-shopify', async (req, res) => {
               body: JSON.stringify({ metafield: mf }),
             });
           }
+        }
+      }
+    }
+
+    // Push Open Graph tags (og:title and og:description) - Google uses these as alternate title sources
+    // Stored in the 'social' namespace as Shopify's standard OG metafields
+    const ogFieldsToSet = [];
+    if (ogTitle || metaTitle) ogFieldsToSet.push({ namespace: 'social', key: 'og_title', value: ogTitle || metaTitle, type: 'single_line_text_field' });
+    if (ogDescription || metaDescription) ogFieldsToSet.push({ namespace: 'social', key: 'og_description', value: ogDescription || metaDescription, type: 'multi_line_text_field' });
+
+    for (const mf of ogFieldsToSet) {
+      const listRes2 = await fetchFn(`https://${shop}/admin/api/${apiVersion}/products/${productId}/metafields.json?namespace=${mf.namespace}&key=${mf.key}`, {
+        headers: { 'X-Shopify-Access-Token': token },
+      });
+      if (listRes2.ok) {
+        const listData2 = await listRes2.json();
+        const existing2 = (listData2.metafields || [])[0];
+        if (existing2) {
+          await fetchFn(`https://${shop}/admin/api/${apiVersion}/metafields/${existing2.id}.json`, {
+            method: 'PUT',
+            headers: { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ metafield: { id: existing2.id, value: mf.value, type: mf.type } }),
+          });
+        } else {
+          await fetchFn(`https://${shop}/admin/api/${apiVersion}/products/${productId}/metafields.json`, {
+            method: 'POST',
+            headers: { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ metafield: mf }),
+          });
         }
       }
     }

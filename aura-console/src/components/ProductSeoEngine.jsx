@@ -32,7 +32,7 @@ function seoScore(fields) {
   else if (descLen >= 130) s += 18;
   else if (descLen >= 120) s += 12;
   else if (fields.seoDescription) s += 6;
-  if (kws.length >= 3) s += 5; else if (kws.length > 0) s += 2;
+  if (kws.length >= 1) s += 5;
   if (kwInTitle) s += 15;
   if (kwInDesc) s += 15;
   if (fields.handle) s += 5;
@@ -225,7 +225,7 @@ export default function ProductSeoEngine() {
     try {
       const res = await apiFetch('/api/product-seo/generate', { method: 'POST', data: { productName: selectedProduct.title, productDescription: selectedProduct.title + (selectedProduct.tags ? '. Tags: ' + selectedProduct.tags : ''), focusKeywords: editor.keywords || undefined } });
       const p = res.parsed || {};
-      const next = { seoTitle: p.seoTitle || selectedProduct.title, seoDescription: p.metaDescription || '', handle: (p.slug || p.seoTitle || selectedProduct.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''), keywords: p.keywords || '', altText: p.altText || '' };
+      const next = { seoTitle: p.seoTitle || selectedProduct.title, seoDescription: p.metaDescription || '', handle: (p.slug || p.seoTitle || selectedProduct.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''), keywords: p.keywords || '', altText: p.altText || '', ogTitle: p.ogTitle || p.seoTitle || '', ogDescription: p.ogDescription || p.metaDescription || '' };
       setEditor(next);
       saveLocal(selectedProduct.id, next);
       showToast('All SEO fields generated!');
@@ -268,7 +268,7 @@ export default function ProductSeoEngine() {
     if (!selectedProduct) return;
     setPushing(true);
     try {
-      await apiFetch('/api/product-seo/push-to-shopify', { method: 'POST', data: { productId: selectedProduct.id, metaTitle: editor.seoTitle, metaDescription: editor.seoDescription, handle: editor.handle !== selectedProduct.handle ? editor.handle : undefined } });
+      await apiFetch('/api/product-seo/push-to-shopify', { method: 'POST', data: { productId: selectedProduct.id, metaTitle: editor.seoTitle, metaDescription: editor.seoDescription, handle: editor.handle !== selectedProduct.handle ? editor.handle : undefined, ogTitle: editor.ogTitle || editor.seoTitle || undefined, ogDescription: editor.ogDescription || editor.seoDescription || undefined } });
       saveLocal(selectedProduct.id, editor);
       showToast('SEO pushed to Shopify!');
     } catch (err) { showToast('Push failed: ' + (err.response?.data?.error || err.message), 'error'); }
@@ -327,13 +327,14 @@ export default function ProductSeoEngine() {
 
   const checklist = [
     { ok: editor.seoTitle.length >= 50 && editor.seoTitle.length <= 60, label: 'SEO title is 50-60 characters (Google sweet spot)', tip: 'Currently ' + editor.seoTitle.length + ' chars - aim for 50-60' },
-    { ok: editor.seoDescription.length >= 150 && editor.seoDescription.length <= 160, label: 'Meta description is 150-160 characters (fills Google snippet)', tip: 'Currently ' + editor.seoDescription.length + ' chars - aim for 150-160' },
-    { ok: chips.length >= 3, label: 'At least 3 focus keywords', tip: 'Currently ' + chips.length + ' keyword(s)' },
-    { ok: chips.some(k => kwInTitleMatch(k)), label: 'Primary keyword in SEO title', tip: 'Add at least one keyword to the title' },
-    { ok: chips.some(k => kwInDescMatch(k)), label: 'Primary keyword in meta description', tip: 'Add at least one keyword to the description' },
-    { ok: !!editor.handle, label: 'URL handle / slug is set', tip: 'Set a clean URL slug' },
-    { ok: !!editor.altText, label: 'Image alt text is set', tip: 'Describe the main product image' },
-    { ok: !!editor.seoDescription && (editor.seoDescription.includes('!') || editor.seoDescription.toLowerCase().includes('buy') || editor.seoDescription.toLowerCase().includes('shop') || editor.seoDescription.toLowerCase().includes('get')), label: 'Meta description has a call-to-action', tip: 'Include buy, shop, get or use punctuation' },
+    { ok: editor.seoDescription.length >= 150 && editor.seoDescription.length <= 160, label: 'Meta description is 150-160 characters (fills Google snippet)', tip: 'Currently ' + editor.seoDescription.length + ' chars - Google truncates at ~155 on desktop, aim for 150-160' },
+    { ok: chips.length >= 1, label: 'Focus keywords set (used for AI copy, not a Google ranking signal)', tip: 'Add at least 1 keyword - these guide the AI only. Note: Google ignores the meta keywords tag.' },
+    { ok: chips.some(k => kwInTitleMatch(k)), label: 'Primary keyword appears naturally in SEO title', tip: 'Weave your primary keyword into the title - no stuffing' },
+    { ok: chips.some(k => kwInDescMatch(k)), label: 'Primary keyword appears naturally in meta description', tip: 'Include your keyword naturally in the description' },
+    { ok: !!editor.handle, label: 'URL handle / slug is set', tip: 'Set a clean URL slug (note: URL keywords have minimal ranking impact per Google)' },
+    { ok: !!editor.altText, label: 'Image alt text is set (helps Google Images ranking)', tip: 'Describe the main product image - important for Google Images discovery' },
+    { ok: !!editor.seoDescription && (editor.seoDescription.includes('!') || editor.seoDescription.toLowerCase().includes('buy') || editor.seoDescription.toLowerCase().includes('shop') || editor.seoDescription.toLowerCase().includes('get')), label: 'Meta description has a call-to-action (improves click-through rate)', tip: 'Include buy, shop, get or use punctuation for urgency' },
+    { ok: !!editor.seoTitle && !editor.seoTitle.match(/(.{3,})\s+\1/i), label: 'No keyword stuffing in title (against Google spam policy)', tip: 'Each keyword should appear once - no repetition' },
   ];
   const checkPassed = checklist.filter(c => c.ok).length;
 
@@ -528,7 +529,7 @@ export default function ProductSeoEngine() {
                         <CharBar value={editor.seoTitle} min={30} max={60} sweetMin={50} sweetMax={58} label="50-60 chars ideal (30-60 accepted by Google)" />
                       </FieldBlock>
 
-                      <FieldBlock label="Meta Description" hint="Shown below the title in search results" badge={<GenBtn onClick={() => generateField('seoDescription')} loading={!!fieldGenerating.seoDescription} />}>
+                      <FieldBlock label="Meta Description" hint="Shown below title in search results - Google truncates at ~155 chars on desktop, no hard limit" badge={<GenBtn onClick={() => generateField('seoDescription')} loading={!!fieldGenerating.seoDescription} />}>
                         <textarea value={editor.seoDescription} onChange={e => setEditor(ed => ({ ...ed, seoDescription: e.target.value }))}
                           placeholder="Compelling description with your main keyword and a call-to-action."
                           rows={4}
@@ -544,7 +545,7 @@ export default function ProductSeoEngine() {
                         </div>
                       </FieldBlock>
 
-                      <FieldBlock label="Focus Keywords" hint="Press Enter or comma to add - colour shows presence in title/desc" badge={<GenBtn onClick={() => generateField('keywords')} loading={!!fieldGenerating.keywords} small />}>
+                      <FieldBlock label="Focus Keywords" hint="Guide the AI copy - not a meta tag ranking signal (Google ignores meta keywords since 2009)" badge={<GenBtn onClick={() => generateField('keywords')} loading={!!fieldGenerating.keywords} small />}>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, background: '#0a0f1a', border: '1px solid #1e2d42', borderRadius: 10, padding: '8px 10px', minHeight: 50, alignItems: 'center' }}>
                           {chips.map(kw => {
                             const inT = kwInTitleMatch(kw);
@@ -591,7 +592,7 @@ export default function ProductSeoEngine() {
                           return [
                             { label: 'SEO Title', pts: 25, earned: editor.seoTitle.length >= 50 && editor.seoTitle.length <= 60 ? 25 : editor.seoTitle.length >= 40 ? 20 : editor.seoTitle.length >= 30 ? 14 : editor.seoTitle ? 6 : 0, ok: editor.seoTitle.length >= 50 && editor.seoTitle.length <= 60, msg: !editor.seoTitle ? 'Missing' : editor.seoTitle.length > 60 ? 'Too long' : editor.seoTitle.length < 30 ? 'Too short' : editor.seoTitle.length < 50 ? 'Good (' + editor.seoTitle.length + ' chars)' : 'Perfect' },
                             { label: 'Meta Desc', pts: 25, earned: editor.seoDescription.length >= 150 && editor.seoDescription.length <= 160 ? 25 : editor.seoDescription.length >= 130 ? 18 : editor.seoDescription.length >= 120 ? 12 : editor.seoDescription ? 6 : 0, ok: editor.seoDescription.length >= 150 && editor.seoDescription.length <= 160, msg: !editor.seoDescription ? 'Missing' : editor.seoDescription.length > 160 ? 'Too long' : editor.seoDescription.length < 120 ? 'Too short' : editor.seoDescription.length < 150 ? 'Good (' + editor.seoDescription.length + ' chars)' : 'Perfect' },
-                            { label: 'Keywords', pts: 5, earned: chips.length >= 3 ? 5 : chips.length > 0 ? 2 : 0, ok: chips.length >= 3, msg: chips.length ? chips.length + ' keywords' : 'Missing' },
+                            { label: 'KW Set', pts: 5, earned: chips.length >= 1 ? 5 : 0, ok: chips.length >= 1, msg: chips.length ? chips.length + ' kw(s)' : 'None set' },
                             { label: 'KW in Title', pts: 15, earned: kwInT ? 15 : 0, ok: kwInT, msg: kwInT ? 'Found' : chips.length ? 'Not found' : 'No keywords' },
                             { label: 'KW in Desc', pts: 15, earned: kwInD ? 15 : 0, ok: kwInD, msg: kwInD ? 'Found' : chips.length ? 'Not found' : 'No keywords' },
                             { label: 'URL Handle', pts: 5, earned: editor.handle ? 5 : 0, ok: !!editor.handle, msg: editor.handle || 'Missing' },
