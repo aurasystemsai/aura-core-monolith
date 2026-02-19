@@ -25,37 +25,47 @@ router.post('/generate', async (req, res) => {
     if (!openai) {
       return res.status(503).json({ ok: false, error: 'OpenAI not configured' });
     }
-    const kwSection = focusKeywords
-      ? `\nFocus Keywords (YOU MUST USE THESE in the seoTitle and metaDescription): ${focusKeywords}\n`
+    const kwList = focusKeywords
+      ? focusKeywords.split(',').map(k => k.trim()).filter(Boolean)
+      : [];
+    const kwSection = kwList.length
+      ? `\nFocus Keywords: ${kwList.join(', ')}\n`
       : '';
-    const prompt = `You are an expert e-commerce SEO assistant. Generate SEO fields for the product below and respond ONLY with valid JSON (no markdown, no extra text).
+    const kwInstruction = kwList.length
+      ? `\nKEYWORD RULES (MANDATORY - do not skip any):\n` +
+        `- seoTitle: pick the 1-2 most important keywords from the list and include them verbatim\n` +
+        `- metaDescription: you MUST weave in as many of the following keywords as possible, verbatim, in natural flowing copy: ${kwList.join(', ')}\n` +
+        `- Every single keyword that fits within 160 characters must appear in metaDescription\n` +
+        `- Do NOT paraphrase or reword the keywords - use them exactly as written\n`
+      : `\n- seoTitle: 30-60 characters, include the main product keyword\n` +
+        `- metaDescription: 120-160 characters, include keywords and a CTA\n`;
+    const prompt = `You are an expert e-commerce SEO copywriter. Generate SEO fields and respond ONLY with valid JSON - no markdown, no extra text, no explanation.
 
 Product Name: ${productName}
 Product Description: ${productDescription}${kwSection}
-Respond with this exact JSON structure:
+Respond with ONLY this JSON structure:
 {
   "seoTitle": "...",
   "metaDescription": "...",
   "slug": "...",
-  "keywords": "keyword1, keyword2, keyword3, keyword4, keyword5",
+  "keywords": "...",
   "altText": "..."
 }
-
-Rules:
-- seoTitle: 30-60 characters, MUST naturally include the most important focus keyword
-- metaDescription: 120-160 characters, MUST include at least one focus keyword and a call-to-action (Buy, Shop, Get, etc.)
-- slug: lowercase, hyphens only, no special chars, include primary keyword
-- keywords: return the provided focus keywords plus any additional relevant ones, comma-separated
-- altText: descriptive alt text for main product image including primary keyword
-- CRITICAL: the seoTitle and metaDescription must each contain at least one of the focus keywords verbatim`;
+${kwInstruction}
+Additional rules:
+- seoTitle: 30-60 characters total
+- metaDescription: 120-160 characters total, end with a call-to-action (Shop now, Buy today, Get yours, etc.)
+- slug: lowercase, hyphens only
+- keywords: repeat the focus keywords list exactly, adding any extra relevant terms
+- altText: describe the product image using the primary keyword`;
     const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
-        { role: 'system', content: 'You are an expert e-commerce SEO assistant.' },
+        { role: 'system', content: 'You are a strict SEO copywriter. You always follow keyword placement instructions exactly. You never skip or reword provided keywords.' },
         { role: 'user', content: prompt }
       ],
-      max_tokens: 512,
-      temperature: 0.7
+      max_tokens: 600,
+      temperature: 0.2
     });
     const raw = completion.choices[0]?.message?.content?.trim() || '{}';
     let parsed = {};
@@ -82,15 +92,19 @@ router.post('/bulk-generate', async (req, res) => {
     }
     const results = [];
     for (const p of products) {
-      const prompt = `You are an expert e-commerce SEO assistant. Generate SEO fields for the product below and respond ONLY with valid JSON (no markdown, no extra text).\n\nProduct Name: ${p.productName}\nProduct Description: ${p.productDescription}\n\nRespond with this exact JSON structure:\n{\n  "seoTitle": "...",\n  "metaDescription": "...",\n  "slug": "...",\n  "keywords": "keyword1, keyword2, keyword3, keyword4, keyword5",\n  "altText": "..."\n}`;
+      const bKwList = p.focusKeywords ? p.focusKeywords.split(',').map(k => k.trim()).filter(Boolean) : [];
+      const bKwInstruction = bKwList.length
+        ? `\nFocus Keywords: ${bKwList.join(', ')}\nKEYWORD RULES: include the top 1-2 keywords in seoTitle verbatim. Weave ALL of these keywords verbatim into metaDescription: ${bKwList.join(', ')}. Do not paraphrase them.\n`
+        : '';
+      const prompt = `You are a strict SEO copywriter. Generate SEO fields and respond ONLY with valid JSON, no markdown.\n\nProduct Name: ${p.productName}\nProduct Description: ${p.productDescription}${bKwInstruction}\nRespond with ONLY this JSON:\n{\n  "seoTitle": "...",\n  "metaDescription": "...",\n  "slug": "...",\n  "keywords": "...",\n  "altText": "..."\n}\nRules: seoTitle 30-60 chars, metaDescription 120-160 chars with CTA, slug lowercase hyphens only.`;
       const completion = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
-          { role: 'system', content: 'You are an expert e-commerce SEO assistant.' },
+          { role: 'system', content: 'You are a strict SEO copywriter. Always include provided keywords verbatim in the output.' },
           { role: 'user', content: prompt }
         ],
-        max_tokens: 512,
-        temperature: 0.7
+        max_tokens: 600,
+        temperature: 0.2
       });
       const raw2 = completion.choices[0]?.message?.content?.trim() || '{}';
       let parsed2 = {};
