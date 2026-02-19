@@ -53,11 +53,11 @@ Product: ${productName}
 Details: ${productDescription}
 ${kwBlock}
 Requirements:
-- seoTitle: 40-60 characters. Compelling, click-worthy. Include the most important keyword naturally. Think Google ad headline - make them WANT to click.
-- metaDescription: 145-165 characters. Benefit-first, emotionally engaging, naturally includes keywords, ends with a punchy CTA (Shop Now, Get Yours Today, etc.). NO robotic keyword lists.
-- slug: clean URL slug, lowercase, hyphens, keyword-focused
-- keywords: comma-separated list of the target keywords provided
-- altText: vivid, descriptive alt text for the main product image, 10-15 words
+- seoTitle: 50-60 characters (Google's sweet spot - fills the blue link fully). Compelling click-worthy headline. Make the shopper think "that's exactly what I need". Include primary keyword naturally.
+- metaDescription: MUST be 152-158 characters. This is non-negotiable - count every character including spaces. Write 2 punchy sentences: sentence 1 = compelling benefit/hook with keywords woven in; sentence 2 = supporting detail + strong CTA. Use the full character budget - do not leave space unused. If your draft is under 148 chars, add more specific benefits. Aim for 155 chars.
+- slug: clean URL slug, lowercase, hyphens, primary keyword
+- keywords: comma-separated list of all target keywords
+- altText: vivid 12-15 word product image description including primary keyword
 
 Return ONLY this JSON:
 {

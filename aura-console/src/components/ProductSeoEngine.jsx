@@ -20,10 +20,18 @@ function seoScore(fields) {
   const kws = (fields.keywords || '').split(',').map(k => k.trim()).filter(Boolean);
   const kwInTitle = kws.some(k => kwMatch(title, k));
   const kwInDesc = kws.some(k => kwMatch(desc, k));
-  if (fields.seoTitle && fields.seoTitle.length >= 30 && fields.seoTitle.length <= 60) s += 25;
-  else if (fields.seoTitle) s += 10;
-  if (fields.seoDescription && fields.seoDescription.length >= 120 && fields.seoDescription.length <= 160) s += 25;
-  else if (fields.seoDescription) s += 10;
+  // Title: sweet spot 50-60 (Google truncates at ~60). Tiered.
+  const titleLen = (fields.seoTitle || '').length;
+  if (titleLen >= 50 && titleLen <= 60) s += 25;
+  else if (titleLen >= 40) s += 20;
+  else if (titleLen >= 30) s += 14;
+  else if (fields.seoTitle) s += 6;
+  // Desc: sweet spot 150-160 (fills Google snippet). Tiered.
+  const descLen = (fields.seoDescription || '').length;
+  if (descLen >= 150 && descLen <= 160) s += 25;
+  else if (descLen >= 130) s += 18;
+  else if (descLen >= 120) s += 12;
+  else if (fields.seoDescription) s += 6;
   if (kws.length >= 3) s += 5; else if (kws.length > 0) s += 2;
   if (kwInTitle) s += 15;
   if (kwInDesc) s += 15;
@@ -55,13 +63,18 @@ function ScoreRing({ score, size = 88 }) {
   );
 }
 
-function CharBar({ value = '', min, max, label }) {
+function CharBar({ value = '', min, max, sweetMin, sweetMax, label }) {
   const len = value.length;
-  const ok = len >= min && len <= max;
   const over = len > max;
+  const inRange = len >= min && len <= max;
+  const perfect = len >= (sweetMin || min) && len <= (sweetMax || max);
   const pct = Math.min(100, (len / max) * 100);
-  const colour = ok ? '#4ade80' : over ? '#f87171' : len > 0 ? '#fbbf24' : '#374151';
-  const statusText = len === 0 ? 'Empty' : ok ? 'Good length' : over ? 'Too long' : 'Too short';
+  const colour = len === 0 ? '#374151' : over ? '#f87171' : perfect ? '#4ade80' : inRange ? '#a3e635' : '#fbbf24';
+  const statusText = len === 0 ? 'Empty'
+    : over ? 'Too long'
+    : len < min ? 'Too short'
+    : perfect ? 'Perfect'
+    : `Good - aim for ${sweetMin || min}+`;
   return (
     <div style={{ marginTop: 6 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -313,8 +326,8 @@ export default function ProductSeoEngine() {
   const kwInDescMatch = (kw) => kwMatch(descLower, kw);
 
   const checklist = [
-    { ok: editor.seoTitle.length >= 30 && editor.seoTitle.length <= 60, label: 'SEO title is 30-60 characters', tip: 'Currently ' + editor.seoTitle.length + ' chars' },
-    { ok: editor.seoDescription.length >= 120 && editor.seoDescription.length <= 160, label: 'Meta description is 120-160 characters', tip: 'Currently ' + editor.seoDescription.length + ' chars' },
+    { ok: editor.seoTitle.length >= 50 && editor.seoTitle.length <= 60, label: 'SEO title is 50-60 characters (Google sweet spot)', tip: 'Currently ' + editor.seoTitle.length + ' chars - aim for 50-60' },
+    { ok: editor.seoDescription.length >= 150 && editor.seoDescription.length <= 160, label: 'Meta description is 150-160 characters (fills Google snippet)', tip: 'Currently ' + editor.seoDescription.length + ' chars - aim for 150-160' },
     { ok: chips.length >= 3, label: 'At least 3 focus keywords', tip: 'Currently ' + chips.length + ' keyword(s)' },
     { ok: chips.some(k => kwInTitleMatch(k)), label: 'Primary keyword in SEO title', tip: 'Add at least one keyword to the title' },
     { ok: chips.some(k => kwInDescMatch(k)), label: 'Primary keyword in meta description', tip: 'Add at least one keyword to the description' },
@@ -512,7 +525,7 @@ export default function ProductSeoEngine() {
                         <input value={editor.seoTitle} onChange={e => setEditor(ed => ({ ...ed, seoTitle: e.target.value }))}
                           placeholder="e.g. Premium Snowboard - Fast and Responsive"
                           style={{ width: '100%', background: '#0a0f1a', border: '1px solid ' + (editor.seoTitle.length > 60 ? '#f87171' : '#1e2d42'), borderRadius: 10, padding: '11px 14px', color: '#e2e8f0', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
-                        <CharBar value={editor.seoTitle} min={30} max={60} label="30-60 characters recommended" />
+                        <CharBar value={editor.seoTitle} min={30} max={60} sweetMin={50} sweetMax={58} label="50-60 chars ideal (30-60 accepted by Google)" />
                       </FieldBlock>
 
                       <FieldBlock label="Meta Description" hint="Shown below the title in search results" badge={<GenBtn onClick={() => generateField('seoDescription')} loading={!!fieldGenerating.seoDescription} />}>
@@ -520,7 +533,7 @@ export default function ProductSeoEngine() {
                           placeholder="Compelling description with your main keyword and a call-to-action."
                           rows={4}
                           style={{ width: '100%', background: '#0a0f1a', border: '1px solid ' + (editor.seoDescription.length > 160 ? '#f87171' : '#1e2d42'), borderRadius: 10, padding: '11px 14px', color: '#e2e8f0', fontSize: 14, outline: 'none', resize: 'vertical', lineHeight: 1.6, boxSizing: 'border-box' }} />
-                        <CharBar value={editor.seoDescription} min={120} max={160} label="120-160 characters recommended" />
+                        <CharBar value={editor.seoDescription} min={120} max={160} sweetMin={150} sweetMax={158} label="150-160 chars ideal (fills Google snippet)" />
                       </FieldBlock>
 
                       <FieldBlock label="URL Handle / Slug" hint="Use lowercase letters, numbers and hyphens only" badge={<GenBtn onClick={() => generateField('handle')} loading={!!fieldGenerating.handle} small />}>
@@ -576,8 +589,8 @@ export default function ProductSeoEngine() {
                           const kwInT = chips.some(k => kwInTitleMatch(k));
                           const kwInD = chips.some(k => kwInDescMatch(k));
                           return [
-                            { label: 'SEO Title', pts: 25, earned: editor.seoTitle.length >= 30 && editor.seoTitle.length <= 60 ? 25 : editor.seoTitle ? 10 : 0, ok: editor.seoTitle.length >= 30 && editor.seoTitle.length <= 60, msg: !editor.seoTitle ? 'Missing' : editor.seoTitle.length < 30 ? 'Too short' : editor.seoTitle.length > 60 ? 'Too long' : 'Perfect' },
-                            { label: 'Meta Desc', pts: 25, earned: editor.seoDescription.length >= 120 && editor.seoDescription.length <= 160 ? 25 : editor.seoDescription ? 10 : 0, ok: editor.seoDescription.length >= 120 && editor.seoDescription.length <= 160, msg: !editor.seoDescription ? 'Missing' : editor.seoDescription.length < 120 ? 'Too short' : editor.seoDescription.length > 160 ? 'Too long' : 'Perfect' },
+                            { label: 'SEO Title', pts: 25, earned: editor.seoTitle.length >= 50 && editor.seoTitle.length <= 60 ? 25 : editor.seoTitle.length >= 40 ? 20 : editor.seoTitle.length >= 30 ? 14 : editor.seoTitle ? 6 : 0, ok: editor.seoTitle.length >= 50 && editor.seoTitle.length <= 60, msg: !editor.seoTitle ? 'Missing' : editor.seoTitle.length > 60 ? 'Too long' : editor.seoTitle.length < 30 ? 'Too short' : editor.seoTitle.length < 50 ? 'Good (' + editor.seoTitle.length + ' chars)' : 'Perfect' },
+                            { label: 'Meta Desc', pts: 25, earned: editor.seoDescription.length >= 150 && editor.seoDescription.length <= 160 ? 25 : editor.seoDescription.length >= 130 ? 18 : editor.seoDescription.length >= 120 ? 12 : editor.seoDescription ? 6 : 0, ok: editor.seoDescription.length >= 150 && editor.seoDescription.length <= 160, msg: !editor.seoDescription ? 'Missing' : editor.seoDescription.length > 160 ? 'Too long' : editor.seoDescription.length < 120 ? 'Too short' : editor.seoDescription.length < 150 ? 'Good (' + editor.seoDescription.length + ' chars)' : 'Perfect' },
                             { label: 'Keywords', pts: 5, earned: chips.length >= 3 ? 5 : chips.length > 0 ? 2 : 0, ok: chips.length >= 3, msg: chips.length ? chips.length + ' keywords' : 'Missing' },
                             { label: 'KW in Title', pts: 15, earned: kwInT ? 15 : 0, ok: kwInT, msg: kwInT ? 'Found' : chips.length ? 'Not found' : 'No keywords' },
                             { label: 'KW in Desc', pts: 15, earned: kwInD ? 15 : 0, ok: kwInD, msg: kwInD ? 'Found' : chips.length ? 'Not found' : 'No keywords' },
