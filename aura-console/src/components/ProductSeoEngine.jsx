@@ -7,15 +7,37 @@ const apiFetch = (url, opts = {}) =>
 
 function seoScore(fields) {
   let s = 0;
-  if (fields.seoTitle && fields.seoTitle.length >= 30 && fields.seoTitle.length <= 60) s += 30;
-  else if (fields.seoTitle) s += 15;
-  if (fields.seoDescription && fields.seoDescription.length >= 120 && fields.seoDescription.length <= 160) s += 30;
-  else if (fields.seoDescription) s += 15;
-  if (fields.keywords && fields.keywords.split(',').filter(Boolean).length >= 3) s += 20;
-  else if (fields.keywords) s += 10;
-  if (fields.handle) s += 10;
+  const title = (fields.seoTitle || '').toLowerCase();
+  const desc = (fields.seoDescription || '').toLowerCase();
+  const kws = (fields.keywords || '').split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+  const kwInTitle = kws.some(k => title.includes(k));
+  const kwInDesc = kws.some(k => desc.includes(k));
+
+  // Title length: 25pts
+  if (fields.seoTitle && fields.seoTitle.length >= 30 && fields.seoTitle.length <= 60) s += 25;
+  else if (fields.seoTitle) s += 10;
+
+  // Description length: 25pts
+  if (fields.seoDescription && fields.seoDescription.length >= 120 && fields.seoDescription.length <= 160) s += 25;
+  else if (fields.seoDescription) s += 10;
+
+  // Keywords exist: 5pts
+  if (kws.length >= 3) s += 5;
+  else if (kws.length > 0) s += 2;
+
+  // Keyword in title: 15pts
+  if (kwInTitle) s += 15;
+
+  // Keyword in description: 15pts
+  if (kwInDesc) s += 15;
+
+  // Handle: 5pts
+  if (fields.handle) s += 5;
+
+  // Alt text: 10pts
   if (fields.altText) s += 10;
-  return s;
+
+  return Math.min(100, s);
 }
 
 function ScoreRing({ score }) {
@@ -606,20 +628,27 @@ export default function ProductSeoEngine() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {[
-                        { label: 'SEO Title', ok: editor.seoTitle.length >= 30 && editor.seoTitle.length <= 60, msg: editor.seoTitle.length === 0 ? 'Missing' : editor.seoTitle.length < 30 ? 'Too short' : editor.seoTitle.length > 60 ? 'Too long' : 'Perfect' },
-                        { label: 'Meta Description', ok: editor.seoDescription.length >= 120 && editor.seoDescription.length <= 160, msg: editor.seoDescription.length === 0 ? 'Missing' : editor.seoDescription.length < 120 ? 'Too short' : editor.seoDescription.length > 160 ? 'Too long' : 'Perfect' },
-                        { label: 'Keywords', ok: editor.keywords.split(',').filter(Boolean).length >= 3, msg: editor.keywords ? `${editor.keywords.split(',').filter(Boolean).length} keywords` : 'Missing' },
-                        { label: 'URL Handle', ok: !!editor.handle, msg: editor.handle || 'Missing' },
-                        { label: 'Alt Text', ok: !!editor.altText, msg: editor.altText ? 'Set' : 'Missing' },
-                      ].map(item => (
-                        <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#0f172a', borderRadius: 8 }}>
-                          <span style={{ fontSize: 13, color: '#94a3b8' }}>{item.label}</span>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: item.ok ? '#4ade80' : '#f87171' }}>
-                            {item.ok ? '✓' : '✗'} {item.msg}
-                          </span>
-                        </div>
-                      ))}
+                      {(() => {
+                        const kws = editor.keywords.split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+                        const kwInTitle = kws.some(k => editor.seoTitle.toLowerCase().includes(k));
+                        const kwInDesc = kws.some(k => editor.seoDescription.toLowerCase().includes(k));
+                        return [
+                          { label: 'SEO Title', ok: editor.seoTitle.length >= 30 && editor.seoTitle.length <= 60, msg: editor.seoTitle.length === 0 ? 'Missing' : editor.seoTitle.length < 30 ? 'Too short' : editor.seoTitle.length > 60 ? 'Too long' : 'Perfect' },
+                          { label: 'Meta Description', ok: editor.seoDescription.length >= 120 && editor.seoDescription.length <= 160, msg: editor.seoDescription.length === 0 ? 'Missing' : editor.seoDescription.length < 120 ? 'Too short' : editor.seoDescription.length > 160 ? 'Too long' : 'Perfect' },
+                          { label: 'Keywords', ok: kws.length >= 3, msg: kws.length ? `${kws.length} keywords` : 'Missing' },
+                          { label: 'Keyword in Title', ok: kwInTitle, msg: kwInTitle ? 'Found' : kws.length ? 'Not found' : 'No keywords set' },
+                          { label: 'Keyword in Desc', ok: kwInDesc, msg: kwInDesc ? 'Found' : kws.length ? 'Not found' : 'No keywords set' },
+                          { label: 'URL Handle', ok: !!editor.handle, msg: editor.handle || 'Missing' },
+                          { label: 'Alt Text', ok: !!editor.altText, msg: editor.altText ? 'Set' : 'Missing' },
+                        ].map(item => (
+                          <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#0f172a', borderRadius: 8 }}>
+                            <span style={{ fontSize: 13, color: '#94a3b8' }}>{item.label}</span>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: item.ok ? '#4ade80' : '#f87171' }}>
+                              {item.ok ? '✓' : '✗'} {item.msg}
+                            </span>
+                          </div>
+                        ));
+                      })()}
                     </div>
                   </div>
 
