@@ -191,31 +191,25 @@ export default function ProductSeoEngine() {
         method: 'POST',
         data: { productName: selectedProduct.title, productDescription: selectedProduct.title + (selectedProduct.tags ? '. Tags: ' + selectedProduct.tags : '') },
       });
-      const raw = res.result || '';
-      const extract = (label, text) => {
-        const re = new RegExp(label + '[:\\s]+(.+)', 'i');
-        const m = text.match(re);
-        return m ? m[1].replace(/^["']|["']$/g, '').trim() : '';
-      };
+      const p = res.parsed || {};
       if (field === 'seoTitle') {
-        const val = extract('(seo )?title', raw) || selectedProduct.title;
+        const val = p.seoTitle || selectedProduct.title;
         setEditor(e => ({ ...e, seoTitle: val }));
         saveLocal(selectedProduct.id, { seoTitle: val });
       } else if (field === 'seoDescription') {
-        const val = extract('meta description', raw) || extract('description', raw) || '';
+        const val = p.metaDescription || '';
         setEditor(e => ({ ...e, seoDescription: val }));
         saveLocal(selectedProduct.id, { seoDescription: val });
       } else if (field === 'keywords') {
-        const val = extract('keywords', raw) || extract('keyword', raw) || '';
+        const val = p.keywords || '';
         setEditor(e => ({ ...e, keywords: val }));
         saveLocal(selectedProduct.id, { keywords: val });
       } else if (field === 'handle') {
-        const title = extract('(seo )?title', raw) || selectedProduct.title;
-        const val = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const val = (p.slug || p.seoTitle || selectedProduct.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         setEditor(e => ({ ...e, handle: val }));
         saveLocal(selectedProduct.id, { handle: val });
       } else if (field === 'altText') {
-        const val = extract('alt text', raw) || extract('alt', raw) || `${selectedProduct.title} product image`;
+        const val = p.altText || `${selectedProduct.title} product image`;
         setEditor(e => ({ ...e, altText: val }));
         saveLocal(selectedProduct.id, { altText: val });
       }
@@ -275,17 +269,13 @@ export default function ProductSeoEngine() {
           method: 'POST',
           data: { productName: p.title, productDescription: p.title + (p.tags ? '. Tags: ' + p.tags : '') },
         });
-        const raw = res.result || '';
-        const extract = (label, text) => {
-          const re = new RegExp(label + '[:\\s]+(.+)', 'i');
-          const m = text.match(re);
-          return m ? m[1].replace(/^["']|["']$/g, '').trim() : '';
-        };
-        const seoTitle = extract('(seo )?title', raw) || p.title;
-        const seoDescription = extract('meta description', raw) || extract('description', raw) || '';
-        const keywords = extract('keywords', raw) || '';
-        const handle = seoTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-        const fields = { seoTitle, seoDescription, keywords, handle };
+        const parsed = res.parsed || {};
+        const seoTitle = parsed.seoTitle || p.title;
+        const seoDescription = parsed.metaDescription || '';
+        const keywords = parsed.keywords || '';
+        const altText = parsed.altText || '';
+        const handle = (parsed.slug || seoTitle).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const fields = { seoTitle, seoDescription, keywords, handle, altText };
         saveLocal(p.id, fields);
         results.push({ product: p, fields, score: seoScore(fields), status: 'ok' });
       } catch (e) {

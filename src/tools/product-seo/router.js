@@ -25,7 +25,26 @@ router.post('/generate', async (req, res) => {
     if (!openai) {
       return res.status(503).json({ ok: false, error: 'OpenAI not configured' });
     }
-    const prompt = `Generate an SEO title, meta description, slug, and keyword set for the following product.\nProduct Name: ${productName}\nProduct Description: ${productDescription}`;
+    const prompt = `You are an expert e-commerce SEO assistant. Generate SEO fields for the product below and respond ONLY with valid JSON (no markdown, no extra text).
+
+Product Name: ${productName}
+Product Description: ${productDescription}
+
+Respond with this exact JSON structure:
+{
+  "seoTitle": "...",
+  "metaDescription": "...",
+  "slug": "...",
+  "keywords": "keyword1, keyword2, keyword3, keyword4, keyword5",
+  "altText": "..."
+}
+
+Rules:
+- seoTitle: 30-60 characters, include main keyword
+- metaDescription: 120-160 characters, include CTA
+- slug: lowercase, hyphens only, no special chars
+- keywords: 5-8 comma-separated keywords
+- altText: descriptive alt text for main product image`;
     const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
@@ -35,8 +54,14 @@ router.post('/generate', async (req, res) => {
       max_tokens: 512,
       temperature: 0.7
     });
-    const reply = completion.choices[0]?.message?.content?.trim() || '';
-    res.json({ ok: true, result: reply });
+    const raw = completion.choices[0]?.message?.content?.trim() || '{}';
+    let parsed = {};
+    try { parsed = JSON.parse(raw); } catch (_) {
+      // fallback: try to extract JSON block from response
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (match) { try { parsed = JSON.parse(match[0]); } catch (_) {} }
+    }
+    res.json({ ok: true, result: raw, parsed });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message || 'AI error' });
   }
@@ -54,7 +79,7 @@ router.post('/bulk-generate', async (req, res) => {
     }
     const results = [];
     for (const p of products) {
-      const prompt = `Generate an SEO title, meta description, slug, and keyword set for the following product.\nProduct Name: ${p.productName}\nProduct Description: ${p.productDescription}`;
+      const prompt = `You are an expert e-commerce SEO assistant. Generate SEO fields for the product below and respond ONLY with valid JSON (no markdown, no extra text).\n\nProduct Name: ${p.productName}\nProduct Description: ${p.productDescription}\n\nRespond with this exact JSON structure:\n{\n  "seoTitle": "...",\n  "metaDescription": "...",\n  "slug": "...",\n  "keywords": "keyword1, keyword2, keyword3, keyword4, keyword5",\n  "altText": "..."\n}`;
       const completion = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
@@ -64,8 +89,13 @@ router.post('/bulk-generate', async (req, res) => {
         max_tokens: 512,
         temperature: 0.7
       });
-      const reply = completion.choices[0]?.message?.content?.trim() || '';
-      results.push({ input: p, result: reply });
+      const raw2 = completion.choices[0]?.message?.content?.trim() || '{}';
+      let parsed2 = {};
+      try { parsed2 = JSON.parse(raw2); } catch (_) {
+        const match2 = raw2.match(/\{[\s\S]*\}/);
+        if (match2) { try { parsed2 = JSON.parse(match2[0]); } catch (_) {} }
+      }
+      results.push({ input: p, result: raw2, parsed: parsed2 });
     }
     res.json({ ok: true, results });
   } catch (err) {
