@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 
-// ─── tiny helpers ───────────────────────────────────────────────
 const apiFetch = (url, opts = {}) =>
   axios({ url, withCredentials: true, ...opts }).then(r => r.data);
 
+// â”€â”€â”€ Scoring â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function seoScore(fields) {
   let s = 0;
   const title = (fields.seoTitle || '').toLowerCase();
@@ -12,48 +12,39 @@ function seoScore(fields) {
   const kws = (fields.keywords || '').split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
   const kwInTitle = kws.some(k => title.includes(k));
   const kwInDesc = kws.some(k => desc.includes(k));
-
-  // Title length: 25pts
   if (fields.seoTitle && fields.seoTitle.length >= 30 && fields.seoTitle.length <= 60) s += 25;
   else if (fields.seoTitle) s += 10;
-
-  // Description length: 25pts
   if (fields.seoDescription && fields.seoDescription.length >= 120 && fields.seoDescription.length <= 160) s += 25;
   else if (fields.seoDescription) s += 10;
-
-  // Keywords exist: 5pts
-  if (kws.length >= 3) s += 5;
-  else if (kws.length > 0) s += 2;
-
-  // Keyword in title: 15pts
+  if (kws.length >= 3) s += 5; else if (kws.length > 0) s += 2;
   if (kwInTitle) s += 15;
-
-  // Keyword in description: 15pts
   if (kwInDesc) s += 15;
-
-  // Handle: 5pts
   if (fields.handle) s += 5;
-
-  // Alt text: 10pts
   if (fields.altText) s += 10;
-
   return Math.min(100, s);
 }
 
-function ScoreRing({ score }) {
-  const colour = score >= 80 ? '#4ade80' : score >= 50 ? '#fbbf24' : '#f87171';
+function seoGrade(score) {
+  if (score >= 90) return { label: 'Excellent', colour: '#4ade80', bg: '#0d2f1a', icon: 'ðŸ†' };
+  if (score >= 70) return { label: 'Good', colour: '#a3e635', bg: '#1a2b0a', icon: 'âœ…' };
+  if (score >= 50) return { label: 'Needs Work', colour: '#fbbf24', bg: '#2b1f0a', icon: 'âš ï¸' };
+  return { label: 'Poor', colour: '#f87171', bg: '#2b0f0f', icon: 'âŒ' };
+}
+
+// â”€â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+function ScoreRing({ score, size = 88 }) {
+  const { colour, label, icon } = seoGrade(score);
+  const inner = size * 0.72;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-      <div style={{
-        width: 72, height: 72, borderRadius: '50%',
-        background: `conic-gradient(${colour} ${score * 3.6}deg, #1e2a3a ${score * 3.6}deg)`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <div style={{ width: 54, height: 54, borderRadius: '50%', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ color: colour, fontWeight: 800, fontSize: 18 }}>{score}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+      <div style={{ width: size, height: size, borderRadius: '50%', background: `conic-gradient(${colour} ${score * 3.6}deg, #1a2233 ${score * 3.6}deg)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 20px ${colour}33` }}>
+        <div style={{ width: inner, height: inner, borderRadius: '50%', background: '#0a0f1a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+          <span style={{ color: colour, fontWeight: 900, fontSize: size * 0.23, lineHeight: 1 }}>{score}</span>
+          <span style={{ color: colour + 'aa', fontSize: size * 0.1, fontWeight: 700 }}>/100</span>
         </div>
       </div>
-      <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>SEO Score</span>
+      <span style={{ fontSize: 12, color: colour, fontWeight: 700 }}>{icon} {label}</span>
     </div>
   );
 }
@@ -62,63 +53,104 @@ function CharBar({ value = '', min, max, label }) {
   const len = value.length;
   const ok = len >= min && len <= max;
   const over = len > max;
-  const pct = Math.min(100, (len / (max + 20)) * 100);
-  const colour = ok ? '#4ade80' : over ? '#f87171' : '#fbbf24';
+  const pct = Math.min(100, (len / max) * 100);
+  const colour = ok ? '#4ade80' : over ? '#f87171' : len > 0 ? '#fbbf24' : '#374151';
+  const statusText = len === 0 ? 'Empty' : ok ? 'âœ“ Good length' : over ? 'âš  Too long' : 'âš  Too short';
   return (
-    <div style={{ marginTop: 4 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+    <div style={{ marginTop: 6 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, alignItems: 'center' }}>
         <span style={{ fontSize: 11, color: '#64748b' }}>{label}</span>
-        <span style={{ fontSize: 11, color: colour, fontWeight: 600 }}>{len} / {max} chars</span>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <span style={{ fontSize: 11, color: colour, fontWeight: 700 }}>{statusText}</span>
+          <span style={{ fontSize: 11, color: colour, fontWeight: 600, background: colour + '18', border: `1px solid ${colour}33`, borderRadius: 4, padding: '1px 6px' }}>{len}/{max}</span>
+        </div>
       </div>
-      <div style={{ height: 4, background: '#1e2a3a', borderRadius: 2, overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${pct}%`, background: colour, borderRadius: 2, transition: 'width 0.3s' }} />
+      <div style={{ height: 5, background: '#1a2233', borderRadius: 3, overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${colour}88, ${colour})`, borderRadius: 3, transition: 'width 0.3s ease' }} />
       </div>
     </div>
   );
 }
 
-function GooglePreview({ title, description, handle, shop }) {
-  const url = shop ? `https://${shop}/products/${handle || 'product-slug'}` : `yourstore.myshopify.com/products/${handle || 'product-slug'}`;
+function SerpPreview({ title, description, handle, shop, device = 'desktop' }) {
+  const url = `${shop || 'yourstore.myshopify.com'}/products/${handle || 'product-slug'}`;
+  const isMobile = device === 'mobile';
   return (
-    <div style={{ background: '#fff', borderRadius: 10, padding: '14px 18px', fontFamily: 'Arial, sans-serif', border: '1px solid #e5e7eb' }}>
-      <div style={{ fontSize: 12, color: '#006621', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{url}</div>
-      <div style={{ fontSize: 17, color: '#1a0dab', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title || 'Your SEO Title'}</div>
-      <div style={{ fontSize: 13, color: '#545454', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-        {description || 'Your meta description will appear here. Make it compelling and 120–160 characters.'}
+    <div style={{ background: '#fff', borderRadius: 12, padding: isMobile ? '12px 14px' : '16px 20px', fontFamily: "'Google Sans', Arial, sans-serif", boxShadow: '0 2px 12px #0001', maxWidth: isMobile ? 375 : '100%', margin: isMobile ? '0 auto' : 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        <div style={{ width: isMobile ? 20 : 26, height: isMobile ? 20 : 26, borderRadius: '50%', background: '#e8f0fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? 10 : 12 }}>ðŸ”µ</div>
+        <div>
+          <div style={{ fontSize: isMobile ? 12 : 14, color: '#202124', fontWeight: 500, lineHeight: 1 }}>{shop || 'yourstore.myshopify.com'}</div>
+          <div style={{ fontSize: isMobile ? 10 : 12, color: '#4d5156', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: isMobile ? 260 : 500 }}>https://{url}</div>
+        </div>
+      </div>
+      <div style={{ fontSize: isMobile ? 16 : 20, color: '#1a0dab', marginBottom: 6, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 400 }}>
+        {title || 'Your SEO Title Will Appear Here'}
+      </div>
+      <div style={{ fontSize: isMobile ? 13 : 14, color: '#4d5156', lineHeight: 1.58, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        {description || 'Your meta description will appear here. Make it compelling and between 120â€“160 characters.'}
       </div>
     </div>
   );
 }
 
-const TABS = ['Products', 'Editor', 'Bulk Generate', 'Analytics'];
+function FieldBlock({ label, hint, badge, children }) {
+  return (
+    <div style={{ background: 'linear-gradient(135deg, #0f1829 0%, #111927 100%)', border: '1px solid #1e2d42', borderRadius: 16, padding: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <div>
+          <div style={{ fontWeight: 700, color: '#cbd5e1', fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</div>
+          {hint && <div style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>{hint}</div>}
+        </div>
+        {badge}
+      </div>
+      {children}
+    </div>
+  );
+}
 
+function GenBtn({ onClick, loading, small }) {
+  return (
+    <button onClick={onClick} disabled={loading} title="AI Generate" style={{ background: loading ? '#1e2d42' : 'linear-gradient(135deg, #7fffd4 0%, #22d3ee 100%)', border: 'none', borderRadius: small ? 8 : 10, padding: small ? '5px 12px' : '7px 16px', color: '#0a0f1a', fontWeight: 800, fontSize: small ? 12 : 13, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, transition: 'all 0.15s', opacity: loading ? 0.6 : 1 }}>
+      {loading ? <span style={{ display: 'inline-block', width: 12, height: 12, border: '2px solid #7fffd4', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> : 'âœ¨'} {loading ? 'Generatingâ€¦' : 'Generate'}
+    </button>
+  );
+}
+
+const TABS = [
+  { id: 'products', label: 'ðŸ›ï¸ Products', desc: 'Browse & select' },
+  { id: 'editor', label: 'âœï¸ Editor', desc: 'Edit SEO fields' },
+  { id: 'bulk', label: 'âš¡ Bulk', desc: 'Mass generate' },
+  { id: 'analytics', label: 'ðŸ“Š Analytics', desc: 'Score insights' },
+];
+
+// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function ProductSeoEngine() {
-  const [tab, setTab] = useState('Products');
-  const [shopifyProducts, setShopifyProducts] = useState([]);
+  const [tab, setTab] = useState('products');
+  const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('title');
 
-  // Editor state
   const [editor, setEditor] = useState({ seoTitle: '', seoDescription: '', handle: '', keywords: '', altText: '' });
+  const [kwInput, setKwInput] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [fieldGenerating, setFieldGenerating] = useState({});
   const [pushing, setPushing] = useState(false);
+  const [savedAt, setSavedAt] = useState(null);
   const [toast, setToast] = useState(null);
   const [shopDomain, setShopDomain] = useState('');
+  const [serpDevice, setSerpDevice] = useState('desktop');
+  const [editorTab, setEditorTab] = useState('fields'); // fields | preview | checklist
 
-  // Bulk state
   const [bulkSelected, setBulkSelected] = useState(new Set());
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [bulkResults, setBulkResults] = useState([]);
   const [bulkPushing, setBulkPushing] = useState(false);
 
-  // Per-field generate
-  const [kwInput, setKwInput] = useState('');
-  const [fieldGenerating, setFieldGenerating] = useState({});
-
-  // Analytics
-  const [analytics, setAnalytics] = useState({ generated: 0, pushed: 0, avgScore: 0, topIssues: [] });
+  const autoSaveTimer = useRef();
 
   const showToast = useCallback((msg, type = 'success') => {
     setToast({ msg, type });
@@ -127,132 +159,93 @@ export default function ProductSeoEngine() {
 
   useEffect(() => {
     loadProducts();
-    // Get shop domain for SERP preview
     axios.get('/api/session', { withCredentials: true }).then(r => {
       const s = r.data?.projectDetails?.domain || r.data?.shop || '';
-      setShopDomain(s.replace('https://', '').replace('http://', '').replace(/\/$/, ''));
+      setShopDomain(s.replace(/https?:\/\//, '').replace(/\/$/, ''));
     }).catch(() => {});
   }, []);
+
+  // Auto-save 1.5s after last keystroke
+  useEffect(() => {
+    if (!selectedProduct) return;
+    clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      saveLocal(selectedProduct.id, editor);
+      setSavedAt(new Date());
+    }, 1500);
+    return () => clearTimeout(autoSaveTimer.current);
+  }, [editor, selectedProduct]);
 
   async function loadProducts() {
     setLoadingProducts(true);
     try {
       const data = await apiFetch('/api/product-seo/shopify-products');
-      setShopifyProducts(data.products || []);
-      if (data.products?.length) {
-        // compute analytics
-        const stored = JSON.parse(localStorage.getItem('aura_seo_records') || '{}');
-        const scores = data.products.map(p => seoScore(stored[p.id] || {}));
-        setAnalytics(a => ({
-          ...a,
-          avgScore: scores.length ? Math.round(scores.reduce((s, v) => s + v, 0) / scores.length) : 0,
-          generated: Object.keys(stored).length,
-        }));
-      }
-    } catch (e) {
-      showToast('Could not load Shopify products — check your connection', 'error');
+      setProducts(data.products || []);
+    } catch {
+      showToast('Could not load products â€” check connection', 'error');
     }
     setLoadingProducts(false);
   }
 
   function selectProduct(p) {
     setSelectedProduct(p);
-    // Load previously saved fields from localStorage
     const stored = JSON.parse(localStorage.getItem('aura_seo_records') || '{}');
     const saved = stored[p.id] || {};
-    setEditor({
-      seoTitle: saved.seoTitle || p.title || '',
-      seoDescription: saved.seoDescription || '',
-      handle: saved.handle || p.handle || '',
-      keywords: saved.keywords || '',
-      altText: saved.altText || '',
-    });
-    setTab('Editor');
+    setEditor({ seoTitle: saved.seoTitle || p.title || '', seoDescription: saved.seoDescription || '', handle: saved.handle || p.handle || '', keywords: saved.keywords || '', altText: saved.altText || '' });
+    setKwInput('');
+    setTab('editor');
   }
 
-  async function generateSeo() {
+  function saveLocal(id, fields) {
+    const s = JSON.parse(localStorage.getItem('aura_seo_records') || '{}');
+    s[id] = { ...(s[id] || {}), ...fields };
+    localStorage.setItem('aura_seo_records', JSON.stringify(s));
+  }
+
+  const stored = JSON.parse(localStorage.getItem('aura_seo_records') || '{}');
+
+  async function generateAll() {
     if (!selectedProduct) return;
     setGenerating(true);
     try {
-      const res = await apiFetch('/api/product-seo/generate', {
-        method: 'POST',
-        data: { productName: selectedProduct.title, productDescription: selectedProduct.title + (selectedProduct.tags ? '. Tags: ' + selectedProduct.tags : '') },
-      });
-      // Parse the raw AI text into structured fields
-      const raw = res.result || '';
-      const extract = (label, text) => {
-        const re = new RegExp(label + '[:\\s]+(.+)', 'i');
-        const m = text.match(re);
-        return m ? m[1].replace(/^["']|["']$/g, '').trim() : '';
-      };
-      const seoTitle = extract('(seo )?title', raw) || selectedProduct.title;
-      const seoDescription = extract('meta description', raw) || extract('description', raw) || '';
-      const keywords = extract('keywords', raw) || extract('keyword', raw) || '';
-      const handle = (seoTitle || selectedProduct.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      setEditor(e => ({ ...e, seoTitle, seoDescription, keywords, handle }));
-      showToast('AI SEO generated! Review and push to Shopify.');
-      // Auto-save to localStorage
-      saveLocal(selectedProduct.id, { seoTitle, seoDescription, keywords, handle });
+      const res = await apiFetch('/api/product-seo/generate', { method: 'POST', data: { productName: selectedProduct.title, productDescription: selectedProduct.title + (selectedProduct.tags ? '. Tags: ' + selectedProduct.tags : '') } });
+      const p = res.parsed || {};
+      const next = { seoTitle: p.seoTitle || selectedProduct.title, seoDescription: p.metaDescription || '', handle: (p.slug || p.seoTitle || selectedProduct.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''), keywords: p.keywords || '', altText: p.altText || '' };
+      setEditor(next);
+      saveLocal(selectedProduct.id, next);
+      showToast('âœ¨ All SEO fields generated!');
     } catch (err) {
-      showToast('AI generation failed: ' + (err.response?.data?.error || err.message), 'error');
+      showToast('Generation failed: ' + (err.response?.data?.error || err.message), 'error');
     }
     setGenerating(false);
-  }
-
-  function saveLocal(productId, fields) {
-    const stored = JSON.parse(localStorage.getItem('aura_seo_records') || '{}');
-    stored[productId] = { ...(stored[productId] || {}), ...fields };
-    localStorage.setItem('aura_seo_records', JSON.stringify(stored));
   }
 
   async function generateField(field) {
     if (!selectedProduct) return;
     setFieldGenerating(f => ({ ...f, [field]: true }));
     try {
-      const res = await apiFetch('/api/product-seo/generate', {
-        method: 'POST',
-        data: { productName: selectedProduct.title, productDescription: selectedProduct.title + (selectedProduct.tags ? '. Tags: ' + selectedProduct.tags : '') },
-      });
+      const res = await apiFetch('/api/product-seo/generate', { method: 'POST', data: { productName: selectedProduct.title, productDescription: selectedProduct.title + (selectedProduct.tags ? '. Tags: ' + selectedProduct.tags : '') } });
       const p = res.parsed || {};
-      if (field === 'seoTitle') {
-        const val = p.seoTitle || selectedProduct.title;
-        setEditor(e => ({ ...e, seoTitle: val }));
-        saveLocal(selectedProduct.id, { seoTitle: val });
-      } else if (field === 'seoDescription') {
-        const val = p.metaDescription || '';
-        setEditor(e => ({ ...e, seoDescription: val }));
-        saveLocal(selectedProduct.id, { seoDescription: val });
-      } else if (field === 'keywords') {
-        const val = p.keywords || '';
-        setEditor(e => ({ ...e, keywords: val }));
-        saveLocal(selectedProduct.id, { keywords: val });
-      } else if (field === 'handle') {
-        const val = (p.slug || p.seoTitle || selectedProduct.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-        setEditor(e => ({ ...e, handle: val }));
-        saveLocal(selectedProduct.id, { handle: val });
-      } else if (field === 'altText') {
-        const val = p.altText || `${selectedProduct.title} product image`;
-        setEditor(e => ({ ...e, altText: val }));
-        saveLocal(selectedProduct.id, { altText: val });
-      }
-      showToast(`✨ ${field} generated!`);
-    } catch (err) {
-      showToast('Generation failed: ' + (err.response?.data?.error || err.message), 'error');
-    }
+      const map = { seoTitle: p.seoTitle || selectedProduct.title, seoDescription: p.metaDescription || '', keywords: p.keywords || '', handle: (p.slug || p.seoTitle || selectedProduct.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''), altText: p.altText || `${selectedProduct.title} product image` };
+      const val = map[field] || '';
+      setEditor(e => ({ ...e, [field]: val }));
+      saveLocal(selectedProduct.id, { [field]: val });
+      showToast(`âœ¨ ${field} generated!`);
+    } catch (err) { showToast('Failed: ' + (err.response?.data?.error || err.message), 'error'); }
     setFieldGenerating(f => ({ ...f, [field]: false }));
   }
 
   function addKeywordChip() {
-    const trimmed = kwInput.trim().replace(/,$/, '');
-    if (!trimmed) return;
+    const t = kwInput.trim().replace(/,$/, '');
+    if (!t) return;
     const existing = editor.keywords.split(',').map(k => k.trim()).filter(Boolean);
-    const newKws = trimmed.split(/[,\n]+/).map(k => k.trim()).filter(k => k && !existing.includes(k));
+    const newKws = t.split(/[,\n]+/).map(k => k.trim()).filter(k => k && !existing.map(e => e.toLowerCase()).includes(k.toLowerCase()));
     if (newKws.length) setEditor(e => ({ ...e, keywords: [...existing, ...newKws].join(', ') }));
     setKwInput('');
   }
 
   function removeKeywordChip(kw) {
-    const updated = editor.keywords.split(',').map(k => k.trim()).filter(k => k && k !== kw);
+    const updated = editor.keywords.split(',').map(k => k.trim()).filter(k => k.toLowerCase() !== kw.toLowerCase());
     setEditor(e => ({ ...e, keywords: updated.join(', ') }));
   }
 
@@ -260,22 +253,10 @@ export default function ProductSeoEngine() {
     if (!selectedProduct) return;
     setPushing(true);
     try {
-      await apiFetch('/api/product-seo/push-to-shopify', {
-        method: 'POST',
-        data: {
-          productId: selectedProduct.id,
-          title: editor.seoTitle !== selectedProduct.title ? editor.seoTitle : undefined,
-          metaTitle: editor.seoTitle,
-          metaDescription: editor.seoDescription,
-          handle: editor.handle !== selectedProduct.handle ? editor.handle : undefined,
-        },
-      });
+      await apiFetch('/api/product-seo/push-to-shopify', { method: 'POST', data: { productId: selectedProduct.id, metaTitle: editor.seoTitle, metaDescription: editor.seoDescription, handle: editor.handle !== selectedProduct.handle ? editor.handle : undefined } });
       saveLocal(selectedProduct.id, editor);
-      setAnalytics(a => ({ ...a, pushed: a.pushed + 1 }));
-      showToast('✅ SEO pushed to Shopify successfully!');
-    } catch (err) {
-      showToast('Push failed: ' + (err.response?.data?.error || err.message), 'error');
-    }
+      showToast('ðŸš€ SEO pushed to Shopify!');
+    } catch (err) { showToast('Push failed: ' + (err.response?.data?.error || err.message), 'error'); }
     setPushing(false);
   }
 
@@ -283,196 +264,212 @@ export default function ProductSeoEngine() {
     if (!bulkSelected.size) return;
     setBulkGenerating(true);
     setBulkResults([]);
-    const products = shopifyProducts.filter(p => bulkSelected.has(p.id));
     const results = [];
-    for (const p of products) {
+    for (const p of products.filter(p => bulkSelected.has(p.id))) {
       try {
-        const res = await apiFetch('/api/product-seo/generate', {
-          method: 'POST',
-          data: { productName: p.title, productDescription: p.title + (p.tags ? '. Tags: ' + p.tags : '') },
-        });
+        const res = await apiFetch('/api/product-seo/generate', { method: 'POST', data: { productName: p.title, productDescription: p.title + (p.tags ? '. Tags: ' + p.tags : '') } });
         const parsed = res.parsed || {};
-        const seoTitle = parsed.seoTitle || p.title;
-        const seoDescription = parsed.metaDescription || '';
-        const keywords = parsed.keywords || '';
-        const altText = parsed.altText || '';
-        const handle = (parsed.slug || seoTitle).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-        const fields = { seoTitle, seoDescription, keywords, handle, altText };
+        const fields = { seoTitle: parsed.seoTitle || p.title, seoDescription: parsed.metaDescription || '', keywords: parsed.keywords || '', handle: (parsed.slug || parsed.seoTitle || p.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''), altText: parsed.altText || '' };
         saveLocal(p.id, fields);
         results.push({ product: p, fields, score: seoScore(fields), status: 'ok' });
-      } catch (e) {
-        results.push({ product: p, fields: {}, score: 0, status: 'error', error: e.message });
-      }
+      } catch (e) { results.push({ product: p, fields: {}, score: 0, status: 'error', error: e.message }); }
       setBulkResults([...results]);
     }
     setBulkGenerating(false);
-    setAnalytics(a => ({ ...a, generated: a.generated + results.filter(r => r.status === 'ok').length }));
-    showToast(`Bulk generation complete — ${results.filter(r => r.status === 'ok').length} products done`);
+    showToast(`âœ… ${results.filter(r => r.status === 'ok').length}/${results.length} products generated`);
   }
 
   async function bulkPushAll() {
-    const tooPush = bulkResults.filter(r => r.status === 'ok');
-    if (!tooPush.length) return;
+    const ok = bulkResults.filter(r => r.status === 'ok');
+    if (!ok.length) return;
     setBulkPushing(true);
-    let pushed = 0;
-    for (const r of tooPush) {
-      try {
-        await apiFetch('/api/product-seo/push-to-shopify', {
-          method: 'POST',
-          data: { productId: r.product.id, metaTitle: r.fields.seoTitle, metaDescription: r.fields.seoDescription },
-        });
-        pushed++;
-      } catch (_) {}
+    let n = 0;
+    for (const r of ok) {
+      try { await apiFetch('/api/product-seo/push-to-shopify', { method: 'POST', data: { productId: r.product.id, metaTitle: r.fields.seoTitle, metaDescription: r.fields.seoDescription } }); n++; } catch (_) {}
     }
     setBulkPushing(false);
-    setAnalytics(a => ({ ...a, pushed: a.pushed + pushed }));
-    showToast(`✅ Pushed ${pushed} products to Shopify!`);
+    showToast(`ðŸš€ Pushed ${n} products to Shopify!`);
   }
 
-  const filteredProducts = shopifyProducts.filter(p => {
-    const matchSearch = p.title.toLowerCase().includes(search.toLowerCase()) || p.handle.includes(search.toLowerCase());
-    const matchStatus = statusFilter === 'all' || p.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const filteredProducts = products
+    .filter(p => {
+      const s = search.toLowerCase();
+      return (p.title.toLowerCase().includes(s) || (p.handle || '').includes(s)) && (statusFilter === 'all' || p.status === statusFilter);
+    })
+    .sort((a, b) => {
+      if (sortBy === 'score') return seoScore(stored[b.id] || {}) - seoScore(stored[a.id] || {});
+      if (sortBy === 'score_asc') return seoScore(stored[a.id] || {}) - seoScore(stored[b.id] || {});
+      return (a.title || '').localeCompare(b.title || '');
+    });
 
   const score = seoScore(editor);
+  const { colour: scoreColour, bg: scoreBg } = seoGrade(score);
+  const chips = editor.keywords.split(',').map(k => k.trim()).filter(Boolean);
+  const titleLower = editor.seoTitle.toLowerCase();
+  const descLower = editor.seoDescription.toLowerCase();
 
-  const stored = JSON.parse(localStorage.getItem('aura_seo_records') || '{}');
+  const checklist = [
+    { ok: editor.seoTitle.length >= 30 && editor.seoTitle.length <= 60, label: 'SEO title is 30â€“60 characters', tip: `Currently ${editor.seoTitle.length} chars` },
+    { ok: editor.seoDescription.length >= 120 && editor.seoDescription.length <= 160, label: 'Meta description is 120â€“160 characters', tip: `Currently ${editor.seoDescription.length} chars` },
+    { ok: chips.length >= 3, label: 'At least 3 focus keywords', tip: `Currently ${chips.length} keyword${chips.length !== 1 ? 's' : ''}` },
+    { ok: chips.some(k => titleLower.includes(k.toLowerCase())), label: 'Primary keyword in SEO title', tip: 'Add at least one keyword to the title' },
+    { ok: chips.some(k => descLower.includes(k.toLowerCase())), label: 'Primary keyword in meta description', tip: 'Add at least one keyword to the description' },
+    { ok: !!editor.handle, label: 'URL handle / slug is set', tip: 'Set a clean URL slug' },
+    { ok: !!editor.altText, label: 'Image alt text is set', tip: 'Describe the main product image' },
+    { ok: !editor.seoTitle.toLowerCase().includes('the ') || editor.seoTitle.length > 0, label: 'Title doesn\'t start with stop word', tip: 'Avoid starting with "the", "a", "an"' },
+    { ok: editor.seoDescription.includes('!') || editor.seoDescription.includes('?') || editor.seoDescription.toLowerCase().includes('buy') || editor.seoDescription.toLowerCase().includes('shop') || editor.seoDescription.toLowerCase().includes('get'), label: 'Meta description has a call-to-action', tip: 'Include "buy", "shop", "get" or punctuation for emphasis' },
+  ];
+  const checkPassed = checklist.filter(c => c.ok).length;
 
   return (
-    <div style={{ background: '#0f172a', minHeight: '100vh', color: '#e5e7eb', fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div style={{ background: '#070c16', minHeight: '100vh', color: '#e2e8f0', fontFamily: '"Inter", system-ui, sans-serif' }}>
 
       {/* Toast */}
       {toast && (
-        <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, background: toast.type === 'error' ? '#2d1515' : '#0f2d24', border: `1px solid ${toast.type === 'error' ? '#f87171' : '#4ade80'}`, borderRadius: 12, padding: '14px 20px', color: toast.type === 'error' ? '#f87171' : '#4ade80', fontSize: 14, fontWeight: 500, maxWidth: 380, boxShadow: '0 8px 32px rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 18 }}>{toast.type === 'error' ? '⚠️' : '✅'}</span>
-          <span>{toast.msg}</span>
+        <div style={{ position: 'fixed', bottom: 28, right: 28, zIndex: 9999, background: toast.type === 'error' ? '#1f0a0a' : '#071a10', border: `1px solid ${toast.type === 'error' ? '#f87171' : '#4ade80'}40`, borderRadius: 14, padding: '14px 20px', color: toast.type === 'error' ? '#f87171' : '#4ade80', fontSize: 14, fontWeight: 500, maxWidth: 400, boxShadow: '0 12px 40px #000a', display: 'flex', alignItems: 'center', gap: 12, backdropFilter: 'blur(10px)' }}>
+          <span style={{ fontSize: 20 }}>{toast.type === 'error' ? 'ðŸš¨' : 'âœ…'}</span>
+          {toast.msg}
         </div>
       )}
 
       {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e2a3a 100%)', borderBottom: '1px solid #1e2a3a', padding: '28px 32px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div>
-            <h1 style={{ fontSize: 28, fontWeight: 900, color: '#7fffd4', margin: 0 }}>Product SEO Engine</h1>
-            <p style={{ color: '#64748b', fontSize: 14, margin: '4px 0 0' }}>AI-powered SEO generation, scoring & direct Shopify publishing</p>
+      <div style={{ background: 'linear-gradient(135deg, #0a0f1e 0%, #0d1628 50%, #0f1a2e 100%)', borderBottom: '1px solid #1a2740', padding: '0 32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 24, paddingBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #7fffd4, #22d3ee)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 4px 20px #7fffd433' }}>ðŸ”</div>
+            <div>
+              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900, background: 'linear-gradient(135deg, #7fffd4, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Product SEO Engine</h1>
+              <p style={{ margin: '3px 0 0', fontSize: 13, color: '#475569' }}>AI-powered SEO optimisation & direct Shopify publishing</p>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 12 }}>
-            <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 10, padding: '10px 18px', textAlign: 'center' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#7fffd4' }}>{shopifyProducts.length}</div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>Products</div>
-            </div>
-            <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 10, padding: '10px 18px', textAlign: 'center' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#a78bfa' }}>{analytics.generated}</div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>Generated</div>
-            </div>
-            <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 10, padding: '10px 18px', textAlign: 'center' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#4ade80' }}>{analytics.pushed}</div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>Pushed Live</div>
-            </div>
-            <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 10, padding: '10px 18px', textAlign: 'center' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: analytics.avgScore >= 80 ? '#4ade80' : analytics.avgScore >= 50 ? '#fbbf24' : '#f87171' }}>{analytics.avgScore}</div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>Avg Score</div>
-            </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            {[
+              { label: 'Products', value: products.length, colour: '#7fffd4' },
+              { label: 'Optimised', value: Object.keys(stored).length, colour: '#a78bfa' },
+              { label: 'Avg Score', value: products.length ? Math.round(products.reduce((s, p) => s + seoScore(stored[p.id] || {}), 0) / products.length) : 0, colour: '#fbbf24' },
+            ].map(st => (
+              <div key={st.label} style={{ background: '#0d1628', border: '1px solid #1a2740', borderRadius: 12, padding: '10px 18px', textAlign: 'center', minWidth: 80 }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: st.colour }}>{st.value}</div>
+                <div style={{ fontSize: 11, color: '#475569', marginTop: 1 }}>{st.label}</div>
+              </div>
+            ))}
+            <button onClick={loadProducts} style={{ background: '#0d1628', border: '1px solid #1a2740', borderRadius: 12, padding: '10px 16px', color: '#7fffd4', cursor: 'pointer', fontSize: 18 }}>â†»</button>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: 0, borderTop: '1px solid #1e2a3a' }}>
+        {/* Tab bar */}
+        <div style={{ display: 'flex', gap: 0, borderTop: '1px solid #1a2740' }}>
           {TABS.map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{
-              background: 'none', border: 'none', padding: '12px 24px', cursor: 'pointer',
-              color: tab === t ? '#7fffd4' : '#64748b', fontWeight: tab === t ? 700 : 500, fontSize: 14,
-              borderBottom: tab === t ? '2px solid #7fffd4' : '2px solid transparent',
-              transition: 'all 0.15s',
-            }}>{t}</button>
+            <button key={t.id} onClick={() => setTab(t.id)} style={{ background: 'none', border: 'none', borderBottom: tab === t.id ? '2px solid #7fffd4' : '2px solid transparent', padding: '14px 24px', cursor: 'pointer', color: tab === t.id ? '#7fffd4' : '#475569', fontWeight: tab === t.id ? 700 : 500, fontSize: 14, transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 8 }}>
+              {t.label}
+            </button>
           ))}
         </div>
       </div>
 
-      <div style={{ padding: '28px 32px' }}>
+      <div style={{ padding: '28px 32px', maxWidth: 1400, margin: '0 auto' }}>
 
-        {/* ── PRODUCTS TAB ── */}
-        {tab === 'Products' && (
+        {/* â”€â”€ PRODUCTS TAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {tab === 'products' && (
           <div>
-            {/* Filters */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
-              <input
-                placeholder="🔍  Search products..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                style={{ flex: 1, background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 10, padding: '10px 16px', color: '#e5e7eb', fontSize: 14, outline: 'none' }}
-              />
-              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-                style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 10, padding: '10px 16px', color: '#e5e7eb', fontSize: 14, cursor: 'pointer' }}>
+            {/* Toolbar */}
+            <div style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>
+              <div style={{ flex: 1, minWidth: 200, position: 'relative' }}>
+                <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#475569', fontSize: 16 }}>ðŸ”</span>
+                <input placeholder="Search productsâ€¦" value={search} onChange={e => setSearch(e.target.value)}
+                  style={{ width: '100%', background: '#0d1628', border: '1px solid #1a2740', borderRadius: 10, padding: '11px 14px 11px 40px', color: '#e2e8f0', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ background: '#0d1628', border: '1px solid #1a2740', borderRadius: 10, padding: '11px 14px', color: '#e2e8f0', fontSize: 14, cursor: 'pointer' }}>
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
                 <option value="draft">Draft</option>
                 <option value="archived">Archived</option>
               </select>
-              <button onClick={loadProducts} style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 10, padding: '10px 16px', color: '#7fffd4', cursor: 'pointer', fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap' }}>
-                ↻ Refresh
-              </button>
-              <button onClick={() => { setBulkSelected(new Set(filteredProducts.map(p => p.id))); setTab('Bulk Generate'); }}
-                style={{ background: '#7fffd4', border: 'none', borderRadius: 10, padding: '10px 20px', color: '#0f172a', cursor: 'pointer', fontSize: 14, fontWeight: 800, whiteSpace: 'nowrap' }}>
-                ⚡ Bulk Generate All
+              <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ background: '#0d1628', border: '1px solid #1a2740', borderRadius: 10, padding: '11px 14px', color: '#e2e8f0', fontSize: 14, cursor: 'pointer' }}>
+                <option value="title">Sort: Aâ€“Z</option>
+                <option value="score">Score: Highâ€“Low</option>
+                <option value="score_asc">Score: Lowâ€“High</option>
+              </select>
+              <button onClick={() => { setBulkSelected(new Set(filteredProducts.map(p => p.id))); setTab('bulk'); }}
+                style={{ background: 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 10, padding: '11px 22px', color: '#0a0f1a', fontWeight: 800, fontSize: 14, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                âš¡ Bulk Generate All
               </button>
             </div>
 
-            {loadingProducts ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
-                {[...Array(8)].map((_, i) => (
-                  <div key={i} style={{ background: '#1e2a3a', borderRadius: 14, padding: 20, height: 120, animation: 'pulse 1.5s ease infinite' }} />
+            {/* Summary bar */}
+            {products.length > 0 && (
+              <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+                {[
+                  { label: 'No SEO data', count: products.filter(p => !stored[p.id]?.seoTitle).length, colour: '#f87171', bg: '#1f0a0a' },
+                  { label: 'Score < 50', count: products.filter(p => { const s = seoScore(stored[p.id] || {}); return stored[p.id] && s < 50; }).length, colour: '#fbbf24', bg: '#1f180a' },
+                  { label: 'Score 50â€“79', count: products.filter(p => { const s = seoScore(stored[p.id] || {}); return s >= 50 && s < 80; }).length, colour: '#a3e635', bg: '#131f0a' },
+                  { label: 'Score 80+', count: products.filter(p => seoScore(stored[p.id] || {}) >= 80).length, colour: '#4ade80', bg: '#0a1f10' },
+                ].map(b => (
+                  <div key={b.label} style={{ background: b.bg, border: `1px solid ${b.colour}30`, borderRadius: 8, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: b.colour }}>{b.count}</span>
+                    <span style={{ fontSize: 12, color: b.colour + 'cc' }}>{b.label}</span>
+                  </div>
                 ))}
               </div>
+            )}
+
+            {loadingProducts ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+                {[...Array(8)].map((_, i) => <div key={i} style={{ background: '#0d1628', borderRadius: 16, height: 130, animation: 'pulse 1.5s ease infinite' }} />)}
+              </div>
             ) : filteredProducts.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '64px 0', color: '#64748b' }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>🛍️</div>
-                <div style={{ fontSize: 18, fontWeight: 600, color: '#94a3b8' }}>No products found</div>
-                <div style={{ fontSize: 14, marginTop: 8 }}>Connect your Shopify store or adjust your search filters</div>
+              <div style={{ textAlign: 'center', padding: '80px 0', color: '#475569' }}>
+                <div style={{ fontSize: 56, marginBottom: 16 }}>ðŸ›ï¸</div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: '#64748b' }}>No products found</div>
+                <div style={{ fontSize: 14, marginTop: 8 }}>Connect your Shopify store or try a different search</div>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 16 }}>
                 {filteredProducts.map(p => {
-                  const savedFields = stored[p.id] || {};
-                  const ps = seoScore(savedFields);
-                  const hasData = Object.keys(savedFields).length > 0;
-                  const scoreColor = ps >= 80 ? '#4ade80' : ps >= 50 ? '#fbbf24' : '#f87171';
+                  const pFields = stored[p.id] || {};
+                  const ps = seoScore(pFields);
+                  const { colour: pc, bg: pb } = seoGrade(ps);
+                  const hasData = !!pFields.seoTitle;
                   return (
                     <div key={p.id} onClick={() => selectProduct(p)}
-                      style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 18, cursor: 'pointer', transition: 'all 0.2s', position: 'relative', overflow: 'hidden' }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#7fffd4'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#2f3650'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                      style={{ background: 'linear-gradient(135deg, #0d1628 0%, #0f1a2e 100%)', border: `1px solid ${hasData ? '#1a2740' : '#2d1515'}`, borderRadius: 16, padding: 18, cursor: 'pointer', transition: 'all 0.2s', position: 'relative', overflow: 'hidden' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#7fffd480'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 32px #000a'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = hasData ? '#1a2740' : '#2d1515'; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
                     >
-                      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                        {p.image ? (
-                          <img src={p.image} alt={p.title} style={{ width: 56, height: 56, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
-                        ) : (
-                          <div style={{ width: 56, height: 56, borderRadius: 10, background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>📦</div>
-                        )}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 700, fontSize: 15, color: '#e5e7eb', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</div>
-                          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.handle} • {p.vendor}</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: p.status === 'active' ? '#0f2d24' : '#231f15', color: p.status === 'active' ? '#4ade80' : '#fbbf24', border: `1px solid ${p.status === 'active' ? '#4ade80' : '#fbbf24'}`, fontWeight: 600 }}>
-                              {p.status}
-                            </span>
-                            {p.variants && <span style={{ fontSize: 11, color: '#64748b' }}>{p.variants.length} variant{p.variants.length !== 1 ? 's' : ''}</span>}
+                      {/* Score badge top-right */}
+                      <div style={{ position: 'absolute', top: 14, right: 14, background: hasData ? pb : '#0d1628', border: `1px solid ${hasData ? pc : '#1a2740'}40`, borderRadius: 8, padding: '4px 10px', textAlign: 'center' }}>
+                        <div style={{ fontSize: 16, fontWeight: 900, color: hasData ? pc : '#374151' }}>{hasData ? ps : 'â€”'}</div>
+                        <div style={{ fontSize: 9, color: hasData ? pc + 'aa' : '#374151', fontWeight: 600 }}>SEO</div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', paddingRight: 56 }}>
+                        {p.image ? <img src={p.image} alt={p.title} style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover', flexShrink: 0, border: '1px solid #1a2740' }} />
+                          : <div style={{ width: 56, height: 56, borderRadius: 12, background: '#111927', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}>ðŸ“¦</div>}
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ fontWeight: 700, fontSize: 15, color: '#e2e8f0', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</div>
+                          <div style={{ fontSize: 12, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.vendor} Â· {p.handle}</div>
+                          <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 5, background: p.status === 'active' ? '#0a1f10' : '#1a1a0a', color: p.status === 'active' ? '#4ade80' : '#fbbf24', border: `1px solid ${p.status === 'active' ? '#4ade8030' : '#fbbf2430'}`, fontWeight: 600 }}>{p.status}</span>
+                            {hasData && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 5, background: '#071a10', color: '#7fffd4', border: '1px solid #7fffd420', fontWeight: 600 }}>âœ“ SEO ready</span>}
+                            {!hasData && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 5, background: '#1f0a0a', color: '#f87171', border: '1px solid #f8717120', fontWeight: 600 }}>Needs SEO</span>}
                           </div>
                         </div>
-                        <div style={{ flexShrink: 0, textAlign: 'center' }}>
-                          <div style={{ fontSize: 20, fontWeight: 800, color: hasData ? scoreColor : '#374151' }}>{hasData ? ps : '—'}</div>
-                          <div style={{ fontSize: 10, color: '#475569', fontWeight: 600 }}>SEO</div>
-                        </div>
                       </div>
+
                       {hasData && (
-                        <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #2f3650', display: 'flex', gap: 6 }}>
-                          {savedFields.seoTitle && <span style={{ fontSize: 11, color: '#7fffd4', background: 'rgba(127,255,212,0.08)', padding: '2px 8px', borderRadius: 4 }}>✓ Title</span>}
-                          {savedFields.seoDescription && <span style={{ fontSize: 11, color: '#7fffd4', background: 'rgba(127,255,212,0.08)', padding: '2px 8px', borderRadius: 4 }}>✓ Description</span>}
-                          {savedFields.keywords && <span style={{ fontSize: 11, color: '#7fffd4', background: 'rgba(127,255,212,0.08)', padding: '2px 8px', borderRadius: 4 }}>✓ Keywords</span>}
+                        <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #1a2740' }}>
+                          {/* Mini score bar */}
+                          <div style={{ height: 3, background: '#1a2740', borderRadius: 2, overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${ps}%`, background: `linear-gradient(90deg, ${pc}80, ${pc})`, borderRadius: 2 }} />
+                          </div>
+                          <div style={{ display: 'flex', gap: 5, marginTop: 7, flexWrap: 'wrap' }}>
+                            {pFields.seoTitle && <span style={{ fontSize: 10, color: '#7fffd4', background: '#7fffd409', border: '1px solid #7fffd415', padding: '1px 6px', borderRadius: 4 }}>Title âœ“</span>}
+                            {pFields.seoDescription && <span style={{ fontSize: 10, color: '#7fffd4', background: '#7fffd409', border: '1px solid #7fffd415', padding: '1px 6px', borderRadius: 4 }}>Desc âœ“</span>}
+                            {pFields.keywords && <span style={{ fontSize: 10, color: '#7fffd4', background: '#7fffd409', border: '1px solid #7fffd415', padding: '1px 6px', borderRadius: 4 }}>Keywords âœ“</span>}
+                            {pFields.altText && <span style={{ fontSize: 10, color: '#7fffd4', background: '#7fffd409', border: '1px solid #7fffd415', padding: '1px 6px', borderRadius: 4 }}>Alt âœ“</span>}
+                          </div>
                         </div>
                       )}
-                      <div style={{ position: 'absolute', top: 14, right: 14, fontSize: 12, color: '#7fffd4', fontWeight: 700, opacity: 0 }} className="edit-label">Edit →</div>
                     </div>
                   );
                 })}
@@ -481,366 +478,399 @@ export default function ProductSeoEngine() {
           </div>
         )}
 
-        {/* ── EDITOR TAB ── */}
-        {tab === 'Editor' && (
+        {/* â”€â”€ EDITOR TAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {tab === 'editor' && (
           <div>
             {!selectedProduct ? (
-              <div style={{ textAlign: 'center', padding: '64px 0', color: '#64748b' }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>👈</div>
-                <div style={{ fontSize: 18, fontWeight: 600, color: '#94a3b8' }}>Select a product first</div>
-                <button onClick={() => setTab('Products')} style={{ marginTop: 16, background: '#7fffd4', border: 'none', borderRadius: 10, padding: '10px 24px', color: '#0f172a', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>Browse Products</button>
+              <div style={{ textAlign: 'center', padding: '80px 0' }}>
+                <div style={{ fontSize: 56, marginBottom: 16 }}>ðŸ‘ˆ</div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: '#64748b' }}>Select a product first</div>
+                <button onClick={() => setTab('products')} style={{ marginTop: 20, background: 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 12, padding: '12px 28px', color: '#0a0f1a', fontWeight: 800, cursor: 'pointer', fontSize: 15 }}>Browse Products â†’</button>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24 }}>
-                {/* Left: Form */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                  {/* Product info bar */}
-                  <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
-                    {selectedProduct.image && <img src={selectedProduct.image} alt={selectedProduct.title} style={{ width: 52, height: 52, borderRadius: 10, objectFit: 'cover' }} />}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 16, color: '#e5e7eb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedProduct.title}</div>
-                      <div style={{ fontSize: 13, color: '#64748b' }}>{selectedProduct.vendor} • {selectedProduct.handle}</div>
-                    </div>
-                    <button onClick={generateSeo} disabled={generating}
-                      style={{ background: generating ? '#374151' : 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 10, padding: '10px 22px', color: '#0f172a', fontWeight: 800, cursor: generating ? 'wait' : 'pointer', fontSize: 14, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {generating ? '⏳ Generating…' : '✨ AI Generate'}
+              <div>
+                {/* Product + action bar */}
+                <div style={{ background: 'linear-gradient(135deg, #0d1628, #0f1a2e)', border: '1px solid #1a2740', borderRadius: 16, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
+                  {selectedProduct.image && <img src={selectedProduct.image} alt={selectedProduct.title} style={{ width: 52, height: 52, borderRadius: 12, objectFit: 'cover', border: '1px solid #1a2740' }} />}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 800, fontSize: 17, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedProduct.title}</div>
+                    <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>{selectedProduct.vendor} Â· /products/{selectedProduct.handle}</div>
+                  </div>
+                  {savedAt && <div style={{ fontSize: 11, color: '#334155', whiteSpace: 'nowrap' }}>Auto-saved {savedAt.toLocaleTimeString()}</div>}
+                  <div style={{ display: 'flex', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
+                    <button onClick={generateAll} disabled={generating}
+                      style={{ background: generating ? '#1a2740' : 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 12, padding: '10px 22px', color: '#0a0f1a', fontWeight: 800, cursor: generating ? 'wait' : 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {generating ? <><span style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid #7fffd4', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Generatingâ€¦</> : 'âœ¨ AI Generate All'}
                     </button>
-                  </div>
-
-                  {/* SEO Title */}
-                  <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 20 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <label style={{ fontWeight: 700, color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>SEO Title (Page Title)</label>
-                      <button onClick={() => generateField('seoTitle')} disabled={fieldGenerating.seoTitle || generating}
-                        style={{ background: 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 8, padding: '5px 14px', color: '#0f172a', fontWeight: 700, fontSize: 12, cursor: 'pointer', opacity: fieldGenerating.seoTitle ? 0.6 : 1 }}>
-                        {fieldGenerating.seoTitle ? '…' : '✨ Generate'}
-                      </button>
-                    </div>
-                    <input value={editor.seoTitle} onChange={e => setEditor(ed => ({ ...ed, seoTitle: e.target.value }))}
-                      placeholder="e.g. Premium Ski Wax — Fast & Long-Lasting | Brand Name"
-                      style={{ width: '100%', background: '#0f172a', border: '1px solid #2f3650', borderRadius: 8, padding: '10px 14px', color: '#e5e7eb', fontSize: 15, outline: 'none', boxSizing: 'border-box' }}
-                    />
-                    <CharBar value={editor.seoTitle} min={30} max={60} label="Recommended: 30–60 chars" />
-                    {editor.seoTitle.length > 60 && <div style={{ marginTop: 6, fontSize: 12, color: '#f87171' }}>⚠️ Too long — Google will truncate this in search results</div>}
-                  </div>
-
-                  {/* Meta Description */}
-                  <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 20 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <label style={{ fontWeight: 700, color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Meta Description</label>
-                      <button onClick={() => generateField('seoDescription')} disabled={fieldGenerating.seoDescription || generating}
-                        style={{ background: 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 8, padding: '5px 14px', color: '#0f172a', fontWeight: 700, fontSize: 12, cursor: 'pointer', opacity: fieldGenerating.seoDescription ? 0.6 : 1 }}>
-                        {fieldGenerating.seoDescription ? '…' : '✨ Generate'}
-                      </button>
-                    </div>
-                    <textarea value={editor.seoDescription} onChange={e => setEditor(ed => ({ ...ed, seoDescription: e.target.value }))}
-                      placeholder="Compelling description that appears in Google results. Include your main keyword and a call-to-action."
-                      rows={4}
-                      style={{ width: '100%', background: '#0f172a', border: '1px solid #2f3650', borderRadius: 8, padding: '10px 14px', color: '#e5e7eb', fontSize: 14, outline: 'none', resize: 'vertical', lineHeight: 1.5, boxSizing: 'border-box' }}
-                    />
-                    <CharBar value={editor.seoDescription} min={120} max={160} label="Recommended: 120–160 chars" />
-                  </div>
-
-                  {/* URL Handle */}
-                  <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 20 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <label style={{ fontWeight: 700, color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>URL Handle / Slug</label>
-                      <button onClick={() => generateField('handle')} disabled={fieldGenerating.handle || generating}
-                        style={{ background: 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 8, padding: '5px 14px', color: '#0f172a', fontWeight: 700, fontSize: 12, cursor: 'pointer', opacity: fieldGenerating.handle ? 0.6 : 1 }}>
-                        {fieldGenerating.handle ? '…' : '✨ Generate'}
-                      </button>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', background: '#0f172a', border: '1px solid #2f3650', borderRadius: 8, overflow: 'hidden' }}>
-                      <span style={{ padding: '10px 12px', color: '#475569', fontSize: 13, borderRight: '1px solid #2f3650', whiteSpace: 'nowrap' }}>/products/</span>
-                      <input value={editor.handle} onChange={e => setEditor(ed => ({ ...ed, handle: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') }))}
-                        style={{ flex: 1, background: 'none', border: 'none', padding: '10px 14px', color: '#e5e7eb', fontSize: 14, outline: 'none' }}
-                      />
-                    </div>
-                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 6 }}>Use lowercase letters, numbers, and hyphens only</div>
-                  </div>
-
-                  {/* Keywords */}
-                  <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 20 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <label style={{ fontWeight: 700, color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Focus Keywords <span style={{ fontWeight: 400, textTransform: 'none', fontSize: 12 }}>(Enter or comma to add)</span></label>
-                      <button onClick={() => generateField('keywords')} disabled={fieldGenerating.keywords || generating}
-                        style={{ background: 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 8, padding: '5px 14px', color: '#0f172a', fontWeight: 700, fontSize: 12, cursor: 'pointer', opacity: fieldGenerating.keywords ? 0.6 : 1 }}>
-                        {fieldGenerating.keywords ? '…' : '✨ Generate'}
-                      </button>
-                    </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, background: '#0f172a', border: '1px solid #2f3650', borderRadius: 8, padding: '8px 10px', minHeight: 44, alignItems: 'center' }}>
-                      {editor.keywords.split(',').filter(k => k.trim()).map((kw, i) => (
-                        <span key={i} style={{ background: 'rgba(127,255,212,0.12)', border: '1px solid rgba(127,255,212,0.35)', borderRadius: 20, padding: '3px 10px 3px 12px', fontSize: 12, color: '#7fffd4', display: 'flex', alignItems: 'center', gap: 5 }}>
-                          {kw.trim()}
-                          <button onClick={() => removeKeywordChip(kw.trim())} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
-                        </span>
-                      ))}
-                      <input
-                        value={kwInput}
-                        onChange={e => setKwInput(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addKeywordChip(); } }}
-                        onBlur={addKeywordChip}
-                        placeholder={editor.keywords ? 'Add another…' : 'e.g. snowboard, winter sports…'}
-                        style={{ flex: 1, minWidth: 120, background: 'none', border: 'none', color: '#e5e7eb', fontSize: 13, outline: 'none', padding: '2px 4px' }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Alt Text */}
-                  <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 20 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <label style={{ fontWeight: 700, color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Image Alt Text</label>
-                      <button onClick={() => generateField('altText')} disabled={fieldGenerating.altText || generating}
-                        style={{ background: 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 8, padding: '5px 14px', color: '#0f172a', fontWeight: 700, fontSize: 12, cursor: 'pointer', opacity: fieldGenerating.altText ? 0.6 : 1 }}>
-                        {fieldGenerating.altText ? '…' : '✨ Generate'}
-                      </button>
-                    </div>
-                    <input value={editor.altText} onChange={e => setEditor(ed => ({ ...ed, altText: e.target.value }))}
-                      placeholder="Descriptive alt text for the main product image"
-                      style={{ width: '100%', background: '#0f172a', border: '1px solid #2f3650', borderRadius: 8, padding: '10px 14px', color: '#e5e7eb', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
-                    />
-                  </div>
-
-                  {/* Action buttons */}
-                  <div style={{ display: 'flex', gap: 12 }}>
-                    <button onClick={() => { saveLocal(selectedProduct.id, editor); showToast('Draft saved locally'); }}
-                      style={{ flex: 1, background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 10, padding: '12px', color: '#94a3b8', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
-                      💾 Save Draft
-                    </button>
+                    <button onClick={() => { saveLocal(selectedProduct.id, editor); setSavedAt(new Date()); showToast('Draft saved'); }}
+                      style={{ background: '#0d1628', border: '1px solid #1a2740', borderRadius: 12, padding: '10px 18px', color: '#94a3b8', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>ðŸ’¾ Save</button>
                     <button onClick={pushToShopify} disabled={pushing || !editor.seoTitle}
-                      style={{ flex: 2, background: pushing ? '#374151' : 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 10, padding: '12px', color: '#0f172a', fontWeight: 800, cursor: pushing ? 'wait' : 'pointer', fontSize: 15 }}>
-                      {pushing ? '⏳ Pushing to Shopify…' : '🚀 Push to Shopify'}
+                      style={{ background: pushing || !editor.seoTitle ? '#1a2740' : 'linear-gradient(135deg, #7c3aed, #6d28d9)', border: 'none', borderRadius: 12, padding: '10px 22px', color: '#fff', fontWeight: 800, cursor: pushing ? 'wait' : 'pointer', fontSize: 14 }}>
+                      {pushing ? 'â³ Pushingâ€¦' : 'ðŸš€ Push to Shopify'}
                     </button>
                   </div>
                 </div>
 
-                {/* Right: Score + Preview */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                  {/* Score card */}
-                  <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 20 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 16 }}>
-                      <ScoreRing score={score} />
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: 16, color: '#e5e7eb' }}>
-                          {score >= 80 ? '🏆 Excellent' : score >= 60 ? '👍 Good' : score >= 40 ? '⚠️ Needs Work' : '❌ Poor'}
+                {/* Editor sub-tabs */}
+                <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: '#0d1628', border: '1px solid #1a2740', borderRadius: 12, padding: 4, width: 'fit-content' }}>
+                  {[['fields', 'âœï¸ Fields'], ['preview', 'ðŸ‘ï¸ Preview'], ['checklist', 'âœ… Checklist']].map(([id, label]) => (
+                    <button key={id} onClick={() => setEditorTab(id)} style={{ background: editorTab === id ? 'linear-gradient(135deg, #7fffd420, #22d3ee20)' : 'none', border: editorTab === id ? '1px solid #7fffd430' : '1px solid transparent', borderRadius: 8, padding: '7px 16px', color: editorTab === id ? '#7fffd4' : '#475569', fontWeight: editorTab === id ? 700 : 500, fontSize: 13, cursor: 'pointer' }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                {editorTab === 'fields' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 20 }}>
+                    {/* Left: fields */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                      <FieldBlock label="SEO Title" hint="Shown in browser tab & Google search results" badge={<GenBtn onClick={() => generateField('seoTitle')} loading={fieldGenerating.seoTitle} />}>
+                        <input value={editor.seoTitle} onChange={e => setEditor(ed => ({ ...ed, seoTitle: e.target.value }))}
+                          placeholder="e.g. Premium Snowboard â€” Fast & Responsive | Brand"
+                          style={{ width: '100%', background: '#0a0f1a', border: `1px solid ${editor.seoTitle.length > 60 ? '#f87171' : '#1e2d42'}`, borderRadius: 10, padding: '11px 14px', color: '#e2e8f0', fontSize: 15, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s' }} />
+                        <CharBar value={editor.seoTitle} min={30} max={60} label="30â€“60 characters recommended" />
+                      </FieldBlock>
+
+                      <FieldBlock label="Meta Description" hint="Shown below the title in search results â€” include a CTA" badge={<GenBtn onClick={() => generateField('seoDescription')} loading={fieldGenerating.seoDescription} />}>
+                        <textarea value={editor.seoDescription} onChange={e => setEditor(ed => ({ ...ed, seoDescription: e.target.value }))}
+                          placeholder="Compelling description with your main keyword and a call-to-action. Make the user want to click."
+                          rows={4}
+                          style={{ width: '100%', background: '#0a0f1a', border: `1px solid ${editor.seoDescription.length > 160 ? '#f87171' : '#1e2d42'}`, borderRadius: 10, padding: '11px 14px', color: '#e2e8f0', fontSize: 14, outline: 'none', resize: 'vertical', lineHeight: 1.6, boxSizing: 'border-box', transition: 'border-color 0.2s' }} />
+                        <CharBar value={editor.seoDescription} min={120} max={160} label="120â€“160 characters recommended" />
+                      </FieldBlock>
+
+                      <FieldBlock label="URL Handle / Slug" hint="Use lowercase letters, numbers and hyphens only" badge={<GenBtn onClick={() => generateField('handle')} loading={fieldGenerating.handle} small />}>
+                        <div style={{ display: 'flex', background: '#0a0f1a', border: '1px solid #1e2d42', borderRadius: 10, overflow: 'hidden' }}>
+                          <span style={{ padding: '11px 12px', color: '#334155', fontSize: 13, borderRight: '1px solid #1e2d42', whiteSpace: 'nowrap', flexShrink: 0 }}>/products/</span>
+                          <input value={editor.handle} onChange={e => setEditor(ed => ({ ...ed, handle: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') }))}
+                            style={{ flex: 1, background: 'none', border: 'none', padding: '11px 14px', color: '#e2e8f0', fontSize: 14, outline: 'none' }} />
                         </div>
-                        <div style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>SEO Health Score</div>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {(() => {
-                        const kws = editor.keywords.split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
-                        const kwInTitle = kws.some(k => editor.seoTitle.toLowerCase().includes(k));
-                        const kwInDesc = kws.some(k => editor.seoDescription.toLowerCase().includes(k));
-                        return [
-                          { label: 'SEO Title', ok: editor.seoTitle.length >= 30 && editor.seoTitle.length <= 60, msg: editor.seoTitle.length === 0 ? 'Missing' : editor.seoTitle.length < 30 ? 'Too short' : editor.seoTitle.length > 60 ? 'Too long' : 'Perfect' },
-                          { label: 'Meta Description', ok: editor.seoDescription.length >= 120 && editor.seoDescription.length <= 160, msg: editor.seoDescription.length === 0 ? 'Missing' : editor.seoDescription.length < 120 ? 'Too short' : editor.seoDescription.length > 160 ? 'Too long' : 'Perfect' },
-                          { label: 'Keywords', ok: kws.length >= 3, msg: kws.length ? `${kws.length} keywords` : 'Missing' },
-                          { label: 'Keyword in Title', ok: kwInTitle, msg: kwInTitle ? 'Found' : kws.length ? 'Not found' : 'No keywords set' },
-                          { label: 'Keyword in Desc', ok: kwInDesc, msg: kwInDesc ? 'Found' : kws.length ? 'Not found' : 'No keywords set' },
-                          { label: 'URL Handle', ok: !!editor.handle, msg: editor.handle || 'Missing' },
-                          { label: 'Alt Text', ok: !!editor.altText, msg: editor.altText ? 'Set' : 'Missing' },
-                        ].map(item => (
-                          <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#0f172a', borderRadius: 8 }}>
-                            <span style={{ fontSize: 13, color: '#94a3b8' }}>{item.label}</span>
-                            <span style={{ fontSize: 12, fontWeight: 600, color: item.ok ? '#4ade80' : '#f87171' }}>
-                              {item.ok ? '✓' : '✗'} {item.msg}
-                            </span>
+                      </FieldBlock>
+
+                      <FieldBlock label="Focus Keywords" hint="Press Enter or comma to add â€” used in keyword presence check" badge={<GenBtn onClick={() => generateField('keywords')} loading={fieldGenerating.keywords} small />}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, background: '#0a0f1a', border: '1px solid #1e2d42', borderRadius: 10, padding: '8px 10px', minHeight: 50, alignItems: 'center', cursor: 'text' }}
+                          onClick={e => { if (e.target === e.currentTarget) e.currentTarget.querySelector('input')?.focus(); }}>
+                          {chips.map(kw => {
+                            const inT = titleLower.includes(kw.toLowerCase());
+                            const inD = descLower.includes(kw.toLowerCase());
+                            const colour = inT && inD ? '#4ade80' : inT || inD ? '#fbbf24' : '#f87171';
+                            return (
+                              <span key={kw} title={`Title: ${inT ? 'âœ“' : 'âœ—'} Â· Desc: ${inD ? 'âœ“' : 'âœ—'}`} style={{ background: colour + '18', border: `1px solid ${colour}40`, borderRadius: 20, padding: '4px 10px 4px 12px', fontSize: 12, color: colour, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5, cursor: 'default' }}>
+                                {kw}
+                                <button onClick={() => removeKeywordChip(kw)} style={{ background: 'none', border: 'none', color: colour + '88', cursor: 'pointer', fontSize: 15, lineHeight: 1, padding: 0 }}>Ã—</button>
+                              </span>
+                            );
+                          })}
+                          <input value={kwInput} onChange={e => setKwInput(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addKeywordChip(); } }}
+                            onBlur={addKeywordChip}
+                            placeholder={chips.length === 0 ? 'e.g. snowboard, winter sportsâ€¦' : 'Add anotherâ€¦'}
+                            style={{ flex: 1, minWidth: 120, background: 'none', border: 'none', color: '#e2e8f0', fontSize: 13, outline: 'none', padding: '3px 4px' }} />
+                        </div>
+                        {chips.length > 0 && (
+                          <div style={{ marginTop: 8, fontSize: 11, color: '#475569' }}>
+                            ðŸŸ¢ Green = in title &amp; desc Â· ðŸŸ¡ Yellow = in one Â· ðŸ”´ Red = in neither
                           </div>
-                        ));
-                      })()}
+                        )}
+                      </FieldBlock>
+
+                      <FieldBlock label="Image Alt Text" hint="Describe the main product image for accessibility & SEO" badge={<GenBtn onClick={() => generateField('altText')} loading={fieldGenerating.altText} small />}>
+                        <input value={editor.altText} onChange={e => setEditor(ed => ({ ...ed, altText: e.target.value }))}
+                          placeholder="e.g. Red premium freestyle snowboard with carbon fibre base"
+                          style={{ width: '100%', background: '#0a0f1a', border: '1px solid #1e2d42', borderRadius: 10, padding: '11px 14px', color: '#e2e8f0', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+                      </FieldBlock>
                     </div>
-                  </div>
 
-                  {/* SERP Preview */}
-                  <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 20 }}>
-                    <div style={{ fontWeight: 700, color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>Google SERP Preview</div>
-                    <GooglePreview title={editor.seoTitle} description={editor.seoDescription} handle={editor.handle} shop={shopDomain} />
-                  </div>
+                    {/* Right: live score + keyword presence */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                      {/* Score card */}
+                      <div style={{ background: 'linear-gradient(135deg, #0d1628, #0f1a2e)', border: `1px solid ${scoreColour}30`, borderRadius: 16, padding: 22 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 18 }}>
+                          <ScoreRing score={score} />
+                          <div>
+                            <div style={{ fontWeight: 800, fontSize: 18, color: '#e2e8f0' }}>SEO Health Score</div>
+                            <div style={{ fontSize: 13, color: '#475569', marginTop: 3 }}>Updates as you type</div>
+                            <div style={{ marginTop: 8, background: scoreBg, border: `1px solid ${scoreColour}30`, borderRadius: 8, padding: '5px 12px', display: 'inline-block', fontSize: 13, color: scoreColour, fontWeight: 700 }}>{score < 50 ? 'Needs improvement' : score < 70 ? 'Getting there' : score < 90 ? 'Almost perfect' : 'Excellent SEO!'}</div>
+                          </div>
+                        </div>
 
-                  {/* Keyword density check */}
-                  {editor.keywords && editor.seoDescription && (
-                    <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 20 }}>
-                      <div style={{ fontWeight: 700, color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>Keyword Presence Check</div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        {editor.keywords.split(',').filter(k => k.trim()).slice(0, 5).map((kw, i) => {
-                          const kwClean = kw.trim().toLowerCase();
-                          const inTitle = editor.seoTitle.toLowerCase().includes(kwClean);
-                          const inDesc = editor.seoDescription.toLowerCase().includes(kwClean);
-                          return (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#0f172a', borderRadius: 6 }}>
-                              <span style={{ fontSize: 13, color: '#94a3b8' }}>"{kwClean}"</span>
-                              <div style={{ display: 'flex', gap: 6 }}>
-                                <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 4, background: inTitle ? '#0f2d24' : '#1a0f0f', color: inTitle ? '#4ade80' : '#f87171', border: `1px solid ${inTitle ? '#4ade80' : '#ef444420'}` }}>Title {inTitle ? '✓' : '✗'}</span>
-                                <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 4, background: inDesc ? '#0f2d24' : '#1a0f0f', color: inDesc ? '#4ade80' : '#f87171', border: `1px solid ${inDesc ? '#4ade80' : '#ef444420'}` }}>Desc {inDesc ? '✓' : '✗'}</span>
+                        {/* Score breakdown */}
+                        {(() => {
+                          const kws2 = chips;
+                          const kwInT = kws2.some(k => titleLower.includes(k.toLowerCase()));
+                          const kwInD = kws2.some(k => descLower.includes(k.toLowerCase()));
+                          return [
+                            { label: 'SEO Title', pts: 25, earned: editor.seoTitle.length >= 30 && editor.seoTitle.length <= 60 ? 25 : editor.seoTitle ? 10 : 0, ok: editor.seoTitle.length >= 30 && editor.seoTitle.length <= 60, msg: editor.seoTitle.length === 0 ? 'Missing' : editor.seoTitle.length < 30 ? 'Too short' : editor.seoTitle.length > 60 ? 'Too long' : 'Perfect' },
+                            { label: 'Meta Description', pts: 25, earned: editor.seoDescription.length >= 120 && editor.seoDescription.length <= 160 ? 25 : editor.seoDescription ? 10 : 0, ok: editor.seoDescription.length >= 120 && editor.seoDescription.length <= 160, msg: editor.seoDescription.length === 0 ? 'Missing' : editor.seoDescription.length < 120 ? 'Too short' : editor.seoDescription.length > 160 ? 'Too long' : 'Perfect' },
+                            { label: 'Keywords (3+)', pts: 5, earned: kws2.length >= 3 ? 5 : kws2.length > 0 ? 2 : 0, ok: kws2.length >= 3, msg: kws2.length ? `${kws2.length} keyword${kws2.length !== 1 ? 's' : ''}` : 'Missing' },
+                            { label: 'Keyword in Title', pts: 15, earned: kwInT ? 15 : 0, ok: kwInT, msg: kwInT ? 'Found' : kws2.length ? 'Not found' : 'No keywords' },
+                            { label: 'Keyword in Desc', pts: 15, earned: kwInD ? 15 : 0, ok: kwInD, msg: kwInD ? 'Found' : kws2.length ? 'Not found' : 'No keywords' },
+                            { label: 'URL Handle', pts: 5, earned: editor.handle ? 5 : 0, ok: !!editor.handle, msg: editor.handle || 'Missing' },
+                            { label: 'Image Alt Text', pts: 10, earned: editor.altText ? 10 : 0, ok: !!editor.altText, msg: editor.altText ? 'Set' : 'Missing' },
+                          ].map(item => (
+                            <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 10px', background: '#0a0f1a', borderRadius: 8, marginBottom: 5 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ fontSize: 13, color: item.ok ? '#4ade80' : '#f87171', lineHeight: 1 }}>{item.ok ? 'âœ“' : 'âœ—'}</span>
+                                <span style={{ fontSize: 12, color: '#94a3b8' }}>{item.label}</span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ fontSize: 11, color: item.ok ? '#4ade80' : '#64748b' }}>{item.msg}</span>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: item.earned > 0 ? '#7fffd4' : '#334155', background: item.earned > 0 ? '#7fffd410' : 'none', border: `1px solid ${item.earned > 0 ? '#7fffd420' : '#1a2740'}`, borderRadius: 4, padding: '1px 6px' }}>{item.earned}/{item.pts}</span>
                               </div>
                             </div>
-                          );
-                        })}
+                          ));
+                        })()}
+                      </div>
+
+                      {/* Keyword presence */}
+                      {chips.length > 0 && (
+                        <div style={{ background: 'linear-gradient(135deg, #0d1628, #0f1a2e)', border: '1px solid #1a2740', borderRadius: 16, padding: 18 }}>
+                          <div style={{ fontWeight: 700, fontSize: 13, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Keyword Presence</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            {chips.slice(0, 8).map(kw => {
+                              const inT = titleLower.includes(kw.toLowerCase());
+                              const inD = descLower.includes(kw.toLowerCase());
+                              return (
+                                <div key={kw} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#0a0f1a', borderRadius: 8 }}>
+                                  <span style={{ fontSize: 12, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>"{kw}"</span>
+                                  <div style={{ display: 'flex', gap: 5 }}>
+                                    {[['Title', inT], ['Desc', inD]].map(([lbl, found]) => (
+                                      <span key={lbl} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 5, fontWeight: 700, background: found ? '#0a1f10' : '#1f0a0a', color: found ? '#4ade80' : '#f87171', border: `1px solid ${found ? '#4ade8025' : '#f8717125'}` }}>
+                                        {lbl} {found ? 'âœ“' : 'âœ—'}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {editorTab === 'preview' && (
+                  <div>
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+                      {[['desktop', 'ðŸ–¥ï¸ Desktop'], ['mobile', 'ðŸ“± Mobile']].map(([d, label]) => (
+                        <button key={d} onClick={() => setSerpDevice(d)} style={{ background: serpDevice === d ? '#7fffd420' : '#0d1628', border: `1px solid ${serpDevice === d ? '#7fffd440' : '#1a2740'}`, borderRadius: 10, padding: '8px 18px', color: serpDevice === d ? '#7fffd4' : '#475569', fontWeight: serpDevice === d ? 700 : 500, fontSize: 13, cursor: 'pointer' }}>{label}</button>
+                      ))}
+                    </div>
+                    <div style={{ maxWidth: serpDevice === 'mobile' ? 400 : 680, margin: '0 auto' }}>
+                      <div style={{ background: '#0d1628', border: '1px solid #1a2740', borderRadius: 14, padding: 20, marginBottom: 16 }}>
+                        <div style={{ fontSize: 12, color: '#475569', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }}>Google Search Result Preview</div>
+                        <SerpPreview title={editor.seoTitle} description={editor.seoDescription} handle={editor.handle} shop={shopDomain} device={serpDevice} />
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        <div style={{ background: '#0d1628', border: '1px solid #1a2740', borderRadius: 12, padding: 14 }}>
+                          <div style={{ fontSize: 11, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Title</div>
+                          <div style={{ fontSize: 12, color: editor.seoTitle.length > 60 ? '#f87171' : editor.seoTitle.length >= 30 ? '#4ade80' : '#fbbf24', fontWeight: 700 }}>{editor.seoTitle.length} chars {editor.seoTitle.length > 60 ? 'â€” will be truncated' : editor.seoTitle.length < 30 ? 'â€” too short' : 'âœ“'}</div>
+                        </div>
+                        <div style={{ background: '#0d1628', border: '1px solid #1a2740', borderRadius: 12, padding: 14 }}>
+                          <div style={{ fontSize: 11, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Description</div>
+                          <div style={{ fontSize: 12, color: editor.seoDescription.length > 160 ? '#f87171' : editor.seoDescription.length >= 120 ? '#4ade80' : '#fbbf24', fontWeight: 700 }}>{editor.seoDescription.length} chars {editor.seoDescription.length > 160 ? 'â€” will be truncated' : editor.seoDescription.length < 120 ? 'â€” too short' : 'âœ“'}</div>
+                        </div>
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+
+                {editorTab === 'checklist' && (
+                  <div style={{ maxWidth: 680 }}>
+                    <div style={{ background: 'linear-gradient(135deg, #0d1628, #0f1a2e)', border: '1px solid #1a2740', borderRadius: 16, padding: 22, marginBottom: 16 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                        <div style={{ fontWeight: 800, fontSize: 17, color: '#e2e8f0' }}>SEO Checklist</div>
+                        <div style={{ background: checkPassed === checklist.length ? '#0a1f10' : '#1f180a', border: `1px solid ${checkPassed === checklist.length ? '#4ade8040' : '#fbbf2440'}`, borderRadius: 10, padding: '6px 14px', fontSize: 14, fontWeight: 800, color: checkPassed === checklist.length ? '#4ade80' : '#fbbf24' }}>
+                          {checkPassed} / {checklist.length} passed
+                        </div>
+                      </div>
+                      <div style={{ height: 6, background: '#1a2740', borderRadius: 3, overflow: 'hidden', marginBottom: 18 }}>
+                        <div style={{ height: '100%', width: `${(checkPassed / checklist.length) * 100}%`, background: 'linear-gradient(90deg, #7fffd4, #4ade80)', borderRadius: 3, transition: 'width 0.4s ease' }} />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {checklist.map((item, i) => (
+                          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 14px', background: item.ok ? '#071a10' : '#0f1829', border: `1px solid ${item.ok ? '#4ade8020' : '#1e2d42'}`, borderRadius: 10 }}>
+                            <div style={{ width: 22, height: 22, borderRadius: 6, background: item.ok ? '#4ade8020' : '#f8717120', border: `1px solid ${item.ok ? '#4ade8040' : '#f8717130'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0, marginTop: 1 }}>
+                              {item.ok ? 'âœ“' : 'âœ—'}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: item.ok ? '#e2e8f0' : '#94a3b8' }}>{item.label}</div>
+                              {!item.ok && <div style={{ fontSize: 12, color: '#f87171', marginTop: 3 }}>â†’ {item.tip}</div>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
 
-        {/* ── BULK GENERATE TAB ── */}
-        {tab === 'Bulk Generate' && (
+        {/* â”€â”€ BULK TAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {tab === 'bulk' && (
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, gap: 16, flexWrap: 'wrap' }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#e5e7eb' }}>Bulk SEO Generation</h2>
-                <p style={{ margin: '4px 0 0', fontSize: 14, color: '#64748b' }}>Select products and generate SEO for all of them at once, then push in bulk to Shopify</p>
+                <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: '#e2e8f0' }}>Bulk SEO Generation</h2>
+                <p style={{ margin: '6px 0 0', fontSize: 14, color: '#475569' }}>Select products and generate + publish SEO for all at once</p>
               </div>
-              <div style={{ display: 'flex', gap: 12 }}>
-                <button onClick={() => setBulkSelected(new Set(shopifyProducts.map(p => p.id)))}
-                  style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 10, padding: '10px 16px', color: '#94a3b8', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
-                  Select All ({shopifyProducts.length})
-                </button>
-                <button onClick={() => setBulkSelected(new Set())}
-                  style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 10, padding: '10px 16px', color: '#94a3b8', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
-                  Clear
-                </button>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button onClick={() => setBulkSelected(new Set(products.map(p => p.id)))} style={{ background: '#0d1628', border: '1px solid #1a2740', borderRadius: 10, padding: '10px 16px', color: '#94a3b8', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Select All ({products.length})</button>
+                <button onClick={() => setBulkSelected(new Set())} style={{ background: '#0d1628', border: '1px solid #1a2740', borderRadius: 10, padding: '10px 16px', color: '#94a3b8', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Clear</button>
                 <button onClick={runBulkGenerate} disabled={bulkGenerating || !bulkSelected.size}
-                  style={{ background: bulkGenerating || !bulkSelected.size ? '#374151' : 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 10, padding: '10px 22px', color: '#0f172a', fontWeight: 800, cursor: bulkGenerating ? 'wait' : 'pointer', fontSize: 14, opacity: !bulkSelected.size ? 0.5 : 1 }}>
-                  {bulkGenerating ? `⏳ Generating... (${bulkResults.length}/${bulkSelected.size})` : `✨ Generate ${bulkSelected.size} Products`}
+                  style={{ background: bulkGenerating || !bulkSelected.size ? '#1a2740' : 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 10, padding: '10px 22px', color: '#0a0f1a', fontWeight: 800, cursor: bulkGenerating ? 'wait' : 'pointer', fontSize: 14, opacity: !bulkSelected.size ? 0.5 : 1 }}>
+                  {bulkGenerating ? `â³ Generatingâ€¦ (${bulkResults.length}/${bulkSelected.size})` : `âœ¨ Generate ${bulkSelected.size} Product${bulkSelected.size !== 1 ? 's' : ''}`}
                 </button>
                 {bulkResults.filter(r => r.status === 'ok').length > 0 && (
-                  <button onClick={bulkPushAll} disabled={bulkPushing}
-                    style={{ background: bulkPushing ? '#374151' : '#7c3aed', border: 'none', borderRadius: 10, padding: '10px 22px', color: '#fff', fontWeight: 800, cursor: bulkPushing ? 'wait' : 'pointer', fontSize: 14 }}>
-                    {bulkPushing ? '⏳ Pushing…' : `🚀 Push All to Shopify (${bulkResults.filter(r => r.status === 'ok').length})`}
+                  <button onClick={bulkPushAll} disabled={bulkPushing} style={{ background: bulkPushing ? '#1a2740' : 'linear-gradient(135deg, #7c3aed, #6d28d9)', border: 'none', borderRadius: 10, padding: '10px 22px', color: '#fff', fontWeight: 800, cursor: bulkPushing ? 'wait' : 'pointer', fontSize: 14 }}>
+                    {bulkPushing ? 'â³ Pushingâ€¦' : `ðŸš€ Push All (${bulkResults.filter(r => r.status === 'ok').length})`}
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Product selector + results */}
+            {bulkGenerating && (
+              <div style={{ background: '#0d1628', border: '1px solid #1a2740', borderRadius: 14, padding: 20, marginBottom: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={{ fontSize: 14, color: '#94a3b8', fontWeight: 600 }}>Generating SEOâ€¦</span>
+                  <span style={{ fontSize: 14, color: '#7fffd4', fontWeight: 700 }}>{bulkResults.length} / {bulkSelected.size}</span>
+                </div>
+                <div style={{ height: 8, background: '#1a2740', borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${bulkSelected.size ? (bulkResults.length / bulkSelected.size) * 100 : 0}%`, background: 'linear-gradient(90deg, #7fffd4, #22d3ee)', borderRadius: 4, transition: 'width 0.3s' }} />
+                </div>
+              </div>
+            )}
+
             {bulkResults.length > 0 ? (
-              <div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>
-                  {bulkResults.map((r, i) => (
-                    <div key={i} style={{ background: '#1e2a3a', border: `1px solid ${r.status === 'ok' ? '#4ade8040' : '#f8717140'}`, borderRadius: 12, padding: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>
+                {bulkResults.map((r, i) => {
+                  const { colour: rc } = seoGrade(r.score);
+                  return (
+                    <div key={i} style={{ background: 'linear-gradient(135deg, #0d1628, #0f1a2e)', border: `1px solid ${r.status === 'ok' ? '#4ade8025' : '#f8717125'}`, borderRadius: 14, padding: 16 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                         {r.product.image && <img src={r.product.image} alt={r.product.title} style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />}
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 700, fontSize: 14, color: '#e5e7eb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.product.title}</div>
-                          {r.status === 'ok' && <div style={{ fontSize: 12, color: '#64748b' }}>Score: <span style={{ color: r.score >= 80 ? '#4ade80' : r.score >= 50 ? '#fbbf24' : '#f87171', fontWeight: 600 }}>{r.score}/100</span></div>}
-                          {r.status === 'error' && <div style={{ fontSize: 12, color: '#f87171' }}>{r.error}</div>}
+                          <div style={{ fontWeight: 700, fontSize: 14, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.product.title}</div>
+                          {r.status === 'ok' ? <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>Score: <span style={{ color: rc, fontWeight: 700 }}>{r.score}/100</span></div>
+                            : <div style={{ fontSize: 12, color: '#f87171', marginTop: 2 }}>{r.error}</div>}
                         </div>
-                        <span style={{ fontSize: 20 }}>{r.status === 'ok' ? '✅' : '❌'}</span>
+                        <span style={{ fontSize: 22 }}>{r.status === 'ok' ? 'âœ…' : 'âŒ'}</span>
                       </div>
                       {r.status === 'ok' && (
-                        <div style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.6 }}>
-                          <div><span style={{ color: '#64748b' }}>Title: </span>{r.fields.seoTitle}</div>
-                          <div style={{ marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}><span style={{ color: '#64748b' }}>Desc: </span>{r.fields.seoDescription}</div>
+                        <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.7, borderTop: '1px solid #1a2740', paddingTop: 10 }}>
+                          <div><span style={{ color: '#475569' }}>Title: </span><span style={{ color: '#94a3b8' }}>{r.fields.seoTitle}</span></div>
+                          <div style={{ marginTop: 4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}><span style={{ color: '#475569' }}>Desc: </span><span style={{ color: '#94a3b8' }}>{r.fields.seoDescription}</span></div>
                         </div>
                       )}
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
-                {shopifyProducts.map(p => (
-                  <div key={p.id} onClick={() => {
-                    const next = new Set(bulkSelected);
-                    if (next.has(p.id)) next.delete(p.id); else next.add(p.id);
-                    setBulkSelected(next);
-                  }}
-                    style={{ background: '#1e2a3a', border: `2px solid ${bulkSelected.has(p.id) ? '#7fffd4' : '#2f3650'}`, borderRadius: 12, padding: '14px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s' }}>
-                    <div style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${bulkSelected.has(p.id) ? '#7fffd4' : '#374151'}`, background: bulkSelected.has(p.id) ? '#7fffd4' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      {bulkSelected.has(p.id) && <span style={{ color: '#0f172a', fontSize: 13, fontWeight: 800 }}>✓</span>}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+                {products.map(p => {
+                  const sel = bulkSelected.has(p.id);
+                  return (
+                    <div key={p.id} onClick={() => { const n = new Set(bulkSelected); sel ? n.delete(p.id) : n.add(p.id); setBulkSelected(n); }}
+                      style={{ background: 'linear-gradient(135deg, #0d1628, #0f1a2e)', border: `2px solid ${sel ? '#7fffd4' : '#1a2740'}`, borderRadius: 12, padding: '14px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s' }}>
+                      <div style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${sel ? '#7fffd4' : '#334155'}`, background: sel ? '#7fffd4' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {sel && <span style={{ color: '#0a0f1a', fontSize: 13, fontWeight: 900 }}>âœ“</span>}
+                      </div>
+                      {p.image && <img src={p.image} alt={p.title} style={{ width: 38, height: 38, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</div>
+                        <div style={{ fontSize: 11, color: '#475569' }}>{p.status} Â· Score: {seoScore(stored[p.id] || {})}</div>
+                      </div>
                     </div>
-                    {p.image && <img src={p.image} alt={p.title} style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: '#e5e7eb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</div>
-                      <div style={{ fontSize: 12, color: '#64748b' }}>{p.status}</div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
         )}
 
-        {/* ── ANALYTICS TAB ── */}
-        {tab === 'Analytics' && (
+        {/* â”€â”€ ANALYTICS TAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {tab === 'analytics' && (
           <div>
-            <h2 style={{ margin: '0 0 20px', fontSize: 20, fontWeight: 800, color: '#e5e7eb' }}>SEO Analytics Overview</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16, marginBottom: 28 }}>
+            <h2 style={{ margin: '0 0 24px', fontSize: 22, fontWeight: 900, color: '#e2e8f0' }}>SEO Analytics Overview</h2>
+
+            {/* Top stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14, marginBottom: 28 }}>
               {[
-                { label: 'Total Products', value: shopifyProducts.length, color: '#7fffd4', icon: '🛍️' },
-                { label: 'SEO Generated', value: Object.keys(stored).length, color: '#a78bfa', icon: '✨' },
-                { label: 'Missing Meta Desc', value: shopifyProducts.filter(p => !(stored[p.id]?.seoDescription)).length, color: '#f87171', icon: '⚠️' },
-                { label: 'Missing Title', value: shopifyProducts.filter(p => !(stored[p.id]?.seoTitle)).length, color: '#fbbf24', icon: '📝' },
-                { label: 'Score ≥ 80 (Good)', value: shopifyProducts.filter(p => seoScore(stored[p.id] || {}) >= 80).length, color: '#4ade80', icon: '🏆' },
-                { label: 'Score < 40 (Poor)', value: shopifyProducts.filter(p => seoScore(stored[p.id] || {}) < 40).length, color: '#f87171', icon: '❌' },
-              ].map(stat => (
-                <div key={stat.label} style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: '20px 22px' }}>
-                  <div style={{ fontSize: 28, marginBottom: 8 }}>{stat.icon}</div>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: stat.color }}>{stat.value}</div>
-                  <div style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>{stat.label}</div>
+                { icon: 'ðŸ›ï¸', label: 'Total Products', value: products.length, colour: '#7fffd4' },
+                { icon: 'âœ¨', label: 'SEO Generated', value: Object.keys(stored).length, colour: '#a78bfa' },
+                { icon: 'ðŸ†', label: 'Score â‰¥ 80', value: products.filter(p => seoScore(stored[p.id] || {}) >= 80).length, colour: '#4ade80' },
+                { icon: 'âš ï¸', label: 'Score < 50', value: products.filter(p => stored[p.id] && seoScore(stored[p.id] || {}) < 50).length, colour: '#fbbf24' },
+                { icon: 'âŒ', label: 'No SEO data', value: products.filter(p => !stored[p.id]?.seoTitle).length, colour: '#f87171' },
+                { icon: 'ðŸ”‘', label: 'Have Keywords', value: products.filter(p => stored[p.id]?.keywords).length, colour: '#22d3ee' },
+              ].map(st => (
+                <div key={st.label} style={{ background: 'linear-gradient(135deg, #0d1628, #0f1a2e)', border: '1px solid #1a2740', borderRadius: 16, padding: '18px 20px' }}>
+                  <div style={{ fontSize: 28, marginBottom: 10 }}>{st.icon}</div>
+                  <div style={{ fontSize: 32, fontWeight: 900, color: st.colour, lineHeight: 1 }}>{st.value}</div>
+                  <div style={{ fontSize: 12, color: '#475569', marginTop: 5, fontWeight: 500 }}>{st.label}</div>
                 </div>
               ))}
             </div>
 
             {/* Score distribution */}
-            <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 24, marginBottom: 20 }}>
-              <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#e5e7eb' }}>SEO Score Distribution</h3>
-              {[{ label: 'Excellent (80–100)', min: 80, max: 100, color: '#4ade80' }, { label: 'Good (60–79)', min: 60, max: 79, color: '#a3e635' }, { label: 'Needs Work (40–59)', min: 40, max: 59, color: '#fbbf24' }, { label: 'Poor (0–39)', min: 0, max: 39, color: '#f87171' }].map(band => {
-                const count = shopifyProducts.filter(p => { const s = seoScore(stored[p.id] || {}); return s >= band.min && s <= band.max; }).length;
-                const pct = shopifyProducts.length ? Math.round(count / shopifyProducts.length * 100) : 0;
+            <div style={{ background: 'linear-gradient(135deg, #0d1628, #0f1a2e)', border: '1px solid #1a2740', borderRadius: 16, padding: 24, marginBottom: 20 }}>
+              <h3 style={{ margin: '0 0 18px', fontSize: 16, fontWeight: 800, color: '#e2e8f0' }}>Score Distribution</h3>
+              {[{ label: 'Excellent (80â€“100)', min: 80, max: 100, colour: '#4ade80' }, { label: 'Good (60â€“79)', min: 60, max: 79, colour: '#a3e635' }, { label: 'Needs Work (40â€“59)', min: 40, max: 59, colour: '#fbbf24' }, { label: 'Poor (0â€“39)', min: 0, max: 39, colour: '#f87171' }].map(band => {
+                const count = products.filter(p => { const s = seoScore(stored[p.id] || {}); return s >= band.min && s <= band.max; }).length;
+                const pct = products.length ? Math.round((count / products.length) * 100) : 0;
                 return (
-                  <div key={band.label} style={{ marginBottom: 12 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <div key={band.label} style={{ marginBottom: 14 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
                       <span style={{ fontSize: 13, color: '#94a3b8' }}>{band.label}</span>
-                      <span style={{ fontSize: 13, color: band.color, fontWeight: 600 }}>{count} products ({pct}%)</span>
+                      <span style={{ fontSize: 13, color: band.colour, fontWeight: 700 }}>{count} products Â· {pct}%</span>
                     </div>
-                    <div style={{ height: 8, background: '#0f172a', borderRadius: 4, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${pct}%`, background: band.color, borderRadius: 4, transition: 'width 0.5s' }} />
+                    <div style={{ height: 10, background: '#0a0f1a', borderRadius: 5, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${band.colour}80, ${band.colour})`, borderRadius: 5, transition: 'width 0.6s ease' }} />
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Products needing attention */}
-            <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 24 }}>
-              <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#e5e7eb' }}>🔴 Products Needing Attention</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {shopifyProducts
-                  .filter(p => seoScore(stored[p.id] || {}) < 50)
-                  .slice(0, 8)
-                  .map(p => {
+            {/* Needs attention */}
+            <div style={{ background: 'linear-gradient(135deg, #0d1628, #0f1a2e)', border: '1px solid #1a2740', borderRadius: 16, padding: 24 }}>
+              <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 800, color: '#e2e8f0' }}>ðŸ”´ Needs Attention</h3>
+              {products.filter(p => seoScore(stored[p.id] || {}) < 50).length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '24px 0', color: '#4ade80', fontSize: 15, fontWeight: 700 }}>ðŸ† All products have good SEO scores!</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {products.filter(p => seoScore(stored[p.id] || {}) < 50).slice(0, 10).map(p => {
                     const ps = seoScore(stored[p.id] || {});
-                    const issues = [];
+                    const { colour: pc } = seoGrade(ps);
                     const f = stored[p.id] || {};
+                    const issues = [];
                     if (!f.seoTitle) issues.push('No SEO title');
                     else if (f.seoTitle.length < 30) issues.push('Title too short');
                     else if (f.seoTitle.length > 60) issues.push('Title too long');
                     if (!f.seoDescription) issues.push('No meta description');
                     if (!f.keywords) issues.push('No keywords');
+                    const kws = (f.keywords || '').split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+                    if (f.seoTitle && kws.length && !kws.some(k => f.seoTitle.toLowerCase().includes(k))) issues.push('Keyword not in title');
                     return (
-                      <div key={p.id} onClick={() => selectProduct(p)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', background: '#0f172a', borderRadius: 10, cursor: 'pointer' }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#162032'}
-                        onMouseLeave={e => e.currentTarget.style.background = '#0f172a'}>
-                        {p.image && <img src={p.image} alt={p.title} style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover' }} />}
+                      <div key={p.id} onClick={() => selectProduct(p)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', background: '#0a0f1a', borderRadius: 10, cursor: 'pointer', transition: 'background 0.15s' }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#0f1829'}
+                        onMouseLeave={e => e.currentTarget.style.background = '#0a0f1a'}>
+                        {p.image && <img src={p.image} alt={p.title} style={{ width: 34, height: 34, borderRadius: 7, objectFit: 'cover' }} />}
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 600, fontSize: 14, color: '#e5e7eb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</div>
-                          <div style={{ fontSize: 12, color: '#f87171', marginTop: 2 }}>{issues.join(' • ')}</div>
+                          <div style={{ fontWeight: 600, fontSize: 14, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</div>
+                          <div style={{ fontSize: 11, color: '#f87171', marginTop: 2 }}>{issues.join(' Â· ')}</div>
                         </div>
-                        <div style={{ fontSize: 18, fontWeight: 800, color: '#f87171', minWidth: 36, textAlign: 'right' }}>{ps}</div>
-                        <span style={{ fontSize: 12, color: '#7fffd4', fontWeight: 600 }}>Fix →</span>
+                        <div style={{ fontSize: 20, fontWeight: 900, color: pc, minWidth: 34, textAlign: 'right' }}>{ps}</div>
+                        <span style={{ fontSize: 12, color: '#7fffd4', fontWeight: 700, whiteSpace: 'nowrap' }}>Fix â†’</span>
                       </div>
                     );
                   })}
-                {shopifyProducts.filter(p => seoScore(stored[p.id] || {}) < 50).length === 0 && (
-                  <div style={{ textAlign: 'center', color: '#4ade80', padding: '24px 0', fontSize: 15, fontWeight: 600 }}>🏆 All products have good SEO scores!</div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -848,10 +878,14 @@ export default function ProductSeoEngine() {
       </div>
 
       <style>{`
-        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
-        input:focus, textarea:focus { border-color: #7fffd4 !important; box-shadow: 0 0 0 3px rgba(127,255,212,0.1); }
-        button:active { transform: scale(0.97); }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        input:focus, textarea:focus { border-color: #7fffd4 !important; box-shadow: 0 0 0 3px #7fffd415 !important; }
+        button:not(:disabled):active { transform: scale(0.96); }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #0a0f1a; } ::-webkit-scrollbar-thumb { background: #1a2740; border-radius: 3px; }
       `}</style>
     </div>
   );
 }
+
+
