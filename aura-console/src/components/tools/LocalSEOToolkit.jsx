@@ -46,6 +46,27 @@ export default function LocalSEOToolkit() {
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
+  // Sync GMB
+  const handleSyncGMB = async () => {
+    if (!input) return;
+    setError("");
+    try {
+      const res = await fetch("/api/local-seo-toolkit/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ location: input })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Unknown error");
+      if (data.gmb) setGmb(data.gmb);
+      if (data.citations) setCitations(data.citations);
+      if (data.reviews) setReviews(data.reviews);
+      if (data.rankings) setRankings(data.rankings);
+    } catch (err) {
+      setError(err.message || "Failed to sync");
+    }
+  };
+
   // Feedback
   const handleFeedback = async () => {
     if (!feedback) return;
@@ -72,7 +93,7 @@ export default function LocalSEOToolkit() {
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Business or Location</div>
         <input value={input} onChange={e => setInput(e.target.value)} placeholder="Enter your business name or location..." style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #ccc', width: 420, marginBottom: 18 }} aria-label="Business or Location" />
-        <button style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginLeft: 12 }}>Sync GMB</button>
+        <button onClick={handleSyncGMB} disabled={!input} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: input ? 'pointer' : 'not-allowed', marginLeft: 12, opacity: input ? 1 : 0.5 }}>Sync GMB</button>
       </div>
       {/* GMB Data */}
       <div style={{ marginBottom: 32 }}>

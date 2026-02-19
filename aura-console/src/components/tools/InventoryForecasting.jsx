@@ -136,35 +136,19 @@ export default function InventoryForecasting() {
       </div>
       {/* History */}
       {history.length > 0 && (
-        <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
-          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Forecast History</div>
-          <ul style={{ paddingLeft: 18 }}>
-            {history.map((h, i) => (
-              <li key={i} style={{ marginBottom: 10 }}>
-                <div><b>Input:</b> {h.input}</div>
-                <div><b>Result:</b> {JSON.stringify(h.result).slice(0, 120)}{JSON.stringify(h.result).length > 120 ? "..." : ""}</div>
-              </li>
-            ))}
-          </ul>
+        <div style={{ marginTop: 24, background: "#181f2a", borderRadius: 12, padding: 18 }}>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: "#e2e8f0" }}>Forecast History</div>
+          {history.map((h, i) => (
+            <div key={i} style={{ background: "#23263a", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2f3a50" }}>
+              <div style={{ fontWeight: 600, color: "#e2e8f0", fontSize: 13 }}>{h.input ? h.input.slice(0, 60) + (h.input.length > 60 ? "…" : "") : `Run #${i+1}`}</div>
+              {h.result && <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>{JSON.stringify(h.result).slice(0, 150)}{JSON.stringify(h.result).length > 150 ? "…" : ""}</div>}
+            </div>
+          ))}
         </div>
       )}
-      {/* Feedback */}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#232336', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
-        <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
-        <textarea
-          value={feedback}
-          onChange={e => setFeedback(e.target.value)}
-          rows={3}
-          style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid #ccc', marginBottom: 12 }}
-          placeholder="Share your feedback or suggestions..."
-          aria-label="Feedback"
-        />
-        <button type="submit" style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Send Feedback</button>
-        {error && <div style={{ color: '#ef4444', marginTop: 8 }}>{error}</div>}
-      </form>
       {/* Accessibility & Compliance */}
-      <div style={{ marginTop: 32, fontSize: 13, color: darkMode ? "#a3e635" : "#64748b", textAlign: "center" }}>
-        <span>Best-in-class SaaS features. Accessibility: WCAG 2.1, keyboard navigation, color contrast. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", textDecoration: 'underline' }}>Contact Support</a></span>
+      <div style={{ marginTop: 32, fontSize: 13, color: "#64748b", textAlign: "center" }}>
+        <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: "#0ea5e9", textDecoration: "underline" }}>Contact Support</a></span>
       </div>
     </div>
   );

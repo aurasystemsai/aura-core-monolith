@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import './CustomerDataPlatform.css';
 
+function FeedbackModal({ open, onClose, onSubmit }) {
+  const [text, setText] = React.useState('');
+  if (!open) return null;
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: '#0008', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ background: '#23263a', borderRadius: 14, padding: 28, minWidth: 340, boxShadow: '0 8px 32px #000a' }}>
+        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 12, color: '#f3f4f6' }}>Send Feedback</div>
+        <textarea value={text} onChange={e => setText(e.target.value)} rows={4} style={{ width: '100%', background: '#1e2235', color: '#f3f4f6', border: '1px solid #374151', borderRadius: 8, padding: 10, fontSize: 14, boxSizing: 'border-box' }} placeholder='Share your feedback...' />
+        <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+          <button onClick={() => { onSubmit(text); setText(''); }} disabled={!text} style={{ background: '#7fffd4', color: '#23263a', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer' }}>Submit</button>
+          <button onClick={onClose} style={{ background: '#374151', color: '#f3f4f6', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Main CDP Component
 
 export default function CustomerDataPlatform() {
@@ -155,7 +172,7 @@ export default function CustomerDataPlatform() {
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
           <button onClick={toggleAccessibility} aria-label="Toggle accessibility mode" style={{ background: accessibilityMode ? "#a3e635" : "#e0e7ff", color: accessibilityMode ? "#23263a" : "#6366f1", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Accessibility</button>
-          <button onClick={() => setShowHelp(true)} aria-label="Help" style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}><FiHelpCircle /></button>
+          <button onClick={() => setShowHelp(true)} aria-label="Help" style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>?</button>
         </div>
       </div>
       <div style={{ marginBottom: 10, color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>
@@ -163,16 +180,16 @@ export default function CustomerDataPlatform() {
       </div>
       <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
         <button onClick={() => setShowOnboarding(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
-        <button onClick={fetchAnalytics} style={{ background: "#eab308", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}><FiBarChart2 /> Analytics</button>
+        <button onClick={fetchAnalytics} style={{ background: "#eab308", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>📊 Analytics</button>
         <label style={{ background: "#a3e635", color: "#23263a", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>
-          <FiUpload /> Import
+          ⬆ Import
           <input type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} disabled={importing} />
         </label>
-        <button onClick={handleExport} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }} disabled={exporting}><FiDownload /> Export</button>
-        <button onClick={() => setShowFeedback(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}><FiBell /> Feedback</button>
+        <button onClick={handleExport} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }} disabled={exporting}>⬇ Export</button>
+        <button onClick={() => setShowFeedback(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>💬 Feedback</button>
         <button onClick={checkRBAC} style={{ background: "#e0e7ff", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>RBAC</button>
         <button onClick={fetchCompliance} style={{ background: "#e0e7ff", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Compliance</button>
-        <button onClick={runPlugin} style={{ background: "#e0e7ff", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}><FiSettings /> Plugin</button>
+        <button onClick={runPlugin} style={{ background: "#e0e7ff", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>⚙ Plugin</button>
       </div>
       {notification && <div style={{ color: "#22c55e", marginBottom: 10 }}>{notification}</div>}
       {showHelp && (
@@ -241,7 +258,7 @@ export default function CustomerDataPlatform() {
       {result && (
         <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635" : "#23263a" }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>Query Result:</div>
-          <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{JSON.stringify(result, null, 2)}</pre>
+          <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 14, lineHeight: 1.7 }}>{typeof result === 'string' ? result : JSON.stringify(result, null, 2)}</div>
         </div>
       )}
       {history.length > 0 && (

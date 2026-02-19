@@ -17,8 +17,10 @@ export default function RankVisibilityTracker() {
   const [feedback, setFeedback] = useState("");
   const [reportUrl, setReportUrl] = useState("");
   const [education, setEducation] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleRun = async () => {
+    setLoading(true);
     setError("");
     setResponse("");
     setAnalytics(null);
@@ -62,6 +64,8 @@ export default function RankVisibilityTracker() {
     } catch (err) {
       setError(err.message);
       setNotification("");
+    } finally {
+      setLoading(false);
     }
   };
 

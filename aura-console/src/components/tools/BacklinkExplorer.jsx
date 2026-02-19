@@ -113,9 +113,12 @@ export default function BacklinkExplorer() {
       <button onClick={handleAnalyze} disabled={loading || !domain} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Analyzing..." : "Analyze"}</button>
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {result && (
-        <div style={{ background: "#23263a", borderRadius: 10, padding: 16, marginBottom: 12, color: "#a3e635" }}>
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>Analysis Result:</div>
-          <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{JSON.stringify(result, null, 2)}</pre>
+        <div style={{ background: "#1e2235", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #2f3a50" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <span style={{ fontWeight: 700, color: "#a3e635", fontSize: 14 }}>Analysis Result</span>
+            <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #374151", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
+          </div>
+          <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 13, color: "#e2e8f0", margin: 0 }}>{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
       {history.length > 0 && (
@@ -123,10 +126,13 @@ export default function BacklinkExplorer() {
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analysis History</div>
                   <ul style={{ paddingLeft: 18 }}>
                     {history.map((h, i) => (
-                      <li key={i} style={{ marginBottom: 10 }}>
-                        <div><b>Domain:</b> {h.domain}</div>
-                        <div><b>Result:</b> {JSON.stringify(h.result).slice(0, 120)}{JSON.stringify(h.result).length > 120 ? "..." : ""}</div>
-                      </li>
+                    <div key={i} style={{ background: "#23263a", borderRadius: 8, padding: "12px 16px", border: "1px solid #2f3a50", marginBottom: 8 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
+                        <span style={{ fontWeight: 700, color: "#e2e8f0" }}>{h.domain}</span>
+                        <span style={{ color: "#64748b" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : `#${i+1}`}</span>
+                      </div>
+                      {h.result && <div style={{ fontSize: 13, color: "#94a3b8" }}>{JSON.stringify(h.result).slice(0, 200)}{JSON.stringify(h.result).length > 200 ? "…" : ""}</div>}
+                    </div>
                     ))}
                   </ul>
                 </div>
@@ -139,32 +145,17 @@ export default function BacklinkExplorer() {
                 {imported && <span style={{ marginLeft: 12, color: '#6366f1' }}>Imported: {imported}</span>}
                 {exported && <a href={exported} download="backlink-history.json" style={{ marginLeft: 12, color: '#22c55e', textDecoration: 'underline' }}>Download Export</a>}
               </div>
-              {/* Analytics Dashboard */}
-              <div style={{ marginBottom: 32 }}>
-                <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
-                <div style={{ fontSize: 15, color: '#a3e635' }}>
-                  {analytics.length ? (
-                    <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', color: '#a3e635', padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
-                  ) : (
-                    <span>No analytics yet. Analyze or import history to see results.</span>
-                  )}
+              <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
+                <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #2f3a50" }}>
+                  <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Analyses</div>
+                  <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{history.length}</div>
+                </div>
+                <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #2f3a50" }}>
+                  <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
+                  <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{analytics.length}</div>
                 </div>
               </div>
-              {/* Feedback */}
-              <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#23263a', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
-                <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
-                <textarea
-                  value={feedback}
-                  onChange={e => setFeedback(e.target.value)}
-                  rows={3}
-                  style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid #ccc', marginBottom: 12 }}
-                  placeholder="Share your feedback or suggestions..."
-                  aria-label="Feedback"
-                />
-                <button type="submit" style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Send Feedback</button>
-                {error && <div style={{ color: '#ef4444', marginTop: 8 }}>{error}</div>}
-              </form>
-              {/* Accessibility & Compliance */}
+{/* Accessibility & Compliance */}
               <div style={{ marginTop: 32, fontSize: 13, color: '#a3e635', textAlign: 'center' }}>
                 <span>Best-in-class SaaS features. Accessibility: WCAG 2.1, keyboard navigation, color contrast. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
               </div>

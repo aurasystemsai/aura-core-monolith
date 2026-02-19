@@ -21,7 +21,6 @@ export default function SocialSchedulerContentEngine() {
       const data = await res.json();
       if (data.ok) setHistory(data.history || []);
     } catch {}
-    // ...existing code...
   };
   // Fetch analytics
   const fetchAnalytics = async () => {

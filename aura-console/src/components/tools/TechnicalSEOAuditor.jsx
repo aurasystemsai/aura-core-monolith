@@ -11,6 +11,17 @@ export default function TechnicalSEOAuditor() {
   const [imported, setImported] = useState(null);
   const [exported, setExported] = useState(null);
   const [feedback, setFeedback] = useState("");
+  const [bulkUpload, setBulkUpload] = useState(null);
+  const [channels, setChannels] = useState({ google: true, bing: false, mobile: false });
+  const [aiModel, setAiModel] = useState("gpt-4");
+  const [darkMode] = useState(true);
+  const [collaborators, setCollaborators] = useState("");
+  const [accessLevel, setAccessLevel] = useState("editor");
+  const [privacy, setPrivacy] = useState("private");
+  const [compliance, setCompliance] = useState({ gdpr: false, ccpa: false });
+  const [education, setEducation] = useState("");
+  const [reportUrl, setReportUrl] = useState("");
+  const [notification, setNotification] = useState("");
   const fileInputRef = useRef();
 
   // Fetch history
@@ -101,6 +112,14 @@ export default function TechnicalSEOAuditor() {
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  // Share — generate a shareable link to the current report
+  const handleShare = () => {
+    if (!response) return;
+    const url = `${window.location.origin}?tool=technical-seo-auditor&site=${encodeURIComponent(input)}`;
+    setReportUrl(url);
+    navigator.clipboard?.writeText(url);
   };
 
   useEffect(() => {
@@ -211,10 +230,15 @@ export default function TechnicalSEOAuditor() {
         <div style={{ color: "#0af", marginTop: 12, fontWeight: 600 }}>{notification}</div>
       )}
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
-      {analytics && (
-        <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
-          <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Analytics</div>
-          <div style={{ fontSize: 16 }}>{JSON.stringify(analytics)}</div>
+      {analytics && analytics.length > 0 && (
+        <div style={{ marginTop: 24, background: "#1e2235", borderRadius: 12, padding: 18 }}>
+          <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8, color: "#7fffd4" }}>Analytics</div>
+          <div style={{ display: "flex", gap: 12 }}>
+            <div style={{ background: "#23263a", borderRadius: 8, padding: "12px 20px", border: "1px solid #2f3a50" }}>
+              <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Events</div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: "#7fffd4" }}>{analytics.length}</div>
+            </div>
+          </div>
         </div>
       )}
       {response && (

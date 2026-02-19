@@ -54,6 +54,7 @@ export default function BlogSEO() {
   ]);
   const [selectedProvider, setSelectedProvider] = useState("gpt-4");
   const [readiness, setReadiness] = useState(68);
+  const [activeTab, setActiveTab] = useState(null);
   const fileInputRef = useRef();
 
   const intentScore = useMemo(() => 88 + Math.round(Math.random() * 4), [topic, primaryKeyword]);
@@ -139,15 +140,26 @@ export default function BlogSEO() {
             <h4>{group.toUpperCase()}</h4>
             <div className="blogseo-tab-list">
               {items.map((item) => (
-                <div key={item} className="blogseo-tab-chip">
+                <div
+                  key={item}
+                  className={`blogseo-tab-chip${activeTab === item ? " blogseo-tab-chip--active" : ""}`}
+                  onClick={() => setActiveTab(activeTab === item ? null : item)}
+                  style={{ cursor: "pointer", opacity: activeTab && activeTab !== item ? 0.6 : 1 }}
+                >
                   <span>{item}</span>
-                  <span>↗</span>
+                  <span>{activeTab === item ? "✓" : "↗"}</span>
                 </div>
               ))}
             </div>
           </div>
         ))}
       </div>
+      {activeTab && (
+        <div style={{ background: "#1e2235", borderRadius: 10, padding: "14px 18px", marginBottom: 20, border: "1px solid #2f3a50", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ color: "#7fffd4", fontWeight: 700, fontSize: 14 }}>Active: {activeTab}</span>
+          <button onClick={() => setActiveTab(null)} style={{ background: "transparent", border: "1px solid #374151", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Close ✕</button>
+        </div>
+      )}
 
       <div className="blogseo-grid two-column">
         <div className="blogseo-card">

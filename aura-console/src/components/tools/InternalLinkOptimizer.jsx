@@ -180,25 +180,22 @@ export default function InternalLinkOptimizer() {
         </div>
       )}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
-        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Links</div>
-        <ul style={{ paddingLeft: 18 }}>
-          {links.map(l => (
-            <li key={l.id} style={{ marginBottom: 10 }}>
-              <div><b>ID:</b> {l.id}</div>
-              <div><b>Content:</b> {l.content || JSON.stringify(l)}</div>
-            </li>
-          ))}
-        </ul>
+      <div style={{ marginTop: 24, background: darkMode ? "#181f2a" : "#fff", borderRadius: 12, padding: 18, border: "1px solid #2f3a50" }}>
+        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: darkMode ? "#e2e8f0" : "#23263a" }}>Links</div>
+        {links.map(l => (
+          <div key={l.id} style={{ background: darkMode ? "#23263a" : "#f8fafc", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2f3a50" }}>
+            <span style={{ fontWeight: 600, color: darkMode ? "#e2e8f0" : "#23263a" }}>{l.content ? l.content.slice(0, 80) + (l.content.length > 80 ? "…" : "") : `Link #${l.id}`}</span>
+          </div>
+        ))}
       </div>
-      <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
-        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
-        <div style={{ fontSize: 15, color: darkMode ? "#a3e635" : "#23263a" }}>
-          {analytics.length ? (
-            <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "none", padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
-          ) : (
-            <span>No analytics yet. Generate or import links to see results.</span>
-          )}
+      <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
+        <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #2f3a50" }}>
+          <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Links</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{links.length}</div>
+        </div>
+        <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #2f3a50" }}>
+          <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{analytics.length}</div>
         </div>
       </div>
       <div style={{ marginTop: 32, fontSize: 13, color: darkMode ? "#a3e635" : "#64748b", textAlign: "center" }}>

@@ -148,9 +148,11 @@ export default function CustomerSupportAI() {
       {notification && <div style={{ color: "#0af", marginTop: 12, fontWeight: 600 }}>{notification}</div>}
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
       {analytics && (
-        <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
-          <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Analytics</div>
-          <div style={{ fontSize: 16 }}>{JSON.stringify(analytics)}</div>
+        <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
+          <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #2f3a50" }}>
+            <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Runs</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: "#7fffd4", marginTop: 2 }}>{history.length}</div>
+          </div>
         </div>
       )}
       {response && (
@@ -175,27 +177,6 @@ export default function CustomerSupportAI() {
           </ul>
         </div>
       )}
-      <form
-        onSubmit={e => { e.preventDefault(); handleFeedback(); }}
-        style={{ marginTop: 32, background: darkMode ? "#23263a" : "#f8fafc", borderRadius: 12, padding: 20 }}
-        aria-label="Send feedback"
-      >
-        <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
-        <textarea
-          value={feedback}
-          onChange={e => setFeedback(e.target.value)}
-          rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 12, background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
-          placeholder="Share your feedback or suggestions..."
-          aria-label="Feedback input"
-        />
-        <button
-          type="submit"
-          style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
-        >
-          Send Feedback
-        </button>
-      </form>
       <div style={{ marginTop: 32, fontSize: 13, color: darkMode ? "#a3e635" : "#64748b", textAlign: "center" }}>
         <span>Integrations: <b>CRM</b>, <b>Shopify</b>, <b>Support APIs</b> | Accessible, secure, and best-in-class SaaS features.</span>
       </div>

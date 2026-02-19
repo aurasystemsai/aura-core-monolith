@@ -142,24 +142,9 @@ export default function AuraOperationsAI() {
         </div>
       )}
 
-      {/* Feedback */}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#232336', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
-        <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
-        <textarea
-          value={feedback}
-          onChange={e => setFeedback(e.target.value)}
-          rows={3}
-          style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid #ccc', marginBottom: 12 }}
-          placeholder="Share your feedback or suggestions..."
-          aria-label="Feedback"
-        />
-        <button type="submit" style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Send Feedback</button>
-        {error && <div style={{ color: '#ef4444', marginTop: 8 }}>{error}</div>}
-      </form>
-
       {/* Accessibility & Compliance */}
       <div style={{ marginTop: 32, fontSize: 13, color: '#64748b', textAlign: 'center' }}>
-        <span>Best-in-class SaaS features. Accessibility: WCAG 2.1, keyboard navigation, color contrast. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
+        <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
       </div>
     </div>
   );

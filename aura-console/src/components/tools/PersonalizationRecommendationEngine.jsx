@@ -252,9 +252,12 @@ export default function PersonalizationRecommendationEngine() {
       <button onClick={handleQuery} disabled={loading || !query} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Querying..." : "Get Recommendation"}</button>
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {result && (
-        <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635" : "#23263a" }}>
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>Recommendation Result:</div>
-          <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{JSON.stringify(result, null, 2)}</pre>
+        <div style={{ background: "#1e2235", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #2f3a50" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <span style={{ fontWeight: 700, color: "#a3e635", fontSize: 14 }}>Recommendation Result</span>
+            <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #374151", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
+          </div>
+          <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 13, color: "#e2e8f0", margin: 0 }}>{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
       {history.length > 0 && (
@@ -262,10 +265,10 @@ export default function PersonalizationRecommendationEngine() {
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Recommendation History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, i) => (
-              <li key={i} style={{ marginBottom: 10 }}>
-                <div><b>Query:</b> {h.query}</div>
-                <div><b>Result:</b> {JSON.stringify(h.result).slice(0, 120)}{JSON.stringify(h.result).length > 120 ? "..." : ""}</div>
-              </li>
+              <div key={i} style={{ background: "#23263a", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2f3a50" }}>
+                <div style={{ fontWeight: 600, fontSize: 13, color: "#e2e8f0" }}>{h.query}</div>
+                <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>{JSON.stringify(h.result).slice(0, 150)}{JSON.stringify(h.result).length > 150 ? "…" : ""}</div>
+              </div>
             ))}
           </ul>
         </div>

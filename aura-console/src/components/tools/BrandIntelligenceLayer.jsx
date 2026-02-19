@@ -1,5 +1,6 @@
 
 import React, { useState, useRef } from "react";
+import { apiFetch } from "../../api";
 
 export default function BrandIntelligenceLayer() {
   const [input, setInput] = useState("");

@@ -43,6 +43,24 @@ export default function InternalLinkingSuggestions() {
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
+  // Get suggestions
+  const handleGetSuggestions = async () => {
+    if (!input) return;
+    setError("");
+    try {
+      const res = await fetch("/api/internal-linking-suggestions/ai/suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: input })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Unknown error");
+      setSuggestions(data.suggestions || []);
+    } catch (err) {
+      setError(err.message || "Failed to get suggestions");
+    }
+  };
+
   // Feedback
   const handleFeedback = async () => {
     if (!feedback) return;
@@ -69,7 +87,7 @@ export default function InternalLinkingSuggestions() {
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analyze Content or URL</div>
         <input value={input} onChange={e => setInput(e.target.value)} placeholder="Paste your content or page URL here..." style={{ fontSize: 16, padding: 8, borderRadius: 8, border: '1px solid #ccc', width: 420, marginBottom: 18 }} aria-label="Content or URL" />
-        <button style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginLeft: 12 }}>Get Suggestions</button>
+        <button onClick={handleGetSuggestions} disabled={!input} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: input ? 'pointer' : 'not-allowed', marginLeft: 12, opacity: input ? 1 : 0.5 }}>Get Suggestions</button>
       </div>
       {/* Suggestions Table */}
       <div style={{ marginBottom: 32 }}>

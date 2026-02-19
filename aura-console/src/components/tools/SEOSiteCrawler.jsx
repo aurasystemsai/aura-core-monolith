@@ -131,9 +131,12 @@ export default function SEOSiteCrawler() {
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {response && (
-        <div style={{ background: "#23263a", borderRadius: 10, padding: 16, marginBottom: 12, color: "#7fffd4" }}>
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Crawl Report:</div>
-          <div>{response}</div>
+        <div style={{ background: "#1e2235", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #2f3a50" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <span style={{ fontWeight: 700, color: "#7fffd4", fontSize: 14 }}>AI Crawl Report</span>
+            <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #374151", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
+          </div>
+          <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, fontSize: 14, color: "#e2e8f0" }}>{response}</div>
         </div>
       )}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
@@ -141,36 +144,26 @@ export default function SEOSiteCrawler() {
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: "#7fffd4" }}>History</div>
         <ul style={{ paddingLeft: 18 }}>
           {history.map(h => (
-            <li key={h.id} style={{ marginBottom: 10, color: "#f3f4f6" }}>
-              <div><b>ID:</b> {h.id}</div>
-              <div><b>Site:</b> {h.site}</div>
-              <div><b>Report:</b> {h.report || JSON.stringify(h)}</div>
-            </li>
+            <div key={h.id} style={{ background: "#23263a", borderRadius: 8, padding: "12px 16px", border: "1px solid #2f3a50", marginBottom: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
+                <span style={{ fontWeight: 700, color: "#e2e8f0" }}>{h.site}</span>
+                <span style={{ color: "#64748b" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : `#${h.id}`}</span>
+              </div>
+              {h.report && <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.5 }}>{typeof h.report === "string" ? h.report.slice(0, 200) + (h.report.length > 200 ? "…" : "") : ""}</div>}
+            </div>
           ))}
         </ul>
       </div>
-      <div style={{ marginTop: 24, background: "#181f2a", borderRadius: 12, padding: 18 }}>
-        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: "#7fffd4" }}>Analytics</div>
-        <div style={{ fontSize: 15, color: "#f3f4f6" }}>
-          {analytics.length ? (
-            <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "none", color: "#7fffd4", padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
-          ) : (
-            <span>No analytics yet. Generate or import history to see results.</span>
-          )}
+      <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
+        <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #2f3a50" }}>
+          <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Crawls</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#7fffd4", marginTop: 2 }}>{history.length}</div>
+        </div>
+        <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #2f3a50" }}>
+          <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#7fffd4", marginTop: 2 }}>{analytics.length}</div>
         </div>
       </div>
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#23263a", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
-        <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
-        <textarea
-          value={feedback}
-          onChange={e => setFeedback(e.target.value)}
-          rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#23263a", color: "#f3f4f6" }}
-          placeholder="Share your feedback or suggestions..."
-          aria-label="Feedback input"
-        />
-        <button type="submit" style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send Feedback</button>
-      </form>
     </div>
   );
 }
