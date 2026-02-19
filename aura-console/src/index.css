@@ -1,16 +1,16 @@
 :root {
-  --bg: #050814;
-  --bg-alt: #070b1c;
-  --card: #232b3b;
-  --border: #151b33;
-  --text: #f3f4f6;
-  --muted: #9ca3c7;
-  --accent: #00f0ff;
-  --accent-soft: rgba(0, 240, 255, 0.18);
-  --error: #ff5c7a;
-  --radius-lg: 24px;
-  --radius-md: 12px;
-  --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.6);
+  --bg: #0a0a0a;
+  --bg-alt: #111111;
+  --card: #161616;
+  --border: #242424;
+  --text: #f0f0f0;
+  --muted: #6b6b6b;
+  --accent: #ffffff;
+  --accent-soft: rgba(255, 255, 255, 0.06);
+  --error: #f87171;
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.6);
   --font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
 
@@ -30,8 +30,7 @@ body,
 
 body {
   font-family: var(--font);
-  background: radial-gradient(circle at top, #111827 0, #020617 45%, #000 100%);
-
+  background: #0a0a0a;
   color: var(--text);
 }
 
@@ -39,16 +38,9 @@ body {
 
 .app {
   min-height: 100vh;
-  text-transform: uppercase;
-  /* font-size: 13px; */
-  color: var(--accent);
+  color: var(--text);
 }
 
-  body {
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--text);
-  }
 .branding .subtitle {
   color: var(--muted);
   margin-top: 4px;

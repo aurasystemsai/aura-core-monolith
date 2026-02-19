@@ -424,27 +424,24 @@ function App() {
               className={activeSection === 'dashboard' ? 'nav-link-active' : 'nav-link'}
               onClick={() => setActiveSection('dashboard')}
             >
-              <span className="nav-icon">📊</span>
               Dashboard
             </button>
             <button
               className={activeSection === 'all-tools' || activeSection === 'main-suite' || activeSection.includes('suite') ? 'nav-link-active' : 'nav-link'}
               onClick={() => setActiveSection('all-tools')}
             >
-              <span className="nav-icon">🚀</span>
               Tools
             </button>
             <button
               className={activeSection === 'settings' ? 'nav-link-active' : 'nav-link'}
               onClick={() => setActiveSection('settings')}
             >
-              <span className="nav-icon">⚙️</span>
               Settings
             </button>
           </div>
           <div className="nav-actions">
             {plan && plan !== 'free' && (
-              <span style={{ fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 12, background: PLAN_COLOUR[plan] + '22', color: PLAN_COLOUR[plan], border: `1px solid ${PLAN_COLOUR[plan]}55`, marginRight: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 6, background: '#1a1a1a', color: '#aaaaaa', border: '1px solid #2a2a2a', marginRight: 8, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                 {PLAN_LABEL[plan]}
               </span>
             )}
@@ -587,44 +584,45 @@ function App() {
           </div>
         </main>
         {/* Floating AI Chatbot widget - always visible at root */}
-        <div style={{ position: "fixed", bottom: 32, right: 32, zIndex: 9999 }}>
+        <div style={{ position: "fixed", bottom: 28, right: 28, zIndex: 9999 }}>
           {!showChatbot && (
             <button
               onClick={() => setShowChatbot(true)}
               style={{
-                background: "#232b3b",
-                color: "#7fffd4",
+                background: "#ffffff",
+                color: "#000000",
                 border: "none",
-                borderRadius: 50,
-                boxShadow: "0 2px 12px #22d3ee55",
-                padding: "16px 22px",
-                fontWeight: 700,
-                fontSize: 18,
-                cursor: "pointer"
+                borderRadius: 10,
+                boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
+                padding: "11px 20px",
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: "pointer",
+                letterSpacing: "0.01em"
               }}
               aria-label="Open AI Chatbot"
             >
-              💬 Chat
+              AI Chat
             </button>
           )}
           {showChatbot && (
             <div style={{ position: "relative", width: 400, maxWidth: "90vw" }}>
-              <div style={{ position: "absolute", top: -38, right: 0 }}>
+              <div style={{ position: "absolute", top: -40, right: 0 }}>
                 <button
                   onClick={() => setShowChatbot(false)}
                   style={{
-                    background: "#ff4d4f",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 20,
-                    padding: "4px 12px",
-                    fontWeight: 700,
-                    fontSize: 14,
+                    background: "#1a1a1a",
+                    color: "#aaaaaa",
+                    border: "1px solid #2a2a2a",
+                    borderRadius: 8,
+                    padding: "5px 14px",
+                    fontWeight: 600,
+                    fontSize: 13,
                     cursor: "pointer"
                   }}
                   aria-label="Close AI Chatbot"
                 >
-                  ✕ Close
+                  Close
                 </button>
               </div>
               <AiChatbot coreUrl={coreUrl} />
