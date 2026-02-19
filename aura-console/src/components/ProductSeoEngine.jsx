@@ -91,6 +91,10 @@ export default function ProductSeoEngine() {
   const [bulkResults, setBulkResults] = useState([]);
   const [bulkPushing, setBulkPushing] = useState(false);
 
+  // Per-field generate
+  const [kwInput, setKwInput] = useState('');
+  const [fieldGenerating, setFieldGenerating] = useState({});
+
   // Analytics
   const [analytics, setAnalytics] = useState({ generated: 0, pushed: 0, avgScore: 0, topIssues: [] });
 
@@ -177,6 +181,63 @@ export default function ProductSeoEngine() {
     const stored = JSON.parse(localStorage.getItem('aura_seo_records') || '{}');
     stored[productId] = { ...(stored[productId] || {}), ...fields };
     localStorage.setItem('aura_seo_records', JSON.stringify(stored));
+  }
+
+  async function generateField(field) {
+    if (!selectedProduct) return;
+    setFieldGenerating(f => ({ ...f, [field]: true }));
+    try {
+      const res = await apiFetch('/api/product-seo/generate', {
+        method: 'POST',
+        data: { productName: selectedProduct.title, productDescription: selectedProduct.title + (selectedProduct.tags ? '. Tags: ' + selectedProduct.tags : '') },
+      });
+      const raw = res.result || '';
+      const extract = (label, text) => {
+        const re = new RegExp(label + '[:\\s]+(.+)', 'i');
+        const m = text.match(re);
+        return m ? m[1].replace(/^["']|["']$/g, '').trim() : '';
+      };
+      if (field === 'seoTitle') {
+        const val = extract('(seo )?title', raw) || selectedProduct.title;
+        setEditor(e => ({ ...e, seoTitle: val }));
+        saveLocal(selectedProduct.id, { seoTitle: val });
+      } else if (field === 'seoDescription') {
+        const val = extract('meta description', raw) || extract('description', raw) || '';
+        setEditor(e => ({ ...e, seoDescription: val }));
+        saveLocal(selectedProduct.id, { seoDescription: val });
+      } else if (field === 'keywords') {
+        const val = extract('keywords', raw) || extract('keyword', raw) || '';
+        setEditor(e => ({ ...e, keywords: val }));
+        saveLocal(selectedProduct.id, { keywords: val });
+      } else if (field === 'handle') {
+        const title = extract('(seo )?title', raw) || selectedProduct.title;
+        const val = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        setEditor(e => ({ ...e, handle: val }));
+        saveLocal(selectedProduct.id, { handle: val });
+      } else if (field === 'altText') {
+        const val = extract('alt text', raw) || extract('alt', raw) || `${selectedProduct.title} product image`;
+        setEditor(e => ({ ...e, altText: val }));
+        saveLocal(selectedProduct.id, { altText: val });
+      }
+      showToast(`✨ ${field} generated!`);
+    } catch (err) {
+      showToast('Generation failed: ' + (err.response?.data?.error || err.message), 'error');
+    }
+    setFieldGenerating(f => ({ ...f, [field]: false }));
+  }
+
+  function addKeywordChip() {
+    const trimmed = kwInput.trim().replace(/,$/, '');
+    if (!trimmed) return;
+    const existing = editor.keywords.split(',').map(k => k.trim()).filter(Boolean);
+    const newKws = trimmed.split(/[,\n]+/).map(k => k.trim()).filter(k => k && !existing.includes(k));
+    if (newKws.length) setEditor(e => ({ ...e, keywords: [...existing, ...newKws].join(', ') }));
+    setKwInput('');
+  }
+
+  function removeKeywordChip(kw) {
+    const updated = editor.keywords.split(',').map(k => k.trim()).filter(k => k && k !== kw);
+    setEditor(e => ({ ...e, keywords: updated.join(', ') }));
   }
 
   async function pushToShopify() {
@@ -436,7 +497,13 @@ export default function ProductSeoEngine() {
 
                   {/* SEO Title */}
                   <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 20 }}>
-                    <label style={{ display: 'block', fontWeight: 700, color: '#94a3b8', marginBottom: 8, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>SEO Title (Page Title)</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <label style={{ fontWeight: 700, color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>SEO Title (Page Title)</label>
+                      <button onClick={() => generateField('seoTitle')} disabled={fieldGenerating.seoTitle || generating}
+                        style={{ background: 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 8, padding: '5px 14px', color: '#0f172a', fontWeight: 700, fontSize: 12, cursor: 'pointer', opacity: fieldGenerating.seoTitle ? 0.6 : 1 }}>
+                        {fieldGenerating.seoTitle ? '…' : '✨ Generate'}
+                      </button>
+                    </div>
                     <input value={editor.seoTitle} onChange={e => setEditor(ed => ({ ...ed, seoTitle: e.target.value }))}
                       placeholder="e.g. Premium Ski Wax — Fast & Long-Lasting | Brand Name"
                       style={{ width: '100%', background: '#0f172a', border: '1px solid #2f3650', borderRadius: 8, padding: '10px 14px', color: '#e5e7eb', fontSize: 15, outline: 'none', boxSizing: 'border-box' }}
@@ -447,7 +514,13 @@ export default function ProductSeoEngine() {
 
                   {/* Meta Description */}
                   <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 20 }}>
-                    <label style={{ display: 'block', fontWeight: 700, color: '#94a3b8', marginBottom: 8, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Meta Description</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <label style={{ fontWeight: 700, color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Meta Description</label>
+                      <button onClick={() => generateField('seoDescription')} disabled={fieldGenerating.seoDescription || generating}
+                        style={{ background: 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 8, padding: '5px 14px', color: '#0f172a', fontWeight: 700, fontSize: 12, cursor: 'pointer', opacity: fieldGenerating.seoDescription ? 0.6 : 1 }}>
+                        {fieldGenerating.seoDescription ? '…' : '✨ Generate'}
+                      </button>
+                    </div>
                     <textarea value={editor.seoDescription} onChange={e => setEditor(ed => ({ ...ed, seoDescription: e.target.value }))}
                       placeholder="Compelling description that appears in Google results. Include your main keyword and a call-to-action."
                       rows={4}
@@ -458,7 +531,13 @@ export default function ProductSeoEngine() {
 
                   {/* URL Handle */}
                   <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 20 }}>
-                    <label style={{ display: 'block', fontWeight: 700, color: '#94a3b8', marginBottom: 8, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>URL Handle / Slug</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <label style={{ fontWeight: 700, color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>URL Handle / Slug</label>
+                      <button onClick={() => generateField('handle')} disabled={fieldGenerating.handle || generating}
+                        style={{ background: 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 8, padding: '5px 14px', color: '#0f172a', fontWeight: 700, fontSize: 12, cursor: 'pointer', opacity: fieldGenerating.handle ? 0.6 : 1 }}>
+                        {fieldGenerating.handle ? '…' : '✨ Generate'}
+                      </button>
+                    </div>
                     <div style={{ display: 'flex', alignItems: 'center', background: '#0f172a', border: '1px solid #2f3650', borderRadius: 8, overflow: 'hidden' }}>
                       <span style={{ padding: '10px 12px', color: '#475569', fontSize: 13, borderRight: '1px solid #2f3650', whiteSpace: 'nowrap' }}>/products/</span>
                       <input value={editor.handle} onChange={e => setEditor(ed => ({ ...ed, handle: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') }))}
@@ -470,21 +549,40 @@ export default function ProductSeoEngine() {
 
                   {/* Keywords */}
                   <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 20 }}>
-                    <label style={{ display: 'block', fontWeight: 700, color: '#94a3b8', marginBottom: 8, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Focus Keywords</label>
-                    <input value={editor.keywords} onChange={e => setEditor(ed => ({ ...ed, keywords: e.target.value }))}
-                      placeholder="ski wax, fast wax, snowboard wax, performance ski wax"
-                      style={{ width: '100%', background: '#0f172a', border: '1px solid #2f3650', borderRadius: 8, padding: '10px 14px', color: '#e5e7eb', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
-                    />
-                    <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <label style={{ fontWeight: 700, color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Focus Keywords <span style={{ fontWeight: 400, textTransform: 'none', fontSize: 12 }}>(Enter or comma to add)</span></label>
+                      <button onClick={() => generateField('keywords')} disabled={fieldGenerating.keywords || generating}
+                        style={{ background: 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 8, padding: '5px 14px', color: '#0f172a', fontWeight: 700, fontSize: 12, cursor: 'pointer', opacity: fieldGenerating.keywords ? 0.6 : 1 }}>
+                        {fieldGenerating.keywords ? '…' : '✨ Generate'}
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, background: '#0f172a', border: '1px solid #2f3650', borderRadius: 8, padding: '8px 10px', minHeight: 44, alignItems: 'center' }}>
                       {editor.keywords.split(',').filter(k => k.trim()).map((kw, i) => (
-                        <span key={i} style={{ background: 'rgba(127,255,212,0.1)', border: '1px solid rgba(127,255,212,0.3)', borderRadius: 6, padding: '3px 10px', fontSize: 12, color: '#7fffd4' }}>{kw.trim()}</span>
+                        <span key={i} style={{ background: 'rgba(127,255,212,0.12)', border: '1px solid rgba(127,255,212,0.35)', borderRadius: 20, padding: '3px 10px 3px 12px', fontSize: 12, color: '#7fffd4', display: 'flex', alignItems: 'center', gap: 5 }}>
+                          {kw.trim()}
+                          <button onClick={() => removeKeywordChip(kw.trim())} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
+                        </span>
                       ))}
+                      <input
+                        value={kwInput}
+                        onChange={e => setKwInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addKeywordChip(); } }}
+                        onBlur={addKeywordChip}
+                        placeholder={editor.keywords ? 'Add another…' : 'e.g. snowboard, winter sports…'}
+                        style={{ flex: 1, minWidth: 120, background: 'none', border: 'none', color: '#e5e7eb', fontSize: 13, outline: 'none', padding: '2px 4px' }}
+                      />
                     </div>
                   </div>
 
                   {/* Alt Text */}
                   <div style={{ background: '#1e2a3a', border: '1px solid #2f3650', borderRadius: 14, padding: 20 }}>
-                    <label style={{ display: 'block', fontWeight: 700, color: '#94a3b8', marginBottom: 8, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Image Alt Text</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <label style={{ fontWeight: 700, color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Image Alt Text</label>
+                      <button onClick={() => generateField('altText')} disabled={fieldGenerating.altText || generating}
+                        style={{ background: 'linear-gradient(135deg, #7fffd4, #22d3ee)', border: 'none', borderRadius: 8, padding: '5px 14px', color: '#0f172a', fontWeight: 700, fontSize: 12, cursor: 'pointer', opacity: fieldGenerating.altText ? 0.6 : 1 }}>
+                        {fieldGenerating.altText ? '…' : '✨ Generate'}
+                      </button>
+                    </div>
                     <input value={editor.altText} onChange={e => setEditor(ed => ({ ...ed, altText: e.target.value }))}
                       placeholder="Descriptive alt text for the main product image"
                       style={{ width: '100%', background: '#0f172a', border: '1px solid #2f3650', borderRadius: 8, padding: '10px 14px', color: '#e5e7eb', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
