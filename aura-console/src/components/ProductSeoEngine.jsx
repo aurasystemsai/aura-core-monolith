@@ -4,13 +4,22 @@ import axios from 'axios';
 const apiFetch = (url, opts = {}) =>
   axios({ url, withCredentials: true, ...opts }).then(r => r.data);
 
+// Match a keyword against text: exact phrase OR all individual words present anywhere (word-level)
+function kwMatch(text, kw) {
+  const t = text.toLowerCase();
+  const k = kw.toLowerCase().trim();
+  if (t.includes(k)) return true;
+  const words = k.split(/\s+/).filter(Boolean);
+  return words.length > 1 && words.every(w => t.includes(w));
+}
+
 function seoScore(fields) {
   let s = 0;
   const title = (fields.seoTitle || '').toLowerCase();
   const desc = (fields.seoDescription || '').toLowerCase();
-  const kws = (fields.keywords || '').split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
-  const kwInTitle = kws.some(k => title.includes(k));
-  const kwInDesc = kws.some(k => desc.includes(k));
+  const kws = (fields.keywords || '').split(',').map(k => k.trim()).filter(Boolean);
+  const kwInTitle = kws.some(k => kwMatch(title, k));
+  const kwInDesc = kws.some(k => kwMatch(desc, k));
   if (fields.seoTitle && fields.seoTitle.length >= 30 && fields.seoTitle.length <= 60) s += 25;
   else if (fields.seoTitle) s += 10;
   if (fields.seoDescription && fields.seoDescription.length >= 120 && fields.seoDescription.length <= 160) s += 25;
@@ -300,13 +309,15 @@ export default function ProductSeoEngine() {
   const chips = editor.keywords.split(',').map(k => k.trim()).filter(Boolean);
   const titleLower = editor.seoTitle.toLowerCase();
   const descLower = editor.seoDescription.toLowerCase();
+  const kwInTitleMatch = (kw) => kwMatch(titleLower, kw);
+  const kwInDescMatch = (kw) => kwMatch(descLower, kw);
 
   const checklist = [
     { ok: editor.seoTitle.length >= 30 && editor.seoTitle.length <= 60, label: 'SEO title is 30-60 characters', tip: 'Currently ' + editor.seoTitle.length + ' chars' },
     { ok: editor.seoDescription.length >= 120 && editor.seoDescription.length <= 160, label: 'Meta description is 120-160 characters', tip: 'Currently ' + editor.seoDescription.length + ' chars' },
     { ok: chips.length >= 3, label: 'At least 3 focus keywords', tip: 'Currently ' + chips.length + ' keyword(s)' },
-    { ok: chips.some(k => titleLower.includes(k.toLowerCase())), label: 'Primary keyword in SEO title', tip: 'Add at least one keyword to the title' },
-    { ok: chips.some(k => descLower.includes(k.toLowerCase())), label: 'Primary keyword in meta description', tip: 'Add at least one keyword to the description' },
+    { ok: chips.some(k => kwInTitleMatch(k)), label: 'Primary keyword in SEO title', tip: 'Add at least one keyword to the title' },
+    { ok: chips.some(k => kwInDescMatch(k)), label: 'Primary keyword in meta description', tip: 'Add at least one keyword to the description' },
     { ok: !!editor.handle, label: 'URL handle / slug is set', tip: 'Set a clean URL slug' },
     { ok: !!editor.altText, label: 'Image alt text is set', tip: 'Describe the main product image' },
     { ok: !!editor.seoDescription && (editor.seoDescription.includes('!') || editor.seoDescription.toLowerCase().includes('buy') || editor.seoDescription.toLowerCase().includes('shop') || editor.seoDescription.toLowerCase().includes('get')), label: 'Meta description has a call-to-action', tip: 'Include buy, shop, get or use punctuation' },
@@ -523,8 +534,8 @@ export default function ProductSeoEngine() {
                       <FieldBlock label="Focus Keywords" hint="Press Enter or comma to add - colour shows presence in title/desc" badge={<GenBtn onClick={() => generateField('keywords')} loading={!!fieldGenerating.keywords} small />}>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, background: '#0a0f1a', border: '1px solid #1e2d42', borderRadius: 10, padding: '8px 10px', minHeight: 50, alignItems: 'center' }}>
                           {chips.map(kw => {
-                            const inT = titleLower.includes(kw.toLowerCase());
-                            const inD = descLower.includes(kw.toLowerCase());
+                            const inT = kwInTitleMatch(kw);
+                            const inD = kwInDescMatch(kw);
                             const colour = inT && inD ? '#4ade80' : inT || inD ? '#fbbf24' : '#f87171';
                             return (
                               <span key={kw} title={'Title: ' + (inT ? 'yes' : 'no') + ' / Desc: ' + (inD ? 'yes' : 'no')} style={{ background: colour + '18', border: '1px solid ' + colour + '40', borderRadius: 20, padding: '4px 10px 4px 12px', fontSize: 12, color: colour, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -562,8 +573,8 @@ export default function ProductSeoEngine() {
                           </div>
                         </div>
                         {(() => {
-                          const kwInT = chips.some(k => titleLower.includes(k.toLowerCase()));
-                          const kwInD = chips.some(k => descLower.includes(k.toLowerCase()));
+                          const kwInT = chips.some(k => kwInTitleMatch(k));
+                          const kwInD = chips.some(k => kwInDescMatch(k));
                           return [
                             { label: 'SEO Title', pts: 25, earned: editor.seoTitle.length >= 30 && editor.seoTitle.length <= 60 ? 25 : editor.seoTitle ? 10 : 0, ok: editor.seoTitle.length >= 30 && editor.seoTitle.length <= 60, msg: !editor.seoTitle ? 'Missing' : editor.seoTitle.length < 30 ? 'Too short' : editor.seoTitle.length > 60 ? 'Too long' : 'Perfect' },
                             { label: 'Meta Desc', pts: 25, earned: editor.seoDescription.length >= 120 && editor.seoDescription.length <= 160 ? 25 : editor.seoDescription ? 10 : 0, ok: editor.seoDescription.length >= 120 && editor.seoDescription.length <= 160, msg: !editor.seoDescription ? 'Missing' : editor.seoDescription.length < 120 ? 'Too short' : editor.seoDescription.length > 160 ? 'Too long' : 'Perfect' },
@@ -591,8 +602,8 @@ export default function ProductSeoEngine() {
                         <div style={{ background: 'linear-gradient(135deg, #0d1628, #0f1a2e)', border: '1px solid #1a2740', borderRadius: 16, padding: 18 }}>
                           <div style={{ fontWeight: 700, fontSize: 13, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Keyword Presence</div>
                           {chips.slice(0, 8).map(kw => {
-                            const inT = titleLower.includes(kw.toLowerCase());
-                            const inD = descLower.includes(kw.toLowerCase());
+                            const inT = kwInTitleMatch(kw);
+                            const inD = kwInDescMatch(kw);
                             return (
                               <div key={kw} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#0a0f1a', borderRadius: 8, marginBottom: 5 }}>
                                 <span style={{ fontSize: 12, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 130 }}>"{kw}"</span>

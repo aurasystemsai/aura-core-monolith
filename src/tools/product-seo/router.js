@@ -28,22 +28,25 @@ router.post('/generate', async (req, res) => {
     const kwList = focusKeywords
       ? focusKeywords.split(',').map(k => k.trim()).filter(Boolean)
       : [];
-    const kwSection = kwList.length
-      ? `\nFocus Keywords: ${kwList.join(', ')}\n`
-      : '';
+    // Extract every unique individual word across all keyword phrases
+    const allKwWords = kwList.length
+      ? [...new Set(kwList.flatMap(k => k.toLowerCase().split(/\s+/)).filter(w => w.length > 2))]
+      : [];
     const kwInstruction = kwList.length
-      ? `\nKEYWORD RULES (MANDATORY - do not skip any):\n` +
-        `- seoTitle: pick the 1-2 most important keywords from the list and include them verbatim\n` +
-        `- metaDescription: you MUST weave in as many of the following keywords as possible, verbatim, in natural flowing copy: ${kwList.join(', ')}\n` +
-        `- Every single keyword that fits within 160 characters must appear in metaDescription\n` +
-        `- Do NOT paraphrase or reword the keywords - use them exactly as written\n`
-      : `\n- seoTitle: 30-60 characters, include the main product keyword\n` +
-        `- metaDescription: 120-160 characters, include keywords and a CTA\n`;
-    const prompt = `You are an expert e-commerce SEO copywriter. Generate SEO fields and respond ONLY with valid JSON - no markdown, no extra text, no explanation.
+      ? `\nFOCUS KEYWORDS: ${kwList.join(', ')}\n` +
+        `\nMANDATORY KEYWORD RULES:\n` +
+        `1. seoTitle (30-60 chars): include the 1-2 highest-value keyword PHRASES verbatim\n` +
+        `2. metaDescription (150-200 chars): you MUST ensure ALL of these individual words appear somewhere in the text: ${allKwWords.join(', ')}\n` +
+        `   Write 2-3 short sentences. Distribute the keyword words naturally across all sentences.\n` +
+        `   Every word listed above must appear at least once. Do not skip any.\n` +
+        `3. End metaDescription with: Shop now!\n`
+      : `\nseoTitle: 30-60 chars with main keyword. metaDescription: 150-200 chars with keywords and CTA.\n`;
+    const prompt = `You are a strict e-commerce SEO copywriter. Respond ONLY with valid JSON - no markdown, no explanation.
 
 Product Name: ${productName}
-Product Description: ${productDescription}${kwSection}
-Respond with ONLY this JSON structure:
+Product Description: ${productDescription}
+${kwInstruction}
+JSON structure (respond with ONLY this, nothing else):
 {
   "seoTitle": "...",
   "metaDescription": "...",
@@ -51,13 +54,10 @@ Respond with ONLY this JSON structure:
   "keywords": "...",
   "altText": "..."
 }
-${kwInstruction}
-Additional rules:
-- seoTitle: 30-60 characters total
-- metaDescription: 120-160 characters total, end with a call-to-action (Shop now, Buy today, Get yours, etc.)
-- slug: lowercase, hyphens only
-- keywords: repeat the focus keywords list exactly, adding any extra relevant terms
-- altText: describe the product image using the primary keyword`;
+Other rules:
+- slug: lowercase hyphens only, derived from primary keyword
+- keywords: list all focus keywords exactly as provided
+- altText: product image description including primary keyword`;
     const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
