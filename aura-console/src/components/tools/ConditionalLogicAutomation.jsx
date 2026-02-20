@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
+﻿import React, { useEffect, useMemo, useState, useRef } from "react";
 import { apiFetch } from "../../api";
 import BackButton from "./BackButton";
 
@@ -950,62 +950,62 @@ export default function ConditionalLogicAutomation() {
   }, [flowNodes, branchGroup, undoStack, redoStack]);
 
   return (
-    <div style={{ background: "#0f1115", borderRadius: 18, boxShadow: "0 15px 60px #0007", padding: 32, fontFamily: "Inter, sans-serif", color: "#e5e7eb", border: "1px solid #1f2937" }}>
+    <div style={{ background: "#0f1115", borderRadius: 18, boxShadow: "0 15px 60px #0007", padding: 32, fontFamily: "Inter, sans-serif", color: "#f0f0f0", border: "1px solid #1a1a1a" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12, flexWrap: "wrap" }}>
         <BackButton label="← Back to Suite" onClick={goBackToSuite} />
-        <div style={{ color: "#9ca3af", fontSize: 13 }}>Workflows Suite · Conditional Logic & Branching</div>
+        <div style={{ color: "#888888", fontSize: 13 }}>Workflows Suite · Conditional Logic & Branching</div>
       </div>
 
       {isViewer && (
-        <div style={{ background: "#1f2937", border: "1px solid #374151", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ background: "#1a1a1a", border: "1px solid #333333", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <div>
             <div style={{ fontWeight: 800, color: "#fcd34d" }}>View-only mode</div>
-            <div style={{ color: "#9ca3af", fontSize: 13 }}>You can inspect conditional flows but need elevated access to edit or run simulations.</div>
+            <div style={{ color: "#888888", fontSize: 13 }}>You can inspect conditional flows but need elevated access to edit or run simulations.</div>
           </div>
-          <button onClick={() => setAccessRequested(true)} disabled={accessRequested} style={{ background: accessRequested ? "#374151" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: accessRequested ? "default" : "pointer" }}>
+          <button onClick={() => setAccessRequested(true)} disabled={accessRequested} style={{ background: accessRequested ? "#333333" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: accessRequested ? "default" : "pointer" }}>
             {accessRequested ? "Request sent" : "Request edit access"}
           </button>
         </div>
       )}
       {devSandbox && !isViewer && (
-        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <div>
             <div style={{ fontWeight: 800, color: "#f59e0b" }}>Sandbox only</div>
-            <div style={{ color: "#9ca3af", fontSize: 13 }}>Publishing is disabled in dev. Switch to Stage/Prod to run full simulations and attach preflight.</div>
+            <div style={{ color: "#888888", fontSize: 13 }}>Publishing is disabled in dev. Switch to Stage/Prod to run full simulations and attach preflight.</div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button onClick={() => setEnv("stage")} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Switch to Stage</button>
+            <button onClick={() => setEnv("stage")} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Switch to Stage</button>
             <button onClick={() => setEnv("prod")} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Go Prod</button>
           </div>
         </div>
       )}
       {issueHelp && (
-        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10, display: "grid", gap: 8, marginBottom: 12 }}>
+        <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: 10, display: "grid", gap: 8, marginBottom: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
             <div style={{ color: "#a5f3fc", fontWeight: 800 }}>Issue help</div>
-            <button onClick={() => setIssueHelp(null)} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "4px 8px", fontWeight: 700, cursor: "pointer" }}>Close</button>
+            <button onClick={() => setIssueHelp(null)} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px", fontWeight: 700, cursor: "pointer" }}>Close</button>
           </div>
-          <div style={{ color: "#e5e7eb" }}>{issueHelp}</div>
-          <div style={{ color: "#9ca3af", fontSize: 13 }}>Recommended fix: {issueHelp.toLowerCase().includes("branch") ? "Define branch conditions and ensure at least one action per branch." : issueHelp.toLowerCase().includes("trigger") ? "Add or enable a trigger node." : issueHelp.toLowerCase().includes("approval") ? "Capture an approver email or disable approvals." : "Review the trace, adjust conditions/actions, then rerun preflight."}</div>
+          <div style={{ color: "#f0f0f0" }}>{issueHelp}</div>
+          <div style={{ color: "#888888", fontSize: 13 }}>Recommended fix: {issueHelp.toLowerCase().includes("branch") ? "Define branch conditions and ensure at least one action per branch." : issueHelp.toLowerCase().includes("trigger") ? "Add or enable a trigger node." : issueHelp.toLowerCase().includes("approval") ? "Capture an approver email or disable approvals." : "Review the trace, adjust conditions/actions, then rerun preflight."}</div>
         </div>
       )}
 
       {history.length > 0 && (
-        <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 10, display: "grid", gap: 8 }}>
+        <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 10, display: "grid", gap: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <div style={{ fontWeight: 800 }}>Recent simulations</div>
-            <div style={{ color: "#9ca3af", fontSize: 12 }}>Last {Math.min(3, history.length)} shown</div>
+            <div style={{ color: "#888888", fontSize: 12 }}>Last {Math.min(3, history.length)} shown</div>
           </div>
           <div style={{ display: "grid", gap: 8 }}>
             {history.slice(0, 3).map((h, idx) => (
-              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px" }}>
+              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#111827", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 10px" }}>
                 <div>
-                  <div style={{ fontWeight: 700, color: "#e5e7eb" }}>{h.summary || "Run"} · {h.env}</div>
-                  <div style={{ color: "#9ca3af", fontSize: 12 }}>Saved {h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "recent"}</div>
+                  <div style={{ fontWeight: 700, color: "#f0f0f0" }}>{h.summary || "Run"} · {h.env}</div>
+                  <div style={{ color: "#888888", fontSize: 12 }}>Saved {h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "recent"}</div>
                 </div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  <button aria-label={`Load simulation ${idx + 1}`} onClick={() => restoreSnapshot(h)} style={{ background: "#1f2937", color: "#e5e7eb", border: "1px solid #334155", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load</button>
-                  <button aria-label={`Re-run simulation ${idx + 1}`} onClick={() => { restoreSnapshot(h); setTimeout(() => simulate(), 0); }} disabled={devSandbox || isViewer} style={{ background: devSandbox ? "#1f2937" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: devSandbox || isViewer ? "not-allowed" : "pointer", opacity: devSandbox || isViewer ? 0.6 : 1 }}>{devSandbox ? "Sandbox" : "Re-run"}</button>
+                  <button aria-label={`Load simulation ${idx + 1}`} onClick={() => restoreSnapshot(h)} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load</button>
+                  <button aria-label={`Re-run simulation ${idx + 1}`} onClick={() => { restoreSnapshot(h); setTimeout(() => simulate(), 0); }} disabled={devSandbox || isViewer} style={{ background: devSandbox ? "#1a1a1a" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: devSandbox || isViewer ? "not-allowed" : "pointer", opacity: devSandbox || isViewer ? 0.6 : 1 }}>{devSandbox ? "Sandbox" : "Re-run"}</button>
                 </div>
               </div>
             ))}
@@ -1015,15 +1015,15 @@ export default function ConditionalLogicAutomation() {
 
       {showCommandPalette && (
         <div style={{ position: "fixed", inset: 0, background: "#0009", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20 }}>
-          <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 14, padding: 16, width: "min(520px, 92vw)", boxShadow: "0 18px 60px #000" }}>
+          <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 14, padding: 16, width: "min(520px, 92vw)", boxShadow: "0 18px 60px #000" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
               <div style={{ fontWeight: 800, color: "#a5f3fc" }}>Command Palette</div>
-              <button onClick={() => setShowCommandPalette(false)} style={{ background: "transparent", color: "#9ca3af", border: "none", cursor: "pointer", fontWeight: 700 }}>Esc</button>
+              <button onClick={() => setShowCommandPalette(false)} style={{ background: "transparent", color: "#888888", border: "none", cursor: "pointer", fontWeight: 700 }}>Esc</button>
             </div>
             {[{ label: "Save draft", action: handleManualSave, hotkey: "Ctrl+S", disabled: false }, { label: "Run preflight", action: runPreflight, hotkey: "Alt+P", disabled: false }, { label: "Simulate", action: simulate, hotkey: "Ctrl+Enter", disabled: isViewer }, { label: "Undo", action: handleUndo, hotkey: "Ctrl+Z", disabled: !undoStack.length || isViewer }, { label: "Redo", action: handleRedo, hotkey: "Ctrl+Shift+Z", disabled: !redoStack.length || isViewer }].map(cmd => (
-              <button key={cmd.label} disabled={cmd.disabled} onClick={() => { cmd.action(); setShowCommandPalette(false); }} style={{ width: "100%", textAlign: "left", background: cmd.disabled ? "#1f2937" : "#111827", color: cmd.disabled ? "#6b7280" : "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", marginBottom: 8, cursor: cmd.disabled ? "not-allowed" : "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <button key={cmd.label} disabled={cmd.disabled} onClick={() => { cmd.action(); setShowCommandPalette(false); }} style={{ width: "100%", textAlign: "left", background: cmd.disabled ? "#1a1a1a" : "#111827", color: cmd.disabled ? "#666666" : "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", marginBottom: 8, cursor: cmd.disabled ? "not-allowed" : "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>{cmd.label}</span>
-                <span style={{ fontSize: 12, color: "#9ca3af" }}>{cmd.hotkey}</span>
+                <span style={{ fontSize: 12, color: "#888888" }}>{cmd.hotkey}</span>
               </button>
             ))}
           </div>
@@ -1031,53 +1031,53 @@ export default function ConditionalLogicAutomation() {
       )}
 
       <div style={{ position: "sticky", top: 0, zIndex: 4, display: "flex", gap: 12, flexWrap: "wrap", background: "#0f1115", paddingBottom: 10 }}>
-        <div style={{ display: "flex", gap: 8, alignItems: "center", background: "#111827", border: "1px solid #1f2937", borderRadius: 12, padding: "8px 12px" }}>
-          <span style={{ color: "#9ca3af", fontWeight: 700 }}>Env</span>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", background: "#111827", border: "1px solid #1a1a1a", borderRadius: 12, padding: "8px 12px" }}>
+          <span style={{ color: "#888888", fontWeight: 700 }}>Env</span>
           {["dev", "stage", "prod"].map(opt => (
-            <button key={opt} onClick={() => setEnv(opt)} style={{ background: env === opt ? "#0ea5e9" : "#0b1221", color: env === opt ? "#0b1221" : "#e5e7eb", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 12px", fontWeight: 800, cursor: "pointer" }}>
+            <button key={opt} onClick={() => setEnv(opt)} style={{ background: env === opt ? "#0ea5e9" : "#0b1221", color: env === opt ? "#0b1221" : "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 12px", fontWeight: 800, cursor: "pointer" }}>
               {opt.toUpperCase()}
             </button>
           ))}
-          <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", fontWeight: 700 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: "6px 10px", fontWeight: 700 }}>
             <input type="checkbox" checked={disabled} onChange={e => setDisabled(e.target.checked)} /> Disabled
           </label>
           <span style={{ color: draftStatus === "saved" ? "#22c55e" : "#fbbf24", fontSize: 12 }}>{draftStatus === "saved" ? `Saved ${formatTime(lastSavedAt)}` : "Saving..."}</span>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <button onClick={runPreflight} style={{ background: "#1e293b", color: "#fcd34d", border: "1px solid #334155", borderRadius: 12, padding: "10px 12px", fontWeight: 800, cursor: "pointer" }}>🔍 Preflight (Ctrl+S)</button>
+          <button onClick={runPreflight} style={{ background: "#1a1a1a", color: "#fcd34d", border: "1px solid #333333", borderRadius: 12, padding: "10px 12px", fontWeight: 800, cursor: "pointer" }}>🔍 Preflight (Ctrl+S)</button>
           <button onClick={runDryRun} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: "pointer" }}>Dry-run (dev)</button>
           {preflightStatus && (
-            <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 999, border: "1px solid #1f2937", background: preflightStatus.ok ? "#0b1221" : "#1f2937", color: preflightStatus.ok ? "#22c55e" : preflightStatus.issues ? "#fcd34d" : "#f87171", fontWeight: 800, fontSize: 12 }}>
+            <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 999, border: "1px solid #1a1a1a", background: preflightStatus.ok ? "#0b1221" : "#1a1a1a", color: preflightStatus.ok ? "#22c55e" : preflightStatus.issues ? "#fcd34d" : "#f87171", fontWeight: 800, fontSize: 12 }}>
               <span style={{ width: 10, height: 10, borderRadius: "50%", background: preflightStatus.ok ? "#22c55e" : preflightStatus.issues ? "#f59e0b" : "#ef4444" }} />
               <span>{preflightStatus.ok ? "Preflight pass" : preflightStatus.issues ? `${preflightStatus.issues} issues` : "Preflight failed"}</span>
-              {preflightStatus.ts ? <span style={{ color: "#9ca3af", fontWeight: 600 }}>· {new Date(preflightStatus.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span> : null}
-              <button onClick={() => setShowPreflightPopover(v => !v)} style={{ background: "transparent", border: "none", color: "#e5e7eb", cursor: "pointer", fontWeight: 800 }}>Trace</button>
-              <button onClick={clearPreflightStatus} style={{ marginLeft: 2, background: "transparent", border: "none", color: "#9ca3af", cursor: "pointer", fontWeight: 800 }}>Clear</button>
+              {preflightStatus.ts ? <span style={{ color: "#888888", fontWeight: 600 }}>· {new Date(preflightStatus.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span> : null}
+              <button onClick={() => setShowPreflightPopover(v => !v)} style={{ background: "transparent", border: "none", color: "#f0f0f0", cursor: "pointer", fontWeight: 800 }}>Trace</button>
+              <button onClick={clearPreflightStatus} style={{ marginLeft: 2, background: "transparent", border: "none", color: "#888888", cursor: "pointer", fontWeight: 800 }}>Clear</button>
               <button onClick={downloadPreflightReport} style={{ background: "transparent", border: "none", color: "#67e8f9", cursor: "pointer", fontWeight: 800 }}>Save</button>
               {showPreflightPopover && (
-                <div style={{ position: "absolute", top: "110%", right: 0, minWidth: 220, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10, boxShadow: "0 10px 30px rgba(0,0,0,0.4)", zIndex: 10 }}>
+                <div style={{ position: "absolute", top: "110%", right: 0, minWidth: 220, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: 10, boxShadow: "0 10px 30px rgba(0,0,0,0.4)", zIndex: 10 }}>
                   <div style={{ fontWeight: 800, color: "#fcd34d", marginBottom: 6 }}>Preflight issues</div>
-                  <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: 6 }}>Why this matters: stops broken branches from impacting Shopify customers.</div>
+                  <div style={{ color: "#888888", fontSize: 12, marginBottom: 6 }}>Why this matters: stops broken branches from impacting Shopify customers.</div>
                   {preflightIssues.length === 0 ? <div style={{ color: "#22c55e" }}>Clear</div> : (
-                    <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", maxHeight: 160, overflow: "auto" }}>
+                    <ul style={{ margin: 0, paddingLeft: 16, color: "#f0f0f0", maxHeight: 160, overflow: "auto" }}>
                       {preflightIssues.slice(0, 6).map((p, i) => <li key={i}>{p}</li>)}
-                      {preflightIssues.length > 6 && <li style={{ color: "#9ca3af" }}>…{preflightIssues.length - 6} more</li>}
+                      {preflightIssues.length > 6 && <li style={{ color: "#888888" }}>…{preflightIssues.length - 6} more</li>}
                     </ul>
                   )}
                   <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
                     <button onClick={() => applyQuickFix("approver")} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add approver note</button>
                     <button onClick={() => applyQuickFix("prod-note")} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add prod note</button>
-                    <button onClick={() => applyQuickFix("trigger-action")} style={{ background: "#22c55e", color: "#0f172a", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add trigger/action</button>
-                    <button onClick={() => applyQuickFix("dedupe-labels")} style={{ background: "#6366f1", color: "#e5e7eb", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix duplicates</button>
+                    <button onClick={() => applyQuickFix("trigger-action")} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add trigger/action</button>
+                    <button onClick={() => applyQuickFix("dedupe-labels")} style={{ background: "#6366f1", color: "#f0f0f0", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix duplicates</button>
                   </div>
                   {preflightTrace.length > 0 && (
                     <div style={{ marginTop: 8 }}>
                       <div style={{ color: "#67e8f9", fontWeight: 700 }}>Trace</div>
-                      <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", maxHeight: 140, overflow: "auto" }}>
+                      <ul style={{ margin: 0, paddingLeft: 16, color: "#f0f0f0", maxHeight: 140, overflow: "auto" }}>
                         {preflightTrace.slice(0, 5).map((t, i) => (
                           <li key={i}>{t.label}: {t.issues?.join("; ")}</li>
                         ))}
-                        {preflightTrace.length > 5 && <li style={{ color: "#9ca3af" }}>…{preflightTrace.length - 5} more</li>}
+                        {preflightTrace.length > 5 && <li style={{ color: "#888888" }}>…{preflightTrace.length - 5} more</li>}
                       </ul>
                     </div>
                   )}
@@ -1085,41 +1085,41 @@ export default function ConditionalLogicAutomation() {
               )}
             </span>
           )}
-          <button aria-label="Run simulation" onClick={simulate} disabled={devSandbox || isViewer} style={{ background: devSandbox ? "#1f2937" : "#22c55e", color: devSandbox ? "#9ca3af" : "#0f172a", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: devSandbox || isViewer ? "not-allowed" : "pointer", opacity: devSandbox || isViewer ? 0.65 : 1 }}>{devSandbox ? "Sandbox (set Stage)" : "▶️ Run Simulation (Ctrl+Enter)"}</button>
-          <button onClick={rollbackToLastSimulation} disabled={!lastSimulatedSnapshot} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 12, padding: "10px 12px", fontWeight: 800, cursor: lastSimulatedSnapshot ? "pointer" : "not-allowed", opacity: lastSimulatedSnapshot ? 1 : 0.5 }}>Rollback to last sim</button>
-          <button onClick={() => setSelectedPayloadPreset(p => p)} style={{ background: "#0ea5e91a", color: "#67e8f9", border: "1px solid #1f2937", borderRadius: 12, padding: "10px 12px", fontWeight: 800 }}>Dev Payload Presets</button>
+          <button aria-label="Run simulation" onClick={simulate} disabled={devSandbox || isViewer} style={{ background: devSandbox ? "#1a1a1a" : "#22c55e", color: devSandbox ? "#888888" : "#111111", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: devSandbox || isViewer ? "not-allowed" : "pointer", opacity: devSandbox || isViewer ? 0.65 : 1 }}>{devSandbox ? "Sandbox (set Stage)" : "▶️ Run Simulation (Ctrl+Enter)"}</button>
+          <button onClick={rollbackToLastSimulation} disabled={!lastSimulatedSnapshot} style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 12, padding: "10px 12px", fontWeight: 800, cursor: lastSimulatedSnapshot ? "pointer" : "not-allowed", opacity: lastSimulatedSnapshot ? 1 : 0.5 }}>Rollback to last sim</button>
+          <button onClick={() => setSelectedPayloadPreset(p => p)} style={{ background: "#0ea5e91a", color: "#67e8f9", border: "1px solid #1a1a1a", borderRadius: 12, padding: "10px 12px", fontWeight: 800 }}>Dev Payload Presets</button>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginLeft: "auto" }}>
-          <span style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: (flowNodes.filter(n => n.type === "action").length >= 4 || (branchGroup.branches || []).length >= 3) ? "#f97316" : "#22c55e", fontWeight: 700 }}>Perf guardrail: {(flowNodes.filter(n => n.type === "action").length >= 4 || (branchGroup.branches || []).length >= 3) ? "tighten" : "OK"}</span>
-          <span style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 999, padding: "6px 10px", color: disabled ? "#f97316" : "#22c55e", fontWeight: 700 }}>Disabled: {disabled ? "Yes" : "No"}</span>
+          <span style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: (flowNodes.filter(n => n.type === "action").length >= 4 || (branchGroup.branches || []).length >= 3) ? "#f97316" : "#22c55e", fontWeight: 700 }}>Perf guardrail: {(flowNodes.filter(n => n.type === "action").length >= 4 || (branchGroup.branches || []).length >= 3) ? "tighten" : "OK"}</span>
+          <span style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: disabled ? "#f97316" : "#22c55e", fontWeight: 700 }}>Disabled: {disabled ? "Yes" : "No"}</span>
         </div>
       </div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-        <input value={reviewerEmail} onChange={e => setReviewerEmail(e.target.value)} placeholder="Reviewer email" style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", minWidth: 220 }} />
+        <input value={reviewerEmail} onChange={e => setReviewerEmail(e.target.value)} placeholder="Reviewer email" style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "6px 10px", minWidth: 220 }} />
         <button onClick={attachPreflightForReviewer} style={{ background: "#8b5cf6", color: "#0b1221", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Attach preflight</button>
-        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: "6px 10px", color: preflightIssues.length ? "#f97316" : "#22c55e", fontWeight: 700 }}>Guardrails: {preflightIssues.length ? `${preflightIssues.length} issues` : "clear"}</div>
+        <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: "6px 10px", color: preflightIssues.length ? "#f97316" : "#22c55e", fontWeight: 700 }}>Guardrails: {preflightIssues.length ? `${preflightIssues.length} issues` : "clear"}</div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 18 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <h2 style={{ fontWeight: 800, fontSize: 30, margin: 0, color: "#a5f3fc" }}>Conditional Logic & Branching</h2>
-            <span style={{ background: "#1f2937", color: "#93c5fd", padding: "6px 10px", borderRadius: 999, fontSize: 13, fontWeight: 700 }}>Pro</span>
+            <span style={{ background: "#1a1a1a", color: "#93c5fd", padding: "6px 10px", borderRadius: 999, fontSize: 13, fontWeight: 700 }}>Pro</span>
             {activeTemplate && (
               <span style={{ background: "#0ea5e91a", color: "#67e8f9", padding: "6px 10px", borderRadius: 999, fontSize: 13, fontWeight: 700 }}>Template: {activeTemplate}</span>
             )}
           </div>
-          <div style={{ color: "#9ca3af", marginTop: 6 }}>
+          <div style={{ color: "#888888", marginTop: 6 }}>
             Build multi-branch workflows, simulate outcomes, and export/import configs in one place.
           </div>
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button onClick={validate} style={{ background: "#1e293b", color: "#e0f2fe", border: "1px solid #334155", borderRadius: 10, padding: "10px 14px", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={validate} style={{ background: "#1a1a1a", color: "#e0f2fe", border: "1px solid #333333", borderRadius: 10, padding: "10px 14px", fontWeight: 700, cursor: "pointer" }}>
             ✅ Validate
           </button>
-          <button onClick={simulate} style={{ background: "#22c55e", color: "#0f172a", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>
+          <button onClick={simulate} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>
             ▶️ Simulate
           </button>
-          <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#1f2937", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>
+          <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#1a1a1a", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>
             ⬆️ Import
           </button>
           <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import workflows" />
@@ -1131,52 +1131,52 @@ export default function ConditionalLogicAutomation() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10, marginBottom: 12 }}>
-        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
-          <div style={{ color: "#9ca3af", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 }}>Readiness</div>
+        <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
+          <div style={{ color: "#888888", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 }}>Readiness</div>
           <div style={{ fontWeight: 800, fontSize: 22, color: healthSignals.coverage >= 85 ? "#22c55e" : "#fbbf24" }}>{healthSignals.coverage}%</div>
-          <div style={{ color: "#9ca3af", fontSize: 13 }}>{healthSignals.summary}</div>
+          <div style={{ color: "#888888", fontSize: 13 }}>{healthSignals.summary}</div>
         </div>
-        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+        <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Guardrails</div>
           <div style={{ color: healthSignals.guardrailsOk ? "#22c55e" : "#f59e0b", fontWeight: 700 }}>{healthSignals.guardrailsOk ? "Clear" : `${preflightIssues.length} issue${preflightIssues.length === 1 ? "" : "s"}`}</div>
-          <div style={{ color: "#9ca3af", fontSize: 12, marginBottom: preflightIssues.length ? 6 : 0 }}>Trigger ready: {healthSignals.triggerOk ? "Yes" : "No"}</div>
+          <div style={{ color: "#888888", fontSize: 12, marginBottom: preflightIssues.length ? 6 : 0 }}>Trigger ready: {healthSignals.triggerOk ? "Yes" : "No"}</div>
           {(flowNodes.length >= 6 || (branchGroup.branches || []).length >= 3) && (
             <div style={{ color: "#fbbf24", fontSize: 12, marginBottom: 6 }}>Perf detail: {flowNodes.length} nodes / {(branchGroup.branches || []).length} branches — consider splitting flows.</div>
           )}
           {preflightIssues.length > 0 && (
-            <ul style={{ margin: 0, paddingLeft: 16, color: "#e5e7eb", fontSize: 12, display: "grid", gap: 4 }}>
+            <ul style={{ margin: 0, paddingLeft: 16, color: "#f0f0f0", fontSize: 12, display: "grid", gap: 4 }}>
               {preflightIssues.slice(0, 3).map((issue, idx) => (
                 <li key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                   <span>{issue}</span>
                   <div style={{ display: "flex", gap: 6 }}>
-                    <button aria-label={`Explain ${issue}`} onClick={() => setIssueHelp(issue)} style={{ background: "#1f2937", border: "1px solid #334155", color: "#a5f3fc", borderRadius: 8, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Explain</button>
+                    <button aria-label={`Explain ${issue}`} onClick={() => setIssueHelp(issue)} style={{ background: "#1a1a1a", border: "1px solid #333333", color: "#a5f3fc", borderRadius: 8, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Explain</button>
                     {quickFixForIssue(issue) && (
                       <button aria-label={`Fix ${issue}`} onClick={() => applyQuickFix(quickFixForIssue(issue))} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "2px 8px", fontWeight: 800, cursor: "pointer" }}>Fix</button>
                     )}
                   </div>
                 </li>
               ))}
-              {preflightIssues.length > 3 && <li style={{ color: "#9ca3af" }}>+{preflightIssues.length - 3} more (open Trace)</li>}
+              {preflightIssues.length > 3 && <li style={{ color: "#888888" }}>+{preflightIssues.length - 3} more (open Trace)</li>}
             </ul>
           )}
         </div>
-        <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+        <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Workflow hygiene</div>
           <div style={{ color: dirtySinceSave ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>{dirtySinceSave ? "Unsaved edits" : "Clean"}</div>
-          <div style={{ color: "#9ca3af", fontSize: 12 }}>Last saved {lastSavedAt ? formatTime(lastSavedAt) : "—"}</div>
+          <div style={{ color: "#888888", fontSize: 12 }}>Last saved {lastSavedAt ? formatTime(lastSavedAt) : "—"}</div>
         </div>
       </div>
 
-      <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+      <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
           <div style={{ fontWeight: 800 }}>Operational checklist</div>
-          <div style={{ color: "#9ca3af", fontSize: 12 }}>Keeps you honest before shipping</div>
+          <div style={{ color: "#888888", fontSize: 12 }}>Keeps you honest before shipping</div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 8 }}>
           {healthChecklist.map(item => (
-            <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 10, background: "#0f172a", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px" }}>
+            <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 10, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 10px" }}>
               <div style={{ width: 10, height: 10, borderRadius: "50%", background: item.ok ? "#22c55e" : "#f97316" }} />
-              <div style={{ color: "#e5e7eb", fontWeight: 600 }}>{item.label}</div>
+              <div style={{ color: "#f0f0f0", fontWeight: 600 }}>{item.label}</div>
             </div>
           ))}
         </div>
@@ -1186,31 +1186,31 @@ export default function ConditionalLogicAutomation() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
             {[{ label: "Triggers", value: stats.triggers, color: "#93c5fd" }, { label: "Conditions", value: stats.conditions, color: "#a5f3fc" }, { label: "Actions", value: stats.actions, color: "#c084fc" }, { label: "Branches", value: stats.branches, color: "#f59e0b" }].map(card => (
-              <div key={card.label} style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+              <div key={card.label} style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
                 <div style={{ color: card.color, fontSize: 24, fontWeight: 800 }}>{card.value}</div>
-                <div style={{ color: "#9ca3af", fontWeight: 600 }}>{card.label}</div>
+                <div style={{ color: "#888888", fontWeight: 600 }}>{card.label}</div>
               </div>
             ))}
           </div>
 
-          <div style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 14, padding: 14 }}>
+          <div style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 14, padding: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <div style={{ fontWeight: 700, color: "#e5e7eb" }}>Palette & Templates</div>
+              <div style={{ fontWeight: 700, color: "#f0f0f0" }}>Palette & Templates</div>
               <input
                 value={paletteFilter}
                 onChange={e => setPaletteFilter(e.target.value)}
                 placeholder="Search triggers, conditions, actions"
-                style={{ background: "#0b1221", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px", width: 240 }}
+                style={{ background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 10px", width: 240 }}
               />
             </div>
             <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
               {[{ title: "Triggers", items: filteredPalette.triggers, accent: "#38bdf8" }, { title: "Conditions", items: filteredPalette.conditions, accent: "#a78bfa" }, { title: "Actions", items: filteredPalette.actions, accent: "#22c55e" }].map(group => (
-                <div key={group.title} style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 10 }}>
+                <div key={group.title} style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 10 }}>
                   <div style={{ color: group.accent, fontWeight: 700, marginBottom: 6 }}>{group.title}</div>
                   {group.items.map(item => (
-                    <div key={item.title} style={{ marginBottom: 8, padding: 8, background: "#0f172a", borderRadius: 10, border: "1px solid #1f2937" }}>
-                      <div style={{ fontWeight: 700, color: "#e5e7eb" }}>{item.title}</div>
-                      <div style={{ color: "#9ca3af", fontSize: 13 }}>{item.description}</div>
+                    <div key={item.title} style={{ marginBottom: 8, padding: 8, background: "#111111", borderRadius: 10, border: "1px solid #1a1a1a" }}>
+                      <div style={{ fontWeight: 700, color: "#f0f0f0" }}>{item.title}</div>
+                      <div style={{ color: "#888888", fontSize: 13 }}>{item.description}</div>
                       <button onClick={() => addNode(item)} style={{ marginTop: 6, background: group.accent, color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Add</button>
                     </div>
                   ))}
@@ -1219,33 +1219,33 @@ export default function ConditionalLogicAutomation() {
             </div>
             <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
               {TEMPLATE_PRESETS.map(t => (
-                <button key={t.id} onClick={() => applyTemplate(t)} style={{ background: "#0f172a", color: "#a5f3fc", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", fontWeight: 700, cursor: "pointer" }}>
+                <button key={t.id} onClick={() => applyTemplate(t)} style={{ background: "#111111", color: "#a5f3fc", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", fontWeight: 700, cursor: "pointer" }}>
                   ⚡ {t.name}
                 </button>
               ))}
             </div>
           </div>
 
-          <div style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 14, padding: 14 }}>
+          <div style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 14, padding: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <div style={{ fontWeight: 800, color: "#e5e7eb" }}>Flow Canvas</div>
-              <span style={{ color: "#9ca3af" }}>Drag-less inline editing</span>
+              <div style={{ fontWeight: 800, color: "#f0f0f0" }}>Flow Canvas</div>
+              <span style={{ color: "#888888" }}>Drag-less inline editing</span>
             </div>
             {flowNodes.length === 0 && (
-              <div style={{ color: "#9ca3af", background: "#0b1221", border: "1px dashed #1f2937", borderRadius: 10, padding: 16 }}>
+              <div style={{ color: "#888888", background: "#0b1221", border: "1px dashed #1a1a1a", borderRadius: 10, padding: 16 }}>
                 Add triggers/conditions/actions from the palette or load a template.
               </div>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {flowNodes.map(node => (
-                <div key={node.id} style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+                <div key={node.id} style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ background: "#111827", padding: "4px 10px", borderRadius: 999, color: "#cbd5f5", fontWeight: 700 }}>{node.type?.toUpperCase()}</span>
+                      <span style={{ background: "#111827", padding: "4px 10px", borderRadius: 999, color: "#e0e0e0", fontWeight: 700 }}>{node.type?.toUpperCase()}</span>
                       <input
                         value={node.title || ""}
                         onChange={e => updateNode(node.id, { title: e.target.value })}
-                        style={{ background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", minWidth: 140 }}
+                        style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", minWidth: 140 }}
                       />
                     </div>
                     <button onClick={() => removeNode(node.id)} style={{ background: "transparent", color: "#f87171", border: "none", fontWeight: 800, cursor: "pointer" }}>✕</button>
@@ -1254,7 +1254,7 @@ export default function ConditionalLogicAutomation() {
                     value={node.description || ""}
                     onChange={e => updateNode(node.id, { description: e.target.value })}
                     rows={2}
-                    style={{ width: "100%", background: "#0f172a", color: "#cbd5f5", border: "1px solid #1f2937", borderRadius: 10, padding: 8, marginTop: 8 }}
+                    style={{ width: "100%", background: "#111111", color: "#e0e0e0", border: "1px solid #1a1a1a", borderRadius: 10, padding: 8, marginTop: 8 }}
                     placeholder="Describe this step"
                   />
                   {node.type === "condition" && (
@@ -1263,12 +1263,12 @@ export default function ConditionalLogicAutomation() {
                         value={node.config?.field || ""}
                         onChange={e => updateNode(node.id, { config: { ...node.config, field: e.target.value } })}
                         placeholder="field"
-                        style={{ background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", flex: 1, minWidth: 120 }}
+                        style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", flex: 1, minWidth: 120 }}
                       />
                       <select
                         value={node.config?.operator || "equals"}
                         onChange={e => updateNode(node.id, { config: { ...node.config, operator: e.target.value } })}
-                        style={{ background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", minWidth: 130 }}
+                        style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", minWidth: 130 }}
                       >
                         {OPERATORS.map(op => (
                           <option key={op} value={op}>{op}</option>
@@ -1278,7 +1278,7 @@ export default function ConditionalLogicAutomation() {
                         value={node.config?.value || ""}
                         onChange={e => updateNode(node.id, { config: { ...node.config, value: e.target.value } })}
                         placeholder="value"
-                        style={{ background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", flex: 1, minWidth: 120 }}
+                        style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", flex: 1, minWidth: 120 }}
                       />
                     </div>
                   )}
@@ -1288,13 +1288,13 @@ export default function ConditionalLogicAutomation() {
                         value={node.config?.event || ""}
                         onChange={e => updateNode(node.id, { config: { ...node.config, event: e.target.value } })}
                         placeholder="event id"
-                        style={{ background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", minWidth: 160 }}
+                        style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", minWidth: 160 }}
                       />
                       <input
                         value={node.config?.threshold ?? ""}
                         onChange={e => updateNode(node.id, { config: { ...node.config, threshold: e.target.value } })}
                         placeholder="threshold (optional)"
-                        style={{ background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", minWidth: 160 }}
+                        style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", minWidth: 160 }}
                       />
                     </div>
                   )}
@@ -1304,13 +1304,13 @@ export default function ConditionalLogicAutomation() {
                         value={node.config?.channel || ""}
                         onChange={e => updateNode(node.id, { config: { ...node.config, channel: e.target.value } })}
                         placeholder="channel (email/sms/flow/task)"
-                        style={{ background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", minWidth: 180 }}
+                        style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", minWidth: 180 }}
                       />
                       <input
                         value={node.config?.template || node.config?.target || ""}
                         onChange={e => updateNode(node.id, { config: { ...node.config, template: e.target.value, target: e.target.value } })}
                         placeholder="template/target"
-                        style={{ background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", minWidth: 160 }}
+                        style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", minWidth: 160 }}
                       />
                     </div>
                   )}
@@ -1319,26 +1319,26 @@ export default function ConditionalLogicAutomation() {
             </div>
           </div>
 
-          <div style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 14, padding: 14 }}>
+          <div style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 14, padding: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <div style={{ fontWeight: 800, color: "#e5e7eb" }}>Branching Builder</div>
+              <div style={{ fontWeight: 800, color: "#f0f0f0" }}>Branching Builder</div>
               <button onClick={addBranch} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>+ Add Branch</button>
             </div>
             {(branchGroup.branches || []).length === 0 && (
-              <div style={{ color: "#9ca3af", background: "#0b1221", border: "1px dashed #1f2937", borderRadius: 10, padding: 14 }}>
+              <div style={{ color: "#888888", background: "#0b1221", border: "1px dashed #1a1a1a", borderRadius: 10, padding: 14 }}>
                 Define IF/ELSEIF branches. Each branch can have its own actions. Unmatched traffic will fall into Else.
               </div>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {(branchGroup.branches || []).map((branch, idx) => (
-                <div key={branch.id} style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+                <div key={branch.id} style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                     <span style={{ background: "#111827", color: "#c084fc", padding: "4px 10px", borderRadius: 999, fontWeight: 800 }}>IF #{idx + 1}</span>
                     <input
                       value={branch.label || ""}
                       onChange={e => setBranchGroup(prev => ({ ...prev, branches: prev.branches.map(b => b.id === branch.id ? { ...b, label: e.target.value } : b) }))}
                       placeholder="Branch label"
-                      style={{ background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", minWidth: 140 }}
+                      style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", minWidth: 140 }}
                     />
                   </div>
                   <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
@@ -1346,12 +1346,12 @@ export default function ConditionalLogicAutomation() {
                       value={branch.condition?.field || ""}
                       onChange={e => updateBranchCondition(branch.id, { field: e.target.value })}
                       placeholder="field"
-                      style={{ background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", minWidth: 140 }}
+                      style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", minWidth: 140 }}
                     />
                     <select
                       value={branch.condition?.operator || "equals"}
                       onChange={e => updateBranchCondition(branch.id, { operator: e.target.value })}
-                      style={{ background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", minWidth: 150 }}
+                      style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", minWidth: 150 }}
                     >
                       {OPERATORS.map(op => (
                         <option key={op} value={op}>{op}</option>
@@ -1361,15 +1361,15 @@ export default function ConditionalLogicAutomation() {
                       value={branch.condition?.value || ""}
                       onChange={e => updateBranchCondition(branch.id, { value: e.target.value })}
                       placeholder="value"
-                      style={{ background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", minWidth: 140 }}
+                      style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", minWidth: 140 }}
                     />
                   </div>
                   <div style={{ marginTop: 10 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{ color: "#9ca3af", fontWeight: 700 }}>Actions</div>
+                      <div style={{ color: "#888888", fontWeight: 700 }}>Actions</div>
                       <div style={{ display: "flex", gap: 6 }}>
                         {ACTION_LIBRARY.map(a => (
-                          <button key={a.title + branch.id} onClick={() => addBranchAction(branch.id, a)} style={{ background: "#0f172a", color: "#22c55e", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", cursor: "pointer", fontWeight: 700 }}>
+                          <button key={a.title + branch.id} onClick={() => addBranchAction(branch.id, a)} style={{ background: "#111111", color: "#22c55e", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", cursor: "pointer", fontWeight: 700 }}>
                             + {a.title}
                           </button>
                         ))}
@@ -1377,13 +1377,13 @@ export default function ConditionalLogicAutomation() {
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
                       {(branch.actions || []).length === 0 && (
-                        <div style={{ color: "#6b7280", background: "#0f172a", borderRadius: 8, padding: 10, border: "1px dashed #1f2937" }}>No actions yet.</div>
+                        <div style={{ color: "#666666", background: "#111111", borderRadius: 8, padding: 10, border: "1px dashed #1a1a1a" }}>No actions yet.</div>
                       )}
                       {(branch.actions || []).map(action => (
-                        <div key={action.id} style={{ background: "#0f172a", border: "1px solid #1f2937", borderRadius: 10, padding: 8, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                        <div key={action.id} style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: 8, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                           <div>
                             <div style={{ color: "#22c55e", fontWeight: 700 }}>{action.title}</div>
-                            <div style={{ color: "#9ca3af", fontSize: 13 }}>{action.description}</div>
+                            <div style={{ color: "#888888", fontSize: 13 }}>{action.description}</div>
                           </div>
                           <button onClick={() => removeBranchAction(branch.id, action.id)} style={{ background: "transparent", color: "#f87171", border: "none", cursor: "pointer", fontWeight: 800 }}>✕</button>
                         </div>
@@ -1393,12 +1393,12 @@ export default function ConditionalLogicAutomation() {
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 10 }}>
+            <div style={{ marginTop: 12, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 10 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ color: "#f97316", fontWeight: 800 }}>Else</div>
                 <div style={{ display: "flex", gap: 6 }}>
                   {ACTION_LIBRARY.map(a => (
-                    <button key={a.title + "else"} onClick={() => addElseAction(a)} style={{ background: "#0f172a", color: "#f59e0b", border: "1px solid #1f2937", borderRadius: 8, padding: "6px 8px", cursor: "pointer", fontWeight: 700 }}>
+                    <button key={a.title + "else"} onClick={() => addElseAction(a)} style={{ background: "#111111", color: "#f59e0b", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", cursor: "pointer", fontWeight: 700 }}>
                       + {a.title}
                     </button>
                   ))}
@@ -1406,13 +1406,13 @@ export default function ConditionalLogicAutomation() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
                 {(branchGroup.elseActions || []).length === 0 && (
-                  <div style={{ color: "#6b7280", background: "#0f172a", borderRadius: 8, padding: 10, border: "1px dashed #1f2937" }}>No else actions yet.</div>
+                  <div style={{ color: "#666666", background: "#111111", borderRadius: 8, padding: 10, border: "1px dashed #1a1a1a" }}>No else actions yet.</div>
                 )}
                 {(branchGroup.elseActions || []).map(action => (
-                  <div key={action.id} style={{ background: "#0f172a", border: "1px solid #1f2937", borderRadius: 10, padding: 8, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                  <div key={action.id} style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: 8, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                     <div>
                       <div style={{ color: "#f59e0b", fontWeight: 700 }}>{action.title}</div>
-                      <div style={{ color: "#9ca3af", fontSize: 13 }}>{action.description}</div>
+                      <div style={{ color: "#888888", fontSize: 13 }}>{action.description}</div>
                     </div>
                     <button onClick={() => removeElseAction(action.id)} style={{ background: "transparent", color: "#f87171", border: "none", cursor: "pointer", fontWeight: 800 }}>✕</button>
                   </div>
@@ -1421,14 +1421,14 @@ export default function ConditionalLogicAutomation() {
             </div>
           </div>
 
-          <div style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 14, padding: 14 }}>
+          <div style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 14, padding: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <div style={{ fontWeight: 800, color: "#e5e7eb" }}>Simulation Preview</div>
-              <small style={{ color: "#9ca3af" }}>Paste sample payload to test pathing</small>
+              <div style={{ fontWeight: 800, color: "#f0f0f0" }}>Simulation Preview</div>
+              <small style={{ color: "#888888" }}>Paste sample payload to test pathing</small>
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
               {PAYLOAD_PRESETS.map(p => (
-                <button key={p.id} onClick={() => { setSelectedPayloadPreset(p.id); setSimulationInput(JSON.stringify(p.payload, null, 2)); }} style={{ background: selectedPayloadPreset === p.id ? "#0ea5e9" : "#0b1221", color: selectedPayloadPreset === p.id ? "#0b1221" : "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "8px 10px", fontWeight: 700, cursor: "pointer" }}>
+                <button key={p.id} onClick={() => { setSelectedPayloadPreset(p.id); setSimulationInput(JSON.stringify(p.payload, null, 2)); }} style={{ background: selectedPayloadPreset === p.id ? "#0ea5e9" : "#0b1221", color: selectedPayloadPreset === p.id ? "#0b1221" : "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 10px", fontWeight: 700, cursor: "pointer" }}>
                   {p.name} <span style={{ marginLeft: 6, background: "#0ea5e91a", color: "#67e8f9", padding: "2px 6px", borderRadius: 999, fontSize: 12 }}>{p.badge}</span>
                 </button>
               ))}
@@ -1437,22 +1437,22 @@ export default function ConditionalLogicAutomation() {
               value={simulationInput}
               onChange={e => setSimulationInput(e.target.value)}
               rows={7}
-              style={{ width: "100%", background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 12, padding: 10 }}
+              style={{ width: "100%", background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 12, padding: 10 }}
             />
             <button onClick={simulate} style={{ marginTop: 10, background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Run Simulation</button>
             {simulationResult && (
-              <div style={{ marginTop: 10, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 12 }}>
+              <div style={{ marginTop: 10, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
                 <div style={{ color: "#a5f3fc", fontWeight: 800 }}>Matched: {simulationResult.matchedBranch}</div>
-                <div style={{ color: "#9ca3af", marginTop: 4 }}>Actions to fire:</div>
-                <ul style={{ margin: 0, paddingLeft: 18, color: "#e5e7eb" }}>
+                <div style={{ color: "#888888", marginTop: 4 }}>Actions to fire:</div>
+                <ul style={{ margin: 0, paddingLeft: 18, color: "#f0f0f0" }}>
                   {simulationResult.actions.map(a => (
                     <li key={a.id}>{a.title} ({a.config?.channel || "action"})</li>
                   ))}
-                  {simulationResult.actions.length === 0 && <li style={{ color: "#6b7280" }}>No actions</li>}
+                  {simulationResult.actions.length === 0 && <li style={{ color: "#666666" }}>No actions</li>}
                 </ul>
                 {diffSummary && (
-                  <div style={{ marginTop: 10, color: "#9ca3af", fontSize: 13 }}>
-                    <div style={{ color: "#e5e7eb", fontWeight: 700 }}>Changes since last simulation</div>
+                  <div style={{ marginTop: 10, color: "#888888", fontSize: 13 }}>
+                    <div style={{ color: "#f0f0f0", fontWeight: 700 }}>Changes since last simulation</div>
                     <div>Added nodes: {diffSummary.added.length}, Removed: {diffSummary.removed.length}, Changed: {diffSummary.changed.length}, Branch delta: {diffSummary.branchDelta}</div>
                   </div>
                 )}
@@ -1462,54 +1462,54 @@ export default function ConditionalLogicAutomation() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 14, padding: 14 }}>
-            <div style={{ fontWeight: 800, color: "#e5e7eb", marginBottom: 8 }}>Data Explorer</div>
+          <div style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 14, padding: 14 }}>
+            <div style={{ fontWeight: 800, color: "#f0f0f0", marginBottom: 8 }}>Data Explorer</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
-              <button onClick={fetchLogicBlocks} style={{ background: "#0f172a", color: "#a5f3fc", border: "1px solid #1f2937", borderRadius: 8, padding: "8px 10px", fontWeight: 700, cursor: "pointer" }}>Load Logic Blocks</button>
-              <button onClick={fetchWorkflows} style={{ background: "#0f172a", color: "#22c55e", border: "1px solid #1f2937", borderRadius: 8, padding: "8px 10px", fontWeight: 700, cursor: "pointer" }}>Load Workflows</button>
-              <button onClick={fetchTriggers} style={{ background: "#0f172a", color: "#38bdf8", border: "1px solid #1f2937", borderRadius: 8, padding: "8px 10px", fontWeight: 700, cursor: "pointer" }}>Load Triggers</button>
+              <button onClick={fetchLogicBlocks} style={{ background: "#111111", color: "#a5f3fc", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px", fontWeight: 700, cursor: "pointer" }}>Load Logic Blocks</button>
+              <button onClick={fetchWorkflows} style={{ background: "#111111", color: "#22c55e", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px", fontWeight: 700, cursor: "pointer" }}>Load Workflows</button>
+              <button onClick={fetchTriggers} style={{ background: "#111111", color: "#38bdf8", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px", fontWeight: 700, cursor: "pointer" }}>Load Triggers</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 300, overflowY: "auto" }}>
               {logicBlocks.map(b => (
-                <div key={b.id} style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 8 }}>
+                <div key={b.id} style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: 8 }}>
                   <div style={{ color: "#a5f3fc", fontWeight: 700 }}>{b.name}</div>
-                  <div style={{ color: "#9ca3af", fontSize: 13 }}>{b.description}</div>
+                  <div style={{ color: "#888888", fontSize: 13 }}>{b.description}</div>
                   <button onClick={() => addNode({ ...b, type: "condition", title: b.name, description: b.description })} style={{ marginTop: 6, background: "#0ea5e9", color: "white", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Add to Flow</button>
                 </div>
               ))}
               {workflows.map(w => (
-                <div key={w.id} style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 8 }}>
+                <div key={w.id} style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: 8 }}>
                   <div style={{ color: "#22c55e", fontWeight: 700 }}>{w.name}</div>
-                  <div style={{ color: "#9ca3af", fontSize: 13 }}>Steps: {(w.steps || []).join(", ")}</div>
+                  <div style={{ color: "#888888", fontSize: 13 }}>Steps: {(w.steps || []).join(", ")}</div>
                 </div>
               ))}
               {triggers.map(t => (
-                <div key={t.id} style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 8 }}>
+                <div key={t.id} style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: 8 }}>
                   <div style={{ color: "#38bdf8", fontWeight: 700 }}>{t.name}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 14, padding: 14 }}>
-            <div style={{ fontWeight: 800, color: "#e5e7eb", marginBottom: 8 }}>Assistant</div>
+          <div style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 14, padding: 14 }}>
+            <div style={{ fontWeight: 800, color: "#f0f0f0", marginBottom: 8 }}>Assistant</div>
             <textarea
               value={aiPrompt}
               onChange={e => setAiPrompt(e.target.value)}
               rows={4}
               placeholder="Ask for branching ideas, guardrails, or messaging logic"
-              style={{ width: "100%", background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 12, padding: 10 }}
+              style={{ width: "100%", background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 12, padding: 10 }}
             />
             <button onClick={askAssistant} disabled={queryLoading} style={{ marginTop: 8, background: "#6366f1", color: "white", border: "none", borderRadius: 10, padding: "10px 12px", fontWeight: 800, cursor: "pointer", opacity: queryLoading ? 0.7 : 1 }}>
               {queryLoading ? "Thinking..." : "Ask Assistant"}
             </button>
             {aiResponse && (
-              <div style={{ marginTop: 8, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 10, color: "#e5e7eb", whiteSpace: "pre-wrap" }}>{aiResponse}</div>
+              <div style={{ marginTop: 8, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 10, color: "#f0f0f0", whiteSpace: "pre-wrap" }}>{aiResponse}</div>
             )}
           </div>
 
-          <div style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 14, padding: 14 }}>
-            <div style={{ fontWeight: 800, color: "#e5e7eb", marginBottom: 8 }}>Validation</div>
+          <div style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 14, padding: 14 }}>
+            <div style={{ fontWeight: 800, color: "#f0f0f0", marginBottom: 8 }}>Validation</div>
             {validationIssues.length === 0 ? (
               <div style={{ color: "#22c55e" }}>No blocking issues detected. Ready to ship.</div>
             ) : (
@@ -1520,9 +1520,9 @@ export default function ConditionalLogicAutomation() {
               </ul>
             )}
             {preflightIssues.length > 0 && (
-              <div style={{ marginTop: 10, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10 }}>
+              <div style={{ marginTop: 10, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: 10 }}>
                 <div style={{ color: "#fcd34d", fontWeight: 800 }}>Preflight</div>
-                <ul style={{ margin: 6, paddingLeft: 18, color: "#e5e7eb" }}>
+                <ul style={{ margin: 6, paddingLeft: 18, color: "#f0f0f0" }}>
                   {preflightIssues.map((issue, idx) => (
                     <li key={idx}>{issue}</li>
                   ))}
@@ -1530,9 +1530,9 @@ export default function ConditionalLogicAutomation() {
               </div>
             )}
             {preflightTrace.length > 0 && (
-              <div style={{ marginTop: 10, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10 }}>
+              <div style={{ marginTop: 10, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: 10 }}>
                 <div style={{ color: "#a5f3fc", fontWeight: 800 }}>Preflight Trace</div>
-                <ul style={{ margin: 6, paddingLeft: 18, color: "#e5e7eb", display: "flex", flexDirection: "column", gap: 6 }}>
+                <ul style={{ margin: 6, paddingLeft: 18, color: "#f0f0f0", display: "flex", flexDirection: "column", gap: 6 }}>
                   {preflightTrace.map((item, idx) => {
                     const color = item.status === "pass" ? "#22c55e" : item.status === "warn" ? "#f59e0b" : "#f87171";
                     return (
@@ -1552,20 +1552,20 @@ export default function ConditionalLogicAutomation() {
                   value={confirmationNote}
                   onChange={e => setConfirmationNote(e.target.value)}
                   placeholder="Who approved? What changed?"
-                  style={{ marginTop: 6, width: "100%", background: "#0f172a", color: "#e5e7eb", border: "1px solid #1f2937", borderRadius: 8, padding: "8px 10px" }}
+                  style={{ marginTop: 6, width: "100%", background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }}
                 />
               </div>
             )}
           </div>
 
-          <div style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 14, padding: 14 }}>
-            <div style={{ fontWeight: 800, color: "#e5e7eb", marginBottom: 8 }}>Feedback</div>
+          <div style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 14, padding: 14 }}>
+            <div style={{ fontWeight: 800, color: "#f0f0f0", marginBottom: 8 }}>Feedback</div>
             <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} aria-label="Send feedback">
               <textarea
                 value={feedback}
                 onChange={e => setFeedback(e.target.value)}
                 rows={2}
-                style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 10, border: "1px solid #1f2937", marginBottom: 10, background: "#0f172a", color: "#e5e7eb" }}
+                style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 10, border: "1px solid #1a1a1a", marginBottom: 10, background: "#111111", color: "#f0f0f0" }}
                 placeholder="What should we improve next?"
                 aria-label="Feedback input"
               />
@@ -1574,7 +1574,7 @@ export default function ConditionalLogicAutomation() {
           </div>
 
           {(imported || error) && (
-            <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 12, padding: 10 }}>
+            <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 10 }}>
               {imported && <div style={{ color: "#22c55e" }}>Imported: {imported}</div>}
               {error && <div style={{ color: "#fca5a5" }}>{error}</div>}
             </div>
@@ -1584,3 +1584,4 @@ export default function ConditionalLogicAutomation() {
     </div>
   );
 }
+

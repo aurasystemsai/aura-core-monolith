@@ -1,4 +1,4 @@
-/* Aura Console Credits & Usage UI Styles */
+﻿/* Aura Console Credits & Usage UI Styles */
 .aura-credits-shell {
   max-width: 420px;
   margin: 64px auto;
@@ -53,7 +53,7 @@
 }
 .aura-credits-bar {
   height: 100%;
-  background: #334155;
+  background: #333333;
   border-radius: 8px 0 0 8px;
   transition: width 0.3s;
 }
@@ -85,4 +85,5 @@
   margin-top: 10px;
   text-align: center;
 }
+
 

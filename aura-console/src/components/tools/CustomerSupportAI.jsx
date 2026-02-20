@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useRef } from "react";
 
 export default function CustomerSupportAI() {
@@ -89,7 +89,7 @@ export default function CustomerSupportAI() {
   const onboardingContent = (
     <div style={{ padding: 24, background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Customer Support AI</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#334155", fontSize: 16 }}>
+      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#333333", fontSize: 16 }}>
         <li>Enter a support question or upload a CSV/Excel file for bulk responses</li>
         <li>Select channels: email, chat, social, phone</li>
         <li>Get AI-powered suggestions, analytics, and sentiment</li>
@@ -183,3 +183,4 @@ export default function CustomerSupportAI() {
     </div>
   );
 }
+

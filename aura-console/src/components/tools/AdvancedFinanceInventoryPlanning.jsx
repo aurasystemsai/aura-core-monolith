@@ -1,14 +1,14 @@
-
+﻿
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import BackButton from "./BackButton";
 
 const THEMES = {
   dark: {
     bg: "#0b1220",
-    card: "#0f172a",
-    border: "#1f2937",
-    text: "#e5e7eb",
-    muted: "#9ca3af",
+    card: "#111111",
+    border: "#1a1a1a",
+    text: "#f0f0f0",
+    muted: "#888888",
     accent: "#7dd3fc",
     positive: "#22c55e",
     warning: "#f59e0b",
@@ -18,7 +18,7 @@ const THEMES = {
     bg: "#f8fafc",
     card: "#ffffff",
     border: "#dbeafe",
-    text: "#0f172a",
+    text: "#111111",
     muted: "#475569",
     accent: "#0ea5e9",
     positive: "#16a34a",
@@ -368,7 +368,7 @@ export default function AdvancedFinanceInventoryPlanning() {
           onClick={() => setShowOnboarding(false)}
           style={{
             background: palette.accent,
-            color: "#0f172a",
+            color: "#111111",
             border: "none",
             borderRadius: 10,
             padding: "10px 18px",
@@ -426,7 +426,7 @@ export default function AdvancedFinanceInventoryPlanning() {
           </button>
           <button
             onClick={saveVersion}
-            style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${palette.accent}`, background: palette.accent, color: "#0f172a", fontWeight: 800, cursor: "pointer" }}
+            style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${palette.accent}`, background: palette.accent, color: "#111111", fontWeight: 800, cursor: "pointer" }}
           >
             Save Version
           </button>
@@ -484,7 +484,7 @@ export default function AdvancedFinanceInventoryPlanning() {
               <button
                 onClick={handleAnalyze}
                 disabled={loading || !query}
-                style={{ background: palette.accent, color: "#0f172a", border: `1px solid ${palette.accent}`, borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: loading || !query ? "not-allowed" : "pointer" }}
+                style={{ background: palette.accent, color: "#111111", border: `1px solid ${palette.accent}`, borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: loading || !query ? "not-allowed" : "pointer" }}
               >
                 {loading ? "Analyzing..." : "Analyze"}
               </button>
@@ -506,7 +506,7 @@ export default function AdvancedFinanceInventoryPlanning() {
         </div>
 
         {result && (
-          <div style={{ ...paletteCard, background: theme === "light" ? "#ecfeff" : "#0f172a" }}>
+          <div style={{ ...paletteCard, background: theme === "light" ? "#ecfeff" : "#111111" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
               <div style={{ fontWeight: 800 }}>Analysis Result — {activeScenarioData?.name}</div>
               <span style={{ color: palette.muted, fontSize: 12 }}>{new Date().toLocaleTimeString()}</span>
@@ -871,7 +871,7 @@ export default function AdvancedFinanceInventoryPlanning() {
             placeholder="Share your feedback or suggestions..."
             aria-label="Feedback"
           />
-          <button type="submit" style={{ background: palette.accent, color: "#0f172a", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: "pointer" }}>Send Feedback</button>
+          <button type="submit" style={{ background: palette.accent, color: "#111111", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: "pointer" }}>Send Feedback</button>
           {error && <div style={{ color: palette.danger, marginTop: 8 }}>{error}</div>}
         </form>
 
@@ -882,3 +882,4 @@ export default function AdvancedFinanceInventoryPlanning() {
     </div>
   );
 }
+

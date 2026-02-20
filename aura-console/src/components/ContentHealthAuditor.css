@@ -1,4 +1,4 @@
-.cha-wrap {
+﻿.cha-wrap {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -65,7 +65,7 @@
 }
 
 .cha-summary-item {
-  border: 1px solid #334155;
+  border: 1px solid #333333;
   background: #181f2a;
   border-radius: 14px;
   padding: 10px 12px;
@@ -112,7 +112,7 @@
 }
 
 .cha-table-wrap {
-  border: 1px solid #334155;
+  border: 1px solid #333333;
   border-radius: 16px;
   overflow: hidden;
   background: #232b3b;
@@ -127,7 +127,7 @@
 .cha-table thead th {
   text-align: left;
   padding: 10px 12px;
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid #333333;
   opacity: 0.8;
   font-weight: 650;
   background: #232b3b;
@@ -176,7 +176,7 @@
   font-size: 11px;
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid #334155;
+  border: 1px solid #333333;
   background: #232b3b;
   opacity: 0.95;
 }
@@ -197,7 +197,7 @@
   border-radius: 999px;
   font-weight: 700;
   font-size: 12px;
-  border: 1px solid #334155;
+  border: 1px solid #333333;
   background: #181f2a;
 }
 
@@ -230,3 +230,4 @@
     "Courier New", monospace;
   opacity: 0.9;
 }
+

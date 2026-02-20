@@ -1,4 +1,4 @@
-// aura-console/src/components/tools/AdvancedPersonalizationAnalyticsChart.jsx
+﻿// aura-console/src/components/tools/AdvancedPersonalizationAnalyticsChart.jsx
 // Advanced analytics chart for Advanced Personalization Engine
 import React from 'react';
 import { Line } from 'react-chartjs-2';
@@ -33,9 +33,10 @@ export default function AdvancedPersonalizationAnalyticsChart({ data }) {
     ],
   };
   return (
-    <div style={{ background: '#18181b', borderRadius: 12, padding: 18, marginBottom: 24, color: '#e5e7eb' }}>
+    <div style={{ background: '#18181b', borderRadius: 12, padding: 18, marginBottom: 24, color: '#f0f0f0' }}>
       <BackButton />
       <Line data={chartData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
     </div>
   );
 }
+

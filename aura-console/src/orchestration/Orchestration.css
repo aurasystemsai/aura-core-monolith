@@ -1,4 +1,4 @@
-/* Aura Console Orchestration UI Styles */
+﻿/* Aura Console Orchestration UI Styles */
 .aura-orchestration-shell {
   max-width: 520px;
   margin: 64px auto;
@@ -52,7 +52,7 @@
 .aura-orchestration-btn {
   padding: 8px 18px;
   border-radius: var(--radius-md);
-  background: #334155;
+  background: #333333;
   color: #f3f4f6;
   font-weight: 600;
   font-size: 1rem;
@@ -70,3 +70,4 @@
   margin-top: 18px;
   text-align: center;
 }
+

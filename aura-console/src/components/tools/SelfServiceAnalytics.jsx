@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import Chart from "chart.js/auto";
@@ -613,9 +613,9 @@ export default function SelfServiceAnalytics() {
               key={c.id}
               className="chart-result"
               style={{
-                background: "#0f172a",
-                border: "1px solid #1f2937",
-                color: "#e5e7eb",
+                background: "#111111",
+                border: "1px solid #1a1a1a",
+                color: "#f0f0f0",
                 borderRadius: 6,
                 padding: 10,
                 marginBottom: 8,
@@ -642,9 +642,9 @@ export default function SelfServiceAnalytics() {
               key={v.id}
               className="saved-view"
               style={{
-                background: "#0f172a",
-                border: "1px solid #1f2937",
-                color: "#e5e7eb",
+                background: "#111111",
+                border: "1px solid #1a1a1a",
+                color: "#f0f0f0",
                 borderRadius: 6,
                 padding: 10,
                 marginBottom: 8,
@@ -693,9 +693,9 @@ export default function SelfServiceAnalytics() {
               key={s.id}
               className="schedule"
               style={{
-                background: "#0f172a",
-                border: "1px solid #1f2937",
-                color: "#e5e7eb",
+                background: "#111111",
+                border: "1px solid #1a1a1a",
+                color: "#f0f0f0",
                 borderRadius: 6,
                 padding: 10,
                 marginBottom: 8,
@@ -732,9 +732,9 @@ export default function SelfServiceAnalytics() {
                   key={i}
                   className="history-item"
                   style={{
-                    background: "#0f172a",
-                    border: "1px solid #1f2937",
-                    color: "#e5e7eb",
+                    background: "#111111",
+                    border: "1px solid #1a1a1a",
+                    color: "#f0f0f0",
                     borderRadius: 6,
                     padding: 10,
                     marginBottom: 8,
@@ -756,7 +756,7 @@ export default function SelfServiceAnalytics() {
               key={i}
               className="alert-item"
               style={{
-                background: "#1f2937",
+                background: "#1a1a1a",
                 border: "1px solid #eab308",
                 color: "#fef08a",
                 borderRadius: 6,
@@ -830,3 +830,4 @@ export default function SelfServiceAnalytics() {
     </div>
   );
 }
+

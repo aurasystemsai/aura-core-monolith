@@ -1,4 +1,4 @@
-/* aura-console/src/components/FixQueue.css */
+﻿/* aura-console/src/components/FixQueue.css */
 
 .fq-wrap {
   width: 100%;
@@ -56,7 +56,7 @@
   width: 100%;
   overflow: auto;
   border-radius: 16px;
-  border: 1px solid #334155;
+  border: 1px solid #333333;
   background: #232b3b;
 }
 
@@ -134,7 +134,7 @@
 }
 
 .fq-issue-pill {
-  border: 1px solid #334155;
+  border: 1px solid #333333;
   background: #232b3b;
   padding: 4px 8px;
   border-radius: 999px;
@@ -178,7 +178,7 @@
   right: 18px;
   z-index: 9999;
   background: #232b3b;
-  border: 1px solid #334155;
+  border: 1px solid #333333;
   color: #f3f4f6;
   padding: 10px 12px;
   border-radius: 12px;
@@ -209,3 +209,4 @@
 .fq-row-busy input[type="checkbox"] {
   opacity: 0.85;
 }
+

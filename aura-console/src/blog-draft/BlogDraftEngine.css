@@ -1,5 +1,5 @@
-:root {
-  --bde-bg: linear-gradient(135deg, #0f172a 0%, #0b1021 40%, #0f172a 100%);
+﻿:root {
+  --bde-bg: linear-gradient(135deg, #111111 0%, #0b1021 40%, #111111 100%);
   --bde-card: #10172a;
   --bde-border: rgba(255, 255, 255, 0.06);
   --bde-text: #e2e8f0;
@@ -499,7 +499,7 @@
 }
 
 .bde-modal {
-  background: linear-gradient(135deg, #1a1f3a 0%, #0f172a 100%);
+  background: linear-gradient(135deg, #1a1f3a 0%, #111111 100%);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
@@ -1006,4 +1006,5 @@
     box-shadow: none;
   }
 }
+
 

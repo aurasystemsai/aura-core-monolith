@@ -1,4 +1,4 @@
-/* ContentIngestor.css - unified dark theme for Content Ingestor panel */
+﻿/* ContentIngestor.css - unified dark theme for Content Ingestor panel */
 .content-ingest-card {
   background: #232b3b;
   color: #f3f4f6;
@@ -34,7 +34,7 @@
 .content-ingest-card .inspector-input, .content-ingest-card .inspector-textarea {
   background: #181f2a;
   color: #f3f4f6;
-  border: 1.5px solid #334155;
+  border: 1.5px solid #333333;
   border-radius: 10px;
   padding: 10px 18px;
   font-size: 1.08em;
@@ -46,7 +46,7 @@
   border: 1.5px solid #38bdf8;
 }
 .content-ingest-card .button--primary {
-  background: #334155;
+  background: #333333;
   color: #f3f4f6;
   border: none;
   border-radius: 12px;
@@ -77,3 +77,4 @@
 .content-ingest-card strong {
   color: #f3f4f6;
 }
+

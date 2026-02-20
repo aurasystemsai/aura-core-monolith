@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import BackButton from "./BackButton";
 
 export default function SocialMediaAnalyticsListening() {
@@ -34,7 +34,7 @@ export default function SocialMediaAnalyticsListening() {
   const onboardingContent = (
     <div style={{ padding: 24, background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Social Media Analytics & Listening</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#334155", fontSize: 16 }}>
+      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#333333", fontSize: 16 }}>
         <li>Analyze brand mentions and sentiment</li>
         <li>Track trends, engagement, and competitors</li>
         <li>Export, share, and review analysis history</li>
@@ -83,7 +83,7 @@ export default function SocialMediaAnalyticsListening() {
         </div>
       )}
       {history.length > 0 && (
-        <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: darkMode ? "#333333" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analysis History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, i) => (
@@ -101,3 +101,4 @@ export default function SocialMediaAnalyticsListening() {
     </div>
   );
 }
+

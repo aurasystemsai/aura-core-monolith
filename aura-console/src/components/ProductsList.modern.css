@@ -1,4 +1,4 @@
-/* Force Products/SEO Manager heading to match dashboard overview */
+﻿/* Force Products/SEO Manager heading to match dashboard overview */
 .products-card h1, .products-card h2, .pl-title {
   color: #f3f4f6 !important;
   font-weight: 900;
@@ -57,7 +57,7 @@
   letter-spacing: 0.01em;
 }
 .pl-keyword-pill {
-  background: #1e293b;
+  background: #1a1a1a;
   color: #f3f4f6;
   background: #232b3b;
   border-radius: 10px;
@@ -67,17 +67,17 @@
   display: inline-block;
   font-weight: 700;
   letter-spacing: 0.01em;
-  border: 1.5px solid #334155;
+  border: 1.5px solid #333333;
   box-shadow: 0 1px 4px #181f2a;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
 .pl-keyword-pill:hover {
-  background: #1e293b;
+  background: #1a1a1a;
   color: #f3f4f6;
 }
 .pl-btn, .pl-btn--edit, .pl-btn--save, .pl-btn--cancel, .pl-btn--ai, .pl-btn--fixall, .pl-btn--fix {
-  background: #334155;
+  background: #333333;
   color: #f3f4f6;
   border: none;
   border-radius: 10px;
@@ -214,7 +214,7 @@
   background: #232b3b;
   font-weight: 700;
   color: #f3f4f6;
-  border-bottom: 2px solid #334155;
+  border-bottom: 2px solid #333333;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -222,7 +222,7 @@
 }
 
 .pl-btn {
-  background: #334155;
+  background: #333333;
   color: #f3f4f6;
   border: none;
   border-radius: 8px;
@@ -286,7 +286,7 @@
 }
 
 .pl-btn--accent {
-  background: #334155;
+  background: #333333;
   color: #f3f4f6;
 }
 
@@ -296,7 +296,7 @@
 }
 
 .pl-btn--edit:hover, .pl-btn--save:hover, .pl-btn--ai:hover, .pl-btn--fixall:hover, .pl-btn--fix:hover {
-  background: #334155;
+  background: #333333;
   color: #f3f4f6;
 }
 
@@ -311,7 +311,7 @@
 }
 
 .pl-input, .pl-select {
-  border: 1px solid #334155;
+  border: 1px solid #333333;
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 1rem;
@@ -458,7 +458,7 @@
   height: 48px;
   object-fit: cover;
   border-radius: 6px;
-  border: 1px solid #334155;
+  border: 1px solid #333333;
   background: #181f2a;
   box-shadow: 0 1px 4px 0 #181f2a;
   display: inline-block;
@@ -486,7 +486,7 @@
   font-size: 2rem;
   line-height: 48px;
   text-align: center;
-  border: 1px dashed #334155;
+  border: 1px dashed #333333;
   vertical-align: middle;
 }
 
@@ -543,3 +543,4 @@
   clip: rect(0,0,0,0);
   border: 0;
 }
+

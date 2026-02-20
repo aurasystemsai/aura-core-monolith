@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 
 export default function SelfServicePortal() {
   const [showOnboarding, setShowOnboarding] = React.useState(true);
@@ -14,9 +14,9 @@ export default function SelfServicePortal() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#e5e7eb' }}>
+    <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Self-Service Portal</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#334155', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#333333', fontSize: 16 }}>
         <li>Manage integrations, billing, and support in one place</li>
         <li>Import/export account data, analyze usage</li>
         <li>Accessible, secure, and fully compliant</li>
@@ -138,3 +138,4 @@ export default function SelfServicePortal() {
     </div>
   );
 }
+

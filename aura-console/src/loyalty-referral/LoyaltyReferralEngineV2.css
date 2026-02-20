@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Loyalty & Referral Program V2 - Enterprise Styling
  * Comprehensive CSS with gradient cards, tier badges, gamification, and responsive design
  */
@@ -270,7 +270,7 @@
   background: white;
   padding: 0.5rem 1rem;
   border-radius: 6px;
-  border: 1px dashed #d1d5db;
+  border: 1px dashed #dddddd;
   font-weight: 600;
   letter-spacing: 2px;
 }
@@ -339,7 +339,7 @@
 .referral-tracking-table td {
   padding: 0.75rem;
   text-align: left;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .referral-tracking-table th {
@@ -367,7 +367,7 @@
   top: 50%;
   transform: translateY(-50%);
   font-size: 2rem;
-  color: #d1d5db;
+  color: #dddddd;
 }
 
 .funnel-stage:last-child::after {
@@ -382,7 +382,7 @@
 
 .funnel-label {
   font-size: 0.9rem;
-  color: #6b7280;
+  color: #666666;
   margin-top: 0.5rem;
 }
 
@@ -402,7 +402,7 @@
   padding: 1.5rem;
   background: white;
   border-radius: 12px;
-  border: 2px solid #e5e7eb;
+  border: 2px solid #f0f0f0;
   transition: all 0.3s ease;
 }
 
@@ -428,7 +428,7 @@
 
 .badge-description {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: #666666;
 }
 
 .badge-unlock-animation {
@@ -486,7 +486,7 @@
 
 .challenge-progress-bg {
   fill: none;
-  stroke: #e5e7eb;
+  stroke: #f0f0f0;
   stroke-width: 8;
 }
 
@@ -609,7 +609,7 @@
 
 .campaign-status-badge.active { background: #d1fae5; color: #065f46; }
 .campaign-status-badge.paused { background: #fef3c7; color: #92400e; }
-.campaign-status-badge.ended { background: #e5e7eb; color: #374151; }
+.campaign-status-badge.ended { background: #f0f0f0; color: #333333; }
 
 .campaign-flow-diagram {
   display: flex;
@@ -627,12 +627,12 @@
   padding: 1rem;
   background: white;
   border-radius: 8px;
-  border: 2px solid #e5e7eb;
+  border: 2px solid #f0f0f0;
 }
 
 .flow-arrow {
   font-size: 1.5rem;
-  color: #9ca3af;
+  color: #888888;
 }
 
 /* ============================================================================
@@ -676,7 +676,7 @@
 
 .metric-label {
   font-size: 0.9rem;
-  color: #6b7280;
+  color: #666666;
 }
 
 .metric-change {
@@ -703,7 +703,7 @@
   padding: 1.5rem;
   background: white;
   border-radius: 12px;
-  border: 2px solid #e5e7eb;
+  border: 2px solid #f0f0f0;
   transition: all 0.3s ease;
   cursor: pointer;
 }
@@ -798,18 +798,18 @@
   .campaign-card,
   .analytics-chart-container,
   .tier-progress-container {
-    background: #1f2937;
-    border-color: #374151;
-    color: #e5e7eb;
+    background: #1a1a1a;
+    border-color: #333333;
+    color: #f0f0f0;
   }
   
   .metric-box {
-    background: #374151;
-    color: #e5e7eb;
+    background: #333333;
+    color: #f0f0f0;
   }
   
   .leaderboard-row:hover {
-    background: #374151;
+    background: #333333;
   }
 }
 
@@ -853,3 +853,4 @@
     display: none !important;
   }
 }
+

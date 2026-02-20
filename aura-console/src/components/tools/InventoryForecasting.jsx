@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef } from "react";
 
 export default function InventoryForecasting() {
   const [input, setInput] = useState("");
@@ -79,7 +79,7 @@ export default function InventoryForecasting() {
   const onboardingContent = (
     <div style={{ padding: 24, background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Inventory Forecasting</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#334155", fontSize: 16 }}>
+      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#333333", fontSize: 16 }}>
         <li>Demand forecasting, reorder automation, and supply chain analytics</li>
         <li>Export, share, and review forecast history</li>
         <li>Accessible, secure, and fully compliant</li>
@@ -153,3 +153,4 @@ export default function InventoryForecasting() {
     </div>
   );
 }
+

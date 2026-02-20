@@ -1,4 +1,4 @@
-.cdp-container {
+﻿.cdp-container {
   padding: 24px;
   max-width: 1400px;
   margin: 0 auto;
@@ -89,7 +89,7 @@
   font-size: 36px;
   font-weight: 700;
   margin-bottom: 4px;
-  color: #1e293b;
+  color: #1a1a1a;
 }
 
 .metric-detail {
@@ -193,7 +193,7 @@
 
 .btn-secondary {
   background: #e2e8f0;
-  color: #1e293b;
+  color: #1a1a1a;
   border: none;
   border-radius: 8px;
   padding: 10px 20px;
@@ -520,3 +520,4 @@
   background: #f1f5f9;
   color: #475569;
 }
+

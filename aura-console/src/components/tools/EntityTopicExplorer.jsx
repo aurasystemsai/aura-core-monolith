@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef } from "react";
 import { apiFetch } from "../../api";
 
 export default function EntityTopicExplorer() {
@@ -93,7 +93,7 @@ export default function EntityTopicExplorer() {
   };
 
   return (
-    <div style={{ background: "#18181b", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#e5e7eb' }}>
+    <div style={{ background: "#18181b", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f0f0f0' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Entity/Topic Explorer</h2>
       <div style={{ color: "#0ea5e9", fontWeight: 600, marginBottom: 18 }}>
         <span role="img" aria-label="entity">🧠</span> Semantic SEO: discover entities and topics for your content.
@@ -116,7 +116,7 @@ export default function EntityTopicExplorer() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Entities</div>
           <ul style={{ paddingLeft: 18 }}>
             {entities.map((e, idx) => (
-              <li key={e.id || idx} style={{ marginBottom: 8, background: "#232336", borderRadius: 8, padding: 8, color: '#e5e7eb' }}>{e.name}</li>
+              <li key={e.id || idx} style={{ marginBottom: 8, background: "#232336", borderRadius: 8, padding: 8, color: '#f0f0f0' }}>{e.name}</li>
             ))}
           </ul>
         </div>
@@ -132,7 +132,7 @@ export default function EntityTopicExplorer() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Semantic Analysis</div>
           <ul style={{ paddingLeft: 18 }}>
             {analysis.map((a, idx) => (
-              <li key={a.id || idx} style={{ marginBottom: 8, background: "#232336", borderRadius: 8, padding: 8, color: '#e5e7eb' }}>{a.name}</li>
+              <li key={a.id || idx} style={{ marginBottom: 8, background: "#232336", borderRadius: 8, padding: 8, color: '#f0f0f0' }}>{a.name}</li>
             ))}
           </ul>
         </div>
@@ -163,3 +163,4 @@ export default function EntityTopicExplorer() {
     </div>
   );
 }
+

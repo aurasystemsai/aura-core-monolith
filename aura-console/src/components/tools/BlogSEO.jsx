@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+﻿import React, { useMemo, useRef, useState } from "react";
 import BackButton from "./BackButton";
 import "../../blog-seo/BlogSEOEngine.css";
 
@@ -157,7 +157,7 @@ export default function BlogSEO() {
       {activeTab && (
         <div style={{ background: "#1e2235", borderRadius: 10, padding: "14px 18px", marginBottom: 20, border: "1px solid #2f3a50", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ color: "#7fffd4", fontWeight: 700, fontSize: 14 }}>Active: {activeTab}</span>
-          <button onClick={() => setActiveTab(null)} style={{ background: "transparent", border: "1px solid #374151", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Close ✕</button>
+          <button onClick={() => setActiveTab(null)} style={{ background: "transparent", border: "1px solid #333333", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Close ✕</button>
         </div>
       )}
 
@@ -314,3 +314,4 @@ export default function BlogSEO() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const STORAGE_KEY = "collab-approvals:draft";
 const WORKFLOW_PRESETS = [
@@ -454,7 +454,7 @@ export default function CollaborationApprovalWorkflows() {
         <div style={{ background: "#232336", border: "1px solid #2f2f36", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <div>
             <div style={{ fontWeight: 800, color: "#fcd34d" }}>View-only mode</div>
-            <div style={{ color: "#9ca3af", fontSize: 13 }}>You can inspect approvals but need elevated access to edit or build workflows.</div>
+            <div style={{ color: "#888888", fontSize: 13 }}>You can inspect approvals but need elevated access to edit or build workflows.</div>
           </div>
           <button onClick={() => setAccessRequested(true)} disabled={accessRequested} style={{ background: accessRequested ? "#2f2f36" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: accessRequested ? "default" : "pointer" }}>
             {accessRequested ? "Request sent" : "Request edit access"}
@@ -464,47 +464,47 @@ export default function CollaborationApprovalWorkflows() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10, marginBottom: 12 }}>
         <div style={{ background: "#10111a", border: "1px solid #2f2f36", borderRadius: 12, padding: 12 }}>
-          <div style={{ color: "#9ca3af", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 }}>Readiness</div>
+          <div style={{ color: "#888888", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 }}>Readiness</div>
           <div style={{ fontWeight: 800, fontSize: 22, color: readinessSummary.coverage >= 85 ? "#22c55e" : "#fbbf24" }}>{readinessSummary.coverage}%</div>
-          <div style={{ color: "#9ca3af", fontSize: 13 }}>{readinessSummary.summary}</div>
+          <div style={{ color: "#888888", fontSize: 13 }}>{readinessSummary.summary}</div>
         </div>
         <div style={{ background: "#10111a", border: "1px solid #2f2f36", borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Guardrails</div>
           <div style={{ color: readinessSummary.guardrailsOk ? "#22c55e" : "#f59e0b", fontWeight: 700 }}>{readinessSummary.guardrailsOk ? "Clear" : `${preflightIssues.length} issue${preflightIssues.length === 1 ? "" : "s"}`}</div>
-          <div style={{ color: "#9ca3af", fontSize: 12 }}>Content depth: {readinessSummary.contentRich ? "Rich" : "Needs detail"}</div>
+          <div style={{ color: "#888888", fontSize: 12 }}>Content depth: {readinessSummary.contentRich ? "Rich" : "Needs detail"}</div>
         </div>
         <div style={{ background: "#10111a", border: "1px solid #2f2f36", borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Workflow hygiene</div>
           <div style={{ color: dirtySinceSave ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>{dirtySinceSave ? "Unsaved edits" : "Clean"}</div>
-          <div style={{ color: "#9ca3af", fontSize: 12 }}>Last saved {lastSavedAt ? formatTime(lastSavedAt) : "—"}</div>
+          <div style={{ color: "#888888", fontSize: 12 }}>Last saved {lastSavedAt ? formatTime(lastSavedAt) : "—"}</div>
         </div>
       </div>
 
       <div style={{ marginBottom: 12, background: "#10111a", border: "1px solid #2f2f36", borderRadius: 12, padding: 12 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
           <div style={{ fontWeight: 800, color: "#e4e4e7" }}>Operational checklist</div>
-          <div style={{ color: "#9ca3af", fontSize: 12 }}>Auto-updates as you edit</div>
+          <div style={{ color: "#888888", fontSize: 12 }}>Auto-updates as you edit</div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 8 }}>
           {checklist.map(item => (
             <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 10, background: "#0f0f16", border: "1px solid #2f2f36", borderRadius: 10, padding: "8px 10px" }}>
               <div style={{ width: 10, height: 10, borderRadius: "50%", background: item.ok ? "#22c55e" : "#f97316" }} />
-              <div style={{ color: "#e5e7eb", fontWeight: 600 }}>{item.label}</div>
+              <div style={{ color: "#f0f0f0", fontWeight: 600 }}>{item.label}</div>
             </div>
           ))}
         </div>
       </div>
       {showCommandPalette && (
         <div style={{ position: "fixed", inset: 0, background: "#0009", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20 }}>
-          <div style={{ background: "#0b1221", border: "1px solid #1f2937", borderRadius: 14, padding: 16, width: "min(520px, 92vw)", boxShadow: "0 18px 60px #000" }}>
+          <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 14, padding: 16, width: "min(520px, 92vw)", boxShadow: "0 18px 60px #000" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
               <div style={{ fontWeight: 800, color: "#a5f3fc" }}>Command Palette</div>
-              <button onClick={() => setShowCommandPalette(false)} style={{ background: "transparent", color: "#9ca3af", border: "none", cursor: "pointer", fontWeight: 700 }}>Esc</button>
+              <button onClick={() => setShowCommandPalette(false)} style={{ background: "transparent", color: "#888888", border: "none", cursor: "pointer", fontWeight: 700 }}>Esc</button>
             </div>
             {[{ label: "Save draft", action: handleManualSave, hotkey: "Ctrl+S", disabled: false }, { label: "Run preflight", action: runPreflight, hotkey: "Alt+P", disabled: false }, { label: "Build", action: handleBuild, hotkey: "Ctrl+Enter", disabled: isViewer }, { label: "Undo", action: handleUndo, hotkey: "Ctrl+Z", disabled: !undoStack.length || isViewer }, { label: "Redo", action: handleRedo, hotkey: "Ctrl+Shift+Z", disabled: !redoStack.length || isViewer }].map(cmd => (
-              <button key={cmd.label} disabled={cmd.disabled} onClick={() => { cmd.action(); setShowCommandPalette(false); }} style={{ width: "100%", textAlign: "left", background: cmd.disabled ? "#1f2937" : "#111827", color: cmd.disabled ? "#6b7280" : "#e5e7eb", border: "1px solid #1f2937", borderRadius: 10, padding: "10px 12px", marginBottom: 8, cursor: cmd.disabled ? "not-allowed" : "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <button key={cmd.label} disabled={cmd.disabled} onClick={() => { cmd.action(); setShowCommandPalette(false); }} style={{ width: "100%", textAlign: "left", background: cmd.disabled ? "#1a1a1a" : "#111827", color: cmd.disabled ? "#666666" : "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", marginBottom: 8, cursor: cmd.disabled ? "not-allowed" : "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>{cmd.label}</span>
-                <span style={{ fontSize: 12, color: "#9ca3af" }}>{cmd.hotkey}</span>
+                <span style={{ fontSize: 12, color: "#888888" }}>{cmd.hotkey}</span>
               </button>
             ))}
           </div>
@@ -514,19 +514,19 @@ export default function CollaborationApprovalWorkflows() {
         <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#232336", border: "1px solid #2f2f36", borderRadius: 12, padding: "8px 12px" }}>
           <span style={{ color: "#d4d4d8", fontWeight: 700 }}>Env</span>
           {["dev", "stage", "prod"].map(opt => (
-            <button key={opt} onClick={() => handleDirectChange(setEnv)(opt)} disabled={isViewer} style={{ background: env === opt ? "#a3e635" : "#111827", color: env === opt ? "#111827" : "#e5e7eb", border: "1px solid #2f2f36", borderRadius: 999, padding: "6px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{opt.toUpperCase()}</button>
+            <button key={opt} onClick={() => handleDirectChange(setEnv)(opt)} disabled={isViewer} style={{ background: env === opt ? "#a3e635" : "#111827", color: env === opt ? "#111827" : "#f0f0f0", border: "1px solid #2f2f36", borderRadius: 999, padding: "6px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{opt.toUpperCase()}</button>
           ))}
           <span style={{ color: draftStatus === "saved" ? "#22c55e" : "#fbbf24", fontSize: 12 }}>{draftStatus === "saved" ? `Saved ${formatTime(lastSavedAt)}` : "Saving..."}</span>
           {dirtySinceSave && <span style={{ color: "#fbbf24", fontSize: 12 }}>· Unsaved changes</span>}
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button onClick={runPreflight} disabled={isViewer} style={{ background: "#1e293b", color: "#fcd34d", border: "1px solid #334155", borderRadius: 12, padding: "10px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>🔍 Preflight (Alt+P)</button>
-          <button onClick={handleBuild} disabled={isViewer} style={{ background: "#22c55e", color: "#0f172a", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{loading ? "Building…" : "Build (Ctrl+Enter)"}</button>
+          <button onClick={runPreflight} disabled={isViewer} style={{ background: "#1a1a1a", color: "#fcd34d", border: "1px solid #333333", borderRadius: 12, padding: "10px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>🔍 Preflight (Alt+P)</button>
+          <button onClick={handleBuild} disabled={isViewer} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 12, padding: "10px 12px", fontWeight: 900, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{loading ? "Building…" : "Build (Ctrl+Enter)"}</button>
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Collaboration & Approval Workflows</h2>
-        <div style={{ color: "#9ca3af", fontSize: 13 }}>
+        <div style={{ color: "#888888", fontSize: 13 }}>
           Hotkeys: Ctrl+S save draft, Ctrl+Enter build, Alt+P preflight, Ctrl+Z / Ctrl+Shift+Z undo/redo, Ctrl+K palette.
           {diffSummary && <span style={{ marginLeft: 10 }}>Δ chars since last build: {diffSummary.delta}</span>}
         </div>
@@ -535,7 +535,7 @@ export default function CollaborationApprovalWorkflows() {
       <div style={{ marginBottom: 18 }}>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
           {WORKFLOW_PRESETS.map(p => (
-            <button key={p.id} onClick={() => { if (isViewer) return; pushUndoSnapshot(); setSelectedPreset(p.id); setWorkflow(p.workflow); }} disabled={isViewer} style={{ background: selectedPreset === p.id ? "#a3e635" : "#232336", color: selectedPreset === p.id ? "#111827" : "#e5e7eb", border: "1px solid #2f2f36", borderRadius: 10, padding: "8px 10px", fontWeight: 700, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>
+            <button key={p.id} onClick={() => { if (isViewer) return; pushUndoSnapshot(); setSelectedPreset(p.id); setWorkflow(p.workflow); }} disabled={isViewer} style={{ background: selectedPreset === p.id ? "#a3e635" : "#232336", color: selectedPreset === p.id ? "#111827" : "#f0f0f0", border: "1px solid #2f2f36", borderRadius: 10, padding: "8px 10px", fontWeight: 700, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>
               {p.name} <span style={{ marginLeft: 6, background: "#a3e6351a", color: "#bef264", padding: "2px 6px", borderRadius: 999, fontSize: 12 }}>{p.badge}</span>
             </button>
           ))}
@@ -553,12 +553,12 @@ export default function CollaborationApprovalWorkflows() {
       {preflightIssues.length > 0 && (
         <div style={{ marginBottom: 12, background: "#232336", border: "1px solid #2f2f36", borderRadius: 12, padding: 12 }}>
           <div style={{ color: "#fcd34d", fontWeight: 800 }}>Preflight</div>
-          <ul style={{ margin: 6, paddingLeft: 18, color: "#e5e7eb" }}>
+          <ul style={{ margin: 6, paddingLeft: 18, color: "#f0f0f0" }}>
             {preflightIssues.map((i, idx) => <li key={idx}>{i}</li>)}
           </ul>
           {env === "prod" && (
             <div style={{ marginTop: 8 }}>
-              <input value={confirmationNote} onChange={handleInputChange(setConfirmationNote)} disabled={isViewer} placeholder="Who approved? What changed?" style={{ width: "100%", background: "#0f172a", color: "#e5e7eb", border: "1px solid #2f2f36", borderRadius: 10, padding: "8px 10px", opacity: isViewer ? 0.7 : 1 }} />
+              <input value={confirmationNote} onChange={handleInputChange(setConfirmationNote)} disabled={isViewer} placeholder="Who approved? What changed?" style={{ width: "100%", background: "#111111", color: "#f0f0f0", border: "1px solid #2f2f36", borderRadius: 10, padding: "8px 10px", opacity: isViewer ? 0.7 : 1 }} />
             </div>
           )}
         </div>
@@ -566,7 +566,7 @@ export default function CollaborationApprovalWorkflows() {
       {preflightTrace.length > 0 && (
         <div style={{ marginBottom: 12, background: "#232336", border: "1px solid #2f2f36", borderRadius: 12, padding: 12 }}>
           <div style={{ color: "#a5f3fc", fontWeight: 800 }}>Preflight Trace</div>
-          <ul style={{ margin: 6, paddingLeft: 12, color: "#e5e7eb", display: "flex", flexDirection: "column", gap: 6 }}>
+          <ul style={{ margin: 6, paddingLeft: 12, color: "#f0f0f0", display: "flex", flexDirection: "column", gap: 6 }}>
             {preflightTrace.map((item, idx) => {
               const color = item.status === "pass" ? "#22c55e" : item.status === "warn" ? "#f59e0b" : "#f87171";
               const symbol = item.status === "pass" ? "✓" : item.status === "warn" ? "!" : "✕";
@@ -589,7 +589,7 @@ export default function CollaborationApprovalWorkflows() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Workflows</div>
           <ul style={{ paddingLeft: 18 }}>
             {workflows.map((wf, idx) => (
-              <li key={wf.id || idx} style={{ marginBottom: 8, background: "#232336", borderRadius: 8, padding: 8, color: '#e5e7eb' }}>{wf.name}</li>
+              <li key={wf.id || idx} style={{ marginBottom: 8, background: "#232336", borderRadius: 8, padding: 8, color: '#f0f0f0' }}>{wf.name}</li>
             ))}
           </ul>
         </div>
@@ -645,3 +645,4 @@ export default function CollaborationApprovalWorkflows() {
     </div>
   );
 }
+

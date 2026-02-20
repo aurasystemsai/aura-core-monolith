@@ -1,4 +1,4 @@
-/* DraftLibrary.css - unified dark theme for Draft Library panel */
+﻿/* DraftLibrary.css - unified dark theme for Draft Library panel */
 .draft-library-grid {
   display: grid;
   grid-template-columns: 320px 1fr;
@@ -23,7 +23,7 @@
 .draft-library-list button.button--ghost {
   background: transparent;
   color: #f3f4f6;
-  border: 1.5px solid #334155;
+  border: 1.5px solid #333333;
   border-radius: 12px;
   padding: 12px 10px;
   font-size: 1.08em;
@@ -39,7 +39,7 @@
   border: 1.5px solid #38bdf8;
 }
 .draft-library-detail .pill {
-  background: #334155;
+  background: #333333;
   color: #f3f4f6;
   border: none;
   border-radius: 8px;
@@ -57,7 +57,7 @@
 .draft-library-detail .button--ghost.button--tiny {
   background: #232b3b;
   color: #f3f4f6;
-  border: 1.5px solid #334155;
+  border: 1.5px solid #333333;
   border-radius: 8px;
   padding: 6px 14px;
   font-size: 0.98em;
@@ -79,3 +79,4 @@
   margin-top: 8px;
   overflow-x: auto;
 }
+

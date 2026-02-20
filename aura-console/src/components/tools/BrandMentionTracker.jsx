@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef } from "react";
 import { apiFetch } from "../../api";
 
 export default function BrandMentionTracker() {
@@ -77,7 +77,7 @@ export default function BrandMentionTracker() {
   };
 
   return (
-    <div style={{ background: "#18181b", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#e5e7eb' }}>
+    <div style={{ background: "#18181b", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f0f0f0' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Brand Mention Tracker</h2>
       <div style={{ color: "#0ea5e9", fontWeight: 600, marginBottom: 18 }}>
         <span role="img" aria-label="brand">🔎</span> Track brand mentions and sentiment across the web.
@@ -99,7 +99,7 @@ export default function BrandMentionTracker() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Mentions</div>
           <ul style={{ paddingLeft: 18 }}>
             {mentions.map((m, idx) => (
-              <li key={m.id || idx} style={{ marginBottom: 8, background: "#232336", borderRadius: 8, padding: 8, color: '#e5e7eb' }}>{m.name}</li>
+              <li key={m.id || idx} style={{ marginBottom: 8, background: "#232336", borderRadius: 8, padding: 8, color: '#f0f0f0' }}>{m.name}</li>
             ))}
           </ul>
         </div>
@@ -126,7 +126,7 @@ export default function BrandMentionTracker() {
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #6366f1", marginBottom: 12, background: "#18181b", color: "#e5e7eb" }}
+          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #6366f1", marginBottom: 12, background: "#18181b", color: "#f0f0f0" }}
           placeholder="Share your feedback or suggestions..."
           aria-label="Feedback input"
         />
@@ -135,3 +135,4 @@ export default function BrandMentionTracker() {
     </div>
   );
 }
+

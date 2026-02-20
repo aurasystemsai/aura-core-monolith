@@ -1,4 +1,4 @@
-.pricing-page {
+﻿.pricing-page {
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem 1rem;
@@ -22,7 +22,7 @@
 }
 .plan {
   background: #18181b;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #f0f0f0;
   border-radius: 1rem;
   box-shadow: 0 2px 12px 0 #0001;
   padding: 2rem 1.5rem;
@@ -82,3 +82,4 @@
   color: #888;
   font-size: 1rem;
 }
+

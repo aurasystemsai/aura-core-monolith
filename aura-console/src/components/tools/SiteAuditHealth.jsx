@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import BackButton from "./BackButton";
 import { apiFetch } from "../../api";
 
@@ -110,7 +110,7 @@ export default function SiteAuditHealth() {
         value={input}
         onChange={e => setInput(e.target.value)}
         type="text"
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #374151", marginBottom: 16, background: "#1e2235", color: "#f3f4f6", boxSizing: "border-box" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #333333", marginBottom: 16, background: "#1e2235", color: "#f3f4f6", boxSizing: "border-box" }}
         placeholder="https://yoursite.com"
         aria-label="Site URL"
         onKeyDown={e => e.key === "Enter" && !loading && input && handleAudit()}
@@ -119,9 +119,9 @@ export default function SiteAuditHealth() {
         <button onClick={handleAudit} disabled={loading || !input} style={{ background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 15, cursor: loading || !input ? "not-allowed" : "pointer", opacity: loading || !input ? 0.6 : 1 }}>
           {loading ? "Auditing…" : "Run Audit"}
         </button>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#334155", color: "#f3f4f6", border: "1px solid #475569", borderRadius: 8, padding: "10px 18px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Import</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#333333", color: "#f3f4f6", border: "1px solid #475569", borderRadius: 8, padding: "10px 18px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} />
-        <button onClick={handleExport} disabled={!history.length} style={{ background: "#334155", color: "#f3f4f6", border: "1px solid #475569", borderRadius: 8, padding: "10px 18px", fontWeight: 600, fontSize: 14, cursor: history.length ? "pointer" : "not-allowed", opacity: history.length ? 1 : 0.5 }}>Export JSON</button>
+        <button onClick={handleExport} disabled={!history.length} style={{ background: "#333333", color: "#f3f4f6", border: "1px solid #475569", borderRadius: 8, padding: "10px 18px", fontWeight: 600, fontSize: 14, cursor: history.length ? "pointer" : "not-allowed", opacity: history.length ? 1 : 0.5 }}>Export JSON</button>
         {exported && <a href={exported} download="site-audit-history.json" style={{ alignSelf: "center", color: "#7fffd4", fontWeight: 600, fontSize: 13 }}>⬇ Download</a>}
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 10, fontSize: 13 }}>✓ Imported: {imported}</div>}
@@ -130,7 +130,7 @@ export default function SiteAuditHealth() {
         <div style={{ background: "#1e2235", borderRadius: 12, padding: 20, marginBottom: 20, border: "1px solid #2f3a50" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <span style={{ fontWeight: 700, color: "#7fffd4", fontSize: 15 }}>Audit Report</span>
-            <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #374151", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
+            <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #333333", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
           </div>
           <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, fontSize: 14, color: "#e2e8f0" }}>{response}</div>
         </div>
@@ -148,7 +148,7 @@ export default function SiteAuditHealth() {
       <div style={{ background: "#1a1f30", borderRadius: 12, padding: 18, marginBottom: 20 }}>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12, color: "#7fffd4" }}>Audit History</div>
         {history.length === 0 ? (
-          <div style={{ color: "#4b5563", fontSize: 14, textAlign: "center", padding: "24px 0" }}>No audits yet. Enter a URL above to get started.</div>
+          <div style={{ color: "#444444", fontSize: 14, textAlign: "center", padding: "24px 0" }}>No audits yet. Enter a URL above to get started.</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {history.map((h, i) => (

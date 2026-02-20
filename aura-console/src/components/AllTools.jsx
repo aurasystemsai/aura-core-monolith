@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+﻿import React, { useState, useEffect, useMemo } from "react";
 import { apiFetch } from "../api";
 import usePlan, { canUseTool, requiredPlanFor, PLAN_LABEL, PLAN_PRICE, PLAN_COLOUR } from "../hooks/usePlan";
 
@@ -147,7 +147,7 @@ export default function AllTools({ setActiveSection }) {
         {(searchTerm || activeCategory !== 'all') && (
           <button
             onClick={() => { setSearchTerm(''); setActiveCategory('all'); }}
-            style={{ padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: '1px solid #374151', background: 'transparent', color: '#64748b' }}
+            style={{ padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: '1px solid #333333', background: 'transparent', color: '#64748b' }}
           >
             Clear filters ✕
           </button>
@@ -160,7 +160,7 @@ export default function AllTools({ setActiveSection }) {
           <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: '#94a3b8', marginBottom: 8 }}>No tools found</div>
           <div style={{ fontSize: 14 }}>Try a different search term or category</div>
-          <button onClick={() => { setSearchTerm(''); setActiveCategory('all'); }} style={{ marginTop: 20, padding: '8px 20px', borderRadius: 8, border: '1px solid #374151', background: 'transparent', color: '#7fffd4', fontWeight: 700, cursor: 'pointer' }}>Clear filters</button>
+          <button onClick={() => { setSearchTerm(''); setActiveCategory('all'); }} style={{ marginTop: 20, padding: '8px 20px', borderRadius: 8, border: '1px solid #333333', background: 'transparent', color: '#7fffd4', fontWeight: 700, cursor: 'pointer' }}>Clear filters</button>
         </div>
       )}
       <div className="all-tools-grid">
@@ -219,7 +219,7 @@ export default function AllTools({ setActiveSection }) {
           padding: 32px;
           max-width: 1400px;
           margin: 0 auto;
-          background: #0f172a;
+          background: #111111;
           min-height: 100vh;
         }
 
@@ -282,7 +282,7 @@ export default function AllTools({ setActiveSection }) {
           border-radius: 10px;
           border: 1px solid #1e1e1e;
           background: #111111;
-          color: #e5e7eb;
+          color: #f0f0f0;
           font-size: 15px;
         }
 
@@ -297,7 +297,7 @@ export default function AllTools({ setActiveSection }) {
           border-radius: 10px;
           border: 1px solid #1e1e1e;
           background: #111111;
-          color: #e5e7eb;
+          color: #f0f0f0;
           font-size: 15px;
           cursor: pointer;
         }
@@ -307,7 +307,7 @@ export default function AllTools({ setActiveSection }) {
           border-radius: 10px;
           border: none;
           background: linear-gradient(135deg, #7fffd4 0%, #22d3ee 100%);
-          color: #0f172a;
+          color: #111111;
           font-weight: 700;
           font-size: 15px;
           cursor: pointer;
@@ -351,7 +351,7 @@ export default function AllTools({ setActiveSection }) {
         .tool-card h3 {
           font-size: 18px;
           font-weight: 700;
-          color: #e5e7eb;
+          color: #f0f0f0;
           margin: 0;
           flex: 1;
         }
@@ -386,12 +386,12 @@ export default function AllTools({ setActiveSection }) {
 
         .status-new {
           background: #22d3ee;
-          color: #0f172a;
+          color: #111111;
         }
 
         .status-beta {
           background: #f59e0b;
-          color: #0f172a;
+          color: #111111;
         }
 
         .doc-link {
@@ -410,3 +410,4 @@ export default function AllTools({ setActiveSection }) {
     </div>
   );
 }
+

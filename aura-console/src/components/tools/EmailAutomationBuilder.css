@@ -1,4 +1,4 @@
-/* ========================================
+﻿/* ========================================
    EMAIL AUTOMATION BUILDER - ENTERPRISE CSS
    ======================================== */
 
@@ -14,14 +14,14 @@
   --bg-primary: #ffffff;
   --bg-secondary: #f9fafb;
   --bg-tertiary: #f3f4f6;
-  --bg-dark: #1f2937;
+  --bg-dark: #1a1a1a;
   
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --text-tertiary: #9ca3af;
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --text-tertiary: #888888;
   
-  --border-color: #e5e7eb;
-  --border-dark: #d1d5db;
+  --border-color: #f0f0f0;
+  --border-dark: #dddddd;
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -653,3 +653,4 @@
 .email-automation-builder__spinner {
   animation: email-automation-builder-spin 1s linear infinite;
 }
+

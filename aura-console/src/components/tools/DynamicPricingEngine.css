@@ -1,4 +1,4 @@
-/* ================================================================
+﻿/* ================================================================
    DYNAMIC PRICING ENGINE - ENTERPRISE CSS STYLING
    ================================================================ */
 
@@ -87,7 +87,7 @@
   border: none;
   border-radius: 8px;
   background: white;
-  color: #4b5563;
+  color: #444444;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -123,7 +123,7 @@
   border: none;
   border-radius: 6px;
   background: #f3f4f6;
-  color: #6b7280;
+  color: #666666;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -131,8 +131,8 @@
 }
 
 .dpe-tab-btn:hover {
-  background: #e5e7eb;
-  color: #374151;
+  background: #f0f0f0;
+  color: #333333;
 }
 
 .dpe-tab-btn.active {
@@ -168,7 +168,7 @@
 
 .dpe-tab-content h2 {
   margin: 0 0 24px 0;
-  color: #1f2937;
+  color: #1a1a1a;
   font-size: 1.8rem;
   font-weight: 700;
   border-bottom: 3px solid #667eea;
@@ -177,14 +177,14 @@
 
 .dpe-tab-content h3 {
   margin: 24px 0 16px 0;
-  color: #374151;
+  color: #333333;
   font-size: 1.3rem;
   font-weight: 600;
 }
 
 .dpe-tab-content h4 {
   margin: 0 0 8px 0;
-  color: #6b7280;
+  color: #666666;
   font-size: 0.9rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -226,7 +226,7 @@
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
-  border: 2px solid #e5e7eb;
+  border: 2px solid #f0f0f0;
 }
 
 .dpe-form-grid {
@@ -241,7 +241,7 @@
 .dpe-form-section textarea {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid #e5e7eb;
+  border: 2px solid #f0f0f0;
   border-radius: 8px;
   font-size: 0.95rem;
   transition: all 0.2s ease;
@@ -294,19 +294,19 @@
 }
 
 .dpe-list-item-header strong {
-  color: #1f2937;
+  color: #1a1a1a;
   font-size: 1.05rem;
 }
 
 .dpe-list-item-meta {
-  color: #6b7280;
+  color: #666666;
   font-size: 0.9rem;
   margin-top: 4px;
 }
 
 .dpe-list-item-content {
   margin-top: 12px;
-  color: #4b5563;
+  color: #444444;
   font-size: 0.95rem;
 }
 
@@ -364,7 +364,7 @@
 }
 
 .dpe-table tbody tr {
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #f0f0f0;
   transition: background 0.2s ease;
 }
 
@@ -374,11 +374,11 @@
 
 .dpe-table td {
   padding: 14px 16px;
-  color: #4b5563;
+  color: #444444;
 }
 
 .dpe-table td strong {
-  color: #1f2937;
+  color: #1a1a1a;
 }
 
 /* Status Badges */
@@ -418,7 +418,7 @@
 
 .dpe-status-disabled {
   background: #f3f4f6;
-  color: #6b7280;
+  color: #666666;
 }
 
 /* Severity Badges */
@@ -540,7 +540,7 @@
   justify-content: center;
   align-items: center;
   gap: 16px;
-  color: #6b7280;
+  color: #666666;
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -639,12 +639,12 @@
 /* Dark Mode Support (Optional) */
 @media (prefers-color-scheme: dark) {
   .dpe-container {
-    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    background: linear-gradient(135deg, #1a1a1a 0%, #111827 100%);
   }
 
   .dpe-content {
-    background: #1f2937;
-    color: #e5e7eb;
+    background: #1a1a1a;
+    color: #f0f0f0;
   }
 
   .dpe-tab-content h2,
@@ -653,40 +653,40 @@
   }
 
   .dpe-form-section {
-    background: #374151;
-    border-color: #4b5563;
+    background: #333333;
+    border-color: #444444;
   }
 
   .dpe-form-section input,
   .dpe-form-section select,
   .dpe-form-section textarea {
-    background: #1f2937;
-    border-color: #4b5563;
-    color: #e5e7eb;
+    background: #1a1a1a;
+    border-color: #444444;
+    color: #f0f0f0;
   }
 
   .dpe-list-item {
-    background: #374151;
+    background: #333333;
   }
 
   .dpe-list-item:hover {
-    background: #4b5563;
+    background: #444444;
   }
 
   .dpe-table tbody tr {
-    border-bottom-color: #4b5563;
+    border-bottom-color: #444444;
   }
 
   .dpe-table tbody tr:hover {
-    background: #374151;
+    background: #333333;
   }
 
   .dpe-table td {
-    color: #d1d5db;
+    color: #dddddd;
   }
 
   .dpe-footer {
-    background: #1f2937;
+    background: #1a1a1a;
   }
 }
 
@@ -717,3 +717,4 @@
     box-shadow: none;
   }
 }
+

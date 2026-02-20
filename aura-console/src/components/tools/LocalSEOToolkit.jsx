@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 
 export default function LocalSEOToolkit() {
   // Flagship UI state
@@ -17,9 +17,9 @@ export default function LocalSEOToolkit() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#e5e7eb' }}>
+    <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Local SEO Toolkit</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#334155', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#333333', fontSize: 16 }}>
         <li>Sync GMB, track citations, monitor reviews, and local rankings</li>
         <li>Import/export data, analyze trends, and optimize for local search</li>
         <li>Accessible, secure, and fully compliant</li>
@@ -179,3 +179,4 @@ export default function LocalSEOToolkit() {
     </div>
   );
 }
+

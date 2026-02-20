@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState } from "react";
 
 export default function WinbackFeatureCard({ title, description, icon, children, actions = [], darkMode: propDarkMode }) {
@@ -35,7 +35,7 @@ export default function WinbackFeatureCard({ title, description, icon, children,
       {/* Icon removed for clean look */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 700, fontSize: 20, color: '#fafafa', marginBottom: 4 }}>{title}</div>
-        <div style={{ color: '#d1d5db', fontSize: 15, marginBottom: 6 }}>{description}</div>
+        <div style={{ color: '#dddddd', fontSize: 15, marginBottom: 6 }}>{description}</div>
         {children}
         {actions.length > 0 && (
           <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -66,3 +66,4 @@ export default function WinbackFeatureCard({ title, description, icon, children,
     </div>
   );
 }
+

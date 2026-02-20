@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef } from "react";
 
 export default function InternalLinkOptimizer() {
   const [input, setInput] = useState("");
@@ -120,7 +120,7 @@ export default function InternalLinkOptimizer() {
   const onboardingContent = (
     <div style={{ padding: 24, background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Internal Link Optimizer</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#334155", fontSize: 16 }}>
+      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#333333", fontSize: 16 }}>
         <li>Generate, import, and manage internal links with AI</li>
         <li>Analyze performance with real-time analytics</li>
         <li>Collaborate and share with your team</li>
@@ -204,3 +204,4 @@ export default function InternalLinkOptimizer() {
     </div>
   );
 }
+

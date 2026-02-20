@@ -1,4 +1,4 @@
-
+﻿
 
 import React from "react";
 
@@ -210,12 +210,12 @@ export default function AutoInsights() {
           <div style={{ fontSize: 20, color: "var(--text-accent)", fontWeight: 700 }}>AI-powered business insights, analytics, and recommendations</div>
         </div>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: '#0b1221', color: '#e5e7eb', border: '1px solid #1f2937', borderRadius: 10, padding: '10px 12px', fontWeight: 800 }}>
+          <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: '#0b1221', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: '10px 12px', fontWeight: 800 }}>
             <option value="dev">Dev</option>
             <option value="stage">Stage</option>
             <option value="prod">Prod</option>
           </select>
-          <select value={shop} onChange={e => setShop(e.target.value)} style={{ background: '#0b1221', color: '#e5e7eb', border: '1px solid #1f2937', borderRadius: 10, padding: '10px 12px', fontWeight: 800 }}>
+          <select value={shop} onChange={e => setShop(e.target.value)} style={{ background: '#0b1221', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: '10px 12px', fontWeight: 800 }}>
             <option value="demo-shop.myshopify.com">demo-shop.myshopify.com</option>
             <option value="staging-shop.myshopify.com">staging-shop.myshopify.com</option>
           </select>
@@ -225,25 +225,25 @@ export default function AutoInsights() {
             <div style={{ fontSize: 15, color: "#b6eaff" }}>Best Practice</div>
           </div>
           <div style={{ background: '#181f2a', borderRadius: 12, padding: '10px 14px', minWidth: 180 }}>
-            <div style={{ color: '#9ca3af', fontSize: 12 }}>Sync health</div>
+            <div style={{ color: '#888888', fontSize: 12 }}>Sync health</div>
             <div style={{ fontWeight: 800, color: syncHealth.status === 'healthy' ? '#22c55e' : '#f87171' }}>{syncHealth.status}</div>
-            <div style={{ color: '#9ca3af', fontSize: 12 }}>Last sync {syncHealth.lastSuccess ? new Date(syncHealth.lastSuccess).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
+            <div style={{ color: '#888888', fontSize: 12 }}>Last sync {syncHealth.lastSuccess ? new Date(syncHealth.lastSuccess).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
           </div>
           <div style={{ background: '#181f2a', borderRadius: 12, padding: '10px 14px', minWidth: 200 }}>
-            <div style={{ color: '#9ca3af', fontSize: 12 }}>Freshness SLA: {freshness.sla}m</div>
+            <div style={{ color: '#888888', fontSize: 12 }}>Freshness SLA: {freshness.sla}m</div>
             <div style={{ fontWeight: 800, color: freshness.status === 'healthy' ? '#22c55e' : '#fbbf24' }}>Age: {freshness.minutes}m</div>
             <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-              <button className="aura-btn" style={{ background: '#1f2937', color: '#e5e7eb', border: '1px solid #334155' }} onClick={checkFreshness}>Check</button>
+              <button className="aura-btn" style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333' }} onClick={checkFreshness}>Check</button>
               <button className="aura-btn" style={{ background: '#0ea5e9', color: '#fff' }} onClick={() => setFreshness(f => ({ ...f, sla: Math.max(5, f.sla - 2) }))}>Tighten SLA</button>
             </div>
           </div>
           <div style={{ background: '#181f2a', borderRadius: 12, padding: '10px 14px', minWidth: 220 }}>
-            <div style={{ color: '#9ca3af', fontSize: 12 }}>Source freshness map</div>
-            <div style={{ color: '#e5e7eb', fontWeight: 700 }}>Orders {Math.round((Date.now() - sourceFreshness.orders) / 60000)}m · Events {Math.round((Date.now() - sourceFreshness.events) / 60000)}m</div>
-            <div style={{ color: '#9ca3af', fontSize: 12 }}>Attribution {(Math.round((Date.now() - sourceFreshness.attribution) / 60000))}m</div>
+            <div style={{ color: '#888888', fontSize: 12 }}>Source freshness map</div>
+            <div style={{ color: '#f0f0f0', fontWeight: 700 }}>Orders {Math.round((Date.now() - sourceFreshness.orders) / 60000)}m · Events {Math.round((Date.now() - sourceFreshness.events) / 60000)}m</div>
+            <div style={{ color: '#888888', fontSize: 12 }}>Attribution {(Math.round((Date.now() - sourceFreshness.attribution) / 60000))}m</div>
             <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-              <button className="aura-btn" style={{ background: '#1f2937', color: '#e5e7eb', border: '1px solid #334155' }} onClick={refreshSources}>Refresh sources</button>
-              <button className="aura-btn" style={{ background: '#0b1221', color: '#fbbf24', border: '1px solid #334155' }} onClick={() => setIncidentMode(true)}>Open incident</button>
+              <button className="aura-btn" style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333' }} onClick={refreshSources}>Refresh sources</button>
+              <button className="aura-btn" style={{ background: '#0b1221', color: '#fbbf24', border: '1px solid #333333' }} onClick={() => setIncidentMode(true)}>Open incident</button>
             </div>
           </div>
           <button className="aura-btn" style={{ background: '#7fffd4', color: '#0a0a0a', fontWeight: 800 }} onClick={simulateIngest}>Refresh data</button>
@@ -280,9 +280,9 @@ export default function AutoInsights() {
           </div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
             <button className="aura-btn" onClick={snapshotSegment}>Snapshot segment</button>
-            <button className="aura-btn" style={{ background: '#1f2937', color: '#e5e7eb', border: '1px solid #334155' }} onClick={() => addPin(`Shared ${segment}`, 'Shared pin set')}>Share pins</button>
+            <button className="aura-btn" style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333' }} onClick={() => addPin(`Shared ${segment}`, 'Shared pin set')}>Share pins</button>
             {exportUrl && <a href={exportUrl} download="segment-snapshot.json" style={{ color: '#7fffd4', textDecoration: 'underline', fontSize: 13 }}>Download snapshot</a>}
-            <div style={{ color: '#9ca3af', fontSize: 12 }}>Seg: {segment} · Dim: {dimension} · Metric: {metricPreset}</div>
+            <div style={{ color: '#888888', fontSize: 12 }}>Seg: {segment} · Dim: {dimension} · Metric: {metricPreset}</div>
           </div>
         </div>
         {/* Alerts & Integrations */}
@@ -340,12 +340,12 @@ export default function AutoInsights() {
               <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <button className="aura-btn" onClick={exportExecSummary}>Export exec summary</button>
                 {exportUrl && <a href={exportUrl} download="exec-summary.txt" style={{ color: '#7fffd4', textDecoration: 'underline', fontSize: 13 }}>Download</a>}
-                <button className="aura-btn" style={{ background: '#1f2937', color: '#e5e7eb', border: '1px solid #334155' }} onClick={() => recordHistory('Scheduled weekly PDF')}>Schedule weekly PDF</button>
+                <button className="aura-btn" style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333' }} onClick={() => recordHistory('Scheduled weekly PDF')}>Schedule weekly PDF</button>
               </div>
             </div>
           </div>
         </div>
-        <div style={{ marginTop: 16, display: 'flex', gap: 12, flexWrap: 'wrap', background: '#0b1221', borderRadius: 14, padding: 14, border: '1px solid #1f2937' }}>
+        <div style={{ marginTop: 16, display: 'flex', gap: 12, flexWrap: 'wrap', background: '#0b1221', borderRadius: 14, padding: 14, border: '1px solid #1a1a1a' }}>
           <div style={{ fontWeight: 800, color: '#7fffd4' }}>Shopify metric presets</div>
           <select className="aura-input" value={metricPreset} onChange={e => setMetricPreset(e.target.value)} style={{ width: 160 }}>
             <option>GMV</option>
@@ -361,7 +361,7 @@ export default function AutoInsights() {
           </select>
           <button className="aura-btn" onClick={() => recordHistory(`Preset ${metricPreset} by ${dimension} for ${shop}`)}>Apply</button>
           <button className="aura-btn" onClick={() => recordHistory(`Explain ${metricPreset}`)}>Explain this metric</button>
-          <div style={{ color: '#9ca3af', fontSize: 13 }}>Maps to Shopify events (checkout, orders, carts) for {shop}</div>
+          <div style={{ color: '#888888', fontSize: 13 }}>Maps to Shopify events (checkout, orders, carts) for {shop}</div>
         </div>
       </div>
 
@@ -396,15 +396,15 @@ export default function AutoInsights() {
               <button className="aura-btn" onClick={() => addPin(`${metricPreset} • ${dimension}`, commentDraft || 'Captured from dashboard')}>Pin current view</button>
             </div>
             {pinboard.length === 0 ? (
-              <div style={{ color: '#9ca3af', fontSize: 13 }}>No pins yet. Ctrl+P to pin current preset.</div>
+              <div style={{ color: '#888888', fontSize: 13 }}>No pins yet. Ctrl+P to pin current preset.</div>
             ) : (
               <div style={{ display: 'grid', gap: 10 }}>
                 {pinboard.map(pin => (
-                  <div key={pin.id} style={{ background: '#0b1221', borderRadius: 10, padding: 10, border: '1px solid #1f2937' }}>
-                    <div style={{ color: '#e5e7eb', fontWeight: 700 }}>{pin.title}</div>
-                    <div style={{ color: '#9ca3af', fontSize: 12 }}>{pin.note}</div>
+                  <div key={pin.id} style={{ background: '#0b1221', borderRadius: 10, padding: 10, border: '1px solid #1a1a1a' }}>
+                    <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{pin.title}</div>
+                    <div style={{ color: '#888888', fontSize: 12 }}>{pin.note}</div>
                     {pin.comments && pin.comments.length > 0 && <div style={{ color: '#7fffd4', fontSize: 12 }}>Comments: {pin.comments.join(' · ')}</div>}
-                    <div style={{ color: '#9ca3af', fontSize: 12 }}>{pin.shop} · {pin.env}</div>
+                    <div style={{ color: '#888888', fontSize: 12 }}>{pin.shop} · {pin.env}</div>
                   </div>
                 ))}
               </div>
@@ -415,10 +415,10 @@ export default function AutoInsights() {
             <div style={{ color: '#b6eaff', fontSize: 15 }}>Attribution and feature importance</div>
             <div style={{ marginTop: 8, display: 'grid', gap: 8 }}>
               {attribution.map((a, idx) => (
-                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0b1221', borderRadius: 10, padding: 10, border: '1px solid #1f2937' }}>
+                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0b1221', borderRadius: 10, padding: 10, border: '1px solid #1a1a1a' }}>
                   <div>
-                    <div style={{ color: '#e5e7eb', fontWeight: 700 }}>{a.factor}</div>
-                    <div style={{ color: '#9ca3af', fontSize: 12 }}>Weight {(a.weight * 100).toFixed(0)}%</div>
+                    <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{a.factor}</div>
+                    <div style={{ color: '#888888', fontSize: 12 }}>Weight {(a.weight * 100).toFixed(0)}%</div>
                   </div>
                   <div style={{ color: a.contribution.startsWith('-') ? '#f87171' : '#22c55e', fontWeight: 800 }}>{a.contribution}</div>
                 </div>
@@ -445,16 +445,16 @@ export default function AutoInsights() {
             <div style={{ fontWeight: 800, color: '#7fffd4', fontSize: 18, marginBottom: 8 }}>Anomaly stream</div>
             <div style={{ display: 'grid', gap: 10 }}>
               {anomalies.map(a => (
-                <div key={a.id} style={{ display: 'grid', gap: 8, background: '#0b1221', borderRadius: 10, padding: '10px 12px', border: '1px solid #1f2937' }}>
+                <div key={a.id} style={{ display: 'grid', gap: 8, background: '#0b1221', borderRadius: 10, padding: '10px 12px', border: '1px solid #1a1a1a' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <div style={{ color: '#e5e7eb', fontWeight: 700 }}>{a.label}</div>
-                      <div style={{ color: '#9ca3af', fontSize: 12 }}>{a.time} · {a.severity}</div>
+                      <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{a.label}</div>
+                      <div style={{ color: '#888888', fontSize: 12 }}>{a.time} · {a.severity}</div>
                     </div>
                     {suppressedAnomalies.includes(a.id) && <div style={{ color: '#fbbf24', fontSize: 12 }}>Suppressed</div>}
                   </div>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    <button className="aura-btn" style={{ background: '#1f2937', color: '#e5e7eb', border: '1px solid #334155' }} onClick={() => recordHistory(`Acknowledged anomaly: ${a.label}`)}>Acknowledge</button>
+                    <button className="aura-btn" style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333' }} onClick={() => recordHistory(`Acknowledged anomaly: ${a.label}`)}>Acknowledge</button>
                     <button className="aura-btn" style={{ background: '#0ea5e9', color: '#fff' }} onClick={() => routeAlert('slack')}>Route to Slack</button>
                     <button className="aura-btn" style={{ background: '#7fffd4', color: '#0a0a0a' }} onClick={() => routeAlert('email')}>Email alert</button>
                     <button className="aura-btn" style={{ background: '#b91c1c', color: '#fff' }} onClick={() => suppressAnomaly(a.id)}>Suppress</button>
@@ -479,9 +479,9 @@ export default function AutoInsights() {
             </select>
           </div>
           <div style={{ color: '#b6eaff', fontSize: 15 }}>Comparing {comparison} vs {segment}</div>
-          <div style={{ marginTop: 10, background: '#0b1221', borderRadius: 10, padding: 12, border: '1px solid #1f2937' }}>
-            <div style={{ color: '#e5e7eb', fontWeight: 700 }}>Delta callouts</div>
-            <div style={{ color: '#9ca3af', fontSize: 13 }}>Conversion +4.2 pts; AOV -1.1%; LTV +3.6%</div>
+          <div style={{ marginTop: 10, background: '#0b1221', borderRadius: 10, padding: 12, border: '1px solid #1a1a1a' }}>
+            <div style={{ color: '#f0f0f0', fontWeight: 700 }}>Delta callouts</div>
+            <div style={{ color: '#888888', fontSize: 13 }}>Conversion +4.2 pts; AOV -1.1%; LTV +3.6%</div>
           </div>
           <button className="aura-btn" style={{ marginTop: 10 }} onClick={() => recordHistory('Exported comparison CSV')}>Export comparison CSV</button>
         </div>
@@ -489,13 +489,13 @@ export default function AutoInsights() {
           <div style={{ fontWeight: 800, color: '#7fffd4', fontSize: 18 }}>AI assist</div>
           <button className="aura-btn" onClick={() => recordHistory('AI summary generated')}>Summarize this view</button>
           <button className="aura-btn" onClick={() => recordHistory('Next best actions suggested')}>Suggest next best actions</button>
-          <div style={{ color: '#9ca3af', fontSize: 13 }}>Actions consider current filters and segment.</div>
+          <div style={{ color: '#888888', fontSize: 13 }}>Actions consider current filters and segment.</div>
         </div>
         <div style={{ background: '#0a0a0a', borderRadius: 18, padding: 18, display: 'grid', gap: 10 }}>
           <div style={{ fontWeight: 800, color: '#7fffd4', fontSize: 18 }}>Scenario simulator</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
             <input className="aura-input" type="number" value={scenario.shift} onChange={e => setScenario(prev => ({ ...prev, shift: Number(e.target.value) || 0 }))} style={{ width: 100 }} />
-            <span style={{ color: '#9ca3af', fontSize: 13 }}>% shift in spend</span>
+            <span style={{ color: '#888888', fontSize: 13 }}>% shift in spend</span>
             <select className="aura-input" value={scenario.segment} onChange={e => setScenario(prev => ({ ...prev, segment: e.target.value }))} style={{ width: 140 }}>
               <option>Enterprise</option>
               <option>SMB</option>
@@ -524,22 +524,22 @@ export default function AutoInsights() {
       <div style={{ padding: "0 48px 24px" }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontWeight: 800, color: '#7fffd4', fontSize: 18 }}>Debug panel</div>
-          <button className="aura-btn" style={{ background: '#1f2937', color: '#e5e7eb', border: '1px solid #334155' }} onClick={() => setShowDebug(v => !v)}>{showDebug ? 'Hide' : 'Show'} traces</button>
+          <button className="aura-btn" style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333' }} onClick={() => setShowDebug(v => !v)}>{showDebug ? 'Hide' : 'Show'} traces</button>
         </div>
         {showDebug ? (
-          traceEvents.length === 0 ? <div style={{ color: '#9ca3af', marginTop: 8 }}>No traces yet. Ctrl+D toggles. Filters, pins, ingests are traced.</div> : (
+          traceEvents.length === 0 ? <div style={{ color: '#888888', marginTop: 8 }}>No traces yet. Ctrl+D toggles. Filters, pins, ingests are traced.</div> : (
             <div style={{ marginTop: 10, display: 'grid', gap: 8 }}>
               {traceEvents.map((t, idx) => (
-                <div key={idx} style={{ background: '#0b1221', borderRadius: 10, padding: 10, border: '1px solid #1f2937' }}>
-                  <div style={{ color: '#e5e7eb', fontWeight: 700 }}>{t.event}</div>
-                  <div style={{ color: '#9ca3af', fontSize: 12 }}>{new Date(t.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {t.env} · {t.shop}</div>
-                  <div style={{ color: '#9ca3af', fontSize: 12, wordBreak: 'break-word' }}>{JSON.stringify(t.meta)}</div>
+                <div key={idx} style={{ background: '#0b1221', borderRadius: 10, padding: 10, border: '1px solid #1a1a1a' }}>
+                  <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{t.event}</div>
+                  <div style={{ color: '#888888', fontSize: 12 }}>{new Date(t.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {t.env} · {t.shop}</div>
+                  <div style={{ color: '#888888', fontSize: 12, wordBreak: 'break-word' }}>{JSON.stringify(t.meta)}</div>
                 </div>
               ))}
             </div>
           )
         ) : (
-          <div style={{ color: '#9ca3af', marginTop: 8 }}>Tracing is off. Toggle to view recent actions.</div>
+          <div style={{ color: '#888888', marginTop: 8 }}>Tracing is off. Toggle to view recent actions.</div>
         )}
       </div>
 
@@ -548,12 +548,12 @@ export default function AutoInsights() {
           <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text-primary)", marginBottom: 10 }}>Recent activity</div>
           <div style={{ display: 'grid', gap: 10 }}>
             {history.slice(0, 5).map((h, idx) => (
-              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0b1221', border: '1px solid #1f2937', borderRadius: 12, padding: '10px 12px' }}>
+              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: '10px 12px' }}>
                 <div>
-                  <div style={{ fontWeight: 700, color: '#e5e7eb' }}>{h.summary}</div>
-                  <div style={{ color: '#9ca3af', fontSize: 12 }}>{new Date(h.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {h.env}</div>
+                  <div style={{ fontWeight: 700, color: '#f0f0f0' }}>{h.summary}</div>
+                  <div style={{ color: '#888888', fontSize: 12 }}>{new Date(h.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {h.env}</div>
                 </div>
-                <button className="aura-btn" style={{ background: '#1f2937', color: '#e5e7eb', border: '1px solid #334155' }} onClick={() => recordHistory(`Replayed: ${h.summary}`)}>Replay</button>
+                <button className="aura-btn" style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333' }} onClick={() => recordHistory(`Replayed: ${h.summary}`)}>Replay</button>
               </div>
             ))}
           </div>
@@ -562,3 +562,4 @@ export default function AutoInsights() {
     </div>
   );
 }
+

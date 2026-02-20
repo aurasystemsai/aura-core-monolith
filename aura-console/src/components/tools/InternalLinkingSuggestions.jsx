@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 
 export default function InternalLinkingSuggestions() {
   // Flagship UI state
@@ -14,9 +14,9 @@ export default function InternalLinkingSuggestions() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#e5e7eb' }}>
+    <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Internal Linking Suggestions</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#334155', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#333333', fontSize: 16 }}>
         <li>Generate, import, and manage internal link suggestions with AI</li>
         <li>Analyze link graph, anchor text, and SEO impact</li>
         <li>Accessible, secure, and fully compliant</li>
@@ -140,3 +140,4 @@ export default function InternalLinkingSuggestions() {
     </div>
   );
 }
+

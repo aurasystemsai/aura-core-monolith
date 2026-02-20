@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+﻿import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 
 const apiFetch = (url, opts = {}) =>
@@ -69,7 +69,7 @@ function CharBar({ value = '', min, max, sweetMin, sweetMax, label }) {
   const inRange = len >= min && len <= max;
   const perfect = len >= (sweetMin || min) && len <= (sweetMax || max);
   const pct = Math.min(100, (len / max) * 100);
-  const colour = len === 0 ? '#374151' : over ? '#f87171' : perfect ? '#4ade80' : inRange ? '#a3e635' : '#fbbf24';
+  const colour = len === 0 ? '#333333' : over ? '#f87171' : perfect ? '#4ade80' : inRange ? '#a3e635' : '#fbbf24';
   const statusText = len === 0 ? 'Empty'
     : over ? 'Too long'
     : len < min ? 'Too short'
@@ -442,8 +442,8 @@ export default function ProductSeoEngine() {
                       onMouseLeave={e => { e.currentTarget.style.borderColor = hasData ? '#1e1e1e' : '#2a1515'; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
                     >
                         <div style={{ position: 'absolute', top: 14, right: 14, background: hasData ? pb : '#111111', border: '1px solid ' + (hasData ? pc : '#1e1e1e') + '40', borderRadius: 8, padding: '4px 10px', textAlign: 'center' }}>
-                        <div style={{ fontSize: 16, fontWeight: 900, color: hasData ? pc : '#374151' }}>{hasData ? ps : '-'}</div>
-                        <div style={{ fontSize: 9, color: (hasData ? pc : '#374151') + 'aa', fontWeight: 600 }}>SEO</div>
+                        <div style={{ fontSize: 16, fontWeight: 900, color: hasData ? pc : '#333333' }}>{hasData ? ps : '-'}</div>
+                        <div style={{ fontSize: 9, color: (hasData ? pc : '#333333') + 'aa', fontWeight: 600 }}>SEO</div>
                       </div>
                       <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', paddingRight: 56 }}>
                         {p.image
@@ -873,3 +873,4 @@ export default function ProductSeoEngine() {
     </div>
   );
 }
+

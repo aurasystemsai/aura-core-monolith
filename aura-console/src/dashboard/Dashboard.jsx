@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from "react";
+﻿import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch } from "../api";
 import { sendCopilotMessage } from "../core/advancedAiClient";
 import IntegrationHealthPanel from "../components/IntegrationHealthPanel";
@@ -658,7 +658,7 @@ const Dashboard = ({ setActiveSection }) => {
 
 	if (loading) {
 		return (
-			<div className="aura-dashboard-shell" style={{ padding: "24px", background: "#0f172a", minHeight: "100vh" }}>
+			<div className="aura-dashboard-shell" style={{ padding: "24px", background: "#111111", minHeight: "100vh" }}>
 				<style>{`
 					@keyframes shimmer {
 						0% { background-position: 200% 0; }
@@ -709,7 +709,7 @@ const Dashboard = ({ setActiveSection }) => {
 	};
 
 	return (
-		<div className="aura-dashboard-shell" style={{ padding: "24px", background: "#0f172a", minHeight: "100vh" }}>
+		<div className="aura-dashboard-shell" style={{ padding: "24px", background: "#111111", minHeight: "100vh" }}>
 			<style>{`
 				.quick-action-card:hover {
 					transform: translateY(-4px);
@@ -803,7 +803,7 @@ const Dashboard = ({ setActiveSection }) => {
 						{/* Scanning progress view */}
 						{scanningInProgress && (
 							<div style={{ padding:'20px 28px', flex:1, overflowY:'auto' }}>
-								<div style={{ background:'#0f172a', borderRadius:12, padding:'14px 18px', marginBottom:16, display:'flex', alignItems:'center', gap:10 }}>
+								<div style={{ background:'#111111', borderRadius:12, padding:'14px 18px', marginBottom:16, display:'flex', alignItems:'center', gap:10 }}>
 									<span style={{ width:8, height:8, background:'#7fffd4', borderRadius:'50%', animation:'pulse-dot 1s ease infinite', flexShrink:0 }} />
 									<span style={{ color:'#7fffd4', fontSize:13, fontFamily:'monospace', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
 										{scanningPage || 'Initialising scanner...'}
@@ -843,7 +843,7 @@ const Dashboard = ({ setActiveSection }) => {
 											<div key={i}
 												onClick={() => { if (issue.fix && setActiveSection) { setActiveSection(issue.fix, issue.page); setShowScanModal(false); } }}
 												className="seo-issue-row"
-												style={{ background:'#0f172a', border:`1px solid ${issue.severity==='high'?'#e53e3e':issue.severity==='medium'?'#f59e0b':'#4ade80'}`, borderRadius:10, padding:'12px 16px', display:'flex', alignItems:'flex-start', gap:12, cursor: issue.fix ? 'pointer' : 'default' }}>
+												style={{ background:'#111111', border:`1px solid ${issue.severity==='high'?'#e53e3e':issue.severity==='medium'?'#f59e0b':'#4ade80'}`, borderRadius:10, padding:'12px 16px', display:'flex', alignItems:'flex-start', gap:12, cursor: issue.fix ? 'pointer' : 'default' }}>
 												<span style={{ fontSize:16, marginTop:1 }}>{issue.severity==='high'?'🔴':issue.severity==='medium'?'🟡':'🟢'}</span>
 												<div style={{ flex:1, minWidth:0 }}>
 													<div style={{ color:'#f0f0f0', fontWeight:600, fontSize:14, display:'flex', alignItems:'center', gap:8 }}>
@@ -931,7 +931,7 @@ const Dashboard = ({ setActiveSection }) => {
 								border: "1px solid #1e1e1e",
 								borderRadius: 8,
 								padding: "10px 16px",
-								color: autoRefresh ? "#0f172a" : "#7fffd4",
+								color: autoRefresh ? "#111111" : "#7fffd4",
 								fontSize: 14,
 								fontWeight: 600,
 								cursor: "pointer",
@@ -971,7 +971,7 @@ const Dashboard = ({ setActiveSection }) => {
 								border: "none",
 								borderRadius: 8,
 								padding: "10px 20px",
-								color: "#0f172a",
+								color: "#111111",
 								fontSize: 14,
 								fontWeight: 700,
 								cursor: "pointer",
@@ -1021,7 +1021,7 @@ const Dashboard = ({ setActiveSection }) => {
 						disabled={copilotLoading}
 						style={{
 							background: copilotLoading ? "#3a3f55" : "#7fffd4",
-							color: "#0f172a",
+							color: "#111111",
 							border: "none",
 							borderRadius: 10,
 							fontWeight: 800,
@@ -1114,7 +1114,7 @@ const Dashboard = ({ setActiveSection }) => {
 									onClick={() => setActiveSection && setActiveSection(rec.link)}
 									style={{
 										background: "#7fffd4",
-										color: "#0f172a",
+										color: "#111111",
 										border: "none",
 										borderRadius: 8,
 										padding: "8px 16px",
@@ -1228,7 +1228,7 @@ const Dashboard = ({ setActiveSection }) => {
 								<div key={i}
 									onClick={() => issue.fix && setActiveSection && setActiveSection(issue.fix, issue.page)}
 									style={{
-										background: "#0f172a",
+										background: "#111111",
 										border: `1px solid ${issue.severity === 'high' ? '#e53e3e' : issue.severity === 'medium' ? '#f59e0b' : '#4ade80'}`,
 										borderRadius: 10,
 										padding: "12px 16px",
@@ -1606,3 +1606,4 @@ const Dashboard = ({ setActiveSection }) => {
 };
 
 export default Dashboard;
+

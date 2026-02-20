@@ -1,4 +1,4 @@
-
+﻿
 
 import React, { useState, useRef, useEffect } from "react";
 import { apiFetch } from "../api";
@@ -129,7 +129,7 @@ export default function AiAltTextEngine() {
       </div>
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {result && (
-        <div style={{ background: "#232336", borderRadius: 10, padding: 16, marginBottom: 12, color: "#e5e7eb" }}>
+        <div style={{ background: "#232336", borderRadius: 10, padding: 16, marginBottom: 12, color: "#f0f0f0" }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Alt Text:</div>
           <div>{typeof result === "string" ? result : JSON.stringify(result)}</div>
         </div>
@@ -172,3 +172,4 @@ export default function AiAltTextEngine() {
     </div>
   );
 }
+

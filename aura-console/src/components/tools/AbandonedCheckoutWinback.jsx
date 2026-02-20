@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+﻿import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { apiFetch } from '../../api';
 import WinbackFeatureCard from './WinbackFeatureCard';
 import WinbackAnalyticsChart from './WinbackAnalyticsChart';
@@ -2909,7 +2909,7 @@ function AbandonedCheckoutWinback() {
               {/* Segment Modal (Add/Edit) */}
               {showSegmentModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#e5e7eb' }}>
+                  <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#f0f0f0' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingSegment ? 'Edit Segment' : 'New Segment'}</h3>
                     <form onSubmit={e => { e.preventDefault(); saveSegment(editingSegment ? editingSegment : { name: '', rule: '', created: new Date().toISOString().slice(0, 10) }); }}>
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-segment-name">Name</label>
@@ -2976,7 +2976,7 @@ function AbandonedCheckoutWinback() {
               {/* Template Modal (Add/Edit) */}
               {showTemplateModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#e5e7eb' }}>
+                  <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#f0f0f0' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingTemplate ? 'Edit Template' : 'New Template'}</h3>
                     <form onSubmit={e => { e.preventDefault(); saveTemplate(editingTemplate ? editingTemplate : { name: '', channel: 'email', content: '', created: new Date().toISOString().slice(0, 10) }); }}>
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-template-name">Name</label>
@@ -3050,7 +3050,7 @@ function AbandonedCheckoutWinback() {
               {/* Experiment Modal (Add/Edit) */}
               {showExperimentModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#e5e7eb' }}>
+                  <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#f0f0f0' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingExperiment ? 'Edit Experiment' : 'New Experiment'}</h3>
                     <form onSubmit={e => { e.preventDefault(); saveExperiment(editingExperiment ? editingExperiment : { name: '', variantA: '', variantB: '', status: 'draft', created: new Date().toISOString().slice(0, 10) }); }}>
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-experiment-name">Name</label>
@@ -3228,7 +3228,7 @@ function AbandonedCheckoutWinback() {
               <WinbackHelpDocs />
               <div style={{ marginTop: 32 }}>
                 <h4 style={{ fontWeight: 700, fontSize: 18, marginBottom: 12 }}>Frequently Asked Questions</h4>
-                <ul style={{ fontSize: 15, color: '#334155', paddingLeft: 24 }}>
+                <ul style={{ fontSize: 15, color: '#333333', paddingLeft: 24 }}>
                   <li><b>How do I create a winback campaign?</b> Use the Campaigns section to create, schedule, and manage campaigns. Click '+ New Campaign' to get started.</li>
                   <li><b>Can I automate cart recovery?</b> Yes! Use the Automation section to set up triggers and actions for cart recovery workflows.</li>
                   <li><b>How do I connect integrations?</b> Go to Integrations and click '+ Connect Integration' to link third-party services like Shopify or Klaviyo.</li>
@@ -3523,3 +3523,4 @@ function StoreLanguageSelector({ segment, onUpdate }) {
 
 export default AbandonedCheckoutWinback;
 // End of file
+

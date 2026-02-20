@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useEffect, useRef } from "react";
 
 export default function ToolScaffold({ toolId, toolName, fields }) {
@@ -115,7 +115,7 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
       {showHelp && (
         <div style={{ background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 16 }}>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>How to use {toolName}</div>
-          <ul style={{ margin: 0, paddingLeft: 18, color: darkMode ? "#a3e635" : "#334155", fontSize: 15 }}>
+          <ul style={{ margin: 0, paddingLeft: 18, color: darkMode ? "#a3e635" : "#333333", fontSize: 15 }}>
             <li>Fill out all required fields and click Run Tool.</li>
             <li>Advanced fields: file upload, select, date, textarea, etc. are supported.</li>
             <li>Results and errors will appear below the form.</li>
@@ -173,3 +173,4 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../api";
 import Toast from "../Toast";
 import usePlan, { canUseTool, requiredPlanFor, PLAN_LABEL, PLAN_PRICE, PLAN_COLOUR } from "../../hooks/usePlan";
@@ -84,8 +84,8 @@ export default function MainSuite({ setActiveSection }) {
         bg: "#111827",
         card: "#0b1220",
         border: "#233047",
-        text: "#e5e7eb",
-        muted: "#9ca3af",
+        text: "#f0f0f0",
+        muted: "#888888",
         accent: "#7fffd4",
         primary: "#3b82f6",
       }
@@ -93,7 +93,7 @@ export default function MainSuite({ setActiveSection }) {
         bg: "#f8fafc",
         card: "#ffffff",
         border: "#dbeafe",
-        text: "#0f172a",
+        text: "#111111",
         muted: "#475569",
         accent: "#0ea5e9",
         primary: "#2563eb",
@@ -181,7 +181,7 @@ export default function MainSuite({ setActiveSection }) {
             padding: "10px 12px",
             borderRadius: 10,
             border: `1px solid ${palette.border}`,
-            background: darkMode ? "#0f172a" : "#fff",
+            background: darkMode ? "#111111" : "#fff",
             color: palette.text,
           }}
         />
@@ -318,7 +318,7 @@ export default function MainSuite({ setActiveSection }) {
                 key={m.id}
                 style={{
                   background: palette.card,
-                  border: `1px solid ${locked ? "#374151" : palette.border}`,
+                  border: `1px solid ${locked ? "#333333" : palette.border}`,
                   borderRadius: 12,
                   padding: 12,
                   display: "flex",
@@ -397,3 +397,4 @@ export default function MainSuite({ setActiveSection }) {
     </div>
   );
 }
+

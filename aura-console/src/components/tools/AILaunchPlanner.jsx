@@ -1,13 +1,13 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import BackButton from "./BackButton";
 
 const THEMES = {
   dark: {
     bg: "#0b1220",
-    card: "#0f172a",
-    border: "#1f2937",
-    text: "#e5e7eb",
-    muted: "#9ca3af",
+    card: "#111111",
+    border: "#1a1a1a",
+    text: "#f0f0f0",
+    muted: "#888888",
     accent: "#38bdf8",
     success: "#22c55e",
     warning: "#f59e0b",
@@ -17,7 +17,7 @@ const THEMES = {
     bg: "#f8fafc",
     card: "#ffffff",
     border: "#dbeafe",
-    text: "#0f172a",
+    text: "#111111",
     muted: "#475569",
     accent: "#2563eb",
     success: "#16a34a",
@@ -257,7 +257,7 @@ export default function AILaunchPlanner() {
             <option value="light">Light</option>
             <option value="audit">Audit</option>
           </select>
-          <button onClick={saveVersion} style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${palette.accent}`, background: palette.accent, color: "#0f172a", fontWeight: 800, cursor: "pointer" }}>Save Version</button>
+          <button onClick={saveVersion} style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${palette.accent}`, background: palette.accent, color: "#111111", fontWeight: 800, cursor: "pointer" }}>Save Version</button>
           <button onClick={copyShare} style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${palette.border}`, background: palette.card, color: palette.text, fontWeight: 700, cursor: "pointer" }}>Copy Share</button>
         </div>
       </div>
@@ -282,7 +282,7 @@ export default function AILaunchPlanner() {
               <li>Channels, budget, dependencies, and metrics in one view.</li>
             </ul>
             <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
-              <button onClick={() => setShowOnboarding(false)} style={{ background: palette.accent, color: "#0f172a", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: "pointer" }}>Start</button>
+              <button onClick={() => setShowOnboarding(false)} style={{ background: palette.accent, color: "#111111", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: "pointer" }}>Start</button>
               <button onClick={() => setChecks(DEFAULT_CHECKS)} style={{ background: "transparent", color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: "10px 18px", fontWeight: 700, cursor: "pointer" }}>Reset checks</button>
             </div>
           </div>
@@ -311,7 +311,7 @@ export default function AILaunchPlanner() {
             <button
               onClick={handleRun}
               disabled={loading || !input}
-              style={{ background: palette.accent, color: "#0f172a", border: `1px solid ${palette.accent}`, borderRadius: 10, padding: "12px 18px", fontWeight: 800, cursor: loading || !input ? "not-allowed" : "pointer" }}
+              style={{ background: palette.accent, color: "#111111", border: `1px solid ${palette.accent}`, borderRadius: 10, padding: "12px 18px", fontWeight: 800, cursor: loading || !input ? "not-allowed" : "pointer" }}
             >
               {loading ? "Running..." : "Run Tool"}
             </button>
@@ -519,7 +519,7 @@ export default function AILaunchPlanner() {
             placeholder="Share your feedback or suggestions..."
             aria-label="Feedback"
           />
-          <button type="submit" style={{ background: palette.accent, color: "#0f172a", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: "pointer" }}>Send Feedback</button>
+          <button type="submit" style={{ background: palette.accent, color: "#111111", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: "pointer" }}>Send Feedback</button>
           {error && <div style={{ color: palette.danger, marginTop: 8 }}>{error}</div>}
         </form>
 
@@ -530,3 +530,4 @@ export default function AILaunchPlanner() {
     </div>
   );
 }
+

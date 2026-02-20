@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 export default function RankVisibilityTracker() {
   const [input, setInput] = useState("");
   const [bulkUpload, setBulkUpload] = useState(null);
@@ -215,7 +215,7 @@ export default function RankVisibilityTracker() {
       )}
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
       {analytics && (
-        <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: darkMode ? "#333333" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Analytics</div>
           <div style={{ fontSize: 16 }}>{JSON.stringify(analytics)}</div>
         </div>
@@ -272,3 +272,4 @@ export default function RankVisibilityTracker() {
     </div>
   );
 }
+

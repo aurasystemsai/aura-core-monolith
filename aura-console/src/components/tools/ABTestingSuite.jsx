@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import { apiFetch } from "../../api";
 import OnboardingChecklist from "../../onboarding/OnboardingChecklist";
 import BackButton from "./BackButton";
@@ -142,14 +142,14 @@ export default function ABTestingSuite() {
               </div>
               {variants.map((v, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                  <input value={v.name} onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, name: e.target.value } : vv))} placeholder={`Variant ${String.fromCharCode(65 + i)}`} style={{ fontSize: 15, padding: 8, borderRadius: 8, border: '1px solid #334155', width: 90 }} aria-label={`Variant ${String.fromCharCode(65 + i)}`} />
+                  <input value={v.name} onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, name: e.target.value } : vv))} placeholder={`Variant ${String.fromCharCode(65 + i)}`} style={{ fontSize: 15, padding: 8, borderRadius: 8, border: '1px solid #333333', width: 90 }} aria-label={`Variant ${String.fromCharCode(65 + i)}`} />
                   <button onClick={() => setVariants(variants.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', color: '#ef4444', fontWeight: 700, fontSize: 18, cursor: 'pointer' }} title="Remove">×</button>
                 </div>
               ))}
               <button onClick={() => setVariants([...variants, { name: `Variant ${String.fromCharCode(65 + variants.length)}`, content: "" }])} className="btn btn-tertiary" style={{ marginTop: 6, width: '100%' }}>Add Variant</button>
             </div>
             {/* Drag-and-drop/Preview Area */}
-            <div style={{ flex: 2, minHeight: 220, border: '2px dashed #334155', borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#20293a' }}>
+            <div style={{ flex: 2, minHeight: 220, border: '2px dashed #333333', borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#20293a' }}>
               <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>
                 Live Preview
                 <span title="See how each variant will look and behave. Edit content live." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
@@ -162,7 +162,7 @@ export default function ABTestingSuite() {
                       value={v.content}
                       onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, content: e.target.value } : vv))}
                       placeholder="Variant content (HTML, text, etc.)"
-                      style={{ width: '100%', minHeight: 60, borderRadius: 6, border: '1px solid #334155', padding: 8, fontSize: 15, background: '#1a2230', color: '#e0e6ed' }}
+                      style={{ width: '100%', minHeight: 60, borderRadius: 6, border: '1px solid #333333', padding: 8, fontSize: 15, background: '#1a2230', color: '#e0e6ed' }}
                     />
                   </div>
                 ))}
@@ -176,7 +176,7 @@ export default function ABTestingSuite() {
             Test Details
             <span title="Name your test for easy tracking and reporting." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
           </h4>
-          <input value={testName} onChange={e => setTestName(e.target.value)} placeholder="Test name" style={{ fontSize: 16, padding: 10, borderRadius: 8, border: '1px solid #334155', width: '100%', marginBottom: 16 }} aria-label="Test name" />
+          <input value={testName} onChange={e => setTestName(e.target.value)} placeholder="Test name" style={{ fontSize: 16, padding: 10, borderRadius: 8, border: '1px solid #333333', width: '100%', marginBottom: 16 }} aria-label="Test name" />
           {/* Advanced targeting & segmentation */}
           <div style={{ marginBottom: 18 }}>
             <h4 style={{ fontWeight: 600, fontSize: 16 }}>
@@ -188,7 +188,7 @@ export default function ABTestingSuite() {
               {/* Audience Targeting */}
               <div>
                 <label style={{ fontWeight: 500 }}>Audience:</label>
-                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #334155' }}>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #333333' }}>
                   <option>All Visitors</option>
                   <option>Returning Customers</option>
                   <option>First-time Visitors</option>
@@ -199,7 +199,7 @@ export default function ABTestingSuite() {
               {/* Device Targeting */}
               <div>
                 <label style={{ fontWeight: 500 }}>Device:</label>
-                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #334155' }}>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #333333' }}>
                   <option>All Devices</option>
                   <option>Desktop</option>
                   <option>Mobile</option>
@@ -209,7 +209,7 @@ export default function ABTestingSuite() {
               {/* Geo Targeting */}
               <div>
                 <label style={{ fontWeight: 500 }}>Location:</label>
-                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #334155' }}>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #333333' }}>
                   <option>All Countries</option>
                   <option>United States</option>
                   <option>Canada</option>
@@ -221,7 +221,7 @@ export default function ABTestingSuite() {
               {/* Behavioral Targeting */}
               <div>
                 <label style={{ fontWeight: 500 }}>Behavior:</label>
-                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #334155' }}>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #333333' }}>
                   <option>All Users</option>
                   <option>Cart Abandoners</option>
                   <option>High Spenders</option>
@@ -315,7 +315,7 @@ export default function ABTestingSuite() {
               <div style={{ marginBottom: 8 }}><strong>Jane:</strong> "Ready for launch?" <span style={{ color: '#38bdf8', fontSize: 13 }}>2m ago</span></div>
               <div style={{ marginBottom: 8 }}><strong>Alex:</strong> "Approved. Roll out to 50%." <span style={{ color: '#0ea5e9', fontSize: 13 }}>1m ago</span></div>
               <form style={{ marginTop: 12 }}>
-                <input type="text" placeholder="Add a comment..." style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', fontSize: 15 }} />
+                <input type="text" placeholder="Add a comment..." style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333333', fontSize: 15 }} />
                 <button type="submit" className="btn btn-secondary" style={{ marginTop: 6, width: '100%' }}>Comment</button>
               </form>
             </div>
@@ -388,7 +388,7 @@ export default function ABTestingSuite() {
             value={feedback}
             onChange={e => setFeedback(e.target.value)}
             rows={3}
-            style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid #334155', marginBottom: 12 }}
+            style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid #333333', marginBottom: 12 }}
             placeholder="Share your feedback or suggestions..."
             aria-label="Feedback"
           />
@@ -404,4 +404,5 @@ export default function ABTestingSuite() {
     </div>
   );
 }
+
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 
@@ -8,7 +8,7 @@ const options = {
     legend: {
       display: true,
       position: 'top',
-      labels: { color: '#e5e7eb' },
+      labels: { color: '#f0f0f0' },
     },
   },
   scales: {
@@ -120,3 +120,4 @@ export default function DashboardCharts() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { FiDownload, FiUpload, FiBarChart2, FiBell, FiSettings, FiHelpCircle } from "react-icons/fi";
 
 function FeedbackModal({ open, onClose, onSubmit }) {
@@ -6,12 +6,12 @@ function FeedbackModal({ open, onClose, onSubmit }) {
   if (!open) return null;
   return (
     <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "#0008", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ background: "#232336", borderRadius: 12, padding: 32, minWidth: 340, color: '#e5e7eb' }}>
+      <div style={{ background: "#232336", borderRadius: 12, padding: 32, minWidth: 340, color: '#f0f0f0' }}>
         <h3 style={{ marginBottom: 12 }}>Send Feedback</h3>
         <textarea value={feedback} onChange={e => setFeedback(e.target.value)} style={{ width: "100%", minHeight: 80, borderRadius: 8, border: "1px solid #ccc", marginBottom: 18 }} placeholder="Your feedback..." />
         <div style={{ display: "flex", gap: 12 }}>
           <button onClick={() => onSubmit(feedback)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, cursor: "pointer" }}>Submit</button>
-          <button onClick={onClose} style={{ background: "#e5e7eb", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+          <button onClick={onClose} style={{ background: "#f0f0f0", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, cursor: "pointer" }}>Cancel</button>
         </div>
       </div>
     </div>
@@ -62,7 +62,7 @@ export default function PersonalizationRecommendationEngine() {
   const onboardingContent = (
     <div style={{ padding: 24, background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Personalization & Recommendation Engine</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#334155", fontSize: 16 }}>
+      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#333333", fontSize: 16 }}>
         <li>Personalized product and content recommendations</li>
         <li>Segmentation, targeting, and A/B testing</li>
         <li>Export, share, and review recommendation history</li>
@@ -194,7 +194,7 @@ export default function PersonalizationRecommendationEngine() {
       {showHelp && (
         <div style={{ background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, padding: 24, marginBottom: 18 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22 }}>Help & Documentation</h3>
-          <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#334155", fontSize: 16 }}>
+          <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#333333", fontSize: 16 }}>
             <li>How to use personalization and recommendation features</li>
             <li>Best practices for segmentation and targeting</li>
             <li>Accessibility and compliance information</li>
@@ -208,7 +208,7 @@ export default function PersonalizationRecommendationEngine() {
       {showAnalytics && (
         <div style={{ background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, padding: 24, marginBottom: 18 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22 }}>Analytics Dashboard</h3>
-          <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#334155", fontSize: 16 }}>
+          <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#333333", fontSize: 16 }}>
             {analytics.map((a, i) => (
               <li key={i} style={{ marginBottom: 10 }}>
                 <div><b>Event:</b> {a.event}</div>
@@ -255,13 +255,13 @@ export default function PersonalizationRecommendationEngine() {
         <div style={{ background: "#1e2235", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #2f3a50" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <span style={{ fontWeight: 700, color: "#a3e635", fontSize: 14 }}>Recommendation Result</span>
-            <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #374151", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
+            <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #333333", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
           </div>
           <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 13, color: "#e2e8f0", margin: 0 }}>{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
       {history.length > 0 && (
-        <div style={{ marginTop: 24, background: darkMode ? "#334155" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: darkMode ? "#333333" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Recommendation History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, i) => (
@@ -279,3 +279,4 @@ export default function PersonalizationRecommendationEngine() {
     </div>
   );
 }
+

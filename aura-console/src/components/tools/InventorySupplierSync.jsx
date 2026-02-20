@@ -1,11 +1,11 @@
-
+﻿
 import React, { useState, useRef } from "react";
 
 function VisualInventoryTable({ data, setData, rows = [], setRows }) {
   return (
-    <div style={{ border: "1px solid #d1d5db", borderRadius: 10, padding: 18, background: "#f9fafb", marginBottom: 18 }}>
+    <div style={{ border: "1px solid #dddddd", borderRadius: 10, padding: 18, background: "#f9fafb", marginBottom: 18 }}>
       <div style={{ fontWeight: 600, marginBottom: 8 }}>Visual Inventory Table (CSV/Excel Import)</div>
-      <div style={{ minHeight: 80, border: '1px dashed #bbb', borderRadius: 8, padding: 12, background: '#232336', marginBottom: 12, color: '#e5e7eb' }}>
+      <div style={{ minHeight: 80, border: '1px dashed #bbb', borderRadius: 8, padding: 12, background: '#232336', marginBottom: 12, color: '#f0f0f0' }}>
         {rows.length ? (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {rows.map((r, i) => (
@@ -113,9 +113,9 @@ export default function InventorySupplierSync() {
 
   // Onboarding
   const onboardingContent = (
-    <div style={{ padding: 24, background: "#232336", borderRadius: 12, marginBottom: 18, color: '#e5e7eb' }}>
+    <div style={{ padding: 24, background: "#232336", borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Inventory Supplier Sync</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: "#334155", fontSize: 16 }}>
+      <ul style={{ margin: "16px 0 0 18px", color: "#333333", fontSize: 16 }}>
         <li>Import, map, and reconcile supplier inventory visually</li>
         <li>AI-powered discrepancy detection and suggestions</li>
         <li>Analyze sync performance with real-time analytics</li>
@@ -212,3 +212,4 @@ export default function InventorySupplierSync() {
     </div>
   );
 }
+

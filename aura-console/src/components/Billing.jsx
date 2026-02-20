@@ -1,4 +1,4 @@
-// Billing & Subscription Management UI
+﻿// Billing & Subscription Management UI
 // Shopify App Billing integration for plan management
 
 import React, { useState, useEffect } from 'react';
@@ -370,7 +370,7 @@ const Billing = () => {
           padding: 32px;
           max-width: 1200px;
           margin: 0 auto;
-          background: #0f172a;
+          background: #111111;
           min-height: 100vh;
         }
 
@@ -382,7 +382,7 @@ const Billing = () => {
           font-size: 32px;
           font-weight: 700;
           margin: 0 0 8px 0;
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .billing-header p {
@@ -403,7 +403,7 @@ const Billing = () => {
 
         .usage-card h3,
         .invoices-card h3 {
-          color: #e5e7eb;
+          color: #f0f0f0;
           margin-top: 0;
         }
 
@@ -423,7 +423,7 @@ const Billing = () => {
 
         .plan-header h2 {
           margin: 0 0 8px 0;
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .status-badge {
@@ -540,7 +540,7 @@ const Billing = () => {
         .stat-value {
           font-size: 24px;
           font-weight: 700;
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .progress-bar {
@@ -559,7 +559,7 @@ const Billing = () => {
 
         .btn-secondary {
           background: #1e1e1e;
-          color: #e5e7eb;
+          color: #f0f0f0;
           padding: 12px 24px;
           border: none;
           border-radius: 8px;
@@ -642,7 +642,7 @@ const Billing = () => {
         }
 
         .modal-header h2 {
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .close-btn {
@@ -657,7 +657,7 @@ const Billing = () => {
         }
 
         .close-btn:hover {
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .plans-grid {
@@ -675,7 +675,7 @@ const Billing = () => {
         }
 
         .plan-card h3 {
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .plan-card.popular {
@@ -778,3 +778,4 @@ const Billing = () => {
 };
 
 export default Billing;
+

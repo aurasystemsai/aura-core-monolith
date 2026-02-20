@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useRef, useEffect } from "react";
 import { apiFetch } from "../../api";
 
@@ -111,7 +111,7 @@ export default function ContentHealthAuditor() {
 
   return (
     <div>
-      <div style={{ background: "#18181b", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#e5e7eb' }}>
+      <div style={{ background: "#18181b", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f0f0f0' }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 8 }}>Content Health Auditor</h2>
         <div style={{ marginBottom: 10, color: "#0ea5e9", fontWeight: 600 }}>
           <span role="img" aria-label="health">🩺</span> Audit, manage, and analyze content health with AI and analytics.
@@ -136,7 +136,7 @@ export default function ContentHealthAuditor() {
           <div style={{ background: "#1e2235", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #2f3a50" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <span style={{ fontWeight: 700, color: "#7fffd4", fontSize: 14 }}>AI Audit Report</span>
-              <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #374151", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
+              <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #333333", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
             </div>
             <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, fontSize: 14, color: "#e2e8f0" }}>{response}</div>
           </div>
@@ -170,3 +170,4 @@ export default function ContentHealthAuditor() {
     </div>
   );
 }
+

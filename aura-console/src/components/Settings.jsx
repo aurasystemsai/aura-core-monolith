@@ -1,4 +1,4 @@
-// Settings Page - Shopify Integration
+﻿// Settings Page - Shopify Integration
 // Platform configuration and integrations management
 
 import React, { useState, useEffect } from 'react';
@@ -316,7 +316,7 @@ const Settings = ({ setActiveSection }) => {
                   </div>
                 )}
 
-                <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #1e2a3a' }}>
+                <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #1e1e1e' }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#94a3b8', marginBottom: 10 }}>Data Synchronisation</div>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {['products','orders','customers','inventory'].map(type => {
@@ -328,8 +328,8 @@ const Settings = ({ setActiveSection }) => {
                             onClick={() => syncShopifyData(type)}
                             disabled={!!st}
                             style={{
-                              background: st === 'done' ? '#052e16' : st === 'error' ? '#2d1515' : '#1e2a3a',
-                              border: `1px solid ${st === 'done' ? '#16a34a' : st === 'error' ? '#f87171' : '#374151'}`,
+                              background: st === 'done' ? '#052e16' : st === 'error' ? '#2d1515' : '#1e1e1e',
+                              border: `1px solid ${st === 'done' ? '#16a34a' : st === 'error' ? '#f87171' : '#333333'}`,
                               color: st === 'done' ? '#4ade80' : st === 'error' ? '#f87171' : '#94a3b8',
                               borderRadius: 8, padding: '7px 14px', fontSize: 13,
                               cursor: st ? 'wait' : 'pointer', whiteSpace: 'nowrap'
@@ -358,7 +358,7 @@ const Settings = ({ setActiveSection }) => {
                     <button
                       onClick={disconnectShopify}
                       disabled={saving}
-                      style={{ background: 'none', border: '1px solid #374151', color: '#64748b', borderRadius: 8, padding: '7px 14px', fontSize: 12, cursor: 'pointer' }}
+                      style={{ background: 'none', border: '1px solid #333333', color: '#64748b', borderRadius: 8, padding: '7px 14px', fontSize: 12, cursor: 'pointer' }}
                     >
                       Disconnect store
                     </button>
@@ -372,11 +372,11 @@ const Settings = ({ setActiveSection }) => {
         <div style={{ background: '#111111', padding: 32, borderRadius: 12, border: '1px solid #1e1e1e', marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
             <div>
-              <h2 style={{ margin: 0, color: '#e5e7eb', fontSize: 22, fontWeight: 800 }}>Billing &amp; Plan</h2>
+              <h2 style={{ margin: 0, color: '#f0f0f0', fontSize: 22, fontWeight: 800 }}>Billing &amp; Plan</h2>
               <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: 14 }}>Billing is handled securely through Shopify — no card details stored here.</p>
             </div>
             {subscription && (
-              <div style={{ background: '#0f172a', border: `2px solid ${PLANS.find(p => p.id === subscription.plan_id)?.colour || '#4ade80'}`, borderRadius: 10, padding: '8px 20px', textAlign: 'center' }}>
+              <div style={{ background: '#111111', border: `2px solid ${PLANS.find(p => p.id === subscription.plan_id)?.colour || '#4ade80'}`, borderRadius: 10, padding: '8px 20px', textAlign: 'center' }}>
                 <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Current Plan</div>
                 <div style={{ fontSize: 18, fontWeight: 900, color: PLANS.find(p => p.id === subscription.plan_id)?.colour || '#4ade80', marginTop: 2 }}>
                   {PLANS.find(p => p.id === subscription.plan_id)?.name || subscription.plan_id}
@@ -400,13 +400,13 @@ const Settings = ({ setActiveSection }) => {
                 const isUpgrading = upgrading === plan.id;
                 const isDowngrade = planIndex < currentPlanIndex;
                 return (
-                  <div key={plan.id} style={{ background: isCurrent ? `${plan.colour}12` : '#0f172a', border: `2px solid ${isCurrent ? plan.colour : '#1e1e1e'}`, borderRadius: 14, padding: 24, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                  <div key={plan.id} style={{ background: isCurrent ? `${plan.colour}12` : '#111111', border: `2px solid ${isCurrent ? plan.colour : '#1e1e1e'}`, borderRadius: 14, padding: 24, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                     {plan.badge && (
-                      <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: plan.colour, color: '#0f172a', fontSize: 11, fontWeight: 800, padding: '3px 12px', borderRadius: 20, whiteSpace: 'nowrap' }}>{plan.badge}</div>
+                      <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: plan.colour, color: '#111111', fontSize: 11, fontWeight: 800, padding: '3px 12px', borderRadius: 20, whiteSpace: 'nowrap' }}>{plan.badge}</div>
                     )}
                     <div style={{ fontSize: 18, fontWeight: 800, color: plan.colour, marginBottom: 4 }}>{plan.name}</div>
                     <div style={{ marginBottom: 16 }}>
-                      <span style={{ fontSize: 32, fontWeight: 900, color: '#e5e7eb' }}>${plan.price}</span>
+                      <span style={{ fontSize: 32, fontWeight: 900, color: '#f0f0f0' }}>${plan.price}</span>
                       {plan.price > 0 && <span style={{ fontSize: 14, color: '#64748b' }}> / month</span>}
                       {plan.price === 0 && <span style={{ fontSize: 14, color: '#64748b' }}> forever</span>}
                     </div>
@@ -423,7 +423,7 @@ const Settings = ({ setActiveSection }) => {
                       <button
                         onClick={() => subscribePlan(plan.id)}
                         disabled={!!upgrading}
-                        style={{ background: isUpgrading ? '#374151' : plan.colour, border: 'none', borderRadius: 8, padding: '11px', color: '#0f172a', fontWeight: 800, cursor: upgrading ? 'wait' : 'pointer', fontSize: 14, opacity: upgrading && !isUpgrading ? 0.5 : 1 }}
+                        style={{ background: isUpgrading ? '#333333' : plan.colour, border: 'none', borderRadius: 8, padding: '11px', color: '#111111', fontWeight: 800, cursor: upgrading ? 'wait' : 'pointer', fontSize: 14, opacity: upgrading && !isUpgrading ? 0.5 : 1 }}
                       >
                         {isUpgrading ? '⏳ Redirecting to Shopify…' : isDowngrade ? `Downgrade to ${plan.name}` : `Upgrade to ${plan.name} →`}
                       </button>
@@ -490,7 +490,7 @@ const Settings = ({ setActiveSection }) => {
           padding: 32px;
           max-width: 1200px;
           margin: 0 auto;
-          background: #0f172a;
+          background: #111111;
           min-height: 100vh;
         }
 
@@ -502,7 +502,7 @@ const Settings = ({ setActiveSection }) => {
           font-size: 32px;
           font-weight: 700;
           margin: 0 0 8px 0;
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .settings-header p {
@@ -520,7 +520,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .settings-section h2 {
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .connect-shopify-card {
@@ -541,7 +541,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .connect-shopify-card h2 {
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .connect-shopify-card p {
@@ -560,7 +560,7 @@ const Settings = ({ setActiveSection }) => {
           display: block;
           margin-bottom: 8px;
           font-weight: 500;
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .shop-domain-input {
@@ -570,7 +570,7 @@ const Settings = ({ setActiveSection }) => {
           border-radius: 8px;
           font-size: 16px;
           background: #0f1324;
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .shop-domain-input:focus {
@@ -618,7 +618,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .help-text strong {
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .help-text ul {
@@ -637,7 +637,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .connected-shopify-card h3 {
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .status-badge {
@@ -672,7 +672,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .detail-row .value {
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .sync-actions {
@@ -680,7 +680,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .sync-actions h4 {
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .sync-buttons {
@@ -697,7 +697,7 @@ const Settings = ({ setActiveSection }) => {
           border-radius: 8px;
           cursor: pointer;
           font-weight: 500;
-          color: #e5e7eb;
+          color: #f0f0f0;
           transition: all 0.2s;
         }
 
@@ -741,7 +741,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .setting-group h3 {
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .setting-group p {
@@ -791,7 +791,7 @@ const Settings = ({ setActiveSection }) => {
           margin: 0 0 4px 0;
           font-size: 20px;
           font-weight: 600;
-          color: #e5e7eb;
+          color: #f0f0f0;
         }
 
         .card-subtitle {
@@ -820,7 +820,7 @@ const Settings = ({ setActiveSection }) => {
         .input-label {
           display: block;
           font-weight: 600;
-          color: #e5e7eb;
+          color: #f0f0f0;
           margin-bottom: 12px;
           font-size: 14px;
         }
@@ -868,7 +868,7 @@ const Settings = ({ setActiveSection }) => {
 
         .btn-secondary-small {
           background: #1e1e1e;
-          color: #e5e7eb;
+          color: #f0f0f0;
           border: none;
           border-radius: 6px;
           padding: 8px 16px;
@@ -899,3 +899,4 @@ const Settings = ({ setActiveSection }) => {
 };
 
 export default Settings;
+

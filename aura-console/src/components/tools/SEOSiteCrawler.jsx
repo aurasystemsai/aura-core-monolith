@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import { apiFetch } from "../../api";
 
 const SEV_COLORS = { high: "#ef4444", medium: "#f59e0b", low: "#22c55e" };
@@ -9,7 +9,7 @@ function SeverityBadge({ sev }) {
     <span style={{
       background: SEV_BG[sev] || "#1e2235",
       color: SEV_COLORS[sev] || "#94a3b8",
-      border: `1px solid ${SEV_COLORS[sev] || "#374151"}`,
+      border: `1px solid ${SEV_COLORS[sev] || "#333333"}`,
       borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 700,
       textTransform: "uppercase", letterSpacing: 0.5,
     }}>{sev}</span>
@@ -42,7 +42,7 @@ function IssueCard({ issue, pageUrl }) {
   };
 
   return (
-    <div style={{ background: SEV_BG[issue.severity] || "#1e2235", borderRadius: 8, padding: "10px 14px", border: `1px solid ${SEV_COLORS[issue.severity] || "#374151"}22`, marginBottom: 8 }}>
+    <div style={{ background: SEV_BG[issue.severity] || "#1e2235", borderRadius: 8, padding: "10px 14px", border: `1px solid ${SEV_COLORS[issue.severity] || "#333333"}22`, marginBottom: 8 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
         <SeverityBadge sev={issue.severity} />
         <span style={{ fontWeight: 700, color: "#e2e8f0", fontSize: 13 }}>{issue.type}</span>
@@ -61,7 +61,7 @@ function IssueCard({ issue, pageUrl }) {
       {suggestion && (
         <div style={{ marginTop: 8, background: "#1e2235", borderRadius: 6, padding: "8px 12px", border: "1px solid #2f3a50", fontSize: 13, color: "#7fffd4", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
           {suggestion}
-          <button onClick={() => navigator.clipboard?.writeText(suggestion)} style={{ display: "block", marginTop: 6, background: "transparent", border: "1px solid #374151", borderRadius: 5, padding: "2px 10px", color: "#64748b", fontSize: 11, cursor: "pointer" }}>Copy</button>
+          <button onClick={() => navigator.clipboard?.writeText(suggestion)} style={{ display: "block", marginTop: 6, background: "transparent", border: "1px solid #333333", borderRadius: 5, padding: "2px 10px", color: "#64748b", fontSize: 11, cursor: "pointer" }}>Copy</button>
         </div>
       )}
       {fixErr && <div style={{ color: "#ef4444", fontSize: 12, marginTop: 6 }}>{fixErr}</div>}
@@ -229,7 +229,7 @@ export default function SEOSiteCrawler() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && handleCrawl()}
-          style={{ width: "100%", fontSize: 15, padding: "10px 14px", borderRadius: 8, border: "1px solid #374151", background: "#1e2235", color: "#f3f4f6", boxSizing: "border-box" }}
+          style={{ width: "100%", fontSize: 15, padding: "10px 14px", borderRadius: 8, border: "1px solid #333333", background: "#1e2235", color: "#f3f4f6", boxSizing: "border-box" }}
           placeholder="https://yourstore.myshopify.com"
           aria-label="Site URL"
         />
@@ -240,7 +240,7 @@ export default function SEOSiteCrawler() {
         <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#94a3b8", marginBottom: 6 }}>
           Focus Keywords <span style={{ fontWeight: 400, color: "#64748b" }}>(press Enter or comma to add)</span>
         </label>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, background: "#1e2235", borderRadius: 8, border: "1px solid #374151", padding: "8px 10px", minHeight: 44, alignItems: "center" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, background: "#1e2235", borderRadius: 8, border: "1px solid #333333", padding: "8px 10px", minHeight: 44, alignItems: "center" }}>
           {keywords.map(kw => (
             <span key={kw} style={{ background: "#2f3a50", color: "#7fffd4", borderRadius: 20, padding: "3px 11px 3px 12px", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
               {kw}
@@ -260,7 +260,7 @@ export default function SEOSiteCrawler() {
 
       {/* Action Buttons */}
       <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
-        <button onClick={handleCrawl} disabled={loading || !input.trim()} style={{ background: loading ? "#374151" : "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "11px 26px", fontWeight: 700, fontSize: 15, cursor: loading || !input.trim() ? "not-allowed" : "pointer" }}>
+        <button onClick={handleCrawl} disabled={loading || !input.trim()} style={{ background: loading ? "#333333" : "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "11px 26px", fontWeight: 700, fontSize: 15, cursor: loading || !input.trim() ? "not-allowed" : "pointer" }}>
           {loading ? "Crawling…" : "🕷️ Crawl & Analyze"}
         </button>
         <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "11px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Import</button>
@@ -340,3 +340,4 @@ export default function SEOSiteCrawler() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 
 export default function BacklinkExplorer() {
   const [domain, setDomain] = useState("");
@@ -116,13 +116,13 @@ export default function BacklinkExplorer() {
         <div style={{ background: "#1e2235", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #2f3a50" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <span style={{ fontWeight: 700, color: "#a3e635", fontSize: 14 }}>Analysis Result</span>
-            <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #374151", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
+            <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #333333", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
           </div>
           <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 13, color: "#e2e8f0", margin: 0 }}>{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
       {history.length > 0 && (
-        <div style={{ marginTop: 24, background: "#334155", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: "#333333", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analysis History</div>
                   <ul style={{ paddingLeft: 18 }}>
                     {history.map((h, i) => (
@@ -161,3 +161,4 @@ export default function BacklinkExplorer() {
               </div>
             </div>
           );
+

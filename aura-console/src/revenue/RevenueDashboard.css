@@ -1,4 +1,4 @@
-/* Revenue Dashboard Styles */
+﻿/* Revenue Dashboard Styles */
 
 .revenue-dashboard {
   padding: 24px;
@@ -268,7 +268,7 @@
   color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid #f0f0f0;
 }
 
 .streams-table td {
@@ -351,7 +351,7 @@
   font-weight: 600;
   color: #666;
   text-transform: uppercase;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid #f0f0f0;
 }
 
 .cohort-table td {
@@ -504,3 +504,4 @@
     grid-template-columns: 1fr;
   }
 }
+
