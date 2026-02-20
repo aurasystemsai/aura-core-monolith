@@ -28,6 +28,20 @@ router.post('/reviews', (req, res) => {
   }
 });
 
+// Get review statistics (must be before /:id to avoid route swallowing)
+router.get('/reviews/statistics', (req, res) => {
+  try {
+    const { productId, startDate, endDate } = req.query;
+    const stats = reviewEngine.getReviewStatistics({
+      productId,
+      dateRange: startDate && endDate ? { startDate, endDate } : null,
+    });
+    res.json(stats);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // Get review
 router.get('/reviews/:id', (req, res) => {
   try {
@@ -166,20 +180,6 @@ router.post('/reviews/search', (req, res) => {
       offset: offset || 0,
     });
     res.json(results);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Get review statistics
-router.get('/reviews/statistics', (req, res) => {
-  try {
-    const { productId, startDate, endDate } = req.query;
-    const stats = reviewEngine.getReviewStatistics({
-      productId,
-      dateRange: startDate && endDate ? { startDate, endDate } : null,
-    });
-    res.json(stats);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -526,6 +526,16 @@ router.delete('/moderation/blocked-emails/:email', (req, res) => {
   try {
     const result = moderationEngine.unblockEmail(req.params.email);
     res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// List blocked emails
+router.get('/moderation/blocked-emails', (req, res) => {
+  try {
+    const emails = moderationEngine.listBlockedEmails ? moderationEngine.listBlockedEmails() : [];
+    res.json(emails);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -1246,19 +1256,6 @@ router.get('/analytics/statistics', (req, res) => {
 
 // ========== Integration Endpoints (34) ==========
 
-// Get integration
-router.get('/integrations/:id', (req, res) => {
-  try {
-    const integration = integrationEngine.getIntegration(req.params.id);
-    if (!integration) {
-      return res.status(404).json({ error: 'Integration not found' });
-    }
-    res.json(integration);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
 // List integrations
 router.get('/integrations', (req, res) => {
   try {
@@ -1482,6 +1479,19 @@ router.get('/integrations/statistics', (req, res) => {
   try {
     const stats = integrationEngine.getIntegrationStatistics();
     res.json(stats);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Get integration by ID (must be after specific routes to avoid swallowing /webhooks, /sync-logs, /statistics)
+router.get('/integrations/:id', (req, res) => {
+  try {
+    const integration = integrationEngine.getIntegration(req.params.id);
+    if (!integration) {
+      return res.status(404).json({ error: 'Integration not found' });
+    }
+    res.json(integration);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
