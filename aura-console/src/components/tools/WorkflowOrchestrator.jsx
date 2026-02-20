@@ -988,7 +988,7 @@ export default function WorkflowOrchestrator() {
   }, [steps, undoStack, redoStack, showCommandPalette]);
 
   return (
-    <div style={{ background: "#0f1115", color: "#f0f0f0", padding: 24, borderRadius: 16, border: "1px solid #1a1a1a", boxShadow: "0 12px 48px #0007" }}>
+    <div style={{ background: "#0d0d0d", color: "#f0f0f0", padding: 24, borderRadius: 16, border: "1px solid #1a1a1a", boxShadow: "0 12px 48px #0007" }}>
       <BackButton />
       {isViewer && (
         <div style={{ background: "#1a1a1a", border: "1px solid #333333", borderRadius: 12, padding: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -996,7 +996,7 @@ export default function WorkflowOrchestrator() {
             <div style={{ fontWeight: 800, color: "#fcd34d" }}>View-only mode</div>
             <div style={{ color: "#888888", fontSize: 13 }}>You can inspect orchestrations but need elevated access to edit or ship changes.</div>
           </div>
-          <button onClick={() => setAccessRequested(true)} disabled={accessRequested} style={{ background: accessRequested ? "#333333" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: accessRequested ? "default" : "pointer" }}>
+          <button onClick={() => setAccessRequested(true)} disabled={accessRequested} style={{ background: accessRequested ? "#333333" : "#22c55e", color: "#111111", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: accessRequested ? "default" : "pointer" }}>
             {accessRequested ? "Request sent" : "Request edit access"}
           </button>
         </div>
@@ -1007,7 +1007,7 @@ export default function WorkflowOrchestrator() {
             <div style={{ fontWeight: 800, color: "#93c5fd" }}>Sandbox mode (dev)</div>
             <div style={{ color: "#e0e0e0", fontSize: 13 }}>Prod-only actions like Orchestrate are blocked; switch env to stage/prod to ship.</div>
           </div>
-          <button onClick={() => setEnv("stage")} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Switch to stage</button>
+          <button onClick={() => setEnv("stage")} style={{ background: "#0ea5e9", color: "#111111", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Switch to stage</button>
         </div>
       )}
       {isEnvLocked && (
@@ -1017,13 +1017,13 @@ export default function WorkflowOrchestrator() {
       )}
       {showCommandPalette && (
         <div style={{ position: "fixed", inset: 0, background: "#0009", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20 }}>
-          <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 14, padding: 16, width: "min(520px, 92vw)", boxShadow: "0 18px 60px #000" }}>
+          <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 14, padding: 16, width: "min(520px, 92vw)", boxShadow: "0 18px 60px #000" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
               <div style={{ fontWeight: 800, color: "#a5f3fc" }}>Command Palette</div>
               <button onClick={() => setShowCommandPalette(false)} style={{ background: "transparent", color: "#888888", border: "none", cursor: "pointer", fontWeight: 700 }}>Esc</button>
             </div>
             {[{ label: "Save draft", action: handleManualSave, hotkey: "Ctrl+S", disabled: false }, { label: "Run preflight", action: runPreflight, hotkey: "Alt+P", disabled: false }, { label: "Orchestrate", action: handleOrchestrate, hotkey: "Ctrl+Enter", disabled: isViewer }, { label: "Undo", action: handleUndo, hotkey: "Ctrl+Z", disabled: !undoStack.length || isViewer }, { label: "Redo", action: handleRedo, hotkey: "Ctrl+Shift+Z", disabled: !redoStack.length || isViewer }].map(cmd => (
-              <button key={cmd.label} disabled={cmd.disabled} onClick={() => { cmd.action(); setShowCommandPalette(false); }} style={{ width: "100%", textAlign: "left", background: cmd.disabled ? "#1a1a1a" : "#111827", color: cmd.disabled ? "#666666" : "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", marginBottom: 8, cursor: cmd.disabled ? "not-allowed" : "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <button key={cmd.label} disabled={cmd.disabled} onClick={() => { cmd.action(); setShowCommandPalette(false); }} style={{ width: "100%", textAlign: "left", background: cmd.disabled ? "#1a1a1a" : "#111111", color: cmd.disabled ? "#666666" : "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", marginBottom: 8, cursor: cmd.disabled ? "not-allowed" : "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>{cmd.label}</span>
                 <span style={{ fontSize: 12, color: "#888888" }}>{cmd.hotkey}</span>
               </button>
@@ -1037,21 +1037,21 @@ export default function WorkflowOrchestrator() {
           <div style={{ color: "#888888", marginTop: 4 }}>Plan, run, and approve orchestrations before shipping. Hotkeys: Ctrl+S save, Ctrl+Enter run, Ctrl+Z undo, Ctrl+Shift+Z redo, c clone, Ctrl+K palette.</div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <select value={env} onChange={e => setEnv(e.target.value)} disabled={isViewer} style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 12px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
+          <select value={env} onChange={e => setEnv(e.target.value)} disabled={isViewer} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 12px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
             <option value="dev">Dev</option><option value="stage">Stage</option><option value="prod">Prod</option>
           </select>
-          <input value={versionTag} onChange={e => setVersionTag(e.target.value)} disabled={isViewer} placeholder="Version tag" style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 12px", minWidth: 120, opacity: isViewer ? 0.7 : 1 }} />
-          <span style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: "#a5f3fc", fontWeight: 700 }}>Role: {role}</span>
-          <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#111827", border: "1px solid #1a1a1a", borderRadius: 10, padding: "6px 10px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
+          <input value={versionTag} onChange={e => setVersionTag(e.target.value)} disabled={isViewer} placeholder="Version tag" style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 12px", minWidth: 120, opacity: isViewer ? 0.7 : 1 }} />
+          <span style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: "#a5f3fc", fontWeight: 700 }}>Role: {role}</span>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: "6px 10px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
             <input type="checkbox" checked={disabled} onChange={e => setDisabled(e.target.checked)} disabled={isViewer} /> Disabled
           </label>
-          <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#111827", border: "1px solid #1a1a1a", borderRadius: 10, padding: "6px 10px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: "6px 10px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
             <input type="checkbox" checked={approvalRequired} onChange={e => setApprovalRequired(e.target.checked)} disabled={isViewer} /> Approvals
           </label>
-          <input value={approverEmail} onChange={e => setApproverEmail(e.target.value)} disabled={isViewer} placeholder="Approver email" style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 12px", minWidth: 180, opacity: isViewer ? 0.7 : 1 }} />
+          <input value={approverEmail} onChange={e => setApproverEmail(e.target.value)} disabled={isViewer} placeholder="Approver email" style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 12px", minWidth: 180, opacity: isViewer ? 0.7 : 1 }} />
         </div>
         {issueHelp && (
-          <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: 10, marginTop: 8, display: "grid", gap: 8 }}>
+          <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: 10, marginTop: 8, display: "grid", gap: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
               <div style={{ color: "#a5f3fc", fontWeight: 800 }}>Issue help</div>
               <button onClick={() => setIssueHelp(null)} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px", fontWeight: 700, cursor: "pointer" }}>Close</button>
@@ -1059,8 +1059,8 @@ export default function WorkflowOrchestrator() {
             <div style={{ color: "#f0f0f0" }}>{issueHelp}</div>
             <div style={{ color: "#888888", fontSize: 13 }}>Recommended fix: {issueHelp.toLowerCase().includes("approver") ? "Add or update an approver email, then rerun preflight." : issueHelp.toLowerCase().includes("trigger") ? "Add a trigger step so orchestration can start." : issueHelp.toLowerCase().includes("prod") ? "Add a production confirmation note and ensure approvals are set." : issueHelp.toLowerCase().includes("duplicate") ? "Clean up duplicate labels via quick fix." : "Review the trace for context, then apply the quick fix or adjust steps."}</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button onClick={() => applyQuickFix("approver")} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add approver</button>
-              <button onClick={() => applyQuickFix("prod-note")} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add prod note</button>
+              <button onClick={() => applyQuickFix("approver")} style={{ background: "#0ea5e9", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add approver</button>
+              <button onClick={() => applyQuickFix("prod-note")} style={{ background: "#f59e0b", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add prod note</button>
               <button onClick={() => applyQuickFix("trigger-action")} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add trigger/action</button>
               <button onClick={() => applyQuickFix("dedupe-labels")} style={{ background: "#6366f1", color: "#f0f0f0", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix duplicates</button>
             </div>
@@ -1069,12 +1069,12 @@ export default function WorkflowOrchestrator() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10, marginBottom: 10 }}>
-        <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
+        <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
           <div style={{ color: "#888888", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 }}>Readiness</div>
           <div style={{ fontWeight: 800, fontSize: 22, color: readinessSummary.coverage >= 85 ? "#22c55e" : "#fbbf24" }}>{readinessSummary.coverage}%</div>
           <div style={{ color: "#888888", fontSize: 13 }}>{readinessSummary.summary}</div>
         </div>
-        <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
+        <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Guardrails</div>
           <div style={{ color: preflightIssues.length ? "#f59e0b" : "#22c55e", fontWeight: 700 }}>{preflightIssues.length ? `${preflightIssues.length} issue${preflightIssues.length > 1 ? "s" : ""}` : "Clear"}</div>
           <div style={{ color: "#888888", fontSize: 12, marginBottom: preflightIssues.length ? 6 : 0 }}>Triggers ok: {readinessSummary.triggerOk ? "Yes" : "No"} · Approvals: {readinessSummary.approvalsOk ? "Ready" : "Need email"}</div>
@@ -1088,7 +1088,7 @@ export default function WorkflowOrchestrator() {
                     <span>{issue}</span>
                     <div style={{ display: "flex", gap: 6 }}>
                       <button aria-label={`Explain ${issue}`} onClick={() => setIssueHelp(issue)} style={{ background: "#1a1a1a", border: "1px solid #333333", color: "#a5f3fc", borderRadius: 8, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Explain</button>
-                      {fixKind && <button aria-label={`Fix ${issue}`} onClick={() => applyQuickFix(fixKind)} style={{ background: "#10b981", border: "1px solid #065f46", color: "#0b1221", borderRadius: 8, padding: "2px 8px", fontWeight: 800, cursor: "pointer" }}>Fix</button>}
+                      {fixKind && <button aria-label={`Fix ${issue}`} onClick={() => applyQuickFix(fixKind)} style={{ background: "#10b981", border: "1px solid #065f46", color: "#111111", borderRadius: 8, padding: "2px 8px", fontWeight: 800, cursor: "pointer" }}>Fix</button>}
                     </div>
                   </li>
                 );
@@ -1097,14 +1097,14 @@ export default function WorkflowOrchestrator() {
             </ul>
           )}
         </div>
-        <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
+        <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Workflow hygiene</div>
           <div style={{ color: dirtySinceSave ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>{dirtySinceSave ? "Unsaved edits" : "Clean"}</div>
           <div style={{ color: "#888888", fontSize: 12 }}>Last saved {lastSavedAt ? formatTime(lastSavedAt) : "—"}</div>
         </div>
       </div>
 
-      <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
+      <div style={{ marginBottom: 12, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 10, flexWrap: "wrap" }}>
           <div style={{ fontWeight: 800 }}>Operational checklist</div>
           <div style={{ color: "#888888", fontSize: 12 }}>Auto-updates as you edit</div>
@@ -1120,7 +1120,7 @@ export default function WorkflowOrchestrator() {
       </div>
 
         {preflightTrace.length > 0 && (
-          <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
+          <div style={{ marginBottom: 12, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
             <div style={{ fontWeight: 800, marginBottom: 6, color: "#fcd34d" }}>Preflight trace</div>
             <ul style={{ margin: 0, paddingLeft: 18, color: "#f0f0f0" }}>
               {preflightTrace.map((t, i) => (
@@ -1133,17 +1133,17 @@ export default function WorkflowOrchestrator() {
       {(env === "prod" || riskLevel === "high") && (
         <div style={{ marginBottom: 8, background: "#1a1a1a", border: "1px solid #333333", borderRadius: 10, padding: 10, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ color: "#fbbf24", fontWeight: 700 }}>Prod / high-risk confirmation</div>
-          <input value={confirmationNote} onChange={e => setConfirmationNote(e.target.value)} disabled={isViewer} placeholder="Add a confirmation note" style={{ flex: 1, minWidth: 220, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 12px", opacity: isViewer ? 0.7 : 1 }} />
+          <input value={confirmationNote} onChange={e => setConfirmationNote(e.target.value)} disabled={isViewer} placeholder="Add a confirmation note" style={{ flex: 1, minWidth: 220, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 12px", opacity: isViewer ? 0.7 : 1 }} />
         </div>
       )}
 
-      <div style={{ position: "sticky", top: 0, zIndex: 2, background: "#0f1115", paddingBottom: 6, marginBottom: 12 }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 2, background: "#0d0d0d", paddingBottom: 6, marginBottom: 12 }}>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6, alignItems: "center" }}>
-          <button onClick={runPreflight} disabled={isViewer} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Preflight</button>
-          <button onClick={runDryRun} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Dry-run (dev)</button>
-          <button onClick={handleRunTests} disabled={isViewer || testStatus === "running"} style={{ background: "#67e8f9", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{testStatus === "running" ? "Running tests…" : "Run test suite"}</button>
+          <button onClick={runPreflight} disabled={isViewer} style={{ background: "#f59e0b", color: "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Preflight</button>
+          <button onClick={runDryRun} disabled={isViewer} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Dry-run (dev)</button>
+          <button onClick={handleRunTests} disabled={isViewer || testStatus === "running"} style={{ background: "#67e8f9", color: "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{testStatus === "running" ? "Running tests…" : "Run test suite"}</button>
           {preflightStatus && (
-            <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 999, border: "1px solid #1a1a1a", background: preflightStatus.ok ? "#0b1221" : "#1a1a1a", color: preflightStatus.ok ? "#22c55e" : preflightStatus.issues ? "#fcd34d" : "#f87171", fontWeight: 800, fontSize: 12 }}>
+            <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 999, border: "1px solid #1a1a1a", background: preflightStatus.ok ? "#111111" : "#1a1a1a", color: preflightStatus.ok ? "#22c55e" : preflightStatus.issues ? "#fcd34d" : "#f87171", fontWeight: 800, fontSize: 12 }}>
               <span style={{ width: 10, height: 10, borderRadius: "50%", background: preflightStatus.ok ? "#22c55e" : preflightStatus.issues ? "#f59e0b" : "#ef4444" }} />
               <span>{preflightStatus.ok ? "Preflight pass" : preflightStatus.issues ? `${preflightStatus.issues} issues` : "Preflight failed"}</span>
               {preflightStatus.ts ? <span style={{ color: "#888888", fontWeight: 600 }}>· {new Date(preflightStatus.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span> : null}
@@ -1151,7 +1151,7 @@ export default function WorkflowOrchestrator() {
               <button onClick={clearPreflightStatus} style={{ marginLeft: 2, background: "transparent", border: "none", color: "#888888", cursor: "pointer", fontWeight: 800 }}>Clear</button>
               <button onClick={downloadPreflightReport} style={{ background: "transparent", border: "none", color: "#67e8f9", cursor: "pointer", fontWeight: 800 }}>Save</button>
               {showPreflightPopover && (
-                <div style={{ position: "absolute", top: "110%", right: 0, minWidth: 220, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: 10, boxShadow: "0 10px 30px rgba(0,0,0,0.4)", zIndex: 10 }}>
+                <div style={{ position: "absolute", top: "110%", right: 0, minWidth: 220, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: 10, boxShadow: "0 10px 30px rgba(0,0,0,0.4)", zIndex: 10 }}>
                   <div style={{ fontWeight: 800, color: "#fcd34d", marginBottom: 6 }}>Preflight issues</div>
                   <div style={{ color: "#888888", fontSize: 12, marginBottom: 6 }}>Why this matters: prevents broken orchestration from hitting Shopify customers.</div>
                   {preflightIssues.length === 0 ? <div style={{ color: "#22c55e" }}>Clear</div> : (
@@ -1161,8 +1161,8 @@ export default function WorkflowOrchestrator() {
                     </ul>
                   )}
                   <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    <button onClick={() => applyQuickFix("approver")} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add approver</button>
-                    <button onClick={() => applyQuickFix("prod-note")} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add prod note</button>
+                    <button onClick={() => applyQuickFix("approver")} style={{ background: "#0ea5e9", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add approver</button>
+                    <button onClick={() => applyQuickFix("prod-note")} style={{ background: "#f59e0b", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add prod note</button>
                     <button onClick={() => applyQuickFix("trigger-action")} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Add trigger/action</button>
                     <button onClick={() => applyQuickFix("dedupe-labels")} style={{ background: "#6366f1", color: "#f0f0f0", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix duplicates</button>
                   </div>
@@ -1181,17 +1181,17 @@ export default function WorkflowOrchestrator() {
               )}
             </span>
           )}
-          <button onClick={handleCloneStep} disabled={isViewer} style={{ background: "#a855f7", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Clone step</button>
-          <input value={versionName} onChange={e => setVersionName(e.target.value)} placeholder="Version name" style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", minWidth: 140 }} />
-          <button onClick={handleSnapshotVersion} disabled={isViewer} style={{ background: "#8b5cf6", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Snapshot</button>
-          <select value={payloadPreset} onChange={e => setPayloadPreset(e.target.value)} disabled={isViewer} style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", opacity: isViewer ? 0.7 : 1 }}>
+          <button onClick={handleCloneStep} disabled={isViewer} style={{ background: "#a855f7", color: "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Clone step</button>
+          <input value={versionName} onChange={e => setVersionName(e.target.value)} placeholder="Version name" style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", minWidth: 140 }} />
+          <button onClick={handleSnapshotVersion} disabled={isViewer} style={{ background: "#8b5cf6", color: "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Snapshot</button>
+          <select value={payloadPreset} onChange={e => setPayloadPreset(e.target.value)} disabled={isViewer} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", opacity: isViewer ? 0.7 : 1 }}>
             {payloadPresets.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
-          <button onClick={handleTestDev} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{testStatus === "running" ? "Testing..." : "Test in dev"}</button>
-          <button onClick={handleOrchestrate} disabled={loading || isViewer || devSandbox || isEnvLocked} style={{ background: devSandbox || isEnvLocked ? "#1a1a1a" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 15, cursor: loading || isViewer || devSandbox || isEnvLocked ? "not-allowed" : "pointer", opacity: loading || isViewer || devSandbox || isEnvLocked ? 0.6 : 1 }}>{isEnvLocked ? "Prod requires admin" : devSandbox ? "Sandbox (switch env)" : loading ? "Orchestrating..." : "Orchestrate"}</button>
-          <button onClick={rollbackToLastRun} disabled={isViewer || !lastRunSnapshot} style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", fontWeight: 800, cursor: isViewer || !lastRunSnapshot ? "not-allowed" : "pointer", opacity: isViewer || !lastRunSnapshot ? 0.6 : 1 }}>Rollback to last run</button>
-          <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Export JSON</button>
-          <button onClick={() => importRef.current?.click()} style={{ background: "#a855f7", color: "#0b1221", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Import JSON</button>
+          <button onClick={handleTestDev} disabled={isViewer} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>{testStatus === "running" ? "Testing..." : "Test in dev"}</button>
+          <button onClick={handleOrchestrate} disabled={loading || isViewer || devSandbox || isEnvLocked} style={{ background: devSandbox || isEnvLocked ? "#1a1a1a" : "#22c55e", color: "#111111", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 15, cursor: loading || isViewer || devSandbox || isEnvLocked ? "not-allowed" : "pointer", opacity: loading || isViewer || devSandbox || isEnvLocked ? 0.6 : 1 }}>{isEnvLocked ? "Prod requires admin" : devSandbox ? "Sandbox (switch env)" : loading ? "Orchestrating..." : "Orchestrate"}</button>
+          <button onClick={rollbackToLastRun} disabled={isViewer || !lastRunSnapshot} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", fontWeight: 800, cursor: isViewer || !lastRunSnapshot ? "not-allowed" : "pointer", opacity: isViewer || !lastRunSnapshot ? 0.6 : 1 }}>Rollback to last run</button>
+          <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#111111", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Export JSON</button>
+          <button onClick={() => importRef.current?.click()} style={{ background: "#a855f7", color: "#111111", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Import JSON</button>
           <input type="file" accept="application/json" ref={importRef} onChange={handleImport} style={{ display: "none" }} />
           <div style={{ color: "#888888", fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ color: draftStatus === "saved" ? "#22c55e" : "#fbbf24" }}>{draftStatus === "saved" ? "Saved" : "Saving"}</span>
@@ -1200,40 +1200,40 @@ export default function WorkflowOrchestrator() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: steps.some(s => s.type === "trigger") ? "#22c55e" : "#f97316", fontWeight: 700 }}>Trigger {steps.some(s => s.type === "trigger") ? "OK" : "Missing"}</span>
-          <span style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: approvalRequired && !approverEmail ? "#f97316" : "#22c55e", fontWeight: 700 }}>Approvals {approvalRequired ? (approverEmail ? "Ready" : "Need email") : "Off"}</span>
-          <span style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: riskLevel === "high" ? "#f87171" : riskLevel === "medium" ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>Risk {riskLevel}</span>
-          <span style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: steps.length >= 6 ? "#f97316" : "#22c55e", fontWeight: 700 }}>Perf guardrail: {steps.length >= 6 ? "tighten" : "OK"}</span>
-          <span style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: disabled ? "#f97316" : "#22c55e", fontWeight: 700 }}>Disabled: {disabled ? "Yes" : "No"}</span>
+          <span style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: steps.some(s => s.type === "trigger") ? "#22c55e" : "#f97316", fontWeight: 700 }}>Trigger {steps.some(s => s.type === "trigger") ? "OK" : "Missing"}</span>
+          <span style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: approvalRequired && !approverEmail ? "#f97316" : "#22c55e", fontWeight: 700 }}>Approvals {approvalRequired ? (approverEmail ? "Ready" : "Need email") : "Off"}</span>
+          <span style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: riskLevel === "high" ? "#f87171" : riskLevel === "medium" ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>Risk {riskLevel}</span>
+          <span style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: steps.length >= 6 ? "#f97316" : "#22c55e", fontWeight: 700 }}>Perf guardrail: {steps.length >= 6 ? "tighten" : "OK"}</span>
+          <span style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: disabled ? "#f97316" : "#22c55e", fontWeight: 700 }}>Disabled: {disabled ? "Yes" : "No"}</span>
           {env === "prod" && <span style={{ background: "#7c2d12", border: "1px solid #b45309", borderRadius: 999, padding: "6px 10px", color: confirmationNote ? "#facc15" : "#fca5a5", fontWeight: 700 }}>Prod note {confirmationNote ? "ready" : "required"}</span>}
-          <span style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: perf.latencyMs > 900 ? "#f97316" : perf.latencyMs > 600 ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>Latency {Math.round(perf.latencyMs)}ms</span>
-          <span style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: perf.successRate < 0.95 ? "#f97316" : "#22c55e", fontWeight: 700 }}>Success {(perf.successRate * 100).toFixed(1)}%</span>
-          <span style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: slaCompliance.status === "on-track" ? "#22c55e" : slaCompliance.status === "watch" ? "#fbbf24" : "#f97316", fontWeight: 700 }}>SLA {slaCompliance.status}</span>
+          <span style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: perf.latencyMs > 900 ? "#f97316" : perf.latencyMs > 600 ? "#fbbf24" : "#22c55e", fontWeight: 700 }}>Latency {Math.round(perf.latencyMs)}ms</span>
+          <span style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: perf.successRate < 0.95 ? "#f97316" : "#22c55e", fontWeight: 700 }}>Success {(perf.successRate * 100).toFixed(1)}%</span>
+          <span style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 999, padding: "6px 10px", color: slaCompliance.status === "on-track" ? "#22c55e" : slaCompliance.status === "watch" ? "#fbbf24" : "#f97316", fontWeight: 700 }}>SLA {slaCompliance.status}</span>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
-          <input value={reviewerEmail} onChange={e => setReviewerEmail(e.target.value)} placeholder="Reviewer email" style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "6px 10px", minWidth: 200 }} />
-          <button onClick={attachPreflightForReviewer} disabled={isViewer} style={{ background: "#8b5cf6", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Attach preflight</button>
-          <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: "6px 10px", color: disabled ? "#f97316" : "#22c55e", fontWeight: 700 }}>Disabled: {disabled ? "Yes" : "No"}</div>
+          <input value={reviewerEmail} onChange={e => setReviewerEmail(e.target.value)} placeholder="Reviewer email" style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "6px 10px", minWidth: 200 }} />
+          <button onClick={attachPreflightForReviewer} disabled={isViewer} style={{ background: "#8b5cf6", color: "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Attach preflight</button>
+          <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: "6px 10px", color: disabled ? "#f97316" : "#22c55e", fontWeight: 700 }}>Disabled: {disabled ? "Yes" : "No"}</div>
         </div>
         {importError && <div style={{ color: "#fca5a5", fontSize: 12, marginTop: 6 }}>Import error: {importError}</div>}
       </div>
 
       {history.length > 0 && (
-        <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 10, display: "grid", gap: 8 }}>
+        <div style={{ marginBottom: 12, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 10, display: "grid", gap: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <div style={{ fontWeight: 800 }}>Recent runs</div>
             <div style={{ color: "#888888", fontSize: 12 }}>Last {Math.min(3, history.length)} shown</div>
           </div>
           <div style={{ display: "grid", gap: 8 }}>
             {history.slice(0, 3).map((h, idx) => (
-              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#111827", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 10px" }}>
+              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 10px" }}>
                 <div>
                   <div style={{ fontWeight: 700, color: "#f0f0f0" }}>{h.workflowName || "Run"} · {h.env}/{h.versionTag || "v"}</div>
                   <div style={{ color: "#888888", fontSize: 12 }}>Saved {h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "recent"} · {h.steps?.length || 0} steps</div>
                 </div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   <button aria-label={`Load run ${idx + 1}`} onClick={() => restoreSnapshot(h)} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load</button>
-                  <button aria-label={`Re-run ${idx + 1}`} onClick={() => { restoreSnapshot(h); setTimeout(() => handleOrchestrate(), 0); }} disabled={devSandbox || isViewer} style={{ background: devSandbox ? "#1a1a1a" : "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: devSandbox || isViewer ? "not-allowed" : "pointer", opacity: devSandbox || isViewer ? 0.6 : 1 }}>{devSandbox ? "Sandbox" : "Re-run"}</button>
+                  <button aria-label={`Re-run ${idx + 1}`} onClick={() => { restoreSnapshot(h); setTimeout(() => handleOrchestrate(), 0); }} disabled={devSandbox || isViewer} style={{ background: devSandbox ? "#1a1a1a" : "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: devSandbox || isViewer ? "not-allowed" : "pointer", opacity: devSandbox || isViewer ? 0.6 : 1 }}>{devSandbox ? "Sandbox" : "Re-run"}</button>
                 </div>
               </div>
             ))}
@@ -1243,27 +1243,27 @@ export default function WorkflowOrchestrator() {
 
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 16, alignItems: "start", marginBottom: 14 }}>
         <div style={{ display: "grid", gap: 8 }}>
-          <input value={workflowName} onChange={e => setWorkflowName(e.target.value)} disabled={isViewer} placeholder="Workflow name" style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }} />
-          <textarea value={objective} onChange={e => setObjective(e.target.value)} disabled={isViewer} placeholder="Objective / desired outcome" rows={2} style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", opacity: isViewer ? 0.7 : 1 }} />
+          <input value={workflowName} onChange={e => setWorkflowName(e.target.value)} disabled={isViewer} placeholder="Workflow name" style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }} />
+          <textarea value={objective} onChange={e => setObjective(e.target.value)} disabled={isViewer} placeholder="Objective / desired outcome" rows={2} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", opacity: isViewer ? 0.7 : 1 }} />
         </div>
         <div style={{ display: "grid", gap: 8 }}>
-          <input value={tags} onChange={e => setTags(e.target.value)} disabled={isViewer} placeholder="Tags (comma separated)" style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", opacity: isViewer ? 0.7 : 1 }} />
+          <input value={tags} onChange={e => setTags(e.target.value)} disabled={isViewer} placeholder="Tags (comma separated)" style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", opacity: isViewer ? 0.7 : 1 }} />
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <select value={riskLevel} onChange={e => setRiskLevel(e.target.value)} disabled={isViewer} style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
+            <select value={riskLevel} onChange={e => setRiskLevel(e.target.value)} disabled={isViewer} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", fontWeight: 700, opacity: isViewer ? 0.7 : 1 }}>
               <option value="low">Low risk</option><option value="medium">Medium risk</option><option value="high">High risk</option>
             </select>
-            <input value={owner} onChange={e => setOwner(e.target.value)} disabled={isViewer} placeholder="Workflow owner" style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", flex: 1, opacity: isViewer ? 0.7 : 1 }} />
+            <input value={owner} onChange={e => setOwner(e.target.value)} disabled={isViewer} placeholder="Workflow owner" style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "10px 12px", flex: 1, opacity: isViewer ? 0.7 : 1 }} />
           </div>
         </div>
       </div>
 
       {testResults.length > 0 && (
-        <div style={{ marginBottom: 12, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
+        <div style={{ marginBottom: 12, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 800, marginBottom: 6 }}>Test harness</div>
           <div style={{ color: "#888888", fontSize: 12, marginBottom: 6 }}>Validates payload size, trigger presence, and preflight cleanliness.</div>
           <div style={{ display: "grid", gap: 6 }}>
             {testResults.map(tr => (
-              <div key={tr.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, background: "#111827", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 10px" }}>
+              <div key={tr.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 10px" }}>
                 <div>
                   <div style={{ fontWeight: 700, color: "#f0f0f0" }}>{tr.name}</div>
                   <div style={{ color: "#888888", fontSize: 12 }}>Expect: {tr.expect} · Got: {tr.status}</div>
@@ -1273,12 +1273,12 @@ export default function WorkflowOrchestrator() {
             ))}
           </div>
           <div style={{ marginTop: 8, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-            <select value={fixtureEnv} onChange={e => setFixtureEnv(e.target.value)} style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 10px" }}>
+            <select value={fixtureEnv} onChange={e => setFixtureEnv(e.target.value)} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 10px" }}>
               <option value="dev">Dev fixture</option>
               <option value="stage">Stage fixture</option>
               <option value="prod">Prod fixture</option>
             </select>
-            <button onClick={downloadTestReport} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Download report</button>
+            <button onClick={downloadTestReport} style={{ background: "#0ea5e9", color: "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Download report</button>
             {testReportUrl && <a href={testReportUrl} download="workflow-tests.json" style={{ color: "#67e8f9", fontWeight: 700 }}>Save now</a>}
           </div>
         </div>
@@ -1291,7 +1291,7 @@ export default function WorkflowOrchestrator() {
         <div style={{ minWidth: 240 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6 }}>
             <div style={{ fontWeight: 700, marginBottom: 8 }}>Workflow Steps</div>
-            <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search" style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", fontSize: 12 }} />
+            <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search" style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", fontSize: 12 }} />
           </div>
           <ul style={{ listStyle: "none", padding: 0 }}>
             {steps.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.config.toLowerCase().includes(searchTerm.toLowerCase())).map(step => (
@@ -1308,34 +1308,34 @@ export default function WorkflowOrchestrator() {
                   ) : null}
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
-                  <button onClick={e => { e.stopPropagation(); handleReorder(step.id, "up"); }} disabled={isViewer} style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #0a0a0a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>↑</button>
-                  <button onClick={e => { e.stopPropagation(); handleReorder(step.id, "down"); }} disabled={isViewer} style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #0a0a0a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>↓</button>
-                  {steps.length > 1 && <button onClick={e => { e.stopPropagation(); handleRemoveStep(step.id); }} disabled={isViewer} style={{ background: "#111827", color: "#fca5a5", border: "1px solid #0a0a0a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>✕</button>}
+                  <button onClick={e => { e.stopPropagation(); handleReorder(step.id, "up"); }} disabled={isViewer} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #0a0a0a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>↑</button>
+                  <button onClick={e => { e.stopPropagation(); handleReorder(step.id, "down"); }} disabled={isViewer} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #0a0a0a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>↓</button>
+                  {steps.length > 1 && <button onClick={e => { e.stopPropagation(); handleRemoveStep(step.id); }} disabled={isViewer} style={{ background: "#111111", color: "#fca5a5", border: "1px solid #0a0a0a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>✕</button>}
                 </div>
               </li>
             ))}
           </ul>
-          <div style={{ margin: "8px 0", background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: 8 }}>
+          <div style={{ margin: "8px 0", background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: 8 }}>
             <div style={{ fontWeight: 700, marginBottom: 4 }}>Minimap</div>
             <div style={{ display: "grid", gap: 4 }}>
               {steps.map(s => (
-                <button key={s.id} onClick={() => setSelectedStep(s.id)} style={{ textAlign: "left", background: selectedStep === s.id ? "#1a1a1a" : "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", fontSize: 12, cursor: "pointer" }}>
+                <button key={s.id} onClick={() => setSelectedStep(s.id)} style={{ textAlign: "left", background: selectedStep === s.id ? "#1a1a1a" : "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", fontSize: 12, cursor: "pointer" }}>
                   #{s.id} · {s.name} ({s.type})
                 </button>
               ))}
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button onClick={() => handleAddStep(null, "trigger")} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>+ Add Trigger</button>
-            <button onClick={() => handleAddStep()} disabled={isViewer} style={{ background: "#10b981", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>+ Add Action</button>
-            <button onClick={handleDuplicateBranch} disabled={isViewer} style={{ background: "#a855f7", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>Duplicate branch</button>
-            <button onClick={handleCopySelection} disabled={isViewer || !selectedStepIds.length} style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 14px", fontWeight: 700, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>Copy</button>
-            <button onClick={handlePasteSelection} disabled={isViewer || !clipboard.length} style={{ background: "#111827", color: "#67e8f9", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 14px", fontWeight: 700, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>Paste</button>
-            <button onClick={handleMultiDelete} disabled={isViewer || !selectedStepIds.length} style={{ background: "#111827", color: "#fca5a5", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 14px", fontWeight: 700, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>Delete selected</button>
+            <button onClick={() => handleAddStep(null, "trigger")} disabled={isViewer} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>+ Add Trigger</button>
+            <button onClick={() => handleAddStep()} disabled={isViewer} style={{ background: "#10b981", color: "#111111", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>+ Add Action</button>
+            <button onClick={handleDuplicateBranch} disabled={isViewer} style={{ background: "#a855f7", color: "#111111", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>Duplicate branch</button>
+            <button onClick={handleCopySelection} disabled={isViewer || !selectedStepIds.length} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 14px", fontWeight: 700, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>Copy</button>
+            <button onClick={handlePasteSelection} disabled={isViewer || !clipboard.length} style={{ background: "#111111", color: "#67e8f9", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 14px", fontWeight: 700, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>Paste</button>
+            <button onClick={handleMultiDelete} disabled={isViewer || !selectedStepIds.length} style={{ background: "#111111", color: "#fca5a5", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 14px", fontWeight: 700, cursor: isViewer ? "not-allowed" : "pointer", marginTop: 4, opacity: isViewer ? 0.6 : 1 }}>Delete selected</button>
           </div>
           <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
             <div style={{ color: "#888888", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 }}>Playbooks</div>
-            <button onClick={() => setShowTemplateGallery(true)} disabled={isViewer} style={{ alignSelf: "flex-start", background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Open template gallery</button>
+            <button onClick={() => setShowTemplateGallery(true)} disabled={isViewer} style={{ alignSelf: "flex-start", background: "#0ea5e9", color: "#111111", border: "none", borderRadius: 8, padding: "6px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Open template gallery</button>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               <button onClick={() => applyPlaybook("seoFix")} disabled={isViewer} style={{ background: "#1a1a1a", color: "#a5f3fc", border: "1px solid #111111", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>SEO Fix Queue</button>
               <button onClick={() => applyPlaybook("productSync")} disabled={isViewer} style={{ background: "#1a1a1a", color: "#a5f3fc", border: "1px solid #111111", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Product Sync</button>
@@ -1357,10 +1357,10 @@ export default function WorkflowOrchestrator() {
               <textarea value={step.config} onChange={e => handleStepChange(step.id, { config: e.target.value })} disabled={isViewer} rows={5} style={{ width: "100%", borderRadius: 6, border: "1px solid #0a0a0a", padding: 10, background: "#0a0a0a", color: "#f0f0f0", opacity: isViewer ? 0.6 : 1 }} placeholder={step.type === "trigger" ? "Describe the trigger (e.g. 'Order placed with AOV > $50')" : "Describe the action (e.g. 'Send Slack notification to #ops')"} />
               <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {step.type === "trigger" && triggerTemplates.map(t => (
-                  <button key={t.label} onClick={() => handleStepChange(step.id, { config: t.config, name: t.label })} disabled={isViewer} style={{ background: "#111827", color: "#a5f3fc", border: "1px solid #111111", borderRadius: 999, padding: "6px 10px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>{t.label}</button>
+                  <button key={t.label} onClick={() => handleStepChange(step.id, { config: t.config, name: t.label })} disabled={isViewer} style={{ background: "#111111", color: "#a5f3fc", border: "1px solid #111111", borderRadius: 999, padding: "6px 10px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>{t.label}</button>
                 ))}
                 {step.type !== "trigger" && actionTemplates.map(t => (
-                  <button key={t.label} onClick={() => handleStepChange(step.id, { config: t.config, name: t.label })} disabled={isViewer} style={{ background: "#111827", color: "#a5f3fc", border: "1px solid #111111", borderRadius: 999, padding: "6px 10px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>{t.label}</button>
+                  <button key={t.label} onClick={() => handleStepChange(step.id, { config: t.config, name: t.label })} disabled={isViewer} style={{ background: "#111111", color: "#a5f3fc", border: "1px solid #111111", borderRadius: 999, padding: "6px 10px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>{t.label}</button>
                 ))}
               </div>
             </div>
@@ -1372,13 +1372,13 @@ export default function WorkflowOrchestrator() {
         <div>
           {error && <div style={{ color: "#fca5a5", marginBottom: 10 }}>{error}</div>}
           {result && (
-            <div style={{ marginTop: 8, background: "#111827", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
+            <div style={{ marginTop: 8, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
               <div style={{ fontWeight: 700, marginBottom: 4, color: "#f0f0f0" }}>Orchestration Output:</div>
               <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", color: "#e0e0e0", margin: 0 }}>{JSON.stringify(result, null, 2)}</pre>
             </div>
           )}
           {diffSummary && (
-            <div style={{ marginTop: 12, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
+            <div style={{ marginTop: 12, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
               <div style={{ fontWeight: 700, marginBottom: 6 }}>Changes since last run</div>
               <div style={{ color: "#888888", fontSize: 13 }}>Added: {diffSummary.added.length} · Removed: {diffSummary.removed.length} · Edited: {diffSummary.changed.length}</div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 6 }}>
@@ -1389,18 +1389,18 @@ export default function WorkflowOrchestrator() {
             </div>
           )}
           {versions.length > 0 && (
-            <div style={{ marginTop: 12, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
+            <div style={{ marginTop: 12, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
               <div style={{ fontWeight: 700, marginBottom: 6 }}>Version history</div>
               <div style={{ display: "grid", gap: 8 }}>
                 {versions.map((v, idx) => (
-                  <div key={idx} style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 10, padding: 8, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  <div key={idx} style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: 8, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                     <div>
                       <div style={{ fontWeight: 700, color: "#f0f0f0" }}>{v.label}</div>
                       <div style={{ color: "#888888", fontSize: 12 }}>Steps: {v.steps?.length || 0} · Env: {v.env}</div>
                     </div>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      <button onClick={() => { setSteps(v.steps || []); setEnv(v.env || env); setApprovalRequired(!!v.approvalRequired); }} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Load</button>
-                      <button onClick={() => setLastRunSnapshot(v)} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Baseline</button>
+                      <button onClick={() => { setSteps(v.steps || []); setEnv(v.env || env); setApprovalRequired(!!v.approvalRequired); }} style={{ background: "#0ea5e9", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Load</button>
+                      <button onClick={() => setLastRunSnapshot(v)} style={{ background: "#f59e0b", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Baseline</button>
                     </div>
                   </div>
                 ))}
@@ -1408,7 +1408,7 @@ export default function WorkflowOrchestrator() {
             </div>
           )}
         </div>
-        <div style={{ background: "#0b0f16", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
+        <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Preview Payload</div>
           <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", color: "#e0e0e0", margin: 0, maxHeight: 260, overflow: "auto" }}>{JSON.stringify(previewPayload, null, 2)}</pre>
           <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
@@ -1416,33 +1416,33 @@ export default function WorkflowOrchestrator() {
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
               <input type="range" min={1} max={100} value={rolloutPercent} onChange={e => setRolloutPercent(Number(e.target.value))} />
               <span style={{ color: "#f0f0f0", fontWeight: 700 }}>{rolloutPercent}% rollout</span>
-              <button onClick={() => setRolloutPercent(100)} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Promote to 100%</button>
+              <button onClick={() => setRolloutPercent(100)} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Promote to 100%</button>
               <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#f0f0f0" }}>
                 <input type="checkbox" checked={autoRevert} onChange={e => setAutoRevert(e.target.checked)} /> Auto-revert on errors
               </label>
-              <input type="number" min={1} max={50} value={errorSpikeThreshold} onChange={e => setErrorSpikeThreshold(Number(e.target.value))} style={{ width: 80, background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px" }} />
+              <input type="number" min={1} max={50} value={errorSpikeThreshold} onChange={e => setErrorSpikeThreshold(Number(e.target.value))} style={{ width: 80, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px" }} />
               <span style={{ color: "#888888", fontSize: 12 }}>Spike threshold</span>
             </div>
           </div>
           <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
             <div style={{ fontWeight: 700 }}>Sinks & webhooks</div>
-            <input value={slackChannel} onChange={e => setSlackChannel(e.target.value)} placeholder="Slack channel (e.g. #ops)" style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px" }} />
-            <input value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} placeholder="Webhook URL" style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px" }} />
+            <input value={slackChannel} onChange={e => setSlackChannel(e.target.value)} placeholder="Slack channel (e.g. #ops)" style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px" }} />
+            <input value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} placeholder="Webhook URL" style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px" }} />
             <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#f0f0f0" }}>
               <input type="checkbox" checked={queueEnabled} onChange={e => setQueueEnabled(e.target.checked)} /> Queue stub enabled
             </label>
-            <button onClick={sendWebhookEvent} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Send sample event</button>
+            <button onClick={sendWebhookEvent} style={{ background: "#0ea5e9", color: "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Send sample event</button>
           </div>
           <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
             <div style={{ fontWeight: 700 }}>SLA budgets</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
               <label style={{ color: "#f0f0f0", display: "flex", alignItems: "center", gap: 6 }}>
                 Latency budget (ms)
-                <input type="number" min={100} max={3000} value={latencyBudgetMs} onChange={e => setLatencyBudgetMs(Number(e.target.value))} style={{ width: 90, background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px" }} />
+                <input type="number" min={100} max={3000} value={latencyBudgetMs} onChange={e => setLatencyBudgetMs(Number(e.target.value))} style={{ width: 90, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px" }} />
               </label>
               <label style={{ color: "#f0f0f0", display: "flex", alignItems: "center", gap: 6 }}>
                 Error budget (% allowed)
-                <input type="number" min={0.5} max={10} step={0.5} value={errorBudgetPct} onChange={e => setErrorBudgetPct(Number(e.target.value))} style={{ width: 90, background: "#111827", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px" }} />
+                <input type="number" min={0.5} max={10} step={0.5} value={errorBudgetPct} onChange={e => setErrorBudgetPct(Number(e.target.value))} style={{ width: 90, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px" }} />
               </label>
               <span style={{ color: "#888888", fontSize: 12 }}>{slaCompliance.summary}</span>
             </div>
@@ -1466,7 +1466,7 @@ export default function WorkflowOrchestrator() {
         </div>
       )}
 
-      <div style={{ marginTop: 18, display: "grid", gap: 10, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
+      <div style={{ marginTop: 18, display: "grid", gap: 10, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
           <div style={{ fontWeight: 800 }}>Observability</div>
           <div style={{ color: "#888888", fontSize: 12 }}>Last publish {lastPublish ? new Date(lastPublish).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</div>
@@ -1478,7 +1478,7 @@ export default function WorkflowOrchestrator() {
         <div style={{ display: "grid", gap: 6 }}>
           <div style={{ fontWeight: 700, color: "#f0f0f0" }}>Audit log</div>
           {auditLog.length === 0 ? <div style={{ color: "#888888", fontSize: 12 }}>No events yet</div> : auditLog.map((a, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 8, background: "#111827", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", color: "#f0f0f0", fontSize: 12 }}>
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 8, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", color: "#f0f0f0", fontSize: 12 }}>
               <span>{a.event}</span>
               <span style={{ color: "#888888" }}>{a.env}</span>
               <span style={{ color: "#888888" }}>{new Date(a.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
@@ -1489,7 +1489,7 @@ export default function WorkflowOrchestrator() {
 
       {showTemplateGallery && (
         <div style={{ position: "fixed", inset: 0, background: "#000b", zIndex: 30, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-          <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 14, padding: 16, width: "min(760px, 94vw)", boxShadow: "0 18px 60px #000" }}>
+          <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 14, padding: 16, width: "min(760px, 94vw)", boxShadow: "0 18px 60px #000" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
               <div>
                 <div style={{ fontWeight: 800, color: "#a5f3fc" }}>Template gallery</div>
@@ -1499,7 +1499,7 @@ export default function WorkflowOrchestrator() {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
               {galleryTemplates.map(tpl => (
-                <div key={tpl.id} style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 10, padding: 10, display: "grid", gap: 8 }}>
+                <div key={tpl.id} style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: 10, display: "grid", gap: 8 }}>
                   <div style={{ fontWeight: 800 }}>{tpl.title}</div>
                   <div style={{ color: "#888888", fontSize: 12 }}>{tpl.description}</div>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -1508,7 +1508,7 @@ export default function WorkflowOrchestrator() {
                     ))}
                   </div>
                   <div style={{ color: "#67e8f9", fontSize: 12 }}>Rollout: {tpl.rollout || 100}%</div>
-                  <button onClick={() => applyTemplate(tpl)} disabled={isViewer} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 10px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Use template</button>
+                  <button onClick={() => applyTemplate(tpl)} disabled={isViewer} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "8px 10px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Use template</button>
                 </div>
               ))}
             </div>
@@ -1522,5 +1522,6 @@ export default function WorkflowOrchestrator() {
     </div>
   );
 }
+
 
 

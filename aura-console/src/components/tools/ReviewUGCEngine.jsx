@@ -131,7 +131,7 @@ export default function ReviewUGCEngine() {
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {response && (
-        <div style={{ background: "#1e2235", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #1e1e1e" }}>
+        <div style={{ background: "#1e1e1e", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #1e1e1e" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <span style={{ fontWeight: 700, color: "#7fffd4", fontSize: 14 }}>AI Review</span>
             <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #333333", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
@@ -153,11 +153,11 @@ export default function ReviewUGCEngine() {
         ))}
       </div>
       <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-        <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
+        <div style={{ background: "#1e1e1e", borderRadius: 10, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Reviews</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#7fffd4", marginTop: 2 }}>{reviews.length}</div>
         </div>
-        <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
+        <div style={{ background: "#1e1e1e", borderRadius: 10, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#7fffd4", marginTop: 2 }}>{analytics.length}</div>
         </div>
@@ -165,6 +165,7 @@ export default function ReviewUGCEngine() {
     </div>
   );
 }
+
 
 
 

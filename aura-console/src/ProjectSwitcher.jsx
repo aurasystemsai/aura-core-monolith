@@ -166,7 +166,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
             padding: "8px 9px",
             borderRadius: 10,
             border: "1px solid rgba(55,65,81,0.9)",
-            background: "#020617",
+            background: "#0a0a0a",
             maxHeight: 180,
             overflowY: "auto",
             fontSize: 12,
@@ -275,4 +275,5 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
 }
 
 export default ProjectSwitcher;
+
 

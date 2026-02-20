@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --bg: #0a0a0a;
   --bg-alt: #111111;
   --card: #161616;
@@ -265,7 +265,7 @@ body {
 .pane {
   display: flex;
   flex-direction: column;
-  background: #020617;
+  background: #0a0a0a;
   border-radius: 16px;
   border: 1px solid var(--border);
   overflow: hidden;
@@ -321,3 +321,4 @@ textarea {
   color: var(--muted);
   font-size: 14px;
 }
+

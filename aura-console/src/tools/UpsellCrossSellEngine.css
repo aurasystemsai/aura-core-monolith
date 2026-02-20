@@ -258,7 +258,7 @@
 
 .Polaris-Label {
   font-weight: 500;
-  color: #212b36;
+  color: #1a1a1a;
   margin-bottom: 0.375rem;
 }
 
@@ -446,7 +446,7 @@
 }
 
 .recovery-step strong {
-  color: #212b36;
+  color: #1a1a1a;
   font-weight: 600;
 }
 
@@ -640,4 +640,5 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
 

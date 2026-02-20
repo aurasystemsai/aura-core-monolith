@@ -639,7 +639,7 @@
 /* Dark Mode Support (Optional) */
 @media (prefers-color-scheme: dark) {
   .dpe-container {
-    background: linear-gradient(135deg, #1a1a1a 0%, #111827 100%);
+    background: linear-gradient(135deg, #1a1a1a 0%, #111111 100%);
   }
 
   .dpe-content {
@@ -717,5 +717,6 @@
     box-shadow: none;
   }
 }
+
 
 

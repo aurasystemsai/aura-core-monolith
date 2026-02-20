@@ -185,7 +185,7 @@
   padding: 12px 28px;
   border-radius: 10px;
   background: linear-gradient(90deg, #111111 0%, #7fffd4 100%);
-  color: #181c2a;
+  color: #111111;
   font-weight: 800;
   font-size: 1.08rem;
   border: none;
@@ -266,3 +266,4 @@
   border-radius: 6px;
   padding: 4px 12px;
 }
+

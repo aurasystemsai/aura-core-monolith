@@ -526,7 +526,7 @@ const Billing = () => {
 
         .usage-stat {
           padding: 16px;
-          background: #0f1324;
+          background: #111111;
           border: 1px solid #1e1e1e;
           border-radius: 8px;
         }
@@ -585,7 +585,7 @@ const Billing = () => {
         .invoices-table th {
           text-align: left;
           padding: 12px;
-          background: #0f1324;
+          background: #111111;
           font-weight: 600;
           color: #94a3b8;
         }
@@ -667,7 +667,7 @@ const Billing = () => {
         }
 
         .plan-card {
-          background: #0f1324;
+          background: #111111;
           border: 2px solid #1e1e1e;
           border-radius: 12px;
           padding: 24px;
@@ -778,5 +778,6 @@ const Billing = () => {
 };
 
 export default Billing;
+
 
 

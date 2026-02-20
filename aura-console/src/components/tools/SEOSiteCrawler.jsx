@@ -7,7 +7,7 @@ const SEV_BG = { high: "#3f1315", medium: "#3d2a0a", low: "#0d2218" };
 function SeverityBadge({ sev }) {
   return (
     <span style={{
-      background: SEV_BG[sev] || "#1e2235",
+      background: SEV_BG[sev] || "#1e1e1e",
       color: SEV_COLORS[sev] || "#94a3b8",
       border: `1px solid ${SEV_COLORS[sev] || "#333333"}`,
       borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 700,
@@ -42,7 +42,7 @@ function IssueCard({ issue, pageUrl }) {
   };
 
   return (
-    <div style={{ background: SEV_BG[issue.severity] || "#1e2235", borderRadius: 8, padding: "10px 14px", border: `1px solid ${SEV_COLORS[issue.severity] || "#333333"}22`, marginBottom: 8 }}>
+    <div style={{ background: SEV_BG[issue.severity] || "#1e1e1e", borderRadius: 8, padding: "10px 14px", border: `1px solid ${SEV_COLORS[issue.severity] || "#333333"}22`, marginBottom: 8 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
         <SeverityBadge sev={issue.severity} />
         <span style={{ fontWeight: 700, color: "#e2e8f0", fontSize: 13 }}>{issue.type}</span>
@@ -59,7 +59,7 @@ function IssueCard({ issue, pageUrl }) {
         </div>
       )}
       {suggestion && (
-        <div style={{ marginTop: 8, background: "#1e2235", borderRadius: 6, padding: "8px 12px", border: "1px solid #1e1e1e", fontSize: 13, color: "#7fffd4", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+        <div style={{ marginTop: 8, background: "#1e1e1e", borderRadius: 6, padding: "8px 12px", border: "1px solid #1e1e1e", fontSize: 13, color: "#7fffd4", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
           {suggestion}
           <button onClick={() => navigator.clipboard?.writeText(suggestion)} style={{ display: "block", marginTop: 6, background: "transparent", border: "1px solid #333333", borderRadius: 5, padding: "2px 10px", color: "#64748b", fontSize: 11, cursor: "pointer" }}>Copy</button>
         </div>
@@ -72,7 +72,7 @@ function IssueCard({ issue, pageUrl }) {
 function KeywordPresencePanel({ keywords, keywordPresence }) {
   if (!keywords || keywords.length === 0) return null;
   return (
-    <div style={{ background: "#1a1f2e", borderRadius: 8, padding: "10px 14px", marginBottom: 10, border: "1px solid #1e1e1e" }}>
+    <div style={{ background: "#111111", borderRadius: 8, padding: "10px 14px", marginBottom: 10, border: "1px solid #1e1e1e" }}>
       <div style={{ fontWeight: 700, fontSize: 12, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Keyword Presence Check</div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {(keywordPresence || []).map(kp => (
@@ -229,7 +229,7 @@ export default function SEOSiteCrawler() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && handleCrawl()}
-          style={{ width: "100%", fontSize: 15, padding: "10px 14px", borderRadius: 8, border: "1px solid #333333", background: "#1e2235", color: "#f3f4f6", boxSizing: "border-box" }}
+          style={{ width: "100%", fontSize: 15, padding: "10px 14px", borderRadius: 8, border: "1px solid #333333", background: "#1e1e1e", color: "#f3f4f6", boxSizing: "border-box" }}
           placeholder="https://yourstore.myshopify.com"
           aria-label="Site URL"
         />
@@ -240,7 +240,7 @@ export default function SEOSiteCrawler() {
         <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#94a3b8", marginBottom: 6 }}>
           Focus Keywords <span style={{ fontWeight: 400, color: "#64748b" }}>(press Enter or comma to add)</span>
         </label>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, background: "#1e2235", borderRadius: 8, border: "1px solid #333333", padding: "8px 10px", minHeight: 44, alignItems: "center" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, background: "#1e1e1e", borderRadius: 8, border: "1px solid #333333", padding: "8px 10px", minHeight: 44, alignItems: "center" }}>
           {keywords.map(kw => (
             <span key={kw} style={{ background: "#1e1e1e", color: "#7fffd4", borderRadius: 20, padding: "3px 11px 3px 12px", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
               {kw}
@@ -283,7 +283,7 @@ export default function SEOSiteCrawler() {
               { label: "Medium", value: result.medium, color: "#f59e0b" },
               { label: "Low", value: result.low, color: "#22c55e" },
             ].map(s => (
-              <div key={s.label} style={{ background: "#1e2235", borderRadius: 10, padding: "10px 18px", border: "1px solid #1e1e1e", textAlign: "center" }}>
+              <div key={s.label} style={{ background: "#1e1e1e", borderRadius: 10, padding: "10px 18px", border: "1px solid #1e1e1e", textAlign: "center" }}>
                 <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
                 <div style={{ fontSize: 24, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value ?? 0}</div>
               </div>
@@ -302,11 +302,11 @@ export default function SEOSiteCrawler() {
 
       {/* Stats */}
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 20 }}>
-        <div style={{ background: "#1e2235", borderRadius: 10, padding: "10px 18px", border: "1px solid #1e1e1e" }}>
+        <div style={{ background: "#1e1e1e", borderRadius: 10, padding: "10px 18px", border: "1px solid #1e1e1e" }}>
           <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Crawls</div>
           <div style={{ fontSize: 24, fontWeight: 800, color: "#7fffd4", marginTop: 2 }}>{history.length}</div>
         </div>
-        <div style={{ background: "#1e2235", borderRadius: 10, padding: "10px 18px", border: "1px solid #1e1e1e" }}>
+        <div style={{ background: "#1e1e1e", borderRadius: 10, padding: "10px 18px", border: "1px solid #1e1e1e" }}>
           <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
           <div style={{ fontSize: 24, fontWeight: 800, color: "#7fffd4", marginTop: 2 }}>{analytics.length}</div>
         </div>
@@ -340,6 +340,7 @@ export default function SEOSiteCrawler() {
     </div>
   );
 }
+
 
 
 

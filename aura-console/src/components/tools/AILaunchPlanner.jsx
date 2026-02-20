@@ -3,7 +3,7 @@ import BackButton from "./BackButton";
 
 const THEMES = {
   dark: {
-    bg: "#0b1220",
+    bg: "#111111",
     card: "#111111",
     border: "#1a1a1a",
     text: "#f0f0f0",
@@ -25,7 +25,7 @@ const THEMES = {
     danger: "#dc2626",
   },
   audit: {
-    bg: "#0c1a1c",
+    bg: "#111111",
     card: "#0f2529",
     border: "#17424a",
     text: "#d8f3ff",
@@ -530,4 +530,5 @@ export default function AILaunchPlanner() {
     </div>
   );
 }
+
 

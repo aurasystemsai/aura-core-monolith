@@ -99,7 +99,7 @@ export default function LTVChurnPredictor() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>LTV</div>
           <ul style={{ paddingLeft: 18 }}>
             {ltv.map((l, idx) => (
-              <li key={l.id || idx} style={{ marginBottom: 8, background: "#232336", borderRadius: 8, padding: 8, color: '#f0f0f0' }}>{l.name}</li>
+              <li key={l.id || idx} style={{ marginBottom: 8, background: "#222222", borderRadius: 8, padding: 8, color: '#f0f0f0' }}>{l.name}</li>
             ))}
           </ul>
         </div>
@@ -123,4 +123,5 @@ export default function LTVChurnPredictor() {
     </div>
   );
 }
+
 

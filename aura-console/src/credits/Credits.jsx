@@ -56,7 +56,7 @@ const Credits = () => {
           <span style={{color:'#7fffd4'}}>No pay-as-you-go. Try the free tier or upgrade for more power.</span>
         </div>
 
-        <div style={{background:'#1a2233',borderRadius:10,padding:'22px 22px 18px',margin:'22px 0 0',fontSize:15,boxShadow:'0 4px 32px #0004'}}>
+        <div style={{background:'#111111',borderRadius:10,padding:'22px 22px 18px',margin:'22px 0 0',fontSize:15,boxShadow:'0 4px 32px #0004'}}>
           <div style={{fontWeight:700,fontSize:16,marginBottom:8,color:'#7fffd4'}}>Need more credits or advanced features?</div>
           <div style={{fontSize:14,margin:'0 0 18px',color:'#fff'}}>Explore all plans and features below. No pay-as-you-go—just a free tier to try, and simple subscriptions when you’re ready for more.</div>
           <b>Plans & Features</b>
@@ -161,4 +161,5 @@ const Credits = () => {
 };
 
 export default Credits;
+
 

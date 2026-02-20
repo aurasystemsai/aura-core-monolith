@@ -110,7 +110,7 @@ export default function SiteAuditHealth() {
         value={input}
         onChange={e => setInput(e.target.value)}
         type="text"
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #333333", marginBottom: 16, background: "#1e2235", color: "#f3f4f6", boxSizing: "border-box" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #333333", marginBottom: 16, background: "#1e1e1e", color: "#f3f4f6", boxSizing: "border-box" }}
         placeholder="https://yoursite.com"
         aria-label="Site URL"
         onKeyDown={e => e.key === "Enter" && !loading && input && handleAudit()}
@@ -127,7 +127,7 @@ export default function SiteAuditHealth() {
       {imported && <div style={{ color: "#22c55e", marginBottom: 10, fontSize: 13 }}>✓ Imported: {imported}</div>}
       {error && <div style={{ color: "#ef4444", marginBottom: 12, padding: "10px 14px", background: "#2d1515", borderRadius: 8, fontSize: 14 }}>⚠ {error}</div>}
       {response && (
-        <div style={{ background: "#1e2235", borderRadius: 12, padding: 20, marginBottom: 20, border: "1px solid #1e1e1e" }}>
+        <div style={{ background: "#1e1e1e", borderRadius: 12, padding: 20, marginBottom: 20, border: "1px solid #1e1e1e" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <span style={{ fontWeight: 700, color: "#7fffd4", fontSize: 15 }}>Audit Report</span>
             <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #333333", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
@@ -138,14 +138,14 @@ export default function SiteAuditHealth() {
       {/* Stat Cards */}
       <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
         {[{ label: "Total Audits", value: history.length }, { label: "Events Tracked", value: analytics.length }].map(s => (
-          <div key={s.label} style={{ background: "#1e2235", borderRadius: 10, padding: "14px 22px", border: "1px solid #1e1e1e", minWidth: 130 }}>
+          <div key={s.label} style={{ background: "#1e1e1e", borderRadius: 10, padding: "14px 22px", border: "1px solid #1e1e1e", minWidth: 130 }}>
             <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: "#7fffd4", marginTop: 4 }}>{s.value}</div>
           </div>
         ))}
       </div>
       {/* History */}
-      <div style={{ background: "#1a1f30", borderRadius: 12, padding: 18, marginBottom: 20 }}>
+      <div style={{ background: "#111111", borderRadius: 12, padding: 18, marginBottom: 20 }}>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12, color: "#7fffd4" }}>Audit History</div>
         {history.length === 0 ? (
           <div style={{ color: "#444444", fontSize: 14, textAlign: "center", padding: "24px 0" }}>No audits yet. Enter a URL above to get started.</div>
@@ -166,4 +166,5 @@ export default function SiteAuditHealth() {
     </div>
   );
 }
+
 

@@ -6,7 +6,7 @@ function FeedbackModal({ open, onClose, onSubmit }) {
   if (!open) return null;
   return (
     <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "#0008", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ background: "#232336", borderRadius: 12, padding: 32, minWidth: 340, color: '#f0f0f0' }}>
+      <div style={{ background: "#222222", borderRadius: 12, padding: 32, minWidth: 340, color: '#f0f0f0' }}>
         <h3 style={{ marginBottom: 12 }}>Send Feedback</h3>
         <textarea value={feedback} onChange={e => setFeedback(e.target.value)} style={{ width: "100%", minHeight: 80, borderRadius: 8, border: "1px solid #ccc", marginBottom: 18 }} placeholder="Your feedback..." />
         <div style={{ display: "flex", gap: 12 }}>
@@ -252,7 +252,7 @@ export default function PersonalizationRecommendationEngine() {
       <button onClick={handleQuery} disabled={loading || !query} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Querying..." : "Get Recommendation"}</button>
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {result && (
-        <div style={{ background: "#1e2235", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #1e1e1e" }}>
+        <div style={{ background: "#1e1e1e", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #1e1e1e" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <span style={{ fontWeight: 700, color: "#a3e635", fontSize: 14 }}>Recommendation Result</span>
             <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #333333", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
@@ -279,5 +279,6 @@ export default function PersonalizationRecommendationEngine() {
     </div>
   );
 }
+
 
 

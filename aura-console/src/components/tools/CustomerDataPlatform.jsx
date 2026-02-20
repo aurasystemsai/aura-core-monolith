@@ -8,7 +8,7 @@ function FeedbackModal({ open, onClose, onSubmit }) {
     <div style={{ position: 'fixed', inset: 0, background: '#0008', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ background: '#0a0a0a', borderRadius: 14, padding: 28, minWidth: 340, boxShadow: '0 8px 32px #000a' }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 12, color: '#f3f4f6' }}>Send Feedback</div>
-        <textarea value={text} onChange={e => setText(e.target.value)} rows={4} style={{ width: '100%', background: '#1e2235', color: '#f3f4f6', border: '1px solid #333333', borderRadius: 8, padding: 10, fontSize: 14, boxSizing: 'border-box' }} placeholder='Share your feedback...' />
+        <textarea value={text} onChange={e => setText(e.target.value)} rows={4} style={{ width: '100%', background: '#1e1e1e', color: '#f3f4f6', border: '1px solid #333333', borderRadius: 8, padding: 10, fontSize: 14, boxSizing: 'border-box' }} placeholder='Share your feedback...' />
         <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
           <button onClick={() => { onSubmit(text); setText(''); }} disabled={!text} style={{ background: '#7fffd4', color: '#0a0a0a', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer' }}>Submit</button>
           <button onClick={onClose} style={{ background: '#333333', color: '#f3f4f6', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
@@ -280,4 +280,5 @@ export default function CustomerDataPlatform() {
     </div>
   );
 }
+
 

@@ -818,14 +818,14 @@ export default function CustomDashboardBuilder() {
     <div style={{ background: "#18181b", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f0f0f0' }}>
       <button onClick={() => mainRef.current?.focus()} style={{ position: "absolute", left: -9999, top: 0 }} aria-label="Skip to content">Skip to content</button>
       {devSandbox && (
-        <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+        <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
           <div>
             <div style={{ fontWeight: 800, color: "#f59e0b" }}>Sandbox mode</div>
             <div style={{ color: "#888888", fontSize: 13 }}>API-backed fetches are blocked in dev. Switch to Stage/Prod to sync widgets and data sources.</div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button onClick={() => setEnv("stage")} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Switch to Stage</button>
-            <button onClick={() => setEnv("prod")} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Go Prod</button>
+            <button onClick={() => setEnv("prod")} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Go Prod</button>
           </div>
         </div>
       )}
@@ -838,7 +838,7 @@ export default function CustomDashboardBuilder() {
         {draftSavedAt && <div style={{ color: "#888888", fontSize: 12 }}>Draft saved: {new Date(draftSavedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>}
         <div style={{ color: "#6ee7b7", fontSize: 12 }}>Autosave every 30s.</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button onClick={() => setRole(role === "editor" ? "viewer" : "editor")} style={{ background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>Role: {role}</button>
+          <button onClick={() => setRole(role === "editor" ? "viewer" : "editor")} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>Role: {role}</button>
           <button onClick={() => setEditLocked(!editLocked)} style={{ background: editLocked ? "#7f1d1d" : "#1a1a1a", color: editLocked ? "#fecdd3" : "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>{editLocked ? "Unlock" : "Lock edits"}</button>
           <button onClick={() => {
             const raw = localStorage.getItem("cdb-draft");
@@ -871,7 +871,7 @@ export default function CustomDashboardBuilder() {
         {editLocked && <div style={{ background: "#2f1114", border: "1px solid #444444", borderRadius: 10, padding: 10, color: "#fecdd3" }}>View-only: edits and publish are disabled.</div>}
       </div>
       <div style={{ display: "grid", gap: 12, marginBottom: 18 }}>
-        <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+        <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
           <div>
             <div style={{ fontWeight: 800, color: "#7fffd4" }}>Quality & Guardrails</div>
             <div style={{ color: "#888888", fontSize: 13 }}>Complexity score {complexityScore} · Risk: {riskLevel} · {freshnessLabel} · Perf: {perfSummary()}</div>
@@ -880,90 +880,90 @@ export default function CustomDashboardBuilder() {
                 <span style={{ color: "#888888", fontSize: 12 }}>Lint findings:</span>
                 <span style={{ background: "#2f1114", color: "#fecdd3", borderRadius: 8, padding: "2px 8px", fontSize: 12 }}>High: {lintSummary.high || 0}</span>
                 <span style={{ background: "#2f2311", color: "#fef3c7", borderRadius: 8, padding: "2px 8px", fontSize: 12 }}>Med: {lintSummary.medium || 0}</span>
-                <span style={{ background: "#111827", color: "#cbd5e1", borderRadius: 8, padding: "2px 8px", fontSize: 12 }}>Low: {lintSummary.low || 0}</span>
+                <span style={{ background: "#111111", color: "#cbd5e1", borderRadius: 8, padding: "2px 8px", fontSize: 12 }}>Low: {lintSummary.low || 0}</span>
                 <button onClick={() => setLintAcknowledged(true)} disabled={lintFindings.length === 0} style={{ background: lintAcknowledged ? "#14532d" : "#1a1a1a", color: lintAcknowledged ? "#bbf7d0" : "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px", fontWeight: 700, cursor: lintFindings.length === 0 ? "not-allowed" : "pointer", opacity: lintFindings.length === 0 ? 0.6 : 1, fontSize: 12 }}>{lintAcknowledged ? "Acknowledged" : "Acknowledge"}</button>
               </div>
             )}
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button onClick={() => { if (!ensureWritable()) return; runLint(); }} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>Run lint</button>
-            <button onClick={() => { if (!ensureWritable()) return; handlePublish(); }} style={{ background: published ? "#0ea5e9" : "#22c55e", color: published ? "#e0f2fe" : "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>{published ? "Published" : "Publish"}</button>
+            <button onClick={() => { if (!ensureWritable()) return; handlePublish(); }} style={{ background: published ? "#0ea5e9" : "#22c55e", color: published ? "#e0f2fe" : "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>{published ? "Published" : "Publish"}</button>
             <button onClick={handleShare} disabled={devSandbox} style={{ background: devSandbox ? "#1a1a1a" : "#6366f1", color: devSandbox ? "#888888" : "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: devSandbox ? "not-allowed" : "pointer", opacity: devSandbox ? 0.6 : 1 }}>Share JSON</button>
             <button onClick={() => { if (!ensureWritable()) return; duplicateDashboard(); }} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>Duplicate</button>
-            <button onClick={() => { if (!ensureWritable()) return; schedulePublish(); }} style={{ background: "#0b1221", color: "#bae6fd", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>Schedule</button>
+            <button onClick={() => { if (!ensureWritable()) return; schedulePublish(); }} style={{ background: "#111111", color: "#bae6fd", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>Schedule</button>
             <button onClick={() => { if (!ensureWritable()) return; setWebhookEnabled(!webhookEnabled); }} style={{ background: webhookEnabled ? "#0ea5e9" : "#1a1a1a", color: webhookEnabled ? "#e0f2fe" : "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>{webhookEnabled ? "Webhook On" : "Webhook Off"}</button>
             <button onClick={generatePreviewToken} disabled={devSandbox} style={{ background: devSandbox ? "#1a1a1a" : "#333333", color: devSandbox ? "#888888" : "#e0f2fe", border: "1px solid #1e1e1e", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: devSandbox ? "not-allowed" : "pointer", opacity: devSandbox ? 0.6 : 1 }}>Share Preview</button>
             <button onClick={measureLatency} style={{ background: "#1a1a1a", color: "#7dd3fc", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>Measure latency</button>
-            <button onClick={simulateLoadTest} style={{ background: simulatedLoad ? "#444444" : "#f97316", color: simulatedLoad ? "#f0f0f0" : "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>{simulatedLoad ? "Load active" : "Simulate load"}</button>
-            <button onClick={cleanupDashboard} style={{ background: "#0b1221", color: "#a5f3fc", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>Cleanup</button>
+            <button onClick={simulateLoadTest} style={{ background: simulatedLoad ? "#444444" : "#f97316", color: simulatedLoad ? "#f0f0f0" : "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>{simulatedLoad ? "Load active" : "Simulate load"}</button>
+            <button onClick={cleanupDashboard} style={{ background: "#111111", color: "#a5f3fc", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>Cleanup</button>
             <button onClick={healStaleSources} style={{ background: "#14532d", color: "#bbf7d0", border: "1px solid #166534", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>Heal stale</button>
             <button onClick={() => setMaintenanceFreeze(m => !m)} style={{ background: maintenanceFreeze ? "#7f1d1d" : "#1a1a1a", color: maintenanceFreeze ? "#fecdd3" : "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>{maintenanceFreeze ? "Freeze: ON" : "Freeze: OFF"}</button>
-            <button onClick={() => { if (watchlist.length === 0) { setError("Add watchlist items to simulate SLA breach."); return; } setSlaBreach(true); setAuditLog(prev => [{ at: Date.now(), message: "SLA breach simulated for watchlist" }, ...prev].slice(0, 8)); runLint(); }} style={{ background: slaBreach ? "#7f1d1d" : "#f59e0b", color: slaBreach ? "#fecdd3" : "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>{slaBreach ? "Breach active" : "Simulate SLA breach"}</button>
+            <button onClick={() => { if (watchlist.length === 0) { setError("Add watchlist items to simulate SLA breach."); return; } setSlaBreach(true); setAuditLog(prev => [{ at: Date.now(), message: "SLA breach simulated for watchlist" }, ...prev].slice(0, 8)); runLint(); }} style={{ background: slaBreach ? "#7f1d1d" : "#f59e0b", color: slaBreach ? "#fecdd3" : "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>{slaBreach ? "Breach active" : "Simulate SLA breach"}</button>
           </div>
         </div>
-        <div style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
+        <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
             <div style={{ color: "#cbd5e1", fontWeight: 700, fontSize: 13 }}>Guardrail recap</div>
             <div style={{ color: "#888888", fontSize: 12 }}>Freeze, review, lint, PII, owners</div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-            <span style={{ background: maintenanceFreeze ? "#2f1114" : "#0b1221", color: maintenanceFreeze ? "#fecdd3" : "#bbf7d0", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Freeze: {maintenanceFreeze ? "Active" : "Off"}</span>
-            <span style={{ background: reviewStatus !== "approved" ? "#2f2311" : "#0b1221", color: reviewStatus !== "approved" ? "#fcd34d" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Review: {reviewStatus}</span>
-            <span style={{ background: highLintCount > 0 ? "#2f1114" : "#0b1221", color: highLintCount > 0 ? "#fecdd3" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>High lint: {highLintCount}</span>
-            <span style={{ background: missingPiiCount > 0 ? "#2f2311" : "#0b1221", color: missingPiiCount > 0 ? "#fcd34d" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>PII unchecked: {missingPiiCount}</span>
-            <span style={{ background: missingOwnersCount > 0 ? "#2f2311" : "#0b1221", color: missingOwnersCount > 0 ? "#fcd34d" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Owners missing: {missingOwnersCount}</span>
+            <span style={{ background: maintenanceFreeze ? "#2f1114" : "#111111", color: maintenanceFreeze ? "#fecdd3" : "#bbf7d0", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Freeze: {maintenanceFreeze ? "Active" : "Off"}</span>
+            <span style={{ background: reviewStatus !== "approved" ? "#2f2311" : "#111111", color: reviewStatus !== "approved" ? "#fcd34d" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Review: {reviewStatus}</span>
+            <span style={{ background: highLintCount > 0 ? "#2f1114" : "#111111", color: highLintCount > 0 ? "#fecdd3" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>High lint: {highLintCount}</span>
+            <span style={{ background: missingPiiCount > 0 ? "#2f2311" : "#111111", color: missingPiiCount > 0 ? "#fcd34d" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>PII unchecked: {missingPiiCount}</span>
+            <span style={{ background: missingOwnersCount > 0 ? "#2f2311" : "#111111", color: missingOwnersCount > 0 ? "#fcd34d" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Owners missing: {missingOwnersCount}</span>
             <span style={{ background: targetCoverage === 100 ? "#111111" : "#2f2311", color: targetCoverage === 100 ? "#bbf7d0" : "#fcd34d", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Target coverage: {targetCoverage}%</span>
             <span style={{ background: ownerCoverage === 100 ? "#111111" : "#2f2311", color: ownerCoverage === 100 ? "#bbf7d0" : "#fcd34d", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Owner coverage: {ownerCoverage}%</span>
             <span style={{ background: piiCoverage === 100 ? "#111111" : "#2f2311", color: piiCoverage === 100 ? "#bbf7d0" : "#fcd34d", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>PII coverage: {piiCoverage}%</span>
             <span style={{ background: watchlistMissingTargets.length > 0 ? "#2f2311" : "#111111", color: watchlistMissingTargets.length > 0 ? "#fcd34d" : "#bbf7d0", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Watchlist gaps: {watchlistMissingTargets.length}</span>
             <button onClick={copyGuardrailSummary} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>Copy summary</button>
-            <button onClick={() => setShowGuardrailText(s => !s)} style={{ background: "#0b1221", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>{showGuardrailText ? "Hide text" : "Show text"}</button>
+            <button onClick={() => setShowGuardrailText(s => !s)} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>{showGuardrailText ? "Hide text" : "Show text"}</button>
           </div>
           {showGuardrailText && (
             <div style={{ display: "grid", gap: 8 }}>
-              <textarea readOnly value={buildGuardrailSummary()} style={{ width: "100%", background: "#0b1221", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 10, padding: 10, fontSize: 12 }} rows={2} aria-label="Guardrail summary text" />
-              <textarea readOnly value={buildSlaSnapshot()} style={{ width: "100%", background: "#0b1221", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 10, padding: 10, fontSize: 12 }} rows={2} aria-label="SLA snapshot text" />
+              <textarea readOnly value={buildGuardrailSummary()} style={{ width: "100%", background: "#111111", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 10, padding: 10, fontSize: 12 }} rows={2} aria-label="Guardrail summary text" />
+              <textarea readOnly value={buildSlaSnapshot()} style={{ width: "100%", background: "#111111", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 10, padding: 10, fontSize: 12 }} rows={2} aria-label="SLA snapshot text" />
               {watchlistMissingTargets.length > 0 && (
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                   <div style={{ color: "#888888", fontSize: 12 }}>Watchlist gaps: {watchlistMissingTargets.join(", ")}</div>
-                  <button onClick={copyWatchlistGaps} style={{ background: "#0b1221", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>Copy watchlist gaps</button>
-                  <button onClick={fillWatchlistTargets} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer", fontSize: 12 }}>Fill watchlist targets</button>
+                  <button onClick={copyWatchlistGaps} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>Copy watchlist gaps</button>
+                  <button onClick={fillWatchlistTargets} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer", fontSize: 12 }}>Fill watchlist targets</button>
                 </div>
               )}
             </div>
           )}
         </div>
-        <div style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
+        <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
             <div style={{ color: "#cbd5e1", fontWeight: 700, fontSize: 13 }}>Coverage & lint</div>
             <div style={{ color: "#888888", fontSize: 12 }}>Targets and last lint</div>
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ background: missingTargetsCount > 0 ? "#2f2311" : "#0b1221", color: missingTargetsCount > 0 ? "#fcd34d" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Missing targets: {missingTargetsCount}</span>
+            <span style={{ background: missingTargetsCount > 0 ? "#2f2311" : "#111111", color: missingTargetsCount > 0 ? "#fcd34d" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Missing targets: {missingTargetsCount}</span>
             <span style={{ color: "#888888", fontSize: 12 }}>Watchlist missing: {dashboard.filter(w => watchlist.includes(w.id) && !targets[w.id]).length}</span>
-            <button onClick={setAllTargets} disabled={dashboard.length === 0} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: dashboard.length === 0 ? "not-allowed" : "pointer", opacity: dashboard.length === 0 ? 0.6 : 1, fontSize: 12 }}>Fill missing targets</button>
+            <button onClick={setAllTargets} disabled={dashboard.length === 0} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: dashboard.length === 0 ? "not-allowed" : "pointer", opacity: dashboard.length === 0 ? 0.6 : 1, fontSize: 12 }}>Fill missing targets</button>
             <div style={{ color: "#888888", fontSize: 12 }}>{lintRunAt ? `Lint at ${new Date(lintRunAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Lint not run yet"}</div>
             <button onClick={runLint} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>Run lint now</button>
           </div>
           <div style={{ display: "grid", gap: 6 }}>
             <div style={{ color: "#888888", fontSize: 12 }}>Target coverage: {targetCoverage}%</div>
-            <div style={{ height: 8, background: "#0b1221", borderRadius: 6, overflow: "hidden", border: "1px solid #1a1a1a" }}>
+            <div style={{ height: 8, background: "#111111", borderRadius: 6, overflow: "hidden", border: "1px solid #1a1a1a" }}>
               <div style={{ width: `${targetCoverage}%`, height: "100%", background: targetCoverage === 100 ? "#22c55e" : targetCoverage >= 70 ? "#fbbf24" : "#ef4444", transition: "width 0.2s ease" }} />
             </div>
           </div>
         </div>
-        <div style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
+        <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
             <div style={{ color: "#cbd5e1", fontWeight: 700, fontSize: 13 }}>Data source health</div>
             <div style={{ color: "#888888", fontSize: 12 }}>Stale & unbound check</div>
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ background: staleSources.length > 0 ? "#2f1114" : "#0b1221", color: staleSources.length > 0 ? "#fecdd3" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Stale: {staleSources.length}</span>
-            <span style={{ background: unboundSources.length > 0 ? "#2f2311" : "#0b1221", color: unboundSources.length > 0 ? "#fcd34d" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Unbound: {unboundSources.length}</span>
-            <button onClick={autoRecheckSources} disabled={dataSources.length === 0} style={{ background: "#0b1221", color: dataSources.length === 0 ? "#888888" : "#7dd3fc", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: dataSources.length === 0 ? "not-allowed" : "pointer", opacity: dataSources.length === 0 ? 0.6 : 1, fontSize: 12 }}>Auto re-check</button>
+            <span style={{ background: staleSources.length > 0 ? "#2f1114" : "#111111", color: staleSources.length > 0 ? "#fecdd3" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Stale: {staleSources.length}</span>
+            <span style={{ background: unboundSources.length > 0 ? "#2f2311" : "#111111", color: unboundSources.length > 0 ? "#fcd34d" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Unbound: {unboundSources.length}</span>
+            <button onClick={autoRecheckSources} disabled={dataSources.length === 0} style={{ background: "#111111", color: dataSources.length === 0 ? "#888888" : "#7dd3fc", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: dataSources.length === 0 ? "not-allowed" : "pointer", opacity: dataSources.length === 0 ? 0.6 : 1, fontSize: 12 }}>Auto re-check</button>
             <button onClick={healStaleSources} disabled={dataSources.length === 0} style={{ background: "#14532d", color: dataSources.length === 0 ? "#888888" : "#bbf7d0", border: "1px solid #166534", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: dataSources.length === 0 ? "not-allowed" : "pointer", opacity: dataSources.length === 0 ? 0.6 : 1, fontSize: 12 }}>Heal stale</button>
             <button onClick={assignOwnersForMissing} disabled={missingOwnersCount === 0} style={{ background: "#1a1a1a", color: missingOwnersCount === 0 ? "#888888" : "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: missingOwnersCount === 0 ? "not-allowed" : "pointer", opacity: missingOwnersCount === 0 ? 0.6 : 1, fontSize: 12 }}>Assign owners</button>
-            <button onClick={markPiiForMissing} disabled={missingPiiCount === 0} style={{ background: "#0b1221", color: missingPiiCount === 0 ? "#888888" : "#a5f3fc", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: missingPiiCount === 0 ? "not-allowed" : "pointer", opacity: missingPiiCount === 0 ? 0.6 : 1, fontSize: 12 }}>Mark PII missing</button>
+            <button onClick={markPiiForMissing} disabled={missingPiiCount === 0} style={{ background: "#111111", color: missingPiiCount === 0 ? "#888888" : "#a5f3fc", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: missingPiiCount === 0 ? "not-allowed" : "pointer", opacity: missingPiiCount === 0 ? 0.6 : 1, fontSize: 12 }}>Mark PII missing</button>
           </div>
           {(staleSources.length > 0 || unboundSources.length > 0) && (
             <div style={{ display: "grid", gap: 4, color: "#888888", fontSize: 12 }}>
@@ -980,29 +980,29 @@ export default function CustomDashboardBuilder() {
           {dataSources.length > 0 && (
             <div style={{ display: "grid", gap: 6 }}>
               <div style={{ color: "#888888", fontSize: 12 }}>Owner coverage: {ownerCoverage}%</div>
-              <div style={{ height: 8, background: "#0b1221", borderRadius: 6, overflow: "hidden", border: "1px solid #1a1a1a" }}>
+              <div style={{ height: 8, background: "#111111", borderRadius: 6, overflow: "hidden", border: "1px solid #1a1a1a" }}>
                 <div style={{ width: `${ownerCoverage}%`, height: "100%", background: ownerCoverage === 100 ? "#22c55e" : ownerCoverage >= 70 ? "#fbbf24" : "#ef4444", transition: "width 0.2s ease" }} />
               </div>
               <div style={{ color: "#888888", fontSize: 12 }}>PII coverage: {piiCoverage}%</div>
-              <div style={{ height: 8, background: "#0b1221", borderRadius: 6, overflow: "hidden", border: "1px solid #1a1a1a" }}>
+              <div style={{ height: 8, background: "#111111", borderRadius: 6, overflow: "hidden", border: "1px solid #1a1a1a" }}>
                 <div style={{ width: `${piiCoverage}%`, height: "100%", background: piiCoverage === 100 ? "#22c55e" : piiCoverage >= 70 ? "#fbbf24" : "#ef4444", transition: "width 0.2s ease" }} />
               </div>
             </div>
           )}
         </div>
-        <div style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
+        <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             <label style={{ color: "#cbd5e1", fontSize: 13, display: "flex", gap: 6, alignItems: "center" }}>Perf budget (ms)
-              <input type="number" min="100" max="2000" value={perfBudget} onChange={e => setPerfBudget(Math.max(50, Number(e.target.value) || 0))} style={{ width: 90, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px" }} />
+              <input type="number" min="100" max="2000" value={perfBudget} onChange={e => setPerfBudget(Math.max(50, Number(e.target.value) || 0))} style={{ width: 90, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px" }} />
             </label>
             <div style={{ color: "#888888", fontSize: 13 }}>Avg latency: {averageLatency()}ms · {perfSummary()}</div>
           </div>
-          <div style={{ height: 8, background: "#0b1221", borderRadius: 6, overflow: "hidden", border: "1px solid #1a1a1a" }}>
+          <div style={{ height: 8, background: "#111111", borderRadius: 6, overflow: "hidden", border: "1px solid #1a1a1a" }}>
             <div style={{ width: `${Math.min(100, Math.max(0, (averageLatency() / (perfBudget || 1)) * 100))}%`, height: "100%", background: averageLatency() <= perfBudget ? "#22c55e" : averageLatency() <= perfBudget * 1.4 ? "#f59e0b" : "#ef4444", transition: "width 0.3s ease" }} />
           </div>
         </div>
         {lintFindings.length > 0 && (
-          <div style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "grid", gap: 6 }}>
+          <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "grid", gap: 6 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               <div style={{ color: "#cbd5e1", fontWeight: 700, fontSize: 13 }}>Open lint findings</div>
               <button onClick={() => setLintFindings([])} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>Clear findings</button>
@@ -1020,7 +1020,7 @@ export default function CustomDashboardBuilder() {
             Live state: published {publishedAt ? new Date(publishedAt).toLocaleString() : "just now"} ({env}).
           </div>
         )}
-        <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "grid", gap: 6 }}>
+        <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "grid", gap: 6 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
             <div style={{ color: "#cbd5e1", fontWeight: 700, fontSize: 13 }}>SLA & owners</div>
             <div style={{ color: "#888888", fontSize: 12 }}>Coverage and alerts snapshot</div>
@@ -1029,24 +1029,24 @@ export default function CustomDashboardBuilder() {
             <span style={{ background: ownerCoverage === 100 ? "#111111" : "#2f2311", color: ownerCoverage === 100 ? "#bbf7d0" : "#fcd34d", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Owner coverage: {ownerCoverage}%</span>
             <span style={{ background: piiCoverage === 100 ? "#111111" : "#2f2311", color: piiCoverage === 100 ? "#bbf7d0" : "#fcd34d", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>PII coverage: {piiCoverage}%</span>
             <span style={{ background: watchlist.length > 0 ? "#1e1e1e" : "#111111", color: "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Watchlist: {watchlist.length}</span>
-            <span style={{ background: slaBreach ? "#2f1114" : "#0b1221", color: slaBreach ? "#fecdd3" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>SLA breach: {slaBreach ? "Simulated" : "None"}</span>
+            <span style={{ background: slaBreach ? "#2f1114" : "#111111", color: slaBreach ? "#fecdd3" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>SLA breach: {slaBreach ? "Simulated" : "None"}</span>
             {watchlistMissingTargets.length > 0 && <span style={{ background: "#2f2311", color: "#fcd34d", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Watchlist missing targets: {watchlistMissingTargets.length}</span>}
-            <button onClick={copySlaSnapshot} style={{ background: "#0b1221", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>Copy SLA snapshot</button>
+            <button onClick={copySlaSnapshot} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>Copy SLA snapshot</button>
           </div>
           <div style={{ display: "grid", gap: 6 }}>
             <div style={{ color: "#888888", fontSize: 12 }}>Owner coverage</div>
-            <div style={{ height: 8, background: "#0b1221", borderRadius: 6, overflow: "hidden", border: "1px solid #1a1a1a" }}>
+            <div style={{ height: 8, background: "#111111", borderRadius: 6, overflow: "hidden", border: "1px solid #1a1a1a" }}>
               <div style={{ width: `${ownerCoverage}%`, height: "100%", background: ownerCoverage === 100 ? "#22c55e" : ownerCoverage >= 70 ? "#fbbf24" : "#ef4444", transition: "width 0.2s ease" }} />
             </div>
             <div style={{ color: "#888888", fontSize: 12 }}>PII coverage</div>
-            <div style={{ height: 8, background: "#0b1221", borderRadius: 6, overflow: "hidden", border: "1px solid #1a1a1a" }}>
+            <div style={{ height: 8, background: "#111111", borderRadius: 6, overflow: "hidden", border: "1px solid #1a1a1a" }}>
               <div style={{ width: `${piiCoverage}%`, height: "100%", background: piiCoverage === 100 ? "#22c55e" : piiCoverage >= 70 ? "#fbbf24" : "#ef4444", transition: "width 0.2s ease" }} />
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
               <button onClick={assignOwnersForMissing} disabled={missingOwnersCount === 0} style={{ background: "#1a1a1a", color: missingOwnersCount === 0 ? "#888888" : "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: missingOwnersCount === 0 ? "not-allowed" : "pointer", opacity: missingOwnersCount === 0 ? 0.6 : 1, fontSize: 12 }}>Assign owners</button>
-              <button onClick={markPiiForMissing} disabled={missingPiiCount === 0} style={{ background: "#0b1221", color: missingPiiCount === 0 ? "#888888" : "#a5f3fc", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: missingPiiCount === 0 ? "not-allowed" : "pointer", opacity: missingPiiCount === 0 ? 0.6 : 1, fontSize: 12 }}>Mark PII missing</button>
-              <button onClick={setAllTargets} disabled={dashboard.length === 0} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: dashboard.length === 0 ? "not-allowed" : "pointer", opacity: dashboard.length === 0 ? 0.6 : 1, fontSize: 12 }}>Fill targets</button>
-              <button onClick={() => { setSlaBreach(false); setAuditLog(prev => [{ at: Date.now(), message: "Cleared SLA breach from banner" }, ...prev].slice(0, 8)); runLint(); }} disabled={!slaBreach} style={{ background: "#0b1221", color: slaBreach ? "#f0f0f0" : "#888888", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: slaBreach ? "pointer" : "not-allowed", opacity: slaBreach ? 1 : 0.6, fontSize: 12 }}>Clear SLA breach</button>
+              <button onClick={markPiiForMissing} disabled={missingPiiCount === 0} style={{ background: "#111111", color: missingPiiCount === 0 ? "#888888" : "#a5f3fc", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: missingPiiCount === 0 ? "not-allowed" : "pointer", opacity: missingPiiCount === 0 ? 0.6 : 1, fontSize: 12 }}>Mark PII missing</button>
+              <button onClick={setAllTargets} disabled={dashboard.length === 0} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: dashboard.length === 0 ? "not-allowed" : "pointer", opacity: dashboard.length === 0 ? 0.6 : 1, fontSize: 12 }}>Fill targets</button>
+              <button onClick={() => { setSlaBreach(false); setAuditLog(prev => [{ at: Date.now(), message: "Cleared SLA breach from banner" }, ...prev].slice(0, 8)); runLint(); }} disabled={!slaBreach} style={{ background: "#111111", color: slaBreach ? "#f0f0f0" : "#888888", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: slaBreach ? "pointer" : "not-allowed", opacity: slaBreach ? 1 : 0.6, fontSize: 12 }}>Clear SLA breach</button>
             </div>
           </div>
         </div>
@@ -1063,7 +1063,7 @@ export default function CustomDashboardBuilder() {
           <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 10, color: "#cbd5e1" }}>Template applied: {templateApplied}</div>
         )}
         {publishPreview.added.length + publishPreview.removed.length > 0 && (
-          <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, color: "#f0f0f0", display: "grid", gap: 6 }}>
+          <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, color: "#f0f0f0", display: "grid", gap: 6 }}>
             <div style={{ fontWeight: 800 }}>Publish diff</div>
             {publishPreview.added.length > 0 && <div style={{ color: "#22c55e" }}>Added: {publishPreview.added.join(", ")}</div>}
             {publishPreview.removed.length > 0 && <div style={{ color: "#fbbf24" }}>Removed: {publishPreview.removed.join(", ")}</div>}
@@ -1082,7 +1082,7 @@ export default function CustomDashboardBuilder() {
           if (!metadata.title || !metadata.owner || !metadata.tags) blockers.push("Metadata");
           if (blockers.length === 0) return null;
           return (
-            <div style={{ background: "#111827", border: "1px solid #1a1a1a", borderRadius: 12, padding: 10, color: "#fcd34d", fontSize: 13, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 10, color: "#fcd34d", fontSize: 13, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <span style={{ fontWeight: 700, color: "#fde68a" }}>Publish checklist:</span>
               {blockers.map((b, idx) => (
                 <span key={idx} style={{ background: "#1a1a1a", border: "1px solid #333333", borderRadius: 10, padding: "4px 8px", color: "#cbd5e1", fontSize: 12 }}>{b}</span>
@@ -1106,41 +1106,41 @@ export default function CustomDashboardBuilder() {
           </div>
         )}
         {webhookLog && (
-          <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: 10, color: "#bae6fd" }}>Webhook: {webhookLog}</div>
+          <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: 10, color: "#bae6fd" }}>Webhook: {webhookLog}</div>
         )}
       </div>
       <div style={{ marginBottom: 18, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-        <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "10px 12px", fontWeight: 700 }}>
+        <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "10px 12px", fontWeight: 700 }}>
           <option value="dev">Dev</option>
           <option value="stage">Stage</option>
           <option value="prod">Prod</option>
         </select>
         <button onClick={fetchWidgets} disabled={devSandbox} style={{ background: devSandbox ? "#1a1a1a" : "#6366f1", color: devSandbox ? "#888888" : "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: devSandbox ? "not-allowed" : "pointer", opacity: devSandbox ? 0.7 : 1 }}>Load Widget Library</button>
         <button onClick={fetchDataSources} disabled={devSandbox} style={{ background: devSandbox ? "#1a1a1a" : "#0ea5e9", color: devSandbox ? "#888888" : "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: devSandbox ? "not-allowed" : "pointer", marginLeft: 0, opacity: devSandbox ? 0.7 : 1 }}>Load Data Sources</button>
-        <button onClick={refreshSources} disabled={Object.keys(freshness).length === 0} style={{ background: Object.keys(freshness).length === 0 ? "#1a1a1a" : "#22c55e", color: Object.keys(freshness).length === 0 ? "#888888" : "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: Object.keys(freshness).length === 0 ? "not-allowed" : "pointer", opacity: Object.keys(freshness).length === 0 ? 0.6 : 1 }}>Refresh Sources</button>
-          <button onClick={autoRecheckSources} disabled={Object.keys(freshness).length === 0} style={{ background: "#0b1221", color: Object.keys(freshness).length === 0 ? "#888888" : "#7dd3fc", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: Object.keys(freshness).length === 0 ? "not-allowed" : "pointer", opacity: Object.keys(freshness).length === 0 ? 0.6 : 1 }}>Auto Re-check</button>
-        <input value={schedule} onChange={e => { setSchedule(e.target.value); setUnsaved(true); }} style={{ background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px", fontWeight: 600 }} aria-label="Publish schedule" />
+        <button onClick={refreshSources} disabled={Object.keys(freshness).length === 0} style={{ background: Object.keys(freshness).length === 0 ? "#1a1a1a" : "#22c55e", color: Object.keys(freshness).length === 0 ? "#888888" : "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: Object.keys(freshness).length === 0 ? "not-allowed" : "pointer", opacity: Object.keys(freshness).length === 0 ? 0.6 : 1 }}>Refresh Sources</button>
+          <button onClick={autoRecheckSources} disabled={Object.keys(freshness).length === 0} style={{ background: "#111111", color: Object.keys(freshness).length === 0 ? "#888888" : "#7dd3fc", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: Object.keys(freshness).length === 0 ? "not-allowed" : "pointer", opacity: Object.keys(freshness).length === 0 ? 0.6 : 1 }}>Auto Re-check</button>
+        <input value={schedule} onChange={e => { setSchedule(e.target.value); setUnsaved(true); }} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px", fontWeight: 600 }} aria-label="Publish schedule" />
       </div>
       <div style={{ display: "grid", gap: 10, marginBottom: 18 }}>
         <div style={{ fontWeight: 700, color: "#f0f0f0" }}>Metadata & compliance</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <input value={metadata.title} onChange={e => { setMetadata({ ...metadata, title: e.target.value }); setUnsaved(true); }} placeholder="Title" style={{ flex: 1, minWidth: 160, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
-          <input value={metadata.owner} onChange={e => { setMetadata({ ...metadata, owner: e.target.value }); setUnsaved(true); }} placeholder="Owner" style={{ flex: 1, minWidth: 160, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
-          <input value={metadata.tags} onChange={e => { setMetadata({ ...metadata, tags: e.target.value }); setUnsaved(true); }} placeholder="Tags (comma separated)" style={{ flex: 2, minWidth: 200, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
+          <input value={metadata.title} onChange={e => { setMetadata({ ...metadata, title: e.target.value }); setUnsaved(true); }} placeholder="Title" style={{ flex: 1, minWidth: 160, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
+          <input value={metadata.owner} onChange={e => { setMetadata({ ...metadata, owner: e.target.value }); setUnsaved(true); }} placeholder="Owner" style={{ flex: 1, minWidth: 160, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
+          <input value={metadata.tags} onChange={e => { setMetadata({ ...metadata, tags: e.target.value }); setUnsaved(true); }} placeholder="Tags (comma separated)" style={{ flex: 2, minWidth: 200, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
         </div>
-        <textarea value={runbook} onChange={e => { setRunbook(e.target.value); setUnsaved(true); }} rows={2} placeholder="Runbook / Ops notes (e.g., how to respond to anomalies)" style={{ width: "100%", background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 10px", fontSize: 13 }} />
+        <textarea value={runbook} onChange={e => { setRunbook(e.target.value); setUnsaved(true); }} rows={2} placeholder="Runbook / Ops notes (e.g., how to respond to anomalies)" style={{ width: "100%", background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 10px", fontSize: 13 }} />
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <select value={escalationChannel} onChange={e => { setEscalationChannel(e.target.value); setUnsaved(true); }} style={{ background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700 }}>
+          <select value={escalationChannel} onChange={e => { setEscalationChannel(e.target.value); setUnsaved(true); }} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700 }}>
             <option value="slack">Slack</option>
             <option value="email">Email</option>
             <option value="pager">Pager</option>
           </select>
-          <input value={escalationTarget} onChange={e => { setEscalationTarget(e.target.value); setUnsaved(true); }} placeholder="Escalation target (channel, email, rotation)" style={{ flex: 1, minWidth: 200, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
+          <input value={escalationTarget} onChange={e => { setEscalationTarget(e.target.value); setUnsaved(true); }} placeholder="Escalation target (channel, email, rotation)" style={{ flex: 1, minWidth: 200, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
           <div style={{ color: "#888888", fontSize: 12 }}>Alert routing for on-call.</div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <input value={reviewer} onChange={e => { setReviewer(e.target.value); setUnsaved(true); }} placeholder="Reviewer" style={{ flex: 1, minWidth: 160, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
-          <select value={reviewStatus} onChange={e => { setReviewStatus(e.target.value); setUnsaved(true); }} style={{ background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700 }}>
+          <input value={reviewer} onChange={e => { setReviewer(e.target.value); setUnsaved(true); }} placeholder="Reviewer" style={{ flex: 1, minWidth: 160, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
+          <select value={reviewStatus} onChange={e => { setReviewStatus(e.target.value); setUnsaved(true); }} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700 }}>
             <option value="pending">Pending</option>
             <option value="requested">Requested</option>
             <option value="approved">Approved</option>
@@ -1150,18 +1150,18 @@ export default function CustomDashboardBuilder() {
           <button onClick={() => { setReviewStatus("requested"); setUnsaved(true); setAuditLog(prev => [{ at: Date.now(), message: "Review requested" }, ...prev].slice(0, 8)); }} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>Request review</button>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <input value={versionLabel} onChange={e => { setVersionLabel(e.target.value); setUnsaved(true); }} placeholder="Version label (e.g., Q1 refresh)" style={{ flex: 1, minWidth: 200, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
-          <input value={versionNotes} onChange={e => { setVersionNotes(e.target.value); setUnsaved(true); }} placeholder="Version notes" style={{ flex: 2, minWidth: 240, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
+          <input value={versionLabel} onChange={e => { setVersionLabel(e.target.value); setUnsaved(true); }} placeholder="Version label (e.g., Q1 refresh)" style={{ flex: 1, minWidth: 200, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
+          <input value={versionNotes} onChange={e => { setVersionNotes(e.target.value); setUnsaved(true); }} placeholder="Version notes" style={{ flex: 2, minWidth: 240, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
         </div>
       </div>
       <div style={{ display: "grid", gap: 10, marginBottom: 18 }}>
         <div style={{ fontWeight: 700, color: "#f0f0f0" }}>Layout & Targets</div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
           <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#cbd5e1" }}>Columns
-            <input type="number" min="1" max="6" value={layoutCols} onChange={e => setLayoutCols(Number(e.target.value) || 1)} style={{ width: 64, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px" }} />
+            <input type="number" min="1" max="6" value={layoutCols} onChange={e => setLayoutCols(Number(e.target.value) || 1)} style={{ width: 64, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px" }} />
           </label>
           <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#cbd5e1" }}>Row height
-            <input type="number" min="120" max="480" value={rowHeight} onChange={e => setRowHeight(Number(e.target.value) || 120)} style={{ width: 80, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px" }} /> px
+            <input type="number" min="120" max="480" value={rowHeight} onChange={e => setRowHeight(Number(e.target.value) || 120)} style={{ width: 80, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px" }} /> px
           </label>
           <div style={{ color: "#888888", fontSize: 13 }}>Preview: {layoutCols} cols · {rowHeight}px rows</div>
           {watchlist.length > 0 && <div style={{ color: "#7dd3fc", fontSize: 13 }}>Watchlist: {watchlist.length} widget{watchlist.length > 1 ? "s" : ""}</div>}
@@ -1169,16 +1169,16 @@ export default function CustomDashboardBuilder() {
         <div style={{ display: "grid", gap: 8 }}>
           <div style={{ color: "#888888", fontSize: 13 }}>Set target notes per widget</div>
           {dashboard.length > 0 && (
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: 8 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: 8 }}>
               <input value={defaultTarget} onChange={e => { setDefaultTarget(e.target.value); setUnsaved(true); }} placeholder="Default target" style={{ minWidth: 180, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
-              <button onClick={setAllTargets} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Apply to missing targets</button>
+              <button onClick={setAllTargets} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Apply to missing targets</button>
               <div style={{ color: "#888888", fontSize: 12 }}>Uses saved default or prompts you.</div>
             </div>
           )}
           {dashboard.map((w, idx) => (
             <div key={w.id} style={{ display: "flex", gap: 8, alignItems: "center", background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: 8 }}>
               <div style={{ color: "#7dd3fc", fontWeight: 700, minWidth: 140 }}>{w.name}</div>
-              <input value={targets[w.id] || ""} onChange={e => { setTargets(prev => ({ ...prev, [w.id]: e.target.value })); setUnsaved(true); }} placeholder="Target / SLA" style={{ flex: 1, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
+              <input value={targets[w.id] || ""} onChange={e => { setTargets(prev => ({ ...prev, [w.id]: e.target.value })); setUnsaved(true); }} placeholder="Target / SLA" style={{ flex: 1, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
             </div>
           ))}
           {dashboard.length === 0 && <div style={{ color: "#888888", fontSize: 13 }}>Add widgets to set targets.</div>}
@@ -1195,10 +1195,10 @@ export default function CustomDashboardBuilder() {
       <div style={{ display: "flex", gap: 18, marginBottom: 18 }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Widgets</div>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search widgets" style={{ width: "100%", marginBottom: 8, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search widgets" style={{ width: "100%", marginBottom: 8, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 10px" }} />
           <ul style={{ paddingLeft: 18 }}>
             {filteredWidgets.map((w, idx) => (
-              <li key={w.id || idx} draggable onDragStart={() => handleDragStart(idx)} style={{ marginBottom: 8, background: "#232336", borderRadius: 8, padding: 8, cursor: "grab", color: '#f0f0f0' }}>{w.name}</li>
+              <li key={w.id || idx} draggable onDragStart={() => handleDragStart(idx)} style={{ marginBottom: 8, background: "#222222", borderRadius: 8, padding: 8, cursor: "grab", color: '#f0f0f0' }}>{w.name}</li>
             ))}
           </ul>
         </div>
@@ -1214,11 +1214,11 @@ export default function CustomDashboardBuilder() {
                 </div>
                 <div style={{ marginTop: 6, display: "grid", gap: 6 }}>
                   <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-                    <input placeholder="Add comment" onKeyDown={e => { if (e.key === "Enter") { addComment(w.id, e.target.value); e.target.value = ""; } }} style={{ flex: 1, minWidth: 180, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", fontSize: 13 }} />
+                    <input placeholder="Add comment" onKeyDown={e => { if (e.key === "Enter") { addComment(w.id, e.target.value); e.target.value = ""; } }} style={{ flex: 1, minWidth: 180, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", fontSize: 13 }} />
                     <span style={{ color: "#888888", fontSize: 12 }}>Comments: {(comments[w.id] || []).length}</span>
                   </div>
                   {(comments[w.id] || []).slice(-2).map((c, cidx) => (
-                    <div key={cidx} style={{ color: "#888888", fontSize: 12, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 8, padding: 6 }}>
+                    <div key={cidx} style={{ color: "#888888", fontSize: 12, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 8, padding: 6 }}>
                       {c.text} · {new Date(c.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </div>
                   ))}
@@ -1239,7 +1239,7 @@ export default function CustomDashboardBuilder() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Data Sources</div>
           <ul style={{ paddingLeft: 18 }}>
             {dataSources.map((ds, idx) => (
-              <li key={ds.id || idx} style={{ marginBottom: 8, background: "#232336", borderRadius: 8, padding: 8, color: '#f0f0f0' }}>
+              <li key={ds.id || idx} style={{ marginBottom: 8, background: "#222222", borderRadius: 8, padding: 8, color: '#f0f0f0' }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                   <span style={{ display: "flex", gap: 6, alignItems: "center" }}>
                     {ds.name}
@@ -1252,7 +1252,7 @@ export default function CustomDashboardBuilder() {
                       PII reviewed
                       <input type="checkbox" checked={piiFlags[ds.id || ds.name] || false} onChange={e => { setPiiFlags(prev => ({ ...prev, [ds.id || ds.name]: e.target.checked })); setUnsaved(true); }} />
                     </label>
-                    <button onClick={() => { setPiiFlags(prev => ({ ...prev, [ds.id || ds.name]: true })); setUnsaved(true); }} style={{ background: "#0b1221", color: "#a5f3fc", border: "1px solid #1a1a1a", borderRadius: 8, padding: "4px 8px", fontWeight: 700, cursor: "pointer", fontSize: 11 }}>Mark PII reviewed</button>
+                    <button onClick={() => { setPiiFlags(prev => ({ ...prev, [ds.id || ds.name]: true })); setUnsaved(true); }} style={{ background: "#111111", color: "#a5f3fc", border: "1px solid #1a1a1a", borderRadius: 8, padding: "4px 8px", fontWeight: 700, cursor: "pointer", fontSize: 11 }}>Mark PII reviewed</button>
                     {(() => {
                       const minutes = freshness[ds.name] ? Math.round((Date.now() - freshness[ds.name]) / 60000) : 9999;
                       const stale = minutes > 1440;
@@ -1269,12 +1269,12 @@ export default function CustomDashboardBuilder() {
                 <div style={{ marginTop: 6, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
               {dataSources.length > 0 && (
                 <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                  <button onClick={() => { const updated = { ...piiFlags }; dataSources.forEach(ds => { updated[ds.id || ds.name] = true; }); setPiiFlags(updated); setUnsaved(true); }} style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Mark all PII reviewed</button>
+                  <button onClick={() => { const updated = { ...piiFlags }; dataSources.forEach(ds => { updated[ds.id || ds.name] = true; }); setPiiFlags(updated); setUnsaved(true); }} style={{ background: "#0ea5e9", color: "#111111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Mark all PII reviewed</button>
                   <div style={{ color: "#888888", fontSize: 12 }}>Use when legal/compliance review is complete.</div>
                 </div>
               )}
-                  <input value={dataSourceOwners[ds.name] || ""} onChange={e => { setDataSourceOwners(prev => ({ ...prev, [ds.name]: e.target.value })); setUnsaved(true); }} placeholder="Owner" style={{ minWidth: 140, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", fontSize: 12 }} />
-                  <input value={dataSourceNotes[ds.name] || ""} onChange={e => { setDataSourceNotes(prev => ({ ...prev, [ds.name]: e.target.value })); setUnsaved(true); }} placeholder="Notes" style={{ flex: 1, minWidth: 180, background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", fontSize: 12 }} />
+                  <input value={dataSourceOwners[ds.name] || ""} onChange={e => { setDataSourceOwners(prev => ({ ...prev, [ds.name]: e.target.value })); setUnsaved(true); }} placeholder="Owner" style={{ minWidth: 140, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", fontSize: 12 }} />
+                  <input value={dataSourceNotes[ds.name] || ""} onChange={e => { setDataSourceNotes(prev => ({ ...prev, [ds.name]: e.target.value })); setUnsaved(true); }} placeholder="Notes" style={{ flex: 1, minWidth: 180, background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "6px 8px", fontSize: 12 }} />
                 </div>
               </li>
             ))}
@@ -1287,7 +1287,7 @@ export default function CustomDashboardBuilder() {
             </div>
           )}
           {dependencyMap.length > 0 && (
-            <div style={{ marginTop: 10, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: 10, display: "grid", gap: 6 }}>
+            <div style={{ marginTop: 10, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: 10, display: "grid", gap: 6 }}>
               <div style={{ fontWeight: 700, color: "#cbd5e1" }}>Dependencies</div>
               {dependencyMap.map((dep, idx) => (
                 <div key={idx} style={{ color: "#888888", fontSize: 12 }}>
@@ -1303,8 +1303,8 @@ export default function CustomDashboardBuilder() {
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import dashboard" />
         <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
         <button onClick={downloadDraft} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "10px 18px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Download draft JSON</button>
-        <button onClick={copyGuardrailSummary} style={{ background: "#0b1221", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>Copy guardrail summary</button>
-        <button onClick={copySlaSnapshot} style={{ background: "#0b1221", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>Copy SLA snapshot</button>
+        <button onClick={copyGuardrailSummary} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>Copy guardrail summary</button>
+        <button onClick={copySlaSnapshot} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>Copy SLA snapshot</button>
         <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#cbd5e1", fontSize: 12 }}>
           <input type="checkbox" checked={exportWithDiff} onChange={e => { setExportWithDiff(e.target.checked); setUnsaved(true); }} /> Include diffs
         </label>
@@ -1317,28 +1317,28 @@ export default function CustomDashboardBuilder() {
       {error && (
         <div style={{ color: "#ef4444", marginBottom: 10, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           <span>{error}</span>
-          {quickFixForIssue(error) === "retry" && <button onClick={() => { setError(""); fetchWidgets(); }} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Retry fetch</button>}
-          {quickFixForIssue(error) === "reset" && <button onClick={() => setDashboard([])} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Reset dashboard</button>}
+          {quickFixForIssue(error) === "retry" && <button onClick={() => { setError(""); fetchWidgets(); }} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Retry fetch</button>}
+          {quickFixForIssue(error) === "reset" && <button onClick={() => setDashboard([])} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Reset dashboard</button>}
         </div>
       )}
       {dashboard.length >= 10 && <div style={{ color: "#fbbf24", fontSize: 13, marginBottom: 8 }}>Perf detail: {dashboard.length} widgets — consider splitting dashboards.</div>}
 
       {history.length > 0 && (
-        <div style={{ marginBottom: 18, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
+        <div style={{ marginBottom: 18, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <div style={{ fontWeight: 800, color: "#f0f0f0" }}>Recent dashboards</div>
             <div style={{ color: "#888888", fontSize: 12 }}>Last {Math.min(3, history.length)} shown</div>
           </div>
           <div style={{ display: "grid", gap: 8 }}>
             {history.slice(0, 3).map((h, idx) => (
-              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#111827", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 10px" }}>
+              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 10px" }}>
                 <div>
                   <div style={{ fontWeight: 700, color: "#f0f0f0" }}>{h.summary || "Snapshot"}</div>
                   <div style={{ color: "#888888", fontSize: 12 }}>{h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "recent"} · {h.env}</div>
                 </div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   <button onClick={() => restoreSnapshot(h)} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load</button>
-                  <button onClick={() => { restoreSnapshot(h); setTimeout(() => handleExport(), 0); }} disabled={devSandbox} style={{ background: devSandbox ? "#1a1a1a" : "#22c55e", color: devSandbox ? "#888888" : "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: devSandbox ? "not-allowed" : "pointer", opacity: devSandbox ? 0.6 : 1 }}>{devSandbox ? "Sandbox" : "Re-export"}</button>
+                  <button onClick={() => { restoreSnapshot(h); setTimeout(() => handleExport(), 0); }} disabled={devSandbox} style={{ background: devSandbox ? "#1a1a1a" : "#22c55e", color: devSandbox ? "#888888" : "#111111", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: devSandbox ? "not-allowed" : "pointer", opacity: devSandbox ? 0.6 : 1 }}>{devSandbox ? "Sandbox" : "Re-export"}</button>
                 </div>
               </div>
             ))}
@@ -1355,7 +1355,7 @@ export default function CustomDashboardBuilder() {
                 <span>{a.at ? new Date(a.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</span>
               </div>
               {(a.guardrails || a.slaSnapshot) && (
-                <div style={{ display: "grid", gap: 4, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 8, padding: 8 }}>
+                <div style={{ display: "grid", gap: 4, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 8, padding: 8 }}>
                   {a.guardrails && (
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                       <div style={{ color: "#cbd5e1", fontSize: 12, wordBreak: "break-word" }}>Guardrails: {a.guardrails}</div>
@@ -1375,11 +1375,11 @@ export default function CustomDashboardBuilder() {
         </div>
       )}
       {publishPreview.added.length + publishPreview.removed.length === 0 && versions.length === 0 && (
-        <div style={{ marginBottom: 18, background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 10, padding: 12, color: "#888888", fontSize: 13 }}>
+        <div style={{ marginBottom: 18, background: "#111111", border: "1px solid #1a1a1a", borderRadius: 10, padding: 12, color: "#888888", fontSize: 13 }}>
           Tip: Run lint, set metadata, mark PII reviewed, then publish to create versions and diffs.
         </div>
       )}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#232336", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#222222", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}
@@ -1394,5 +1394,6 @@ export default function CustomDashboardBuilder() {
     </div>
   );
 }
+
 
 

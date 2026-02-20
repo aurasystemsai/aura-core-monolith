@@ -165,7 +165,7 @@
   transition: background 0.15s, color 0.15s;
 }
 .pl-keyword-pill:hover, .pl-keyword-pill:focus {
-  background: #1a1d2b;
+  background: #111111;
   color: #fff;
   border-color: #7fffd4;
 }
@@ -220,7 +220,7 @@
 .pl-tip--warn { color: #ffe97f; }
 .pl-tip-detail { color: #aaa; }
 .pl-debug-panel {
-  background: #181c2a;
+  background: #111111;
   color: #fff;
   font-size: 13px;
   padding: 16px;
@@ -233,4 +233,5 @@
 }
 .pl-debug-accent { color: #7ff; }
 .pl-debug-error { color: #f77; }
+
 

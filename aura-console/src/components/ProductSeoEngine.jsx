@@ -99,7 +99,7 @@ function SerpPreview({ title, description, handle, shop, device }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
         <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#e8f0fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#1a73e8', fontWeight: 900 }}>G</div>
         <div>
-          <div style={{ fontSize: 13, color: '#202124', fontWeight: 500 }}>{shop || 'yourstore.myshopify.com'}</div>
+          <div style={{ fontSize: 13, color: '#202020', fontWeight: 500 }}>{shop || 'yourstore.myshopify.com'}</div>
           <div style={{ fontSize: 11, color: '#4d5156', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: isMobile ? 260 : 500 }}>https://{url}</div>
         </div>
       </div>
@@ -873,5 +873,6 @@ export default function ProductSeoEngine() {
     </div>
   );
 }
+
 
 

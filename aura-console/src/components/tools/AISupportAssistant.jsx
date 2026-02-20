@@ -75,7 +75,7 @@ export default function AISupportAssistant() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
+    <div style={{ padding: 24, background: '#222222', borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to AI Support Assistant</h3>
       <ul style={{ margin: '16px 0 0 18px', color: '#333333', fontSize: 16 }}>
         <li>Enter a support question or task to get AI-powered solutions</li>
@@ -112,7 +112,7 @@ export default function AISupportAssistant() {
       </button>
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
       {response && (
-        <div style={{ marginTop: 32, background: "#232336", borderRadius: 12, padding: 24, color: '#f0f0f0' }}>
+        <div style={{ marginTop: 32, background: "#222222", borderRadius: 12, padding: 24, color: '#f0f0f0' }}>
           <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>AI Response:</div>
           <div style={{ fontSize: 16, color: "#0a0a0a" }}>{response}</div>
         </div>
@@ -149,4 +149,5 @@ export default function AISupportAssistant() {
     </div>
   );
 }
+
 

@@ -15,7 +15,7 @@ export default function ConsentPrivacyManagement() {
   const fileInputRef = useRef();
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
+    <div style={{ padding: 24, background: '#222222', borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Consent & Privacy Management</h3>
       <ul style={{ margin: '16px 0 0 18px', color: '#333333', fontSize: 16 }}>
         <li>Manage user consents, privacy requests, and compliance reports</li>
@@ -144,5 +144,6 @@ export default function ConsentPrivacyManagement() {
     </div>
   );
 }
+
 
 

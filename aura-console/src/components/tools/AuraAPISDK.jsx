@@ -122,13 +122,13 @@ export default function AuraAPISDK() {
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {response && (
-        <div style={{ background: "#232336", borderRadius: 10, padding: 18, marginBottom: 18, color: "#f0f0f0" }}>
+        <div style={{ background: "#222222", borderRadius: 10, padding: 18, marginBottom: 18, color: "#f0f0f0" }}>
           <b>Response:</b>
           <pre style={{ fontSize: 15 }}>{JSON.stringify(response, null, 2)}</pre>
         </div>
       )}
       {docs.length > 0 && (
-        <div style={{ background: "#232336", borderRadius: 12, padding: 20, marginBottom: 18, color: "#f0f0f0" }}>
+        <div style={{ background: "#222222", borderRadius: 12, padding: 20, marginBottom: 18, color: "#f0f0f0" }}>
           <b>API Docs:</b>
           <ul style={{ paddingLeft: 18 }}>
             {docs.map((doc, idx) => (
@@ -137,7 +137,7 @@ export default function AuraAPISDK() {
           </ul>
         </div>
       )}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#232336", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#222222", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}
@@ -152,4 +152,5 @@ export default function AuraAPISDK() {
     </div>
   );
 }
+
 

@@ -210,12 +210,12 @@ export default function AutoInsights() {
           <div style={{ fontSize: 20, color: "var(--text-accent)", fontWeight: 700 }}>AI-powered business insights, analytics, and recommendations</div>
         </div>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: '#0b1221', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: '10px 12px', fontWeight: 800 }}>
+          <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: '10px 12px', fontWeight: 800 }}>
             <option value="dev">Dev</option>
             <option value="stage">Stage</option>
             <option value="prod">Prod</option>
           </select>
-          <select value={shop} onChange={e => setShop(e.target.value)} style={{ background: '#0b1221', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: '10px 12px', fontWeight: 800 }}>
+          <select value={shop} onChange={e => setShop(e.target.value)} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: '10px 12px', fontWeight: 800 }}>
             <option value="demo-shop.myshopify.com">demo-shop.myshopify.com</option>
             <option value="staging-shop.myshopify.com">staging-shop.myshopify.com</option>
           </select>
@@ -243,7 +243,7 @@ export default function AutoInsights() {
             <div style={{ color: '#888888', fontSize: 12 }}>Attribution {(Math.round((Date.now() - sourceFreshness.attribution) / 60000))}m</div>
             <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
               <button className="aura-btn" style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333' }} onClick={refreshSources}>Refresh sources</button>
-              <button className="aura-btn" style={{ background: '#0b1221', color: '#fbbf24', border: '1px solid #333333' }} onClick={() => setIncidentMode(true)}>Open incident</button>
+              <button className="aura-btn" style={{ background: '#111111', color: '#fbbf24', border: '1px solid #333333' }} onClick={() => setIncidentMode(true)}>Open incident</button>
             </div>
           </div>
           <button className="aura-btn" style={{ background: '#7fffd4', color: '#0a0a0a', fontWeight: 800 }} onClick={simulateIngest}>Refresh data</button>
@@ -345,7 +345,7 @@ export default function AutoInsights() {
             </div>
           </div>
         </div>
-        <div style={{ marginTop: 16, display: 'flex', gap: 12, flexWrap: 'wrap', background: '#0b1221', borderRadius: 14, padding: 14, border: '1px solid #1a1a1a' }}>
+        <div style={{ marginTop: 16, display: 'flex', gap: 12, flexWrap: 'wrap', background: '#111111', borderRadius: 14, padding: 14, border: '1px solid #1a1a1a' }}>
           <div style={{ fontWeight: 800, color: '#7fffd4' }}>Shopify metric presets</div>
           <select className="aura-input" value={metricPreset} onChange={e => setMetricPreset(e.target.value)} style={{ width: 160 }}>
             <option>GMV</option>
@@ -400,7 +400,7 @@ export default function AutoInsights() {
             ) : (
               <div style={{ display: 'grid', gap: 10 }}>
                 {pinboard.map(pin => (
-                  <div key={pin.id} style={{ background: '#0b1221', borderRadius: 10, padding: 10, border: '1px solid #1a1a1a' }}>
+                  <div key={pin.id} style={{ background: '#111111', borderRadius: 10, padding: 10, border: '1px solid #1a1a1a' }}>
                     <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{pin.title}</div>
                     <div style={{ color: '#888888', fontSize: 12 }}>{pin.note}</div>
                     {pin.comments && pin.comments.length > 0 && <div style={{ color: '#7fffd4', fontSize: 12 }}>Comments: {pin.comments.join(' · ')}</div>}
@@ -415,7 +415,7 @@ export default function AutoInsights() {
             <div style={{ color: '#b6eaff', fontSize: 15 }}>Attribution and feature importance</div>
             <div style={{ marginTop: 8, display: 'grid', gap: 8 }}>
               {attribution.map((a, idx) => (
-                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0b1221', borderRadius: 10, padding: 10, border: '1px solid #1a1a1a' }}>
+                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#111111', borderRadius: 10, padding: 10, border: '1px solid #1a1a1a' }}>
                   <div>
                     <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{a.factor}</div>
                     <div style={{ color: '#888888', fontSize: 12 }}>Weight {(a.weight * 100).toFixed(0)}%</div>
@@ -445,7 +445,7 @@ export default function AutoInsights() {
             <div style={{ fontWeight: 800, color: '#7fffd4', fontSize: 18, marginBottom: 8 }}>Anomaly stream</div>
             <div style={{ display: 'grid', gap: 10 }}>
               {anomalies.map(a => (
-                <div key={a.id} style={{ display: 'grid', gap: 8, background: '#0b1221', borderRadius: 10, padding: '10px 12px', border: '1px solid #1a1a1a' }}>
+                <div key={a.id} style={{ display: 'grid', gap: 8, background: '#111111', borderRadius: 10, padding: '10px 12px', border: '1px solid #1a1a1a' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{a.label}</div>
@@ -479,7 +479,7 @@ export default function AutoInsights() {
             </select>
           </div>
           <div style={{ color: '#b6eaff', fontSize: 15 }}>Comparing {comparison} vs {segment}</div>
-          <div style={{ marginTop: 10, background: '#0b1221', borderRadius: 10, padding: 12, border: '1px solid #1a1a1a' }}>
+          <div style={{ marginTop: 10, background: '#111111', borderRadius: 10, padding: 12, border: '1px solid #1a1a1a' }}>
             <div style={{ color: '#f0f0f0', fontWeight: 700 }}>Delta callouts</div>
             <div style={{ color: '#888888', fontSize: 13 }}>Conversion +4.2 pts; AOV -1.1%; LTV +3.6%</div>
           </div>
@@ -530,7 +530,7 @@ export default function AutoInsights() {
           traceEvents.length === 0 ? <div style={{ color: '#888888', marginTop: 8 }}>No traces yet. Ctrl+D toggles. Filters, pins, ingests are traced.</div> : (
             <div style={{ marginTop: 10, display: 'grid', gap: 8 }}>
               {traceEvents.map((t, idx) => (
-                <div key={idx} style={{ background: '#0b1221', borderRadius: 10, padding: 10, border: '1px solid #1a1a1a' }}>
+                <div key={idx} style={{ background: '#111111', borderRadius: 10, padding: 10, border: '1px solid #1a1a1a' }}>
                   <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{t.event}</div>
                   <div style={{ color: '#888888', fontSize: 12 }}>{new Date(t.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {t.env} · {t.shop}</div>
                   <div style={{ color: '#888888', fontSize: 12, wordBreak: 'break-word' }}>{JSON.stringify(t.meta)}</div>
@@ -548,7 +548,7 @@ export default function AutoInsights() {
           <div style={{ fontWeight: 800, fontSize: 18, color: "var(--text-primary)", marginBottom: 10 }}>Recent activity</div>
           <div style={{ display: 'grid', gap: 10 }}>
             {history.slice(0, 5).map((h, idx) => (
-              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: '10px 12px' }}>
+              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: '10px 12px' }}>
                 <div>
                   <div style={{ fontWeight: 700, color: '#f0f0f0' }}>{h.summary}</div>
                   <div style={{ color: '#888888', fontSize: 12 }}>{new Date(h.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {h.env}</div>
@@ -562,5 +562,6 @@ export default function AutoInsights() {
     </div>
   );
 }
+
 
 

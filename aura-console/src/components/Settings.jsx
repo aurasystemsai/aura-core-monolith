@@ -569,7 +569,7 @@ const Settings = ({ setActiveSection }) => {
           border: 2px solid #1e1e1e;
           border-radius: 8px;
           font-size: 16px;
-          background: #0f1324;
+          background: #111111;
           color: #f0f0f0;
         }
 
@@ -611,7 +611,7 @@ const Settings = ({ setActiveSection }) => {
           margin-left: auto;
           margin-right: auto;
           padding: 16px;
-          background: #0f1324;
+          background: #111111;
           border: 1px solid #1e1e1e;
           border-radius: 8px;
           color: #cbd5e1;
@@ -829,7 +829,7 @@ const Settings = ({ setActiveSection }) => {
           display: flex;
           gap: 12px;
           align-items: center;
-          background: #0f1324;
+          background: #111111;
           border: 2px solid #1e1e1e;
           border-radius: 8px;
           padding: 16px;
@@ -899,5 +899,6 @@ const Settings = ({ setActiveSection }) => {
 };
 
 export default Settings;
+
 
 

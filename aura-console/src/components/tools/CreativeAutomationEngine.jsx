@@ -193,11 +193,11 @@ export default function CreativeAutomationEngine() {
         ))}
       </div>
       <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-        <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
+        <div style={{ background: "#1e1e1e", borderRadius: 10, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Creatives</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{creatives.length}</div>
         </div>
-        <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
+        <div style={{ background: "#1e1e1e", borderRadius: 10, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{analytics.length}</div>
         </div>
@@ -208,6 +208,7 @@ export default function CreativeAutomationEngine() {
     </div>
   );
 }
+
 
 
 

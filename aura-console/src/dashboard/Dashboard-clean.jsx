@@ -129,7 +129,7 @@ const Dashboard = ({ setActiveSection }) => {
         </div>
 
         <div style={{
-          background: '#1f2436',
+          background: '#1e1e1e',
           borderRadius: 16,
           boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
           padding: '24px',
@@ -144,7 +144,7 @@ const Dashboard = ({ setActiveSection }) => {
           </div>
 
           <div style={{
-            background: '#0f1324',
+            background: '#111111',
             borderRadius: 12,
             padding: '16px',
             border: '1px solid #1e1e1e',
@@ -161,7 +161,7 @@ const Dashboard = ({ setActiveSection }) => {
                   borderRadius: 10,
                   padding: '10px 12px',
                   border: '1px solid #1e1e1e',
-                  background: '#0f1324',
+                  background: '#111111',
                   color: '#e8f2ff',
                   fontSize: 14,
                 }}
@@ -171,7 +171,7 @@ const Dashboard = ({ setActiveSection }) => {
                 disabled={copilotLoading}
                 style={{
                   background: copilotLoading ? '#222222' : '#7fffd4',
-                  color: '#0f1324',
+                  color: '#111111',
                   border: 'none',
                   borderRadius: 10,
                   fontWeight: 800,
@@ -196,7 +196,7 @@ const Dashboard = ({ setActiveSection }) => {
               style={{
                 flex: 1,
                 background: '#7fffd4',
-                color: '#0f1324',
+                color: '#111111',
                 border: 'none',
                 borderRadius: 8,
                 fontWeight: 700,
@@ -270,5 +270,6 @@ const Dashboard = ({ setActiveSection }) => {
 };
 
 export default Dashboard;
+
 
 

@@ -1,4 +1,4 @@
-/* Upgrade Prompt Styles */
+﻿/* Upgrade Prompt Styles */
 
 .upgrade-prompt-overlay {
   position: fixed;
@@ -31,7 +31,7 @@
 .upgrade-prompt-title {
   font-size: 24px;
   font-weight: 700;
-  color: #202223;
+  color: #202020;
   margin: 0 0 12px 0;
 }
 
@@ -53,7 +53,7 @@
 .upgrade-prompt-benefits h3 {
   font-size: 16px;
   font-weight: 600;
-  color: #202223;
+  color: #202020;
   margin: 0 0 12px 0;
 }
 
@@ -236,3 +236,4 @@
     text-align: center;
   }
 }
+

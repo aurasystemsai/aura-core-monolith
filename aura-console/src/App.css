@@ -144,7 +144,7 @@
 }
 .tab-group button:hover:not(.tab-active) {
   color: #7fffd4;
-  background: #232336;
+  background: #222222;
 }
 .tools-dropdown-category {
   padding: 0 0 6px 0;
@@ -160,7 +160,7 @@
   opacity: 0.85;
 }
 .tools-dropdown-category:not(:last-child) {
-  border-bottom: 1px solid #232336;
+  border-bottom: 1px solid #222222;
 }
 
 /* Legacy mega menu - hidden */
@@ -209,7 +209,7 @@
 .self-service-analytics input,
 .self-service-analytics select,
 .self-service-analytics textarea {
-  background: #0b1220;
+  background: #111111;
   color: #f0f0f0;
   border: 1px solid #1a1a1a;
   border-radius: 6px;
@@ -224,7 +224,7 @@
 .self-service-analytics .schedule,
 .self-service-analytics .history-item,
 .self-service-analytics .alert-item {
-  background: #111827;
+  background: #111111;
   border: 1px solid #1a1a1a;
 }
 .self-service-analytics .validation.error { color: #f87171; }
@@ -286,7 +286,7 @@
   justify-content: center;
   font-size: 1.7rem;
   font-weight: 900;
-  color: #181c2a;
+  color: #111111;
   box-shadow: 0 2px 12px #7fffd455;
   margin-right: 8px;
 }
@@ -371,7 +371,7 @@ app-loading {
 
 .paw-pill {
   background: linear-gradient(120deg, #0ea5e9, #22d3ee);
-  color: #0b1020;
+  color: #0d0d0d;
   font-weight: 800;
   border-radius: 999px;
   padding: 6px 12px;
@@ -382,7 +382,7 @@ app-loading {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  background: #111827;
+  background: #111111;
   border: 1px solid #1a1a1a;
   border-radius: 14px;
   padding: 16px;
@@ -402,7 +402,7 @@ app-loading {
 
 .paw-field input,
 .paw-field select {
-  background: #0b1324;
+  background: #111111;
   border: 1px solid #1a1a1a;
   border-radius: 10px;
   padding: 10px 12px;
@@ -412,7 +412,7 @@ app-loading {
 
 .paw-button {
   background: linear-gradient(120deg, #22d3ee, #7c3aed);
-  color: #0b1020;
+  color: #0d0d0d;
   font-weight: 800;
   border: none;
   border-radius: 12px;
@@ -445,7 +445,7 @@ app-loading {
 }
 
 .paw-button--ghost:hover:not(:disabled) {
-  background: #0b1324;
+  background: #111111;
 }
 
 .paw-error {
@@ -470,7 +470,7 @@ app-loading {
 }
 
 .paw-card {
-  background: #0b1324;
+  background: #111111;
   border: 1px solid #1a1a1a;
   border-radius: 12px;
   padding: 14px;
@@ -515,7 +515,7 @@ app-loading {
 
 .paw-skeleton-bar {
   height: 14px;
-  background: #111827;
+  background: #111111;
   border-radius: 6px;
 }
 
@@ -525,7 +525,7 @@ app-loading {
 }
 
 .paw-section {
-  background: #0b1324;
+  background: #111111;
   border: 1px solid #1a1a1a;
   border-radius: 12px;
   padding: 14px;
@@ -557,7 +557,7 @@ app-loading {
 }
 
 .paw-forecast-point {
-  background: #0b1324;
+  background: #111111;
   border: 1px solid #1a1a1a;
   border-radius: 8px;
   padding: 8px;
@@ -588,7 +588,7 @@ app-loading {
 }
 
 .paw-actual-point {
-  background: #111827;
+  background: #111111;
   border-color: #0ea5e933;
 }
 
@@ -647,7 +647,7 @@ app-loading {
 }
 
 .paw-playbook-card {
-  background: #0b1324;
+  background: #111111;
   border: 1px solid #1a1a1a;
   border-radius: 10px;
   padding: 12px;
@@ -679,7 +679,7 @@ app-loading {
 }
 
 .paw-alert-preview-text {
-  background: #0b1324;
+  background: #111111;
   border: 1px solid #1a1a1a;
   border-radius: 8px;
   padding: 8px;
@@ -746,7 +746,7 @@ app-loading {
 }
 
 .paw-inline-input input {
-  background: #0b1324;
+  background: #111111;
   border: 1px solid #1a1a1a;
   border-radius: 8px;
   padding: 8px;
@@ -763,7 +763,7 @@ app-loading {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  background: #0b1324;
+  background: #111111;
   border: 1px solid #1a1a1a;
   border-radius: 10px;
   padding: 10px;
@@ -842,7 +842,7 @@ app-loading {
 .paw-badge {
   padding: 8px 12px;
   border-radius: 10px;
-  background: #0b1324;
+  background: #111111;
   border: 1px solid #1a1a1a;
   color: #e0e0e0;
   font-size: 13px;
@@ -881,9 +881,9 @@ app-loading {
   gap: 10px;
 }
 :root {
-  --surface-sidebar: #020617;
-  --surface-card: #020617;
-  --surface-card-elevated: #020617;
+  --surface-sidebar: #0a0a0a;
+  --surface-card: #0a0a0a;
+  --surface-card-elevated: #0a0a0a;
 
   --border-subtle: rgba(148, 163, 184, 0.3);
   --border-strong: rgba(148, 163, 184, 0.45);
@@ -919,8 +919,8 @@ app-loading {
 }
 
 :root {
-  --bg: #0b1120;
-  --bg-alt: #0e1224;
+  --bg: #111111;
+  --bg-alt: #111111;
   --card: #111111;
   --text: #f0f0f0;
   --muted: #94a3b8;
@@ -938,7 +938,7 @@ body, .app-shell, .app-main {
 }
 
 input, select, textarea, button {
-  background-color: #0b1220 !important;
+  background-color: #111111 !important;
   color: var(--text) !important;
   border-color: var(--border) !important;
 }
@@ -951,14 +951,14 @@ input, select, textarea, button {
 .app-shell {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, #0b1120 0, rgba(15, 23, 42, 0.8) 45%, #020617 100%);
+    radial-gradient(circle at top left, #111111 0, rgba(15, 23, 42, 0.8) 45%, #0a0a0a 100%);
 }
 
 /* ================== SIDEBAR ================== */
 
 .side-nav {
-  background: radial-gradient(circle at top, #020617 0, #020617 50%, #020617 100%);
-  border-right: 1px solid #020617;
+  background: radial-gradient(circle at top, #0a0a0a 0, #0a0a0a 50%, #0a0a0a 100%);
+  border-right: 1px solid #0a0a0a;
   padding: 18px 16px 16px;
   display: flex;
   flex-direction: column;
@@ -979,7 +979,7 @@ input, select, textarea, button {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #020617;
+  color: #0a0a0a;
   font-weight: 700;
   font-size: 16px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.7);
@@ -1002,7 +1002,7 @@ input, select, textarea, button {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #10111a;
+  background: #0d0d0d;
   min-width: 0;
   align-items: center;
   padding: 32px 0;
@@ -1073,7 +1073,7 @@ input, select, textarea, button {
 
 .app-main {
   background:
-    radial-gradient(circle at top center, #020617 0, #020617 40%, #000 100%);
+    radial-gradient(circle at top center, #0a0a0a 0, #0a0a0a 40%, #000 100%);
   padding: 8px 8px 8px;
   display: flex;
   flex-direction: column;
@@ -1158,7 +1158,7 @@ input, select, textarea, button {
   flex: 1;
   border-radius: 999px;
   border: 1px solid rgba(55, 65, 81, 0.9);
-  background: #020617;
+  background: #0a0a0a;
   color: var(--text-secondary);
   padding: 7px 10px;
   font-size: 12px;
@@ -1178,7 +1178,7 @@ input, select, textarea, button {
   padding: 4px 9px;
   border-radius: 999px;
   border: 1px solid rgba(55, 65, 81, 0.9);
-  background: #020617;
+  background: #0a0a0a;
   font-size: 11px;
   color: var(--text-soft);
 }
@@ -1231,7 +1231,7 @@ input, select, textarea, button {
   padding: 6px 10px;
   border-radius: 10px;
   border: 1px dashed rgba(55, 65, 81, 0.95);
-  background: #020617;
+  background: #0a0a0a;
   min-width: 160px;
 }
 
@@ -1272,7 +1272,7 @@ input, select, textarea, button {
 
 .button--primary {
   background: radial-gradient(circle at 0 0, #fbbf24, #22d3ee);
-  color: #020617;
+  color: #0a0a0a;
   border-color: rgba(248, 250, 252, 0.9);
   box-shadow: 0 16px 40px rgba(8, 47, 73, 0.95);
 }
@@ -1290,7 +1290,7 @@ input, select, textarea, button {
 
 .button--ghost {
   border-color: rgba(148, 163, 184, 0.55);
-  background: #020617;
+  background: #0a0a0a;
   color: var(--text-muted);
 }
 
@@ -1396,7 +1396,7 @@ input, select, textarea, button {
 .pill--active {
   border-color: var(--accent);
   background: radial-gradient(circle at 0 0, var(--accent), #0ea5e9);
-  color: #020617;
+  color: #0a0a0a;
   box-shadow:
     0 0 0 1px rgba(34, 211, 238, 0.5),
     0 10px 24px rgba(8, 47, 73, 0.9);
@@ -1409,7 +1409,7 @@ input, select, textarea, button {
 .app-shell {
   display: flex;
   min-height: 100vh;
-  background: #0a1120;
+  background: #111111;
 }
 
 /* Sidebar: Reduce width for more central content */
@@ -1419,7 +1419,7 @@ input, select, textarea, button {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #10111a;
+  background: #0d0d0d;
   min-width: 0;
   align-items: center;
 }
@@ -1707,7 +1707,7 @@ input, select, textarea, button {
   margin-top: 6px;
   padding: 10px;
   border-radius: 12px;
-  background: #020617;
+  background: #0a0a0a;
   border: 1px solid rgba(31, 41, 55, 1);
   max-height: 220px;
   overflow: auto;
@@ -1742,7 +1742,7 @@ input, select, textarea, button {
 .inspector-textarea {
   border-radius: 9px;
   border: 1px solid rgba(55, 65, 81, 0.95);
-  background: #020617;
+  background: #0a0a0a;
   color: var(--text-secondary);
   padding: 7px 9px;
   font-size: 12px;
@@ -1786,7 +1786,7 @@ input, select, textarea, button {
 .preset-chip {
   border-radius: 999px;
   border: 1px solid rgba(55, 65, 81, 0.95);
-  background: #020617;
+  background: #0a0a0a;
   color: var(--text-muted);
   padding: 4px 9px;
   font-size: 11px;
@@ -1866,7 +1866,7 @@ input, select, textarea, button {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: radial-gradient(circle at top, #0b1120 0%, #020617 100%);
+  background: radial-gradient(circle at top, #111111 0%, #0a0a0a 100%);
 }
 
 .project-setup-card {
@@ -1908,7 +1908,7 @@ input, select, textarea, button {
 .project-setup-form select {
   border-radius: 8px;
   border: 1px solid rgba(55, 65, 81, 0.95);
-  background: #020617;
+  background: #0a0a0a;
   color: #f0f0f0;
   padding: 8px 10px;
   font-size: 13px;
@@ -1950,5 +1950,6 @@ input, select, textarea, button {
   font-weight: 600;
   box-shadow: 0 0 12px #00f0ff99;
 }
+
 
 

@@ -1,4 +1,4 @@
-/* ================================================================
+﻿/* ================================================================
    KLAVIYO FLOW AUTOMATION - COMPREHENSIVE STYLES
    ================================================================ */
 
@@ -776,7 +776,7 @@ code {
 }
 
 .klaviyo-sidebar::-webkit-scrollbar-track {
-  background: #2a2d3e;
+  background: #222222;
 }
 
 .klaviyo-sidebar::-webkit-scrollbar-thumb {
@@ -849,3 +849,4 @@ button,
     display: none;
   }
 }
+

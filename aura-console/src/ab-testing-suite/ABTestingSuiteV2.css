@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AB Testing Suite V2 - Enterprise CSS
  * 
  * Features:
@@ -18,7 +18,7 @@
   --warning-color: #f49342;
   --critical-color: #de3618;
   --info-color: #2c6ecb;
-  --text-primary: #202223;
+  --text-primary: #202020;
   --text-secondary: #6d7175;
   --border-color: #c9cccf;
   --background-primary: #ffffff;
@@ -780,3 +780,4 @@
 .p-2 { padding: 1.6rem; }
 .p-3 { padding: 2.4rem; }
 .p-4 { padding: 3.2rem; }
+

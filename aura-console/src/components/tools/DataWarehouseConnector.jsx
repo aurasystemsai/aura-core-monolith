@@ -95,7 +95,7 @@ export default function DataWarehouseConnector() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Data Sources</div>
           <ul style={{ paddingLeft: 18 }}>
             {dataSources.map((ds, idx) => (
-              <li key={ds.id || idx} style={{ marginBottom: 8, background: "#232336", borderRadius: 8, padding: 8, color: '#f0f0f0' }}>{ds.name}</li>
+              <li key={ds.id || idx} style={{ marginBottom: 8, background: "#222222", borderRadius: 8, padding: 8, color: '#f0f0f0' }}>{ds.name}</li>
             ))}
           </ul>
         </div>
@@ -111,7 +111,7 @@ export default function DataWarehouseConnector() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Analytics</div>
           <ul style={{ paddingLeft: 18 }}>
             {analytics.map((a, idx) => (
-              <li key={a.id || idx} style={{ marginBottom: 8, background: "#232336", borderRadius: 8, padding: 8, color: '#f0f0f0' }}>{a.name}</li>
+              <li key={a.id || idx} style={{ marginBottom: 8, background: "#222222", borderRadius: 8, padding: 8, color: '#f0f0f0' }}>{a.name}</li>
             ))}
           </ul>
         </div>
@@ -128,4 +128,5 @@ export default function DataWarehouseConnector() {
     </div>
   );
 }
+
 

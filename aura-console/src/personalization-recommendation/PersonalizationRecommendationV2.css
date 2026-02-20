@@ -40,7 +40,7 @@
 .stat-value {
   font-size: 28px;
   font-weight: 600;
-  color: #202223;
+  color: #202020;
   margin: 0;
 }
 
@@ -120,7 +120,7 @@
 .Polaris-DataTable__Cell--header {
   background-color: #f9fafb;
   font-weight: 600;
-  color: #202223;
+  color: #202020;
   text-transform: uppercase;
   font-size: 12px;
   letter-spacing: 0.5px;
@@ -173,7 +173,7 @@
 .pers-rec-title {
   font-size: 16px;
   font-weight: 600;
-  color: #202223;
+  color: #202020;
   margin: 0;
 }
 
@@ -243,7 +243,7 @@
 .pers-profile-name {
   font-size: 16px;
   font-weight: 600;
-  color: #202223;
+  color: #202020;
   margin: 0 0 4px 0;
 }
 
@@ -269,7 +269,7 @@
 .pers-profile-stat-value {
   font-size: 20px;
   font-weight: 600;
-  color: #202223;
+  color: #202020;
   margin: 0 0 4px 0;
 }
 
@@ -301,7 +301,7 @@
 .pers-campaign-title {
   font-size: 18px;
   font-weight: 600;
-  color: #202223;
+  color: #202020;
   margin: 0 0 6px 0;
 }
 
@@ -451,7 +451,7 @@
   justify-content: space-between;
   margin-bottom: 8px;
   font-size: 14px;
-  color: #202223;
+  color: #202020;
 }
 
 .Polaris-ProgressBar {
@@ -479,7 +479,7 @@
 .pers-chart-title {
   font-size: 16px;
   font-weight: 600;
-  color: #202223;
+  color: #202020;
   margin: 0 0 16px 0;
 }
 
@@ -556,7 +556,7 @@
 .pers-empty-title {
   font-size: 20px;
   font-weight: 600;
-  color: #202223;
+  color: #202020;
   margin: 0 0 8px 0;
 }
 
@@ -582,7 +582,7 @@
 .Polaris-Modal-Header__Title {
   font-size: 20px;
   font-weight: 600;
-  color: #202223;
+  color: #202020;
 }
 
 .Polaris-Modal-Section {
@@ -736,4 +736,5 @@
     page-break-inside: avoid;
   }
 }
+
 

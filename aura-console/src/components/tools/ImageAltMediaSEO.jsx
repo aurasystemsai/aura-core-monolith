@@ -8399,7 +8399,7 @@ export default function ImageAltMediaSEO() {
             {simulationSummary?.variants?.length ? (
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6, fontSize: 12, color: "#cbd5e1" }}>
                 {simulationSummary.variants.map(v => (
-                  <span key={v.variant} style={{ background: "#111827", border: "1px solid #333333", padding: "4px 8px", borderRadius: 8 }}>{v.variant}: {v.hitRate ?? v.hitRateAvg ?? "-"}%</span>
+                  <span key={v.variant} style={{ background: "#111111", border: "1px solid #333333", padding: "4px 8px", borderRadius: 8 }}>{v.variant}: {v.hitRate ?? v.hitRateAvg ?? "-"}%</span>
                 ))}
               </div>
             ) : null}
@@ -8443,7 +8443,7 @@ export default function ImageAltMediaSEO() {
             </div>
             <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 8, fontSize: 12, color: "#cbd5e1" }}>
               <span>Filter</span>
-              <select name="visionFilter" value={visionFilter} onChange={e => setVisionFilter(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #333333", background: "#0b1220", color: "#e2e8f0" }}>
+              <select name="visionFilter" value={visionFilter} onChange={e => setVisionFilter(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #333333", background: "#111111", color: "#e2e8f0" }}>
                 <option value="all">All</option>
                 <option value="mismatch">Mismatches</option>
                 <option value="ok">Aligned</option>
@@ -8457,13 +8457,13 @@ export default function ImageAltMediaSEO() {
                 if (visionFilter === "low-overlap") return typeof v.overlapScore === 'number' && v.overlapScore < 0.5;
                 return true;
               }).slice(0, 10).map((v, idx) => (
-                <li key={`qc-${idx}`} style={{ marginBottom: 10, background: "#0b1220", borderRadius: 8, padding: 10, border: "1px solid #333333" }}>
+                <li key={`qc-${idx}`} style={{ marginBottom: 10, background: "#111111", borderRadius: 8, padding: 10, border: "1px solid #333333" }}>
                   <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                     <div style={{ flex: "0 0 120px" }}>
                       {v.url ? (
                         <img src={v.url} alt="Vision sample" loading="lazy" style={{ width: 120, height: 120, objectFit: "contain", borderRadius: 8, background: "#0b0b0b" }} />
                       ) : (
-                        <div style={{ width: 120, height: 120, borderRadius: 8, background: "#111827", border: "1px dashed #555", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 12 }}>
+                        <div style={{ width: 120, height: 120, borderRadius: 8, background: "#111111", border: "1px dashed #555", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 12 }}>
                           No image
                         </div>
                       )}
@@ -8669,7 +8669,7 @@ export default function ImageAltMediaSEO() {
             </>) }
           </div>
           {similarityResults?.length ? (
-            <div style={{ marginBottom: 12, background: "#111827", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
+            <div style={{ marginBottom: 12, background: "#111111", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 6 }}>
                 <div style={{ fontWeight: 700 }}>Similar results for “{similarityQuery.trim()}” (top {similarityLimit})</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -8736,7 +8736,7 @@ export default function ImageAltMediaSEO() {
           <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               <span style={{ fontSize: 13, color: "#cbd5e1" }}>Filter</span>
-              <select name="filterMode" value={filterMode} onChange={e => setFilterMode(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#111827", color: "#e2e8f0" }}>
+              <select name="filterMode" value={filterMode} onChange={e => setFilterMode(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#111111", color: "#e2e8f0" }}>
                 <option value="all">All</option>
                 <option value="missing">Missing</option>
                 <option value="short">Short</option>
@@ -8746,7 +8746,7 @@ export default function ImageAltMediaSEO() {
             </div>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               <span style={{ fontSize: 13, color: "#cbd5e1" }}>Sort</span>
-              <select name="sortMode" value={sortMode} onChange={e => setSortMode(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#111827", color: "#e2e8f0" }}>
+              <select name="sortMode" value={sortMode} onChange={e => setSortMode(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#111111", color: "#e2e8f0" }}>
                 <option value="newest">Newest</option>
                 <option value="oldest">Oldest</option>
                 <option value="score">Score</option>
@@ -8763,7 +8763,7 @@ export default function ImageAltMediaSEO() {
               Clear selection
             </button>
           </div>
-          <div style={{ marginBottom: 12, background: "#0b1220", borderRadius: 10, padding: 12, border: "1px solid #333333" }}>
+          <div style={{ marginBottom: 12, background: "#111111", borderRadius: 10, padding: 12, border: "1px solid #333333" }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Action log (last 10)</div>
             {actionLog.length ? (
               <ul style={{ margin: 0, paddingLeft: 16 }}>
@@ -8776,7 +8776,7 @@ export default function ImageAltMediaSEO() {
               </ul>
             ) : <div style={{ fontSize: 12, color: "#94a3b8" }}>No actions yet.</div>}
           </div>
-          <div style={{ marginBottom: 12, background: "#0b1220", borderRadius: 10, padding: 12, border: "1px solid #333333" }}>
+          <div style={{ marginBottom: 12, background: "#111111", borderRadius: 10, padding: 12, border: "1px solid #333333" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <div style={{ fontWeight: 700 }}>Hooks observability</div>
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -8787,12 +8787,12 @@ export default function ImageAltMediaSEO() {
             </div>
             {hookMetrics ? (
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", fontSize: 12, color: "#cbd5e1" }}>
-                <span style={{ background: "#111827", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px" }}>Push ok {hookMetrics.push?.success || 0} / err {hookMetrics.push?.error || 0}</span>
-                <span style={{ background: "#111827", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px" }}>Pull ok {hookMetrics.pull?.success || 0} / err {hookMetrics.pull?.error || 0}</span>
-                <span style={{ background: "#111827", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px" }}>AI improve ok {hookMetrics.aiImprove?.success || 0} / err {hookMetrics.aiImprove?.error || 0}</span>
-                {hookMetrics.lastReplayAt ? <span style={{ background: "#111827", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px" }}>Last replay {new Date(hookMetrics.lastReplayAt).toLocaleTimeString()}</span> : null}
-                {hookMetrics.lastPush ? <span style={{ background: "#111827", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px" }}>Last push items {hookMetrics.lastPush.length}</span> : null}
-                {hookMetrics.persistedAt ? <span style={{ background: "#111827", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px" }}>Persisted {new Date(hookMetrics.persistedAt).toLocaleTimeString()}</span> : null}
+                <span style={{ background: "#111111", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px" }}>Push ok {hookMetrics.push?.success || 0} / err {hookMetrics.push?.error || 0}</span>
+                <span style={{ background: "#111111", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px" }}>Pull ok {hookMetrics.pull?.success || 0} / err {hookMetrics.pull?.error || 0}</span>
+                <span style={{ background: "#111111", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px" }}>AI improve ok {hookMetrics.aiImprove?.success || 0} / err {hookMetrics.aiImprove?.error || 0}</span>
+                {hookMetrics.lastReplayAt ? <span style={{ background: "#111111", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px" }}>Last replay {new Date(hookMetrics.lastReplayAt).toLocaleTimeString()}</span> : null}
+                {hookMetrics.lastPush ? <span style={{ background: "#111111", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px" }}>Last push items {hookMetrics.lastPush.length}</span> : null}
+                {hookMetrics.persistedAt ? <span style={{ background: "#111111", border: "1px solid #333333", borderRadius: 8, padding: "4px 8px" }}>Persisted {new Date(hookMetrics.persistedAt).toLocaleTimeString()}</span> : null}
               </div>
             ) : <div style={{ fontSize: 12, color: "#94a3b8" }}>Refresh to see hook metrics.</div>}
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 8, fontSize: 12, color: "#cbd5e1" }}>
@@ -8874,7 +8874,7 @@ export default function ImageAltMediaSEO() {
                           style={{ width: "100%", maxWidth: 150, maxHeight: 150, objectFit: "contain", borderRadius: 8, background: "#0b0b0b" }}
                         />
                       ) : (
-                        <div style={{ width: 140, height: 120, borderRadius: 8, background: "#111827", border: "1px dashed #555", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 12 }}>
+                        <div style={{ width: 140, height: 120, borderRadius: 8, background: "#111111", border: "1px dashed #555", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 12 }}>
                           No image
                         </div>
                       )}
@@ -9239,7 +9239,7 @@ export default function ImageAltMediaSEO() {
                 </select>
               </label>
               {localeStyleGuides[translateLocale] ? (
-                <span style={{ fontSize: 11, color: "#cbd5e1", background: "#0b1220", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px" }}>
+                <span style={{ fontSize: 11, color: "#cbd5e1", background: "#111111", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px" }}>
                   Tone {localeStyleGuides[translateLocale].tone}; Formality {localeStyleGuides[translateLocale].formality}; Punct {localeStyleGuides[translateLocale].punctuation}; Numerals {localeStyleGuides[translateLocale].numerals}
                 </span>
               ) : null}
@@ -9364,7 +9364,7 @@ export default function ImageAltMediaSEO() {
           </div>
         )}
         {batchSummary && (
-          <div style={{ marginTop: 12, padding: 12, background: "#111827", borderRadius: 10, fontSize: 14 }}>
+          <div style={{ marginTop: 12, padding: 12, background: "#111111", borderRadius: 10, fontSize: 14 }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Batch summary</div>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
               <span>Total {batchSummary.total}</span>
@@ -9425,7 +9425,7 @@ export default function ImageAltMediaSEO() {
       </div>
 
       {runs?.length ? (
-        <div style={{ marginTop: 18, background: "#111827", borderRadius: 12, padding: 14 }}>
+        <div style={{ marginTop: 18, background: "#111111", borderRadius: 12, padding: 14 }}>
           <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Recent Batch Runs</div>
           <div style={{ marginBottom: 8, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             <button onClick={handleDownloadRuns} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "6px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Download runs JSON</button>
@@ -9531,7 +9531,7 @@ export default function ImageAltMediaSEO() {
                     <span style={{ fontSize: 13 }}>{p.label}</span>
                     <CircularProgress percent={pct} size={60} strokeWidth={6} color={good ? "#10b981" : "#f59e0b"} />
                   </div>
-                  <div style={{ position: "relative", height: 10, background: "#0b1220", borderRadius: 999 }}>
+                  <div style={{ position: "relative", height: 10, background: "#111111", borderRadius: 999 }}>
                     <div style={{ position: "absolute", left: `${Math.min(100, Math.max(0, target))}%`, top: 0, bottom: 0, width: 2, background: "#f59e0b", opacity: 0.7 }} />
                     <div style={{ width: `${pct}%`, height: "100%", borderRadius: 999, background: good ? "#22c55e" : "#f97316" }} />
                   </div>
@@ -13332,5 +13332,6 @@ export default function ImageAltMediaSEO() {
   </div>
 );
 }
+
 
 

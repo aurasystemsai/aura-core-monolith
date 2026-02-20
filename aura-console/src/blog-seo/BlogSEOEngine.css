@@ -1,5 +1,5 @@
-.blogseo-shell {
-  background: linear-gradient(135deg, #0b1724 0%, #0f2235 45%, #0d2d3d 100%);
+﻿.blogseo-shell {
+  background: linear-gradient(135deg, #111111 0%, #111111 45%, #0d2d3d 100%);
   color: #e9f1f7;
   border-radius: 18px;
   padding: 28px;
@@ -47,7 +47,7 @@
 
 .blogseo-btn.primary {
   background: linear-gradient(120deg, #22d3ee, #f59e0b);
-  color: #0b1724;
+  color: #111111;
   border: none;
 }
 
@@ -286,3 +286,4 @@
     grid-template-columns: 1fr;
   }
 }
+

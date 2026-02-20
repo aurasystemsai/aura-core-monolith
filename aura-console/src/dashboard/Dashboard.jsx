@@ -766,7 +766,7 @@ const Dashboard = ({ setActiveSection }) => {
 				}
 				.aura-toast { animation: toastIn 0.3s ease; }
 				@keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
-					.seo-issue-row:hover { background: #161d2e !important; transform: translateX(2px); }
+					.seo-issue-row:hover { background: #161616 !important; transform: translateX(2px); }
 			@keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
 			@keyframes scanSlide { from{opacity:0;transform:translateY(-6px);} to{opacity:1;transform:translateY(0);} }
 			@keyframes modalIn { from{opacity:0;transform:scale(0.96);} to{opacity:1;transform:scale(1);} }
@@ -1010,7 +1010,7 @@ const Dashboard = ({ setActiveSection }) => {
 							borderRadius: 10,
 							padding: "14px 16px",
 							border: "2px solid #1e1e1e",
-							background: "#0f1324",
+							background: "#111111",
 							color: "#f0f0f0",
 							fontSize: 15,
 							outline: "none",
@@ -1040,7 +1040,7 @@ const Dashboard = ({ setActiveSection }) => {
 						style={{
 							marginTop: 16,
 							padding: 16,
-							background: "#0f1324",
+							background: "#111111",
 							borderRadius: 10,
 							border: "1px solid #1e1e1e",
 						}}
@@ -1096,7 +1096,7 @@ const Dashboard = ({ setActiveSection }) => {
 							<div
 								key={idx}
 								style={{
-									background: "#0f1324",
+									background: "#111111",
 									border: "1px solid #1e1e1e",
 									borderRadius: 10,
 									padding: 16,
@@ -1459,7 +1459,7 @@ const Dashboard = ({ setActiveSection }) => {
 											alignItems: "center",
 											gap: 12,
 											padding: 12,
-											background: "#0f1324",
+											background: "#111111",
 											border: "1px solid #1e1e1e",
 											borderRadius: 8,
 										}}
@@ -1513,7 +1513,7 @@ const Dashboard = ({ setActiveSection }) => {
 											alignItems: "center",
 											gap: 12,
 											padding: 12,
-											background: "#0f1324",
+											background: "#111111",
 											border: "1px solid #3a2d1a",
 											borderRadius: 8,
 										}}
@@ -1606,5 +1606,6 @@ const Dashboard = ({ setActiveSection }) => {
 };
 
 export default Dashboard;
+
 
 

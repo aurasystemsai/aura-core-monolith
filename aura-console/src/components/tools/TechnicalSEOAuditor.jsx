@@ -231,7 +231,7 @@ export default function TechnicalSEOAuditor() {
       )}
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
       {analytics && analytics.length > 0 && (
-        <div style={{ marginTop: 24, background: "#1e2235", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: "#1e1e1e", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8, color: "#7fffd4" }}>Analytics</div>
           <div style={{ display: "flex", gap: 12 }}>
             <div style={{ background: "#0a0a0a", borderRadius: 8, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
@@ -293,4 +293,5 @@ export default function TechnicalSEOAuditor() {
     </div>
   );
 }
+
 

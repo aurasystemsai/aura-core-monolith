@@ -123,7 +123,7 @@ export default function ABTestingSuite() {
             {aiLoading ? 'Getting Suggestions…' : 'AI: Suggest Variants & Optimize'}
           </button>
           {aiSuggestions && (
-            <div style={{ background: '#232b3a', color: '#38bdf8', borderRadius: 8, padding: 14, marginTop: 10, whiteSpace: 'pre-line', fontSize: 15 }}>
+            <div style={{ background: '#1a1a1a', color: '#38bdf8', borderRadius: 8, padding: 14, marginTop: 10, whiteSpace: 'pre-line', fontSize: 15 }}>
               <strong>AI Suggestions:</strong>
               <div>{aiSuggestions}</div>
             </div>
@@ -149,20 +149,20 @@ export default function ABTestingSuite() {
               <button onClick={() => setVariants([...variants, { name: `Variant ${String.fromCharCode(65 + variants.length)}`, content: "" }])} className="btn btn-tertiary" style={{ marginTop: 6, width: '100%' }}>Add Variant</button>
             </div>
             {/* Drag-and-drop/Preview Area */}
-            <div style={{ flex: 2, minHeight: 220, border: '2px dashed #333333', borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#20293a' }}>
+            <div style={{ flex: 2, minHeight: 220, border: '2px dashed #333333', borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#1a1a1a' }}>
               <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>
                 Live Preview
                 <span title="See how each variant will look and behave. Edit content live." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
               </div>
               <div style={{ display: 'flex', gap: 12, width: '100%' }}>
                 {variants.map((v, i) => (
-                  <div key={i} style={{ flex: 1, background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, marginBottom: 8, boxShadow: '0 2px 8px #0002' }}>
+                  <div key={i} style={{ flex: 1, background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 120, marginBottom: 8, boxShadow: '0 2px 8px #0002' }}>
                     <div style={{ fontWeight: 700, marginBottom: 6 }}>{v.name}</div>
                     <textarea
                       value={v.content}
                       onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, content: e.target.value } : vv))}
                       placeholder="Variant content (HTML, text, etc.)"
-                      style={{ width: '100%', minHeight: 60, borderRadius: 6, border: '1px solid #333333', padding: 8, fontSize: 15, background: '#1a2230', color: '#e0e6ed' }}
+                      style={{ width: '100%', minHeight: 60, borderRadius: 6, border: '1px solid #333333', padding: 8, fontSize: 15, background: '#111111', color: '#e0e6ed' }}
                     />
                   </div>
                 ))}
@@ -171,7 +171,7 @@ export default function ABTestingSuite() {
           </div>
         </div>
         {/* Test Details, Targeting, Scheduling, Feature Flags */}
-        <div style={{ flex: 1, background: '#1e2633', borderRadius: 16, padding: 28 }}>
+        <div style={{ flex: 1, background: '#1e1e1e', borderRadius: 16, padding: 28 }}>
           <h4 style={{ fontWeight: 700, fontSize: 18, marginBottom: 12 }}>
             Test Details
             <span title="Name your test for easy tracking and reporting." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
@@ -259,7 +259,7 @@ export default function ABTestingSuite() {
         )}
         <div style={{ marginBottom: 18 }}>
           <strong>Variant Performance (Live):</strong>
-          <table style={{ width: '100%', marginTop: 8, background: '#232b3a', borderRadius: 8, color: '#e0e6ed', fontSize: 15 }}>
+          <table style={{ width: '100%', marginTop: 8, background: '#1a1a1a', borderRadius: 8, color: '#e0e6ed', fontSize: 15 }}>
             <thead>
               <tr style={{ color: '#38bdf8' }}>
                 <th style={{ padding: 6 }}>Variant</th>
@@ -283,21 +283,21 @@ export default function ABTestingSuite() {
           {/* Conversion Rate Chart */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Conversion Rate</div>
-            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
+            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
               {/* Live chart integration required. No placeholder. */}
             </div>
           </div>
           {/* Engagement Chart */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Engagement</div>
-            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
+            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
               {/* Live chart integration required. No placeholder. */}
             </div>
           </div>
           {/* AI Insights */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>AI Insights</div>
-            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
+            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
               {/* Live AI insights only. No static winner or recommendation. */}
             </div>
           </div>
@@ -305,13 +305,13 @@ export default function ABTestingSuite() {
       </section>
 
       {/* --- Collaboration, Comments, Versioning --- */}
-      <section className="abtest-collab" style={{ background: '#1e2633', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+      <section className="abtest-collab" style={{ background: '#1e1e1e', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 14 }}>Collaboration & Version History</h3>
         <div style={{ display: 'flex', gap: 32 }}>
           {/* Comments & Approvals */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Comments & Approvals</div>
-            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
+            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
               <div style={{ marginBottom: 8 }}><strong>Jane:</strong> "Ready for launch?" <span style={{ color: '#38bdf8', fontSize: 13 }}>2m ago</span></div>
               <div style={{ marginBottom: 8 }}><strong>Alex:</strong> "Approved. Roll out to 50%." <span style={{ color: '#0ea5e9', fontSize: 13 }}>1m ago</span></div>
               <form style={{ marginTop: 12 }}>
@@ -323,7 +323,7 @@ export default function ABTestingSuite() {
           {/* Activity Log */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Activity Log</div>
-            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
+            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
               <div>✔️ Test created by Jane <span style={{ color: '#38bdf8', fontSize: 13 }}>5m ago</span></div>
               <div>✔️ Variant B edited by Alex <span style={{ color: '#38bdf8', fontSize: 13 }}>3m ago</span></div>
               <div>✔️ Approved by Alex <span style={{ color: '#0ea5e9', fontSize: 13 }}>1m ago</span></div>
@@ -332,7 +332,7 @@ export default function ABTestingSuite() {
           {/* Rollback & Versioning */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Rollback & Versioning</div>
-            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
+            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
               <div><strong>Current Version:</strong> v1.2</div>
               <div style={{ marginTop: 8 }}>Previous: <button className="btn btn-tertiary" style={{ fontSize: 14, marginRight: 8 }}>v1.1</button> <button className="btn btn-tertiary" style={{ fontSize: 14 }}>v1.0</button></div>
               <div style={{ marginTop: 10, color: '#38bdf8' }}>Restore a previous version instantly.</div>
@@ -348,7 +348,7 @@ export default function ABTestingSuite() {
           {/* Shopify Integration */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Shopify</div>
-            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
+            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
               <div>Connected store: <strong>{window?.AURA_SHOP_DOMAIN || ''}</strong></div>
               <button className="btn btn-secondary" style={{ marginTop: 10 }}>Manage Connection</button>
             </div>
@@ -356,7 +356,7 @@ export default function ABTestingSuite() {
           {/* Analytics & CDP Integration */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Analytics & CDP</div>
-            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
+            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
               <div>Google Analytics, Segment, Amplitude</div>
               <button className="btn btn-secondary" style={{ marginTop: 10 }}>Configure Integrations</button>
             </div>
@@ -364,7 +364,7 @@ export default function ABTestingSuite() {
           {/* Webhooks & API Access */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Webhooks & API</div>
-            <div style={{ background: '#232b3a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
+            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
               <div>Push results to external systems</div>
               <button className="btn btn-secondary" style={{ marginTop: 10 }}>Manage Webhooks</button>
             </div>
@@ -373,7 +373,7 @@ export default function ABTestingSuite() {
       </section>
 
       {/* --- Security, Compliance, Accessibility --- */}
-      <section className="abtest-security" style={{ background: '#1e2633', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+      <section className="abtest-security" style={{ background: '#1e1e1e', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 14 }}>Security, Compliance & Accessibility</h3>
         <div style={{ color: '#64748b', fontSize: 16, minHeight: 60 }}>
           <span>SSO, RBAC, audit logs, GDPR/CCPA/HIPAA, and accessibility dashboards coming soon.</span>
@@ -404,6 +404,7 @@ export default function ABTestingSuite() {
     </div>
   );
 }
+
 
 
 

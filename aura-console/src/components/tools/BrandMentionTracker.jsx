@@ -99,7 +99,7 @@ export default function BrandMentionTracker() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Mentions</div>
           <ul style={{ paddingLeft: 18 }}>
             {mentions.map((m, idx) => (
-              <li key={m.id || idx} style={{ marginBottom: 8, background: "#232336", borderRadius: 8, padding: 8, color: '#f0f0f0' }}>{m.name}</li>
+              <li key={m.id || idx} style={{ marginBottom: 8, background: "#222222", borderRadius: 8, padding: 8, color: '#f0f0f0' }}>{m.name}</li>
             ))}
           </ul>
         </div>
@@ -120,7 +120,7 @@ export default function BrandMentionTracker() {
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#232336", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#222222", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}
@@ -135,4 +135,5 @@ export default function BrandMentionTracker() {
     </div>
   );
 }
+
 

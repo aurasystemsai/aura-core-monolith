@@ -185,7 +185,7 @@ export default function ReportingIntegrations() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#232336', borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
+    <div style={{ padding: 24, background: '#222222', borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Reporting Integrations</h3>
       <ul style={{ margin: '16px 0 0 18px', color: '#333333', fontSize: 16 }}>
         <li>Set up notifications, manage channels, customize alerts</li>
@@ -494,14 +494,14 @@ export default function ReportingIntegrations() {
   return (
     <div style={{ padding: 24 }}>
       {devSandbox && (
-        <div style={{ background: "#0b1221", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+        <div style={{ background: "#111111", border: "1px solid #1a1a1a", borderRadius: 12, padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
           <div>
             <div style={{ fontWeight: 800, color: "#f59e0b" }}>Sandbox mode</div>
             <div style={{ color: "#888888", fontSize: 13 }}>API-backed actions (feedback) are blocked in dev. Switch to Stage/Prod to send.</div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button onClick={() => setEnv("stage")} style={{ background: "#1a1a1a", color: "#f0f0f0", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer", border: "1px solid #333333" }}>Switch to Stage</button>
-            <button onClick={() => setEnv("prod")} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Go Prod</button>
+            <button onClick={() => setEnv("prod")} style={{ background: "#22c55e", color: "#111111", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Go Prod</button>
           </div>
         </div>
       )}
@@ -513,41 +513,41 @@ export default function ReportingIntegrations() {
       )}
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Reporting Integrations</h2>
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
-        <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700 }}>
+        <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700 }}>
           <option value="dev">Dev</option>
           <option value="stage">Stage</option>
           <option value="prod">Prod</option>
         </select>
-        <select value={activeShop} onChange={e => setActiveShop(e.target.value)} style={{ background: "#0b1221", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700 }}>
+        <select value={activeShop} onChange={e => setActiveShop(e.target.value)} style={{ background: "#111111", color: "#f0f0f0", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700 }}>
           {shops.map(s => <option key={s.domain} value={s.domain}>{s.domain}</option>)}
         </select>
-        <select value={role} onChange={e => setRole(e.target.value)} style={{ background: '#0b1221', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 8, padding: '8px 12px', fontWeight: 700 }}>
+        <select value={role} onChange={e => setRole(e.target.value)} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 8, padding: '8px 12px', fontWeight: 700 }}>
           <option value="admin">Admin</option>
           <option value="editor">Editor</option>
           <option value="viewer">Viewer</option>
         </select>
         <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 4 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
         <div style={{ color: '#888888', fontSize: 13 }}>Owner routing</div>
-        <input value={owner} onChange={e => setOwner(e.target.value)} style={{ background: '#0b1221', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 8, padding: '7px 10px', minWidth: 200 }} placeholder="owner email" />
+        <input value={owner} onChange={e => setOwner(e.target.value)} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 8, padding: '7px 10px', minWidth: 200 }} placeholder="owner email" />
       </div>
       {showOnboarding && onboardingContent}
       {/* Health */}
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12, minWidth: 220 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12, minWidth: 220 }}>
           <div style={{ color: '#888888', fontSize: 12 }}>Sync health</div>
           <div style={{ fontWeight: 800, color: syncHealth.status === 'healthy' ? '#22c55e' : '#f87171' }}>{syncHealth.status}</div>
           <div style={{ color: '#888888', fontSize: 12 }}>Last success: {syncHealth.lastSuccess ? new Date(syncHealth.lastSuccess).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
           {syncHealth.lastError && <div style={{ color: '#f87171', fontSize: 12 }}>Last error: {syncHealth.lastError}</div>}
         </div>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12, minWidth: 220 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12, minWidth: 220 }}>
           <div style={{ color: '#888888', fontSize: 12 }}>SLOs</div>
           <div style={{ color: '#f0f0f0', fontWeight: 800 }}>Latency: {slo.latencyMs} ms</div>
           <div style={{ color: '#f0f0f0', fontWeight: 800 }}>Error rate: {slo.errorRate}%</div>
           <div style={{ color: '#888888', fontSize: 12 }}>Next sync: {slo.nextSync ? new Date(slo.nextSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
           <div style={{ color: '#888888', fontSize: 12, marginTop: 4 }}>Perf budget: {perfBudget.applyMs}ms apply · {perfBudget.syncMs}ms sync</div>
-          <button onClick={enforcePerfBudget} disabled={isReadOnly} style={{ marginTop: 6, background: '#0b1221', color: isReadOnly ? '#444444' : '#22c55e', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: isReadOnly ? 'not-allowed' : 'pointer', fontWeight: 700 }}>Enforce budget</button>
+          <button onClick={enforcePerfBudget} disabled={isReadOnly} style={{ marginTop: 6, background: '#111111', color: isReadOnly ? '#444444' : '#22c55e', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: isReadOnly ? 'not-allowed' : 'pointer', fontWeight: 700 }}>Enforce budget</button>
         </div>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12, minWidth: 220 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12, minWidth: 220 }}>
           <div style={{ color: '#888888', fontSize: 12 }}>Shopify API</div>
           <div style={{ color: '#f0f0f0', fontWeight: 800 }}>{activeShop}</div>
           <div style={{ color: '#888888', fontSize: 12 }}>Call limit: {rateLimit.used}/{rateLimit.total} · Cost: {apiCost.current}/{apiCost.limit}</div>
@@ -561,7 +561,7 @@ export default function ReportingIntegrations() {
             <div style={{ marginTop: 6, color: '#888888', fontSize: 12 }}>Progress: sync {syncProgress}% · replay {replayProgress}%</div>
           )}
         </div>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12, minWidth: 220 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12, minWidth: 220 }}>
           <div style={{ color: '#888888', fontSize: 12 }}>Session</div>
           <div style={{ color: '#22c55e', fontWeight: 800 }}>Active</div>
           <button onClick={handleReauth} style={{ marginTop: 6, background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 12px', fontWeight: 700, cursor: 'pointer' }}>Re-auth shop</button>
@@ -569,11 +569,11 @@ export default function ReportingIntegrations() {
       </div>
       {/* Notifications Table */}
       <div style={{ marginBottom: 16, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Channel SLOs</div>
           <div style={{ display: 'grid', gap: 8, marginTop: 6 }}>
             {channelsSlo.map(c => (
-              <div key={c.channel} style={{ background: '#111827', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div key={c.channel} style={{ background: '#111111', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{c.channel.toUpperCase()}</div>
                   <div style={{ color: '#888888', fontSize: 12 }}>Latency {c.latency}ms · Error {c.errorRate}%</div>
@@ -583,7 +583,7 @@ export default function ReportingIntegrations() {
             ))}
           </div>
         </div>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Safe rollout</div>
           <div style={{ color: '#888888', fontSize: 13, marginTop: 4 }}>Canary rollout with auto-rollback on error</div>
           <div style={{ marginTop: 8, display: 'grid', gap: 8 }}>
@@ -594,12 +594,12 @@ export default function ReportingIntegrations() {
             <div style={{ color: '#888888', fontSize: 12 }}>Auto-rollback if error &gt; {rollout.errorThreshold}% during canary.</div>
           </div>
         </div>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Backpressure</div>
           <div style={{ display: 'grid', gap: 6, marginTop: 6, color: '#f0f0f0' }}>
             <div>Concurrency: <input type="number" min="1" value={backpressure.concurrency} onChange={e => setBackpressure(b => ({ ...b, concurrency: Number(e.target.value) || 1 }))} style={{ width: 70 }} /></div>
             <div>Queue depth: <input type="number" min="10" value={backpressure.queueDepth} onChange={e => setBackpressure(b => ({ ...b, queueDepth: Number(e.target.value) || 10 }))} style={{ width: 90 }} /></div>
-            <div>Drop policy: <select value={backpressure.dropPolicy} onChange={e => setBackpressure(b => ({ ...b, dropPolicy: e.target.value }))} style={{ background: '#111827', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 6, padding: '4px 6px' }}>
+            <div>Drop policy: <select value={backpressure.dropPolicy} onChange={e => setBackpressure(b => ({ ...b, dropPolicy: e.target.value }))} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 6, padding: '4px 6px' }}>
               <option value="oldest">Drop oldest</option>
               <option value="newest">Drop newest</option>
               <option value="block">Block</option>
@@ -607,19 +607,19 @@ export default function ReportingIntegrations() {
             <div style={{ color: '#888888', fontSize: 12 }}>Backlog: {backpressure.queueDepth} · Drop: {backpressure.dropPolicy}</div>
           </div>
         </div>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Contract tests</div>
           <button onClick={runContractTests} style={{ marginTop: 6, background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: 'pointer' }}>Run tests</button>
           <div style={{ display: 'grid', gap: 6, marginTop: 8 }}>
             {contractTests.map((t, idx) => (
-              <div key={idx} style={{ background: '#111827', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a' }}>
+              <div key={idx} style={{ background: '#111111', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a' }}>
                 <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{t.name}</div>
                 <div style={{ color: t.status === 'pass' ? '#22c55e' : t.status === 'fail' ? '#f87171' : '#888888', fontSize: 13 }}>{t.status}{t.latency ? ` · ${t.latency}ms` : ''}</div>
               </div>
             ))}
           </div>
         </div>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Env drift</div>
           <div style={{ color: '#888888', fontSize: 13 }}>Compare {env} vs stage for config drift.</div>
           <button onClick={calculateDrift} style={{ marginTop: 8, background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: 'pointer' }}>Check drift</button>
@@ -627,24 +627,24 @@ export default function ReportingIntegrations() {
           <div style={{ marginTop: 10, display: 'grid', gap: 6 }}>
             <div style={{ color: '#888888', fontSize: 12 }}>Config snapshots</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button onClick={snapshotConfigs} disabled={isReadOnly} style={{ background: '#0b1221', color: isReadOnly ? '#444444' : '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: isReadOnly ? 'not-allowed' : 'pointer', fontWeight: 700 }}>Snapshot now</button>
-              <button onClick={() => restoreConfigSnapshot()} disabled={isReadOnly || configSnapshots.length === 0} style={{ background: '#0b1221', color: isReadOnly ? '#444444' : '#fbbf24', border: '1px dashed #f59e0b', borderRadius: 8, padding: '6px 10px', cursor: isReadOnly ? 'not-allowed' : 'pointer', fontWeight: 700 }}>Restore last</button>
+              <button onClick={snapshotConfigs} disabled={isReadOnly} style={{ background: '#111111', color: isReadOnly ? '#444444' : '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: isReadOnly ? 'not-allowed' : 'pointer', fontWeight: 700 }}>Snapshot now</button>
+              <button onClick={() => restoreConfigSnapshot()} disabled={isReadOnly || configSnapshots.length === 0} style={{ background: '#111111', color: isReadOnly ? '#444444' : '#fbbf24', border: '1px dashed #f59e0b', borderRadius: 8, padding: '6px 10px', cursor: isReadOnly ? 'not-allowed' : 'pointer', fontWeight: 700 }}>Restore last</button>
             </div>
             <div style={{ display: 'grid', gap: 6 }}>
               {configSnapshots.map(s => (
-                <div key={s.id} style={{ background: '#111827', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a', display: 'grid', gap: 4 }}>
+                <div key={s.id} style={{ background: '#111111', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a', display: 'grid', gap: 4 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{s.label}</div>
                     <div style={{ color: '#888888', fontSize: 12 }}>{s.created}</div>
                   </div>
                   <div style={{ color: s.drift === 0 ? '#22c55e' : '#fbbf24', fontSize: 12 }}>Drift: {s.drift}</div>
-                  <button onClick={() => restoreConfigSnapshot(s.id)} disabled={isReadOnly} style={{ background: '#0b1221', color: isReadOnly ? '#444444' : '#22c55e', border: '1px solid #333333', borderRadius: 6, padding: '6px 8px', cursor: isReadOnly ? 'not-allowed' : 'pointer', fontWeight: 700 }}>Restore</button>
+                  <button onClick={() => restoreConfigSnapshot(s.id)} disabled={isReadOnly} style={{ background: '#111111', color: isReadOnly ? '#444444' : '#22c55e', border: '1px solid #333333', borderRadius: 6, padding: '6px 8px', cursor: isReadOnly ? 'not-allowed' : 'pointer', fontWeight: 700 }}>Restore</button>
                 </div>
               ))}
             </div>
           </div>
         </div>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Rate-limit planner</div>
           <div style={{ color: '#888888', fontSize: 13 }}>Forecast calls vs Shopify cost headers</div>
           <div style={{ marginTop: 6, display: 'grid', gap: 6 }}>
@@ -653,10 +653,10 @@ export default function ReportingIntegrations() {
             <button onClick={adjustRatePlan} style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: 'pointer' }}>Recalculate</button>
           </div>
         </div>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Retry policy</div>
           <div style={{ display: 'grid', gap: 6, marginTop: 6, color: '#f0f0f0' }}>
-            <div>Strategy: <select value={retryPolicy.strategy} onChange={e => setRetryPolicy(r => ({ ...r, strategy: e.target.value }))} style={{ background: '#111827', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 6, padding: '4px 6px' }}>
+            <div>Strategy: <select value={retryPolicy.strategy} onChange={e => setRetryPolicy(r => ({ ...r, strategy: e.target.value }))} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 6, padding: '4px 6px' }}>
               <option value="exponential">Exponential</option>
               <option value="fixed">Fixed</option>
             </select></div>
@@ -665,12 +665,12 @@ export default function ReportingIntegrations() {
             <button onClick={applyRetryPolicy} style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: 'pointer' }}>Apply</button>
           </div>
         </div>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Synthetic checks</div>
           <button onClick={runSynthetic} style={{ marginTop: 6, background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: 'pointer' }}>Run synthetic</button>
           <div style={{ display: 'grid', gap: 6, marginTop: 8 }}>
             {syntheticChecks.map((s, idx) => (
-              <div key={idx} style={{ background: '#111827', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a' }}>
+              <div key={idx} style={{ background: '#111111', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a' }}>
                 <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{s.name}</div>
                 <div style={{ color: s.status === 'ok' ? '#22c55e' : s.status === 'fail' ? '#f87171' : '#888888', fontSize: 13 }}>{s.status}{s.latency ? ` · ${s.latency}ms` : ''}</div>
               </div>
@@ -680,19 +680,19 @@ export default function ReportingIntegrations() {
             <div style={{ color: '#888888', fontSize: 12 }}>Daypart health</div>
             <div style={{ display: 'grid', gap: 6 }}>
               {Object.entries(daypartHealth).map(([label, pct]) => (
-                <div key={label} style={{ background: '#111827', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div key={label} style={{ background: '#111111', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{label}</div>
                   <div style={{ color: pct > 85 ? '#22c55e' : pct > 70 ? '#fbbf24' : '#f87171', fontWeight: 800 }}>{pct}%</div>
                 </div>
               ))}
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button onClick={refreshDaypartHealth} style={{ background: '#0b1221', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>Refresh</button>
+              <button onClick={refreshDaypartHealth} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>Refresh</button>
               <button onClick={simulateSlaBreach} style={{ background: '#b91c1c', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>Sim SLA breach</button>
             </div>
           </div>
         </div>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Tenant isolation</div>
           <div style={{ color: '#888888', fontSize: 13 }}>Check cross-shop leakage risks</div>
           <button onClick={checkTenantIsolation} style={{ marginTop: 6, background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: 'pointer' }}>Run check</button>
@@ -726,7 +726,7 @@ export default function ReportingIntegrations() {
             <span>No channels yet. Add or import to see results.</span>
           )}
         </div>
-        <div style={{ marginTop: 10, background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 10, padding: 10 }}>
+        <div style={{ marginTop: 10, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 10, padding: 10 }}>
           <div style={{ fontWeight: 700, color: '#f0f0f0', marginBottom: 6 }}>Drilldown — {channelView.toUpperCase()}</div>
           <div style={{ color: '#888888', fontSize: 13 }}>Retries: auto with backoff · Suppress in sandbox: {devSandbox ? 'on' : 'off'}</div>
           {channelErrors[channelView] && channelErrors[channelView].length > 0 ? (
@@ -748,11 +748,11 @@ export default function ReportingIntegrations() {
             <span>No alerts yet. Add or import to see results.</span>
           )}
         </div>
-        <div style={{ marginTop: 10, background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 10, padding: 10 }}>
+        <div style={{ marginTop: 10, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 10, padding: 10 }}>
           <div style={{ fontWeight: 700, color: '#f0f0f0', marginBottom: 6 }}>Webhooks</div>
           <div style={{ display: 'grid', gap: 8 }}>
             {webhooks.map(wh => (
-              <div key={wh.topic} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', background: '#111827', borderRadius: 8, padding: '8px 10px', border: '1px solid #1a1a1a' }}>
+              <div key={wh.topic} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', background: '#111111', borderRadius: 8, padding: '8px 10px', border: '1px solid #1a1a1a' }}>
                 <div>
                   <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{wh.topic}</div>
                   <div style={{ color: '#888888', fontSize: 12 }}>Last delivery: {wh.lastDelivery} · {wh.endpoint}</div>
@@ -765,11 +765,11 @@ export default function ReportingIntegrations() {
             ))}
           </div>
         </div>
-        <div style={{ marginTop: 10, background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 10, padding: 10 }}>
+        <div style={{ marginTop: 10, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 10, padding: 10 }}>
           <div style={{ fontWeight: 700, color: '#f0f0f0', marginBottom: 6 }}>Webhook delivery explorer</div>
           <div style={{ display: 'grid', gap: 8 }}>
             {deliveries.map(d => (
-              <div key={d.id} style={{ background: '#111827', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <div key={d.id} style={{ background: '#111111', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <div>
                   <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{d.topic}</div>
                   <div style={{ color: '#888888', fontSize: 12 }}>Status {d.status} · {d.latency}ms · {d.when}</div>
@@ -784,26 +784,26 @@ export default function ReportingIntegrations() {
           </div>
         </div>
       </div>
-      <div style={{ marginBottom: 24, background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+      <div style={{ marginBottom: 24, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
           <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Inline payload simulator</div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button onClick={() => applyPresetPayload('email')} style={{ background: '#111827', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>Email preset</button>
+            <button onClick={() => applyPresetPayload('email')} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>Email preset</button>
             <button onClick={() => applyPresetPayload('webhook')} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>Webhook preset</button>
             <button onClick={() => applyPresetPayload('slack')} style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>Incident preset</button>
           </div>
         </div>
-        <textarea value={inlinePayload} onChange={e => setInlinePayload(e.target.value)} rows={4} style={{ width: '100%', background: '#111827', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: 10, fontFamily: 'monospace' }} />
+        <textarea value={inlinePayload} onChange={e => setInlinePayload(e.target.value)} rows={4} style={{ width: '100%', background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: 10, fontFamily: 'monospace' }} />
         <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button onClick={validateInlinePayload} style={{ background: '#0b1221', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>Validate</button>
-          <button onClick={simulateSend} disabled={isReadOnly} style={{ background: '#22c55e', color: isReadOnly ? '#444444' : '#0b1221', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: isReadOnly ? 'not-allowed' : 'pointer', fontWeight: 800 }}>Simulate send</button>
+          <button onClick={validateInlinePayload} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>Validate</button>
+          <button onClick={simulateSend} disabled={isReadOnly} style={{ background: '#22c55e', color: isReadOnly ? '#444444' : '#111111', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: isReadOnly ? 'not-allowed' : 'pointer', fontWeight: 800 }}>Simulate send</button>
           <div style={{ color: '#888888', fontSize: 12 }}>Endpoint: {mockEndpoint}</div>
           {simulateResult && <div style={{ color: simulateResult.status === 'ok' ? '#22c55e' : simulateResult.status === 'blocked' ? '#fbbf24' : '#f0f0f0', fontWeight: 700 }}>Result: {simulateResult.status} {simulateResult.code ? `· ${simulateResult.code}` : ''}</div>}
         </div>
         <div style={{ marginTop: 6, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', color: '#888888', fontSize: 12 }}>
           <span>Channel breakers</span>
           {['email','sms','webhook'].map(ch => (
-            <label key={ch} style={{ display: 'flex', gap: 6, alignItems: 'center', background: '#111827', border: '1px solid #1a1a1a', borderRadius: 8, padding: '4px 8px' }}>
+            <label key={ch} style={{ display: 'flex', gap: 6, alignItems: 'center', background: '#111111', border: '1px solid #1a1a1a', borderRadius: 8, padding: '4px 8px' }}>
               <input type="checkbox" checked={channelBreakers[ch]} onChange={e => { setChannelBreakers(prev => ({ ...prev, [ch]: e.target.checked })); recordTrace('circuit_toggle', { channel: ch, on: e.target.checked }); }} />
               <span>{ch} {channelBreakers[ch] ? 'open' : 'closed'}</span>
             </label>
@@ -827,7 +827,7 @@ export default function ReportingIntegrations() {
         {exported && <a href={exported} download="notifications.json" style={{ marginLeft: 12, color: '#22c55e', textDecoration: 'underline' }}>Download Export</a>}
       </div>
       {/* DLQ & Incident mode */}
-      <div style={{ marginBottom: 24, background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+      <div style={{ marginBottom: 24, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Dead-letter queue</div>
           <label style={{ display: 'flex', gap: 6, alignItems: 'center', color: '#888888', fontSize: 13 }}>
@@ -838,20 +838,20 @@ export default function ReportingIntegrations() {
           {dlq.length === 0 ? (
             <div style={{ color: '#22c55e', fontSize: 13 }}>DLQ empty</div>
           ) : dlq.map(item => (
-            <div key={item.id} style={{ background: '#111827', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <div key={item.id} style={{ background: '#111111', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <div>
                 <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{item.id}</div>
                 <div style={{ color: '#888888', fontSize: 12 }}>Reason {item.reason} · Attempts {item.attempts}</div>
                 <div style={{ color: '#888888', fontSize: 12 }}>Payload: {item.payload}</div>
               </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  <button onClick={() => moveDlqToQueue(item.id)} style={{ background: '#22c55e', color: '#0b1221', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Requeue</button>
+                  <button onClick={() => moveDlqToQueue(item.id)} style={{ background: '#22c55e', color: '#111111', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Requeue</button>
                   <button onClick={() => ackDlq(item.id)} style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', fontWeight: 700, cursor: 'pointer' }}>Ack</button>
                 </div>
             </div>
           ))}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-            <button onClick={runMockCheck} style={{ background: '#0b1221', color: '#fbbf24', border: '1px dashed #f59e0b', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>Check mock server</button>
+            <button onClick={runMockCheck} style={{ background: '#111111', color: '#fbbf24', border: '1px dashed #f59e0b', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>Check mock server</button>
               <button onClick={drainDlq} style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>Drain DLQ</button>
             <div style={{ color: '#888888', fontSize: 12 }}>Status: {mockServer.status} · Body: {mockServer.body}</div>
             {mockServer.result && <div style={{ color: mockServer.result.ok ? '#22c55e' : '#f87171', fontWeight: 700 }}>Latency {mockServer.result.latency}ms · {mockServer.result.ok ? 'OK' : 'Fail'}</div>}
@@ -859,7 +859,7 @@ export default function ReportingIntegrations() {
         </div>
       </div>
       {importValidation && (
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12, marginBottom: 12 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12, marginBottom: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Dry run results</div>
             {pendingImport && <div style={{ color: '#888888', fontSize: 12 }}>{pendingImport.fileName}</div>}
@@ -876,11 +876,11 @@ export default function ReportingIntegrations() {
             <div style={{ marginTop: 10, display: 'grid', gap: 6 }}>
               <div style={{ color: '#f0f0f0', fontWeight: 700 }}>Preview</div>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: 220, background: '#111827', borderRadius: 8, padding: 10, border: '1px solid #1a1a1a' }}>
+                <div style={{ flex: 1, minWidth: 220, background: '#111111', borderRadius: 8, padding: 10, border: '1px solid #1a1a1a' }}>
                   <div style={{ color: '#888888', fontSize: 12 }}>Current</div>
                   <div style={{ color: '#f0f0f0', fontWeight: 800 }}>{notifications.length} notifications</div>
                 </div>
-                <div style={{ flex: 1, minWidth: 220, background: '#111827', borderRadius: 8, padding: 10, border: '1px solid #1a1a1a' }}>
+                <div style={{ flex: 1, minWidth: 220, background: '#111111', borderRadius: 8, padding: 10, border: '1px solid #1a1a1a' }}>
                   <div style={{ color: '#888888', fontSize: 12 }}>Incoming</div>
                   <div style={{ color: '#f0f0f0', fontWeight: 800 }}>{pendingImport.data.length} notifications</div>
                 </div>
@@ -889,38 +889,38 @@ export default function ReportingIntegrations() {
           )}
           <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
             <button onClick={() => setPendingImport(null)} style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', fontWeight: 700, cursor: 'pointer' }}>Discard</button>
-            <button disabled={!pendingImport || (importValidation.issues && importValidation.issues.some(i => i.toLowerCase().includes('must') || i.toLowerCase().includes('invalid')))} onClick={applyPendingImport} style={{ background: pendingImport ? '#22c55e' : '#333333', color: pendingImport ? '#0b1221' : '#444444', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: pendingImport ? 'pointer' : 'not-allowed' }}>Apply import</button>
+            <button disabled={!pendingImport || (importValidation.issues && importValidation.issues.some(i => i.toLowerCase().includes('must') || i.toLowerCase().includes('invalid')))} onClick={applyPendingImport} style={{ background: pendingImport ? '#22c55e' : '#333333', color: pendingImport ? '#111111' : '#444444', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: pendingImport ? 'pointer' : 'not-allowed' }}>Apply import</button>
           </div>
         </div>
       )}
       {notifications.length >= 10 && <div style={{ color: '#fbbf24', fontSize: 13, marginBottom: 12 }}>Perf detail: {notifications.length} notifications — consider splitting per channel.</div>}
       {history.length > 0 && (
-        <div style={{ marginBottom: 18, background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12, display: 'grid', gap: 8 }}>
+        <div style={{ marginBottom: 18, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12, display: 'grid', gap: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Recent activity</div>
             <div style={{ color: '#888888', fontSize: 12 }}>Last {Math.min(3, history.length)} shown</div>
           </div>
           <div style={{ display: 'grid', gap: 8 }}>
             {history.slice(0, 3).map((h, idx) => (
-              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#111827', border: '1px solid #1a1a1a', borderRadius: 10, padding: '8px 10px' }}>
+              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#111111', border: '1px solid #1a1a1a', borderRadius: 10, padding: '8px 10px' }}>
                 <div>
                   <div style={{ fontWeight: 700, color: '#f0f0f0' }}>{h.summary || 'Snapshot'}</div>
                   <div style={{ color: '#888888', fontSize: 12 }}>{h.at ? new Date(h.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'recent'} · {h.env}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   <button onClick={() => restoreSnapshot(h)} style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', fontWeight: 700, cursor: 'pointer' }}>Load</button>
-                  <button onClick={() => { restoreSnapshot(h); setTimeout(() => handleExport(), 0); }} style={{ background: '#22c55e', color: '#0b1221', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Export</button>
+                  <button onClick={() => { restoreSnapshot(h); setTimeout(() => handleExport(), 0); }} style={{ background: '#22c55e', color: '#111111', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Export</button>
                 </div>
               </div>
             ))}
           </div>
         </div>
       )}
-      <div style={{ marginBottom: 18, background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+      <div style={{ marginBottom: 18, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
         <div style={{ fontWeight: 800, color: '#f0f0f0', marginBottom: 6 }}>Channel cost & error budget</div>
         <div style={{ display: 'grid', gap: 8 }}>
           {Object.entries(channelCosts).map(([ch, stats]) => (
-            <div key={ch} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#111827', borderRadius: 8, padding: '8px 10px', border: '1px solid #1a1a1a' }}>
+            <div key={ch} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#111111', borderRadius: 8, padding: '8px 10px', border: '1px solid #1a1a1a' }}>
               <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{ch.toUpperCase()}</div>
               <div style={{ color: '#888888', fontSize: 12 }}>Cost {stats.cost} · Errors {stats.errors}</div>
               <button onClick={() => setChannelCosts(prev => ({ ...prev, [ch]: { ...stats, errors: Math.max(0, stats.errors - 1) } }))} style={{ background: '#1a1a1a', color: '#f0f0f0', border: '1px solid #333333', borderRadius: 8, padding: '6px 10px', fontWeight: 700, cursor: 'pointer' }}>Ack error</button>
@@ -940,14 +940,14 @@ export default function ReportingIntegrations() {
         </div>
       </div>
       {/* Secrets posture */}
-      <div style={{ marginBottom: 24, background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+      <div style={{ marginBottom: 24, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Secrets posture</div>
           <div style={{ color: '#888888', fontSize: 12 }}>Rotate and audit secrets by channel</div>
         </div>
         <div style={{ display: 'grid', gap: 8, marginTop: 8 }}>
           {secrets.map(s => (
-            <div key={s.key} style={{ background: '#111827', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <div key={s.key} style={{ background: '#111111', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <div>
                 <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{s.key}</div>
                 <div style={{ color: '#888888', fontSize: 12 }}>Rotated: {s.rotatedAt || '—'}</div>
@@ -960,12 +960,12 @@ export default function ReportingIntegrations() {
       </div>
       {/* Data classification & dependency map */}
       <div style={{ marginBottom: 24, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Data classification</div>
           <div style={{ color: '#888888', fontSize: 12 }}>Mask PII/PCI fields in previews</div>
           <div style={{ display: 'grid', gap: 6, marginTop: 8 }}>
             {classification.map((c, idx) => (
-              <div key={idx} style={{ background: '#111827', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div key={idx} style={{ background: '#111111', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{c.field}</div>
                   <div style={{ color: '#888888', fontSize: 12 }}>{c.tag}</div>
@@ -975,12 +975,12 @@ export default function ReportingIntegrations() {
             ))}
           </div>
         </div>
-        <div style={{ background: '#0b1221', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 800, color: '#f0f0f0' }}>Dependencies</div>
           <div style={{ color: '#888888', fontSize: 12 }}>Upstream/downstream visibility</div>
           <div style={{ display: 'grid', gap: 6, marginTop: 8 }}>
             {dependencyMap.map((d, idx) => (
-              <div key={idx} style={{ background: '#111827', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a' }}>
+              <div key={idx} style={{ background: '#111111', borderRadius: 8, padding: 8, border: '1px solid #1a1a1a' }}>
                 <div style={{ color: '#f0f0f0', fontWeight: 700 }}>{d.from} → {d.to}</div>
               </div>
             ))}
@@ -988,7 +988,7 @@ export default function ReportingIntegrations() {
         </div>
       </div>
       {/* Feedback */}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#232336', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#222222', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}
@@ -1002,8 +1002,8 @@ export default function ReportingIntegrations() {
         {error && (
           <div style={{ color: '#ef4444', marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
             <span>{error}</span>
-            {quickFixForIssue(error) === 'retry' && <button onClick={() => { setError(''); handleFeedback(); }} style={{ background: '#22c55e', color: '#0b1221', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Retry</button>}
-            {quickFixForIssue(error) === 'reset' && <button onClick={() => setNotifications([])} style={{ background: '#22c55e', color: '#0b1221', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Reset data</button>}
+            {quickFixForIssue(error) === 'retry' && <button onClick={() => { setError(''); handleFeedback(); }} style={{ background: '#22c55e', color: '#111111', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Retry</button>}
+            {quickFixForIssue(error) === 'reset' && <button onClick={() => setNotifications([])} style={{ background: '#22c55e', color: '#111111', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Reset data</button>}
           </div>
         )}
       </form>
@@ -1014,4 +1014,5 @@ export default function ReportingIntegrations() {
     </div>
   );
 }
+
 
