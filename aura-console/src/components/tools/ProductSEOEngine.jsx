@@ -433,7 +433,7 @@ export default function ProductSEOEngine() {
                   <div style={{ fontSize: 12, fontWeight: 700, color: "#888888", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.5 }}>Focus Keywords <span style={{ fontWeight: 400, textTransform: "none" }}>(Enter or comma to add)</span></div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6, background: "#0b1220", border: "1px solid #1a1a1a", borderRadius: 10, padding: "8px 10px", minHeight: 44, alignItems: "center" }}>
                     {focusKeywords.map(kw => (
-                      <span key={kw} style={{ background: "#1e3a5f", color: "#60a5fa", borderRadius: 20, padding: "3px 11px 3px 12px", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                      <span key={kw} style={{ background: "#1e1e1e", color: "#60a5fa", borderRadius: 20, padding: "3px 11px 3px 12px", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
                         {kw}
                         <button onClick={() => removeKw(kw)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
                       </span>
@@ -471,7 +471,7 @@ export default function ProductSEOEngine() {
                   <div style={{ fontSize: 12, fontWeight: 700, color: "#888888", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>Google SERP Preview</div>
                   <div style={{ background: "#fff", borderRadius: 8, padding: "14px 18px", maxWidth: 600 }}>
                     <div style={{ fontSize: 12, color: "#202124", marginBottom: 2 }}>{storeBase}/products/{serpSlug}</div>
-                    <div style={{ fontSize: 20, color: "#1a0dab", fontWeight: 500, marginBottom: 3, lineHeight: 1.3, textDecoration: "underline", cursor: "pointer" }}>{serpTitle.slice(0, 60)}{serpTitle.length > 60 ? "…" : ""}</div>
+                    <div style={{ fontSize: 20, color: "#333333", fontWeight: 500, marginBottom: 3, lineHeight: 1.3, textDecoration: "underline", cursor: "pointer" }}>{serpTitle.slice(0, 60)}{serpTitle.length > 60 ? "…" : ""}</div>
                     <div style={{ fontSize: 14, color: "#4d5156", lineHeight: 1.5 }}>{serpDesc}{serpDesc.length >= 160 ? "…" : ""}</div>
                   </div>
                   <div style={{ marginTop: 6, display: "flex", gap: 12, fontSize: 12 }}>
@@ -890,7 +890,7 @@ export default function ProductSEOEngine() {
       )}
 
       <style>{`
-        .btn { background: #2563eb; border: 1px solid #1d4ed8; color: #fff; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        .btn { background: #2563eb; border: 1px solid #333333; color: #fff; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; }
         .btn-secondary { background: #111111; border: 1px solid #1a1a1a; color: #f0f0f0; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; }
         .btn-tertiary { background: #0b1220; border: 1px dashed #333333; color: #f0f0f0; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; }
         .text-area { width: 100%; background: #0b1220; border: 1px solid #1a1a1a; color: #f0f0f0; padding: 10px; border-radius: 10px; }
@@ -900,4 +900,5 @@ export default function ProductSEOEngine() {
     </div>
   );
 }
+
 

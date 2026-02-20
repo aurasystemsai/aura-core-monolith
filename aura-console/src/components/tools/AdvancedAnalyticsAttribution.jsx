@@ -615,10 +615,10 @@ export default function AdvancedAnalyticsAttribution() {
             {shareToken && <span style={{ background: "#111111", color: "#f0f0f0", padding: "6px 10px", borderRadius: 10, fontSize: 12, border: "1px solid #1a1a1a" }}>Share: {shareToken}</span>}
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button onClick={() => copyText(`Guardrails: ${guardrails.summary}`, "Guardrails") } style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #24314a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Copy guardrails</button>
-            <button onClick={() => copyText(`SLA ${slaSummary.label} - ${slaSummary.detail}`, "SLA") } style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #24314a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Copy SLA</button>
+            <button onClick={() => copyText(`Guardrails: ${guardrails.summary}`, "Guardrails") } style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #111111", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Copy guardrails</button>
+            <button onClick={() => copyText(`SLA ${slaSummary.label} - ${slaSummary.detail}`, "SLA") } style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #111111", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Copy SLA</button>
             <button onClick={saveDraft} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Save draft</button>
-            <button onClick={loadDraft} style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #24314a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load draft</button>
+            <button onClick={loadDraft} style={{ background: "#111827", color: "#f0f0f0", border: "1px solid #111111", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load draft</button>
           </div>
         </div>
         <div style={{ display: "grid", gap: 6 }}>
@@ -1012,7 +1012,7 @@ export default function AdvancedAnalyticsAttribution() {
         </div>
       )}
       {result && (
-        <div style={{ display: "grid", gap: 12, background: "#0d1420", border: "1px solid #24314a", borderRadius: 10, padding: 16 }}>
+        <div style={{ display: "grid", gap: 12, background: "#0d1420", border: "1px solid #111111", borderRadius: 10, padding: 16 }}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ color: "#f0f0f0", fontWeight: 800 }}>Run results</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
@@ -1032,7 +1032,7 @@ export default function AdvancedAnalyticsAttribution() {
               <div style={{ fontWeight: 800, marginBottom: 6 }}>Performance by Channel</div>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
-                  <tr style={{ textAlign: "left", borderBottom: "1px solid #24314a" }}>
+                  <tr style={{ textAlign: "left", borderBottom: "1px solid #111111" }}>
                     <th style={{ padding: "6px 4px" }}>Channel</th>
                     <th style={{ padding: "6px 4px" }}>Revenue</th>
                     <th style={{ padding: "6px 4px" }}>Count</th>
@@ -1058,7 +1058,7 @@ export default function AdvancedAnalyticsAttribution() {
           {result.result && (
             <div>
               <div style={{ fontWeight: 800, marginBottom: 6 }}>Attribution Result</div>
-              <pre style={{ background: "#0a101b", border: "1px solid #24314a", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 260, overflow: "auto" }}>
+              <pre style={{ background: "#0a101b", border: "1px solid #111111", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 260, overflow: "auto" }}>
                 {JSON.stringify(result.result, null, 2)}
               </pre>
             </div>
@@ -1066,7 +1066,7 @@ export default function AdvancedAnalyticsAttribution() {
           {result.journeys && (
             <div>
               <div style={{ fontWeight: 800, marginBottom: 6 }}>Journeys</div>
-              <pre style={{ background: "#0a101b", border: "1px solid #24314a", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 260, overflow: "auto" }}>
+              <pre style={{ background: "#0a101b", border: "1px solid #111111", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 260, overflow: "auto" }}>
                 {JSON.stringify(result.journeys, null, 2)}
               </pre>
             </div>
@@ -1074,7 +1074,7 @@ export default function AdvancedAnalyticsAttribution() {
           {result.cohorts && (
             <div>
               <div style={{ fontWeight: 800, marginBottom: 6 }}>Cohorts</div>
-              <pre style={{ background: "#0a101b", border: "1px solid #24314a", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 200, overflow: "auto" }}>
+              <pre style={{ background: "#0a101b", border: "1px solid #111111", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 200, overflow: "auto" }}>
                 {JSON.stringify(result.cohorts, null, 2)}
               </pre>
             </div>
@@ -1107,4 +1107,5 @@ export default function AdvancedAnalyticsAttribution() {
     </div>
   );
 }
+
 

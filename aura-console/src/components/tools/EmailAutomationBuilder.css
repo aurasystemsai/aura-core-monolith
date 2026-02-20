@@ -4,7 +4,7 @@
 
 .email-automation-builder {
   --primary-color: #6366f1;
-  --primary-dark: #4f46e5;
+  --primary-dark: #555555;
   --primary-light: #818cf8;
   --success-color: #059669;
   --warning-color: #d97706;
@@ -653,4 +653,5 @@
 .email-automation-builder__spinner {
   animation: email-automation-builder-spin 1s linear infinite;
 }
+
 

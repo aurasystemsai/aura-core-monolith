@@ -139,7 +139,7 @@ export default function InventoryForecasting() {
         <div style={{ marginTop: 24, background: "#111111", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: "#e2e8f0" }}>Forecast History</div>
           {history.map((h, i) => (
-            <div key={i} style={{ background: "#0a0a0a", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2f3a50" }}>
+            <div key={i} style={{ background: "#0a0a0a", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #1e1e1e" }}>
               <div style={{ fontWeight: 600, color: "#e2e8f0", fontSize: 13 }}>{h.input ? h.input.slice(0, 60) + (h.input.length > 60 ? "…" : "") : `Run #${i+1}`}</div>
               {h.result && <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>{JSON.stringify(h.result).slice(0, 150)}{JSON.stringify(h.result).length > 150 ? "…" : ""}</div>}
             </div>
@@ -153,5 +153,6 @@ export default function InventoryForecasting() {
     </div>
   );
 }
+
 
 

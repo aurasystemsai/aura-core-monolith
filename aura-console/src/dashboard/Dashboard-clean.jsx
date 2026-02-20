@@ -170,7 +170,7 @@ const Dashboard = ({ setActiveSection }) => {
                 onClick={handleCopilotAsk}
                 disabled={copilotLoading}
                 style={{
-                  background: copilotLoading ? '#3a3f55' : '#7fffd4',
+                  background: copilotLoading ? '#222222' : '#7fffd4',
                   color: '#0f1324',
                   border: 'none',
                   borderRadius: 10,
@@ -213,7 +213,7 @@ const Dashboard = ({ setActiveSection }) => {
                 flex: 1,
                 background: '#1e1e1e',
                 color: '#e8f2ff',
-                border: '1px solid #3a4565',
+                border: '1px solid #222222',
                 borderRadius: 8,
                 fontWeight: 700,
                 padding: '10px 16px',
@@ -270,4 +270,5 @@ const Dashboard = ({ setActiveSection }) => {
 };
 
 export default Dashboard;
+
 

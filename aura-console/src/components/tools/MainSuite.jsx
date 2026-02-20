@@ -83,7 +83,7 @@ export default function MainSuite({ setActiveSection }) {
     ? {
         bg: "#111827",
         card: "#0b1220",
-        border: "#233047",
+        border: "#111111",
         text: "#f0f0f0",
         muted: "#888888",
         accent: "#7fffd4",
@@ -397,4 +397,5 @@ export default function MainSuite({ setActiveSection }) {
     </div>
   );
 }
+
 

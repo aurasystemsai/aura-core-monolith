@@ -1,4 +1,4 @@
-.card {
+﻿.card {
   background: rgba(35, 38, 58, 0.92);
   border-radius: 16px;
   box-shadow: 0 2px 16px #0002, 0 1.5px 0 #7fffd422;
@@ -57,7 +57,7 @@
   transition: background 0.18s;
 }
 .dashboard-home-action:hover, .dashboard-home-action:focus {
-  background: #1746a2;
+  background: #1e1e1e;
   color: #fff;
 }
 .draft-library-grid {
@@ -79,7 +79,7 @@
 .fixqueue-job-detail-header {
   padding: 12px 18px;
   border-radius: 12px 12px 0 0;
-  background: #23284a;
+  background: #111111;
 }
 .fixqueue-job-detail-body {
   padding: 12px 18px;
@@ -118,7 +118,7 @@
 }
 .connect-shopify-action:hover, .connect-shopify-action:focus {
   background: #7fffd4;
-  color: #23284a;
+  color: #111111;
 }
 .tool-modal-overlay {
   position: fixed;
@@ -184,7 +184,7 @@
 .tool-modal-action-btn {
   padding: 12px 28px;
   border-radius: 10px;
-  background: linear-gradient(90deg, #23284a 0%, #7fffd4 100%);
+  background: linear-gradient(90deg, #111111 0%, #7fffd4 100%);
   color: #181c2a;
   font-weight: 800;
   font-size: 1.08rem;
@@ -262,7 +262,7 @@
   font-size: 0.98rem;
   color: #7fffd4;
   font-weight: 700;
-  background: #23284a;
+  background: #111111;
   border-radius: 6px;
   padding: 4px 12px;
 }

@@ -180,20 +180,20 @@ export default function InternalLinkOptimizer() {
         </div>
       )}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      <div style={{ marginTop: 24, background: darkMode ? "#111111" : "#fff", borderRadius: 12, padding: 18, border: "1px solid #2f3a50" }}>
+      <div style={{ marginTop: 24, background: darkMode ? "#111111" : "#fff", borderRadius: 12, padding: 18, border: "1px solid #1e1e1e" }}>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: darkMode ? "#e2e8f0" : "#0a0a0a" }}>Links</div>
         {links.map(l => (
-          <div key={l.id} style={{ background: darkMode ? "#0a0a0a" : "#f8fafc", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2f3a50" }}>
+          <div key={l.id} style={{ background: darkMode ? "#0a0a0a" : "#f8fafc", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #1e1e1e" }}>
             <span style={{ fontWeight: 600, color: darkMode ? "#e2e8f0" : "#0a0a0a" }}>{l.content ? l.content.slice(0, 80) + (l.content.length > 80 ? "…" : "") : `Link #${l.id}`}</span>
           </div>
         ))}
       </div>
       <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-        <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #2f3a50" }}>
+        <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Links</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{links.length}</div>
         </div>
-        <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #2f3a50" }}>
+        <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{analytics.length}</div>
         </div>
@@ -204,5 +204,6 @@ export default function InternalLinkOptimizer() {
     </div>
   );
 }
+
 
 

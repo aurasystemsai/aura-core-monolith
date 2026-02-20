@@ -1337,10 +1337,10 @@ export default function WorkflowOrchestrator() {
             <div style={{ color: "#888888", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 }}>Playbooks</div>
             <button onClick={() => setShowTemplateGallery(true)} disabled={isViewer} style={{ alignSelf: "flex-start", background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 12px", fontWeight: 800, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Open template gallery</button>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              <button onClick={() => applyPlaybook("seoFix")} disabled={isViewer} style={{ background: "#1a1a1a", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>SEO Fix Queue</button>
-              <button onClick={() => applyPlaybook("productSync")} disabled={isViewer} style={{ background: "#1a1a1a", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Product Sync</button>
-              <button onClick={() => applyPlaybook("winback")} disabled={isViewer} style={{ background: "#1a1a1a", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Winback</button>
-              <button onClick={() => applyPlaybook("churnSave")} disabled={isViewer} style={{ background: "#1a1a1a", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Churn Save</button>
+              <button onClick={() => applyPlaybook("seoFix")} disabled={isViewer} style={{ background: "#1a1a1a", color: "#a5f3fc", border: "1px solid #111111", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>SEO Fix Queue</button>
+              <button onClick={() => applyPlaybook("productSync")} disabled={isViewer} style={{ background: "#1a1a1a", color: "#a5f3fc", border: "1px solid #111111", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Product Sync</button>
+              <button onClick={() => applyPlaybook("winback")} disabled={isViewer} style={{ background: "#1a1a1a", color: "#a5f3fc", border: "1px solid #111111", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Winback</button>
+              <button onClick={() => applyPlaybook("churnSave")} disabled={isViewer} style={{ background: "#1a1a1a", color: "#a5f3fc", border: "1px solid #111111", borderRadius: 999, padding: "6px 12px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>Churn Save</button>
             </div>
           </div>
         </div>
@@ -1357,10 +1357,10 @@ export default function WorkflowOrchestrator() {
               <textarea value={step.config} onChange={e => handleStepChange(step.id, { config: e.target.value })} disabled={isViewer} rows={5} style={{ width: "100%", borderRadius: 6, border: "1px solid #0a0a0a", padding: 10, background: "#0a0a0a", color: "#f0f0f0", opacity: isViewer ? 0.6 : 1 }} placeholder={step.type === "trigger" ? "Describe the trigger (e.g. 'Order placed with AOV > $50')" : "Describe the action (e.g. 'Send Slack notification to #ops')"} />
               <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {step.type === "trigger" && triggerTemplates.map(t => (
-                  <button key={t.label} onClick={() => handleStepChange(step.id, { config: t.config, name: t.label })} disabled={isViewer} style={{ background: "#111827", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 10px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>{t.label}</button>
+                  <button key={t.label} onClick={() => handleStepChange(step.id, { config: t.config, name: t.label })} disabled={isViewer} style={{ background: "#111827", color: "#a5f3fc", border: "1px solid #111111", borderRadius: 999, padding: "6px 10px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>{t.label}</button>
                 ))}
                 {step.type !== "trigger" && actionTemplates.map(t => (
-                  <button key={t.label} onClick={() => handleStepChange(step.id, { config: t.config, name: t.label })} disabled={isViewer} style={{ background: "#111827", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 10px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>{t.label}</button>
+                  <button key={t.label} onClick={() => handleStepChange(step.id, { config: t.config, name: t.label })} disabled={isViewer} style={{ background: "#111827", color: "#a5f3fc", border: "1px solid #111111", borderRadius: 999, padding: "6px 10px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>{t.label}</button>
                 ))}
               </div>
             </div>
@@ -1504,7 +1504,7 @@ export default function WorkflowOrchestrator() {
                   <div style={{ color: "#888888", fontSize: 12 }}>{tpl.description}</div>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                     {tpl.badges?.map(b => (
-                      <span key={b} style={{ background: "#1a1a1a", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "4px 8px", fontSize: 12 }}>{b}</span>
+                      <span key={b} style={{ background: "#1a1a1a", color: "#a5f3fc", border: "1px solid #111111", borderRadius: 999, padding: "4px 8px", fontSize: 12 }}>{b}</span>
                     ))}
                   </div>
                   <div style={{ color: "#67e8f9", fontSize: 12 }}>Rollout: {tpl.rollout || 100}%</div>
@@ -1522,4 +1522,5 @@ export default function WorkflowOrchestrator() {
     </div>
   );
 }
+
 

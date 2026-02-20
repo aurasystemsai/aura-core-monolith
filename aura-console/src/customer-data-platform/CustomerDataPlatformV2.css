@@ -1,4 +1,4 @@
-/**
+﻿/**
  * CUSTOMER DATA PLATFORM V2 - CSS STYLING
  * Enterprise-grade responsive design with Shopify Polaris theming
  */
@@ -230,8 +230,8 @@
 }
 
 .Polaris-Button--primary:active {
-  background: #3f4eae;
-  border-color: #3f4eae;
+  background: #333333;
+  border-color: #333333;
 }
 
 .Polaris-Button--destructive {
@@ -276,7 +276,7 @@
 
 .Polaris-Badge--statusInfo {
   background: #b4e1fa;
-  color: #084e8a;
+  color: #1e1e1e;
 }
 
 .Polaris-Badge--statusWarning {
@@ -842,3 +842,4 @@
     background: #3a3a3a;
   }
 }
+

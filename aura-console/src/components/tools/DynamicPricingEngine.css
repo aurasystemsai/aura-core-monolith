@@ -403,7 +403,7 @@
 
 .dpe-status-running {
   background: #dbeafe;
-  color: #1e40af;
+  color: #333333;
 }
 
 .dpe-status-completed {
@@ -448,7 +448,7 @@
 
 .dpe-severity-low {
   background: #dbeafe;
-  color: #1e40af;
+  color: #333333;
 }
 
 /* Buttons */
@@ -717,4 +717,5 @@
     box-shadow: none;
   }
 }
+
 

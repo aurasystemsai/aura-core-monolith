@@ -702,7 +702,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .sync-buttons button:hover {
-          background: #3a4565;
+          background: #222222;
         }
 
         .danger-zone {
@@ -763,7 +763,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .setting-card:hover {
-          border-color: #3a4565;
+          border-color: #222222;
           box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
@@ -862,7 +862,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .btn-icon-action:hover {
-          background: #3a4565;
+          background: #222222;
           transform: scale(1.05);
         }
 
@@ -879,7 +879,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .btn-secondary-small:hover {
-          background: #3a4565;
+          background: #222222;
         }
 
         .btn-secondary-small:disabled {
@@ -899,4 +899,5 @@ const Settings = ({ setActiveSection }) => {
 };
 
 export default Settings;
+
 

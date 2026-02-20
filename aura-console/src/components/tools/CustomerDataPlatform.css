@@ -280,7 +280,7 @@
 
 .segment-badge {
   background: #dbeafe;
-  color: #1e40af;
+  color: #333333;
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 12px;
@@ -371,7 +371,7 @@
 
 .segment-size {
   background: #dbeafe;
-  color: #1e40af;
+  color: #333333;
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 12px;
@@ -520,4 +520,5 @@
   background: #f1f5f9;
   color: #475569;
 }
+
 

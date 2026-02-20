@@ -569,7 +569,7 @@ const Billing = () => {
         }
 
         .btn-secondary:hover {
-          background: #3a4565;
+          background: #222222;
         }
 
         .invoices-table {
@@ -778,4 +778,5 @@ const Billing = () => {
 };
 
 export default Billing;
+
 

@@ -252,7 +252,7 @@ export default function PersonalizationRecommendationEngine() {
       <button onClick={handleQuery} disabled={loading || !query} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Querying..." : "Get Recommendation"}</button>
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {result && (
-        <div style={{ background: "#1e2235", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #2f3a50" }}>
+        <div style={{ background: "#1e2235", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #1e1e1e" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <span style={{ fontWeight: 700, color: "#a3e635", fontSize: 14 }}>Recommendation Result</span>
             <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #333333", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
@@ -265,7 +265,7 @@ export default function PersonalizationRecommendationEngine() {
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Recommendation History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, i) => (
-              <div key={i} style={{ background: "#0a0a0a", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2f3a50" }}>
+              <div key={i} style={{ background: "#0a0a0a", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #1e1e1e" }}>
                 <div style={{ fontWeight: 600, fontSize: 13, color: "#e2e8f0" }}>{h.query}</div>
                 <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>{JSON.stringify(h.result).slice(0, 150)}{JSON.stringify(h.result).length > 150 ? "…" : ""}</div>
               </div>
@@ -279,4 +279,5 @@ export default function PersonalizationRecommendationEngine() {
     </div>
   );
 }
+
 

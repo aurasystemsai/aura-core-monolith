@@ -103,7 +103,7 @@ function SerpPreview({ title, description, handle, shop, device }) {
           <div style={{ fontSize: 11, color: '#4d5156', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: isMobile ? 260 : 500 }}>https://{url}</div>
         </div>
       </div>
-      <div style={{ fontSize: isMobile ? 16 : 20, color: '#1a0dab', marginBottom: 6, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <div style={{ fontSize: isMobile ? 16 : 20, color: '#333333', marginBottom: 6, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {title || 'Your SEO Title Will Appear Here'}
       </div>
       <div style={{ fontSize: 13, color: '#4d5156', lineHeight: 1.58, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
@@ -873,4 +873,5 @@ export default function ProductSeoEngine() {
     </div>
   );
 }
+
 

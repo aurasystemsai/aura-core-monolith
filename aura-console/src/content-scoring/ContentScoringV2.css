@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Content Scoring & Optimization V2 Styles
  * Comprehensive styling for content analysis, SEO, readability, and performance tracking
  */
@@ -693,7 +693,7 @@
   }
 
   .chart-bar-fill {
-    background: linear-gradient(90deg, #3b82f6 0%, #1e40af 100%);
+    background: linear-gradient(90deg, #3b82f6 0%, #333333 100%);
   }
 }
 
@@ -850,3 +850,4 @@ select:focus-visible {
 .shadow { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
 .shadow-md { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
 .shadow-lg { box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12); }
+

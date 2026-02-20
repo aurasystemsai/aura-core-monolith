@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import { apiFetch } from "../../api";
 
 export default function TechnicalSEOAuditor() {
@@ -234,7 +234,7 @@ export default function TechnicalSEOAuditor() {
         <div style={{ marginTop: 24, background: "#1e2235", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8, color: "#7fffd4" }}>Analytics</div>
           <div style={{ display: "flex", gap: 12 }}>
-            <div style={{ background: "#0a0a0a", borderRadius: 8, padding: "12px 20px", border: "1px solid #2f3a50" }}>
+            <div style={{ background: "#0a0a0a", borderRadius: 8, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
               <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Events</div>
               <div style={{ fontSize: 24, fontWeight: 800, color: "#7fffd4" }}>{analytics.length}</div>
             </div>
@@ -293,3 +293,4 @@ export default function TechnicalSEOAuditor() {
     </div>
   );
 }
+

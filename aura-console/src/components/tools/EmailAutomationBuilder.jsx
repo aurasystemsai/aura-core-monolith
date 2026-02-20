@@ -150,7 +150,7 @@ export default function EmailAutomationBuilder() {
           <span>{cat.icon}</span>
           <span>{cat.label}</span>
           <span style={{ 
-            background: activeCategory === cat.id ? '#4f46e5' : '#f0f0f0',
+            background: activeCategory === cat.id ? '#555555' : '#f0f0f0',
             borderRadius: 12,
             padding: '2px 8px',
             fontSize: 12,
@@ -1152,4 +1152,5 @@ function CustomAutomationTab() {
     </div>
   );
 }
+
 

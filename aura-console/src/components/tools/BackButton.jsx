@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 
 export default function BackButton({ style = {}, label = "← Go Back", onClick }) {
   const handleClick = () => {
@@ -23,7 +23,7 @@ export default function BackButton({ style = {}, label = "← Go Back", onClick 
     <button
       onClick={handleClick}
       style={{
-        background: "#22223b",
+        background: "#111111",
         color: "#a5f3fc",
         border: "none",
         borderRadius: 8,
@@ -39,3 +39,4 @@ export default function BackButton({ style = {}, label = "← Go Back", onClick 
     </button>
   );
 }
+

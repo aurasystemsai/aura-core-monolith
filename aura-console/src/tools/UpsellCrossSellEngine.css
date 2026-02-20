@@ -1,4 +1,4 @@
-/* ===================================================================
+﻿/* ===================================================================
    UPSELL & CROSS-SELL ENGINE - ENTERPRISE STYLING
    Comprehensive styles for 42-tab interface
    =================================================================== */
@@ -188,7 +188,7 @@
 }
 
 .Polaris-Button--primary:hover {
-  background: linear-gradient(to bottom, #4959bd, #3f4bad);
+  background: linear-gradient(to bottom, #4959bd, #333333);
   box-shadow: 0 4px 8px rgba(92, 106, 196, 0.3);
   transform: translateY(-1px);
 }
@@ -640,3 +640,4 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+

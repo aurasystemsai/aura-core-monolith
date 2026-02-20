@@ -42,7 +42,7 @@ function GooglePreview({ title, description, url }) {
   return (
     <div style={{ background: "#fff", borderRadius: 10, padding: "14px 18px", fontFamily: "Arial, sans-serif", border: "1px solid #f0f0f0" }}>
       <div style={{ fontSize: 12, color: "#006621", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{url || "yourstore.myshopify.com/pages/page-slug"}</div>
-      <div style={{ fontSize: 18, color: "#1a0dab", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title || <span style={{ color: "#999" }}>Your Page Title</span>}</div>
+      <div style={{ fontSize: 18, color: "#333333", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title || <span style={{ color: "#999" }}>Your Page Title</span>}</div>
       <div style={{ fontSize: 13, color: "#545454", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{description || <span style={{ color: "#bbb" }}>Your meta description will appear here</span>}</div>
     </div>
   );
@@ -596,4 +596,5 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
     </div>
   );
 }
+
 

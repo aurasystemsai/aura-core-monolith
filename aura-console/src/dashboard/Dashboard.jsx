@@ -639,7 +639,7 @@ const Dashboard = ({ setActiveSection }) => {
 			<div style={{ 
 				height: 16, 
 				width: "60%", 
-				background: "linear-gradient(90deg, #1e1e1e 0%, #3a4565 50%, #1e1e1e 100%)",
+				background: "linear-gradient(90deg, #1e1e1e 0%, #222222 50%, #1e1e1e 100%)",
 				backgroundSize: "200% 100%",
 				animation: "shimmer 1.5s infinite",
 				borderRadius: 4,
@@ -648,7 +648,7 @@ const Dashboard = ({ setActiveSection }) => {
 			<div style={{ 
 				height: 32, 
 				width: "40%", 
-				background: "linear-gradient(90deg, #1e1e1e 0%, #3a4565 50%, #1e1e1e 100%)",
+				background: "linear-gradient(90deg, #1e1e1e 0%, #222222 50%, #1e1e1e 100%)",
 				backgroundSize: "200% 100%",
 				animation: "shimmer 1.5s infinite",
 				borderRadius: 4,
@@ -718,7 +718,7 @@ const Dashboard = ({ setActiveSection }) => {
 				}
 				.stat-card:hover {
 					box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-					border-color: #3a4565;
+					border-color: #222222;
 				}
 				
 				/* Mobile Responsive Styles */
@@ -1020,7 +1020,7 @@ const Dashboard = ({ setActiveSection }) => {
 						onClick={handleCopilotAsk}
 						disabled={copilotLoading}
 						style={{
-							background: copilotLoading ? "#3a3f55" : "#7fffd4",
+							background: copilotLoading ? "#222222" : "#7fffd4",
 							color: "#111111",
 							border: "none",
 							borderRadius: 10,
@@ -1424,7 +1424,7 @@ const Dashboard = ({ setActiveSection }) => {
 								marginTop: 16,
 								padding: "10px",
 								background: "#1e1e1e",
-								border: "1px solid #3a4565",
+								border: "1px solid #222222",
 								borderRadius: 8,
 								color: "#f0f0f0",
 								fontSize: 14,
@@ -1606,4 +1606,5 @@ const Dashboard = ({ setActiveSection }) => {
 };
 
 export default Dashboard;
+
 

@@ -126,11 +126,11 @@ export default function DailyCFOPack() {
       )}
       {analytics && (
         <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-          <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #2f3a50" }}>
+          <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
             <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Reports</div>
             <div style={{ fontSize: 26, fontWeight: 800, color: darkMode ? "#a3e635" : "#7fffd4", marginTop: 2 }}>{history.length}</div>
           </div>
-          <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #2f3a50" }}>
+          <div style={{ background: "#1e2235", borderRadius: 10, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
             <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
             <div style={{ fontSize: 26, fontWeight: 800, color: darkMode ? "#a3e635" : "#7fffd4", marginTop: 2 }}>{typeof analytics === "object" ? Object.keys(analytics).length : 1}</div>
           </div>
@@ -142,4 +142,5 @@ export default function DailyCFOPack() {
     </div>
   );
 }
+
 

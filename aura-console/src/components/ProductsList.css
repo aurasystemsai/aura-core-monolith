@@ -1,4 +1,4 @@
-.pl-fatal {
+﻿.pl-fatal {
   color: #ff5c7a;
   padding: 32px;
   text-align: center;
@@ -97,23 +97,23 @@
   min-width: 900px;
 }
 .pl-table thead {
-  background: #23284a;
+  background: #111111;
   color: #fff;
   font-size: 15px;
 }
 .pl-table th, .pl-table td {
   padding: 14px 10px;
   text-align: left;
-  border-bottom: 1px solid #23284a;
+  border-bottom: 1px solid #111111;
 }
 .pl-row--expanded {
-  background: #23284a !important;
+  background: #111111 !important;
 }
 .pl-row {
-  background: #20243a;
+  background: #111111;
 }
 .pl-table tr {
-  background: #20243a;
+  background: #111111;
   transition: background 0.15s;
 }
 .pl-table tr:hover, .pl-table tr:focus-within {
@@ -196,7 +196,7 @@
   font-weight: 700;
 }
 .pl-btn--cancel {
-  background: #23284a;
+  background: #111111;
   color: #fff;
 }
 .pl-btn--ai {
@@ -233,3 +233,4 @@
 }
 .pl-debug-accent { color: #7ff; }
 .pl-debug-error { color: #f77; }
+

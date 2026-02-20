@@ -11301,7 +11301,7 @@ export default function ImageAltMediaSEO() {
                 name: "EXIF & Geo-Location", 
                 fn: () => selectedImageIds.forEach(id => handleManageExifData(id, { camera: "Unknown" })), 
                 desc: "Extract/edit EXIF data, GPS coordinates, copyright, strip PII",
-                color: "#4f46e5"
+                color: "#555555"
               }
             ].map((feature, idx) => (
               <div key={idx} style={{ background: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)", borderRadius: 16, padding: 24, border: `2px solid ${feature.color}`, position: "relative", overflow: "hidden" }}>
@@ -13332,4 +13332,5 @@ export default function ImageAltMediaSEO() {
   </div>
 );
 }
+
 

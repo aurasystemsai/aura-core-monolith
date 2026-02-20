@@ -892,7 +892,7 @@ export default function CustomDashboardBuilder() {
             <button onClick={() => { if (!ensureWritable()) return; duplicateDashboard(); }} style={{ background: "#1a1a1a", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>Duplicate</button>
             <button onClick={() => { if (!ensureWritable()) return; schedulePublish(); }} style={{ background: "#0b1221", color: "#bae6fd", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>Schedule</button>
             <button onClick={() => { if (!ensureWritable()) return; setWebhookEnabled(!webhookEnabled); }} style={{ background: webhookEnabled ? "#0ea5e9" : "#1a1a1a", color: webhookEnabled ? "#e0f2fe" : "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>{webhookEnabled ? "Webhook On" : "Webhook Off"}</button>
-            <button onClick={generatePreviewToken} disabled={devSandbox} style={{ background: devSandbox ? "#1a1a1a" : "#1d4ed8", color: devSandbox ? "#888888" : "#e0f2fe", border: "1px solid #1e3a8a", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: devSandbox ? "not-allowed" : "pointer", opacity: devSandbox ? 0.6 : 1 }}>Share Preview</button>
+            <button onClick={generatePreviewToken} disabled={devSandbox} style={{ background: devSandbox ? "#1a1a1a" : "#333333", color: devSandbox ? "#888888" : "#e0f2fe", border: "1px solid #1e1e1e", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: devSandbox ? "not-allowed" : "pointer", opacity: devSandbox ? 0.6 : 1 }}>Share Preview</button>
             <button onClick={measureLatency} style={{ background: "#1a1a1a", color: "#7dd3fc", border: "1px solid #333333", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: isReadOnly ? "not-allowed" : "pointer", opacity: isReadOnly ? 0.6 : 1 }} disabled={isReadOnly}>Measure latency</button>
             <button onClick={simulateLoadTest} style={{ background: simulatedLoad ? "#444444" : "#f97316", color: simulatedLoad ? "#f0f0f0" : "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>{simulatedLoad ? "Load active" : "Simulate load"}</button>
             <button onClick={cleanupDashboard} style={{ background: "#0b1221", color: "#a5f3fc", border: "1px solid #1a1a1a", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}>Cleanup</button>
@@ -1028,7 +1028,7 @@ export default function CustomDashboardBuilder() {
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             <span style={{ background: ownerCoverage === 100 ? "#111111" : "#2f2311", color: ownerCoverage === 100 ? "#bbf7d0" : "#fcd34d", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Owner coverage: {ownerCoverage}%</span>
             <span style={{ background: piiCoverage === 100 ? "#111111" : "#2f2311", color: piiCoverage === 100 ? "#bbf7d0" : "#fcd34d", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>PII coverage: {piiCoverage}%</span>
-            <span style={{ background: watchlist.length > 0 ? "#1e3a8a" : "#111111", color: "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Watchlist: {watchlist.length}</span>
+            <span style={{ background: watchlist.length > 0 ? "#1e1e1e" : "#111111", color: "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Watchlist: {watchlist.length}</span>
             <span style={{ background: slaBreach ? "#2f1114" : "#0b1221", color: slaBreach ? "#fecdd3" : "#cbd5e1", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>SLA breach: {slaBreach ? "Simulated" : "None"}</span>
             {watchlistMissingTargets.length > 0 && <span style={{ background: "#2f2311", color: "#fcd34d", border: "1px solid #333333", borderRadius: 10, padding: "6px 10px", fontSize: 12 }}>Watchlist missing targets: {watchlistMissingTargets.length}</span>}
             <button onClick={copySlaSnapshot} style={{ background: "#0b1221", color: "#f0f0f0", border: "1px solid #333333", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>Copy SLA snapshot</button>
@@ -1394,4 +1394,5 @@ export default function CustomDashboardBuilder() {
     </div>
   );
 }
+
 

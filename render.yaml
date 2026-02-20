@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: aura-core-monolith
+    runtime: node
+    buildCommand: npm install && npm run build:console
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production

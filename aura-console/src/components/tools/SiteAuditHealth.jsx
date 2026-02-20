@@ -127,7 +127,7 @@ export default function SiteAuditHealth() {
       {imported && <div style={{ color: "#22c55e", marginBottom: 10, fontSize: 13 }}>✓ Imported: {imported}</div>}
       {error && <div style={{ color: "#ef4444", marginBottom: 12, padding: "10px 14px", background: "#2d1515", borderRadius: 8, fontSize: 14 }}>⚠ {error}</div>}
       {response && (
-        <div style={{ background: "#1e2235", borderRadius: 12, padding: 20, marginBottom: 20, border: "1px solid #2f3a50" }}>
+        <div style={{ background: "#1e2235", borderRadius: 12, padding: 20, marginBottom: 20, border: "1px solid #1e1e1e" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <span style={{ fontWeight: 700, color: "#7fffd4", fontSize: 15 }}>Audit Report</span>
             <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #333333", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
@@ -138,7 +138,7 @@ export default function SiteAuditHealth() {
       {/* Stat Cards */}
       <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
         {[{ label: "Total Audits", value: history.length }, { label: "Events Tracked", value: analytics.length }].map(s => (
-          <div key={s.label} style={{ background: "#1e2235", borderRadius: 10, padding: "14px 22px", border: "1px solid #2f3a50", minWidth: 130 }}>
+          <div key={s.label} style={{ background: "#1e2235", borderRadius: 10, padding: "14px 22px", border: "1px solid #1e1e1e", minWidth: 130 }}>
             <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: "#7fffd4", marginTop: 4 }}>{s.value}</div>
           </div>
@@ -152,7 +152,7 @@ export default function SiteAuditHealth() {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {history.map((h, i) => (
-              <div key={h.id || i} style={{ background: "#0a0a0a", borderRadius: 8, padding: "12px 16px", border: "1px solid #2f3a50" }}>
+              <div key={h.id || i} style={{ background: "#0a0a0a", borderRadius: 8, padding: "12px 16px", border: "1px solid #1e1e1e" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
                   <span style={{ fontWeight: 700, color: "#e2e8f0" }}>{h.site}</span>
                   <span style={{ color: "#64748b" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : `#${i+1}`}</span>
@@ -166,3 +166,4 @@ export default function SiteAuditHealth() {
     </div>
   );
 }
+

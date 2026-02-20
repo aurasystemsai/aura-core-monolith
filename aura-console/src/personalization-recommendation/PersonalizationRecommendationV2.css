@@ -1,4 +1,4 @@
-/* ============================================================================
+﻿/* ============================================================================
    PERSONALIZATION & RECOMMENDATION ENGINE V2 - ENTERPRISE STYLESHEET
    Responsive design with dark mode support and accessibility features
    ============================================================================ */
@@ -309,7 +309,7 @@
   display: inline-block;
   padding: 4px 10px;
   background: #b4e1fa;
-  color: #084e8a;
+  color: #1e1e1e;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
@@ -397,7 +397,7 @@
 }
 
 .Polaris-Button--primary:active {
-  background-color: #3f4eae;
+  background-color: #333333;
 }
 
 .Polaris-Button--destructive {
@@ -428,7 +428,7 @@
 
 .Polaris-Badge--info {
   background-color: #b4e1fa;
-  color: #084e8a;
+  color: #1e1e1e;
 }
 
 .Polaris-Badge--warning {
@@ -736,3 +736,4 @@
     page-break-inside: avoid;
   }
 }
+
