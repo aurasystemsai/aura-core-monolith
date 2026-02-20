@@ -14,9 +14,9 @@ export default function AutomationTemplates() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#353848', borderRadius: 12, marginBottom: 18, color: '#f9fafb' }}>
+    <div style={{ padding: 24, background: '#3d4058', borderRadius: 12, marginBottom: 18, color: '#f9fafb' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Automation Templates</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#454860', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#525578', fontSize: 16 }}>
         <li>Browse, import, and install workflow templates</li>
         <li>Customize, analyze, and export automations</li>
         <li>Accessible, secure, and fully compliant</li>
@@ -88,7 +88,7 @@ export default function AutomationTemplates() {
       </div>
       {/* Analytics Dashboard */}
       <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-        <div style={{ background: "#222535", borderRadius: 10, padding: "12px 20px", border: "1px solid #222535" }}>
+        <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Templates Used</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{analytics.length}</div>
         </div>

@@ -26,7 +26,7 @@
   --neutral-300: #c9cccf;
   --neutral-400: #8c9196;
   --neutral-500: #6d7175;
-  --neutral-600: #222535;
+  --neutral-600: #2e3045;
 
   /* Spacing */
   --spacing-xs: 4px;
@@ -441,9 +441,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --neutral-100: #222535;
+    --neutral-100: #2e3045;
     --neutral-200: #2d2d2d;
-    --neutral-300: #454860;
+    --neutral-300: #525578;
     --neutral-400: #757575;
     --neutral-500: #a3a3a3;
     --neutral-600: #d4d4d4;
@@ -457,7 +457,7 @@
   }
 
   .health-score-circle {
-    background: linear-gradient(135deg, #2d2d2d 0%, #454860 100%);
+    background: linear-gradient(135deg, #2d2d2d 0%, #525578 100%);
   }
 
   .community-score {

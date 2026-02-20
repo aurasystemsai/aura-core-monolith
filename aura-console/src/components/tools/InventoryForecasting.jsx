@@ -79,7 +79,7 @@ export default function InventoryForecasting() {
   const onboardingContent = (
     <div style={{ padding: 24, background: darkMode ? "#0d0d11" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Inventory Forecasting</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#454860", fontSize: 16 }}>
+      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#525578", fontSize: 16 }}>
         <li>Demand forecasting, reorder automation, and supply chain analytics</li>
         <li>Export, share, and review forecast history</li>
         <li>Accessible, secure, and fully compliant</li>
@@ -93,7 +93,7 @@ export default function InventoryForecasting() {
     <div style={{
       
       margin: "40px auto",
-      background: darkMode ? "#1a1c25" : "#fff",
+      background: darkMode ? "#252638" : "#fff",
       borderRadius: 18,
       boxShadow: "0 2px 24px #0002",
       padding: 36,
@@ -136,10 +136,10 @@ export default function InventoryForecasting() {
       </div>
       {/* History */}
       {history.length > 0 && (
-        <div style={{ marginTop: 24, background: "#1a1c25", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: "#252638", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: "#e2e8f0" }}>Forecast History</div>
           {history.map((h, i) => (
-            <div key={i} style={{ background: "#0d0d11", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #222535" }}>
+            <div key={i} style={{ background: "#0d0d11", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2e3045" }}>
               <div style={{ fontWeight: 600, color: "#e2e8f0", fontSize: 13 }}>{h.input ? h.input.slice(0, 60) + (h.input.length > 60 ? "…" : "") : `Run #${i+1}`}</div>
               {h.result && <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>{JSON.stringify(h.result).slice(0, 150)}{JSON.stringify(h.result).length > 150 ? "…" : ""}</div>}
             </div>

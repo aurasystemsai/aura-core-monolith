@@ -93,7 +93,7 @@ export default function EntityTopicExplorer() {
   };
 
   return (
-    <div style={{ background: "#1a1c25", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f9fafb' }}>
+    <div style={{ background: "#252638", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f9fafb' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Entity/Topic Explorer</h2>
       <div style={{ color: "#0ea5e9", fontWeight: 600, marginBottom: 18 }}>
         <span role="img" aria-label="entity"></span>Semantic SEO: discover entities and topics for your content.
@@ -116,7 +116,7 @@ export default function EntityTopicExplorer() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Entities</div>
           <ul style={{ paddingLeft: 18 }}>
             {entities.map((e, idx) => (
-              <li key={e.id || idx} style={{ marginBottom: 8, background: "#353848", borderRadius: 8, padding: 8, color: '#f9fafb' }}>{e.name}</li>
+              <li key={e.id || idx} style={{ marginBottom: 8, background: "#3d4058", borderRadius: 8, padding: 8, color: '#f9fafb' }}>{e.name}</li>
             ))}
           </ul>
         </div>
@@ -124,7 +124,7 @@ export default function EntityTopicExplorer() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Topics</div>
           <ul style={{ paddingLeft: 18 }}>
             {topics.map((t, idx) => (
-              <li key={t.id || idx} style={{ marginBottom: 8, background: "#1a1c25", borderRadius: 8, padding: 8, color: '#6366f1' }}>{t.name}</li>
+              <li key={t.id || idx} style={{ marginBottom: 8, background: "#252638", borderRadius: 8, padding: 8, color: '#6366f1' }}>{t.name}</li>
             ))}
           </ul>
         </div>
@@ -132,7 +132,7 @@ export default function EntityTopicExplorer() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Semantic Analysis</div>
           <ul style={{ paddingLeft: 18 }}>
             {analysis.map((a, idx) => (
-              <li key={a.id || idx} style={{ marginBottom: 8, background: "#353848", borderRadius: 8, padding: 8, color: '#f9fafb' }}>{a.name}</li>
+              <li key={a.id || idx} style={{ marginBottom: 8, background: "#3d4058", borderRadius: 8, padding: 8, color: '#f9fafb' }}>{a.name}</li>
             ))}
           </ul>
         </div>
@@ -146,15 +146,15 @@ export default function EntityTopicExplorer() {
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       <div style={{ display: "flex", gap: 12, marginTop: 20, marginBottom: 16, flexWrap: "wrap" }}>
-        <div style={{ background: "#222535", borderRadius: 10, padding: "12px 20px", border: "1px solid #222535" }}>
+        <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Entities</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{entities.length}</div>
         </div>
-        <div style={{ background: "#222535", borderRadius: 10, padding: "12px 20px", border: "1px solid #222535" }}>
+        <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Topics</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#0ea5e9", marginTop: 2 }}>{topics.length}</div>
         </div>
-        <div style={{ background: "#222535", borderRadius: 10, padding: "12px 20px", border: "1px solid #222535" }}>
+        <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Analysis</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{analysis.length}</div>
         </div>

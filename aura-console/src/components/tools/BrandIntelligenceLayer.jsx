@@ -154,7 +154,7 @@ export default function BrandIntelligenceLayer() {
       {notification && <div style={{ color: "#0af", marginTop: 12, fontWeight: 600 }}>{notification}</div>}
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
       {analytics && (
-        <div style={{ marginTop: 24, background: "#454860", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: "#525578", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Analytics</div>
           <div style={{ fontSize: 16 }}>{JSON.stringify(analytics)}</div>
         </div>

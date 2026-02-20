@@ -212,7 +212,7 @@ export default function ReportingAlerts() {
   return (
     <div style={{ padding: 24 }}>
       {devSandbox && (
-        <Card style={{ marginBottom: 12, background: "#1a1c25", borderColor: "#222535" }}>
+        <Card style={{ marginBottom: 12, background: "#252638", borderColor: "#2e3045" }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <div>
               <div style={{ fontWeight: 800, color: '#f59e0b' }}>Sandbox mode</div>
@@ -295,7 +295,7 @@ export default function ReportingAlerts() {
                 <b>Recommendation:</b> <span>Suggested threshold: 95th percentile</span>
               </div>
             </div>
-            <div style={{ marginTop: 12, background: '#1a1c25', padding: 10, borderRadius: 8, border: '1px solid #222535' }}>
+            <div style={{ marginTop: 12, background: '#252638', padding: 10, borderRadius: 8, border: '1px solid #2e3045' }}>
               <div style={{ fontWeight: 700, color: '#f9fafb' }}>Severity routing</div>
               <Select size="small" value={routingPreset} onChange={applyPreset} style={{ width: 240, marginTop: 6 }}
                 options={[
@@ -321,7 +321,7 @@ export default function ReportingAlerts() {
               <div style={{ marginTop: 6, display: 'grid', gap: 6 }}>
                 {escalationPolicy.map((step, idx) => (
                   <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ color: '#1a1c25', fontWeight: 600 }}>{step.channel}</span>
+                    <span style={{ color: '#252638', fontWeight: 600 }}>{step.channel}</span>
                     <span style={{ color: '#475569', fontSize: 12 }}>after {step.after} min</span>
                   </div>
                 ))}

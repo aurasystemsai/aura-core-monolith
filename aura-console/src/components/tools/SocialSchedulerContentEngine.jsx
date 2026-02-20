@@ -133,7 +133,7 @@ export default function SocialSchedulerContentEngine() {
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {response && (
-        <div style={{ background: "#353848", borderRadius: 10, padding: 16, marginBottom: 12, color: "#f9fafb" }}>
+        <div style={{ background: "#3d4058", borderRadius: 10, padding: 16, marginBottom: 12, color: "#f9fafb" }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Scheduled Content:</div>
           <div>{response}</div>
         </div>
@@ -161,7 +161,7 @@ export default function SocialSchedulerContentEngine() {
           )}
         </div>
       </div>
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#353848", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#3d4058", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}

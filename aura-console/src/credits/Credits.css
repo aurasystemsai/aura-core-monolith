@@ -46,14 +46,14 @@
 .aura-credits-bar-bg {
   width: 100%;
   height: 14px;
-  background: #1a1c25;
+  background: #252638;
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 4px;
 }
 .aura-credits-bar {
   height: 100%;
-  background: #454860;
+  background: #525578;
   border-radius: 8px 0 0 8px;
   transition: width 0.3s;
 }

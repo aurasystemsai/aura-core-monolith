@@ -609,7 +609,7 @@
 
 .campaign-status-badge.active { background: #d1fae5; color: #065f46; }
 .campaign-status-badge.paused { background: #fef3c7; color: #92400e; }
-.campaign-status-badge.ended { background: #f9fafb; color: #454860; }
+.campaign-status-badge.ended { background: #f9fafb; color: #525578; }
 
 .campaign-flow-diagram {
   display: flex;
@@ -798,18 +798,18 @@
   .campaign-card,
   .analytics-chart-container,
   .tier-progress-container {
-    background: #222535;
-    border-color: #454860;
+    background: #2e3045;
+    border-color: #525578;
     color: #f9fafb;
   }
   
   .metric-box {
-    background: #454860;
+    background: #525578;
     color: #f9fafb;
   }
   
   .leaderboard-row:hover {
-    background: #454860;
+    background: #525578;
   }
 }
 

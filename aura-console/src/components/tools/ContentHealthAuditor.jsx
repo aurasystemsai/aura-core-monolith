@@ -111,7 +111,7 @@ export default function ContentHealthAuditor() {
 
   return (
     <div>
-      <div style={{ background: "#1a1c25", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f9fafb' }}>
+      <div style={{ background: "#252638", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f9fafb' }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 8 }}>Content Health Auditor</h2>
         <div style={{ marginBottom: 10, color: "#0ea5e9", fontWeight: 600 }}>
           <span role="img" aria-label="health"></span>Audit, manage, and analyze content health with AI and analytics.
@@ -133,10 +133,10 @@ export default function ContentHealthAuditor() {
         </div>
         {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
         {response && (
-          <div style={{ background: "#222535", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #222535" }}>
+          <div style={{ background: "#2e3045", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #2e3045" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <span style={{ fontWeight: 700, color: "#6366f1", fontSize: 14 }}>AI Audit Report</span>
-              <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #454860", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
+              <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #525578", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
             </div>
             <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, fontSize: 14, color: "#e2e8f0" }}>{response}</div>
           </div>
@@ -146,7 +146,7 @@ export default function ContentHealthAuditor() {
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map(h => (
-              <div key={h.id} style={{ background: "#0d0d11", borderRadius: 8, padding: "12px 16px", border: "1px solid #222535", marginBottom: 8 }}>
+              <div key={h.id} style={{ background: "#0d0d11", borderRadius: 8, padding: "12px 16px", border: "1px solid #2e3045", marginBottom: 8 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
                   <span style={{ fontWeight: 700, color: "#e2e8f0" }}>{h.content ? h.content.slice(0, 60) + "…" : `Run #${h.id}`}</span>
                   <span style={{ color: "#64748b" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : ""}</span>
@@ -157,11 +157,11 @@ export default function ContentHealthAuditor() {
           </ul>
         </div>
         <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-          <div style={{ background: "#222535", borderRadius: 10, padding: "12px 20px", border: "1px solid #222535" }}>
+          <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
             <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Audits</div>
             <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{history.length}</div>
           </div>
-          <div style={{ background: "#222535", borderRadius: 10, padding: "12px 20px", border: "1px solid #222535" }}>
+          <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
             <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
             <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{analytics.length}</div>
           </div>

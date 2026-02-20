@@ -69,12 +69,12 @@
 
 .status-badge.resolved {
   background: #dbeafe;
-  color: #454860;
+  color: #525578;
 }
 
 .status-badge.closed {
   background: #f9fafb;
-  color: #222535;
+  color: #2e3045;
 }
 
 /* Priority Indicators */
@@ -108,7 +108,7 @@
 
 .priority-indicator.medium {
   background: #bfdbfe;
-  color: #454860;
+  color: #525578;
 }
 
 .priority-indicator.medium::before {
@@ -117,7 +117,7 @@
 
 .priority-indicator.low {
   background: #f9fafb;
-  color: #454860;
+  color: #525578;
 }
 
 .priority-indicator.low::before {
@@ -758,25 +758,25 @@
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   .ticket-card {
-    background: #222535;
+    background: #2e3045;
   }
   
   .qa-review-card {
-    background: #222535;
-    border-color: #454860;
+    background: #2e3045;
+    border-color: #525578;
   }
   
   .article-card {
-    background: #222535;
-    border-color: #454860;
+    background: #2e3045;
+    border-color: #525578;
   }
   
   .message-bubble.customer {
-    background: #454860;
+    background: #525578;
   }
   
   .insight-card {
-    background: #222535;
+    background: #2e3045;
   }
 }
 

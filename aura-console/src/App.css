@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: space-between;
   background: #0d0d11;
-  border-bottom: 1px solid #222535;
+  border-bottom: 1px solid #2e3045;
   padding: 0 32px;
   height: 60px;
   position: sticky;
@@ -82,7 +82,7 @@
   padding: 5px 12px;
   background: rgba(99, 102, 241, 0.08);
   border-radius: 6px;
-  border: 1px solid #353848;
+  border: 1px solid #3d4058;
 }
 
 .shop-name {
@@ -139,12 +139,12 @@
 }
 .tab-group .tab-active {
   color: #22d3ee;
-  background: #1a1c25;
+  background: #252638;
   border-bottom: 2.5px solid #22d3ee;
 }
 .tab-group button:hover:not(.tab-active) {
   color: #6366f1;
-  background: #353848;
+  background: #3d4058;
 }
 .tools-dropdown-category {
   padding: 0 0 6px 0;
@@ -160,7 +160,7 @@
   opacity: 0.85;
 }
 .tools-dropdown-category:not(:last-child) {
-  border-bottom: 1px solid #353848;
+  border-bottom: 1px solid #3d4058;
 }
 
 /* Legacy mega menu - hidden */
@@ -192,9 +192,9 @@
 
 /* Self-Service Analytics theming to match suite */
 .self-service-analytics {
-  background: #1a1c25;
+  background: #252638;
   color: #f9fafb;
-  border: 1px solid #222535;
+  border: 1px solid #2e3045;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
 }
@@ -209,9 +209,9 @@
 .self-service-analytics input,
 .self-service-analytics select,
 .self-service-analytics textarea {
-  background: #1a1c25;
+  background: #252638;
   color: #f9fafb;
-  border: 1px solid #222535;
+  border: 1px solid #2e3045;
   border-radius: 6px;
   padding: 6px 8px;
 }
@@ -224,8 +224,8 @@
 .self-service-analytics .schedule,
 .self-service-analytics .history-item,
 .self-service-analytics .alert-item {
-  background: #1a1c25;
-  border: 1px solid #222535;
+  background: #252638;
+  border: 1px solid #2e3045;
 }
 .self-service-analytics .validation.error { color: #f87171; }
 .self-service-analytics .validation.warn { color: #fbbf24; }
@@ -259,7 +259,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 0 18px 0;
-  border-bottom: 1px solid #222535;
+  border-bottom: 1px solid #2e3045;
   margin-bottom: 18px;
   background: transparent;
   border-radius: 0;
@@ -286,7 +286,7 @@
   justify-content: center;
   font-size: 1.7rem;
   font-weight: 900;
-  color: #1a1c25;
+  color: #252638;
   box-shadow: 0 2px 12px #6366f155;
   margin-right: 8px;
 }
@@ -299,7 +299,7 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1a1c25 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #252638 0%, #6366f1 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -348,8 +348,8 @@ app-loading {
 
 /* Predictive Analytics Widgets */
 .paw-wrapper {
-  background: #1a1c25;
-  border: 1px solid #222535;
+  background: #252638;
+  border: 1px solid #2e3045;
   border-radius: 18px;
   padding: 24px;
   box-shadow: 0 12px 32px #0004;
@@ -382,8 +382,8 @@ app-loading {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  background: #1a1c25;
-  border: 1px solid #222535;
+  background: #252638;
+  border: 1px solid #2e3045;
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 16px;
@@ -402,8 +402,8 @@ app-loading {
 
 .paw-field input,
 .paw-field select {
-  background: #1a1c25;
-  border: 1px solid #222535;
+  background: #252638;
+  border: 1px solid #2e3045;
   border-radius: 10px;
   padding: 10px 12px;
   color: #e2e8f0;
@@ -440,12 +440,12 @@ app-loading {
 .paw-button--ghost {
   background: transparent;
   color: #7dd3fc;
-  border: 1px solid #222535;
+  border: 1px solid #2e3045;
   box-shadow: none;
 }
 
 .paw-button--ghost:hover:not(:disabled) {
-  background: #1a1c25;
+  background: #252638;
 }
 
 .paw-error {
@@ -470,8 +470,8 @@ app-loading {
 }
 
 .paw-card {
-  background: #1a1c25;
-  border: 1px solid #222535;
+  background: #252638;
+  border: 1px solid #2e3045;
   border-radius: 12px;
   padding: 14px;
   display: flex;
@@ -509,13 +509,13 @@ app-loading {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, #22253533, transparent);
+  background: linear-gradient(90deg, transparent, #2e304533, transparent);
   animation: paw-shimmer 1.2s linear infinite;
 }
 
 .paw-skeleton-bar {
   height: 14px;
-  background: #1a1c25;
+  background: #252638;
   border-radius: 6px;
 }
 
@@ -525,8 +525,8 @@ app-loading {
 }
 
 .paw-section {
-  background: #1a1c25;
-  border: 1px solid #222535;
+  background: #252638;
+  border: 1px solid #2e3045;
   border-radius: 12px;
   padding: 14px;
 }
@@ -544,8 +544,8 @@ app-loading {
 }
 
 .paw-forecast-card {
-  background: #1a1c25;
-  border: 1px solid #222535;
+  background: #252638;
+  border: 1px solid #2e3045;
   border-radius: 10px;
   padding: 10px;
 }
@@ -557,8 +557,8 @@ app-loading {
 }
 
 .paw-forecast-point {
-  background: #1a1c25;
-  border: 1px solid #222535;
+  background: #252638;
+  border: 1px solid #2e3045;
   border-radius: 8px;
   padding: 8px;
 }
@@ -588,7 +588,7 @@ app-loading {
 }
 
 .paw-actual-point {
-  background: #1a1c25;
+  background: #252638;
   border-color: #0ea5e933;
 }
 
@@ -610,8 +610,8 @@ app-loading {
 .paw-chip-btn {
   padding: 8px 12px;
   border-radius: 999px;
-  border: 1px solid #222535;
-  background: #1a1c25;
+  border: 1px solid #2e3045;
+  background: #252638;
   color: #e9ebf5;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease, border 0.15s ease;
@@ -626,8 +626,8 @@ app-loading {
 .paw-chip {
   padding: 8px 12px;
   border-radius: 999px;
-  border: 1px solid #222535;
-  background: #1a1c25;
+  border: 1px solid #2e3045;
+  background: #252638;
 }
 
 .paw-chip--medium {
@@ -647,8 +647,8 @@ app-loading {
 }
 
 .paw-playbook-card {
-  background: #1a1c25;
-  border: 1px solid #222535;
+  background: #252638;
+  border: 1px solid #2e3045;
   border-radius: 10px;
   padding: 12px;
   display: flex;
@@ -668,7 +668,7 @@ app-loading {
 }
 
 .paw-alert-preview {
-  background: #1a1c25;
+  background: #252638;
 }
 
 .paw-alert-body {
@@ -679,8 +679,8 @@ app-loading {
 }
 
 .paw-alert-preview-text {
-  background: #1a1c25;
-  border: 1px solid #222535;
+  background: #252638;
+  border: 1px solid #2e3045;
   border-radius: 8px;
   padding: 8px;
 }
@@ -746,8 +746,8 @@ app-loading {
 }
 
 .paw-inline-input input {
-  background: #1a1c25;
-  border: 1px solid #222535;
+  background: #252638;
+  border: 1px solid #2e3045;
   border-radius: 8px;
   padding: 8px;
   color: #e2e8f0;
@@ -763,15 +763,15 @@ app-loading {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  background: #1a1c25;
-  border: 1px solid #222535;
+  background: #252638;
+  border: 1px solid #2e3045;
   border-radius: 10px;
   padding: 10px;
 }
 
 .paw-routing-card input {
-  background: #1a1c25;
-  border: 1px solid #222535;
+  background: #252638;
+  border: 1px solid #2e3045;
   color: #e2e8f0;
   border-radius: 8px;
   padding: 8px;
@@ -819,7 +819,7 @@ app-loading {
 
 .paw-table th,
 .paw-table td {
-  border-bottom: 1px solid #222535;
+  border-bottom: 1px solid #2e3045;
   padding: 8px 10px;
   text-align: left;
 }
@@ -842,8 +842,8 @@ app-loading {
 .paw-badge {
   padding: 8px 12px;
   border-radius: 10px;
-  background: #1a1c25;
-  border: 1px solid #222535;
+  background: #252638;
+  border: 1px solid #2e3045;
   color: #e9ebf5;
   font-size: 13px;
   box-shadow: inset 0 1px 0 #ffffff08;
@@ -919,12 +919,12 @@ app-loading {
 }
 
 :root {
-  --bg: #1a1c25;
-  --bg-alt: #1a1c25;
-  --card: #1a1c25;
+  --bg: #252638;
+  --bg-alt: #252638;
+  --card: #252638;
   --text: #f9fafb;
   --muted: #94a3b8;
-  --border: #222535;
+  --border: #2e3045;
   --accent: #22d3ee;
   --accent-2: #6366f1;
   --success: #22c55e;
@@ -938,7 +938,7 @@ body, .app-shell, .app-main {
 }
 
 input, select, textarea, button {
-  background-color: #1a1c25 !important;
+  background-color: #252638 !important;
   color: var(--text) !important;
   border-color: var(--border) !important;
 }
@@ -951,7 +951,7 @@ input, select, textarea, button {
 .app-shell {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, #1a1c25 0, rgba(15, 23, 42, 0.8) 45%, #0d0d11 100%);
+    radial-gradient(circle at top left, #252638 0, rgba(15, 23, 42, 0.8) 45%, #0d0d11 100%);
 }
 
 /* ================== SIDEBAR ================== */
@@ -1409,7 +1409,7 @@ input, select, textarea, button {
 .app-shell {
   display: flex;
   min-height: 100vh;
-  background: #1a1c25;
+  background: #252638;
 }
 
 /* Sidebar: Reduce width for more central content */
@@ -1866,7 +1866,7 @@ input, select, textarea, button {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: radial-gradient(circle at top, #1a1c25 0%, #0d0d11 100%);
+  background: radial-gradient(circle at top, #252638 0%, #0d0d11 100%);
 }
 
 .project-setup-card {

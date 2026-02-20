@@ -122,13 +122,13 @@ export default function AuraAPISDK() {
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {response && (
-        <div style={{ background: "#353848", borderRadius: 10, padding: 18, marginBottom: 18, color: "#f9fafb" }}>
+        <div style={{ background: "#3d4058", borderRadius: 10, padding: 18, marginBottom: 18, color: "#f9fafb" }}>
           <b>Response:</b>
           <pre style={{ fontSize: 15 }}>{JSON.stringify(response, null, 2)}</pre>
         </div>
       )}
       {docs.length > 0 && (
-        <div style={{ background: "#353848", borderRadius: 12, padding: 20, marginBottom: 18, color: "#f9fafb" }}>
+        <div style={{ background: "#3d4058", borderRadius: 12, padding: 20, marginBottom: 18, color: "#f9fafb" }}>
           <b>API Docs:</b>
           <ul style={{ paddingLeft: 18 }}>
             {docs.map((doc, idx) => (
@@ -137,13 +137,13 @@ export default function AuraAPISDK() {
           </ul>
         </div>
       )}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#353848", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#3d4058", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #6366f1", marginBottom: 12, background: "#1a1c25", color: "#f9fafb" }}
+          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #6366f1", marginBottom: 12, background: "#252638", color: "#f9fafb" }}
           placeholder="Share your feedback or suggestions..."
           aria-label="Feedback input"
         />

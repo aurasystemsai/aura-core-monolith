@@ -613,8 +613,8 @@ export default function SelfServiceAnalytics() {
               key={c.id}
               className="chart-result"
               style={{
-                background: "#1a1c25",
-                border: "1px solid #222535",
+                background: "#252638",
+                border: "1px solid #2e3045",
                 color: "#f9fafb",
                 borderRadius: 6,
                 padding: 10,
@@ -642,8 +642,8 @@ export default function SelfServiceAnalytics() {
               key={v.id}
               className="saved-view"
               style={{
-                background: "#1a1c25",
-                border: "1px solid #222535",
+                background: "#252638",
+                border: "1px solid #2e3045",
                 color: "#f9fafb",
                 borderRadius: 6,
                 padding: 10,
@@ -693,8 +693,8 @@ export default function SelfServiceAnalytics() {
               key={s.id}
               className="schedule"
               style={{
-                background: "#1a1c25",
-                border: "1px solid #222535",
+                background: "#252638",
+                border: "1px solid #2e3045",
                 color: "#f9fafb",
                 borderRadius: 6,
                 padding: 10,
@@ -732,8 +732,8 @@ export default function SelfServiceAnalytics() {
                   key={i}
                   className="history-item"
                   style={{
-                    background: "#1a1c25",
-                    border: "1px solid #222535",
+                    background: "#252638",
+                    border: "1px solid #2e3045",
                     color: "#f9fafb",
                     borderRadius: 6,
                     padding: 10,
@@ -756,7 +756,7 @@ export default function SelfServiceAnalytics() {
               key={i}
               className="alert-item"
               style={{
-                background: "#222535",
+                background: "#2e3045",
                 border: "1px solid #eab308",
                 color: "#fef08a",
                 borderRadius: 6,

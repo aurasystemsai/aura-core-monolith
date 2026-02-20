@@ -9,7 +9,7 @@ export default function WinbackEmptyState({ title, description, action, onAction
       role="region"
       aria-label={title}
       style={{
-        background: darkMode ? '#1a1c25' : '#f8fafc',
+        background: darkMode ? '#252638' : '#f8fafc',
         border: '1.5px dashed #6366f1',
         borderRadius: 16,
         padding: 48,

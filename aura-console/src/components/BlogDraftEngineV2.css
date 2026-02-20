@@ -18,15 +18,15 @@
   --gray-300: #e9ebf5;
   --gray-400: #a8adc4;
   --gray-500: #8b8fa8;
-  --gray-600: #454860;
-  --gray-700: #454860;
-  --gray-800: #222535;
-  --gray-900: #1a1c25;
+  --gray-600: #525578;
+  --gray-700: #525578;
+  --gray-800: #2e3045;
+  --gray-900: #252638;
 
   /* Dark Mode Colors */
-  --dark-bg: #1a1c25;
-  --dark-surface: #222535;
-  --dark-border: #454860;
+  --dark-bg: #252638;
+  --dark-surface: #2e3045;
+  --dark-border: #525578;
   --dark-text: #cbd5e1;
 
   /* Spacing */

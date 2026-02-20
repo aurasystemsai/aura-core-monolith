@@ -97,23 +97,23 @@
   min-width: 900px;
 }
 .pl-table thead {
-  background: #1a1c25;
+  background: #252638;
   color: #fff;
   font-size: 15px;
 }
 .pl-table th, .pl-table td {
   padding: 14px 10px;
   text-align: left;
-  border-bottom: 1px solid #1a1c25;
+  border-bottom: 1px solid #252638;
 }
 .pl-row--expanded {
-  background: #1a1c25 !important;
+  background: #252638 !important;
 }
 .pl-row {
-  background: #1a1c25;
+  background: #252638;
 }
 .pl-table tr {
-  background: #1a1c25;
+  background: #252638;
   transition: background 0.15s;
 }
 .pl-table tr:hover, .pl-table tr:focus-within {
@@ -165,7 +165,7 @@
   transition: background 0.15s, color 0.15s;
 }
 .pl-keyword-pill:hover, .pl-keyword-pill:focus {
-  background: #1a1c25;
+  background: #252638;
   color: #fff;
   border-color: #6366f1;
 }
@@ -196,7 +196,7 @@
   font-weight: 700;
 }
 .pl-btn--cancel {
-  background: #1a1c25;
+  background: #252638;
   color: #fff;
 }
 .pl-btn--ai {
@@ -220,7 +220,7 @@
 .pl-tip--warn { color: #ffe97f; }
 .pl-tip-detail { color: #aaa; }
 .pl-debug-panel {
-  background: #1a1c25;
+  background: #252638;
   color: #fff;
   font-size: 13px;
   padding: 16px;

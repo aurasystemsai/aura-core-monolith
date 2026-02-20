@@ -48,7 +48,7 @@ export default function UserManagement({ coreUrl }) {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '40px auto', padding: 24, background: '#1a1c25', borderRadius: 12 }}>
+    <div style={{ maxWidth: 400, margin: '40px auto', padding: 24, background: '#252638', borderRadius: 12 }}>
       <h2 style={{ color: '#6366f1' }}>User Management</h2>
       <form onSubmit={handleRegister} style={{ marginBottom: 24 }}>
         <div style={{ marginBottom: 12 }}>
@@ -69,7 +69,7 @@ export default function UserManagement({ coreUrl }) {
             </select>
           </label>
         </div>
-        <button type="submit" style={{ width: '100%', background: '#6366f1', color: '#1a1c25', fontWeight: 700, padding: 10, border: 0, borderRadius: 6 }}>Register User</button>
+        <button type="submit" style={{ width: '100%', background: '#6366f1', color: '#252638', fontWeight: 700, padding: 10, border: 0, borderRadius: 6 }}>Register User</button>
       </form>
       {error && <div style={{ color: 'salmon', marginBottom: 12 }}>{error}</div>}
       {success && <div style={{ color: '#6366f1', marginBottom: 12 }}>{success}</div>}

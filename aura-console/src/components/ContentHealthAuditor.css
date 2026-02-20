@@ -10,9 +10,9 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  background: #1a1c25;
+  background: #252638;
   border-radius: 16px;
-  box-shadow: 0 2px 16px 0 #1a1c25;
+  box-shadow: 0 2px 16px 0 #252638;
   padding: 20px 32px;
   margin-bottom: 32px;
 }
@@ -65,8 +65,8 @@
 }
 
 .cha-summary-item {
-  border: 1px solid #454860;
-  background: #1a1c25;
+  border: 1px solid #525578;
+  background: #252638;
   border-radius: 14px;
   padding: 10px 12px;
   min-width: 140px;
@@ -95,7 +95,7 @@
 
 .cha-error {
   border: 1px solid #ef4444;
-  background: #1a1c25;
+  background: #252638;
   border-radius: 14px;
   padding: 12px;
 }
@@ -112,10 +112,10 @@
 }
 
 .cha-table-wrap {
-  border: 1px solid #454860;
+  border: 1px solid #525578;
   border-radius: 16px;
   overflow: hidden;
-  background: #1a1c25;
+  background: #252638;
 }
 
 .cha-table {
@@ -127,15 +127,15 @@
 .cha-table thead th {
   text-align: left;
   padding: 10px 12px;
-  border-bottom: 1px solid #454860;
+  border-bottom: 1px solid #525578;
   opacity: 0.8;
   font-weight: 650;
-  background: #1a1c25;
+  background: #252638;
 }
 
 .cha-table tbody td {
   padding: 10px 12px;
-  border-bottom: 1px solid #1a1c25;
+  border-bottom: 1px solid #252638;
   vertical-align: top;
 }
 
@@ -176,8 +176,8 @@
   font-size: 11px;
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid #454860;
-  background: #1a1c25;
+  border: 1px solid #525578;
+  background: #252638;
   opacity: 0.95;
 }
 
@@ -197,23 +197,23 @@
   border-radius: 999px;
   font-weight: 700;
   font-size: 12px;
-  border: 1px solid #454860;
-  background: #1a1c25;
+  border: 1px solid #525578;
+  background: #252638;
 }
 
 .score-badge--bad {
   border-color: #ef4444;
-  background: #1a1c25;
+  background: #252638;
 }
 
 .score-badge--warn {
   border-color: #f59e42;
-  background: #1a1c25;
+  background: #252638;
 }
 
 .score-badge--good {
   border-color: #22c55e;
-  background: #1a1c25;
+  background: #252638;
 }
 
 .cha-footer {

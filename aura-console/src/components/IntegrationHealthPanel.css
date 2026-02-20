@@ -14,7 +14,7 @@
 .integration-health-chip {
   display: flex;
   align-items: center;
-  background: #1a1c25;
+  background: #252638;
   border-radius: 24px;
   padding: 8px 18px 8px 12px;
   font-weight: 600;
@@ -33,7 +33,7 @@
   color: #ff4d4f;
 }
 .integration-health-chip--loading {
-  background: #1a1c25;
+  background: #252638;
   color: #ffe066;
 }
 .integration-health-dot {

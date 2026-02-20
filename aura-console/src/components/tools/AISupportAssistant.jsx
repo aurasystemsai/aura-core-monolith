@@ -75,9 +75,9 @@ export default function AISupportAssistant() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#353848', borderRadius: 12, marginBottom: 18, color: '#f9fafb' }}>
+    <div style={{ padding: 24, background: '#3d4058', borderRadius: 12, marginBottom: 18, color: '#f9fafb' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to AI Support Assistant</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#454860', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#525578', fontSize: 16 }}>
         <li>Enter a support question or task to get AI-powered solutions</li>
         <li>Review analytics, export results, and view history</li>
         <li>Accessible, secure, and fully compliant</li>
@@ -88,7 +88,7 @@ export default function AISupportAssistant() {
 
   // Main UI
   return (
-    <div style={{ background: "#1a1c25", borderRadius: 16, boxShadow: "0 2px 16px #0008", padding: 32, color: '#f9fafb' }}>
+    <div style={{ background: "#252638", borderRadius: 16, boxShadow: "0 2px 16px #0008", padding: 32, color: '#f9fafb' }}>
       <h2 style={{ fontWeight: 700, fontSize: 28, marginBottom: 12 }}>AI Support Assistant</h2>
       <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}
@@ -112,7 +112,7 @@ export default function AISupportAssistant() {
       </button>
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
       {response && (
-        <div style={{ marginTop: 32, background: "#353848", borderRadius: 12, padding: 24, color: '#f9fafb' }}>
+        <div style={{ marginTop: 32, background: "#3d4058", borderRadius: 12, padding: 24, color: '#f9fafb' }}>
           <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>AI Response:</div>
           <div style={{ fontSize: 16, color: "#0d0d11" }}>{response}</div>
         </div>

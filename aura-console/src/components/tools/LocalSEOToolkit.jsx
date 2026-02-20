@@ -17,9 +17,9 @@ export default function LocalSEOToolkit() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#353848', borderRadius: 12, marginBottom: 18, color: '#f9fafb' }}>
+    <div style={{ padding: 24, background: '#3d4058', borderRadius: 12, marginBottom: 18, color: '#f9fafb' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Local SEO Toolkit</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#454860', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#525578', fontSize: 16 }}>
         <li>Sync GMB, track citations, monitor reviews, and local rankings</li>
         <li>Import/export data, analyze trends, and optimize for local search</li>
         <li>Accessible, secure, and fully compliant</li>
@@ -159,7 +159,7 @@ export default function LocalSEOToolkit() {
         </div>
       </div>
       {/* Feedback */}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#353848', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#3d4058', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}

@@ -201,7 +201,7 @@ class ErrorBoundary extends React.Component {
         }}>
           <div>Something went wrong.</div>
           <div style={{ fontSize: 15, marginTop: 18, color: '#fff8' }}>{this.state.error?.toString()}</div>
-          <pre style={{ color: '#fff', fontSize: 13, marginTop: 18, textAlign: 'left', background: '#222535', padding: 16, borderRadius: 8, overflowX: 'auto' }}>
+          <pre style={{ color: '#fff', fontSize: 13, marginTop: 18, textAlign: 'left', background: '#2e3045', padding: 16, borderRadius: 8, overflowX: 'auto' }}>
             {this.state.error?.stack || ''}
           </pre>
         </div>
@@ -441,7 +441,7 @@ function App() {
           </div>
           <div className="nav-actions">
             {plan && plan !== 'free' && (
-              <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 6, background: '#222535', color: '#a8adc4', border: '1px solid #222535', marginRight: 8, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 6, background: '#2e3045', color: '#a8adc4', border: '1px solid #2e3045', marginRight: 8, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                 {PLAN_LABEL[plan]}
               </span>
             )}
@@ -611,9 +611,9 @@ function App() {
                 <button
                   onClick={() => setShowChatbot(false)}
                   style={{
-                    background: "#222535",
+                    background: "#2e3045",
                     color: "#a8adc4",
-                    border: "1px solid #222535",
+                    border: "1px solid #2e3045",
                     borderRadius: 8,
                     padding: "5px 14px",
                     fontWeight: 600,

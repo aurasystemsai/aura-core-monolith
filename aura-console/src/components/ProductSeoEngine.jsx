@@ -52,7 +52,7 @@ function ScoreRing({ score, size = 88 }) {
   const inner = size * 0.72;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-      <div style={{ width: size, height: size, borderRadius: '50%', background: `conic-gradient(${colour} ${score * 3.6}deg, #222535 ${score * 3.6}deg)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 20px ${colour}33` }}>
+      <div style={{ width: size, height: size, borderRadius: '50%', background: `conic-gradient(${colour} ${score * 3.6}deg, #2e3045 ${score * 3.6}deg)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 20px ${colour}33` }}>
         <div style={{ width: inner, height: inner, borderRadius: '50%', background: '#0d0d11', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ color: colour, fontWeight: 900, fontSize: size * 0.23, lineHeight: 1 }}>{score}</span>
           <span style={{ color: colour + 'aa', fontSize: size * 0.1, fontWeight: 700 }}>/100</span>
@@ -69,7 +69,7 @@ function CharBar({ value = '', min, max, sweetMin, sweetMax, label }) {
   const inRange = len >= min && len <= max;
   const perfect = len >= (sweetMin || min) && len <= (sweetMax || max);
   const pct = Math.min(100, (len / max) * 100);
-  const colour = len === 0 ? '#454860' : over ? '#f87171' : perfect ? '#4ade80' : inRange ? '#a3e635' : '#fbbf24';
+  const colour = len === 0 ? '#525578' : over ? '#f87171' : perfect ? '#4ade80' : inRange ? '#a3e635' : '#fbbf24';
   const statusText = len === 0 ? 'Empty'
     : over ? 'Too long'
     : len < min ? 'Too short'
@@ -84,7 +84,7 @@ function CharBar({ value = '', min, max, sweetMin, sweetMax, label }) {
           <span style={{ fontSize: 11, color: colour, fontWeight: 600, background: colour + '18', border: `1px solid ${colour}33`, borderRadius: 4, padding: '1px 6px' }}>{len}/{max}</span>
         </div>
       </div>
-      <div style={{ height: 5, background: '#222535', borderRadius: 3, overflow: 'hidden' }}>
+      <div style={{ height: 5, background: '#2e3045', borderRadius: 3, overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${colour}88, ${colour})`, borderRadius: 3, transition: 'width 0.3s ease' }} />
       </div>
     </div>
@@ -99,11 +99,11 @@ function SerpPreview({ title, description, handle, shop, device }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
         <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#e8f0fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#1a73e8', fontWeight: 900 }}>G</div>
         <div>
-          <div style={{ fontSize: 13, color: '#222535', fontWeight: 500 }}>{shop || 'yourstore.myshopify.com'}</div>
+          <div style={{ fontSize: 13, color: '#2e3045', fontWeight: 500 }}>{shop || 'yourstore.myshopify.com'}</div>
           <div style={{ fontSize: 11, color: '#4d5156', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: isMobile ? 260 : 500 }}>https://{url}</div>
         </div>
       </div>
-      <div style={{ fontSize: isMobile ? 16 : 20, color: '#454860', marginBottom: 6, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <div style={{ fontSize: isMobile ? 16 : 20, color: '#525578', marginBottom: 6, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {title || 'Your SEO Title Will Appear Here'}
       </div>
       <div style={{ fontSize: 13, color: '#4d5156', lineHeight: 1.58, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
@@ -115,7 +115,7 @@ function SerpPreview({ title, description, handle, shop, device }) {
 
 function GenBtn({ onClick, loading, small }) {
   return (
-    <button onClick={onClick} disabled={loading} style={{ background: loading ? '#353848' : '#ffffff', border: 'none', borderRadius: small ? 6 : 8, padding: small ? '5px 12px' : '7px 16px', color: '#000000', fontWeight: 700, fontSize: small ? 12 : 13, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, opacity: loading ? 0.5 : 1 }}>
+    <button onClick={onClick} disabled={loading} style={{ background: loading ? '#3d4058' : '#ffffff', border: 'none', borderRadius: small ? 6 : 8, padding: small ? '5px 12px' : '7px 16px', color: '#000000', fontWeight: 700, fontSize: small ? 12 : 13, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, opacity: loading ? 0.5 : 1 }}>
       {loading ? <span style={{ display: 'inline-block', width: 12, height: 12, border: '2px solid #666', borderTopColor: '#ffffff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> : null}
       {loading ? 'Generating...' : 'Generate'}
     </button>
@@ -124,7 +124,7 @@ function GenBtn({ onClick, loading, small }) {
 
 function FieldBlock({ label, hint, badge, children }) {
   return (
-    <div style={{ background: '#1a1c25', border: '1px solid #222535', borderRadius: 12, padding: 18 }}>
+    <div style={{ background: '#252638', border: '1px solid #2e3045', borderRadius: 12, padding: 18 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <div>
           <div style={{ fontWeight: 600, color: '#a8adc4', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
@@ -347,7 +347,7 @@ export default function ProductSeoEngine() {
         </div>
       )}
 
-      <div style={{ background: '#0f0f0f', borderBottom: '1px solid #222535', padding: '0 32px' }}>
+      <div style={{ background: '#0f0f0f', borderBottom: '1px solid #2e3045', padding: '0 32px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 22, paddingBottom: 18 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{ width: 40, height: 40, borderRadius: 10, background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000000', fontWeight: 800, fontSize: 12, letterSpacing: '0.05em' }}>SEO</div>
@@ -362,15 +362,15 @@ export default function ProductSeoEngine() {
               { label: 'Optimised', value: Object.keys(stored).length, colour: '#a8adc4' },
               { label: 'Avg Score', value: products.length ? Math.round(products.reduce((s, p) => s + seoScore(stored[p.id] || {}), 0) / products.length) : 0, colour: '#fbbf24' },
             ].map(st => (
-              <div key={st.label} style={{ background: '#1a1c25', border: '1px solid #222535', borderRadius: 10, padding: '9px 16px', textAlign: 'center', minWidth: 76 }}>
+              <div key={st.label} style={{ background: '#252638', border: '1px solid #2e3045', borderRadius: 10, padding: '9px 16px', textAlign: 'center', minWidth: 76 }}>
                 <div style={{ fontSize: 20, fontWeight: 700, color: st.colour }}>{st.value}</div>
                 <div style={{ fontSize: 11, color: '#8b8fa8', marginTop: 1 }}>{st.label}</div>
               </div>
             ))}
-            <button onClick={loadProducts} style={{ background: '#1a1c25', border: '1px solid #222535', borderRadius: 10, padding: '9px 16px', color: '#a8adc4', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Refresh</button>
+            <button onClick={loadProducts} style={{ background: '#252638', border: '1px solid #2e3045', borderRadius: 10, padding: '9px 16px', color: '#a8adc4', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Refresh</button>
           </div>
         </div>
-        <div style={{ display: 'flex', borderTop: '1px solid #222535' }}>
+        <div style={{ display: 'flex', borderTop: '1px solid #2e3045' }}>
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{ background: 'none', border: 'none', borderBottom: tab === t.id ? '2px solid #ffffff' : '2px solid transparent', padding: '13px 22px', cursor: 'pointer', color: tab === t.id ? '#ffffff' : '#8b8fa8', fontWeight: tab === t.id ? 600 : 400, fontSize: 13, transition: 'color 0.15s' }}>
               {t.label}
@@ -385,14 +385,14 @@ export default function ProductSeoEngine() {
           <div>
             <div style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>
               <input placeholder="Search products..." value={search} onChange={e => setSearch(e.target.value)}
-                style={{ flex: 1, minWidth: 200, background: '#1a1c25', border: '1px solid #353848', borderRadius: 10, padding: '11px 14px', color: '#f9fafb', fontSize: 14, outline: 'none' }} />
-              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ background: '#1a1c25', border: '1px solid #353848', borderRadius: 10, padding: '11px 14px', color: '#f9fafb', fontSize: 14, cursor: 'pointer' }}>
+                style={{ flex: 1, minWidth: 200, background: '#252638', border: '1px solid #3d4058', borderRadius: 10, padding: '11px 14px', color: '#f9fafb', fontSize: 14, outline: 'none' }} />
+              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ background: '#252638', border: '1px solid #3d4058', borderRadius: 10, padding: '11px 14px', color: '#f9fafb', fontSize: 14, cursor: 'pointer' }}>
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
                 <option value="draft">Draft</option>
                 <option value="archived">Archived</option>
               </select>
-              <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ background: '#1a1c25', border: '1px solid #353848', borderRadius: 10, padding: '11px 14px', color: '#f9fafb', fontSize: 14, cursor: 'pointer' }}>
+              <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ background: '#252638', border: '1px solid #3d4058', borderRadius: 10, padding: '11px 14px', color: '#f9fafb', fontSize: 14, cursor: 'pointer' }}>
                 <option value="title">Sort: A-Z</option>
                 <option value="score">Score: High to Low</option>
                 <option value="score_asc">Score: Low to High</option>
@@ -437,18 +437,18 @@ export default function ProductSeoEngine() {
                   const hasData = !!pFields.seoTitle;
                   return (
                     <div key={p.id} onClick={() => selectProduct(p)}
-                      style={{ background: '#1a1c25', border: '1px solid ' + (hasData ? '#222535' : '#2a1515'), borderRadius: 16, padding: 18, cursor: 'pointer', transition: 'all 0.2s', position: 'relative' }}
+                      style={{ background: '#252638', border: '1px solid ' + (hasData ? '#2e3045' : '#2a1515'), borderRadius: 16, padding: 18, cursor: 'pointer', transition: 'all 0.2s', position: 'relative' }}
                       onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 32px #000a'; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = hasData ? '#222535' : '#2a1515'; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = hasData ? '#2e3045' : '#2a1515'; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
                     >
-                        <div style={{ position: 'absolute', top: 14, right: 14, background: hasData ? pb : '#1a1c25', border: '1px solid ' + (hasData ? pc : '#222535') + '40', borderRadius: 8, padding: '4px 10px', textAlign: 'center' }}>
-                        <div style={{ fontSize: 16, fontWeight: 900, color: hasData ? pc : '#454860' }}>{hasData ? ps : '-'}</div>
-                        <div style={{ fontSize: 9, color: (hasData ? pc : '#454860') + 'aa', fontWeight: 600 }}>SEO</div>
+                        <div style={{ position: 'absolute', top: 14, right: 14, background: hasData ? pb : '#252638', border: '1px solid ' + (hasData ? pc : '#2e3045') + '40', borderRadius: 8, padding: '4px 10px', textAlign: 'center' }}>
+                        <div style={{ fontSize: 16, fontWeight: 900, color: hasData ? pc : '#525578' }}>{hasData ? ps : '-'}</div>
+                        <div style={{ fontSize: 9, color: (hasData ? pc : '#525578') + 'aa', fontWeight: 600 }}>SEO</div>
                       </div>
                       <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', paddingRight: 56 }}>
                         {p.image
-                          ? <img src={p.image} alt={p.title} style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover', flexShrink: 0, border: '1px solid #222535' }} />
-                          : <div style={{ width: 56, height: 56, borderRadius: 12, background: '#1a1c25', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#8b8fa8', flexShrink: 0 }}>IMG</div>}
+                          ? <img src={p.image} alt={p.title} style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover', flexShrink: 0, border: '1px solid #2e3045' }} />
+                          : <div style={{ width: 56, height: 56, borderRadius: 12, background: '#252638', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#8b8fa8', flexShrink: 0 }}>IMG</div>}
                         <div style={{ minWidth: 0, flex: 1 }}>
                           <div style={{ fontWeight: 700, fontSize: 15, color: '#f9fafb', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</div>
                           <div style={{ fontSize: 12, color: '#8b8fa8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.vendor} - {p.handle}</div>
@@ -460,8 +460,8 @@ export default function ProductSeoEngine() {
                         </div>
                       </div>
                       {hasData && (
-                        <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #222535' }}>
-                          <div style={{ height: 3, background: '#222535', borderRadius: 2, overflow: 'hidden' }}>
+                        <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #2e3045' }}>
+                          <div style={{ height: 3, background: '#2e3045', borderRadius: 2, overflow: 'hidden' }}>
                             <div style={{ height: '100%', width: ps + '%', background: 'linear-gradient(90deg, ' + pc + '80, ' + pc + ')', borderRadius: 2 }} />
                           </div>
                           <div style={{ display: 'flex', gap: 5, marginTop: 7, flexWrap: 'wrap' }}>
@@ -489,8 +489,8 @@ export default function ProductSeoEngine() {
               </div>
             ) : (
               <div>
-                <div style={{ background: '#1a1c25', border: '1px solid #222535', borderRadius: 16, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
-                  {selectedProduct.image && <img src={selectedProduct.image} alt={selectedProduct.title} style={{ width: 52, height: 52, borderRadius: 12, objectFit: 'cover', border: '1px solid #222535' }} />}
+                <div style={{ background: '#252638', border: '1px solid #2e3045', borderRadius: 16, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
+                  {selectedProduct.image && <img src={selectedProduct.image} alt={selectedProduct.title} style={{ width: 52, height: 52, borderRadius: 12, objectFit: 'cover', border: '1px solid #2e3045' }} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 800, fontSize: 17, color: '#f9fafb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedProduct.title}</div>
                     <div style={{ fontSize: 12, color: '#8b8fa8', marginTop: 2 }}>{selectedProduct.vendor} - /products/{selectedProduct.handle}</div>
@@ -498,19 +498,19 @@ export default function ProductSeoEngine() {
                   {savedAt && <div style={{ fontSize: 11, color: '#8b8fa8', whiteSpace: 'nowrap' }}>Auto-saved {savedAt.toLocaleTimeString()}</div>}
                   <div style={{ display: 'flex', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
                     <button onClick={generateAll} disabled={generating}
-                      style={{ background: generating ? '#353848' : '#ffffff', border: 'none', borderRadius: 12, padding: '10px 22px', color: generating ? '#8b8fa8' : '#000000', fontWeight: 700, cursor: generating ? 'wait' : 'pointer', fontSize: 14 }}>
+                      style={{ background: generating ? '#3d4058' : '#ffffff', border: 'none', borderRadius: 12, padding: '10px 22px', color: generating ? '#8b8fa8' : '#000000', fontWeight: 700, cursor: generating ? 'wait' : 'pointer', fontSize: 14 }}>
                       {generating ? 'Generating...' : 'AI Generate All'}
                     </button>
                     <button onClick={() => { saveLocal(selectedProduct.id, editor); setSavedAt(new Date()); showToast('Draft saved'); }}
-                      style={{ background: '#0d0d11', border: '1px solid #222535', borderRadius: 12, padding: '10px 18px', color: '#a8adc4', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>Save Draft</button>
+                      style={{ background: '#0d0d11', border: '1px solid #2e3045', borderRadius: 12, padding: '10px 18px', color: '#a8adc4', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>Save Draft</button>
                     <button onClick={pushToShopify} disabled={pushing || !editor.seoTitle}
-                      style={{ background: pushing || !editor.seoTitle ? '#353848' : 'linear-gradient(135deg, #7c3aed, #6d28d9)', border: 'none', borderRadius: 12, padding: '10px 22px', color: '#fff', fontWeight: 700, cursor: pushing ? 'wait' : 'pointer', fontSize: 14 }}>
+                      style={{ background: pushing || !editor.seoTitle ? '#3d4058' : 'linear-gradient(135deg, #7c3aed, #6d28d9)', border: 'none', borderRadius: 12, padding: '10px 22px', color: '#fff', fontWeight: 700, cursor: pushing ? 'wait' : 'pointer', fontSize: 14 }}>
                       {pushing ? 'Pushing...' : 'Push to Shopify'}
                     </button>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: '#1a1c25', border: '1px solid #222535', borderRadius: 12, padding: 4, width: 'fit-content' }}>
+                <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: '#252638', border: '1px solid #2e3045', borderRadius: 12, padding: 4, width: 'fit-content' }}>
                   {[['fields', 'Fields'], ['preview', 'SERP Preview'], ['checklist', 'SEO Checklist']].map(([id, lbl]) => (
                     <button key={id} onClick={() => setEditorTab(id)} style={{ background: editorTab === id ? 'rgba(255,255,255,0.08)' : 'none', border: editorTab === id ? '1px solid rgba(255,255,255,0.15)' : '1px solid transparent', borderRadius: 8, padding: '7px 16px', color: editorTab === id ? '#ffffff' : '#8b8fa8', fontWeight: editorTab === id ? 600 : 400, fontSize: 13, cursor: 'pointer' }}>
                       {lbl}
@@ -525,7 +525,7 @@ export default function ProductSeoEngine() {
                       <FieldBlock label="SEO Title" hint="Shown in browser tab and Google search results" badge={<GenBtn onClick={() => generateField('seoTitle')} loading={!!fieldGenerating.seoTitle} />}>
                         <input value={editor.seoTitle} onChange={e => setEditor(ed => ({ ...ed, seoTitle: e.target.value }))}
                           placeholder="e.g. Premium Snowboard - Fast and Responsive"
-                          style={{ width: '100%', background: '#0d0d11', border: '1px solid ' + (editor.seoTitle.length > 60 ? '#f87171' : '#222535'), borderRadius: 10, padding: '11px 14px', color: '#f9fafb', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
+                          style={{ width: '100%', background: '#0d0d11', border: '1px solid ' + (editor.seoTitle.length > 60 ? '#f87171' : '#2e3045'), borderRadius: 10, padding: '11px 14px', color: '#f9fafb', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
                         <CharBar value={editor.seoTitle} min={30} max={60} sweetMin={50} sweetMax={58} label="50-60 chars ideal (30-60 accepted by Google)" />
                       </FieldBlock>
 
@@ -533,20 +533,20 @@ export default function ProductSeoEngine() {
                         <textarea value={editor.seoDescription} onChange={e => setEditor(ed => ({ ...ed, seoDescription: e.target.value }))}
                           placeholder="Compelling description with your main keyword and a call-to-action."
                           rows={4}
-                          style={{ width: '100%', background: '#0d0d11', border: '1px solid ' + (editor.seoDescription.length > 160 ? '#f87171' : '#222535'), borderRadius: 10, padding: '11px 14px', color: '#f9fafb', fontSize: 14, outline: 'none', resize: 'vertical', lineHeight: 1.6, boxSizing: 'border-box' }} />
+                          style={{ width: '100%', background: '#0d0d11', border: '1px solid ' + (editor.seoDescription.length > 160 ? '#f87171' : '#2e3045'), borderRadius: 10, padding: '11px 14px', color: '#f9fafb', fontSize: 14, outline: 'none', resize: 'vertical', lineHeight: 1.6, boxSizing: 'border-box' }} />
                         <CharBar value={editor.seoDescription} min={120} max={160} sweetMin={150} sweetMax={158} label="150-160 chars ideal (fills Google snippet)" />
                       </FieldBlock>
 
                       <FieldBlock label="URL Handle / Slug" hint="Use lowercase letters, numbers and hyphens only" badge={<GenBtn onClick={() => generateField('handle')} loading={!!fieldGenerating.handle} small />}>
-                        <div style={{ display: 'flex', background: '#0d0d11', border: '1px solid #222535', borderRadius: 10, overflow: 'hidden' }}>
-                          <span style={{ padding: '11px 12px', color: '#454860', fontSize: 13, borderRight: '1px solid #222535', whiteSpace: 'nowrap' }}>/products/</span>
+                        <div style={{ display: 'flex', background: '#0d0d11', border: '1px solid #2e3045', borderRadius: 10, overflow: 'hidden' }}>
+                          <span style={{ padding: '11px 12px', color: '#525578', fontSize: 13, borderRight: '1px solid #2e3045', whiteSpace: 'nowrap' }}>/products/</span>
                           <input value={editor.handle} onChange={e => setEditor(ed => ({ ...ed, handle: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') }))}
                             style={{ flex: 1, background: 'none', border: 'none', padding: '11px 14px', color: '#f9fafb', fontSize: 14, outline: 'none' }} />
                         </div>
                       </FieldBlock>
 
                       <FieldBlock label="Focus Keywords" hint="Guide the AI copy - not a meta tag ranking signal (Google ignores meta keywords since 2009)" badge={<GenBtn onClick={() => generateField('keywords')} loading={!!fieldGenerating.keywords} small />}>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, background: '#0d0d11', border: '1px solid #222535', borderRadius: 10, padding: '8px 10px', minHeight: 50, alignItems: 'center' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, background: '#0d0d11', border: '1px solid #2e3045', borderRadius: 10, padding: '8px 10px', minHeight: 50, alignItems: 'center' }}>
                           {chips.map(kw => {
                             const inT = kwInTitleMatch(kw);
                             const inD = kwInDescMatch(kw);
@@ -570,12 +570,12 @@ export default function ProductSeoEngine() {
                       <FieldBlock label="Image Alt Text" hint="Describe the main product image for accessibility and SEO" badge={<GenBtn onClick={() => generateField('altText')} loading={!!fieldGenerating.altText} small />}>
                         <input value={editor.altText} onChange={e => setEditor(ed => ({ ...ed, altText: e.target.value }))}
                           placeholder="e.g. Red premium freestyle snowboard with carbon fibre base"
-                          style={{ width: '100%', background: '#0d0d11', border: '1px solid #222535', borderRadius: 10, padding: '11px 14px', color: '#f9fafb', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+                          style={{ width: '100%', background: '#0d0d11', border: '1px solid #2e3045', borderRadius: 10, padding: '11px 14px', color: '#f9fafb', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
                       </FieldBlock>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                      <div style={{ background: '#1a1c25', border: '1px solid ' + scoreColour + '30', borderRadius: 16, padding: 22 }}>
+                      <div style={{ background: '#252638', border: '1px solid ' + scoreColour + '30', borderRadius: 16, padding: 22 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 18 }}>
                           <ScoreRing score={score} />
                           <div>
@@ -605,7 +605,7 @@ export default function ProductSeoEngine() {
                               </div>
                               <div style={{ display: 'flex', gap: 8 }}>
                                 <span style={{ fontSize: 11, color: item.ok ? '#4ade80' : '#8b8fa8' }}>{item.msg}</span>
-                                <span style={{ fontSize: 11, fontWeight: 700, color: item.earned > 0 ? '#6366f1' : '#454860', background: item.earned > 0 ? '#6366f110' : 'none', border: '1px solid ' + (item.earned > 0 ? '#6366f120' : '#222535'), borderRadius: 4, padding: '1px 6px' }}>{item.earned}/{item.pts}</span>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: item.earned > 0 ? '#6366f1' : '#525578', background: item.earned > 0 ? '#6366f110' : 'none', border: '1px solid ' + (item.earned > 0 ? '#6366f120' : '#2e3045'), borderRadius: 4, padding: '1px 6px' }}>{item.earned}/{item.pts}</span>
                               </div>
                             </div>
                           ));
@@ -613,7 +613,7 @@ export default function ProductSeoEngine() {
                       </div>
 
                       {chips.length > 0 && (
-                        <div style={{ background: '#1a1c25', border: '1px solid #222535', borderRadius: 16, padding: 18 }}>
+                        <div style={{ background: '#252638', border: '1px solid #2e3045', borderRadius: 16, padding: 18 }}>
                           <div style={{ fontWeight: 600, fontSize: 13, color: '#a8adc4', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Keyword Presence</div>
                           {chips.slice(0, 8).map(kw => {
                             const inT = kwInTitleMatch(kw);
@@ -641,20 +641,20 @@ export default function ProductSeoEngine() {
                   <div>
                     <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
                       {[['desktop', 'Desktop'], ['mobile', 'Mobile']].map(([d, lbl]) => (
-                        <button key={d} onClick={() => setSerpDevice(d)} style={{ background: serpDevice === d ? 'rgba(255,255,255,0.08)' : '#1a1c25', border: '1px solid ' + (serpDevice === d ? 'rgba(255,255,255,0.2)' : '#222535'), borderRadius: 10, padding: '8px 18px', color: serpDevice === d ? '#ffffff' : '#8b8fa8', fontWeight: serpDevice === d ? 600 : 400, fontSize: 13, cursor: 'pointer' }}>{lbl}</button>
+                        <button key={d} onClick={() => setSerpDevice(d)} style={{ background: serpDevice === d ? 'rgba(255,255,255,0.08)' : '#252638', border: '1px solid ' + (serpDevice === d ? 'rgba(255,255,255,0.2)' : '#2e3045'), borderRadius: 10, padding: '8px 18px', color: serpDevice === d ? '#ffffff' : '#8b8fa8', fontWeight: serpDevice === d ? 600 : 400, fontSize: 13, cursor: 'pointer' }}>{lbl}</button>
                       ))}
                     </div>
                     <div style={{ maxWidth: serpDevice === 'mobile' ? 400 : 680, margin: '0 auto' }}>
-                      <div style={{ background: '#1a1c25', border: '1px solid #222535', borderRadius: 14, padding: 20, marginBottom: 16 }}>
+                      <div style={{ background: '#252638', border: '1px solid #2e3045', borderRadius: 14, padding: 20, marginBottom: 16 }}>
                         <div style={{ fontSize: 12, color: '#8b8fa8', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>Google Search Result Preview</div>
                         <SerpPreview title={editor.seoTitle} description={editor.seoDescription} handle={editor.handle} shop={shopDomain} device={serpDevice} />
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                        <div style={{ background: '#1a1c25', border: '1px solid #222535', borderRadius: 12, padding: 14 }}>
+                        <div style={{ background: '#252638', border: '1px solid #2e3045', borderRadius: 12, padding: 14 }}>
                           <div style={{ fontSize: 11, color: '#8b8fa8', fontWeight: 600, textTransform: 'uppercase', marginBottom: 8 }}>Title</div>
                           <div style={{ fontSize: 12, color: editor.seoTitle.length > 60 ? '#f87171' : editor.seoTitle.length >= 30 ? '#4ade80' : '#fbbf24', fontWeight: 700 }}>{editor.seoTitle.length} chars {editor.seoTitle.length > 60 ? '- truncated' : editor.seoTitle.length < 30 ? '- too short' : '- good'}</div>
                         </div>
-                        <div style={{ background: '#1a1c25', border: '1px solid #222535', borderRadius: 12, padding: 14 }}>
+                        <div style={{ background: '#252638', border: '1px solid #2e3045', borderRadius: 12, padding: 14 }}>
                           <div style={{ fontSize: 11, color: '#8b8fa8', fontWeight: 600, textTransform: 'uppercase', marginBottom: 8 }}>Description</div>
                           <div style={{ fontSize: 12, color: editor.seoDescription.length > 160 ? '#f87171' : editor.seoDescription.length >= 120 ? '#4ade80' : '#fbbf24', fontWeight: 700 }}>{editor.seoDescription.length} chars {editor.seoDescription.length > 160 ? '- truncated' : editor.seoDescription.length < 120 ? '- too short' : '- good'}</div>
                         </div>
@@ -665,18 +665,18 @@ export default function ProductSeoEngine() {
 
                 {editorTab === 'checklist' && (
                   <div style={{ maxWidth: 680 }}>
-                    <div style={{ background: '#1a1c25', border: '1px solid #222535', borderRadius: 16, padding: 22 }}>
+                    <div style={{ background: '#252638', border: '1px solid #2e3045', borderRadius: 16, padding: 22 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                         <div style={{ fontWeight: 800, fontSize: 17, color: '#f9fafb' }}>SEO Checklist</div>
                         <div style={{ background: checkPassed === checklist.length ? '#0a1f10' : '#1f180a', border: '1px solid ' + (checkPassed === checklist.length ? '#4ade8040' : '#fbbf2440'), borderRadius: 10, padding: '6px 14px', fontSize: 14, fontWeight: 800, color: checkPassed === checklist.length ? '#4ade80' : '#fbbf24' }}>
                           {checkPassed} / {checklist.length} passed
                         </div>
                       </div>
-                      <div style={{ height: 6, background: '#222535', borderRadius: 3, overflow: 'hidden', marginBottom: 18 }}>
+                      <div style={{ height: 6, background: '#2e3045', borderRadius: 3, overflow: 'hidden', marginBottom: 18 }}>
                         <div style={{ height: '100%', width: ((checkPassed / checklist.length) * 100) + '%', background: 'linear-gradient(90deg, #6366f1, #4ade80)', borderRadius: 3, transition: 'width 0.4s ease' }} />
                       </div>
                       {checklist.map((item, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 14px', background: item.ok ? '#071a10' : '#0d0d11', border: '1px solid ' + (item.ok ? '#4ade8020' : '#222535'), borderRadius: 10, marginBottom: 6 }}>
+                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 14px', background: item.ok ? '#071a10' : '#0d0d11', border: '1px solid ' + (item.ok ? '#4ade8020' : '#2e3045'), borderRadius: 10, marginBottom: 6 }}>
                           <div style={{ width: 22, height: 22, borderRadius: 6, background: item.ok ? '#4ade8020' : '#f8717120', border: '1px solid ' + (item.ok ? '#4ade8040' : '#f8717130'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, color: item.ok ? '#4ade80' : '#f87171', flexShrink: 0 }}>
                             {item.ok ? 'Y' : 'N'}
                           </div>
@@ -702,14 +702,14 @@ export default function ProductSeoEngine() {
                 <p style={{ margin: '6px 0 0', fontSize: 14, color: '#8b8fa8' }}>Select products and generate SEO for all at once then publish</p>
               </div>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <button onClick={() => setBulkSelected(new Set(products.map(p => p.id)))} style={{ background: '#0d0d11', border: '1px solid #222535', borderRadius: 10, padding: '10px 16px', color: '#a8adc4', cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>Select All ({products.length})</button>
-                <button onClick={() => setBulkSelected(new Set())} style={{ background: '#0d0d11', border: '1px solid #222535', borderRadius: 10, padding: '10px 16px', color: '#a8adc4', cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>Clear</button>
+                <button onClick={() => setBulkSelected(new Set(products.map(p => p.id)))} style={{ background: '#0d0d11', border: '1px solid #2e3045', borderRadius: 10, padding: '10px 16px', color: '#a8adc4', cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>Select All ({products.length})</button>
+                <button onClick={() => setBulkSelected(new Set())} style={{ background: '#0d0d11', border: '1px solid #2e3045', borderRadius: 10, padding: '10px 16px', color: '#a8adc4', cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>Clear</button>
                 <button onClick={runBulkGenerate} disabled={bulkGenerating || !bulkSelected.size}
-                  style={{ background: bulkGenerating || !bulkSelected.size ? '#353848' : '#ffffff', border: 'none', borderRadius: 10, padding: '10px 22px', color: bulkGenerating || !bulkSelected.size ? '#8b8fa8' : '#000000', fontWeight: 700, cursor: bulkGenerating ? 'wait' : 'pointer', fontSize: 14, opacity: !bulkSelected.size ? 0.5 : 1 }}>
+                  style={{ background: bulkGenerating || !bulkSelected.size ? '#3d4058' : '#ffffff', border: 'none', borderRadius: 10, padding: '10px 22px', color: bulkGenerating || !bulkSelected.size ? '#8b8fa8' : '#000000', fontWeight: 700, cursor: bulkGenerating ? 'wait' : 'pointer', fontSize: 14, opacity: !bulkSelected.size ? 0.5 : 1 }}>
                   {bulkGenerating ? 'Generating ' + bulkResults.length + '/' + bulkSelected.size + '...' : 'Generate ' + bulkSelected.size + ' product(s)'}
                 </button>
                 {bulkResults.filter(r => r.status === 'ok').length > 0 && (
-                  <button onClick={bulkPushAll} disabled={bulkPushing} style={{ background: bulkPushing ? '#353848' : 'linear-gradient(135deg, #7c3aed, #6d28d9)', border: 'none', borderRadius: 10, padding: '10px 22px', color: '#fff', fontWeight: 700, cursor: bulkPushing ? 'wait' : 'pointer', fontSize: 14 }}>
+                  <button onClick={bulkPushAll} disabled={bulkPushing} style={{ background: bulkPushing ? '#3d4058' : 'linear-gradient(135deg, #7c3aed, #6d28d9)', border: 'none', borderRadius: 10, padding: '10px 22px', color: '#fff', fontWeight: 700, cursor: bulkPushing ? 'wait' : 'pointer', fontSize: 14 }}>
                     {bulkPushing ? 'Pushing...' : 'Push All (' + bulkResults.filter(r => r.status === 'ok').length + ')'}
                   </button>
                 )}
@@ -717,12 +717,12 @@ export default function ProductSeoEngine() {
             </div>
 
             {bulkGenerating && (
-              <div style={{ background: '#1a1c25', border: '1px solid #222535', borderRadius: 14, padding: 20, marginBottom: 20 }}>
+              <div style={{ background: '#252638', border: '1px solid #2e3045', borderRadius: 14, padding: 20, marginBottom: 20 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                   <span style={{ fontSize: 14, color: '#a8adc4', fontWeight: 600 }}>Generating SEO...</span>
                   <span style={{ fontSize: 14, color: '#6366f1', fontWeight: 700 }}>{bulkResults.length} / {bulkSelected.size}</span>
                 </div>
-                <div style={{ height: 8, background: '#222535', borderRadius: 4, overflow: 'hidden' }}>
+                <div style={{ height: 8, background: '#2e3045', borderRadius: 4, overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: (bulkSelected.size ? (bulkResults.length / bulkSelected.size) * 100 : 0) + '%', background: 'linear-gradient(90deg, #6366f1, #22d3ee)', borderRadius: 4, transition: 'width 0.3s' }} />
                 </div>
               </div>
@@ -733,7 +733,7 @@ export default function ProductSeoEngine() {
                 {bulkResults.map((r, i) => {
                   const { colour: rc } = seoGrade(r.score);
                   return (
-                    <div key={i} style={{ background: '#1a1c25', border: '1px solid ' + (r.status === 'ok' ? '#4ade8025' : '#f8717125'), borderRadius: 14, padding: 16 }}>
+                    <div key={i} style={{ background: '#252638', border: '1px solid ' + (r.status === 'ok' ? '#4ade8025' : '#f8717125'), borderRadius: 14, padding: 16 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
                         {r.product.image && <img src={r.product.image} alt={r.product.title} style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />}
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -745,7 +745,7 @@ export default function ProductSeoEngine() {
                         <span style={{ fontSize: 12, fontWeight: 700, color: r.status === 'ok' ? '#4ade80' : '#f87171' }}>{r.status === 'ok' ? 'OK' : 'ERR'}</span>
                       </div>
                       {r.status === 'ok' && (
-                        <div style={{ fontSize: 12, lineHeight: 1.7, borderTop: '1px solid #222535', paddingTop: 10 }}>
+                        <div style={{ fontSize: 12, lineHeight: 1.7, borderTop: '1px solid #2e3045', paddingTop: 10 }}>
                           <div><span style={{ color: '#8b8fa8' }}>Title: </span><span style={{ color: '#a8adc4' }}>{r.fields.seoTitle}</span></div>
                           <div style={{ marginTop: 4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}><span style={{ color: '#8b8fa8' }}>Desc: </span><span style={{ color: '#a8adc4' }}>{r.fields.seoDescription}</span></div>
                         </div>
@@ -760,8 +760,8 @@ export default function ProductSeoEngine() {
                   const sel = bulkSelected.has(p.id);
                   return (
                     <div key={p.id} onClick={() => { const n = new Set(bulkSelected); sel ? n.delete(p.id) : n.add(p.id); setBulkSelected(n); }}
-                      style={{ background: '#1a1c25', border: '2px solid ' + (sel ? '#ffffff' : '#222535'), borderRadius: 12, padding: '14px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s' }}>
-                      <div style={{ width: 22, height: 22, borderRadius: 6, border: '2px solid ' + (sel ? '#ffffff' : '#454860'), background: sel ? '#ffffff' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      style={{ background: '#252638', border: '2px solid ' + (sel ? '#ffffff' : '#2e3045'), borderRadius: 12, padding: '14px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s' }}>
+                      <div style={{ width: 22, height: 22, borderRadius: 6, border: '2px solid ' + (sel ? '#ffffff' : '#525578'), background: sel ? '#ffffff' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         {sel && <span style={{ color: '#000000', fontSize: 12, fontWeight: 900 }}>Y</span>}
                       </div>
                       {p.image && <img src={p.image} alt={p.title} style={{ width: 38, height: 38, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />}
@@ -789,14 +789,14 @@ export default function ProductSeoEngine() {
                 { label: 'No SEO Data', value: products.filter(p => !stored[p.id]?.seoTitle).length, colour: '#f87171' },
                 { label: 'Have Keywords', value: products.filter(p => stored[p.id]?.keywords).length, colour: '#22d3ee' },
               ].map(st => (
-                <div key={st.label} style={{ background: '#1a1c25', border: '1px solid #222535', borderRadius: 16, padding: '18px 20px' }}>
+                <div key={st.label} style={{ background: '#252638', border: '1px solid #2e3045', borderRadius: 16, padding: '18px 20px' }}>
                   <div style={{ fontSize: 32, fontWeight: 800, color: st.colour, lineHeight: 1 }}>{st.value}</div>
                   <div style={{ fontSize: 12, color: '#8b8fa8', marginTop: 8, fontWeight: 400 }}>{st.label}</div>
                 </div>
               ))}
             </div>
 
-            <div style={{ background: '#1a1c25', border: '1px solid #222535', borderRadius: 16, padding: 24, marginBottom: 20 }}>
+            <div style={{ background: '#252638', border: '1px solid #2e3045', borderRadius: 16, padding: 24, marginBottom: 20 }}>
               <h3 style={{ margin: '0 0 18px', fontSize: 16, fontWeight: 700, color: '#f9fafb' }}>Score Distribution</h3>
               {[
                 { label: 'Excellent (80-100)', min: 80, max: 100, colour: '#4ade80' },
@@ -812,7 +812,7 @@ export default function ProductSeoEngine() {
                       <span style={{ fontSize: 13, color: '#a8adc4' }}>{band.label}</span>
                       <span style={{ fontSize: 13, color: band.colour, fontWeight: 700 }}>{count} products - {pct}%</span>
                     </div>
-                    <div style={{ height: 10, background: '#1a1c25', borderRadius: 5, overflow: 'hidden' }}>
+                    <div style={{ height: 10, background: '#252638', borderRadius: 5, overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: pct + '%', background: 'linear-gradient(90deg, ' + band.colour + '80, ' + band.colour + ')', borderRadius: 5, transition: 'width 0.6s ease' }} />
                     </div>
                   </div>
@@ -820,7 +820,7 @@ export default function ProductSeoEngine() {
               })}
             </div>
 
-            <div style={{ background: '#1a1c25', border: '1px solid #222535', borderRadius: 16, padding: 24 }}>
+            <div style={{ background: '#252638', border: '1px solid #2e3045', borderRadius: 16, padding: 24 }}>
               <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#f9fafb' }}>Needs Attention</h3>
               {products.filter(p => seoScore(stored[p.id] || {}) < 50).length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '24px 0', color: '#4ade80', fontSize: 15, fontWeight: 700 }}>All products have good SEO scores!</div>
@@ -841,7 +841,7 @@ export default function ProductSeoEngine() {
                     return (
                       <div key={p.id} onClick={() => selectProduct(p)}
                       style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', background: '#0d0d11', borderRadius: 10, cursor: 'pointer' }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#1a1c25'}
+                      onMouseEnter={e => e.currentTarget.style.background = '#252638'}
                       onMouseLeave={e => e.currentTarget.style.background = '#0d0d11'}>
                         {p.image && <img src={p.image} alt={p.title} style={{ width: 34, height: 34, borderRadius: 7, objectFit: 'cover' }} />}
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -868,7 +868,7 @@ export default function ProductSeoEngine() {
         button:not(:disabled):active { transform: scale(0.96); }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0d0d11; }
-        ::-webkit-scrollbar-thumb { background: #353848; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #3d4058; border-radius: 3px; }
       `}</style>
     </div>
   );

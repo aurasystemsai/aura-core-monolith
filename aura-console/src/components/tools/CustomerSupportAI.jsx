@@ -89,7 +89,7 @@ export default function CustomerSupportAI() {
   const onboardingContent = (
     <div style={{ padding: 24, background: darkMode ? "#0d0d11" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Customer Support AI</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#454860", fontSize: 16 }}>
+      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#525578", fontSize: 16 }}>
         <li>Enter a support question or upload a CSV/Excel file for bulk responses</li>
         <li>Select channels: email, chat, social, phone</li>
         <li>Get AI-powered suggestions, analytics, and sentiment</li>
@@ -106,7 +106,7 @@ export default function CustomerSupportAI() {
     <div style={{
       
       margin: "40px auto",
-      background: darkMode ? "#1a1c25" : "#fff",
+      background: darkMode ? "#252638" : "#fff",
       borderRadius: 18,
       boxShadow: "0 2px 24px #0002",
       padding: 36,
@@ -149,7 +149,7 @@ export default function CustomerSupportAI() {
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
       {analytics && (
         <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-          <div style={{ background: "#222535", borderRadius: 10, padding: "12px 20px", border: "1px solid #222535" }}>
+          <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
             <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Runs</div>
             <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{history.length}</div>
           </div>

@@ -13,7 +13,7 @@ function Spinner() {
 					width: 38,
 					height: 38,
 					border: "4px solid #ffffff",
-					borderTop: "4px solid #222535",
+					borderTop: "4px solid #2e3045",
 					borderRadius: "50%",
 					animation: "spin 1s linear infinite",
 				}}
@@ -30,8 +30,8 @@ const QuickActionCard = ({ icon, title, description, onClick, color = "#6366f1" 
 	<div
 		onClick={onClick}
 		style={{
-			background: "#1a1c25",
-			border: "1px solid #222535",
+			background: "#252638",
+			border: "1px solid #2e3045",
 			borderRadius: 16,
 			padding: 20,
 			cursor: "pointer",
@@ -52,8 +52,8 @@ const QuickActionCard = ({ icon, title, description, onClick, color = "#6366f1" 
 const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, upgradeRequired = false, tooltip = null }) => (
 	<div
 		style={{
-			background: "#1a1c25",
-			border: "1px solid #222535",
+			background: "#252638",
+			border: "1px solid #2e3045",
 			borderRadius: 16,
 			padding: 24,
 			display: "flex",
@@ -120,7 +120,7 @@ const ActivityItem = ({ icon, title, timestamp, type }) => (
 			display: "flex",
 			gap: 12,
 			padding: "12px 0",
-			borderBottom: "1px solid #222535",
+			borderBottom: "1px solid #2e3045",
 		}}
 	>
 		<div
@@ -128,7 +128,7 @@ const ActivityItem = ({ icon, title, timestamp, type }) => (
 				width: 40,
 				height: 40,
 				borderRadius: 10,
-				background: "#222535",
+				background: "#2e3045",
 				display: "flex",
 				alignItems: "center",
 				justifyContent: "center",
@@ -145,7 +145,7 @@ const ActivityItem = ({ icon, title, timestamp, type }) => (
 			style={{
 				fontSize: 11,
 				color: "#a8adc4",
-				background: "#222535",
+				background: "#2e3045",
 				padding: "4px 8px",
 				borderRadius: 6,
 				height: "fit-content",
@@ -629,8 +629,8 @@ const Dashboard = ({ setActiveSection }) => {
 		<div
 			className="stat-card"
 			style={{
-				background: "#1a1c25",
-				border: "1px solid #222535",
+				background: "#252638",
+				border: "1px solid #2e3045",
 				borderRadius: 16,
 				padding: 20,
 				minHeight: 120,
@@ -639,7 +639,7 @@ const Dashboard = ({ setActiveSection }) => {
 			<div style={{ 
 				height: 16, 
 				width: "60%", 
-				background: "linear-gradient(90deg, #222535 0%, #353848 50%, #222535 100%)",
+				background: "linear-gradient(90deg, #2e3045 0%, #3d4058 50%, #2e3045 100%)",
 				backgroundSize: "200% 100%",
 				animation: "shimmer 1.5s infinite",
 				borderRadius: 4,
@@ -648,7 +648,7 @@ const Dashboard = ({ setActiveSection }) => {
 			<div style={{ 
 				height: 32, 
 				width: "40%", 
-				background: "linear-gradient(90deg, #222535 0%, #353848 50%, #222535 100%)",
+				background: "linear-gradient(90deg, #2e3045 0%, #3d4058 50%, #2e3045 100%)",
 				backgroundSize: "200% 100%",
 				animation: "shimmer 1.5s infinite",
 				borderRadius: 4,
@@ -718,7 +718,7 @@ const Dashboard = ({ setActiveSection }) => {
 				}
 				.stat-card:hover {
 					box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-					border-color: #353848;
+					border-color: #3d4058;
 				}
 				
 				/* Mobile Responsive Styles */
@@ -766,7 +766,7 @@ const Dashboard = ({ setActiveSection }) => {
 				}
 				.aura-toast { animation: toastIn 0.3s ease; }
 				@keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
-					.seo-issue-row:hover { background: #1a1c25 !important; transform: translateX(2px); }
+					.seo-issue-row:hover { background: #252638 !important; transform: translateX(2px); }
 			@keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
 			@keyframes scanSlide { from{opacity:0;transform:translateY(-6px);} to{opacity:1;transform:translateY(0);} }
 			@keyframes modalIn { from{opacity:0;transform:scale(0.96);} to{opacity:1;transform:scale(1);} }
@@ -775,9 +775,9 @@ const Dashboard = ({ setActiveSection }) => {
 			{/* SEO Scan Modal */}
 			{showScanModal && (
 				<div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:10000, display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
-					<div style={{ background:'#1a1c25', border:'1px solid #222535', borderRadius:20, width:'100%', maxWidth:720, maxHeight:'88vh', display:'flex', flexDirection:'column', animation:'modalIn 0.25s ease' }}>
+					<div style={{ background:'#252638', border:'1px solid #2e3045', borderRadius:20, width:'100%', maxWidth:720, maxHeight:'88vh', display:'flex', flexDirection:'column', animation:'modalIn 0.25s ease' }}>
 						{/* Modal header */}
-						<div style={{ padding:'24px 28px 20px', borderBottom:'1px solid #222535', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+						<div style={{ padding:'24px 28px 20px', borderBottom:'1px solid #2e3045', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
 							<div style={{ display:'flex', alignItems:'center', gap:14 }}>
 								{scanningInProgress ? (
 									<div style={{ width:36, height:36, border:'3px solid #6366f1', borderTop:'3px solid transparent', borderRadius:'50%', animation:'spin 0.9s linear infinite', flexShrink:0 }} />
@@ -796,14 +796,14 @@ const Dashboard = ({ setActiveSection }) => {
 								</div>
 							</div>
 							{!scanningInProgress && (
-								<button onClick={() => setShowScanModal(false)} style={{ background:'#222535', border:'none', color:'#a8adc4', borderRadius:8, padding:'8px 16px', cursor:'pointer', fontSize:14, fontWeight:600 }}>Close</button>
+								<button onClick={() => setShowScanModal(false)} style={{ background:'#2e3045', border:'none', color:'#a8adc4', borderRadius:8, padding:'8px 16px', cursor:'pointer', fontSize:14, fontWeight:600 }}>Close</button>
 							)}
 						</div>
 
 						{/* Scanning progress view */}
 						{scanningInProgress && (
 							<div style={{ padding:'20px 28px', flex:1, overflowY:'auto' }}>
-								<div style={{ background:'#1a1c25', borderRadius:12, padding:'14px 18px', marginBottom:16, display:'flex', alignItems:'center', gap:10 }}>
+								<div style={{ background:'#252638', borderRadius:12, padding:'14px 18px', marginBottom:16, display:'flex', alignItems:'center', gap:10 }}>
 									<span style={{ width:8, height:8, background:'#6366f1', borderRadius:'50%', animation:'pulse-dot 1s ease infinite', flexShrink:0 }} />
 									<span style={{ color:'#6366f1', fontSize:13, fontFamily:'monospace', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
 										{scanningPage || 'Initialising scanner...'}
@@ -843,7 +843,7 @@ const Dashboard = ({ setActiveSection }) => {
 											<div key={i}
 												onClick={() => { if (issue.fix && setActiveSection) { setActiveSection(issue.fix, issue.page); setShowScanModal(false); } }}
 												className="seo-issue-row"
-												style={{ background:'#1a1c25', border:`1px solid ${issue.severity==='high'?'#e53e3e':issue.severity==='medium'?'#f59e0b':'#4ade80'}`, borderRadius:10, padding:'12px 16px', display:'flex', alignItems:'flex-start', gap:12, cursor: issue.fix ? 'pointer' : 'default' }}>
+												style={{ background:'#252638', border:`1px solid ${issue.severity==='high'?'#e53e3e':issue.severity==='medium'?'#f59e0b':'#4ade80'}`, borderRadius:10, padding:'12px 16px', display:'flex', alignItems:'flex-start', gap:12, cursor: issue.fix ? 'pointer' : 'default' }}>
 												<span style={{ fontSize:16, marginTop:1 }}>{issue.severity==='high'?'':issue.severity==='medium'?'':''}</span>
 												<div style={{ flex:1, minWidth:0 }}>
 													<div style={{ color:'#f9fafb', fontWeight:600, fontSize:14, display:'flex', alignItems:'center', gap:8 }}>
@@ -908,8 +908,8 @@ const Dashboard = ({ setActiveSection }) => {
 							value={timePeriod}
 							onChange={(e) => setTimePeriod(Number(e.target.value))}
 							style={{
-								background: "#1a1c25",
-								border: "1px solid #222535",
+								background: "#252638",
+								border: "1px solid #2e3045",
 								borderRadius: 8,
 								padding: "10px 16px",
 								color: "#f9fafb",
@@ -927,11 +927,11 @@ const Dashboard = ({ setActiveSection }) => {
 						<button
 							onClick={() => setAutoRefresh(!autoRefresh)}
 							style={{
-								background: autoRefresh ? "#6366f1" : "#1a1c25",
-								border: "1px solid #222535",
+								background: autoRefresh ? "#6366f1" : "#252638",
+								border: "1px solid #2e3045",
 								borderRadius: 8,
 								padding: "10px 16px",
-								color: autoRefresh ? "#1a1c25" : "#6366f1",
+								color: autoRefresh ? "#252638" : "#6366f1",
 								fontSize: 14,
 								fontWeight: 600,
 								cursor: "pointer",
@@ -947,8 +947,8 @@ const Dashboard = ({ setActiveSection }) => {
 						<button
 							onClick={() => fetchStats()}
 							style={{
-								background: "#1a1c25",
-								border: "1px solid #222535",
+								background: "#252638",
+								border: "1px solid #2e3045",
 								borderRadius: 8,
 								padding: "10px 16px",
 								color: "#6366f1",
@@ -971,7 +971,7 @@ const Dashboard = ({ setActiveSection }) => {
 								border: "none",
 								borderRadius: 8,
 								padding: "10px 20px",
-								color: "#1a1c25",
+								color: "#252638",
 								fontSize: 14,
 								fontWeight: 700,
 								cursor: "pointer",
@@ -988,8 +988,8 @@ const Dashboard = ({ setActiveSection }) => {
 			{/* AI Copilot Section */}
 			<div
 				style={{
-					background: "#1a1c25",
-					border: "1px solid #222535",
+					background: "#252638",
+					border: "1px solid #2e3045",
 					borderRadius: 16,
 					padding: 24,
 					marginBottom: 32,
@@ -1009,8 +1009,8 @@ const Dashboard = ({ setActiveSection }) => {
 							flex: 1,
 							borderRadius: 10,
 							padding: "14px 16px",
-							border: "2px solid #222535",
-							background: "#1a1c25",
+							border: "2px solid #2e3045",
+							background: "#252638",
 							color: "#f9fafb",
 							fontSize: 15,
 							outline: "none",
@@ -1020,8 +1020,8 @@ const Dashboard = ({ setActiveSection }) => {
 						onClick={handleCopilotAsk}
 						disabled={copilotLoading}
 						style={{
-							background: copilotLoading ? "#353848" : "#6366f1",
-							color: "#1a1c25",
+							background: copilotLoading ? "#3d4058" : "#6366f1",
+							color: "#252638",
 							border: "none",
 							borderRadius: 10,
 							fontWeight: 800,
@@ -1040,9 +1040,9 @@ const Dashboard = ({ setActiveSection }) => {
 						style={{
 							marginTop: 16,
 							padding: 16,
-							background: "#1a1c25",
+							background: "#252638",
 							borderRadius: 10,
-							border: "1px solid #222535",
+							border: "1px solid #2e3045",
 						}}
 					>
 						<div style={{ fontSize: 12, color: "#6366f1", fontWeight: 700, marginBottom: 8, textTransform: "uppercase" }}>
@@ -1081,8 +1081,8 @@ const Dashboard = ({ setActiveSection }) => {
 			{recommendations.length > 0 && (
 				<div
 					style={{
-						background: "#1a1c25",
-						border: "1px solid #222535",
+						background: "#252638",
+						border: "1px solid #2e3045",
 						borderRadius: 16,
 						padding: 24,
 						marginBottom: 32,
@@ -1096,8 +1096,8 @@ const Dashboard = ({ setActiveSection }) => {
 							<div
 								key={idx}
 								style={{
-									background: "#1a1c25",
-									border: "1px solid #222535",
+									background: "#252638",
+									border: "1px solid #2e3045",
 									borderRadius: 10,
 									padding: 16,
 									display: "flex",
@@ -1114,7 +1114,7 @@ const Dashboard = ({ setActiveSection }) => {
 									onClick={() => setActiveSection && setActiveSection(rec.link)}
 									style={{
 										background: "#6366f1",
-										color: "#1a1c25",
+										color: "#252638",
 										border: "none",
 										borderRadius: 8,
 										padding: "8px 16px",
@@ -1197,7 +1197,7 @@ const Dashboard = ({ setActiveSection }) => {
 
 			{/* SEO Crawl Results Panel */}
 			{crawlResults && (
-				<div style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 16, padding: 24, marginBottom: 32 }}>
+				<div style={{ background: "#252638", border: "1px solid #2e3045", borderRadius: 16, padding: 24, marginBottom: 32 }}>
 					<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
 						<div>
 							<h3 style={{ color: "#f9fafb", fontWeight: 700, fontSize: 18, margin: 0 }}>SEO Scan Results</h3>
@@ -1228,7 +1228,7 @@ const Dashboard = ({ setActiveSection }) => {
 								<div key={i}
 									onClick={() => issue.fix && setActiveSection && setActiveSection(issue.fix, issue.page)}
 									style={{
-										background: "#1a1c25",
+										background: "#252638",
 										border: `1px solid ${issue.severity === 'high' ? '#e53e3e' : issue.severity === 'medium' ? '#f59e0b' : '#4ade80'}`,
 										borderRadius: 10,
 										padding: "12px 16px",
@@ -1266,7 +1266,7 @@ const Dashboard = ({ setActiveSection }) => {
 			{healthScore && (
 				<div
 					style={{
-						background: "#1a1c25",
+						background: "#252638",
 						border: `2px solid ${healthScore.grade === 'A' ? '#6366f1' : healthScore.grade === 'B' ? '#4ade80' : healthScore.grade === 'C' ? '#fbbf24' : healthScore.grade === 'D' ? '#fb923c' : '#ef4444'}`,
 						borderRadius: 16,
 						padding: 24,
@@ -1305,8 +1305,8 @@ const Dashboard = ({ setActiveSection }) => {
 			{/* Goal Tracking */}
 			<div
 				style={{
-					background: "#1a1c25",
-					border: "1px solid #222535",
+					background: "#252638",
+					border: "1px solid #2e3045",
 					borderRadius: 16,
 					padding: 24,
 					marginBottom: 32,
@@ -1324,7 +1324,7 @@ const Dashboard = ({ setActiveSection }) => {
 								{stats.revenueRaw ? `$${stats.revenueRaw.toFixed(0)}` : "$0"} / ${goals.revenue}
 							</span>
 						</div>
-						<div style={{ background: "#222535", height: 8, borderRadius: 4, overflow: "hidden" }}>
+						<div style={{ background: "#2e3045", height: 8, borderRadius: 4, overflow: "hidden" }}>
 							<div style={{ 
 								background: "#6366f1", 
 								height: "100%", 
@@ -1341,7 +1341,7 @@ const Dashboard = ({ setActiveSection }) => {
 								{stats.orders || 0} / {goals.orders}
 							</span>
 						</div>
-						<div style={{ background: "#222535", height: 8, borderRadius: 4, overflow: "hidden" }}>
+						<div style={{ background: "#2e3045", height: 8, borderRadius: 4, overflow: "hidden" }}>
 							<div style={{ 
 								background: "#4ade80", 
 								height: "100%", 
@@ -1358,7 +1358,7 @@ const Dashboard = ({ setActiveSection }) => {
 								{stats.conversion || "0%"} / {goals.conversion}%
 							</span>
 						</div>
-						<div style={{ background: "#222535", height: 8, borderRadius: 4, overflow: "hidden" }}>
+						<div style={{ background: "#2e3045", height: 8, borderRadius: 4, overflow: "hidden" }}>
 							<div style={{ 
 								background: "#fbbf24", 
 								height: "100%", 
@@ -1379,8 +1379,8 @@ const Dashboard = ({ setActiveSection }) => {
 				<div>
 					<div
 						style={{
-							background: "#1a1c25",
-							border: "1px solid #222535",
+							background: "#252638",
+							border: "1px solid #2e3045",
 							borderRadius: 16,
 							padding: 24,
 						}}
@@ -1399,8 +1399,8 @@ const Dashboard = ({ setActiveSection }) => {
 					{/* Activity Feed */}
 					<div
 						style={{
-							background: "#1a1c25",
-							border: "1px solid #222535",
+							background: "#252638",
+							border: "1px solid #2e3045",
 							borderRadius: 16,
 							padding: 24,
 						}}
@@ -1423,8 +1423,8 @@ const Dashboard = ({ setActiveSection }) => {
 								width: "100%",
 								marginTop: 16,
 								padding: "10px",
-								background: "#222535",
-								border: "1px solid #353848",
+								background: "#2e3045",
+								border: "1px solid #3d4058",
 								borderRadius: 8,
 								color: "#f9fafb",
 								fontSize: 14,
@@ -1440,8 +1440,8 @@ const Dashboard = ({ setActiveSection }) => {
 					{/* Top Products Widget */}
 					<div
 						style={{
-							background: "#1a1c25",
-							border: "1px solid #222535",
+							background: "#252638",
+							border: "1px solid #2e3045",
 							borderRadius: 16,
 							padding: 24,
 						}}
@@ -1459,8 +1459,8 @@ const Dashboard = ({ setActiveSection }) => {
 											alignItems: "center",
 											gap: 12,
 											padding: 12,
-											background: "#1a1c25",
-											border: "1px solid #222535",
+											background: "#252638",
+											border: "1px solid #2e3045",
 											borderRadius: 8,
 										}}
 									>
@@ -1495,7 +1495,7 @@ const Dashboard = ({ setActiveSection }) => {
 					{underperformingProducts.length > 0 && (
 						<div
 							style={{
-								background: "#1a1c25",
+								background: "#252638",
 								border: "1px solid #fb923c",
 								borderRadius: 16,
 								padding: 24,
@@ -1513,7 +1513,7 @@ const Dashboard = ({ setActiveSection }) => {
 											alignItems: "center",
 											gap: 12,
 											padding: 12,
-											background: "#1a1c25",
+											background: "#252638",
 											border: "1px solid #3a2d1a",
 											borderRadius: 8,
 										}}

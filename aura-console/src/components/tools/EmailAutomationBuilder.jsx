@@ -134,7 +134,7 @@ export default function EmailAutomationBuilder() {
           }}
           style={{
             background: activeCategory === cat.id ? '#6366f1' : '#f3f4f6',
-            color: activeCategory === cat.id ? '#fff' : '#222535',
+            color: activeCategory === cat.id ? '#fff' : '#2e3045',
             border: 'none',
             borderRadius: 8,
             padding: '10px 18px',
@@ -170,7 +170,7 @@ export default function EmailAutomationBuilder() {
           onClick={() => setActiveTab(tab.id)}
           style={{
             background: activeTab === tab.id ? '#ede9fe' : '#fff',
-            color: '#222535',
+            color: '#2e3045',
             border: activeTab === tab.id ? '2px solid #6366f1' : '1px solid #f9fafb',
             borderRadius: 10,
             padding: 16,
@@ -256,7 +256,7 @@ export default function EmailAutomationBuilder() {
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 32, fontWeight: 800, color: '#222535', marginBottom: 8 }}>Email Automation Builder</h1>
+          <h1 style={{ fontSize: 32, fontWeight: 800, color: '#2e3045', marginBottom: 8 }}>Email Automation Builder</h1>
           <p style={{ fontSize: 16, color: '#8b8fa8' }}>Enterprise email marketing automation platform with AI orchestration, workflows, and multi-channel delivery</p>
         </div>
 
@@ -697,7 +697,7 @@ function AIRecommendationsTab() {
               <span style={{ background: '#ede9fe', color: '#6366f1', padding: '4px 12px', borderRadius: 12, fontSize: 13, fontWeight: 600 }}>{rec.type}</span>
               <span style={{ background: '#d1fae5', color: '#059669', padding: '4px 12px', borderRadius: 12, fontSize: 13, fontWeight: 600 }}>{rec.impact}</span>
             </div>
-            <div style={{ fontSize: 15, color: '#222535', marginBottom: 12 }}>{rec.recommendation}</div>
+            <div style={{ fontSize: 15, color: '#2e3045', marginBottom: 12 }}>{rec.recommendation}</div>
             <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', cursor: 'pointer', fontSize: 14 }}>Apply</button>
           </div>
         ))}

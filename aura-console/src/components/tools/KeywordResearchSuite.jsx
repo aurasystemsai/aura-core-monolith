@@ -6,7 +6,7 @@ function FeedbackModal({ open, onClose, onSubmit }) {
   if (!open) return null;
   return (
     <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "#0008", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ background: "#353848", borderRadius: 12, padding: 32, minWidth: 340, color: '#f9fafb' }}>
+      <div style={{ background: "#3d4058", borderRadius: 12, padding: 32, minWidth: 340, color: '#f9fafb' }}>
         <h3 style={{ marginBottom: 12 }}>Send Feedback</h3>
         <textarea value={feedback} onChange={e => setFeedback(e.target.value)} style={{ width: "100%", minHeight: 80, borderRadius: 8, border: "1px solid #ccc", marginBottom: 18 }} placeholder="Your feedback..." />
         <div style={{ display: "flex", gap: 12 }}>
@@ -144,7 +144,7 @@ export default function KeywordResearchSuite() {
   const onboardingContent = (
     <div style={{ padding: 24, background: darkMode ? "#0d0d11" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Keyword Research Suite</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#454860", fontSize: 16 }}>
+      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#525578", fontSize: 16 }}>
         <li>Keyword volume, difficulty, trends, and gap analysis</li>
         <li>Competitor keyword research and suggestions</li>
         <li>Export, share, and review analysis history</li>
@@ -158,7 +158,7 @@ export default function KeywordResearchSuite() {
     <div style={{
       
       margin: "40px auto",
-      background: darkMode ? "#1a1c25" : accessibilityMode ? "#e0f7fa" : "#fff",
+      background: darkMode ? "#252638" : accessibilityMode ? "#e0f7fa" : "#fff",
       borderRadius: 18,
       boxShadow: "0 2px 24px #0002",
       padding: 36,
@@ -194,7 +194,7 @@ export default function KeywordResearchSuite() {
       {showHelp && (
         <div style={{ background: darkMode ? "#0d0d11" : "#f1f5f9", borderRadius: 12, padding: 24, marginBottom: 18 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22 }}>Help & Documentation</h3>
-          <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#454860", fontSize: 16 }}>
+          <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#525578", fontSize: 16 }}>
             <li>How to use keyword research features</li>
             <li>Best practices for keyword analysis</li>
             <li>Accessibility and compliance information</li>
@@ -208,7 +208,7 @@ export default function KeywordResearchSuite() {
       {showAnalytics && (
         <div style={{ background: darkMode ? "#0d0d11" : "#f1f5f9", borderRadius: 12, padding: 24, marginBottom: 18 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22 }}>Analytics Dashboard</h3>
-          <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#454860", fontSize: 16 }}>
+          <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#525578", fontSize: 16 }}>
             {analytics.map((a, i) => (
               <li key={i} style={{ marginBottom: 10 }}>
                 <div><b>Event:</b> {a.event}</div>
@@ -252,20 +252,20 @@ export default function KeywordResearchSuite() {
       <button onClick={handleAnalyze} disabled={loading || !query} style={{ background: "#a3e635", color: "#0d0d11", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Analyzing..." : "Analyze"}</button>
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {result && (
-        <div style={{ background: "#222535", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #222535" }}>
+        <div style={{ background: "#2e3045", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #2e3045" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <span style={{ fontWeight: 700, color: "#a3e635", fontSize: 14 }}>Analysis Result</span>
-            <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #454860", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
+            <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #525578", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
           </div>
           <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 13, color: "#e2e8f0", margin: 0 }}>{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
       {history.length > 0 && (
-        <div style={{ marginTop: 24, background: darkMode ? "#454860" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: darkMode ? "#525578" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analysis History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, i) => (
-              <div key={i} style={{ background: "#0d0d11", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #222535" }}>
+              <div key={i} style={{ background: "#0d0d11", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2e3045" }}>
                 <div style={{ fontWeight: 600, fontSize: 13, color: "#e2e8f0" }}>{h.query}</div>
                 <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>{JSON.stringify(h.result).slice(0, 150)}{JSON.stringify(h.result).length > 150 ? "…" : ""}</div>
               </div>

@@ -87,7 +87,7 @@
   border: none;
   border-radius: 8px;
   background: white;
-  color: #454860;
+  color: #525578;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -132,7 +132,7 @@
 
 .dpe-tab-btn:hover {
   background: #f9fafb;
-  color: #454860;
+  color: #525578;
 }
 
 .dpe-tab-btn.active {
@@ -168,7 +168,7 @@
 
 .dpe-tab-content h2 {
   margin: 0 0 24px 0;
-  color: #222535;
+  color: #2e3045;
   font-size: 1.8rem;
   font-weight: 700;
   border-bottom: 3px solid #667eea;
@@ -177,7 +177,7 @@
 
 .dpe-tab-content h3 {
   margin: 24px 0 16px 0;
-  color: #454860;
+  color: #525578;
   font-size: 1.3rem;
   font-weight: 600;
 }
@@ -294,7 +294,7 @@
 }
 
 .dpe-list-item-header strong {
-  color: #222535;
+  color: #2e3045;
   font-size: 1.05rem;
 }
 
@@ -306,7 +306,7 @@
 
 .dpe-list-item-content {
   margin-top: 12px;
-  color: #454860;
+  color: #525578;
   font-size: 0.95rem;
 }
 
@@ -374,11 +374,11 @@
 
 .dpe-table td {
   padding: 14px 16px;
-  color: #454860;
+  color: #525578;
 }
 
 .dpe-table td strong {
-  color: #222535;
+  color: #2e3045;
 }
 
 /* Status Badges */
@@ -403,7 +403,7 @@
 
 .dpe-status-running {
   background: #dbeafe;
-  color: #454860;
+  color: #525578;
 }
 
 .dpe-status-completed {
@@ -448,7 +448,7 @@
 
 .dpe-severity-low {
   background: #dbeafe;
-  color: #454860;
+  color: #525578;
 }
 
 /* Buttons */
@@ -639,11 +639,11 @@
 /* Dark Mode Support (Optional) */
 @media (prefers-color-scheme: dark) {
   .dpe-container {
-    background: linear-gradient(135deg, #222535 0%, #1a1c25 100%);
+    background: linear-gradient(135deg, #2e3045 0%, #252638 100%);
   }
 
   .dpe-content {
-    background: #222535;
+    background: #2e3045;
     color: #f9fafb;
   }
 
@@ -653,32 +653,32 @@
   }
 
   .dpe-form-section {
-    background: #454860;
-    border-color: #454860;
+    background: #525578;
+    border-color: #525578;
   }
 
   .dpe-form-section input,
   .dpe-form-section select,
   .dpe-form-section textarea {
-    background: #222535;
-    border-color: #454860;
+    background: #2e3045;
+    border-color: #525578;
     color: #f9fafb;
   }
 
   .dpe-list-item {
-    background: #454860;
+    background: #525578;
   }
 
   .dpe-list-item:hover {
-    background: #454860;
+    background: #525578;
   }
 
   .dpe-table tbody tr {
-    border-bottom-color: #454860;
+    border-bottom-color: #525578;
   }
 
   .dpe-table tbody tr:hover {
-    background: #454860;
+    background: #525578;
   }
 
   .dpe-table td {
@@ -686,7 +686,7 @@
   }
 
   .dpe-footer {
-    background: #222535;
+    background: #2e3045;
   }
 }
 

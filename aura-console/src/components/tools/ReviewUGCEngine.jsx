@@ -131,19 +131,19 @@ export default function ReviewUGCEngine() {
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {response && (
-        <div style={{ background: "#222535", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #222535" }}>
+        <div style={{ background: "#2e3045", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #2e3045" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <span style={{ fontWeight: 700, color: "#6366f1", fontSize: 14 }}>AI Review</span>
-            <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #454860", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
+            <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #525578", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
           </div>
           <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, fontSize: 14, color: "#e2e8f0" }}>{response}</div>
         </div>
       )}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      <div style={{ marginTop: 24, background: "#1a1c25", borderRadius: 12, padding: 18 }}>
+      <div style={{ marginTop: 24, background: "#252638", borderRadius: 12, padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: "#e2e8f0" }}>Review History</div>
         {reviews.map(r => (
-          <div key={r.id} style={{ background: "#0d0d11", borderRadius: 8, padding: "12px 16px", border: "1px solid #222535", marginBottom: 8 }}>
+          <div key={r.id} style={{ background: "#0d0d11", borderRadius: 8, padding: "12px 16px", border: "1px solid #2e3045", marginBottom: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
               <span style={{ fontWeight: 700, color: "#e2e8f0" }}>{r.prompt ? r.prompt.slice(0, 60) + "…" : `Review #${r.id}`}</span>
               <span style={{ color: "#64748b" }}>{r.createdAt ? new Date(r.createdAt).toLocaleString() : ""}</span>
@@ -153,11 +153,11 @@ export default function ReviewUGCEngine() {
         ))}
       </div>
       <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-        <div style={{ background: "#222535", borderRadius: 10, padding: "12px 20px", border: "1px solid #222535" }}>
+        <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Reviews</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{reviews.length}</div>
         </div>
-        <div style={{ background: "#222535", borderRadius: 10, padding: "12px 20px", border: "1px solid #222535" }}>
+        <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{analytics.length}</div>
         </div>

@@ -370,7 +370,7 @@ const Billing = () => {
           padding: 32px;
           max-width: 1200px;
           margin: 0 auto;
-          background: #1a1c25;
+          background: #252638;
           min-height: 100vh;
         }
 
@@ -393,8 +393,8 @@ const Billing = () => {
         .current-plan-card,
         .usage-card,
         .invoices-card {
-          background: #1a1c25;
-          border: 1px solid #222535;
+          background: #252638;
+          border: 1px solid #2e3045;
           padding: 24px;
           border-radius: 12px;
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
@@ -418,7 +418,7 @@ const Billing = () => {
           justify-content: space-between;
           align-items: center;
           padding-bottom: 16px;
-          border-bottom: 1px solid #222535;
+          border-bottom: 1px solid #2e3045;
         }
 
         .plan-header h2 {
@@ -474,7 +474,7 @@ const Billing = () => {
           display: flex;
           justify-content: space-between;
           padding: 12px 0;
-          border-bottom: 1px solid #222535;
+          border-bottom: 1px solid #2e3045;
           color: #cbd5e1;
         }
 
@@ -526,8 +526,8 @@ const Billing = () => {
 
         .usage-stat {
           padding: 16px;
-          background: #1a1c25;
-          border: 1px solid #222535;
+          background: #252638;
+          border: 1px solid #2e3045;
           border-radius: 8px;
         }
 
@@ -545,7 +545,7 @@ const Billing = () => {
 
         .progress-bar {
           height: 8px;
-          background: #222535;
+          background: #2e3045;
           border-radius: 4px;
           margin-top: 8px;
           overflow: hidden;
@@ -558,7 +558,7 @@ const Billing = () => {
         }
 
         .btn-secondary {
-          background: #222535;
+          background: #2e3045;
           color: #f9fafb;
           padding: 12px 24px;
           border: none;
@@ -569,7 +569,7 @@ const Billing = () => {
         }
 
         .btn-secondary:hover {
-          background: #353848;
+          background: #3d4058;
         }
 
         .invoices-table {
@@ -585,14 +585,14 @@ const Billing = () => {
         .invoices-table th {
           text-align: left;
           padding: 12px;
-          background: #1a1c25;
+          background: #252638;
           font-weight: 600;
           color: #94a3b8;
         }
 
         .invoices-table td {
           padding: 12px;
-          border-bottom: 1px solid #222535;
+          border-bottom: 1px solid #2e3045;
           color: #cbd5e1;
         }
 
@@ -607,7 +607,7 @@ const Billing = () => {
         }
 
         .btn-icon:hover {
-          background: #222535;
+          background: #2e3045;
         }
 
         .modal-overlay {
@@ -624,8 +624,8 @@ const Billing = () => {
         }
 
         .modal-content {
-          background: #1a1c25;
-          border: 1px solid #222535;
+          background: #252638;
+          border: 1px solid #2e3045;
           padding: 32px;
           border-radius: 16px;
           max-width: 1000px;
@@ -667,8 +667,8 @@ const Billing = () => {
         }
 
         .plan-card {
-          background: #1a1c25;
-          border: 2px solid #222535;
+          background: #252638;
+          border: 2px solid #2e3045;
           border-radius: 12px;
           padding: 24px;
           position: relative;
@@ -748,7 +748,7 @@ const Billing = () => {
         }
 
         .btn-current {
-          background: #222535;
+          background: #2e3045;
           color: #64748b;
           cursor: not-allowed;
         }

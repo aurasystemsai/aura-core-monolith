@@ -215,7 +215,7 @@ export default function RankVisibilityTracker() {
       )}
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
       {analytics && (
-        <div style={{ marginTop: 24, background: darkMode ? "#454860" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: darkMode ? "#525578" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Analytics</div>
           <div style={{ fontSize: 16 }}>{JSON.stringify(analytics)}</div>
         </div>

@@ -81,9 +81,9 @@ export default function MainSuite({ setActiveSection }) {
 
   const palette = darkMode
     ? {
-        bg: "#1a1c25",
-        card: "#1a1c25",
-        border: "#1a1c25",
+        bg: "#252638",
+        card: "#252638",
+        border: "#252638",
         text: "#f9fafb",
         muted: "#a8adc4",
         accent: "#6366f1",
@@ -93,7 +93,7 @@ export default function MainSuite({ setActiveSection }) {
         bg: "#f8fafc",
         card: "#ffffff",
         border: "#dbeafe",
-        text: "#1a1c25",
+        text: "#252638",
         muted: "#475569",
         accent: "#0ea5e9",
         primary: "#2563eb",
@@ -181,7 +181,7 @@ export default function MainSuite({ setActiveSection }) {
             padding: "10px 12px",
             borderRadius: 10,
             border: `1px solid ${palette.border}`,
-            background: darkMode ? "#1a1c25" : "#fff",
+            background: darkMode ? "#252638" : "#fff",
             color: palette.text,
           }}
         />
@@ -318,7 +318,7 @@ export default function MainSuite({ setActiveSection }) {
                 key={m.id}
                 style={{
                   background: palette.card,
-                  border: `1px solid ${locked ? "#454860" : palette.border}`,
+                  border: `1px solid ${locked ? "#525578" : palette.border}`,
                   borderRadius: 12,
                   padding: 12,
                   display: "flex",
@@ -366,7 +366,7 @@ export default function MainSuite({ setActiveSection }) {
                   )}
                 </div>
                 {preflightStatuses[m.id] && (
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: 999, border: `1px solid ${palette.border}`, background: preflightStatuses[m.id].ok ? (darkMode ? "#1a1c25" : "#e0f2fe") : "#332b17", color: preflightStatuses[m.id].ok ? "#22c55e" : preflightStatuses[m.id].issues ? "#f59e0b" : "#ef4444", fontWeight: 800, fontSize: 11 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: 999, border: `1px solid ${palette.border}`, background: preflightStatuses[m.id].ok ? (darkMode ? "#252638" : "#e0f2fe") : "#332b17", color: preflightStatuses[m.id].ok ? "#22c55e" : preflightStatuses[m.id].issues ? "#f59e0b" : "#ef4444", fontWeight: 800, fontSize: 11 }}>
                     <span style={{ width: 8, height: 8, borderRadius: "50%", background: preflightStatuses[m.id].ok ? "#22c55e" : preflightStatuses[m.id].issues ? "#f59e0b" : "#ef4444" }} />
                     <span>{preflightStatuses[m.id].ok ? "Pass" : `${preflightStatuses[m.id].issues} issue${preflightStatuses[m.id].issues === 1 ? "" : "s"}`}</span>
                     {preflightStatuses[m.id].ts ? <span style={{ color: palette.muted, fontWeight: 600 }}>· {new Date(preflightStatuses[m.id].ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span> : null}

@@ -15,7 +15,7 @@ export default function WinbackFeatureCard({ title, description, icon, children,
       onFocus={() => setHover(true)}
       onBlur={() => setHover(false)}
       style={{
-        background: '#222535',
+        background: '#2e3045',
         borderRadius: 16,
         boxShadow: hover ? '0 4px 24px #22d3ee33' : '0 2px 16px #0001',
         padding: 24,

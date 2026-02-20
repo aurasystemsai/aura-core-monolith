@@ -1,5 +1,5 @@
 ﻿﻿.shop-info-panel {
-  background: linear-gradient(120deg, #0d0d11 60%, #1a1c25 100%);
+  background: linear-gradient(120deg, #0d0d11 60%, #252638 100%);
   border-radius: 18px;
   box-shadow: 0 4px 18px #0004, 0 1.5px 0 #6366f122;
   padding: 28px 32px 22px 32px;
@@ -24,7 +24,7 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: #1a1c25;
+  background: #252638;
   margin-right: 18px;
   box-shadow: 0 2px 8px #0003;
 }
@@ -46,7 +46,7 @@
   font-weight: 700;
   padding: 7px 18px;
   border-radius: 10px;
-  background: linear-gradient(90deg, #1a1c25 60%, #6366f1 100%);
+  background: linear-gradient(90deg, #252638 60%, #6366f1 100%);
   color: #0d0d11;
   margin-left: 18px;
   box-shadow: 0 2px 12px #6366f122;
@@ -55,11 +55,11 @@
   border: none;
 }
 .shop-info-status-paused {
-  background: linear-gradient(90deg, #ff4d4f 60%, #1a1c25 100%);
+  background: linear-gradient(90deg, #ff4d4f 60%, #252638 100%);
   color: #fff;
 }
 .shop-info-status-active {
-  background: linear-gradient(90deg, #4caf50 60%, #1a1c25 100%);
+  background: linear-gradient(90deg, #4caf50 60%, #252638 100%);
   color: #fff;
 }
 @keyframes shopStatusPulse {
@@ -94,7 +94,7 @@
 .shop-info-integration {
   font-size: 0.98rem;
   color: #fff;
-  background: linear-gradient(90deg, #5c6ac4 0%, #1a1c25 100%);
+  background: linear-gradient(90deg, #5c6ac4 0%, #252638 100%);
   border-radius: 8px;
   padding: 5px 14px;
   font-weight: 700;

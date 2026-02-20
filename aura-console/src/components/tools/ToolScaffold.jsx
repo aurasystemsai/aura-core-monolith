@@ -95,7 +95,7 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
     <div
       className="tool-generic"
       style={{
-        background: darkMode ? "#1a1c25" : "#fff",
+        background: darkMode ? "#252638" : "#fff",
         color: darkMode ? "#a3e635" : "#0d0d11",
         borderRadius: 16,
         boxShadow: "0 2px 16px #0001",
@@ -115,7 +115,7 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
       {showHelp && (
         <div style={{ background: darkMode ? "#0d0d11" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 16 }}>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>How to use {toolName}</div>
-          <ul style={{ margin: 0, paddingLeft: 18, color: darkMode ? "#a3e635" : "#454860", fontSize: 15 }}>
+          <ul style={{ margin: 0, paddingLeft: 18, color: darkMode ? "#a3e635" : "#525578", fontSize: 15 }}>
             <li>Fill out all required fields and click Run Tool.</li>
             <li>Advanced fields: file upload, select, date, textarea, etc. are supported.</li>
             <li>Results and errors will appear below the form.</li>

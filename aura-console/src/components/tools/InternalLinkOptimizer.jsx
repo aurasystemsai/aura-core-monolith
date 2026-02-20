@@ -120,7 +120,7 @@ export default function InternalLinkOptimizer() {
   const onboardingContent = (
     <div style={{ padding: 24, background: darkMode ? "#0d0d11" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Internal Link Optimizer</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#454860", fontSize: 16 }}>
+      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#525578", fontSize: 16 }}>
         <li>Generate, import, and manage internal links with AI</li>
         <li>Analyze performance with real-time analytics</li>
         <li>Collaborate and share with your team</li>
@@ -139,7 +139,7 @@ export default function InternalLinkOptimizer() {
     <div style={{
       
       margin: "40px auto",
-      background: darkMode ? "#1a1c25" : "#fff",
+      background: darkMode ? "#252638" : "#fff",
       borderRadius: 18,
       boxShadow: "0 2px 24px #0002",
       padding: 36,
@@ -180,20 +180,20 @@ export default function InternalLinkOptimizer() {
         </div>
       )}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      <div style={{ marginTop: 24, background: darkMode ? "#1a1c25" : "#fff", borderRadius: 12, padding: 18, border: "1px solid #222535" }}>
+      <div style={{ marginTop: 24, background: darkMode ? "#252638" : "#fff", borderRadius: 12, padding: 18, border: "1px solid #2e3045" }}>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: darkMode ? "#e2e8f0" : "#0d0d11" }}>Links</div>
         {links.map(l => (
-          <div key={l.id} style={{ background: darkMode ? "#0d0d11" : "#f8fafc", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #222535" }}>
+          <div key={l.id} style={{ background: darkMode ? "#0d0d11" : "#f8fafc", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2e3045" }}>
             <span style={{ fontWeight: 600, color: darkMode ? "#e2e8f0" : "#0d0d11" }}>{l.content ? l.content.slice(0, 80) + (l.content.length > 80 ? "…" : "") : `Link #${l.id}`}</span>
           </div>
         ))}
       </div>
       <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-        <div style={{ background: "#222535", borderRadius: 10, padding: "12px 20px", border: "1px solid #222535" }}>
+        <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Links</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{links.length}</div>
         </div>
-        <div style={{ background: "#222535", borderRadius: 10, padding: "12px 20px", border: "1px solid #222535" }}>
+        <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{analytics.length}</div>
         </div>

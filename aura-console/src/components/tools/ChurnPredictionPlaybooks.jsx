@@ -15,7 +15,7 @@ export default function ChurnPredictionPlaybooks() {
             <b>Key Features:</b>Customer segmentation, churn risk scoring, retention playbook builder, cohort analysis, workflow triggers, real-time alerts, CRM/marketing integrations
           </div>
         </div>
-        <div className="churn-score-card" style={{ background: "#1a1c25", borderRadius: 18, padding: "18px 32px", boxShadow: "0 2px 16px #0003", textAlign: "center", minWidth: 220 }}>
+        <div className="churn-score-card" style={{ background: "#252638", borderRadius: 18, padding: "18px 32px", boxShadow: "0 2px 16px #0003", textAlign: "center", minWidth: 220 }}>
           <div style={{ fontWeight: 800, fontSize: 22, color: "#6366f1" }}>Customer Health Score</div>
           <div style={{ fontWeight: 900, fontSize: 48, color: "#22c55e" }}>92</div>
           <div style={{ fontSize: 15, color: "#b6eaff" }}>Excellent</div>

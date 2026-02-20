@@ -1,14 +1,14 @@
 ﻿:root {
   /* Base layers — clear surface hierarchy like Linear/Vercel */
   --bg:            #0d0d11;   /* zinc-950 — page background */
-  --bg-surface:    #1a1c25;   /* zinc-900 — cards, panels */
-  --bg-elevated:   #222535;   /* zinc-800 — inputs, hover, nested sections */
-  --bg-alt:        #222535;
+  --bg-surface:    #252638;   /* zinc-900 — cards, panels */
+  --bg-elevated:   #2e3045;   /* zinc-800 — inputs, hover, nested sections */
+  --bg-alt:        #2e3045;
 
   /* Borders — always visible, never harsh */
-  --border-subtle: #222535;
-  --border:        #353848;   /* zinc-700 */
-  --border-strong: #454860;   /* zinc-600 */
+  --border-subtle: #2e3045;
+  --border:        #3d4058;   /* zinc-700 */
+  --border-strong: #525578;   /* zinc-600 */
 
   /* Text hierarchy */
   --text:          #f9fafb;   /* zinc-50  — primary */
@@ -22,7 +22,7 @@
   --accent-text:   #e0e7ff;   /* indigo-100 */
 
   /* Card alias */
-  --card:          #1a1c25;
+  --card:          #252638;
 
   /* Status */
   --success:       #4ade80;
@@ -81,8 +81,8 @@ body {
 .base-row {
   display: flex;
   gap: 8px;
-  border: 1px solid #353848;
-  background: #1a1c25;
+  border: 1px solid #3d4058;
+  background: #252638;
   color: var(--text);
 }
 .base-row .branding .logo {

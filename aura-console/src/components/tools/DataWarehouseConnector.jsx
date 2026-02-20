@@ -80,7 +80,7 @@ export default function DataWarehouseConnector() {
   };
 
   return (
-    <div style={{ background: "#1a1c25", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f9fafb' }}>
+    <div style={{ background: "#252638", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f9fafb' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Data Warehouse/BI Connector</h2>
       <div style={{ color: "#0ea5e9", fontWeight: 600, marginBottom: 18 }}>
         <span role="img" aria-label="warehouse"></span>Integrate with BigQuery, Snowflake, Looker, and more.
@@ -95,7 +95,7 @@ export default function DataWarehouseConnector() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Data Sources</div>
           <ul style={{ paddingLeft: 18 }}>
             {dataSources.map((ds, idx) => (
-              <li key={ds.id || idx} style={{ marginBottom: 8, background: "#353848", borderRadius: 8, padding: 8, color: '#f9fafb' }}>{ds.name}</li>
+              <li key={ds.id || idx} style={{ marginBottom: 8, background: "#3d4058", borderRadius: 8, padding: 8, color: '#f9fafb' }}>{ds.name}</li>
             ))}
           </ul>
         </div>
@@ -103,7 +103,7 @@ export default function DataWarehouseConnector() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Dashboards</div>
           <ul style={{ paddingLeft: 18 }}>
             {dashboards.map((db, idx) => (
-              <li key={db.id || idx} style={{ marginBottom: 8, background: "#1a1c25", borderRadius: 8, padding: 8, color: '#6366f1' }}>{db.name}</li>
+              <li key={db.id || idx} style={{ marginBottom: 8, background: "#252638", borderRadius: 8, padding: 8, color: '#6366f1' }}>{db.name}</li>
             ))}
           </ul>
         </div>
@@ -111,7 +111,7 @@ export default function DataWarehouseConnector() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Analytics</div>
           <ul style={{ paddingLeft: 18 }}>
             {analytics.map((a, idx) => (
-              <li key={a.id || idx} style={{ marginBottom: 8, background: "#353848", borderRadius: 8, padding: 8, color: '#f9fafb' }}>{a.name}</li>
+              <li key={a.id || idx} style={{ marginBottom: 8, background: "#3d4058", borderRadius: 8, padding: 8, color: '#f9fafb' }}>{a.name}</li>
             ))}
           </ul>
         </div>
