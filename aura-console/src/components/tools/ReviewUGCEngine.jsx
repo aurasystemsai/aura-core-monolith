@@ -1,7 +1,17 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
-import { apiFetch } from '../../api';
+import React, { useState, useEffect, useCallback } from 'react';
 
-const BASE = '/api/review-ugc-engine';
+const API = '/api/review-ugc-engine';
+
+async function apiFetch(path, options = {}) {
+  const res = await fetch(`${API}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...options.headers },
+    ...options,
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+const BASE = '';
 
 const S = {
   page: { background: '#09090b', minHeight: '100vh', padding: '24px', color: '#fafafa' },
@@ -36,26 +46,15 @@ const S = {
 };
 
 const CATEGORIES = [
-  { id: 'reviews', label: 'Review Management' },
-  { id: 'ugc', label: 'UGC Collection' },
-  { id: 'moderation', label: 'Moderation' },
-  { id: 'sentiment', label: 'Sentiment & AI' },
-  { id: 'social', label: 'Social Proof' },
-  { id: 'widgets', label: 'Display & Widgets' },
-  { id: 'analytics', label: 'Analytics' },
-  { id: 'integrations', label: 'Integrations' },
+  { id: 'reviews', label: 'Review Management', tabs: ['Reviews List', 'Create / Edit', 'Moderation Queue', 'Responses', 'Rating Summary', 'Statistics'] },
+  { id: 'ugc-collection', label: 'UGC Collection', tabs: ['Campaigns', 'Review Requests', 'Collection Widgets', 'Email Templates', 'Statistics'] },
+  { id: 'moderation', label: 'Moderation', tabs: ['Rules', 'Content Moderation', 'Queue', 'Blocked Words', 'Blocked Emails', 'Statistics'] },
+  { id: 'sentiment', label: 'Sentiment & AI', tabs: ['Analyze', 'Batch Analysis', 'Insights', 'Trends', 'Summary', 'Statistics'] },
+  { id: 'social-proof', label: 'Social Proof', tabs: ['Display Rules', 'Trust Badges', 'Elements', 'A/B Tests', 'Conversion Insights', 'Statistics'] },
+  { id: 'widgets', label: 'Display & Widgets', tabs: ['Widgets', 'Carousels', 'Embeds', 'Themes', 'Preview', 'Statistics'] },
+  { id: 'analytics', label: 'Analytics & Insights', tabs: ['Events', 'Review Metrics', 'Collection Performance', 'Reports', 'Dashboards', 'Alerts', 'Statistics'] },
+  { id: 'integrations', label: 'Integrations', tabs: ['Services', 'Import / Export', 'Shopify Sync', 'Google Shopping', 'Webhooks', 'CSV', 'Sync Logs', 'Statistics'] },
 ];
-
-const TABS = {
-  reviews: ['Reviews List', 'Create / Edit', 'Moderation Queue', 'Responses', 'Rating Summary', 'Statistics'],
-  ugc: ['Campaigns', 'Review Requests', 'Collect Widgets', 'Email Templates', 'Statistics'],
-  moderation: ['Rules', 'Content Check', 'Queue', 'Blocked Words', 'Blocked Emails', 'Statistics'],
-  sentiment: ['Analyze', 'Batch Analysis', 'Insights', 'Trends', 'Statistics'],
-  social: ['Display Rules', 'Trust Badges', 'Elements', 'A/B Tests', 'Conversion Insights', 'Statistics'],
-  widgets: ['Widgets', 'Carousels', 'Embeds', 'Themes', 'Statistics'],
-  analytics: ['Review Metrics', 'Collection Perf.', 'Sentiment Trends', 'Rating Distribution', 'Top Reviewers', 'Reports', 'Dashboards', 'Alerts', 'Statistics'],
-  integrations: ['Services', 'Import / Export', 'Shopify Sync', 'Google Shopping', 'Webhooks', 'CSV', 'Sync Logs', 'Statistics'],
-};
 
 function StarRating({ value = 0, onChange }) {
   return (
@@ -63,7 +62,7 @@ function StarRating({ value = 0, onChange }) {
       {[1, 2, 3, 4, 5].map(n => (
         <span key={n} onClick={onChange ? () => onChange(n) : undefined}
           style={{ fontSize: '20px', cursor: onChange ? 'pointer' : 'default', color: n <= value ? '#eab308' : '#3f3f46' }}>
-          {n <= value ? '★' : '☆'}
+          {n <= value ? '?' : '?'}
         </span>
       ))}
     </div>
@@ -73,7 +72,7 @@ function StarRating({ value = 0, onChange }) {
 function StatCard({ label, value, color = '#4f46e5' }) {
   return (
     <div style={S.stat}>
-      <div style={{ ...S.statNum, color }}>{value ?? '—'}</div>
+      <div style={{ ...S.statNum, color }}>{value ?? '�'}</div>
       <div style={S.statLabel}>{label}</div>
     </div>
   );
@@ -82,14 +81,14 @@ function StatCard({ label, value, color = '#4f46e5' }) {
 function Placeholder({ name }) {
   return (
     <div style={{ ...S.card, textAlign: 'center', padding: '48px' }}>
-      <div style={{ fontSize: '16px', color: '#71717a' }}>{name} — coming shortly...</div>
+      <div style={{ fontSize: '16px', color: '#71717a' }}>{name} � coming shortly...</div>
     </div>
   );
 }
 
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 // REVIEW MANAGEMENT
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 function ReviewManagement({ tab }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -107,15 +106,15 @@ function ReviewManagement({ tab }) {
   }, []);
 
   const loadQueue = useCallback(async () => {
-    try { const d = await apiFetch(`${BASE}/reviews/moderation/queue`); setQueue(Array.isArray(d) ? d : (d.queue || [])); } catch (e) { console.error(e); }
+    try { const d = await apiFetch(`${BASE}/moderation/queue`); setQueue(Array.isArray(d) ? d : (d.queue || [])); } catch (e) { console.error(e); }
   }, []);
 
   const loadStats = useCallback(async () => {
-    try { const d = await apiFetch(`${BASE}/reviews/stats/summary`); setStats(d); } catch (e) { console.error(e); }
+    try { const d = await apiFetch(`${BASE}/reviews/statistics`); setStats(d); } catch (e) { console.error(e); }
   }, []);
 
   const loadRating = useCallback(async () => {
-    try { const d = await apiFetch(`${BASE}/reviews/ratings/summary`); setRatingSummary(d); } catch (e) { console.error(e); }
+    try { const d = await apiFetch(`${BASE}/reviews/search`, { method: 'POST', body: JSON.stringify({ productId: '' }) }); setRatingSummary(d); } catch (e) { console.error(e); }
   }, []);
 
   useEffect(() => {
@@ -131,12 +130,12 @@ function ReviewManagement({ tab }) {
     load();
   };
 
-  const handleApprove = async (id) => { await apiFetch(`${BASE}/reviews/${id}/approve`, { method: 'POST' }); loadQueue(); };
-  const handleReject = async (id) => { await apiFetch(`${BASE}/reviews/${id}/reject`, { method: 'POST' }); loadQueue(); };
+  const handleApprove = async (id) => { await apiFetch(`${BASE}/reviews/${id}/moderate`, { method: 'POST', body: JSON.stringify({ action: 'approve' }) }); loadQueue(); };
+  const handleReject = async (id) => { await apiFetch(`${BASE}/reviews/${id}/moderate`, { method: 'POST', body: JSON.stringify({ action: 'reject' }) }); loadQueue(); };
   const handleDelete = async (id) => { if (!window.confirm('Delete?')) return; await apiFetch(`${BASE}/reviews/${id}`, { method: 'DELETE' }); load(); };
   const handleRespond = async () => {
     if (!selectedId || !responseText.trim()) return;
-    await apiFetch(`${BASE}/reviews/${selectedId}/response`, { method: 'POST', body: JSON.stringify({ response: responseText }) });
+    await apiFetch(`${BASE}/reviews/${selectedId}/responses`, { method: 'POST', body: JSON.stringify({ response: responseText }) });
     setResponseText(''); setSelectedId('');
   };
 
@@ -161,10 +160,10 @@ function ReviewManagement({ tab }) {
             {reviews.length === 0 && <tr><td style={S.td} colSpan={6}><span style={S.muted}>No reviews found.</span></td></tr>}
             {reviews.map(r => (
               <tr key={r.id || r._id}>
-                <td style={S.td}>{r.authorName || '—'}</td>
-                <td style={S.td}>{r.productName || r.productId || '—'}</td>
+                <td style={S.td}>{r.authorName || '�'}</td>
+                <td style={S.td}>{r.productName || r.productId || '�'}</td>
                 <td style={S.td}><StarRating value={r.rating} /></td>
-                <td style={S.td}>{r.title || '—'}</td>
+                <td style={S.td}>{r.title || '�'}</td>
                 <td style={S.td}>{statusBadge(r.status)}</td>
                 <td style={S.td}><div style={S.row}>
                   <button style={S.btnGhost} onClick={() => setSelectedId(r.id || r._id)}>Reply</button>
@@ -205,9 +204,9 @@ function ReviewManagement({ tab }) {
           <thead><tr><th style={S.th}>Author</th><th style={S.th}>Rating</th><th style={S.th}>Title</th><th style={S.th}>Actions</th></tr></thead>
           <tbody>{queue.map(r => (
             <tr key={r.id || r._id}>
-              <td style={S.td}>{r.authorName || '—'}</td>
+              <td style={S.td}>{r.authorName || '�'}</td>
               <td style={S.td}><StarRating value={r.rating} /></td>
-              <td style={S.td}>{r.title || '—'}</td>
+              <td style={S.td}>{r.title || '�'}</td>
               <td style={S.td}><div style={S.row}>
                 <button style={S.btnSuccess} onClick={() => handleApprove(r.id || r._id)}>Approve</button>
                 <button style={S.btnDanger} onClick={() => handleReject(r.id || r._id)}>Reject</button>
@@ -281,12 +280,12 @@ function ReviewManagement({ tab }) {
   return null;
 }
 
-// ──────────────────────────────────────────────────────────
-// PLACEHOLDERS — replaced in phases
-// ──────────────────────────────────────────────────────────
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
+// PLACEHOLDERS � replaced in phases
+// ----------------------------------------------------------
+// ----------------------------------------------------------
 // UGC COLLECTION
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 function UGCCollection({ tab }) {
   const [campaigns, setCampaigns] = useState([]);
   const [templates, setTemplates] = useState([]);
@@ -364,7 +363,7 @@ function UGCCollection({ tab }) {
           {campaigns.map(c => (
             <tr key={c.id||c._id}>
               <td style={S.td}>{c.name}</td><td style={S.td}>{c.type}</td>
-              <td style={S.td}>{c.startDate || '—'}</td><td style={S.td}>{c.endDate || '—'}</td>
+              <td style={S.td}>{c.startDate || '�'}</td><td style={S.td}>{c.endDate || '�'}</td>
               <td style={S.td}><button style={S.btnDanger} onClick={() => deleteCampaign(c.id||c._id)}>Delete</button></td>
             </tr>
           ))}
@@ -475,9 +474,9 @@ function UGCCollection({ tab }) {
 
   return null;
 }
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 // MODERATION
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 function ModerationCenter({ tab }) {
   const [rules, setRules] = useState([]);
   const [queue, setQueue] = useState([]);
@@ -579,8 +578,8 @@ function ModerationCenter({ tab }) {
           <thead><tr><th style={S.th}>Author</th><th style={S.th}>Content</th><th style={S.th}>Reason</th><th style={S.th}>Actions</th></tr></thead>
           <tbody>{queue.map(r => (
             <tr key={r.id||r._id}>
-              <td style={S.td}>{r.authorName||'—'}</td>
-              <td style={{ ...S.td, maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.body||r.content||'—'}</td>
+              <td style={S.td}>{r.authorName||'�'}</td>
+              <td style={{ ...S.td, maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.body||r.content||'�'}</td>
               <td style={S.td}><span style={S.badge('#f97316')}>{r.reason||'flagged'}</span></td>
               <td style={S.td}><div style={S.row}>
                 <button style={S.btnSuccess} onClick={()=>approveItem(r.id||r._id)}>Approve</button>
@@ -605,7 +604,7 @@ function ModerationCenter({ tab }) {
         {blockedWords.map((w, i) => (
           <span key={i} style={{ background: '#27272a', border: '1px solid #3f3f46', borderRadius: '20px', padding: '4px 12px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             {typeof w === 'string' ? w : w.word}
-            <button style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px', lineHeight: 1 }} onClick={()=>removeWord(typeof w === 'string' ? w : w.word)}>×</button>
+            <button style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px', lineHeight: 1 }} onClick={()=>removeWord(typeof w === 'string' ? w : w.word)}>�</button>
           </span>
         ))}
       </div>
@@ -648,9 +647,9 @@ function ModerationCenter({ tab }) {
 
   return null;
 }
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 // SENTIMENT & AI
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 function SentimentAI({ tab }) {
   const [analyzeText, setAnalyzeText] = useState('');
   const [analyzeResult, setAnalyzeResult] = useState(null);
@@ -660,6 +659,9 @@ function SentimentAI({ tab }) {
   const [trends, setTrends] = useState(null);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [summaryForm, setSummaryForm] = useState({ period: 'last30days' });
+  const [summaryData, setSummaryData] = useState(null);
+  const [sumLoading, setSumLoading] = useState(false);
 
   const loadInsights = useCallback(async () => { try { const d = await apiFetch(`${BASE}/sentiment/insights`); setInsights(d); } catch(e){} }, []);
   const loadTrends = useCallback(async () => { try { const d = await apiFetch(`${BASE}/sentiment/trends`); setTrends(d); } catch(e){} }, []);
@@ -668,7 +670,7 @@ function SentimentAI({ tab }) {
   useEffect(() => {
     if (tab === 2) loadInsights();
     else if (tab === 3) loadTrends();
-    else if (tab === 4) loadStats();
+    else if (tab === 5) loadStats();
   }, [tab]);
 
   const handleAnalyze = async () => {
@@ -737,9 +739,9 @@ function SentimentAI({ tab }) {
             <tbody>{batchResults.map((r, i) => (
               <tr key={i}>
                 <td style={S.td}>{i + 1}</td>
-                <td style={{ ...S.td, maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.text || r.content || '—'}</td>
+                <td style={{ ...S.td, maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.text || r.content || '�'}</td>
                 <td style={S.td}><span style={S.badge(sentimentColor(r.sentiment))}>{r.sentiment || 'N/A'}</span></td>
-                <td style={S.td}>{r.score?.toFixed?.(2) ?? '—'}</td>
+                <td style={S.td}>{r.score?.toFixed?.(2) ?? '�'}</td>
               </tr>
             ))}</tbody>
           </table>
@@ -788,9 +790,9 @@ function SentimentAI({ tab }) {
               <tbody>{(trends.data || trends).map((row, i) => (
                 <tr key={i}>
                   <td style={S.td}>{row.period || row.date || row.label}</td>
-                  <td style={S.td}><span style={{ color: '#22c55e' }}>{row.positive ?? '—'}</span></td>
-                  <td style={S.td}><span style={{ color: '#eab308' }}>{row.neutral ?? '—'}</span></td>
-                  <td style={S.td}><span style={{ color: '#ef4444' }}>{row.negative ?? '—'}</span></td>
+                  <td style={S.td}><span style={{ color: '#22c55e' }}>{row.positive ?? '�'}</span></td>
+                  <td style={S.td}><span style={{ color: '#eab308' }}>{row.neutral ?? '�'}</span></td>
+                  <td style={S.td}><span style={{ color: '#ef4444' }}>{row.negative ?? '�'}</span></td>
                 </tr>
               ))}
               </tbody>
@@ -801,7 +803,47 @@ function SentimentAI({ tab }) {
     </div>
   );
 
-  if (tab === 4) return (
+  if (tab === 4) {
+    const handleSummary = async () => {
+      setSumLoading(true);
+      try { const d = await apiFetch(`${BASE}/sentiment/summary`, { method: 'POST', body: JSON.stringify(summaryForm) }); setSummaryData(d); } catch(e){}
+      setSumLoading(false);
+    };
+    return (
+      <div style={S.card}>
+        <div style={S.h2}>Sentiment Summary</div>
+        <div style={S.formGroup}><label style={S.label}>Period</label>
+          <select style={S.select} value={summaryForm.period} onChange={e=>setSummaryForm(f=>({...f,period:e.target.value}))}>
+            <option value="last7days">Last 7 Days</option>
+            <option value="last30days">Last 30 Days</option>
+            <option value="last90days">Last 90 Days</option>
+            <option value="alltime">All Time</option>
+          </select>
+        </div>
+        <button style={S.btn} onClick={handleSummary} disabled={sumLoading}>{sumLoading ? 'Generating...' : 'Generate Summary'}</button>
+        {summaryData && (
+          <div style={{ ...S.elevated, marginTop: '16px' }}>
+            <div style={S.grid4}>
+              <StatCard label="Total Analyzed" value={summaryData.totalAnalyzed} color="#4f46e5" />
+              <StatCard label="Positive %" value={summaryData.positivePercent ? summaryData.positivePercent + '%' : null} color="#22c55e" />
+              <StatCard label="Neutral %" value={summaryData.neutralPercent ? summaryData.neutralPercent + '%' : null} color="#eab308" />
+              <StatCard label="Negative %" value={summaryData.negativePercent ? summaryData.negativePercent + '%' : null} color="#ef4444" />
+            </div>
+            {summaryData.topKeywords && summaryData.topKeywords.length > 0 && (
+              <div style={{ marginTop: '16px' }}>
+                <div style={{ ...S.label, marginBottom: '8px' }}>Top Keywords</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {summaryData.topKeywords.map((k, i) => <span key={i} style={{ ...S.badge('#a78bfa'), padding: '2px 10px' }}>{typeof k === 'string' ? k : `${k.word} (${k.count})`}</span>)}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (tab === 5) return (
     <div style={S.card}>
       <div style={{ ...S.row, justifyContent: 'space-between', marginBottom: '16px' }}>
         <div style={S.h2}>Sentiment Statistics</div>
@@ -820,9 +862,9 @@ function SentimentAI({ tab }) {
 
   return null;
 }
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 // SOCIAL PROOF
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 function SocialProof({ tab }) {
   const [rules, setRules] = useState([]);
   const [badges, setBadges] = useState([]);
@@ -915,7 +957,7 @@ function SocialProof({ tab }) {
         {badges.length === 0 && <span style={S.muted}>No badges yet.</span>}
         {badges.map(b => (
           <div key={b.id||b._id} style={{ ...S.elevated, minWidth: '160px', textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', marginBottom: '4px' }}>★</div>
+            <div style={{ fontSize: '24px', marginBottom: '4px' }}>?</div>
             <div style={{ fontSize: '14px', fontWeight: 600 }}>{b.name}</div>
             <div style={{ ...S.muted, marginBottom: '8px' }}>{b.label}</div>
             <button style={S.btnDanger} onClick={()=>deleteBadge(b.id||b._id)}>Remove</button>
@@ -971,7 +1013,7 @@ function SocialProof({ tab }) {
         <thead><tr><th style={S.th}>Name</th><th style={S.th}>Status</th><th style={S.th}>Conversion A</th><th style={S.th}>Conversion B</th></tr></thead>
         <tbody>
           {abTests.length === 0 && <tr><td style={S.td} colSpan={4}><span style={S.muted}>No A/B tests yet.</span></td></tr>}
-          {abTests.map(t => <tr key={t.id||t._id}><td style={S.td}>{t.name}</td><td style={S.td}><span style={S.badge(t.status==='running'?'#22c55e':'#71717a')}>{t.status||'draft'}</span></td><td style={S.td}>{t.conversionA ?? '—'}</td><td style={S.td}>{t.conversionB ?? '—'}</td></tr>)}
+          {abTests.map(t => <tr key={t.id||t._id}><td style={S.td}>{t.name}</td><td style={S.td}><span style={S.badge(t.status==='running'?'#22c55e':'#71717a')}>{t.status||'draft'}</span></td><td style={S.td}>{t.conversionA ?? '�'}</td><td style={S.td}>{t.conversionB ?? '�'}</td></tr>)}
         </tbody>
       </table>
     </div>
@@ -1022,9 +1064,9 @@ function SocialProof({ tab }) {
 
   return null;
 }
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 // DISPLAY & WIDGETS
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 function DisplayWidgets({ tab }) {
   const [widgets, setWidgets] = useState([]);
   const [carousels, setCarousels] = useState([]);
@@ -1036,6 +1078,9 @@ function DisplayWidgets({ tab }) {
   const [eForm, setEForm] = useState({ name: '', productId: '', showCount: 5 });
   const [tForm, setTForm] = useState({ name: '', primaryColor: '#4f46e5', backgroundColor: '#18181b', textColor: '#fafafa' });
   const [msg, setMsg] = useState('');
+  const [previewWidgetId, setPreviewWidgetId] = useState('');
+  const [previewData, setPreviewData] = useState(null);
+  const [prevLoading, setPrevLoading] = useState(false);
 
   const flash = (t) => { setMsg(t); setTimeout(() => setMsg(''), 3000); };
   const loadWidgets = useCallback(async () => { try { const d = await apiFetch(`${BASE}/widgets`); setWidgets(Array.isArray(d) ? d : (d.widgets || [])); } catch(e){} }, []);
@@ -1049,7 +1094,7 @@ function DisplayWidgets({ tab }) {
     else if (tab === 1) loadCarousels();
     else if (tab === 2) loadEmbeds();
     else if (tab === 3) loadThemes();
-    else if (tab === 4) loadStats();
+    else if (tab === 5) loadStats();
   }, [tab]);
 
   const createWidget = async () => { await apiFetch(`${BASE}/widgets`, { method: 'POST', body: JSON.stringify(wForm) }); setWForm({ name: '', type: 'star-rating', layout: 'grid', maxReviews: 10 }); loadWidgets(); flash('Widget created'); };
@@ -1130,7 +1175,7 @@ function DisplayWidgets({ tab }) {
         <thead><tr><th style={S.th}>Name</th><th style={S.th}>Product ID</th><th style={S.th}>Count</th><th style={S.th}>Embed Code</th></tr></thead>
         <tbody>
           {embeds.length === 0 && <tr><td style={S.td} colSpan={4}><span style={S.muted}>No embeds yet.</span></td></tr>}
-          {embeds.map(em => <tr key={em.id||em._id}><td style={S.td}>{em.name}</td><td style={S.td}>{em.productId || '—'}</td><td style={S.td}>{em.showCount}</td><td style={S.td}><code style={{ color: '#a78bfa', fontSize: '12px' }}>{`<div data-aura-reviews="${em.id||em._id}"></div>`}</code></td></tr>)}
+          {embeds.map(em => <tr key={em.id||em._id}><td style={S.td}>{em.name}</td><td style={S.td}>{em.productId || '�'}</td><td style={S.td}>{em.showCount}</td><td style={S.td}><code style={{ color: '#a78bfa', fontSize: '12px' }}>{`<div data-aura-reviews="${em.id||em._id}"></div>`}</code></td></tr>)}
         </tbody>
       </table>
     </div>
@@ -1170,7 +1215,49 @@ function DisplayWidgets({ tab }) {
     </div>
   );
 
-  if (tab === 4) return (
+  if (tab === 4) {
+    const handlePreview = async () => {
+      if (!previewWidgetId.trim()) return;
+      setPrevLoading(true);
+      try { const d = await apiFetch(`${BASE}/widgets/${previewWidgetId}/preview`, { method: 'POST', body: JSON.stringify({}) }); setPreviewData(d); } catch(e){}
+      setPrevLoading(false);
+    };
+    return (
+      <div style={S.card}>
+        <div style={S.h2}>Widget Preview</div>
+        <div style={S.formGroup}><label style={S.label}>Widget ID</label>
+          <div style={S.row}>
+            <input style={{ ...S.input, flex: 1 }} value={previewWidgetId} onChange={e=>setPreviewWidgetId(e.target.value)} placeholder="Enter widget ID to preview" />
+            <button style={S.btn} onClick={handlePreview} disabled={prevLoading}>{prevLoading ? 'Loading...' : 'Preview'}</button>
+          </div>
+        </div>
+        {previewData && (
+          <div style={{ ...S.elevated, marginTop: '16px' }}>
+            <div style={{ ...S.label, marginBottom: '12px' }}>Preview</div>
+            <div style={{ background: previewData.backgroundColor || '#18181b', border: '1px solid #3f3f46', borderRadius: '10px', padding: '20px' }}>
+              <div style={{ fontSize: '15px', fontWeight: 600, marginBottom: '8px' }}>{previewData.name || 'Widget Preview'}</div>
+              <div style={{ ...S.muted }}>{previewData.type} — {previewData.layout} layout</div>
+              {previewData.sampleReviews && previewData.sampleReviews.length > 0 && (
+                <div style={{ marginTop: '12px' }}>
+                  {previewData.sampleReviews.slice(0, 3).map((r, i) => (
+                    <div key={i} style={{ background: '#27272a', borderRadius: '6px', padding: '10px', marginBottom: '8px' }}>
+                      <div style={{ ...S.row, marginBottom: '4px' }}>
+                        <StarRating value={r.rating} />
+                        <span style={{ ...S.muted, fontSize: '12px', marginLeft: '8px' }}>{r.authorName}</span>
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#d4d4d8' }}>{r.body || r.title}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (tab === 5) return (
     <div style={S.card}>
       <div style={{ ...S.row, justifyContent: 'space-between', marginBottom: '16px' }}>
         <div style={S.h2}>Widget Statistics</div>
@@ -1189,55 +1276,83 @@ function DisplayWidgets({ tab }) {
 
   return null;
 }
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 // ANALYTICS & INSIGHTS
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 function AnalyticsInsights({ tab }) {
+  const [events, setEvents] = useState([]);
   const [metrics, setMetrics] = useState(null);
   const [collPerf, setCollPerf] = useState(null);
-  const [sentTrends, setSentTrends] = useState(null);
-  const [ratingDist, setRatingDist] = useState(null);
-  const [topReviewers, setTopReviewers] = useState([]);
   const [reports, setReports] = useState([]);
   const [dashboards, setDashboards] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [stats, setStats] = useState(null);
+  const [eventForm, setEventForm] = useState({ type: 'review_viewed', productId: '', reviewId: '', metadata: '' });
   const [repForm, setRepForm] = useState({ name: '', type: 'weekly', metrics: '' });
   const [dashForm, setDashForm] = useState({ name: '', widgets: '' });
   const [alertForm, setAlertForm] = useState({ name: '', metric: 'rating', condition: 'below', threshold: 4 });
   const [msg, setMsg] = useState('');
 
   const flash = (t) => { setMsg(t); setTimeout(() => setMsg(''), 3000); };
-  const loadMetrics = useCallback(async () => { try { const d = await apiFetch(`${BASE}/analytics/review-metrics`); setMetrics(d); } catch(e){} }, []);
-  const loadCollPerf = useCallback(async () => { try { const d = await apiFetch(`${BASE}/analytics/collection-performance`); setCollPerf(d); } catch(e){} }, []);
-  const loadSentTrends = useCallback(async () => { try { const d = await apiFetch(`${BASE}/analytics/sentiment-trends`); setSentTrends(d); } catch(e){} }, []);
-  const loadRatingDist = useCallback(async () => { try { const d = await apiFetch(`${BASE}/analytics/rating-distribution`); setRatingDist(d); } catch(e){} }, []);
-  const loadTopReviewers = useCallback(async () => { try { const d = await apiFetch(`${BASE}/analytics/top-reviewers`); setTopReviewers(Array.isArray(d) ? d : (d.reviewers || [])); } catch(e){} }, []);
+  const loadMetrics = useCallback(async () => { try { const d = await apiFetch(`${BASE}/analytics/reviews`); setMetrics(d); } catch(e){} }, []);
+  const loadCollPerf = useCallback(async () => { try { const d = await apiFetch(`${BASE}/analytics/collection`); setCollPerf(d); } catch(e){} }, []);
   const loadReports = useCallback(async () => { try { const d = await apiFetch(`${BASE}/analytics/reports`); setReports(Array.isArray(d) ? d : (d.reports || [])); } catch(e){} }, []);
   const loadDashboards = useCallback(async () => { try { const d = await apiFetch(`${BASE}/analytics/dashboards`); setDashboards(Array.isArray(d) ? d : (d.dashboards || [])); } catch(e){} }, []);
   const loadAlerts = useCallback(async () => { try { const d = await apiFetch(`${BASE}/analytics/alerts`); setAlerts(Array.isArray(d) ? d : (d.alerts || [])); } catch(e){} }, []);
-  const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/analytics/stats`); setStats(d); } catch(e){} }, []);
+  const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/analytics/statistics`); setStats(d); } catch(e){} }, []);
 
   useEffect(() => {
-    if (tab === 0) loadMetrics();
-    else if (tab === 1) loadCollPerf();
-    else if (tab === 2) loadSentTrends();
-    else if (tab === 3) loadRatingDist();
-    else if (tab === 4) loadTopReviewers();
-    else if (tab === 5) loadReports();
-    else if (tab === 6) loadDashboards();
-    else if (tab === 7) loadAlerts();
-    else if (tab === 8) loadStats();
+    if (tab === 1) loadMetrics();
+    else if (tab === 2) loadCollPerf();
+    else if (tab === 3) loadReports();
+    else if (tab === 4) loadDashboards();
+    else if (tab === 5) loadAlerts();
+    else if (tab === 6) loadStats();
   }, [tab]);
 
+  const trackEvent = async () => {
+    const payload = { type: eventForm.type, productId: eventForm.productId, reviewId: eventForm.reviewId };
+    if (eventForm.metadata.trim()) { try { payload.metadata = JSON.parse(eventForm.metadata); } catch(e) { payload.metadata = eventForm.metadata; } }
+    await apiFetch(`${BASE}/analytics/events`, { method: 'POST', body: JSON.stringify(payload) });
+    flash('Event tracked');
+  };
   const createReport = async () => { await apiFetch(`${BASE}/analytics/reports`, { method: 'POST', body: JSON.stringify(repForm) }); setRepForm({ name: '', type: 'weekly', metrics: '' }); loadReports(); flash('Report created'); };
   const createDashboard = async () => { await apiFetch(`${BASE}/analytics/dashboards`, { method: 'POST', body: JSON.stringify(dashForm) }); setDashForm({ name: '', widgets: '' }); loadDashboards(); flash('Dashboard created'); };
   const createAlert = async () => { await apiFetch(`${BASE}/analytics/alerts`, { method: 'POST', body: JSON.stringify(alertForm) }); setAlertForm({ name: '', metric: 'rating', condition: 'below', threshold: 4 }); loadAlerts(); flash('Alert created'); };
   const deleteAlert = async (id) => { await apiFetch(`${BASE}/analytics/alerts/${id}`, { method: 'DELETE' }); loadAlerts(); };
+  const checkAlerts = async () => { const d = await apiFetch(`${BASE}/analytics/alerts/check`, { method: 'POST' }); flash(`Checked alerts: ${d.triggered ?? 0} triggered`); };
 
   const refreshBtn = (fn) => <button style={S.btn} onClick={fn}>Refresh</button>;
 
+  // tab 0: Events
   if (tab === 0) return (
+    <div>
+      {msg && <div style={{ ...S.badge('#22c55e'), marginBottom: '12px', padding: '8px 16px' }}>{msg}</div>}
+      <div style={S.card}>
+        <div style={S.h2}>Track Analytics Event</div>
+        <div style={S.grid2}>
+          <div style={S.formGroup}><label style={S.label}>Event Type</label>
+            <select style={S.select} value={eventForm.type} onChange={e=>setEventForm(f=>({...f,type:e.target.value}))}>
+              <option value="review_viewed">Review Viewed</option>
+              <option value="review_helpful">Review Helpful</option>
+              <option value="review_shared">Review Shared</option>
+              <option value="widget_impression">Widget Impression</option>
+              <option value="widget_click">Widget Click</option>
+              <option value="collection_started">Collection Started</option>
+              <option value="collection_completed">Collection Completed</option>
+            </select>
+          </div>
+          <div style={S.formGroup}><label style={S.label}>Product ID (optional)</label><input style={S.input} value={eventForm.productId} onChange={e=>setEventForm(f=>({...f,productId:e.target.value}))} placeholder="gid://shopify/Product/..." /></div>
+          <div style={S.formGroup}><label style={S.label}>Review ID (optional)</label><input style={S.input} value={eventForm.reviewId} onChange={e=>setEventForm(f=>({...f,reviewId:e.target.value}))} /></div>
+          <div style={S.formGroup}><label style={S.label}>Metadata (JSON, optional)</label><input style={S.input} value={eventForm.metadata} onChange={e=>setEventForm(f=>({...f,metadata:e.target.value}))} placeholder='{"source":"email"}' /></div>
+        </div>
+        <button style={S.btn} onClick={trackEvent}>Track Event</button>
+      </div>
+    </div>
+  );
+
+  // tab 1: Review Metrics
+  if (tab === 1) return (
     <div style={S.card}>
       <div style={{ ...S.row, justifyContent: 'space-between', marginBottom: '16px' }}>
         <div style={S.h2}>Review Metrics</div>{refreshBtn(loadMetrics)}
@@ -1264,7 +1379,8 @@ function AnalyticsInsights({ tab }) {
     </div>
   );
 
-  if (tab === 1) return (
+  // tab 2: Collection Performance
+  if (tab === 2) return (
     <div style={S.card}>
       <div style={{ ...S.row, justifyContent: 'space-between', marginBottom: '16px' }}>
         <div style={S.h2}>Collection Performance</div>{refreshBtn(loadCollPerf)}
@@ -1280,71 +1396,8 @@ function AnalyticsInsights({ tab }) {
     </div>
   );
 
-  if (tab === 2) return (
-    <div style={S.card}>
-      <div style={{ ...S.row, justifyContent: 'space-between', marginBottom: '16px' }}>
-        <div style={S.h2}>Sentiment Trends</div>{refreshBtn(loadSentTrends)}
-      </div>
-      {sentTrends ? (
-        <table style={S.table}>
-          <thead><tr><th style={S.th}>Period</th><th style={S.th}>Positive</th><th style={S.th}>Neutral</th><th style={S.th}>Negative</th></tr></thead>
-          <tbody>{(sentTrends.data || sentTrends).map?.((row, i) => (
-            <tr key={i}>
-              <td style={S.td}>{row.period || row.date}</td>
-              <td style={S.td}><span style={{ color: '#22c55e' }}>{row.positive ?? '—'}</span></td>
-              <td style={S.td}><span style={{ color: '#eab308' }}>{row.neutral ?? '—'}</span></td>
-              <td style={S.td}><span style={{ color: '#ef4444' }}>{row.negative ?? '—'}</span></td>
-            </tr>
-          ))}
-          </tbody>
-        </table>
-      ) : <div style={S.muted}>Click Refresh to load sentiment trends.</div>}
-    </div>
-  );
-
+  // tab 3: Reports
   if (tab === 3) return (
-    <div style={S.card}>
-      <div style={{ ...S.row, justifyContent: 'space-between', marginBottom: '16px' }}>
-        <div style={S.h2}>Rating Distribution</div>{refreshBtn(loadRatingDist)}
-      </div>
-      {ratingDist ? (
-        <div>
-          {[5, 4, 3, 2, 1].map(n => {
-            const count = ratingDist[n] || ratingDist[`star${n}`] || ratingDist.distribution?.[n] || 0;
-            const total = ratingDist.total || Object.values(ratingDist).reduce((a,b) => typeof b === 'number' ? a+b : a, 0);
-            const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-            return (
-              <div key={n} style={{ ...S.row, marginBottom: '10px' }}>
-                <span style={{ width: '60px', color: '#a1a1aa', fontSize: '13px' }}>{n} stars</span>
-                <div style={{ flex: 1, background: '#27272a', borderRadius: '4px', height: '10px', overflow: 'hidden' }}>
-                  <div style={{ width: `${pct}%`, background: n >= 4 ? '#22c55e' : n === 3 ? '#eab308' : '#ef4444', height: '100%' }} />
-                </div>
-                <span style={{ width: '40px', textAlign: 'right', color: '#a1a1aa', fontSize: '13px' }}>{pct}%</span>
-                <span style={{ width: '40px', textAlign: 'right', color: '#71717a', fontSize: '13px' }}>{count}</span>
-              </div>
-            );
-          })}
-        </div>
-      ) : <div style={S.muted}>Click Refresh to load rating distribution.</div>}
-    </div>
-  );
-
-  if (tab === 4) return (
-    <div style={S.card}>
-      <div style={{ ...S.row, justifyContent: 'space-between', marginBottom: '16px' }}>
-        <div style={S.h2}>Top Reviewers</div>{refreshBtn(loadTopReviewers)}
-      </div>
-      <table style={S.table}>
-        <thead><tr><th style={S.th}>#</th><th style={S.th}>Name</th><th style={S.th}>Email</th><th style={S.th}>Reviews</th><th style={S.th}>Avg Rating</th></tr></thead>
-        <tbody>
-          {topReviewers.length === 0 && <tr><td style={S.td} colSpan={5}><span style={S.muted}>No data yet.</span></td></tr>}
-          {topReviewers.map((r, i) => <tr key={r.id||i}><td style={S.td}>{i+1}</td><td style={S.td}>{r.name || r.authorName}</td><td style={S.td}>{r.email || r.authorEmail}</td><td style={S.td}>{r.reviewCount || r.count}</td><td style={S.td}><StarRating value={Math.round(r.avgRating)} /></td></tr>)}
-        </tbody>
-      </table>
-    </div>
-  );
-
-  if (tab === 5) return (
     <div>
       {msg && <div style={{ ...S.badge('#22c55e'), marginBottom: '12px', padding: '8px 16px' }}>{msg}</div>}
       <div style={S.card}>
@@ -1370,7 +1423,8 @@ function AnalyticsInsights({ tab }) {
     </div>
   );
 
-  if (tab === 6) return (
+  // tab 4: Dashboards
+  if (tab === 4) return (
     <div>
       {msg && <div style={{ ...S.badge('#22c55e'), marginBottom: '12px', padding: '8px 16px' }}>{msg}</div>}
       <div style={S.card}>
@@ -1391,11 +1445,15 @@ function AnalyticsInsights({ tab }) {
     </div>
   );
 
-  if (tab === 7) return (
+  // tab 5: Alerts
+  if (tab === 5) return (
     <div>
       {msg && <div style={{ ...S.badge('#22c55e'), marginBottom: '12px', padding: '8px 16px' }}>{msg}</div>}
       <div style={S.card}>
-        <div style={S.h2}>New Alert</div>
+        <div style={{ ...S.row, justifyContent: 'space-between', marginBottom: '16px' }}>
+          <div style={S.h2}>New Alert</div>
+          <button style={S.btnGhost} onClick={checkAlerts}>Check Alerts</button>
+        </div>
         <div style={S.grid2}>
           <div style={S.formGroup}><label style={S.label}>Alert Name</label><input style={S.input} value={alertForm.name} onChange={e=>setAlertForm(f=>({...f,name:e.target.value}))} /></div>
           <div style={S.formGroup}><label style={S.label}>Metric</label>
@@ -1422,7 +1480,8 @@ function AnalyticsInsights({ tab }) {
     </div>
   );
 
-  if (tab === 8) return (
+  // tab 6: Statistics
+  if (tab === 6) return (
     <div style={S.card}>
       <div style={{ ...S.row, justifyContent: 'space-between', marginBottom: '16px' }}>
         <div style={S.h2}>Analytics Statistics</div>{refreshBtn(loadStats)}
@@ -1440,9 +1499,9 @@ function AnalyticsInsights({ tab }) {
 
   return null;
 }
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 // INTEGRATIONS
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 function IntegrationsHub({ tab }) {
   const [services, setServices] = useState([]);
   const [shopifyStatus, setShopifyStatus] = useState(null);
@@ -1661,11 +1720,11 @@ function IntegrationsHub({ tab }) {
           {syncLogs.length === 0 && <tr><td style={S.td} colSpan={5}><span style={S.muted}>No sync logs.</span></td></tr>}
           {syncLogs.map((log, i) => (
             <tr key={log.id||i}>
-              <td style={S.td}>{log.createdAt ? new Date(log.createdAt).toLocaleString() : '—'}</td>
-              <td style={S.td}>{log.source || '—'}</td>
-              <td style={S.td}>{log.records ?? '—'}</td>
+              <td style={S.td}>{log.createdAt ? new Date(log.createdAt).toLocaleString() : '�'}</td>
+              <td style={S.td}>{log.source || '�'}</td>
+              <td style={S.td}>{log.records ?? '�'}</td>
               <td style={S.td}><span style={S.badge(log.status === 'success' ? '#22c55e' : '#ef4444')}>{log.status}</span></td>
-              <td style={{ ...S.td, color: '#a1a1aa', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{log.message || '—'}</td>
+              <td style={{ ...S.td, color: '#a1a1aa', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{log.message || '�'}</td>
             </tr>
           ))}
         </tbody>
@@ -1693,15 +1752,16 @@ function IntegrationsHub({ tab }) {
   return null;
 }
 
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 // MAIN COMPONENT
-// ──────────────────────────────────────────────────────────
+// ----------------------------------------------------------
 export default function ReviewUGCEngine() {
-  const [cat, setCat] = useState('reviews');
-  const [tab, setTab] = useState(0);
+  const [activeCategory, setActiveCategory] = useState('reviews');
+  const [activeTab, setActiveTab] = useState(0);
 
-  const handleCat = (id) => { setCat(id); setTab(0); };
-  const tabs = TABS[cat] || [];
+  const handleCategory = (id) => { setActiveCategory(id); setActiveTab(0); };
+  const activeCat = CATEGORIES.find(c => c.id === activeCategory);
+  const tabs = activeCat?.tabs || [];
 
   return (
     <div style={S.page}>
@@ -1713,13 +1773,13 @@ export default function ReviewUGCEngine() {
       {/* Category bar */}
       <div style={{ display: 'flex', gap: '2px', overflowX: 'auto', borderBottom: '2px solid #27272a', marginBottom: '0' }}>
         {CATEGORIES.map(c => (
-          <button key={c.id} onClick={() => handleCat(c.id)} style={{
+          <button key={c.id} onClick={() => handleCategory(c.id)} style={{
             background: 'transparent', border: 'none',
-            borderBottom: cat === c.id ? '2px solid #4f46e5' : '2px solid transparent',
+            borderBottom: activeCategory === c.id ? '2px solid #4f46e5' : '2px solid transparent',
             marginBottom: '-2px',
-            color: cat === c.id ? '#4f46e5' : '#a1a1aa',
+            color: activeCategory === c.id ? '#4f46e5' : '#a1a1aa',
             padding: '10px 16px', cursor: 'pointer', fontSize: '14px',
-            fontWeight: cat === c.id ? 600 : 400, whiteSpace: 'nowrap',
+            fontWeight: activeCategory === c.id ? 600 : 400, whiteSpace: 'nowrap',
           }}>{c.label}</button>
         ))}
       </div>
@@ -1727,187 +1787,25 @@ export default function ReviewUGCEngine() {
       {/* Tab bar */}
       <div style={{ display: 'flex', gap: '2px', overflowX: 'auto', background: '#18181b', padding: '4px 12px 0', borderBottom: '1px solid #27272a', marginBottom: '20px' }}>
         {tabs.map((t, i) => (
-          <button key={t} onClick={() => setTab(i)} style={{
+          <button key={t} onClick={() => setActiveTab(i)} style={{
             background: 'transparent', border: 'none',
-            borderBottom: tab === i ? '2px solid #4f46e5' : '2px solid transparent',
-            color: tab === i ? '#fafafa' : '#71717a',
+            borderBottom: activeTab === i ? '2px solid #4f46e5' : '2px solid transparent',
+            color: activeTab === i ? '#fafafa' : '#71717a',
             padding: '8px 14px', cursor: 'pointer', fontSize: '13px',
-            fontWeight: tab === i ? 600 : 400, whiteSpace: 'nowrap',
+            fontWeight: activeTab === i ? 600 : 400, whiteSpace: 'nowrap',
           }}>{t}</button>
         ))}
       </div>
 
       {/* Content */}
-      {cat === 'reviews' && <ReviewManagement tab={tab} />}
-      {cat === 'ugc' && <UGCCollection tab={tab} />}
-      {cat === 'moderation' && <ModerationCenter tab={tab} />}
-      {cat === 'sentiment' && <SentimentAI tab={tab} />}
-      {cat === 'social' && <SocialProof tab={tab} />}
-      {cat === 'widgets' && <DisplayWidgets tab={tab} />}
-      {cat === 'analytics' && <AnalyticsInsights tab={tab} />}
-      {cat === 'integrations' && <IntegrationsHub tab={tab} />}
+      {activeCategory === 'reviews' && <ReviewManagement tab={activeTab} />}
+      {activeCategory === 'ugc-collection' && <UGCCollection tab={activeTab} />}
+      {activeCategory === 'moderation' && <ModerationCenter tab={activeTab} />}
+      {activeCategory === 'sentiment' && <SentimentAI tab={activeTab} />}
+      {activeCategory === 'social-proof' && <SocialProof tab={activeTab} />}
+      {activeCategory === 'widgets' && <DisplayWidgets tab={activeTab} />}
+      {activeCategory === 'analytics' && <AnalyticsInsights tab={activeTab} />}
+      {activeCategory === 'integrations' && <IntegrationsHub tab={activeTab} />}
     </div>
   );
 }
-
-  const [imported, setImported] = useState(null);
-  const [exported, setExported] = useState(null);
-  const [feedback, setFeedback] = useState("");
-  const fileInputRef = useRef();
-
-  // Fetch reviews
-  const fetchReviews = async () => {
-    try {
-      const res = await apiFetch("/api/review-ugc-engine/reviews");
-      const data = await res.json();
-      if (data.ok) setReviews(data.reviews || []);
-    } catch {}
-  };
-  // Fetch analytics
-  const fetchAnalytics = async () => {
-    try {
-      const res = await apiFetch("/api/review-ugc-engine/analytics");
-      const data = await res.json();
-      if (data.ok) setAnalytics(data.analytics || []);
-    } catch {}
-  };
-
-  // AI Generate
-  const handleRun = async () => {
-    setLoading(true);
-    setError("");
-    setResponse("");
-    try {
-      const res = await apiFetch("/api/review-ugc-engine/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: input })
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Unknown error");
-      setResponse(data.reply || "No response");
-      // Save review
-      await apiFetch("/api/review-ugc-engine/reviews", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: input, content: data.reply })
-      });
-      fetchReviews();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Import/Export
-  const handleImport = e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async evt => {
-      try {
-        const res = await apiFetch("/api/review-ugc-engine/import", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: JSON.parse(evt.target.result) })
-        });
-        const data = await res.json();
-        if (!data.ok) throw new Error(data.error || "Unknown error");
-        setImported(file.name);
-        fetchReviews();
-      } catch (err) {
-        setError(err.message);
-      }
-    };
-    reader.readAsText(file);
-  };
-  const handleExport = () => {
-    const blob = new Blob([JSON.stringify(reviews, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    setExported(url);
-    setTimeout(() =>URL.revokeObjectURL(url), 10000);
-  };
-
-  // Feedback
-  const handleFeedback = async () => {
-    if (!feedback) return;
-    setError("");
-    try {
-      await apiFetch("/api/review-ugc-engine/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ feedback })
-      });
-      setFeedback("");
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  useEffect(() => {
-    fetchReviews();
-    fetchAnalytics();
-  }, []);
-
-  return (
-    <div style={{ background: "#09090b", color: "#f4f4f5", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
-      <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 8 }}>Review UGC Engine</h2>
-      <div style={{ marginBottom: 10, color: "#0ea5e9", fontWeight: 600 }}>
-        <span role="img" aria-label="sparkles"></span>Generate, import, and analyze reviews and UGC with AI and analytics.
-      </div>
-      <textarea
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        rows={4}
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #ccc", marginBottom: 18 }}
-        placeholder="Type your review prompt here..."
-        aria-label="Review prompt input"
-      />
-      <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={handleRun} disabled={loading || !input} style={{ background: "#4f46e5", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Generating..." : "AI Generate"}</button>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
-        <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import reviews" />
-        <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
-        {exported && <a href={exported} download="reviews.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
-      </div>
-      {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
-      {response && (
-        <div style={{ background: "#27272a", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #27272a" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <span style={{ fontWeight: 700, color: "#4f46e5", fontSize: 14 }}>AI Review</span>
-            <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #52525b", borderRadius: 6, padding: "4px 12px", color: "#a1a1aa", fontSize: 12, cursor: "pointer" }}>Copy</button>
-          </div>
-          <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, fontSize: 14, color: "#e4e4e7" }}>{response}</div>
-        </div>
-      )}
-      {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      <div style={{ marginTop: 24, background: "#18181b", borderRadius: 12, padding: 18 }}>
-        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: "#e4e4e7" }}>Review History</div>
-        {reviews.map(r => (
-          <div key={r.id} style={{ background: "#09090b", borderRadius: 8, padding: "12px 16px", border: "1px solid #27272a", marginBottom: 8 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
-              <span style={{ fontWeight: 700, color: "#e4e4e7" }}>{r.prompt ? r.prompt.slice(0, 60) + "…" : `Review #${r.id}`}</span>
-              <span style={{ color: "#71717a" }}>{r.createdAt ? new Date(r.createdAt).toLocaleString() : ""}</span>
-            </div>
-            {r.content && <div style={{ fontSize: 13, color: "#a1a1aa" }}>{typeof r.content === "string" ? r.content.slice(0, 200) + (r.content.length > 200 ? "…" : "") : ""}</div>}
-          </div>
-        ))}
-      </div>
-      <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-        <div style={{ background: "#27272a", borderRadius: 10, padding: "12px 20px", border: "1px solid #27272a" }}>
-          <div style={{ fontSize: 11, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Reviews</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#4f46e5", marginTop: 2 }}>{reviews.length}</div>
-        </div>
-        <div style={{ background: "#27272a", borderRadius: 10, padding: "12px 20px", border: "1px solid #27272a" }}>
-          <div style={{ fontSize: 11, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#4f46e5", marginTop: 2 }}>{analytics.length}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
-
-
