@@ -62,7 +62,7 @@ export default function AllTools({ setActiveSection }) {
       personalization: { bg: "#f59e0b", text: "Personalization" },
       revenue: { bg: "#14b8a6", text: "Finance" },
       lifecycle: { bg: "#ec4899", text: "Email" },
-      social: { bg: "#6366f1", text: "Marketing" },
+      social: { bg: "#4f46e5", text: "Marketing" },
       support: { bg: "#06b6d4", text: "Support" },
       ads: { bg: "#ef4444", text: "Ads" },
     };
@@ -136,9 +136,9 @@ export default function AllTools({ setActiveSection }) {
             onClick={() => setActiveCategory(cat.id)}
             style={{
               padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              border: `1px solid ${activeCategory === cat.id ? '#6366f1' : '#2e3045'}`,
-              background: activeCategory === cat.id ? '#6366f122' : 'transparent',
-              color: activeCategory === cat.id ? '#6366f1' : '#94a3b8',
+              border: `1px solid ${activeCategory === cat.id ? '#4f46e5' : '#283044'}`,
+              background: activeCategory === cat.id ? '#4f46e522' : 'transparent',
+              color: activeCategory === cat.id ? '#4f46e5' : '#94a3b8',
             }}
           >
             {cat.label}
@@ -147,7 +147,7 @@ export default function AllTools({ setActiveSection }) {
         {(searchTerm || activeCategory !== 'all') && (
           <button
             onClick={() => { setSearchTerm(''); setActiveCategory('all'); }}
-            style={{ padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: '1px solid #525578', background: 'transparent', color: '#64748b' }}
+            style={{ padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: '1px solid #4b5780', background: 'transparent', color: '#64748b' }}
           >
             Clear filters 
           </button>
@@ -160,7 +160,7 @@ export default function AllTools({ setActiveSection }) {
           
           <div style={{ fontSize: 18, fontWeight: 700, color: '#94a3b8', marginBottom: 8 }}>No tools found</div>
           <div style={{ fontSize: 14 }}>Try a different search term or category</div>
-          <button onClick={() => { setSearchTerm(''); setActiveCategory('all'); }} style={{ marginTop: 20, padding: '8px 20px', borderRadius: 8, border: '1px solid #525578', background: 'transparent', color: '#6366f1', fontWeight: 700, cursor: 'pointer' }}>Clear filters</button>
+          <button onClick={() => { setSearchTerm(''); setActiveCategory('all'); }} style={{ marginTop: 20, padding: '8px 20px', borderRadius: 8, border: '1px solid #4b5780', background: 'transparent', color: '#4f46e5', fontWeight: 700, cursor: 'pointer' }}>Clear filters</button>
         </div>
       )}
       <div className="all-tools-grid">
@@ -180,7 +180,7 @@ export default function AllTools({ setActiveSection }) {
                   <span style={{ fontSize: 28 }}></span>
                   <span style={{ fontSize: 13, fontWeight: 800, color: PLAN_COLOUR[reqPlan] }}>{PLAN_LABEL[reqPlan]} Plan</span>
                   <span style={{ fontSize: 11, color: "#94a3b8" }}>from {PLAN_PRICE[reqPlan]}</span>
-                  <span style={{ fontSize: 11, color: "#6366f1", fontWeight: 700, marginTop: 2 }}>Upgrade Plan →</span>
+                  <span style={{ fontSize: 11, color: "#4f46e5", fontWeight: 700, marginTop: 2 }}>Upgrade Plan →</span>
                 </div>
               )}
               <div className="tool-card-header">
@@ -219,7 +219,7 @@ export default function AllTools({ setActiveSection }) {
           padding: 32px;
           max-width: 1400px;
           margin: 0 auto;
-          background: #252638;
+          background: #1f2433;
           min-height: 100vh;
         }
 
@@ -230,7 +230,7 @@ export default function AllTools({ setActiveSection }) {
         .all-tools-header h1 {
           font-size: 36px;
           font-weight: 900;
-          color: #6366f1;
+          color: #4f46e5;
           margin: 0 0 8px 0;
         }
 
@@ -253,7 +253,7 @@ export default function AllTools({ setActiveSection }) {
           width: 48px;
           height: 48px;
           border: 4px solid rgba(127, 255, 212, 0.2);
-          border-top-color: #6366f1;
+          border-top-color: #4f46e5;
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
         }
@@ -280,24 +280,24 @@ export default function AllTools({ setActiveSection }) {
           flex: 1;
           padding: 12px 16px;
           border-radius: 10px;
-          border: 1px solid #2e3045;
-          background: #252638;
-          color: #f9fafb;
+          border: 1px solid #283044;
+          background: #1f2433;
+          color: #f6f7fb;
           font-size: 15px;
         }
 
         .search-input:focus {
           outline: none;
-          border-color: #6366f1;
+          border-color: #4f46e5;
           box-shadow: 0 0 0 3px rgba(127, 255, 212, 0.1);
         }
 
         .sort-select {
           padding: 12px 16px;
           border-radius: 10px;
-          border: 1px solid #2e3045;
-          background: #252638;
-          color: #f9fafb;
+          border: 1px solid #283044;
+          background: #1f2433;
+          color: #f6f7fb;
           font-size: 15px;
           cursor: pointer;
         }
@@ -306,8 +306,8 @@ export default function AllTools({ setActiveSection }) {
           padding: 12px 24px;
           border-radius: 10px;
           border: none;
-          background: linear-gradient(135deg, #6366f1 0%, #22d3ee 100%);
-          color: #252638;
+          background: linear-gradient(135deg, #4f46e5 0%, #22d3ee 100%);
+          color: #1f2433;
           font-weight: 700;
           font-size: 15px;
           cursor: pointer;
@@ -325,8 +325,8 @@ export default function AllTools({ setActiveSection }) {
         }
 
         .tool-card {
-          background: #252638;
-          border: 1px solid #2e3045;
+          background: #1f2433;
+          border: 1px solid #283044;
           border-radius: 16px;
           padding: 24px;
           cursor: pointer;
@@ -336,7 +336,7 @@ export default function AllTools({ setActiveSection }) {
 
         .tool-card:hover {
           transform: translateY(-4px);
-          border-color: #6366f1;
+          border-color: #4f46e5;
           box-shadow: 0 8px 24px rgba(127, 255, 212, 0.15);
         }
 
@@ -351,7 +351,7 @@ export default function AllTools({ setActiveSection }) {
         .tool-card h3 {
           font-size: 18px;
           font-weight: 700;
-          color: #f9fafb;
+          color: #f6f7fb;
           margin: 0;
           flex: 1;
         }
@@ -386,18 +386,18 @@ export default function AllTools({ setActiveSection }) {
 
         .status-new {
           background: #22d3ee;
-          color: #252638;
+          color: #1f2433;
         }
 
         .status-beta {
           background: #f59e0b;
-          color: #252638;
+          color: #1f2433;
         }
 
         .doc-link {
           display: inline-block;
           margin-top: 12px;
-          color: #6366f1;
+          color: #4f46e5;
           font-size: 13px;
           font-weight: 600;
           text-decoration: none;

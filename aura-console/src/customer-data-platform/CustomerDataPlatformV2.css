@@ -48,7 +48,7 @@
 .stat-content .Polaris-DisplayText {
   font-size: 28px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
   line-height: 1.2;
 }
 
@@ -123,7 +123,7 @@
   padding: 12px 16px;
   border-bottom: 1px solid #e1e3e5;
   font-size: 14px;
-  color: #2e3045;
+  color: #283044;
 }
 
 .Polaris-DataTable__Cell--firstColumn {
@@ -131,16 +131,16 @@
 }
 
 .Polaris-DataTable__Cell--header {
-  background: #f9fafb;
+  background: #f6f7fb;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
   text-align: left;
   padding: 14px 16px;
   border-bottom: 2px solid #e1e3e5;
 }
 
 .Polaris-DataTable__Cell:hover {
-  background: #f9fafb;
+  background: #f6f7fb;
 }
 
 .cdp-table-empty {
@@ -156,7 +156,7 @@
 
 .cdp-form-section {
   padding: 20px;
-  background: #f9fafb;
+  background: #f6f7fb;
   border-radius: 8px;
   margin-bottom: 20px;
 }
@@ -230,8 +230,8 @@
 }
 
 .Polaris-Button--primary:active {
-  background: #525578;
-  border-color: #525578;
+  background: #4b5780;
+  border-color: #4b5780;
 }
 
 .Polaris-Button--destructive {
@@ -276,7 +276,7 @@
 
 .Polaris-Badge--statusInfo {
   background: #b4e1fa;
-  color: #2e3045;
+  color: #283044;
 }
 
 .Polaris-Badge--statusWarning {
@@ -358,13 +358,13 @@
 .cdp-panel-title {
   font-size: 18px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
 }
 
 .cdp-panel-content {
   font-size: 14px;
   line-height: 1.6;
-  color: #2e3045;
+  color: #283044;
 }
 
 /* ============================================================
@@ -386,7 +386,7 @@
 .Polaris-Modal-Header__Title {
   font-size: 20px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
 }
 
 .Polaris-Modal-Section {
@@ -544,7 +544,7 @@
 .cdp-chart-title {
   font-size: 18px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
 }
 
 .cdp-metric-card {
@@ -594,7 +594,7 @@
 }
 
 .Polaris-ResourceItem:hover {
-  background: #f9fafb;
+  background: #f6f7fb;
 }
 
 .Polaris-ResourceItem:last-child {
@@ -620,7 +620,7 @@
 .cdp-list-item-title {
   font-size: 14px;
   font-weight: 500;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 4px;
 }
 
@@ -649,7 +649,7 @@
   bottom: 125%;
   left: 50%;
   transform: translateX(-50%);
-  background: #2e3045;
+  background: #283044;
   color: #ffffff;
   padding: 8px 12px;
   border-radius: 4px;
@@ -672,7 +672,7 @@
   left: 50%;
   transform: translateX(-50%);
   border: 4px solid transparent;
-  border-top-color: #2e3045;
+  border-top-color: #283044;
 }
 
 /* ============================================================
@@ -697,7 +697,7 @@
 .Polaris-EmptyState__Heading {
   font-size: 20px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 12px;
 }
 
@@ -823,23 +823,23 @@
 
 @media (prefers-color-scheme: dark) {
   .cdp-container {
-    background: #2e3045;
+    background: #283044;
     color: #e1e3e5;
   }
 
   .Polaris-Card {
-    background: #2e3045;
+    background: #283044;
   }
 
   .Polaris-TextField__Input,
   .Polaris-Select__Input {
-    background: #2e3045;
-    border-color: #3d4058;
+    background: #283044;
+    border-color: #3a4560;
     color: #e1e3e5;
   }
 
   .Polaris-DataTable__Cell--header {
-    background: #3d4058;
+    background: #3a4560;
   }
 }
 

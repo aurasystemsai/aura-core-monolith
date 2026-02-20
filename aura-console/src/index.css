@@ -1,28 +1,28 @@
 ﻿:root {
   /* Base layers — clear surface hierarchy like Linear/Vercel */
-  --bg:            #0d0d11;   /* zinc-950 — page background */
-  --bg-surface:    #252638;   /* zinc-900 — cards, panels */
-  --bg-elevated:   #2e3045;   /* zinc-800 — inputs, hover, nested sections */
-  --bg-alt:        #2e3045;
+  --bg:            #0a0b0f;   /* zinc-950 — page background */
+  --bg-surface:    #1f2433;   /* zinc-900 — cards, panels */
+  --bg-elevated:   #283044;   /* zinc-800 — inputs, hover, nested sections */
+  --bg-alt:        #283044;
 
   /* Borders — always visible, never harsh */
-  --border-subtle: #2e3045;
-  --border:        #3d4058;   /* zinc-700 */
-  --border-strong: #525578;   /* zinc-600 */
+  --border-subtle: #283044;
+  --border:        #3a4560;   /* zinc-700 */
+  --border-strong: #4b5780;   /* zinc-600 */
 
   /* Text hierarchy */
-  --text:          #f9fafb;   /* zinc-50  — primary */
-  --text-secondary:#a8adc4;   /* zinc-400 — labels, secondary */
-  --muted:         #8b8fa8;   /* zinc-500 — placeholder, disabled */
+  --text:          #f6f7fb;   /* zinc-50  — primary */
+  --text-secondary:#b8bed2;   /* zinc-400 — labels, secondary */
+  --muted:         #9aa3b8;   /* zinc-500 — placeholder, disabled */
 
   /* Accent — indigo (professional, not garish) */
-  --accent:        #6366f1;   /* indigo-400 */
-  --accent-hover:  #6366f1;   /* indigo-500 */
+  --accent:        #4f46e5;   /* indigo-400 */
+  --accent-hover:  #4f46e5;   /* indigo-500 */
   --accent-soft:   rgba(99, 102, 241, 0.12);
   --accent-text:   #e0e7ff;   /* indigo-100 */
 
   /* Card alias */
-  --card:          #252638;
+  --card:          #1f2433;
 
   /* Status */
   --success:       #4ade80;
@@ -51,7 +51,7 @@ body,
 
 body {
   font-family: var(--font);
-  background: #0d0d11;
+  background: #0a0b0f;
   color: var(--text);
 }
 
@@ -81,8 +81,8 @@ body {
 .base-row {
   display: flex;
   gap: 8px;
-  border: 1px solid #3d4058;
-  background: #252638;
+  border: 1px solid #3a4560;
+  background: #1f2433;
   color: var(--text);
 }
 .base-row .branding .logo {
@@ -191,7 +191,7 @@ body {
   padding: 7px 16px;
   font-size: 14px;
   background: var(--accent);
-  color: #0d0d11;
+  color: #0a0b0f;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
@@ -286,7 +286,7 @@ body {
 .pane {
   display: flex;
   flex-direction: column;
-  background: #0d0d11;
+  background: #0a0b0f;
   border-radius: 16px;
   border: 1px solid var(--border);
   overflow: hidden;

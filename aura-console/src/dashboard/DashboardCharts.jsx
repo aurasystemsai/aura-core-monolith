@@ -8,17 +8,17 @@ const options = {
     legend: {
       display: true,
       position: 'top',
-      labels: { color: '#f9fafb' },
+      labels: { color: '#f6f7fb' },
     },
   },
   scales: {
     x: { 
       ticks: { color: '#94a3b8' },
-      grid: { color: '#2e3045' },
+      grid: { color: '#283044' },
     },
     y: { 
       ticks: { color: '#94a3b8' },
-      grid: { color: '#2e3045' },
+      grid: { color: '#283044' },
     },
   },
 };
@@ -56,8 +56,8 @@ export default function DashboardCharts() {
               label: 'Revenue ($)',
               data: revenueData,
               fill: false,
-              borderColor: '#6366f1',
-              backgroundColor: '#6366f1',
+              borderColor: '#4f46e5',
+              backgroundColor: '#4f46e5',
               tension: 0.4,
               yAxisID: 'y',
             },

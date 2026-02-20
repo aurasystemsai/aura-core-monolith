@@ -92,7 +92,7 @@ export default function WinbackHelpDocs() {
         onClick={() => setOpen((v) => !v)}
         style={{
           // removed card constraints for full-width
-          color: darkMode ? "#a3e635" : "#6366f1",
+          color: darkMode ? "#a3e635" : "#4f46e5",
           border: "none",
           fontWeight: 700,
           fontSize: 18,
@@ -112,7 +112,7 @@ export default function WinbackHelpDocs() {
             maxHeight: 650,
             overflowY: "auto",
             // removed card constraints for full-width
-            color: darkMode ? "#a3e635" : "#0d0d11",
+            color: darkMode ? "#a3e635" : "#0a0b0f",
             zIndex: 10000,
             fontFamily: 'Inter, sans-serif',
             transition: "background 0.3s, color 0.3s"
@@ -121,19 +121,19 @@ export default function WinbackHelpDocs() {
           role="dialog"
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <h2 style={{ color: darkMode ? "#a3e635" : "#0d0d11", fontWeight: 900, fontSize: 22, margin: 0 }}>Abandoned Checkout Winback: Help & Docs</h2>
-            <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "none", color: darkMode ? "#a3e635" : "#0d0d11", border: "none", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{darkMode ? "️" : ""}</button>
+            <h2 style={{ color: darkMode ? "#a3e635" : "#0a0b0f", fontWeight: 900, fontSize: 22, margin: 0 }}>Abandoned Checkout Winback: Help & Docs</h2>
+            <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "none", color: darkMode ? "#a3e635" : "#0a0b0f", border: "none", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{darkMode ? "️" : ""}</button>
           </div>
           <input
             ref={inputRef}
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search help topics..."
-            style={{ width: "100%", fontSize: 15, padding: 8, borderRadius: 8, border: darkMode ? "1px solid #333" : "1px solid #ccc", marginBottom: 14, background: darkMode ? "#0d0d11" : "#fff", color: darkMode ? "#a3e635" : "#0d0d11" }}
+            style={{ width: "100%", fontSize: 15, padding: 8, borderRadius: 8, border: darkMode ? "1px solid #333" : "1px solid #ccc", marginBottom: 14, background: darkMode ? "#0a0b0f" : "#fff", color: darkMode ? "#a3e635" : "#0a0b0f" }}
             aria-label="Search help topics"
           />
           <div style={{ marginBottom: 18 }}>
-            <button onClick={() => setShowChecklist(c => !c)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginRight: 8 }}>{showChecklist ? "Hide" : "Show"} Onboarding Checklist</button>
+            <button onClick={() => setShowChecklist(c => !c)} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginRight: 8 }}>{showChecklist ? "Hide" : "Show"} Onboarding Checklist</button>
             <a href="https://docs.aurasystems.ai/winback" target="_blank" rel="noopener noreferrer" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600, marginRight: 8 }}>Full Docs</a>
             <a href="https://www.youtube.com/@aurasystems" target="_blank" rel="noopener noreferrer" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600, marginRight: 8 }}>Video Tutorials</a>
             <a href="mailto:support@aura-core.ai" style={{ color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>Contact Support</a>
@@ -168,19 +168,19 @@ export default function WinbackHelpDocs() {
               value={aiInput}
               onChange={e => setAiInput(e.target.value)}
               placeholder="Ask a question..."
-              style={{ flex: 1, fontSize: 15, padding: 8, borderRadius: 8, border: darkMode ? "1px solid #333" : "1px solid #ccc", background: darkMode ? "#0d0d11" : "#fff", color: darkMode ? "#a3e635" : "#0d0d11" }}
+              style={{ flex: 1, fontSize: 15, padding: 8, borderRadius: 8, border: darkMode ? "1px solid #333" : "1px solid #ccc", background: darkMode ? "#0a0b0f" : "#fff", color: darkMode ? "#a3e635" : "#0a0b0f" }}
               aria-label="Ask a question"
             />
-            <button onClick={handleAIHelp} disabled={loading || !aiInput} style={{ background: "#a3e635", color: "#0d0d11", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>{loading ? "Thinking..." : "Ask"}</button>
+            <button onClick={handleAIHelp} disabled={loading || !aiInput} style={{ background: "#a3e635", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>{loading ? "Thinking..." : "Ask"}</button>
           </div>
-          {aiResponse && <div style={{ color: darkMode ? "#a3e635" : "#0d0d11" }}>{aiResponse}</div>}
+          {aiResponse && <div style={{ color: darkMode ? "#a3e635" : "#0a0b0f" }}>{aiResponse}</div>}
           <div style={{ marginTop: 18, fontWeight: 700, fontSize: 17 }}>Feedback</div>
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             <input
               value={feedback}
               onChange={e => setFeedback(e.target.value)}
               placeholder="Share feedback or suggestions..."
-              style={{ flex: 1, fontSize: 15, padding: 8, borderRadius: 8, border: darkMode ? "1px solid #333" : "1px solid #ccc", background: darkMode ? "#0d0d11" : "#fff", color: darkMode ? "#a3e635" : "#0d0d11" }}
+              style={{ flex: 1, fontSize: 15, padding: 8, borderRadius: 8, border: darkMode ? "1px solid #333" : "1px solid #ccc", background: darkMode ? "#0a0b0f" : "#fff", color: darkMode ? "#a3e635" : "#0a0b0f" }}
               aria-label="Feedback input"
             />
             <button onClick={handleFeedback} disabled={loading || !feedback} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>Send</button>

@@ -3,24 +3,24 @@
    ======================================== */
 
 .email-automation-builder {
-  --primary-color: #6366f1;
-  --primary-dark: #8b8fa8;
-  --primary-light: #6366f1;
+  --primary-color: #4f46e5;
+  --primary-dark: #9aa3b8;
+  --primary-light: #4f46e5;
   --success-color: #059669;
   --warning-color: #d97706;
   --danger-color: #dc2626;
   --info-color: #2563eb;
   
   --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
+  --bg-secondary: #f6f7fb;
   --bg-tertiary: #f3f4f6;
-  --bg-dark: #2e3045;
+  --bg-dark: #283044;
   
-  --text-primary: #2e3045;
-  --text-secondary: #8b8fa8;
-  --text-tertiary: #a8adc4;
+  --text-primary: #283044;
+  --text-secondary: #9aa3b8;
+  --text-tertiary: #b8bed2;
   
-  --border-color: #f9fafb;
+  --border-color: #f6f7fb;
   --border-dark: #e9ebf5;
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);

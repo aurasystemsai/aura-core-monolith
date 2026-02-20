@@ -18,7 +18,7 @@
   --warning-color: #f49342;
   --critical-color: #de3618;
   --info-color: #2c6ecb;
-  --text-primary: #2e3045;
+  --text-primary: #283044;
   --text-secondary: #6d7175;
   --border-color: #c9cccf;
   --background-primary: #ffffff;
@@ -37,8 +37,8 @@
     --text-primary: #e3e5e7;
     --text-secondary: #b5b5b5;
     --border-color: #5c5f62;
-    --background-primary: #2e3045;
-    --background-secondary: #2e3045;
+    --background-primary: #283044;
+    --background-secondary: #283044;
   }
 }
 

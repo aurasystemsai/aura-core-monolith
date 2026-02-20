@@ -99,7 +99,7 @@
 .ai-support-conversation-user {
   font-weight: 600;
   font-size: 16px;
-  color: #2e3045;
+  color: #283044;
 }
 
 .ai-support-conversation-time {
@@ -220,13 +220,13 @@
 .ai-support-ticket-number {
   font-weight: 700;
   font-size: 16px;
-  color: #2e3045;
+  color: #283044;
 }
 
 .ai-support-ticket-subject {
   font-weight: 600;
   font-size: 15px;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 8px;
 }
 
@@ -270,7 +270,7 @@
 .ai-support-article-title {
   font-weight: 600;
   font-size: 18px;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 12px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -306,7 +306,7 @@
 
 /* Snippet Cards */
 .ai-support-snippet-card {
-  background: #f9fafb;
+  background: #f6f7fb;
   border: 1px solid #e1e3e5;
   border-radius: 6px;
   padding: 16px;
@@ -331,7 +331,7 @@
 .ai-support-snippet-name {
   font-weight: 600;
   font-size: 14px;
-  color: #2e3045;
+  color: #283044;
 }
 
 .ai-support-snippet-shortcut {
@@ -392,7 +392,7 @@
 .ai-support-integration-name {
   font-weight: 600;
   font-size: 16px;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 4px;
 }
 
@@ -418,7 +418,7 @@
 .ai-support-chart-title {
   font-weight: 600;
   font-size: 16px;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 16px;
 }
 
@@ -439,7 +439,7 @@
 .ai-support-metric-value {
   font-size: 32px;
   font-weight: 700;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 4px;
 }
 
@@ -496,7 +496,7 @@
 .ai-support-empty-state-title {
   font-size: 18px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 8px;
 }
 
@@ -558,31 +558,31 @@
   .ai-support-ticket-card,
   .ai-support-article-card,
   .ai-support-chart-container {
-    background: #2e3045;
-    border-color: #3d4058;
+    background: #283044;
+    border-color: #3a4560;
   }
 
   .ai-support-message-bubble {
-    background: #2e3045;
+    background: #283044;
     color: #e1e3e5;
   }
 
   .ai-support-snippet-card {
-    background: #2e3045;
-    border-color: #3d4058;
+    background: #283044;
+    border-color: #3a4560;
   }
 
   .ai-support-snippet-card:hover {
-    background: #2e3045;
+    background: #283044;
   }
 
   .ai-support-integration-card {
-    background: #2e3045;
-    border-color: #3d4058;
+    background: #283044;
+    border-color: #3a4560;
   }
 
   .ai-support-metric-card {
-    background: linear-gradient(135deg, #2e3045 0%, #2e3045 100%);
+    background: linear-gradient(135deg, #283044 0%, #283044 100%);
   }
 
   .ai-support-conversation-user,

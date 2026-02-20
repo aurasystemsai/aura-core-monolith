@@ -1,17 +1,17 @@
 ﻿﻿.card {
   background: rgba(35, 38, 58, 0.92);
   border-radius: 16px;
-  box-shadow: 0 2px 16px #0002, 0 1.5px 0 #6366f122;
+  box-shadow: 0 2px 16px #0002, 0 1.5px 0 #4f46e522;
   padding: 28px 22px 18px 22px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  border: 1.5px solid #6366f122;
+  border: 1.5px solid #4f46e522;
   transition: transform 0.18s, box-shadow 0.18s;
 }
 .card:focus-within, .card:focus-visible, .card:active {
-  outline: 2px solid #6366f1;
-  box-shadow: 0 8px 32px #6366f155, 0 1.5px 0 #6366f122;
+  outline: 2px solid #4f46e5;
+  box-shadow: 0 8px 32px #4f46e555, 0 1.5px 0 #4f46e522;
 }
 .dashboard-home {
   padding: 48px 0;
@@ -57,7 +57,7 @@
   transition: background 0.18s;
 }
 .dashboard-home-action:hover, .dashboard-home-action:focus {
-  background: #2e3045;
+  background: #283044;
   color: #fff;
 }
 .draft-library-grid {
@@ -70,7 +70,7 @@
 }
 .fixqueue-empty {
   color: #fff;
-  background: #2e3045;
+  background: #283044;
 }
 .fixqueue-error {
   color: #fff;
@@ -79,7 +79,7 @@
 .fixqueue-job-detail-header {
   padding: 12px 18px;
   border-radius: 12px 12px 0 0;
-  background: #252638;
+  background: #1f2433;
 }
 .fixqueue-job-detail-body {
   padding: 12px 18px;
@@ -105,7 +105,7 @@
 .connect-shopify-action {
   display: inline-block;
   padding: 12px 32px;
-  background: #252638;
+  background: #1f2433;
   color: #5c6ac4;
   border-radius: 6px;
   text-decoration: none;
@@ -117,8 +117,8 @@
   transition: background 0.18s, color 0.18s;
 }
 .connect-shopify-action:hover, .connect-shopify-action:focus {
-  background: #6366f1;
-  color: #252638;
+  background: #4f46e5;
+  color: #1f2433;
 }
 .tool-modal-overlay {
   position: fixed;
@@ -133,7 +133,7 @@
 .tool-modal {
   background: rgba(35, 38, 58, 0.98);
   border-radius: 18px;
-  box-shadow: 0 8px 40px #0008, 0 1.5px 0 #6366f122;
+  box-shadow: 0 8px 40px #0008, 0 1.5px 0 #4f46e522;
   padding: 38px 32px 28px 32px;
   min-width: 340px;
   max-width: 420px;
@@ -141,7 +141,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  border: 1.5px solid #6366f122;
+  border: 1.5px solid #4f46e522;
   animation: popIn 0.18s;
 }
 .tool-modal-close {
@@ -151,7 +151,7 @@
   background: none;
   border: none;
   font-size: 2rem;
-  color: #6366f1;
+  color: #4f46e5;
   cursor: pointer;
   font-weight: 900;
   transition: color 0.18s;
@@ -184,13 +184,13 @@
 .tool-modal-action-btn {
   padding: 12px 28px;
   border-radius: 10px;
-  background: linear-gradient(90deg, #252638 0%, #6366f1 100%);
-  color: #252638;
+  background: linear-gradient(90deg, #1f2433 0%, #4f46e5 100%);
+  color: #1f2433;
   font-weight: 800;
   font-size: 1.08rem;
   border: none;
   cursor: not-allowed;
-  box-shadow: 0 2px 12px #6366f122;
+  box-shadow: 0 2px 12px #4f46e522;
   letter-spacing: 0.01em;
   opacity: 0.7;
 }
@@ -211,7 +211,7 @@
 .tools-list-title {
   font-size: 2rem;
   font-weight: 900;
-  color: #6366f1;
+  color: #4f46e5;
   margin-bottom: 24px;
   text-align: left;
   letter-spacing: -0.01em;
@@ -232,7 +232,7 @@
 }
 .tool-card:hover {
   transform: translateY(-2px) scale(1.025);
-  box-shadow: 0 8px 32px #6366f155, 0 1.5px 0 #6366f122;
+  box-shadow: 0 8px 32px #4f46e555, 0 1.5px 0 #4f46e522;
   background: rgba(35, 38, 58, 0.98);
 }
 .tool-card-header {
@@ -243,7 +243,7 @@
 }
 .tool-card-icon {
   font-size: 1.7rem;
-  color: #6366f1;
+  color: #4f46e5;
 }
 .tool-card-name {
   font-size: 1.15rem;
@@ -260,9 +260,9 @@
 }
 .tool-card-tag {
   font-size: 0.98rem;
-  color: #6366f1;
+  color: #4f46e5;
   font-weight: 700;
-  background: #252638;
+  background: #1f2433;
   border-radius: 6px;
   padding: 4px 12px;
 }

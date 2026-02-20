@@ -40,7 +40,7 @@
 .stat-value {
   font-size: 28px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
   margin: 0;
 }
 
@@ -92,7 +92,7 @@
 }
 
 .Polaris-Tabs__Tab:hover {
-  background-color: #f9fafb;
+  background-color: #f6f7fb;
 }
 
 .Polaris-Tabs__Tab--selected {
@@ -118,9 +118,9 @@
 }
 
 .Polaris-DataTable__Cell--header {
-  background-color: #f9fafb;
+  background-color: #f6f7fb;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
   text-transform: uppercase;
   font-size: 12px;
   letter-spacing: 0.5px;
@@ -135,7 +135,7 @@
 }
 
 .Polaris-DataTable tbody tr:hover {
-  background-color: #f9fafb;
+  background-color: #f6f7fb;
 }
 
 /* Recommendation Cards */
@@ -173,7 +173,7 @@
 .pers-rec-title {
   font-size: 16px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
   margin: 0;
 }
 
@@ -243,7 +243,7 @@
 .pers-profile-name {
   font-size: 16px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
   margin: 0 0 4px 0;
 }
 
@@ -269,7 +269,7 @@
 .pers-profile-stat-value {
   font-size: 20px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
   margin: 0 0 4px 0;
 }
 
@@ -301,7 +301,7 @@
 .pers-campaign-title {
   font-size: 18px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
   margin: 0 0 6px 0;
 }
 
@@ -309,7 +309,7 @@
   display: inline-block;
   padding: 4px 10px;
   background: #b4e1fa;
-  color: #2e3045;
+  color: #283044;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
@@ -326,7 +326,7 @@
 .pers-campaign-metric {
   text-align: center;
   padding: 12px;
-  background: #f9fafb;
+  background: #f6f7fb;
   border-radius: 6px;
 }
 
@@ -345,7 +345,7 @@
 
 /* Forms & Inputs */
 .pers-form-section {
-  background: #f9fafb;
+  background: #f6f7fb;
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 16px;
@@ -397,7 +397,7 @@
 }
 
 .Polaris-Button--primary:active {
-  background-color: #525578;
+  background-color: #4b5780;
 }
 
 .Polaris-Button--destructive {
@@ -428,7 +428,7 @@
 
 .Polaris-Badge--info {
   background-color: #b4e1fa;
-  color: #2e3045;
+  color: #283044;
 }
 
 .Polaris-Badge--warning {
@@ -451,7 +451,7 @@
   justify-content: space-between;
   margin-bottom: 8px;
   font-size: 14px;
-  color: #2e3045;
+  color: #283044;
 }
 
 .Polaris-ProgressBar {
@@ -479,7 +479,7 @@
 .pers-chart-title {
   font-size: 16px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
   margin: 0 0 16px 0;
 }
 
@@ -556,7 +556,7 @@
 .pers-empty-title {
   font-size: 20px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
   margin: 0 0 8px 0;
 }
 
@@ -582,7 +582,7 @@
 .Polaris-Modal-Header__Title {
   font-size: 20px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
 }
 
 .Polaris-Modal-Section {
@@ -667,8 +667,8 @@
   .pers-profile-card,
   .pers-campaign-card,
   .pers-chart-container {
-    background: #2e3045;
-    border-color: #3d4058;
+    background: #283044;
+    border-color: #3a4560;
   }
   
   .stat-value,
@@ -687,13 +687,13 @@
   }
   
   .Polaris-DataTable__Cell--header {
-    background-color: #2e3045;
+    background-color: #283044;
   }
   
   .Polaris-TextField__Input,
   .Polaris-Select__Input {
-    background-color: #2e3045;
-    border-color: #3d4058;
+    background-color: #283044;
+    border-color: #3a4560;
     color: #e1e3e5;
   }
 }

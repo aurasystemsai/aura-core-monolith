@@ -80,13 +80,13 @@ export default function DataWarehouseConnector() {
   };
 
   return (
-    <div style={{ background: "#252638", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f9fafb' }}>
+    <div style={{ background: "#1f2433", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f6f7fb' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Data Warehouse/BI Connector</h2>
       <div style={{ color: "#0ea5e9", fontWeight: 600, marginBottom: 18 }}>
         <span role="img" aria-label="warehouse"></span>Integrate with BigQuery, Snowflake, Looker, and more.
       </div>
       <div style={{ marginBottom: 18 }}>
-        <button onClick={fetchDataSources} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Load Data Sources</button>
+        <button onClick={fetchDataSources} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Load Data Sources</button>
         <button onClick={fetchDashboards} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginLeft: 12 }}>Load Dashboards</button>
         <button onClick={fetchAnalytics} style={{ background: "#22c55e", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginLeft: 12 }}>Load Analytics</button>
       </div>
@@ -95,7 +95,7 @@ export default function DataWarehouseConnector() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Data Sources</div>
           <ul style={{ paddingLeft: 18 }}>
             {dataSources.map((ds, idx) => (
-              <li key={ds.id || idx} style={{ marginBottom: 8, background: "#3d4058", borderRadius: 8, padding: 8, color: '#f9fafb' }}>{ds.name}</li>
+              <li key={ds.id || idx} style={{ marginBottom: 8, background: "#3a4560", borderRadius: 8, padding: 8, color: '#f6f7fb' }}>{ds.name}</li>
             ))}
           </ul>
         </div>
@@ -103,7 +103,7 @@ export default function DataWarehouseConnector() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Dashboards</div>
           <ul style={{ paddingLeft: 18 }}>
             {dashboards.map((db, idx) => (
-              <li key={db.id || idx} style={{ marginBottom: 8, background: "#252638", borderRadius: 8, padding: 8, color: '#6366f1' }}>{db.name}</li>
+              <li key={db.id || idx} style={{ marginBottom: 8, background: "#1f2433", borderRadius: 8, padding: 8, color: '#4f46e5' }}>{db.name}</li>
             ))}
           </ul>
         </div>
@@ -111,13 +111,13 @@ export default function DataWarehouseConnector() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Analytics</div>
           <ul style={{ paddingLeft: 18 }}>
             {analytics.map((a, idx) => (
-              <li key={a.id || idx} style={{ marginBottom: 8, background: "#3d4058", borderRadius: 8, padding: 8, color: '#f9fafb' }}>{a.name}</li>
+              <li key={a.id || idx} style={{ marginBottom: 8, background: "#3a4560", borderRadius: 8, padding: 8, color: '#f6f7fb' }}>{a.name}</li>
             ))}
           </ul>
         </div>
       </div>
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0d0d11", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import data sources" />
         <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
         {exported && <a href={exported} download="data-sources.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}

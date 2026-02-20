@@ -36,14 +36,14 @@ export default function BacklinkExplorer() {
   };
 
   const onboardingContent = (
-    <div style={{ padding: 24, background: "#0d0d11", color: "#f3f4f6", borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: "#0a0b0f", color: "#f3f4f6", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Backlink Explorer</h3>
       <ul style={{ margin: "16px 0 0 18px", color: "#a3e635", fontSize: 16 }}>
         <li>Analyze backlinks, referring domains, anchor text, and toxic links</li>
         <li>Export, import, and review analysis history</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#0d0d11", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#0a0b0f", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
               </div>
             );
   }
@@ -85,7 +85,7 @@ export default function BacklinkExplorer() {
     <div style={{
       
       margin: "40px auto",
-      background: "#0d0d11",
+      background: "#0a0b0f",
       borderRadius: 18,
       boxShadow: "0 2px 24px #0002",
       padding: 36,
@@ -100,33 +100,33 @@ export default function BacklinkExplorer() {
       <div style={{ marginBottom: 10, color: "#a3e635", fontWeight: 600 }}>
         <span role="img" aria-label="link"></span>Analyze backlinks and referring domains.
       </div>
-      <button onClick={() => setShowOnboarding(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
+      <button onClick={() => setShowOnboarding(true)} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}
       <input
         value={domain}
         onChange={e => setDomain(e.target.value)}
         type="text"
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#0d0d11", color: "#a3e635" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#0a0b0f", color: "#a3e635" }}
         placeholder="Enter domain to analyze backlinks..."
         aria-label="Domain input"
       />
-      <button onClick={handleAnalyze} disabled={loading || !domain} style={{ background: "#a3e635", color: "#0d0d11", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Analyzing..." : "Analyze"}</button>
+      <button onClick={handleAnalyze} disabled={loading || !domain} style={{ background: "#a3e635", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Analyzing..." : "Analyze"}</button>
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {result && (
-        <div style={{ background: "#2e3045", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #2e3045" }}>
+        <div style={{ background: "#283044", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #283044" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <span style={{ fontWeight: 700, color: "#a3e635", fontSize: 14 }}>Analysis Result</span>
-            <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #525578", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
+            <button onClick={() => navigator.clipboard?.writeText(JSON.stringify(result, null, 2))} style={{ background: "transparent", border: "1px solid #4b5780", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
           </div>
           <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 13, color: "#e2e8f0", margin: 0 }}>{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
       {history.length > 0 && (
-        <div style={{ marginTop: 24, background: "#525578", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: "#4b5780", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analysis History</div>
                   <ul style={{ paddingLeft: 18 }}>
                     {history.map((h, i) => (
-                    <div key={i} style={{ background: "#0d0d11", borderRadius: 8, padding: "12px 16px", border: "1px solid #2e3045", marginBottom: 8 }}>
+                    <div key={i} style={{ background: "#0a0b0f", borderRadius: 8, padding: "12px 16px", border: "1px solid #283044", marginBottom: 8 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
                         <span style={{ fontWeight: 700, color: "#e2e8f0" }}>{h.domain}</span>
                         <span style={{ color: "#64748b" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : `#${i+1}`}</span>
@@ -142,15 +142,15 @@ export default function BacklinkExplorer() {
                 <input type="file" accept="application/json" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImport} />
                 <button onClick={() => fileInputRef.current.click()} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginRight: 12 }}>Import History</button>
                 <button onClick={handleExport} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Export History</button>
-                {imported && <span style={{ marginLeft: 12, color: '#6366f1' }}>Imported: {imported}</span>}
+                {imported && <span style={{ marginLeft: 12, color: '#4f46e5' }}>Imported: {imported}</span>}
                 {exported && <a href={exported} download="backlink-history.json" style={{ marginLeft: 12, color: '#22c55e', textDecoration: 'underline' }}>Download Export</a>}
               </div>
               <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-                <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
+                <div style={{ background: "#283044", borderRadius: 10, padding: "12px 20px", border: "1px solid #283044" }}>
                   <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Analyses</div>
                   <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{history.length}</div>
                 </div>
-                <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
+                <div style={{ background: "#283044", borderRadius: 10, padding: "12px 20px", border: "1px solid #283044" }}>
                   <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
                   <div style={{ fontSize: 26, fontWeight: 800, color: "#a3e635", marginTop: 2 }}>{analytics.length}</div>
                 </div>

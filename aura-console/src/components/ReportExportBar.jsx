@@ -18,9 +18,9 @@ export default function ReportExportBar({ onExportCSV, onExportPDF, onScheduleEm
 }
 
 const btnStyle = {
-  background: '#252638',
+  background: '#1f2433',
   color: '#f3f4f6',
-  border: '1.5px solid #525578',
+  border: '1.5px solid #4b5780',
   borderRadius: 10,
   padding: '10px 22px',
   fontWeight: 700,

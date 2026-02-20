@@ -1,6 +1,6 @@
 ﻿﻿:root {
-  --bde-bg: linear-gradient(135deg, #252638 0%, #0d0d11 40%, #252638 100%);
-  --bde-card: #252638;
+  --bde-bg: linear-gradient(135deg, #1f2433 0%, #0a0b0f 40%, #1f2433 100%);
+  --bde-card: #1f2433;
   --bde-border: rgba(99, 102, 241, 0.10);
   --bde-text: #e2e8f0;
   --bde-muted: #94a3b8;
@@ -75,7 +75,7 @@
 
 .bde-btn.primary {
   background: linear-gradient(120deg, var(--bde-accent) 0%, var(--bde-accent-2) 100%);
-  color: #0d0d11;
+  color: #0a0b0f;
   border: none;
 }
 
@@ -499,7 +499,7 @@
 }
 
 .bde-modal {
-  background: linear-gradient(135deg, #252638 0%, #252638 100%);
+  background: linear-gradient(135deg, #1f2433 0%, #1f2433 100%);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);

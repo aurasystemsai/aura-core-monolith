@@ -85,7 +85,7 @@ export default function AuraAPISDK() {
         <span role="img" aria-label="api"></span>Explore and test Aura API endpoints.
       </div>
       <div style={{ marginBottom: 18 }}>
-        <button onClick={fetchDocs} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Load Docs</button>
+        <button onClick={fetchDocs} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Load Docs</button>
       </div>
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
         <input
@@ -114,7 +114,7 @@ export default function AuraAPISDK() {
         />
       )}
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0d0d11", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import API request" />
         <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
         {exported && <a href={exported} download="aura-api-sdk.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
@@ -122,13 +122,13 @@ export default function AuraAPISDK() {
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {response && (
-        <div style={{ background: "#3d4058", borderRadius: 10, padding: 18, marginBottom: 18, color: "#f9fafb" }}>
+        <div style={{ background: "#3a4560", borderRadius: 10, padding: 18, marginBottom: 18, color: "#f6f7fb" }}>
           <b>Response:</b>
           <pre style={{ fontSize: 15 }}>{JSON.stringify(response, null, 2)}</pre>
         </div>
       )}
       {docs.length > 0 && (
-        <div style={{ background: "#3d4058", borderRadius: 12, padding: 20, marginBottom: 18, color: "#f9fafb" }}>
+        <div style={{ background: "#3a4560", borderRadius: 12, padding: 20, marginBottom: 18, color: "#f6f7fb" }}>
           <b>API Docs:</b>
           <ul style={{ paddingLeft: 18 }}>
             {docs.map((doc, idx) => (
@@ -137,17 +137,17 @@ export default function AuraAPISDK() {
           </ul>
         </div>
       )}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#3d4058", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#3a4560", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #6366f1", marginBottom: 12, background: "#252638", color: "#f9fafb" }}
+          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #4f46e5", marginBottom: 12, background: "#1f2433", color: "#f6f7fb" }}
           placeholder="Share your feedback or suggestions..."
           aria-label="Feedback input"
         />
-        <button type="submit" style={{ background: "#6366f1", color: "#0d0d11", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send Feedback</button>
+        <button type="submit" style={{ background: "#4f46e5", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send Feedback</button>
       </form>
     </div>
   );

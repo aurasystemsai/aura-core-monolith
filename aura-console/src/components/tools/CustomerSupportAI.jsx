@@ -87,9 +87,9 @@ export default function CustomerSupportAI() {
   };
 
   const onboardingContent = (
-    <div style={{ padding: 24, background: darkMode ? "#0d0d11" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: darkMode ? "#0a0b0f" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Customer Support AI</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#525578", fontSize: 16 }}>
+      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#4b5780", fontSize: 16 }}>
         <li>Enter a support question or upload a CSV/Excel file for bulk responses</li>
         <li>Select channels: email, chat, social, phone</li>
         <li>Get AI-powered suggestions, analytics, and sentiment</li>
@@ -98,7 +98,7 @@ export default function CustomerSupportAI() {
         <li>Integrate with CRM, Shopify, and support APIs</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#0d0d11", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#0a0b0f", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
     </div>
   );
 
@@ -106,28 +106,28 @@ export default function CustomerSupportAI() {
     <div style={{
       
       margin: "40px auto",
-      background: darkMode ? "#252638" : "#fff",
+      background: darkMode ? "#1f2433" : "#fff",
       borderRadius: 18,
       boxShadow: "0 2px 24px #0002",
       padding: 36,
-      color: darkMode ? "#a3e635" : "#0d0d11",
+      color: darkMode ? "#a3e635" : "#0a0b0f",
       fontFamily: 'Inter, sans-serif',
       transition: "background 0.3s, color 0.3s"
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Customer Support AI</h2>
-        <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#0d0d11", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
+        <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#0a0b0f", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
       </div>
       <div style={{ marginBottom: 10, color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>
         <span role="img" aria-label="support"></span>AI-powered support for all channels, bulk upload, analytics, and collaboration.
       </div>
-      <button onClick={() => setShowOnboarding(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
+      <button onClick={() => setShowOnboarding(true)} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}
       <textarea
         value={input}
         onChange={e => setInput(e.target.value)}
         rows={4}
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#0d0d11" : "#fff", color: darkMode ? "#a3e635" : "#0d0d11" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#0a0b0f" : "#fff", color: darkMode ? "#a3e635" : "#0a0b0f" }}
         placeholder="Type your support question or issue here..."
         aria-label="Support input"
       />
@@ -142,27 +142,27 @@ export default function CustomerSupportAI() {
         <input type="text" value={collaborators} onChange={e => setCollaborators(e.target.value)} placeholder="Emails, comma separated" style={{ fontSize: 15, padding: 8, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc" }} />
       </div>
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={handleRun} disabled={loading || (!input && !bulkUpload)} style={{ background: "#6366f1", color: "#0d0d11", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 2px 12px #22d3ee55" }}>{loading ? "Running..." : "Run Tool"}</button>
-        <button onClick={handleExport} disabled={!response} style={{ background: "#e0e7ff", color: "#0d0d11", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: response ? "pointer" : "not-allowed" }}>Export</button>
+        <button onClick={handleRun} disabled={loading || (!input && !bulkUpload)} style={{ background: "#4f46e5", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 2px 12px #22d3ee55" }}>{loading ? "Running..." : "Run Tool"}</button>
+        <button onClick={handleExport} disabled={!response} style={{ background: "#e0e7ff", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: response ? "pointer" : "not-allowed" }}>Export</button>
       </div>
       {notification && <div style={{ color: "#0af", marginTop: 12, fontWeight: 600 }}>{notification}</div>}
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
       {analytics && (
         <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-          <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
+          <div style={{ background: "#283044", borderRadius: 10, padding: "12px 20px", border: "1px solid #283044" }}>
             <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Runs</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{history.length}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: "#4f46e5", marginTop: 2 }}>{history.length}</div>
           </div>
         </div>
       )}
       {response && (
-        <div style={{ marginTop: 32, background: darkMode ? "#0d0d11" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+        <div style={{ marginTop: 32, background: darkMode ? "#0a0b0f" : "#f8fafc", borderRadius: 12, padding: 24 }}>
           <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>AI Response:</div>
-          <div style={{ fontSize: 16, color: darkMode ? "#a3e635" : "#0d0d11" }}>{response}</div>
+          <div style={{ fontSize: 16, color: darkMode ? "#a3e635" : "#0a0b0f" }}>{response}</div>
         </div>
       )}
       {history.length > 0 && (
-        <div style={{ marginTop: 32, background: darkMode ? "#0d0d11" : "#f8fafc", borderRadius: 12, padding: 20 }}>
+        <div style={{ marginTop: 32, background: darkMode ? "#0a0b0f" : "#f8fafc", borderRadius: 12, padding: 20 }}>
           <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Response History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, i) => (

@@ -239,7 +239,7 @@
   align-items: center;
   padding: 1rem;
   border-radius: 8px;
-  background: #f9fafb;
+  background: #f6f7fb;
   margin-bottom: 0.75rem;
 }
 
@@ -327,7 +327,7 @@
 .share-button.twitter { background: #1da1f2; color: white; }
 .share-button.whatsapp { background: #25d366; color: white; }
 .share-button.linkedin { background: #0077b5; color: white; }
-.share-button.copy { background: #6366f1; color: white; }
+.share-button.copy { background: #4f46e5; color: white; }
 
 .referral-tracking-table {
   width: 100%;
@@ -339,11 +339,11 @@
 .referral-tracking-table td {
   padding: 0.75rem;
   text-align: left;
-  border-bottom: 1px solid #f9fafb;
+  border-bottom: 1px solid #f6f7fb;
 }
 
 .referral-tracking-table th {
-  background: #f9fafb;
+  background: #f6f7fb;
   font-weight: 600;
 }
 
@@ -382,7 +382,7 @@
 
 .funnel-label {
   font-size: 0.9rem;
-  color: #8b8fa8;
+  color: #9aa3b8;
   margin-top: 0.5rem;
 }
 
@@ -402,7 +402,7 @@
   padding: 1.5rem;
   background: white;
   border-radius: 12px;
-  border: 2px solid #f9fafb;
+  border: 2px solid #f6f7fb;
   transition: all 0.3s ease;
 }
 
@@ -428,7 +428,7 @@
 
 .badge-description {
   font-size: 0.85rem;
-  color: #8b8fa8;
+  color: #9aa3b8;
 }
 
 .badge-unlock-animation {
@@ -486,7 +486,7 @@
 
 .challenge-progress-bg {
   fill: none;
-  stroke: #f9fafb;
+  stroke: #f6f7fb;
   stroke-width: 8;
 }
 
@@ -553,7 +553,7 @@
 }
 
 .leaderboard-row:hover {
-  background: #f9fafb;
+  background: #f6f7fb;
 }
 
 .leaderboard-rank {
@@ -609,7 +609,7 @@
 
 .campaign-status-badge.active { background: #d1fae5; color: #065f46; }
 .campaign-status-badge.paused { background: #fef3c7; color: #92400e; }
-.campaign-status-badge.ended { background: #f9fafb; color: #525578; }
+.campaign-status-badge.ended { background: #f6f7fb; color: #4b5780; }
 
 .campaign-flow-diagram {
   display: flex;
@@ -617,7 +617,7 @@
   gap: 1rem;
   margin: 1.5rem 0;
   padding: 1rem;
-  background: #f9fafb;
+  background: #f6f7fb;
   border-radius: 8px;
 }
 
@@ -627,12 +627,12 @@
   padding: 1rem;
   background: white;
   border-radius: 8px;
-  border: 2px solid #f9fafb;
+  border: 2px solid #f6f7fb;
 }
 
 .flow-arrow {
   font-size: 1.5rem;
-  color: #a8adc4;
+  color: #b8bed2;
 }
 
 /* ============================================================================
@@ -662,7 +662,7 @@
 
 .metric-box {
   padding: 1.5rem;
-  background: #f9fafb;
+  background: #f6f7fb;
   border-radius: 8px;
   text-align: center;
 }
@@ -676,7 +676,7 @@
 
 .metric-label {
   font-size: 0.9rem;
-  color: #8b8fa8;
+  color: #9aa3b8;
 }
 
 .metric-change {
@@ -703,7 +703,7 @@
   padding: 1.5rem;
   background: white;
   border-radius: 12px;
-  border: 2px solid #f9fafb;
+  border: 2px solid #f6f7fb;
   transition: all 0.3s ease;
   cursor: pointer;
 }
@@ -798,18 +798,18 @@
   .campaign-card,
   .analytics-chart-container,
   .tier-progress-container {
-    background: #2e3045;
-    border-color: #525578;
-    color: #f9fafb;
+    background: #283044;
+    border-color: #4b5780;
+    color: #f6f7fb;
   }
   
   .metric-box {
-    background: #525578;
-    color: #f9fafb;
+    background: #4b5780;
+    color: #f6f7fb;
   }
   
   .leaderboard-row:hover {
-    background: #525578;
+    background: #4b5780;
   }
 }
 

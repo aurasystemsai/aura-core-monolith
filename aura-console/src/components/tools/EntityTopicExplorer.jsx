@@ -93,7 +93,7 @@ export default function EntityTopicExplorer() {
   };
 
   return (
-    <div style={{ background: "#252638", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f9fafb' }}>
+    <div style={{ background: "#1f2433", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f6f7fb' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Entity/Topic Explorer</h2>
       <div style={{ color: "#0ea5e9", fontWeight: 600, marginBottom: 18 }}>
         <span role="img" aria-label="entity"></span>Semantic SEO: discover entities and topics for your content.
@@ -107,7 +107,7 @@ export default function EntityTopicExplorer() {
         aria-label="Content input"
       />
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={fetchEntities} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Extract Entities</button>
+        <button onClick={fetchEntities} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Extract Entities</button>
         <button onClick={fetchTopics} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Cluster Topics</button>
         <button onClick={fetchAnalysis} style={{ background: "#22c55e", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Semantic Analysis</button>
       </div>
@@ -116,7 +116,7 @@ export default function EntityTopicExplorer() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Entities</div>
           <ul style={{ paddingLeft: 18 }}>
             {entities.map((e, idx) => (
-              <li key={e.id || idx} style={{ marginBottom: 8, background: "#3d4058", borderRadius: 8, padding: 8, color: '#f9fafb' }}>{e.name}</li>
+              <li key={e.id || idx} style={{ marginBottom: 8, background: "#3a4560", borderRadius: 8, padding: 8, color: '#f6f7fb' }}>{e.name}</li>
             ))}
           </ul>
         </div>
@@ -124,7 +124,7 @@ export default function EntityTopicExplorer() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Topics</div>
           <ul style={{ paddingLeft: 18 }}>
             {topics.map((t, idx) => (
-              <li key={t.id || idx} style={{ marginBottom: 8, background: "#252638", borderRadius: 8, padding: 8, color: '#6366f1' }}>{t.name}</li>
+              <li key={t.id || idx} style={{ marginBottom: 8, background: "#1f2433", borderRadius: 8, padding: 8, color: '#4f46e5' }}>{t.name}</li>
             ))}
           </ul>
         </div>
@@ -132,13 +132,13 @@ export default function EntityTopicExplorer() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Semantic Analysis</div>
           <ul style={{ paddingLeft: 18 }}>
             {analysis.map((a, idx) => (
-              <li key={a.id || idx} style={{ marginBottom: 8, background: "#3d4058", borderRadius: 8, padding: 8, color: '#f9fafb' }}>{a.name}</li>
+              <li key={a.id || idx} style={{ marginBottom: 8, background: "#3a4560", borderRadius: 8, padding: 8, color: '#f6f7fb' }}>{a.name}</li>
             ))}
           </ul>
         </div>
       </div>
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0d0d11", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import content" />
         <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
         {exported && <a href={exported} download="entity-topic-analysis.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
@@ -146,17 +146,17 @@ export default function EntityTopicExplorer() {
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       <div style={{ display: "flex", gap: 12, marginTop: 20, marginBottom: 16, flexWrap: "wrap" }}>
-        <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
+        <div style={{ background: "#283044", borderRadius: 10, padding: "12px 20px", border: "1px solid #283044" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Entities</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{entities.length}</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#4f46e5", marginTop: 2 }}>{entities.length}</div>
         </div>
-        <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
+        <div style={{ background: "#283044", borderRadius: 10, padding: "12px 20px", border: "1px solid #283044" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Topics</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#0ea5e9", marginTop: 2 }}>{topics.length}</div>
         </div>
-        <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
+        <div style={{ background: "#283044", borderRadius: 10, padding: "12px 20px", border: "1px solid #283044" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Analysis</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{analysis.length}</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#4f46e5", marginTop: 2 }}>{analysis.length}</div>
         </div>
       </div>
       <div style={{ fontSize: 13, color: "#64748b", textAlign: "center", paddingBottom: 8 }}>Questions? <a href="mailto:support@aura-core.ai" style={{ color: "#0ea5e9", textDecoration: "underline" }}>Contact Support</a></div>

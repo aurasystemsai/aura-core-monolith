@@ -223,7 +223,7 @@ function Reports() {
         ) : 'No data.'}
       </div>
 
-      <Suspense fallback={<div style={{color:'#6366f1'}}>Loading charts…</div>}>
+      <Suspense fallback={<div style={{color:'#4f46e5'}}>Loading charts…</div>}>
         <DashboardCharts />
       </Suspense>
       <div style={{

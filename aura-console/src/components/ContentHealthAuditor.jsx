@@ -205,7 +205,7 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
           display: 'inline-block',
           marginLeft: 8,
           fontSize: 18,
-          color: '#6366f1',
+          color: '#4f46e5',
           cursor: 'help',
         }}
         title="This panel checks your products, blogs, and pages for SEO and content issues. Use the filters and tips to improve your store's health.">
@@ -216,7 +216,7 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
         <div className="cha-filters">
           <div className="cha-filter">
             <div className="cha-label" title="Choose which type of content to audit (products, blogs, etc)">Type
-              <span style={{color:'#6366f1',marginLeft:4,cursor:'help'}} title="Select a content type to focus your audit. 'All' checks everything.">?</span>
+              <span style={{color:'#4f46e5',marginLeft:4,cursor:'help'}} title="Select a content type to focus your audit. 'All' checks everything.">?</span>
             </div>
             <select className="cha-select" value={type} onChange={e => setType(e.target.value)} title="Filter by content type (product, blog, etc)">
               <option value="">All</option>
@@ -230,14 +230,14 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
           </div>
           <div className="cha-filter">
             <div className="cha-label" title="Show only items with a score at or below this value">Max score
-              <span style={{color:'#6366f1',marginLeft:4,cursor:'help'}} title="Lower scores mean more issues. Set a max to focus on the worst content.">?</span>
+              <span style={{color:'#4f46e5',marginLeft:4,cursor:'help'}} title="Lower scores mean more issues. Set a max to focus on the worst content.">?</span>
             </div>
             <input className="cha-input" type="number" min={0} max={100} value={maxScore} onChange={e => setMaxScore(e.target.value)} title="Show only content with a score at or below this value (lower = more issues)" />
             <div className="cha-help">Shows items at or below this score. Lower scores = more issues.</div>
           </div>
           <div className="cha-filter">
             <div className="cha-label" title="How many results to show at once">Limit
-              <span style={{color:'#6366f1',marginLeft:4,cursor:'help'}} title="Set the maximum number of results to display. Useful for large stores.">?</span>
+              <span style={{color:'#4f46e5',marginLeft:4,cursor:'help'}} title="Set the maximum number of results to display. Useful for large stores.">?</span>
             </div>
             <input className="cha-input" type="number" min={1} max={500} value={limit} onChange={e => setLimit(e.target.value)} title="Maximum number of results to show" />
             <div className="cha-help">Max rows returned from Core. Increase for bigger audits.</div>

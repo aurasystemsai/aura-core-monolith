@@ -106,8 +106,8 @@ export default function MultiChannelOptimizer() {
       style={{
         
         margin: "40px auto",
-        background: darkMode ? "#0d0d11" : "#fff",
-        color: darkMode ? "#f3f4f6" : "#0d0d11",
+        background: darkMode ? "#0a0b0f" : "#fff",
+        color: darkMode ? "#f3f4f6" : "#0a0b0f",
         borderRadius: 16,
         boxShadow: "0 2px 16px #0001",
         padding: 32,
@@ -120,7 +120,7 @@ export default function MultiChannelOptimizer() {
         <button
           aria-label="Toggle dark mode"
           onClick={() => setDarkMode(d => !d)}
-          style={{ background: darkMode ? "#f3f4f6" : "#0d0d11", color: darkMode ? "#0d0d11" : "#f3f4f6", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
+          style={{ background: darkMode ? "#f3f4f6" : "#0a0b0f", color: darkMode ? "#0a0b0f" : "#f3f4f6", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
         >
           {darkMode ? "Light" : "Dark"}
         </button>
@@ -132,7 +132,7 @@ export default function MultiChannelOptimizer() {
         value={input}
         onChange={e => setInput(e.target.value)}
         rows={5}
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#0d0d11" : "#fff", color: darkMode ? "#f3f4f6" : "#0d0d11" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#0a0b0f" : "#fff", color: darkMode ? "#f3f4f6" : "#0a0b0f" }}
         placeholder="Type your campaign or channel mix here..."
         aria-label="Campaign or channel mix input"
       />
@@ -178,7 +178,7 @@ export default function MultiChannelOptimizer() {
       <button
         onClick={handleRun}
         disabled={loading || !input}
-        style={{ background: "#6366f1", color: "#0d0d11", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: "pointer", boxShadow: "0 2px 12px #22d3ee55", marginRight: 12 }}
+        style={{ background: "#4f46e5", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: "pointer", boxShadow: "0 2px 12px #22d3ee55", marginRight: 12 }}
         aria-label="Run optimization"
       >
         {loading ? "Optimizing..." : "Run Tool"}
@@ -186,7 +186,7 @@ export default function MultiChannelOptimizer() {
       <button
         onClick={handleExport}
         disabled={!response}
-        style={{ background: "#e0e7ff", color: "#0d0d11", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: response ? "pointer" : "not-allowed", marginRight: 12 }}
+        style={{ background: "#e0e7ff", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: response ? "pointer" : "not-allowed", marginRight: 12 }}
         aria-label="Export optimization"
       >
         Export
@@ -194,14 +194,14 @@ export default function MultiChannelOptimizer() {
       <button
         onClick={handleShare}
         disabled={!reportUrl}
-        style={{ background: "#bae6fd", color: "#0d0d11", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: reportUrl ? "pointer" : "not-allowed", marginRight: 12 }}
+        style={{ background: "#bae6fd", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: reportUrl ? "pointer" : "not-allowed", marginRight: 12 }}
         aria-label="Share optimization"
       >
         Share
       </button>
       <button
         onClick={() => setInput("")}
-        style={{ background: "#fca5a5", color: "#0d0d11", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
+        style={{ background: "#fca5a5", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
         aria-label="Reset"
       >
         Reset
@@ -212,20 +212,20 @@ export default function MultiChannelOptimizer() {
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
       {analytics && (
         <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-          <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
+          <div style={{ background: "#283044", borderRadius: 10, padding: "12px 20px", border: "1px solid #283044" }}>
             <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Optimizations</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{history.length}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: "#4f46e5", marginTop: 2 }}>{history.length}</div>
           </div>
         </div>
       )}
       {response && (
-        <div style={{ marginTop: 32, background: darkMode ? "#0d0d11" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+        <div style={{ marginTop: 32, background: darkMode ? "#0a0b0f" : "#f8fafc", borderRadius: 12, padding: 24 }}>
           <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>Optimization:</div>
-          <div style={{ fontSize: 16, color: darkMode ? "#e0e7ff" : "#0d0d11" }}>{response}</div>
+          <div style={{ fontSize: 16, color: darkMode ? "#e0e7ff" : "#0a0b0f" }}>{response}</div>
         </div>
       )}
       {history.length > 0 && (
-        <div style={{ marginTop: 32, background: darkMode ? "#0d0d11" : "#f8fafc", borderRadius: 12, padding: 20 }}>
+        <div style={{ marginTop: 32, background: darkMode ? "#0a0b0f" : "#f8fafc", borderRadius: 12, padding: 20 }}>
           <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Optimization History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, i) => (

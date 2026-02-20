@@ -563,7 +563,7 @@ export default function SelfServiceAnalytics() {
           </div>
           {comparePrev && chartPreview.kpis?.delta !== null && chartPreview.kpis?.delta !== undefined && (
             <div style={{ background: "#eef2ff", border: "1px solid #e0e7ff", borderRadius: 8, padding: 12, minWidth: 140 }}>
-              <div style={{ fontSize: 12, color: "#6366f1" }}>Δ vs prev</div>
+              <div style={{ fontSize: 12, color: "#4f46e5" }}>Δ vs prev</div>
               <div style={{ fontWeight: 800, fontSize: 20 }}>{chartPreview.kpis.delta}%</div>
               <div style={{ fontSize: 12, color: "#94a3b8" }}>Prev: {chartPreview.kpis.prevTotal ?? "n/a"}</div>
             </div>
@@ -613,9 +613,9 @@ export default function SelfServiceAnalytics() {
               key={c.id}
               className="chart-result"
               style={{
-                background: "#252638",
-                border: "1px solid #2e3045",
-                color: "#f9fafb",
+                background: "#1f2433",
+                border: "1px solid #283044",
+                color: "#f6f7fb",
                 borderRadius: 6,
                 padding: 10,
                 marginBottom: 8,
@@ -642,9 +642,9 @@ export default function SelfServiceAnalytics() {
               key={v.id}
               className="saved-view"
               style={{
-                background: "#252638",
-                border: "1px solid #2e3045",
-                color: "#f9fafb",
+                background: "#1f2433",
+                border: "1px solid #283044",
+                color: "#f6f7fb",
                 borderRadius: 6,
                 padding: 10,
                 marginBottom: 8,
@@ -693,9 +693,9 @@ export default function SelfServiceAnalytics() {
               key={s.id}
               className="schedule"
               style={{
-                background: "#252638",
-                border: "1px solid #2e3045",
-                color: "#f9fafb",
+                background: "#1f2433",
+                border: "1px solid #283044",
+                color: "#f6f7fb",
                 borderRadius: 6,
                 padding: 10,
                 marginBottom: 8,
@@ -732,9 +732,9 @@ export default function SelfServiceAnalytics() {
                   key={i}
                   className="history-item"
                   style={{
-                    background: "#252638",
-                    border: "1px solid #2e3045",
-                    color: "#f9fafb",
+                    background: "#1f2433",
+                    border: "1px solid #283044",
+                    color: "#f6f7fb",
                     borderRadius: 6,
                     padding: 10,
                     marginBottom: 8,
@@ -756,7 +756,7 @@ export default function SelfServiceAnalytics() {
               key={i}
               className="alert-item"
               style={{
-                background: "#2e3045",
+                background: "#283044",
                 border: "1px solid #eab308",
                 color: "#fef08a",
                 borderRadius: 6,

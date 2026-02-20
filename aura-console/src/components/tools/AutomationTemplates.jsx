@@ -14,14 +14,14 @@ export default function AutomationTemplates() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#3d4058', borderRadius: 12, marginBottom: 18, color: '#f9fafb' }}>
+    <div style={{ padding: 24, background: '#3a4560', borderRadius: 12, marginBottom: 18, color: '#f6f7fb' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Automation Templates</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#525578', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#4b5780', fontSize: 16 }}>
         <li>Browse, import, and install workflow templates</li>
         <li>Customize, analyze, and export automations</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#0d0d11', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#0a0b0f', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
@@ -63,7 +63,7 @@ export default function AutomationTemplates() {
   return (
     <div style={{ padding: 24 }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Automation Templates</h2>
-      <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
+      <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#4f46e5', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}
       {/* Template Gallery */}
       <div style={{ marginBottom: 32 }}>
@@ -83,14 +83,14 @@ export default function AutomationTemplates() {
         <input type="file" accept="application/json" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImport} />
         <button onClick={() => fileInputRef.current.click()} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginRight: 12 }}>Import Templates</button>
         <button onClick={handleExport} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Export Templates</button>
-        {imported && <span style={{ marginLeft: 12, color: '#6366f1' }}>Imported: {imported}</span>}
+        {imported && <span style={{ marginLeft: 12, color: '#4f46e5' }}>Imported: {imported}</span>}
         {exported && <a href={exported} download="templates.json" style={{ marginLeft: 12, color: '#22c55e', textDecoration: 'underline' }}>Download Export</a>}
       </div>
       {/* Analytics Dashboard */}
       <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-        <div style={{ background: "#2e3045", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e3045" }}>
+        <div style={{ background: "#283044", borderRadius: 10, padding: "12px 20px", border: "1px solid #283044" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Templates Used</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{analytics.length}</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#4f46e5", marginTop: 2 }}>{analytics.length}</div>
         </div>
       </div>
       {/* Accessibility & Compliance */}

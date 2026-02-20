@@ -2,7 +2,7 @@
 .aura-credits-shell {
   max-width: 420px;
   margin: 64px auto;
-  background: var(--bg-alt, #0d0d11);
+  background: var(--bg-alt, #0a0b0f);
   border-radius: 16px;
   box-shadow: 0 4px 24px #0003;
   padding: 44px 32px 32px 32px;
@@ -46,14 +46,14 @@
 .aura-credits-bar-bg {
   width: 100%;
   height: 14px;
-  background: #252638;
+  background: #1f2433;
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 4px;
 }
 .aura-credits-bar {
   height: 100%;
-  background: #525578;
+  background: #4b5780;
   border-radius: 8px 0 0 8px;
   transition: width 0.3s;
 }

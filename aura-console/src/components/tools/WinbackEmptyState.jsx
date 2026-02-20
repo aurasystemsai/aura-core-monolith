@@ -9,12 +9,12 @@ export default function WinbackEmptyState({ title, description, action, onAction
       role="region"
       aria-label={title}
       style={{
-        background: darkMode ? '#252638' : '#f8fafc',
-        border: '1.5px dashed #6366f1',
+        background: darkMode ? '#1f2433' : '#f8fafc',
+        border: '1.5px dashed #4f46e5',
         borderRadius: 16,
         padding: 48,
         textAlign: 'center',
-        color: darkMode ? '#a3e635' : '#0d0d11',
+        color: darkMode ? '#a3e635' : '#0a0b0f',
         margin: '32px 0',
         outline: 'none',
         boxShadow: darkMode ? '0 2px 24px #22d3ee33' : '0 2px 16px #0001',
@@ -31,8 +31,8 @@ export default function WinbackEmptyState({ title, description, action, onAction
         <button
           onClick={onAction}
           style={{
-            background: '#6366f1',
-            color: '#0d0d11',
+            background: '#4f46e5',
+            color: '#0a0b0f',
             border: 'none',
             borderRadius: 8,
             padding: '12px 32px',

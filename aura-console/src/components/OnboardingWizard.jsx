@@ -346,7 +346,7 @@ const OnboardingWizard = ({ onComplete }) => {
           width: 48px;
           height: 48px;
           border-radius: 50%;
-          background: #f9fafb;
+          background: #f6f7fb;
           color: #999;
           display: flex;
           align-items: center;
@@ -357,8 +357,8 @@ const OnboardingWizard = ({ onComplete }) => {
         }
 
         .step-circle.active {
-          background: #6366f1;
-          color: #0d0d11;
+          background: #4f46e5;
+          color: #0a0b0f;
         }
 
         .step-circle.completed {
@@ -395,7 +395,7 @@ const OnboardingWizard = ({ onComplete }) => {
           font-size: 42px;
           font-weight: 700;
           margin: 0 0 8px 0;
-          color: #0d0d11;
+          color: #0a0b0f;
         }
 
         .subtitle {
@@ -413,7 +413,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .feature-card {
           padding: 24px;
-          border: 2px solid #f9fafb;
+          border: 2px solid #f6f7fb;
           border-radius: 12px;
           text-align: center;
         }
@@ -437,7 +437,7 @@ const OnboardingWizard = ({ onComplete }) => {
         .setup-message {
           font-size: 18px;
           font-weight: 600;
-          color: #6366f1;
+          color: #4f46e5;
           margin-top: 32px;
         }
 
@@ -448,7 +448,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .step-icon {
           font-size: 64px;
-          color: #6366f1;
+          color: #4f46e5;
           margin-bottom: 24px;
         }
 
@@ -491,7 +491,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .shop-input:focus {
           outline: none;
-          border-color: #6366f1;
+          border-color: #4f46e5;
         }
 
         .btn-shopify {
@@ -531,7 +531,7 @@ const OnboardingWizard = ({ onComplete }) => {
         .link-btn {
           background: none;
           border: none;
-          color: #6366f1;
+          color: #4f46e5;
           font-size: 14px;
           cursor: pointer;
           text-decoration: underline;
@@ -571,26 +571,26 @@ const OnboardingWizard = ({ onComplete }) => {
         }
 
         .plan-card:hover {
-          border-color: #6366f1;
+          border-color: #4f46e5;
           transform: translateY(-4px);
           box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         }
 
         .plan-card.selected {
-          border-color: #6366f1;
+          border-color: #4f46e5;
           background: #f0fffa;
         }
 
         .plan-card.popular {
-          border-color: #6366f1;
+          border-color: #4f46e5;
         }
 
         .popular-badge {
           position: absolute;
           top: -12px;
           right: 24px;
-          background: #6366f1;
-          color: #0d0d11;
+          background: #4f46e5;
+          color: #0a0b0f;
           padding: 6px 12px;
           border-radius: 12px;
           font-size: 12px;
@@ -609,7 +609,7 @@ const OnboardingWizard = ({ onComplete }) => {
         .plan-price .price {
           font-size: 42px;
           font-weight: 700;
-          color: #6366f1;
+          color: #4f46e5;
         }
 
         .plan-price .period {
@@ -639,15 +639,15 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .select-indicator {
           padding: 12px;
-          background: #f9fafb;
+          background: #f6f7fb;
           border-radius: 8px;
           font-weight: 600;
           text-align: center;
         }
 
         .plan-card.selected .select-indicator {
-          background: #6366f1;
-          color: #0d0d11;
+          background: #4f46e5;
+          color: #0a0b0f;
         }
 
         .wizard-footer {
@@ -673,8 +673,8 @@ const OnboardingWizard = ({ onComplete }) => {
         }
 
         .btn-primary {
-          background: #6366f1;
-          color: #0d0d11;
+          background: #4f46e5;
+          color: #0a0b0f;
           padding: 14px 32px;
           border: none;
           border-radius: 8px;
@@ -689,7 +689,7 @@ const OnboardingWizard = ({ onComplete }) => {
         }
 
         .btn-secondary {
-          background: #f9fafb;
+          background: #f6f7fb;
           padding: 14px 32px;
           border: none;
           border-radius: 8px;

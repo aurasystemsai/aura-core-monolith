@@ -593,14 +593,14 @@
   .bmtv2-influencer-card,
   .bmtv2-alert-rule,
   .bmtv2-response-card {
-    background: #2e3045;
+    background: #283044;
     border-color: #333;
   }
 
   .bmtv2-chart-placeholder,
   .bmtv2-word-cloud,
   .bmtv2-volume-spike {
-    background: #2e3045;
+    background: #283044;
   }
 
   .bmtv2-crisis-card {
@@ -644,7 +644,7 @@
 
 /* Loading States */
 .bmtv2-loading-skeleton {
-  background: linear-gradient(90deg, #f9fafb 25%, #e9ebf5 50%, #f9fafb 75%);
+  background: linear-gradient(90deg, #f6f7fb 25%, #e9ebf5 50%, #f6f7fb 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: 4px;

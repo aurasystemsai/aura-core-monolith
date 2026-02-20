@@ -1,4 +1,4 @@
-// aura-console/src/components/tools/WinbackAnalyticsChart.jsx
+﻿// aura-console/src/components/tools/WinbackAnalyticsChart.jsx
 // Advanced analytics chart for Abandoned Checkout Winback
 import React from 'react';
 import { Line } from 'react-chartjs-2';
@@ -18,7 +18,7 @@ export default function WinbackAnalyticsChart({ data }) {
       {
         label: 'Emails Sent',
         data: data.map(e => e.emailsSent || 0),
-        borderColor: '#6366f1',
+        borderColor: '#4f46e5',
         backgroundColor: 'rgba(99,102,241,0.1)',
         tension: 0.3,
       },

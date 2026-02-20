@@ -14,7 +14,7 @@
   font-size: 32px;
   font-weight: 700;
   margin-bottom: 8px;
-  color: #2e3045;
+  color: #283044;
 }
 
 .tool-header p {
@@ -65,14 +65,14 @@
 }
 
 .tabs button:hover {
-  color: #2e3045;
+  color: #283044;
   background: #f1f5f9;
   border-radius: 8px 8px 0 0;
 }
 
 .tabs button.active {
-  color: #6366f1;
-  border-bottom-color: #6366f1;
+  color: #4f46e5;
+  border-bottom-color: #4f46e5;
 }
 
 /* Tab Content */
@@ -110,7 +110,7 @@
 .metric-card h3 {
   font-size: 28px;
   font-weight: 700;
-  color: #6366f1;
+  color: #4f46e5;
   margin-bottom: 8px;
 }
 
@@ -137,7 +137,7 @@
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: #525578;
+  color: #4b5780;
   margin-bottom: 8px;
 }
 
@@ -156,7 +156,7 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #6366f1;
+  border-color: #4f46e5;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
@@ -181,13 +181,13 @@
 }
 
 .btn-primary {
-  background: #6366f1;
+  background: #4f46e5;
   color: white;
   margin-right: 12px;
 }
 
 .btn-primary:hover {
-  background: #8b8fa8;
+  background: #9aa3b8;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
 }
@@ -200,7 +200,7 @@
 
 .btn-secondary {
   background: #e2e8f0;
-  color: #525578;
+  color: #4b5780;
 }
 
 .btn-secondary:hover {
@@ -210,12 +210,12 @@
 .btn-small {
   padding: 6px 12px;
   font-size: 13px;
-  background: #6366f1;
+  background: #4f46e5;
   color: white;
 }
 
 .btn-small:hover {
-  background: #8b8fa8;
+  background: #9aa3b8;
 }
 
 /* Data Tables */
@@ -245,7 +245,7 @@
 .data-table td {
   padding: 12px 16px;
   font-size: 14px;
-  color: #525578;
+  color: #4b5780;
   border-top: 1px solid #e2e8f0;
 }
 
@@ -292,7 +292,7 @@
 .recommendation-card h4 {
   font-size: 16px;
   font-weight: 700;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 12px;
 }
 
@@ -334,7 +334,7 @@
   padding: 4px 8px;
   border-radius: 4px;
   background: #e0e7ff;
-  color: #525578;
+  color: #4b5780;
   text-transform: uppercase;
 }
 
@@ -349,7 +349,7 @@
 .affinity-info h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 12px;
 }
 
@@ -371,7 +371,7 @@
 }
 
 .affinity-info strong {
-  color: #2e3045;
+  color: #283044;
   font-weight: 600;
 }
 
@@ -387,7 +387,7 @@
 .optimization-card h3 {
   font-size: 20px;
   font-weight: 700;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 16px;
 }
 
@@ -420,7 +420,7 @@
 .value-metrics .value {
   font-size: 24px;
   font-weight: 700;
-  color: #2e3045;
+  color: #283044;
 }
 
 .value-metrics .success .value {
@@ -434,7 +434,7 @@
 .suggestions-section h4 {
   font-size: 16px;
   font-weight: 700;
-  color: #525578;
+  color: #4b5780;
   margin-bottom: 12px;
 }
 
@@ -472,7 +472,7 @@
 
 .type-badge.cross-sell {
   background: #e0e7ff;
-  color: #525578;
+  color: #4b5780;
 }
 
 .suggestion-item .increase,
@@ -517,7 +517,7 @@
 .abandoned-carts-section h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 16px;
 }
 
@@ -539,13 +539,13 @@
 
 .model-card:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-  border-color: #6366f1;
+  border-color: #4f46e5;
 }
 
 .model-card h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 12px;
 }
 
@@ -576,7 +576,7 @@
 .training-section h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 8px;
 }
 
@@ -596,14 +596,14 @@
 .model-performance h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 20px;
 }
 
 .model-performance .metric-card h4 {
   font-size: 24px;
   font-weight: 700;
-  color: #6366f1;
+  color: #4f46e5;
   margin-bottom: 4px;
 }
 
@@ -623,7 +623,7 @@
   display: block;
   font-size: 15px;
   font-weight: 600;
-  color: #2e3045;
+  color: #283044;
   margin-bottom: 8px;
 }
 

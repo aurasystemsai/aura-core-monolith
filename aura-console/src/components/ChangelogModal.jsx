@@ -33,14 +33,14 @@ export default function ChangelogModal({ open, onClose }) {
     }} role="dialog" aria-modal="true" aria-label="What’s New">
       <div style={{
         background: 'var(--background-secondary)', borderRadius: 18, boxShadow: '0 8px 40px #0008', padding: '38px 32px 28px', minWidth: 340, maxWidth: 420,
-        display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1.5px solid #6366f1',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1.5px solid #4f46e5',
         animation: 'popIn 0.18s', color: 'var(--text-primary)',
       }}>
-        <h2 style={{color:'#6366f1',fontWeight:900,marginBottom:10,fontSize:26,letterSpacing:'-0.01em'}}>What’s New</h2>
+        <h2 style={{color:'#4f46e5',fontWeight:900,marginBottom:10,fontSize:26,letterSpacing:'-0.01em'}}>What’s New</h2>
         <div style={{width:'100%',maxHeight:320,overflowY:'auto'}}>
           {CHANGELOG.map(entry => (
             <div key={entry.date} style={{marginBottom:22}}>
-              <div style={{fontWeight:700,fontSize:16,color:'#6366f1',marginBottom:2}}>{entry.title}</div>
+              <div style={{fontWeight:700,fontSize:16,color:'#4f46e5',marginBottom:2}}>{entry.title}</div>
               <div style={{fontSize:13,opacity:0.7,marginBottom:4}}>{entry.date}</div>
               <ul style={{margin:0,paddingLeft:18,fontSize:15}}>
                 {entry.items.map((item,i) => <li key={i}>{item}</li>)}

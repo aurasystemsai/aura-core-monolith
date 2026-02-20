@@ -42,7 +42,7 @@
   --neutral-300: #c9cccf;
   --neutral-400: #8c9196;
   --neutral-500: #6d7175;
-  --neutral-600: #2e3045;
+  --neutral-600: #283044;
 
   /* Spacing */
   --spacing-xs: 4px;
@@ -739,9 +739,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --neutral-100: #2e3045;
+    --neutral-100: #283044;
     --neutral-200: #2d2d2d;
-    --neutral-300: #525578;
+    --neutral-300: #4b5780;
     --neutral-400: #757575;
     --neutral-500: #a3a3a3;
     --neutral-600: #d4d4d4;

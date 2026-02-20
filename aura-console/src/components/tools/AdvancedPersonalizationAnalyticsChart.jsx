@@ -12,7 +12,7 @@ export default function AdvancedPersonalizationAnalyticsChart({ data }) {
       {
         label: 'Personalizations Served',
         data: data.map(e => e.personalizations || 0),
-        borderColor: '#6366f1',
+        borderColor: '#4f46e5',
         backgroundColor: 'rgba(99,102,241,0.1)',
         tension: 0.3,
       },
@@ -33,7 +33,7 @@ export default function AdvancedPersonalizationAnalyticsChart({ data }) {
     ],
   };
   return (
-    <div style={{ background: '#252638', borderRadius: 12, padding: 18, marginBottom: 24, color: '#f9fafb' }}>
+    <div style={{ background: '#1f2433', borderRadius: 12, padding: 18, marginBottom: 24, color: '#f6f7fb' }}>
       <BackButton />
       <Line data={chartData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
     </div>

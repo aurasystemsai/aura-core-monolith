@@ -81,19 +81,19 @@ export default function MainSuite({ setActiveSection }) {
 
   const palette = darkMode
     ? {
-        bg: "#252638",
-        card: "#252638",
-        border: "#252638",
-        text: "#f9fafb",
-        muted: "#a8adc4",
-        accent: "#6366f1",
+        bg: "#1f2433",
+        card: "#1f2433",
+        border: "#1f2433",
+        text: "#f6f7fb",
+        muted: "#b8bed2",
+        accent: "#4f46e5",
         primary: "#3b82f6",
       }
     : {
         bg: "#f8fafc",
         card: "#ffffff",
         border: "#dbeafe",
-        text: "#252638",
+        text: "#1f2433",
         muted: "#475569",
         accent: "#0ea5e9",
         primary: "#2563eb",
@@ -181,7 +181,7 @@ export default function MainSuite({ setActiveSection }) {
             padding: "10px 12px",
             borderRadius: 10,
             border: `1px solid ${palette.border}`,
-            background: darkMode ? "#252638" : "#fff",
+            background: darkMode ? "#1f2433" : "#fff",
             color: palette.text,
           }}
         />
@@ -318,7 +318,7 @@ export default function MainSuite({ setActiveSection }) {
                 key={m.id}
                 style={{
                   background: palette.card,
-                  border: `1px solid ${locked ? "#525578" : palette.border}`,
+                  border: `1px solid ${locked ? "#4b5780" : palette.border}`,
                   borderRadius: 12,
                   padding: 12,
                   display: "flex",
@@ -347,7 +347,7 @@ export default function MainSuite({ setActiveSection }) {
                     <span style={{ fontSize: 24 }}></span>
                     <span style={{ fontSize: 12, fontWeight: 800, color: PLAN_COLOUR[reqPlan] }}>{PLAN_LABEL[reqPlan]} Plan required</span>
                     <span style={{ fontSize: 11, color: "#64748b" }}>from {PLAN_PRICE[reqPlan]}</span>
-                    <span style={{ fontSize: 11, color: "#6366f1", fontWeight: 700 }}>Upgrade Plan →</span>
+                    <span style={{ fontSize: 11, color: "#4f46e5", fontWeight: 700 }}>Upgrade Plan →</span>
                   </div>
                 )}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
@@ -366,7 +366,7 @@ export default function MainSuite({ setActiveSection }) {
                   )}
                 </div>
                 {preflightStatuses[m.id] && (
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: 999, border: `1px solid ${palette.border}`, background: preflightStatuses[m.id].ok ? (darkMode ? "#252638" : "#e0f2fe") : "#332b17", color: preflightStatuses[m.id].ok ? "#22c55e" : preflightStatuses[m.id].issues ? "#f59e0b" : "#ef4444", fontWeight: 800, fontSize: 11 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: 999, border: `1px solid ${palette.border}`, background: preflightStatuses[m.id].ok ? (darkMode ? "#1f2433" : "#e0f2fe") : "#332b17", color: preflightStatuses[m.id].ok ? "#22c55e" : preflightStatuses[m.id].issues ? "#f59e0b" : "#ef4444", fontWeight: 800, fontSize: 11 }}>
                     <span style={{ width: 8, height: 8, borderRadius: "50%", background: preflightStatuses[m.id].ok ? "#22c55e" : preflightStatuses[m.id].issues ? "#f59e0b" : "#ef4444" }} />
                     <span>{preflightStatuses[m.id].ok ? "Pass" : `${preflightStatuses[m.id].issues} issue${preflightStatuses[m.id].issues === 1 ? "" : "s"}`}</span>
                     {preflightStatuses[m.id].ts ? <span style={{ color: palette.muted, fontWeight: 600 }}>· {new Date(preflightStatuses[m.id].ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span> : null}

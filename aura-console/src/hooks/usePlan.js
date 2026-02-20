@@ -66,7 +66,7 @@ export const TOOL_PLAN = {
 const PLAN_RANK = { free: 0, professional: 1, enterprise: 2 };
 export const PLAN_LABEL = { free: "Free", professional: "Professional", enterprise: "Enterprise" };
 export const PLAN_PRICE = { free: "$0", professional: "$99/mo", enterprise: "$299/mo" };
-export const PLAN_COLOUR = { free: "#4ade80", professional: "#6366f1", enterprise: "#a78bfa" };
+export const PLAN_COLOUR = { free: "#4ade80", professional: "#4f46e5", enterprise: "#a78bfa" };
 
 export function canUseTool(userPlan, toolId) {
   const required = TOOL_PLAN[toolId];

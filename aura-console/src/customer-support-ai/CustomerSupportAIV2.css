@@ -44,7 +44,7 @@
 }
 
 .ticket-card.status-closed {
-  border-left-color: #8b8fa8;
+  border-left-color: #9aa3b8;
 }
 
 /* Status Badges */
@@ -69,12 +69,12 @@
 
 .status-badge.resolved {
   background: #dbeafe;
-  color: #525578;
+  color: #4b5780;
 }
 
 .status-badge.closed {
-  background: #f9fafb;
-  color: #2e3045;
+  background: #f6f7fb;
+  color: #283044;
 }
 
 /* Priority Indicators */
@@ -108,7 +108,7 @@
 
 .priority-indicator.medium {
   background: #bfdbfe;
-  color: #525578;
+  color: #4b5780;
 }
 
 .priority-indicator.medium::before {
@@ -116,8 +116,8 @@
 }
 
 .priority-indicator.low {
-  background: #f9fafb;
-  color: #525578;
+  background: #f6f7fb;
+  color: #4b5780;
 }
 
 .priority-indicator.low::before {
@@ -128,7 +128,7 @@
 .sla-progress {
   width: 100%;
   height: 8px;
-  background: #f9fafb;
+  background: #f6f7fb;
   border-radius: 4px;
   overflow: hidden;
   margin: 0.5rem 0;
@@ -171,7 +171,7 @@
 
 /* QA Review Cards */
 .qa-review-card {
-  border: 1px solid #f9fafb;
+  border: 1px solid #f6f7fb;
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1rem;
@@ -226,7 +226,7 @@
   justify-content: center;
   font-size: 2rem;
   font-weight: 700;
-  background: conic-gradient(#10b981 0% var(--score-percentage), #f9fafb var(--score-percentage) 100%);
+  background: conic-gradient(#10b981 0% var(--score-percentage), #f6f7fb var(--score-percentage) 100%);
   position: relative;
 }
 
@@ -256,7 +256,7 @@
   content: '';
   width: 200px;
   height: 200px;
-  border: 20px solid #f9fafb;
+  border: 20px solid #f6f7fb;
   border-radius: 50%;
   position: absolute;
   top: 0;
@@ -280,7 +280,7 @@
 .goal-progress-bar {
   width: 100%;
   height: 24px;
-  background: #f9fafb;
+  background: #f6f7fb;
   border-radius: 12px;
   overflow: hidden;
   position: relative;
@@ -321,8 +321,8 @@
   gap: 0.5rem;
   padding: 1rem;
   border-radius: 12px;
-  background: #f9fafb;
-  border: 2px solid #f9fafb;
+  background: #f6f7fb;
+  border: 2px solid #f6f7fb;
   transition: all 0.3s ease;
 }
 
@@ -336,7 +336,7 @@
 }
 
 .achievement-badge.common {
-  border-color: #a8adc4;
+  border-color: #b8bed2;
 }
 
 .achievement-badge.rare {
@@ -370,12 +370,12 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  border-bottom: 1px solid #f9fafb;
+  border-bottom: 1px solid #f6f7fb;
   transition: background 0.2s ease;
 }
 
 .leaderboard-row:hover {
-  background: #f9fafb;
+  background: #f6f7fb;
 }
 
 .leaderboard-rank {
@@ -390,7 +390,7 @@
 }
 
 .leaderboard-rank.rank-2 {
-  color: #a8adc4;
+  color: #b8bed2;
 }
 
 .leaderboard-rank.rank-3 {
@@ -409,7 +409,7 @@
 }
 
 .csat-star.empty {
-  color: #f9fafb;
+  color: #f6f7fb;
 }
 
 .nps-gauge {
@@ -465,7 +465,7 @@
   gap: 1rem;
   padding: 1rem;
   background: white;
-  border: 2px solid #f9fafb;
+  border: 2px solid #f6f7fb;
   border-radius: 8px;
   margin-bottom: 0.5rem;
   position: relative;
@@ -478,7 +478,7 @@
   left: 50%;
   transform: translateX(-50%);
   font-size: 1.5rem;
-  color: #a8adc4;
+  color: #b8bed2;
 }
 
 .macro-action-step:last-child::after {
@@ -487,12 +487,12 @@
 
 .trigger-condition-tree {
   padding-left: 2rem;
-  border-left: 3px solid #f9fafb;
+  border-left: 3px solid #f6f7fb;
 }
 
 .trigger-condition {
   padding: 0.5rem 1rem;
-  background: #f9fafb;
+  background: #f6f7fb;
   border-radius: 6px;
   margin: 0.5rem 0;
   font-size: 0.875rem;
@@ -500,7 +500,7 @@
 
 /* Knowledge Articles */
 .article-card {
-  border: 1px solid #f9fafb;
+  border: 1px solid #f6f7fb;
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1rem;
@@ -527,7 +527,7 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: #8b8fa8;
+  color: #9aa3b8;
   font-size: 0.875rem;
 }
 
@@ -619,7 +619,7 @@
 
 .message-status {
   font-size: 0.75rem;
-  color: #a8adc4;
+  color: #b8bed2;
   margin-top: 0.25rem;
 }
 
@@ -640,7 +640,7 @@
 .intent-confidence-meter {
   width: 100%;
   height: 8px;
-  background: #f9fafb;
+  background: #f6f7fb;
   border-radius: 4px;
   overflow: hidden;
 }
@@ -688,22 +688,22 @@
 }
 
 .churn-risk-gauge.low {
-  background: conic-gradient(#10b981 0% var(--risk-percentage), #f9fafb var(--risk-percentage) 100%);
+  background: conic-gradient(#10b981 0% var(--risk-percentage), #f6f7fb var(--risk-percentage) 100%);
   color: #065f46;
 }
 
 .churn-risk-gauge.medium {
-  background: conic-gradient(#f59e0b 0% var(--risk-percentage), #f9fafb var(--risk-percentage) 100%);
+  background: conic-gradient(#f59e0b 0% var(--risk-percentage), #f6f7fb var(--risk-percentage) 100%);
   color: #92400e;
 }
 
 .churn-risk-gauge.high {
-  background: conic-gradient(#ef4444 0% var(--risk-percentage), #f9fafb var(--risk-percentage) 100%);
+  background: conic-gradient(#ef4444 0% var(--risk-percentage), #f6f7fb var(--risk-percentage) 100%);
   color: #991b1b;
 }
 
 .insight-card {
-  border-left: 4px solid #f9fafb;
+  border-left: 4px solid #f6f7fb;
   padding: 1.5rem;
   background: white;
   border-radius: 8px;
@@ -726,7 +726,7 @@
 }
 
 .insight-card.low {
-  border-left-color: #8b8fa8;
+  border-left-color: #9aa3b8;
 }
 
 /* Responsive Design */
@@ -758,25 +758,25 @@
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   .ticket-card {
-    background: #2e3045;
+    background: #283044;
   }
   
   .qa-review-card {
-    background: #2e3045;
-    border-color: #525578;
+    background: #283044;
+    border-color: #4b5780;
   }
   
   .article-card {
-    background: #2e3045;
-    border-color: #525578;
+    background: #283044;
+    border-color: #4b5780;
   }
   
   .message-bubble.customer {
-    background: #525578;
+    background: #4b5780;
   }
   
   .insight-card {
-    background: #2e3045;
+    background: #283044;
   }
 }
 

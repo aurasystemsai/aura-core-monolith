@@ -85,7 +85,7 @@ export default function AutomationScheduler() {
       <button onClick={() => setShowForm(true)} style={{ marginBottom: 24, background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '10px 18px', fontWeight: 700, cursor: 'pointer' }} disabled={loading}>+ New Schedule</button>
       {error && <div style={{ color: '#ff4d4f', marginBottom: 16 }}>{error}</div>}
       {showForm && (
-        <form onSubmit={handleSubmit} style={{ marginBottom: 32, background: '#252638', padding: 24, borderRadius: 12 }}>
+        <form onSubmit={handleSubmit} style={{ marginBottom: 32, background: '#1f2433', padding: 24, borderRadius: 12 }}>
           <div style={{ marginBottom: 12 }}>
             <label>Name: <input name="name" value={form.name} onChange={handleInput} required style={{ marginLeft: 8 }} /></label>
           </div>
@@ -135,7 +135,7 @@ export default function AutomationScheduler() {
         ) : (
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {schedules.map(s => (
-              <li key={s.id} style={{ background: '#252638', marginBottom: 12, borderRadius: 8, padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <li key={s.id} style={{ background: '#1f2433', marginBottom: 12, borderRadius: 8, padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span><b>{s.name}</b> — {s.type === 'one-time' ? `One-time on ${s.date} at ${s.time}` : `Recurring: ${s.recurrence} at ${s.time}`}</span>
                 <button onClick={() => handleDelete(s.id)} style={{ background: 'var(--button-danger-bg)', color: 'var(--button-danger-text)', border: 'none', borderRadius: 6, padding: '4px 12px', fontWeight: 700, cursor: 'pointer', marginLeft: 16 }} disabled={loading}>Delete</button>
               </li>

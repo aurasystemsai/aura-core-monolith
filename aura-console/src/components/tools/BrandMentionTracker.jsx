@@ -77,7 +77,7 @@ export default function BrandMentionTracker() {
   };
 
   return (
-    <div style={{ background: "#252638", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f9fafb' }}>
+    <div style={{ background: "#1f2433", borderRadius: 18, boxShadow: "0 2px 24px #0008", padding: 36, fontFamily: 'Inter, sans-serif', color: '#f6f7fb' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Brand Mention Tracker</h2>
       <div style={{ color: "#0ea5e9", fontWeight: 600, marginBottom: 18 }}>
         <span role="img" aria-label="brand"></span>Track brand mentions and sentiment across the web.
@@ -91,7 +91,7 @@ export default function BrandMentionTracker() {
         aria-label="Brand input"
       />
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={fetchMentions} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Track Mentions</button>
+        <button onClick={fetchMentions} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Track Mentions</button>
         <button onClick={fetchSentiment} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Analyze Sentiment</button>
       </div>
       <div style={{ display: "flex", gap: 18, marginBottom: 18 }}>
@@ -99,7 +99,7 @@ export default function BrandMentionTracker() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Mentions</div>
           <ul style={{ paddingLeft: 18 }}>
             {mentions.map((m, idx) => (
-              <li key={m.id || idx} style={{ marginBottom: 8, background: "#3d4058", borderRadius: 8, padding: 8, color: '#f9fafb' }}>{m.name}</li>
+              <li key={m.id || idx} style={{ marginBottom: 8, background: "#3a4560", borderRadius: 8, padding: 8, color: '#f6f7fb' }}>{m.name}</li>
             ))}
           </ul>
         </div>
@@ -107,30 +107,30 @@ export default function BrandMentionTracker() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Sentiment</div>
           <ul style={{ paddingLeft: 18 }}>
             {sentiment.map((s, idx) => (
-              <li key={s.id || idx} style={{ marginBottom: 8, background: "#252638", borderRadius: 8, padding: 8, color: '#6366f1' }}>{s.name}</li>
+              <li key={s.id || idx} style={{ marginBottom: 8, background: "#1f2433", borderRadius: 8, padding: 8, color: '#4f46e5' }}>{s.name}</li>
             ))}
           </ul>
         </div>
       </div>
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0d0d11", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import mentions" />
         <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
         {exported && <a href={exported} download="brand-mention-tracker.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#3d4058", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#3a4560", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #6366f1", marginBottom: 12, background: "#252638", color: "#f9fafb" }}
+          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #4f46e5", marginBottom: 12, background: "#1f2433", color: "#f6f7fb" }}
           placeholder="Share your feedback or suggestions..."
           aria-label="Feedback input"
         />
-        <button type="submit" style={{ background: "#6366f1", color: "#0d0d11", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send Feedback</button>
+        <button type="submit" style={{ background: "#4f46e5", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send Feedback</button>
       </form>
     </div>
   );

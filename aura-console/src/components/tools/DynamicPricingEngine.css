@@ -87,7 +87,7 @@
   border: none;
   border-radius: 8px;
   background: white;
-  color: #525578;
+  color: #4b5780;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -123,7 +123,7 @@
   border: none;
   border-radius: 6px;
   background: #f3f4f6;
-  color: #8b8fa8;
+  color: #9aa3b8;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -131,8 +131,8 @@
 }
 
 .dpe-tab-btn:hover {
-  background: #f9fafb;
-  color: #525578;
+  background: #f6f7fb;
+  color: #4b5780;
 }
 
 .dpe-tab-btn.active {
@@ -168,7 +168,7 @@
 
 .dpe-tab-content h2 {
   margin: 0 0 24px 0;
-  color: #2e3045;
+  color: #283044;
   font-size: 1.8rem;
   font-weight: 700;
   border-bottom: 3px solid #667eea;
@@ -177,14 +177,14 @@
 
 .dpe-tab-content h3 {
   margin: 24px 0 16px 0;
-  color: #525578;
+  color: #4b5780;
   font-size: 1.3rem;
   font-weight: 600;
 }
 
 .dpe-tab-content h4 {
   margin: 0 0 8px 0;
-  color: #8b8fa8;
+  color: #9aa3b8;
   font-size: 0.9rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -222,11 +222,11 @@
 
 /* Form Sections */
 .dpe-form-section {
-  background: #f9fafb;
+  background: #f6f7fb;
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
-  border: 2px solid #f9fafb;
+  border: 2px solid #f6f7fb;
 }
 
 .dpe-form-grid {
@@ -241,7 +241,7 @@
 .dpe-form-section textarea {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid #f9fafb;
+  border: 2px solid #f6f7fb;
   border-radius: 8px;
   font-size: 0.95rem;
   transition: all 0.2s ease;
@@ -274,7 +274,7 @@
 }
 
 .dpe-list-item {
-  background: #f9fafb;
+  background: #f6f7fb;
   border-radius: 8px;
   padding: 16px;
   border-left: 4px solid #667eea;
@@ -294,19 +294,19 @@
 }
 
 .dpe-list-item-header strong {
-  color: #2e3045;
+  color: #283044;
   font-size: 1.05rem;
 }
 
 .dpe-list-item-meta {
-  color: #8b8fa8;
+  color: #9aa3b8;
   font-size: 0.9rem;
   margin-top: 4px;
 }
 
 .dpe-list-item-content {
   margin-top: 12px;
-  color: #525578;
+  color: #4b5780;
   font-size: 0.95rem;
 }
 
@@ -364,21 +364,21 @@
 }
 
 .dpe-table tbody tr {
-  border-bottom: 1px solid #f9fafb;
+  border-bottom: 1px solid #f6f7fb;
   transition: background 0.2s ease;
 }
 
 .dpe-table tbody tr:hover {
-  background: #f9fafb;
+  background: #f6f7fb;
 }
 
 .dpe-table td {
   padding: 14px 16px;
-  color: #525578;
+  color: #4b5780;
 }
 
 .dpe-table td strong {
-  color: #2e3045;
+  color: #283044;
 }
 
 /* Status Badges */
@@ -403,7 +403,7 @@
 
 .dpe-status-running {
   background: #dbeafe;
-  color: #525578;
+  color: #4b5780;
 }
 
 .dpe-status-completed {
@@ -418,7 +418,7 @@
 
 .dpe-status-disabled {
   background: #f3f4f6;
-  color: #8b8fa8;
+  color: #9aa3b8;
 }
 
 /* Severity Badges */
@@ -448,7 +448,7 @@
 
 .dpe-severity-low {
   background: #dbeafe;
-  color: #525578;
+  color: #4b5780;
 }
 
 /* Buttons */
@@ -540,7 +540,7 @@
   justify-content: center;
   align-items: center;
   gap: 16px;
-  color: #8b8fa8;
+  color: #9aa3b8;
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -639,12 +639,12 @@
 /* Dark Mode Support (Optional) */
 @media (prefers-color-scheme: dark) {
   .dpe-container {
-    background: linear-gradient(135deg, #2e3045 0%, #252638 100%);
+    background: linear-gradient(135deg, #283044 0%, #1f2433 100%);
   }
 
   .dpe-content {
-    background: #2e3045;
-    color: #f9fafb;
+    background: #283044;
+    color: #f6f7fb;
   }
 
   .dpe-tab-content h2,
@@ -653,32 +653,32 @@
   }
 
   .dpe-form-section {
-    background: #525578;
-    border-color: #525578;
+    background: #4b5780;
+    border-color: #4b5780;
   }
 
   .dpe-form-section input,
   .dpe-form-section select,
   .dpe-form-section textarea {
-    background: #2e3045;
-    border-color: #525578;
-    color: #f9fafb;
+    background: #283044;
+    border-color: #4b5780;
+    color: #f6f7fb;
   }
 
   .dpe-list-item {
-    background: #525578;
+    background: #4b5780;
   }
 
   .dpe-list-item:hover {
-    background: #525578;
+    background: #4b5780;
   }
 
   .dpe-table tbody tr {
-    border-bottom-color: #525578;
+    border-bottom-color: #4b5780;
   }
 
   .dpe-table tbody tr:hover {
-    background: #525578;
+    background: #4b5780;
   }
 
   .dpe-table td {
@@ -686,7 +686,7 @@
   }
 
   .dpe-footer {
-    background: #2e3045;
+    background: #283044;
   }
 }
 
