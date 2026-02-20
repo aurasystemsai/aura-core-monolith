@@ -101,7 +101,7 @@ function ReviewManagement({ tab }) {
 
   const load = useCallback(async () => {
     setLoading(true);
-    try { const d = await apiFetch(`${BASE}/reviews`); setReviews(Array.isArray(d) ? d : (d.reviews || [])); } catch (e) { console.error(e); }
+    try { const d = await apiFetch(`${BASE}/reviews/search`, { method: 'POST', body: JSON.stringify({}) }); setReviews(Array.isArray(d) ? d : (d.reviews || [])); } catch (e) { console.error(e); }
     setLoading(false);
   }, []);
 
@@ -298,10 +298,10 @@ function UGCCollection({ tab }) {
   const [wgtForm, setWgtForm] = useState({ name: '', type: 'popup', position: 'bottom-right', trigger: 'time' });
   const [msg, setMsg] = useState('');
 
-  const loadCampaigns = useCallback(async () => { try { const d = await apiFetch(`${BASE}/ugc/campaigns`); setCampaigns(Array.isArray(d) ? d : (d.campaigns || [])); } catch(e){} }, []);
-  const loadTemplates = useCallback(async () => { try { const d = await apiFetch(`${BASE}/ugc/templates`); setTemplates(Array.isArray(d) ? d : (d.templates || [])); } catch(e){} }, []);
-  const loadWidgets = useCallback(async () => { try { const d = await apiFetch(`${BASE}/ugc/widgets`); setWidgets(Array.isArray(d) ? d : (d.widgets || [])); } catch(e){} }, []);
-  const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/ugc/stats`); setStats(d); } catch(e){} }, []);
+  const loadCampaigns = useCallback(async () => { try { const d = await apiFetch(`${BASE}/campaigns`); setCampaigns(Array.isArray(d) ? d : (d.campaigns || [])); } catch(e){} }, []);
+  const loadTemplates = useCallback(async () => { try { const d = await apiFetch(`${BASE}/email-templates`); setTemplates(Array.isArray(d) ? d : (d.templates || [])); } catch(e){} }, []);
+  const loadWidgets = useCallback(async () => { try { const d = await apiFetch(`${BASE}/collection-widgets`); setWidgets(Array.isArray(d) ? d : (d.widgets || [])); } catch(e){} }, []);
+  const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/collection/statistics`); setStats(d); } catch(e){} }, []);
 
   useEffect(() => {
     if (tab === 0) loadCampaigns();
@@ -313,27 +313,27 @@ function UGCCollection({ tab }) {
   const flash = (text) => { setMsg(text); setTimeout(() => setMsg(''), 3000); };
 
   const createCampaign = async () => {
-    await apiFetch(`${BASE}/ugc/campaigns`, { method: 'POST', body: JSON.stringify(campForm) });
+    await apiFetch(`${BASE}/campaigns`, { method: 'POST', body: JSON.stringify(campForm) });
     setCampForm({ name: '', description: '', type: 'email', startDate: '', endDate: '' });
     loadCampaigns(); flash('Campaign created');
   };
-  const deleteCampaign = async (id) => { if(!window.confirm('Delete?')) return; await apiFetch(`${BASE}/ugc/campaigns/${id}`, { method: 'DELETE' }); loadCampaigns(); };
+  const deleteCampaign = async (id) => { if(!window.confirm('Delete?')) return; await apiFetch(`${BASE}/campaigns/${id}`, { method: 'DELETE' }); loadCampaigns(); };
   const sendRequest = async () => {
-    await apiFetch(`${BASE}/ugc/request`, { method: 'POST', body: JSON.stringify(reqForm) });
+    await apiFetch(`${BASE}/campaigns/send-request`, { method: 'POST', body: JSON.stringify(reqForm) });
     setReqForm({ customerEmail: '', customerName: '', productId: '', orderId: '' }); flash('Request sent');
   };
   const sendBulk = async () => {
     const emails = bulkEmails.split('\n').map(e => e.trim()).filter(Boolean);
-    await apiFetch(`${BASE}/ugc/request/bulk`, { method: 'POST', body: JSON.stringify({ emails }) });
+    await apiFetch(`${BASE}/campaigns/send-request`, { method: 'POST', body: JSON.stringify({ bulk: true, emails }) });
     setBulkEmails(''); flash(`Sent ${emails.length} requests`);
   };
   const createTemplate = async () => {
-    await apiFetch(`${BASE}/ugc/templates`, { method: 'POST', body: JSON.stringify(tplForm) });
+    await apiFetch(`${BASE}/email-templates`, { method: 'POST', body: JSON.stringify(tplForm) });
     setTplForm({ name: '', subject: '', body: '', type: 'request' }); loadTemplates(); flash('Template saved');
   };
-  const deleteTemplate = async (id) => { await apiFetch(`${BASE}/ugc/templates/${id}`, { method: 'DELETE' }); loadTemplates(); };
+  const deleteTemplate = async (id) => { await apiFetch(`${BASE}/email-templates/${id}`, { method: 'DELETE' }); loadTemplates(); };
   const createWidget = async () => {
-    await apiFetch(`${BASE}/ugc/widgets`, { method: 'POST', body: JSON.stringify(wgtForm) });
+    await apiFetch(`${BASE}/collection-widgets`, { method: 'POST', body: JSON.stringify(wgtForm) });
     setWgtForm({ name: '', type: 'popup', position: 'bottom-right', trigger: 'time' }); loadWidgets(); flash('Widget created');
   };
 
@@ -495,7 +495,7 @@ function ModerationCenter({ tab }) {
   const loadQueue = useCallback(async () => { try { const d = await apiFetch(`${BASE}/moderation/queue`); setQueue(Array.isArray(d) ? d : (d.queue || [])); } catch(e){} }, []);
   const loadBlockedWords = useCallback(async () => { try { const d = await apiFetch(`${BASE}/moderation/blocked-words`); setBlockedWords(Array.isArray(d) ? d : (d.words || [])); } catch(e){} }, []);
   const loadBlockedEmails = useCallback(async () => { try { const d = await apiFetch(`${BASE}/moderation/blocked-emails`); setBlockedEmails(Array.isArray(d) ? d : (d.emails || [])); } catch(e){} }, []);
-  const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/moderation/stats`); setStats(d); } catch(e){} }, []);
+  const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/moderation/statistics`); setStats(d); } catch(e){} }, []);
 
   useEffect(() => {
     if (tab === 0) loadRules();
@@ -507,9 +507,9 @@ function ModerationCenter({ tab }) {
 
   const createRule = async () => { await apiFetch(`${BASE}/moderation/rules`, { method: 'POST', body: JSON.stringify(ruleForm) }); setRuleForm({ name: '', type: 'spam', action: 'flag', pattern: '' }); loadRules(); flash('Rule created'); };
   const deleteRule = async (id) => { await apiFetch(`${BASE}/moderation/rules/${id}`, { method: 'DELETE' }); loadRules(); };
-  const handleCheck = async () => { const d = await apiFetch(`${BASE}/moderation/check`, { method: 'POST', body: JSON.stringify({ content: checkContent }) }); setCheckResult(d); };
-  const approveItem = async (id) => { await apiFetch(`${BASE}/moderation/queue/${id}/approve`, { method: 'POST' }); loadQueue(); };
-  const rejectItem = async (id) => { await apiFetch(`${BASE}/moderation/queue/${id}/reject`, { method: 'POST' }); loadQueue(); };
+  const handleCheck = async () => { const d = await apiFetch(`${BASE}/moderation/moderate`, { method: 'POST', body: JSON.stringify({ content: checkContent }) }); setCheckResult(d); };
+  const approveItem = async (id) => { await apiFetch(`${BASE}/moderation/queue/${id}/review`, { method: 'POST', body: JSON.stringify({ action: 'approve' }) }); loadQueue(); };
+  const rejectItem = async (id) => { await apiFetch(`${BASE}/moderation/queue/${id}/review`, { method: 'POST', body: JSON.stringify({ action: 'reject' }) }); loadQueue(); };
   const addWord = async () => { if (!newWord.trim()) return; await apiFetch(`${BASE}/moderation/blocked-words`, { method: 'POST', body: JSON.stringify({ word: newWord }) }); setNewWord(''); loadBlockedWords(); };
   const removeWord = async (word) => { await apiFetch(`${BASE}/moderation/blocked-words/${encodeURIComponent(word)}`, { method: 'DELETE' }); loadBlockedWords(); };
   const addEmail = async () => { if (!newEmail.trim()) return; await apiFetch(`${BASE}/moderation/blocked-emails`, { method: 'POST', body: JSON.stringify({ email: newEmail }) }); setNewEmail(''); loadBlockedEmails(); };
@@ -663,9 +663,9 @@ function SentimentAI({ tab }) {
   const [summaryData, setSummaryData] = useState(null);
   const [sumLoading, setSumLoading] = useState(false);
 
-  const loadInsights = useCallback(async () => { try { const d = await apiFetch(`${BASE}/sentiment/insights`); setInsights(d); } catch(e){} }, []);
-  const loadTrends = useCallback(async () => { try { const d = await apiFetch(`${BASE}/sentiment/trends`); setTrends(d); } catch(e){} }, []);
-  const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/sentiment/stats`); setStats(d); } catch(e){} }, []);
+  const loadInsights = useCallback(async () => { try { const d = await apiFetch(`${BASE}/sentiment/insights`, { method: 'POST', body: JSON.stringify({}) }); setInsights(d); } catch(e){} }, []);
+  const loadTrends = useCallback(async () => { try { const d = await apiFetch(`${BASE}/sentiment/trends`, { method: 'POST', body: JSON.stringify({}) }); setTrends(d); } catch(e){} }, []);
+  const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/sentiment/statistics`); setStats(d); } catch(e){} }, []);
 
   useEffect(() => {
     if (tab === 2) loadInsights();
@@ -684,7 +684,7 @@ function SentimentAI({ tab }) {
     const items = batchTexts.split('\n---\n').map(t => t.trim()).filter(Boolean);
     if (!items.length) return;
     setLoading(true);
-    const d = await apiFetch(`${BASE}/sentiment/batch`, { method: 'POST', body: JSON.stringify({ items }) });
+    const d = await apiFetch(`${BASE}/sentiment/batch-analyze`, { method: 'POST', body: JSON.stringify({ items }) });
     setBatchResults(Array.isArray(d) ? d : (d.results || [])); setLoading(false);
   };
 
@@ -879,12 +879,12 @@ function SocialProof({ tab }) {
   const [msg, setMsg] = useState('');
 
   const flash = (t) => { setMsg(t); setTimeout(() => setMsg(''), 3000); };
-  const loadRules = useCallback(async () => { try { const d = await apiFetch(`${BASE}/social-proof/rules`); setRules(Array.isArray(d) ? d : (d.rules || [])); } catch(e){} }, []);
+  const loadRules = useCallback(async () => { try { const d = await apiFetch(`${BASE}/social-proof/display-rules`); setRules(Array.isArray(d) ? d : (d.rules || [])); } catch(e){} }, []);
   const loadBadges = useCallback(async () => { try { const d = await apiFetch(`${BASE}/social-proof/trust-badges`); setBadges(Array.isArray(d) ? d : (d.badges || [])); } catch(e){} }, []);
-  const loadElements = useCallback(async () => { try { const d = await apiFetch(`${BASE}/social-proof/elements`); setElements(Array.isArray(d) ? d : (d.elements || [])); } catch(e){} }, []);
+  const loadElements = useCallback(async () => { try { const d = await apiFetch(`${BASE}/social-proof/elements/get`, { method: 'POST', body: JSON.stringify({}) }); setElements(Array.isArray(d) ? d : (d.elements || [])); } catch(e){} }, []);
   const loadAbTests = useCallback(async () => { try { const d = await apiFetch(`${BASE}/social-proof/ab-tests`); setAbTests(Array.isArray(d) ? d : (d.tests || [])); } catch(e){} }, []);
-  const loadInsights = useCallback(async () => { try { const d = await apiFetch(`${BASE}/social-proof/conversion-insights`); setInsights(d); } catch(e){} }, []);
-  const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/social-proof/stats`); setStats(d); } catch(e){} }, []);
+  const loadInsights = useCallback(async () => { try { const d = await apiFetch(`${BASE}/social-proof/conversion-insights`, { method: 'POST', body: JSON.stringify({}) }); setInsights(d); } catch(e){} }, []);
+  const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/social-proof/statistics`); setStats(d); } catch(e){} }, []);
 
   useEffect(() => {
     if (tab === 0) loadRules();
@@ -895,8 +895,8 @@ function SocialProof({ tab }) {
     else if (tab === 5) loadStats();
   }, [tab]);
 
-  const createRule = async () => { await apiFetch(`${BASE}/social-proof/rules`, { method: 'POST', body: JSON.stringify(ruleForm) }); setRuleForm({ name: '', trigger: 'purchase', displayType: 'popup', minRating: 4 }); loadRules(); flash('Rule created'); };
-  const deleteRule = async (id) => { await apiFetch(`${BASE}/social-proof/rules/${id}`, { method: 'DELETE' }); loadRules(); };
+  const createRule = async () => { await apiFetch(`${BASE}/social-proof/display-rules`, { method: 'POST', body: JSON.stringify(ruleForm) }); setRuleForm({ name: '', trigger: 'purchase', displayType: 'popup', minRating: 4 }); loadRules(); flash('Rule created'); };
+  const deleteRule = async (id) => { await apiFetch(`${BASE}/social-proof/display-rules/${id}`, { method: 'DELETE' }); loadRules(); };
   const createBadge = async () => { await apiFetch(`${BASE}/social-proof/trust-badges`, { method: 'POST', body: JSON.stringify(badgeForm) }); setBadgeForm({ name: '', type: 'verified', label: '' }); loadBadges(); flash('Badge created'); };
   const deleteBadge = async (id) => { await apiFetch(`${BASE}/social-proof/trust-badges/${id}`, { method: 'DELETE' }); loadBadges(); };
   const createElement = async () => { await apiFetch(`${BASE}/social-proof/elements`, { method: 'POST', body: JSON.stringify(elemForm) }); setElemForm({ type: 'recent-purchase', position: 'bottom-left', delay: 5 }); loadElements(); flash('Element created'); };
@@ -1084,10 +1084,10 @@ function DisplayWidgets({ tab }) {
 
   const flash = (t) => { setMsg(t); setTimeout(() => setMsg(''), 3000); };
   const loadWidgets = useCallback(async () => { try { const d = await apiFetch(`${BASE}/widgets`); setWidgets(Array.isArray(d) ? d : (d.widgets || [])); } catch(e){} }, []);
-  const loadCarousels = useCallback(async () => { try { const d = await apiFetch(`${BASE}/widgets/carousels`); setCarousels(Array.isArray(d) ? d : (d.carousels || [])); } catch(e){} }, []);
+  const loadCarousels = useCallback(async () => { try { const d = await apiFetch(`${BASE}/carousels`); setCarousels(Array.isArray(d) ? d : (d.carousels || [])); } catch(e){} }, []);
   const loadEmbeds = useCallback(async () => { try { const d = await apiFetch(`${BASE}/widgets/embeds`); setEmbeds(Array.isArray(d) ? d : (d.embeds || [])); } catch(e){} }, []);
-  const loadThemes = useCallback(async () => { try { const d = await apiFetch(`${BASE}/widgets/themes`); setThemes(Array.isArray(d) ? d : (d.themes || [])); } catch(e){} }, []);
-  const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/widgets/stats`); setStats(d); } catch(e){} }, []);
+  const loadThemes = useCallback(async () => { try { const d = await apiFetch(`${BASE}/themes`); setThemes(Array.isArray(d) ? d : (d.themes || [])); } catch(e){} }, []);
+  const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/display/statistics`); setStats(d); } catch(e){} }, []);
 
   useEffect(() => {
     if (tab === 0) loadWidgets();
@@ -1099,9 +1099,9 @@ function DisplayWidgets({ tab }) {
 
   const createWidget = async () => { await apiFetch(`${BASE}/widgets`, { method: 'POST', body: JSON.stringify(wForm) }); setWForm({ name: '', type: 'star-rating', layout: 'grid', maxReviews: 10 }); loadWidgets(); flash('Widget created'); };
   const deleteWidget = async (id) => { await apiFetch(`${BASE}/widgets/${id}`, { method: 'DELETE' }); loadWidgets(); };
-  const createCarousel = async () => { await apiFetch(`${BASE}/widgets/carousels`, { method: 'POST', body: JSON.stringify(cForm) }); setCForm({ name: '', autoplay: true, speed: 4000, showRating: true }); loadCarousels(); flash('Carousel created'); };
-  const createEmbed = async () => { await apiFetch(`${BASE}/widgets/embeds`, { method: 'POST', body: JSON.stringify(eForm) }); setEForm({ name: '', productId: '', showCount: 5 }); loadEmbeds(); flash('Embed created'); };
-  const createTheme = async () => { await apiFetch(`${BASE}/widgets/themes`, { method: 'POST', body: JSON.stringify(tForm) }); setTForm({ name: '', primaryColor: '#4f46e5', backgroundColor: '#18181b', textColor: '#fafafa' }); loadThemes(); flash('Theme saved'); };
+  const createCarousel = async () => { await apiFetch(`${BASE}/carousels`, { method: 'POST', body: JSON.stringify(cForm) }); setCForm({ name: '', autoplay: true, speed: 4000, showRating: true }); loadCarousels(); flash('Carousel created'); };
+  const createEmbed = async () => { await apiFetch(`${BASE}/embeds`, { method: 'POST', body: JSON.stringify(eForm) }); setEForm({ name: '', productId: '', showCount: 5 }); loadEmbeds(); flash('Embed created'); };
+  const createTheme = async () => { await apiFetch(`${BASE}/themes`, { method: 'POST', body: JSON.stringify(tForm) }); setTForm({ name: '', primaryColor: '#4f46e5', backgroundColor: '#18181b', textColor: '#fafafa' }); loadThemes(); flash('Theme saved'); };
 
   if (tab === 0) return (
     <div>
@@ -1518,12 +1518,12 @@ function IntegrationsHub({ tab }) {
   const [loading, setLoading] = useState(false);
 
   const flash = (t) => { setMsg(t); setTimeout(() => setMsg(''), 3000); };
-  const loadServices = useCallback(async () => { try { const d = await apiFetch(`${BASE}/integrations/services`); setServices(Array.isArray(d) ? d : (d.services || [])); } catch(e){} }, []);
+  const loadServices = useCallback(async () => { try { const d = await apiFetch(`${BASE}/integrations`); setServices(Array.isArray(d) ? d : (d.services || d.integrations || [])); } catch(e){} }, []);
   const loadShopify = useCallback(async () => { try { const d = await apiFetch(`${BASE}/integrations/shopify/sync`); setShopifyStatus(d); } catch(e){} }, []);
   const loadGoogle = useCallback(async () => { try { const d = await apiFetch(`${BASE}/integrations/google-shopping`); setGoogleConfig(d); if (d) setGoogleForm({ merchantId: d.merchantId || '', feedUrl: d.feedUrl || '', enabled: d.enabled || false }); } catch(e){} }, []);
   const loadWebhooks = useCallback(async () => { try { const d = await apiFetch(`${BASE}/integrations/webhooks`); setWebhooks(Array.isArray(d) ? d : (d.webhooks || [])); } catch(e){} }, []);
   const loadSyncLogs = useCallback(async () => { try { const d = await apiFetch(`${BASE}/integrations/sync-logs`); setSyncLogs(Array.isArray(d) ? d : (d.logs || [])); } catch(e){} }, []);
-  const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/integrations/stats`); setStats(d); } catch(e){} }, []);
+  const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/integrations/statistics`); setStats(d); } catch(e){} }, []);
 
   useEffect(() => {
     if (tab === 0) loadServices();
@@ -1534,12 +1534,12 @@ function IntegrationsHub({ tab }) {
     else if (tab === 7) loadStats();
   }, [tab]);
 
-  const connectService = async () => { await apiFetch(`${BASE}/integrations/services`, { method: 'POST', body: JSON.stringify(svcForm) }); setSvcForm({ name: '', apiKey: '', type: 'custom' }); loadServices(); flash('Service connected'); };
-  const disconnectService = async (id) => { await apiFetch(`${BASE}/integrations/services/${id}`, { method: 'DELETE' }); loadServices(); };
-  const handleImport = async () => { setLoading(true); const d = await apiFetch(`${BASE}/integrations/import`, { method: 'POST', body: JSON.stringify({ url: importUrl }) }); setLoading(false); flash(`Imported ${d.count || 'N/A'} reviews`); };
-  const handleExport = async () => { setLoading(true); const d = await apiFetch(`${BASE}/integrations/export`, { method: 'POST' }); setLoading(false); if (d.downloadUrl) { window.open(d.downloadUrl, '_blank'); } else { flash('Export complete'); } };
-  const triggerShopifySync = async () => { setLoading(true); const d = await apiFetch(`${BASE}/integrations/shopify/sync`, { method: 'POST' }); setLoading(false); setShopifyStatus(d); flash('Shopify sync triggered'); };
-  const saveGoogleConfig = async () => { await apiFetch(`${BASE}/integrations/google-shopping`, { method: 'POST', body: JSON.stringify(googleForm) }); flash('Google Shopping config saved'); loadGoogle(); };
+  const connectService = async () => { await apiFetch(`${BASE}/integrations/${svcForm.type}/connect`, { method: 'POST', body: JSON.stringify({ apiKey: svcForm.apiKey, name: svcForm.name }) }); setSvcForm({ name: '', apiKey: '', type: 'custom' }); loadServices(); flash('Service connected'); };
+  const disconnectService = async (id) => { await apiFetch(`${BASE}/integrations/${id}/disconnect`, { method: 'POST' }); loadServices(); };
+  const handleImport = async () => { setLoading(true); const d = await apiFetch(`${BASE}/integrations/import-reviews`, { method: 'POST', body: JSON.stringify({ url: importUrl }) }); setLoading(false); flash(`Imported ${d.count || 'N/A'} reviews`); };
+  const handleExport = async () => { setLoading(true); const d = await apiFetch(`${BASE}/integrations/export-reviews`, { method: 'POST' }); setLoading(false); if (d.downloadUrl) { window.open(d.downloadUrl, '_blank'); } else { flash('Export complete'); } };
+  const triggerShopifySync = async () => { setLoading(true); const d = await apiFetch(`${BASE}/integrations/shopify/sync-products`, { method: 'POST' }); setLoading(false); setShopifyStatus(d); flash('Shopify sync triggered'); };
+  const saveGoogleConfig = async () => { await apiFetch(`${BASE}/integrations/google-shopping/submit`, { method: 'POST', body: JSON.stringify(googleForm) }); flash('Google Shopping config saved'); loadGoogle(); };
   const createWebhook = async () => { await apiFetch(`${BASE}/integrations/webhooks`, { method: 'POST', body: JSON.stringify(wbkForm) }); setWbkForm({ url: '', events: 'review.created', secret: '' }); loadWebhooks(); flash('Webhook created'); };
   const deleteWebhook = async (id) => { await apiFetch(`${BASE}/integrations/webhooks/${id}`, { method: 'DELETE' }); loadWebhooks(); };
   const handleCsvImport = async () => {
@@ -1547,14 +1547,14 @@ function IntegrationsHub({ tab }) {
     const reader = new FileReader();
     reader.onload = async (e) => {
       setLoading(true);
-      const d = await apiFetch(`${BASE}/integrations/csv/import`, { method: 'POST', body: JSON.stringify({ csv: e.target.result }) });
+      const d = await apiFetch(`${BASE}/integrations/import-csv`, { method: 'POST', body: JSON.stringify({ csv: e.target.result }) });
       setLoading(false); flash(`CSV import: ${d.count || 'N/A'} reviews`);
     };
     reader.readAsText(csvFile);
   };
   const handleCsvExport = async () => {
     setLoading(true);
-    const d = await apiFetch(`${BASE}/integrations/csv/export`, { method: 'POST' });
+    const d = await apiFetch(`${BASE}/integrations/export-csv`, { method: 'POST' });
     setLoading(false);
     if (d.csv) {
       const blob = new Blob([d.csv], { type: 'text/csv' });
