@@ -579,8 +579,8 @@ function ModerationCenter({ tab }) {
           <thead><tr><th style={S.th}>Author</th><th style={S.th}>Content</th><th style={S.th}>Reason</th><th style={S.th}>Actions</th></tr></thead>
           <tbody>{queue.map(r => (
             <tr key={r.id||r._id}>
-              <td style={S.td}>{r.authorName||--}</td>
-              <td style={{ ...S.td, maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.body||r.content||--}</td>
+              <td style={S.td}>{r.authorName||'--'}</td>
+              <td style={{ ...S.td, maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.body||r.content||'--'}</td>
               <td style={S.td}><span style={S.badge('#f97316')}>{r.reason||'flagged'}</span></td>
               <td style={S.td}><div style={S.row}>
                 <button style={S.btnSuccess} onClick={()=>approveItem(r.id||r._id)}>Approve</button>
