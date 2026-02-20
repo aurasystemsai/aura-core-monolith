@@ -1519,7 +1519,7 @@ function IntegrationsHub({ tab }) {
 
   const flash = (t) => { setMsg(t); setTimeout(() => setMsg(''), 3000); };
   const loadServices = useCallback(async () => { try { const d = await apiFetch(`${BASE}/integrations`); setServices(Array.isArray(d) ? d : (d.services || d.integrations || [])); } catch(e){} }, []);
-  const loadShopify = useCallback(async () => { try { const d = await apiFetch(`${BASE}/integrations/shopify/sync`); setShopifyStatus(d); } catch(e){} }, []);
+  const loadShopify = useCallback(async () => { try { const d = await apiFetch(`${BASE}/integrations/shopify`); setShopifyStatus(d); } catch(e){} }, []);
   const loadGoogle = useCallback(async () => { try { const d = await apiFetch(`${BASE}/integrations/google-shopping`); setGoogleConfig(d); if (d) setGoogleForm({ merchantId: d.merchantId || '', feedUrl: d.feedUrl || '', enabled: d.enabled || false }); } catch(e){} }, []);
   const loadWebhooks = useCallback(async () => { try { const d = await apiFetch(`${BASE}/integrations/webhooks`); setWebhooks(Array.isArray(d) ? d : (d.webhooks || [])); } catch(e){} }, []);
   const loadSyncLogs = useCallback(async () => { try { const d = await apiFetch(`${BASE}/integrations/sync-logs`); setSyncLogs(Array.isArray(d) ? d : (d.logs || [])); } catch(e){} }, []);
