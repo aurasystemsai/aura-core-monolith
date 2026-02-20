@@ -1096,8 +1096,18 @@ router.get('/analytics/collection', (req, res) => {
   }
 });
 
-// Get widget performance
-router.get('/analytics/widgets/:widgetId?', (req, res) => {
+// Get widget performance (all)
+router.get('/analytics/widgets', (req, res) => {
+  try {
+    const performance = analyticsEngine.getWidgetPerformance();
+    res.json(performance);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Get widget performance (specific)
+router.get('/analytics/widgets/:widgetId', (req, res) => {
   try {
     const performance = analyticsEngine.getWidgetPerformance(req.params.widgetId);
     res.json(performance);
