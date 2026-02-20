@@ -22,7 +22,7 @@ export default function ConsentPrivacyManagement() {
         <li>Import/export data, analyze compliance</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#23263a', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#0a0a0a', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
@@ -110,7 +110,7 @@ export default function ConsentPrivacyManagement() {
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: '#7fffd4' }}>Consents <span style={{ background: '#1e3a2f', color: '#7fffd4', borderRadius: 12, padding: '2px 10px', fontSize: 12, marginLeft: 6 }}>{consents.length}</span></div>
         {consents.length === 0 ? <div style={{ color: '#4b5563', fontSize: 14 }}>No consents recorded yet.</div> : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {consents.map((c, i) => <div key={i} style={{ background: '#23263a', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#e2e8f0', border: '1px solid #2f3a50' }}>{typeof c === 'string' ? c : (c.type || c.user || JSON.stringify(c).slice(0, 120))}</div>)}
+            {consents.map((c, i) => <div key={i} style={{ background: '#0a0a0a', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#e2e8f0', border: '1px solid #2f3a50' }}>{typeof c === 'string' ? c : (c.type || c.user || JSON.stringify(c).slice(0, 120))}</div>)}
           </div>
         )}
       </div>
@@ -119,7 +119,7 @@ export default function ConsentPrivacyManagement() {
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: '#7fffd4' }}>Privacy Requests <span style={{ background: '#1e3a2f', color: '#7fffd4', borderRadius: 12, padding: '2px 10px', fontSize: 12, marginLeft: 6 }}>{privacyRequests.length}</span></div>
         {privacyRequests.length === 0 ? <div style={{ color: '#4b5563', fontSize: 14 }}>No privacy requests yet.</div> : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {privacyRequests.map((r, i) => <div key={i} style={{ background: '#23263a', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#e2e8f0', border: '1px solid #2f3a50' }}>{r.type || r.user || JSON.stringify(r).slice(0, 120)}</div>)}
+            {privacyRequests.map((r, i) => <div key={i} style={{ background: '#0a0a0a', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#e2e8f0', border: '1px solid #2f3a50' }}>{r.type || r.user || JSON.stringify(r).slice(0, 120)}</div>)}
           </div>
         )}
       </div>
@@ -128,7 +128,7 @@ export default function ConsentPrivacyManagement() {
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: '#7fffd4' }}>Compliance Reports <span style={{ background: '#1e3a2f', color: '#7fffd4', borderRadius: 12, padding: '2px 10px', fontSize: 12, marginLeft: 6 }}>{complianceReports.length}</span></div>
         {complianceReports.length === 0 ? <div style={{ color: '#4b5563', fontSize: 14 }}>No compliance reports yet.</div> : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {complianceReports.map((r, i) => <div key={i} style={{ background: '#23263a', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#e2e8f0', border: '1px solid #2f3a50' }}>{r.title || r.type || JSON.stringify(r).slice(0, 120)}</div>)}
+            {complianceReports.map((r, i) => <div key={i} style={{ background: '#0a0a0a', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#e2e8f0', border: '1px solid #2f3a50' }}>{r.title || r.type || JSON.stringify(r).slice(0, 120)}</div>)}
           </div>
         )}
       </div>

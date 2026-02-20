@@ -44,7 +44,7 @@ export default function OnboardingChecklist({ onComplete, forceShow, onClose }) 
 
   return (
     <div style={{
-      position: 'fixed', bottom: 32, right: 32, zIndex: 9999, background: '#23263a', color: '#fff', borderRadius: 14, boxShadow: '0 4px 24px #0008', padding: '24px 32px', minWidth: 260, maxWidth: 360, fontSize: 16, fontWeight: 500, letterSpacing: '0.01em', animation: 'fadeIn 0.4s', border: '1.5px solid #7fffd4',
+      position: 'fixed', bottom: 32, right: 32, zIndex: 9999, background: '#0a0a0a', color: '#fff', borderRadius: 14, boxShadow: '0 4px 24px #0008', padding: '24px 32px', minWidth: 260, maxWidth: 360, fontSize: 16, fontWeight: 500, letterSpacing: '0.01em', animation: 'fadeIn 0.4s', border: '1.5px solid #7fffd4',
     }}>
       <div style={{fontWeight:700, fontSize:18, color:'#7fffd4', marginBottom:10}}>Getting Started</div>
       <ul style={{listStyle:'none', padding:0, margin:0, marginBottom:10}}>

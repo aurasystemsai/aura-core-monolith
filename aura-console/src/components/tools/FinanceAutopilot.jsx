@@ -118,7 +118,7 @@ export default function FinanceAutopilot() {
 
   // Onboarding
   const onboardingContent = (
-    <div style={{ padding: 24, background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Finance Autopilot</h3>
       <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#334155", fontSize: 16 }}>
         <li>Generate, import, and manage finance tasks with AI</li>
@@ -126,7 +126,7 @@ export default function FinanceAutopilot() {
         <li>Collaborate and share with your team</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
     </div>
   );
 
@@ -143,13 +143,13 @@ export default function FinanceAutopilot() {
       borderRadius: 18,
       boxShadow: "0 2px 24px #0002",
       padding: 36,
-      color: darkMode ? "#a3e635" : "#23263a",
+      color: darkMode ? "#a3e635" : "#0a0a0a",
       fontFamily: 'Inter, sans-serif',
       transition: "background 0.3s, color 0.3s"
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Finance Autopilot</h2>
-        <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
+        <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
       </div>
       <div style={{ marginBottom: 10, color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>
         <span role="img" aria-label="robot">🤖</span> Generate, manage, and analyze finance tasks with AI and analytics.
@@ -160,31 +160,31 @@ export default function FinanceAutopilot() {
         value={input}
         onChange={e => setInput(e.target.value)}
         rows={4}
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#0a0a0a" : "#fff", color: darkMode ? "#a3e635" : "#0a0a0a" }}
         placeholder="Describe your finance task or workflow here..."
         aria-label="Finance task input"
       />
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={handleGenerate} disabled={loading || !input} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Generating..." : "AI Generate"}</button>
-        <button onClick={handleAddTask} disabled={!result} style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Save Task</button>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
+        <button onClick={handleGenerate} disabled={loading || !input} style={{ background: "#a3e635", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Generating..." : "AI Generate"}</button>
+        <button onClick={handleAddTask} disabled={!result} style={{ background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Save Task</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import tasks" />
         <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
         {exported && <a href={exported} download="tasks.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {result && (
-        <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635" : "#23263a" }}>
+        <div style={{ background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635" : "#0a0a0a" }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Task:</div>
           <div>{result}</div>
         </div>
       )}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       <div style={{ marginTop: 24, background: darkMode ? "#181f2a" : "#fff", borderRadius: 12, padding: 18, border: "1px solid #2f3a50" }}>
-        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: darkMode ? "#e2e8f0" : "#23263a" }}>Tasks</div>
+        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: darkMode ? "#e2e8f0" : "#0a0a0a" }}>Tasks</div>
         {tasks.map(t => (
-          <div key={t.id} style={{ background: darkMode ? "#23263a" : "#f8fafc", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2f3a50" }}>
-            <span style={{ fontWeight: 600, color: darkMode ? "#e2e8f0" : "#23263a" }}>{t.content ? t.content.slice(0, 80) + (t.content.length > 80 ? "…" : "") : `Task #${t.id}`}</span>
+          <div key={t.id} style={{ background: darkMode ? "#0a0a0a" : "#f8fafc", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2f3a50" }}>
+            <span style={{ fontWeight: 600, color: darkMode ? "#e2e8f0" : "#0a0a0a" }}>{t.content ? t.content.slice(0, 80) + (t.content.length > 80 ? "…" : "") : `Task #${t.id}`}</span>
           </div>
         ))}
       </div>

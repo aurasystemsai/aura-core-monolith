@@ -117,7 +117,7 @@
   transition: background 0.15s;
 }
 .pl-table tr:hover, .pl-table tr:focus-within {
-  background: #23263a !important;
+  background: #0a0a0a !important;
 }
 .pl-product-cell {
   font-weight: 600;
@@ -154,7 +154,7 @@
   font-size: 13px;
 }
 .pl-keyword-pill {
-  background: #23263a;
+  background: #0a0a0a;
   color: #7fffd4;
   border-radius: 4px;
   padding: 2px 6px;

@@ -8297,7 +8297,7 @@ export default function ImageAltMediaSEO() {
       {(result || captionResult) && (
         <div style={{ display: "grid", gridTemplateColumns: captionResult ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 12 }}>
           {result ? (
-            <div style={{ background: "#23263a", borderRadius: 10, padding: 16, color: "#a3e635" }} aria-live="polite">
+            <div style={{ background: "#0a0a0a", borderRadius: 10, padding: 16, color: "#a3e635" }} aria-live="polite">
               <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Alt Text</div>
               <div>{result}</div>
               {lint && (
@@ -8318,7 +8318,7 @@ export default function ImageAltMediaSEO() {
                   {sanitized && sanitized !== result && (
                     <div style={{ marginTop: 6 }}>
                       <span style={{ fontWeight: 600 }}>Sanitized:</span> {sanitized}
-                      <button onClick={() => setResult(sanitized)} style={{ marginLeft: 8, background: "#a3e635", color: "#23263a", border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 13 }}>Use sanitized</button>
+                      <button onClick={() => setResult(sanitized)} style={{ marginLeft: 8, background: "#a3e635", color: "#0a0a0a", border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 13 }}>Use sanitized</button>
                     </div>
                   )}
                 </div>
@@ -8387,7 +8387,7 @@ export default function ImageAltMediaSEO() {
           onChange={e => setImageUrl(e.target.value)}
           placeholder="Image URL (optional but recommended)"
           aria-label="Image URL"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}
         />
 
         {simulationResults?.length ? (
@@ -8489,19 +8489,19 @@ export default function ImageAltMediaSEO() {
           onChange={e => setKeywords(e.target.value)}
           placeholder="Keywords (comma separated)"
           aria-label="Keywords"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", marginTop: 10 }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635", marginTop: 10 }}
         />
         <input name="brandTerms"
           value={brandTerms}
           onChange={e => setBrandTerms(e.target.value)}
           placeholder="Brand vocabulary (comma separated)"
           aria-label="Brand terms"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", marginTop: 10, marginBottom: 14 }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635", marginTop: 10, marginBottom: 14 }}
         />
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 8, color: "#a3e635", fontSize: 13 }}>
           <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
             Role
-            <select name="role" value={role} onChange={e => setRole(e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+            <select name="role" value={role} onChange={e => setRole(e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}>
               <option value="admin">admin</option>
               <option value="editor">editor</option>
               <option value="reviewer">reviewer</option>
@@ -8560,7 +8560,7 @@ export default function ImageAltMediaSEO() {
                 onBlur={() => setTimeout(() => setSearchSuggestions([]), 200)}
                 placeholder="Search URL or alt text"
                 aria-label="Search images"
-                style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 180, position: "relative" }}
+                style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635", minWidth: 180, position: "relative" }}
               />
               {searchSuggestions.length > 0 && (
                 <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#1e293b", border: "1px solid #475569", borderRadius: 8, marginTop: 4, maxHeight: 200, overflow: "auto", zIndex: 100, boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
@@ -8573,7 +8573,7 @@ export default function ImageAltMediaSEO() {
               <button onClick={handleClearImageSearch} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Clear</button>
               <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                 Page size
-                <select name="imageLimit" value={imageLimit} onChange={e => handleImageLimitChange(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+                <select name="imageLimit" value={imageLimit} onChange={e => handleImageLimitChange(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}>
                   {[10, 20, 50, 100, 200].map(opt => <option key={opt} value={opt}>{opt}</option>)}
                 </select>
               </label>
@@ -8585,7 +8585,7 @@ export default function ImageAltMediaSEO() {
                   onChange={e => setShopDomain(e.target.value)}
                   placeholder="shop.myshopify.com"
                   aria-label="Shopify shop domain"
-                  style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 180 }}
+                  style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635", minWidth: 180 }}
                 />
                 <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                   Max images
@@ -8604,11 +8604,11 @@ export default function ImageAltMediaSEO() {
                   onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleSimilaritySearch(); } }}
                   placeholder="Find similar alt text"
                   aria-label="Similarity search text"
-                  style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 200 }}
+                  style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635", minWidth: 200 }}
                 />
                 <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                   Top
-                  <select name="similarityLimit" value={similarityLimit} onChange={e => setSimilarityLimit(Math.min(Math.max(Number(e.target.value) || 5, 1), 50))} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+                  <select name="similarityLimit" value={similarityLimit} onChange={e => setSimilarityLimit(Math.min(Math.max(Number(e.target.value) || 5, 1), 50))} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}>
                     {[3, 5, 10, 20, 50].map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
                   <span>results</span>
@@ -8630,7 +8630,7 @@ export default function ImageAltMediaSEO() {
             <span>Page {currentImagePage} / {totalImagePages}</span>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <button onClick={() => handleImagePageChange(-1)} disabled={currentImagePage <= 1} style={{ background: "linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: currentImagePage <= 1 ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: currentImagePage <= 1 ? 0.5 : 1 }}>← Prev</button>
-              <input name="jumpToPage" type="number" min={1} max={totalImagePages} value={jumpToPage || currentImagePage} onChange={e => setJumpToPage(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const page = Math.min(Math.max(1, Number(jumpToPage) || 1), totalImagePages); setImageOffset((page - 1) * imageLimit); setJumpToPage(""); fetchImages((page - 1) * imageLimit, imageLimit, imageSearch); } }} placeholder="Jump" style={{ width: 60, padding: "6px 8px", borderRadius: 8, border: "2px solid #8b5cf6", background: "#23263a", color: "#a3e635", textAlign: "center", fontWeight: 700 }} />
+              <input name="jumpToPage" type="number" min={1} max={totalImagePages} value={jumpToPage || currentImagePage} onChange={e => setJumpToPage(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const page = Math.min(Math.max(1, Number(jumpToPage) || 1), totalImagePages); setImageOffset((page - 1) * imageLimit); setJumpToPage(""); fetchImages((page - 1) * imageLimit, imageLimit, imageSearch); } }} placeholder="Jump" style={{ width: 60, padding: "6px 8px", borderRadius: 8, border: "2px solid #8b5cf6", background: "#0a0a0a", color: "#a3e635", textAlign: "center", fontWeight: 700 }} />
               <span style={{ color: "#cbd5e1" }}>/</span>
               <span style={{ fontWeight: 700, color: "#a3e635" }}>{totalImagePages}</span>
               <button onClick={() => handleImagePageChange(1)} disabled={currentImagePage >= totalImagePages} style={{ background: "linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: currentImagePage >= totalImagePages ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: currentImagePage >= totalImagePages ? 0.5 : 1 }}>Next →</button>
@@ -8987,7 +8987,7 @@ export default function ImageAltMediaSEO() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Tone</span>
-          <select name="tone" value={tone} onChange={e => setTone(e.target.value)} aria-label="Tone" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+          <select name="tone" value={tone} onChange={e => setTone(e.target.value)} aria-label="Tone" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}>
             {(meta?.presets?.tone || ["minimalist", "balanced", "expressive"]).map(opt => (
               <option key={opt} value={opt}>{opt}</option>
             ))}
@@ -8995,7 +8995,7 @@ export default function ImageAltMediaSEO() {
         </label>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Verbosity</span>
-          <select name="verbosity" value={verbosity} onChange={e => setVerbosity(e.target.value)} aria-label="Verbosity" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+          <select name="verbosity" value={verbosity} onChange={e => setVerbosity(e.target.value)} aria-label="Verbosity" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}>
             {(meta?.presets?.verbosity || ["terse", "balanced", "detailed"]).map(opt => (
               <option key={opt} value={opt}>{opt}</option>
             ))}
@@ -9005,12 +9005,12 @@ export default function ImageAltMediaSEO() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
           <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontWeight: 600 }}>Variants</span>
-            <input name="variantCount" type="number" min={1} max={5} value={variantCount} onChange={e => setVariantCount(Math.min(5, Math.max(1, Number(e.target.value) || 1)))} aria-label="Variant count" style={{ width: 80, padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }} />
+            <input name="variantCount" type="number" min={1} max={5} value={variantCount} onChange={e => setVariantCount(Math.min(5, Math.max(1, Number(e.target.value) || 1)))} aria-label="Variant count" style={{ width: 80, padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }} />
             <span style={{ fontSize: 12, color: "#a3e635" }}>1-5 suggestions</span>
           </label>
           <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontWeight: 600 }}>Preset bundle</span>
-            <select name="presetBundle" value={selectedBundle} onChange={e => applyBundle(e.target.value)} aria-label="Preset bundle" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+            <select name="presetBundle" value={selectedBundle} onChange={e => applyBundle(e.target.value)} aria-label="Preset bundle" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}>
               <option value="custom">Custom</option>
               {(meta?.presets?.bundles || []).map(b => (
                 <option key={b.key} value={b.key}>{b.key}</option>
@@ -9027,20 +9027,20 @@ export default function ImageAltMediaSEO() {
           onChange={e => setProductTitle(e.target.value)}
           placeholder="Product title"
           aria-label="Product title"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}
         />
         <input name="variant"
           value={variant}
           onChange={e => setVariant(e.target.value)}
           placeholder="Variant (e.g., red / size M)"
           aria-label="Variant"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}
         />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Shot type</span>
-          <select name="shotType" value={shotType} onChange={e => setShotType(e.target.value)} aria-label="Shot type" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+          <select name="shotType" value={shotType} onChange={e => setShotType(e.target.value)} aria-label="Shot type" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}>
             <option value="front">front</option>
             <option value="back">back</option>
             <option value="side">side</option>
@@ -9051,7 +9051,7 @@ export default function ImageAltMediaSEO() {
         </label>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Focus</span>
-          <select name="focus" value={focus} onChange={e => setFocus(e.target.value)} aria-label="Focus" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+          <select name="focus" value={focus} onChange={e => setFocus(e.target.value)} aria-label="Focus" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}>
             <option value="product">product</option>
             <option value="scene">scene</option>
             <option value="detail">detail</option>
@@ -9064,7 +9064,7 @@ export default function ImageAltMediaSEO() {
           value={lintOnlyText}
           onChange={e => setLintOnlyText(e.target.value)}
           rows={3}
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 10, background: "#23263a", color: "#a3e635" }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 10, background: "#0a0a0a", color: "#a3e635" }}
           placeholder="Paste alt text to lint"
           aria-label="Alt text to lint"
         />
@@ -9074,14 +9074,14 @@ export default function ImageAltMediaSEO() {
             onChange={e => setLintOnlyKeywords(e.target.value)}
             placeholder="Keywords (comma separated)"
             aria-label="Lint keywords"
-            style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
+            style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}
           />
           <input name="lintOnlyBrandTerms"
             value={lintOnlyBrandTerms}
             onChange={e => setLintOnlyBrandTerms(e.target.value)}
             placeholder={meta?.presets?.brandVocabHint || "Brand vocabulary (comma separated)"}
             aria-label="Lint brand vocabulary"
-            style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}
+            style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}
           />
         </div>
         <button onClick={handleLintOnly} disabled={loading || !lintOnlyText.trim()} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontWeight: 700, cursor: "pointer" }}>Lint Now</button>
@@ -9106,7 +9106,7 @@ export default function ImageAltMediaSEO() {
         value={attributes}
         onChange={e => setAttributes(e.target.value)}
         rows={3}
-        style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#23263a", color: "#a3e635" }}
+        style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#0a0a0a", color: "#a3e635" }}
         placeholder="Attributes (comma or JSON: color, material, style, use-case)"
         aria-label="Attributes"
       />
@@ -9115,12 +9115,12 @@ export default function ImageAltMediaSEO() {
         onChange={e => setScene(e.target.value)}
         placeholder="Scene (e.g., studio on white, outdoor cafe)"
         aria-label="Scene"
-        style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#23263a", color: "#a3e635" }}
+        style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#0a0a0a", color: "#a3e635" }}
       />
       <div style={{ display: "flex", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Locale</span>
-          <select name="locale" value={locale} onChange={e => setLocale(e.target.value)} aria-label="Locale" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+          <select name="locale" value={locale} onChange={e => setLocale(e.target.value)} aria-label="Locale" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}>
             <option value="en-US">en-US</option>
             <option value="en-GB">en-GB</option>
             <option value="de">de</option>
@@ -9146,16 +9146,16 @@ export default function ImageAltMediaSEO() {
         value={input}
         onChange={e => setInput(e.target.value)}
         rows={4}
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#23263a", color: "#a3e635" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#0a0a0a", color: "#a3e635" }}
         placeholder="Describe your image or alt text needs here..."
         aria-label="Image alt text input"
       />
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={handleGenerate} disabled={loading || (!input && !imageUrl)} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Generating..." : "AI Generate"}</button>
+        <button onClick={handleGenerate} disabled={loading || (!input && !imageUrl)} style={{ background: "#a3e635", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Generating..." : "AI Generate"}</button>
         <button onClick={handleCaption} disabled={loading || (!input && !imageUrl)} style={{ background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>AI Caption</button>
-        <button onClick={handleAddImage} disabled={!result} style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Save Alt Text</button>
+        <button onClick={handleAddImage} disabled={!result} style={{ background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Save Alt Text</button>
         <button onClick={handleCopyResult} disabled={!result} style={{ background: "#14b8a6", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "10px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
         <input name="importFile" ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import images" />
         <button onClick={handleExportJson} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export JSON</button>
         <button onClick={handleExportCsv} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export CSV</button>
@@ -9169,7 +9169,7 @@ export default function ImageAltMediaSEO() {
         </div>
       )}
       {result && (
-        <div style={{ background: "#23263a", borderRadius: 10, padding: 16, marginBottom: 12, color: "#a3e635" }} aria-live="polite">
+        <div style={{ background: "#0a0a0a", borderRadius: 10, padding: 16, marginBottom: 12, color: "#a3e635" }} aria-live="polite">
           <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Alt Text:</div>
           <div>{result}</div>
           {lint && (
@@ -9190,7 +9190,7 @@ export default function ImageAltMediaSEO() {
               {sanitized && sanitized !== result && (
                 <div style={{ marginTop: 6 }}>
                   <span style={{ fontWeight: 600 }}>Sanitized:</span> {sanitized}
-                  <button onClick={() => setResult(sanitized)} style={{ marginLeft: 8, background: "#a3e635", color: "#23263a", border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 13 }}>Use sanitized</button>
+                  <button onClick={() => setResult(sanitized)} style={{ marginLeft: 8, background: "#a3e635", color: "#0a0a0a", border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 13 }}>Use sanitized</button>
                 </div>
               )}
             </div>
@@ -9234,7 +9234,7 @@ export default function ImageAltMediaSEO() {
               <button onClick={handleSimulateSelected} aria-label="Simulate AI for selected" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#e0e7ff" : "#334155", color: roleCanSimulate ? "#1e293b" : "#94a3b8", border: "1px solid #c7d2fe", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Simulate AI</button>
               <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
                 Translate to
-                <select name="translateLocale" value={translateLocale} onChange={e => setTranslateLocale(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635" }}>
+                <select name="translateLocale" value={translateLocale} onChange={e => setTranslateLocale(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635" }}>
                   {['es','fr','de','en-GB','en-US','ja','ko','zh'].map(code => <option key={code} value={code}>{code}</option>)}
                 </select>
               </label>
@@ -9462,14 +9462,14 @@ export default function ImageAltMediaSEO() {
               onChange={e => setCollectionFilter(e.target.value)}
               placeholder="Filter by collection (substring)"
               aria-label="Collection filter"
-              style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 180 }}
+              style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635", minWidth: 180 }}
             />
             <input name="vendorFilter"
               value={vendorFilter}
               onChange={e => setVendorFilter(e.target.value)}
               placeholder="Filter by vendor (substring)"
               aria-label="Vendor filter"
-              style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#23263a", color: "#a3e635", minWidth: 180 }}
+              style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0a0a", color: "#a3e635", minWidth: 180 }}
             />
             <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
               <input name="includeHeaders" type="checkbox" checked={includeHeaders} onChange={e => setIncludeHeaders(e.target.checked)} />

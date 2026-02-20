@@ -658,7 +658,7 @@ export default function WorkflowAutomationBuilder() {
         <li>Export, share, and review workflow history</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
     </div>
   );
 
@@ -903,11 +903,11 @@ export default function WorkflowAutomationBuilder() {
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
         <div style={{ background: "#111827", border: "1px solid #1f2937", borderRadius: 10, padding: 10, minWidth: 220 }}>
           <div style={{ fontWeight: 700, marginBottom: 6 }}>Presets</div>
-          <select value={presetTag} onChange={e => setPresetTag(e.target.value)} style={{ width: "100%", background: "#18181b", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 8, padding: 8, marginBottom: 6 }}>
+          <select value={presetTag} onChange={e => setPresetTag(e.target.value)} style={{ width: "100%", background: "#18181b", color: "#e5e7eb", border: "1px solid #0a0a0a", borderRadius: 8, padding: 8, marginBottom: 6 }}>
             <option value="">All tags</option>
             {Array.from(new Set(PRESETS.flatMap(p => p.tags))).map(tag => <option key={tag} value={tag}>{tag}</option>)}
           </select>
-          <select value={selectedPreset} onChange={e => handleApplyPreset(e.target.value)} style={{ width: "100%", background: "#18181b", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 8, padding: 8, marginBottom: 8 }}>
+          <select value={selectedPreset} onChange={e => handleApplyPreset(e.target.value)} style={{ width: "100%", background: "#18181b", color: "#e5e7eb", border: "1px solid #0a0a0a", borderRadius: 8, padding: 8, marginBottom: 8 }}>
             <option value="">Pick a preset...</option>
             {PRESETS.filter(p => !presetTag || p.tags.includes(presetTag)).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             {userTemplates.map(t => <option key={t.id} value={t.id}>{t.name} (yours)</option>)}
@@ -929,7 +929,7 @@ export default function WorkflowAutomationBuilder() {
             </ul>
           )}
           <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <select value={selectedPayloadPreset} onChange={e => setSelectedPayloadPreset(e.target.value)} style={{ background: "#18181b", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 8, padding: 8 }}>
+            <select value={selectedPayloadPreset} onChange={e => setSelectedPayloadPreset(e.target.value)} style={{ background: "#18181b", color: "#e5e7eb", border: "1px solid #0a0a0a", borderRadius: 8, padding: 8 }}>
               {PAYLOAD_PRESETS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
             <button onClick={handleTestInDev} style={{ background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>{testStatus === "running" ? "Testing..." : "Test in dev"}</button>
@@ -939,7 +939,7 @@ export default function WorkflowAutomationBuilder() {
           <div style={{ fontWeight: 700, marginBottom: 6 }}>Versions</div>
           {versions.length === 0 && <div style={{ color: "#9ca3af", fontSize: 13 }}>No snapshots yet.</div>}
           {versions.slice(0, 4).map(v => (
-            <div key={v.id} style={{ padding: 8, borderRadius: 8, border: "1px solid #23263a", marginBottom: 6, background: "#0b1221" }}>
+            <div key={v.id} style={{ padding: 8, borderRadius: 8, border: "1px solid #0a0a0a", marginBottom: 6, background: "#0b1221" }}>
               <div style={{ fontWeight: 700 }}>{v.label}</div>
               <div style={{ color: "#9ca3af", fontSize: 12 }}>Saved {formatTime(v.createdAt)}</div>
               <button onClick={() => handleRestoreVersion(v)} style={{ marginTop: 6, background: "#22c55e", color: "#0b1221", border: "none", borderRadius: 6, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Restore</button>
@@ -955,7 +955,7 @@ export default function WorkflowAutomationBuilder() {
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Workflow Steps</div>
           <ul style={{ listStyle: "none", padding: 0 }}>
             {steps.map(step => (
-              <li key={step.id} style={{ marginBottom: 8, background: selectedStep === step.id ? "#23263a" : "#18181b", borderRadius: 8, padding: 8, cursor: "pointer", border: selectedStep === step.id ? "2px solid #6366f1" : "1px solid #23263a" }} onClick={() => setSelectedStep(step.id)}>
+              <li key={step.id} style={{ marginBottom: 8, background: selectedStep === step.id ? "#0a0a0a" : "#18181b", borderRadius: 8, padding: 8, cursor: "pointer", border: selectedStep === step.id ? "2px solid #6366f1" : "1px solid #0a0a0a" }} onClick={() => setSelectedStep(step.id)}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6 }}>
                   <div>
                     <b>{step.name}</b> <span style={{ color: "#a5f3fc", fontSize: 12 }}>({step.type})</span>
@@ -975,8 +975,8 @@ export default function WorkflowAutomationBuilder() {
           </div>
           <div style={{ marginTop: 12, background: "#0b1221", border: "1px solid #1f2937", borderRadius: 10, padding: 10 }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Action library</div>
-            <input value={actionSearch} onChange={e => setActionSearch(e.target.value)} placeholder="Search actions/triggers" style={{ width: "100%", background: "#18181b", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 8, padding: 8, marginBottom: 6 }} />
-            <select value={actionTag} onChange={e => setActionTag(e.target.value)} style={{ width: "100%", background: "#18181b", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 8, padding: 8, marginBottom: 8 }}>
+            <input value={actionSearch} onChange={e => setActionSearch(e.target.value)} placeholder="Search actions/triggers" style={{ width: "100%", background: "#18181b", color: "#e5e7eb", border: "1px solid #0a0a0a", borderRadius: 8, padding: 8, marginBottom: 6 }} />
+            <select value={actionTag} onChange={e => setActionTag(e.target.value)} style={{ width: "100%", background: "#18181b", color: "#e5e7eb", border: "1px solid #0a0a0a", borderRadius: 8, padding: 8, marginBottom: 8 }}>
               <option value="">All tags</option>
               {Array.from(new Set(ACTION_LIBRARY.flatMap(a => a.tags))).map(tag => <option key={tag} value={tag}>{tag}</option>)}
             </select>
@@ -998,12 +998,12 @@ export default function WorkflowAutomationBuilder() {
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Step Configuration</div>
           {steps.map(step => step.id === selectedStep && (
             <div key={step.id}>
-              <input value={step.name} onChange={e => setSteps(steps.map(s => s.id === step.id ? { ...s, name: e.target.value } : s))} style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 8, background: "#18181b", color: "#e5e7eb" }} />
-              <select value={step.type} onChange={e => setSteps(steps.map(s => s.id === step.id ? { ...s, type: e.target.value } : s))} style={{ marginBottom: 8, width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 8, background: "#18181b", color: "#e5e7eb" }}>
+              <input value={step.name} onChange={e => setSteps(steps.map(s => s.id === step.id ? { ...s, name: e.target.value } : s))} style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, width: "100%", borderRadius: 6, border: "1px solid #0a0a0a", padding: 8, background: "#18181b", color: "#e5e7eb" }} />
+              <select value={step.type} onChange={e => setSteps(steps.map(s => s.id === step.id ? { ...s, type: e.target.value } : s))} style={{ marginBottom: 8, width: "100%", borderRadius: 6, border: "1px solid #0a0a0a", padding: 8, background: "#18181b", color: "#e5e7eb" }}>
                 <option value="trigger">Trigger</option>
                 <option value="action">Action</option>
               </select>
-              <textarea value={step.config} onChange={e => handleStepChange(step.id, e.target.value)} rows={4} style={{ width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 8, background: "#23263a", color: "#e5e7eb" }} placeholder={step.type === "trigger" ? "Describe the trigger (e.g. 'Order placed')" : "Describe the action (e.g. 'Send Slack notification')"} />
+              <textarea value={step.config} onChange={e => handleStepChange(step.id, e.target.value)} rows={4} style={{ width: "100%", borderRadius: 6, border: "1px solid #0a0a0a", padding: 8, background: "#0a0a0a", color: "#e5e7eb" }} placeholder={step.type === "trigger" ? "Describe the trigger (e.g. 'Order placed')" : "Describe the action (e.g. 'Send Slack notification')"} />
               <div style={{ display: "flex", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
                 <button onClick={() => handleStepChange(step.id, step.type === "trigger" ? "Auto-detected event with debounce" : "Send Slack + email with retry") } style={{ background: "#0ea5e9", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Suggest config</button>
                 <button onClick={() => setStepStatuses(prev => ({ ...prev, [step.id]: "pending" }))} style={{ background: "#f59e0b", color: "#0b1221", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Mark pending</button>

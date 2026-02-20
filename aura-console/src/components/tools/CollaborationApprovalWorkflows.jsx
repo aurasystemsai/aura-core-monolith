@@ -169,7 +169,7 @@ export default function CollaborationApprovalWorkflows() {
   };
 
   const onboardingContent = (
-    <div style={{ padding: 24, background: "#23263a", borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: "#0a0a0a", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Collaboration & Approval Workflows</h3>
       <ul style={{ margin: "16px 0 0 18px", color: "#a3e635", fontSize: 16 }}>
         <li>Design approval and collaboration workflows</li>
@@ -177,7 +177,7 @@ export default function CollaborationApprovalWorkflows() {
         <li>Export, share, and review workflow history</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#23263a", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#0a0a0a", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
     </div>
   );
 
@@ -603,7 +603,7 @@ export default function CollaborationApprovalWorkflows() {
         </div>
       </div>
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={() => fileInputRef.current?.click()} disabled={isViewer} style={{ background: "#fbbf24", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Import</button>
+        <button onClick={() => fileInputRef.current?.click()} disabled={isViewer} style={{ background: "#fbbf24", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import workflows" disabled={isViewer} />
         <button onClick={handleExport} disabled={isViewer} style={{ background: "#0ea5e9", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.7 : 1 }}>Export</button>
         {exported && <a href={exported} download="collaboration-workflows.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
@@ -616,15 +616,15 @@ export default function CollaborationApprovalWorkflows() {
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#23263a", color: "#f3f4f6" }}
+          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#0a0a0a", color: "#f3f4f6" }}
           placeholder="Share your feedback or suggestions..."
           aria-label="Feedback input"
         />
-        <button type="submit" style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send Feedback</button>
+        <button type="submit" style={{ background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send Feedback</button>
       </form>
       {/* ...existing code... */}
       {result && (
-        <div style={{ marginTop: 24, background: "#23263a", borderRadius: 12, padding: 20 }}>
+        <div style={{ marginTop: 24, background: "#0a0a0a", borderRadius: 12, padding: 20 }}>
           <h3 style={{ fontWeight: 700, fontSize: 20 }}>Workflow Result</h3>
           <pre style={{ fontSize: 15, color: "#a3e635" }}>{JSON.stringify(result, null, 2)}</pre>
         </div>
@@ -634,7 +634,7 @@ export default function CollaborationApprovalWorkflows() {
           <h3 style={{ fontWeight: 700, fontSize: 18 }}>History</h3>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, idx) => (
-              <li key={idx} style={{ marginBottom: 8, background: "#23263a", borderRadius: 8, padding: 8 }}>
+              <li key={idx} style={{ marginBottom: 8, background: "#0a0a0a", borderRadius: 8, padding: 8 }}>
                 <b>Workflow:</b> {h.workflow} <br />
                 <b>Result:</b> {JSON.stringify(h.result)}
               </li>

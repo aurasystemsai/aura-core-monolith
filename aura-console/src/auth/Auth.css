@@ -2,7 +2,7 @@
 .aura-auth-shell {
   max-width: 400px;
   margin: 64px auto;
-  background: var(--bg-alt, #23263a);
+  background: var(--bg-alt, #0a0a0a);
   border-radius: 16px;
   box-shadow: 0 4px 24px #0003;
   padding: 40px 32px 32px 32px;

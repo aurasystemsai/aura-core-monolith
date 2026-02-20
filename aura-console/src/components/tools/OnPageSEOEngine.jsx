@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { apiFetch } from "../../api";
 
 function CharBar({ value = "", min, max, label, error }) {
@@ -247,7 +247,7 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
           </div>
           <div style={{ display: "flex", gap: 12 }}>
             {[{ label: "Analyses", value: history.length, color: "#7fffd4" }, { label: "Avg Score", value: history.filter(h => h.score).length ? Math.round(history.filter(h => h.score).reduce((s, h) => s + h.score, 0) / history.filter(h => h.score).length) : "", color: "#a78bfa" }, { label: "Events", value: analyticsData.length, color: "#fbbf24" }].map(s => (
-              <div key={s.label} style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 10, padding: "10px 18px", textAlign: "center" }}>
+              <div key={s.label} style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 10, padding: "10px 18px", textAlign: "center" }}>
                 <div style={{ fontSize: 22, fontWeight: 800, color: s.color }}>{s.value}</div>
                 <div style={{ fontSize: 11, color: "#64748b" }}>{s.label}</div>
               </div>
@@ -278,7 +278,7 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
                       value={form.url}
                       onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
                       placeholder="https://yourstore.myshopify.com/pages/about"
-                      style={{ width: "100%", background: "#0f172a", border: `1px solid ${fetching ? "#fbbf24" : fetchStatus?.ok ? "#4ade80" : "#2f3650"}`, borderRadius: 8, padding: "11px 14px", color: "#e5e7eb", fontSize: 15, outline: "none", boxSizing: "border-box" }}
+                      style={{ width: "100%", background: "#0f172a", border: `1px solid ${fetching ? "#fbbf24" : fetchStatus?.ok ? "#4ade80" : "#1e1e1e"}`, borderRadius: 8, padding: "11px 14px", color: "#e5e7eb", fontSize: 15, outline: "none", boxSizing: "border-box" }}
                     />
                     {fetching && <div style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "#fbbf24" }}>Fetching</div>}
                   </div>
@@ -294,7 +294,7 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
               </div>
 
               {/* Title + Meta */}
-              <div style={{ background: "#1e2a3a", border: `1px solid ${issueFields.has("title") || issueFields.has("metaDescription") ? "#f87171" : "#2f3650"}`, borderRadius: 14, padding: 20, display: "flex", flexDirection: "column", gap: 18 }}>
+              <div style={{ background: "#1e2a3a", border: `1px solid ${issueFields.has("title") || issueFields.has("metaDescription") ? "#f87171" : "#1e1e1e"}`, borderRadius: 14, padding: 20, display: "flex", flexDirection: "column", gap: 18 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: -4 }}>
                   <span style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>Meta Tags</span>
                   {(issueFields.has("title") || issueFields.has("metaDescription")) && <span style={{ fontSize: 11, background: "#2d1515", color: "#f87171", border: "1px solid #f8717140", borderRadius: 4, padding: "2px 8px", fontWeight: 600 }}>Issues Found</span>}
@@ -305,10 +305,10 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
                       Page Title {issueFields.has("title") && ""}
                     </label>
                     <button onClick={() => { setAiPrompt(`Write 5 SEO-optimised titles for this page: ${form.url || form.h1 || form.title}`); setAiContext("title"); setTab("AI Assistant"); }}
-                      style={{ background: "none", border: "1px solid #2f3650", borderRadius: 6, padding: "3px 10px", color: "#a78bfa", cursor: "pointer", fontSize: 11, fontWeight: 600 }}> AI Suggest</button>
+                      style={{ background: "none", border: "1px solid #1e1e1e", borderRadius: 6, padding: "3px 10px", color: "#a78bfa", cursor: "pointer", fontSize: 11, fontWeight: 600 }}> AI Suggest</button>
                   </div>
                   <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                    style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has("title") ? "#f87171" : "#2f3650"}`, borderRadius: 8, padding: "10px 14px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                    style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has("title") ? "#f87171" : "#1e1e1e"}`, borderRadius: 8, padding: "10px 14px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
                   <CharBar value={form.title} min={45} max={65} label="4565 chars" />
                   {result && issueFields.has("title") && <div style={{ marginTop: 6, fontSize: 12, color: "#f87171" }}> {result.issues.find(i => i.field === "title")?.msg}</div>}
                 </div>
@@ -318,17 +318,17 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
                       Meta Description {issueFields.has("metaDescription") && ""}
                     </label>
                     <button onClick={() => { setAiPrompt(`Write 3 meta descriptions for: ${form.title || form.url}`); setAiContext("metaDesc"); setTab("AI Assistant"); }}
-                      style={{ background: "none", border: "1px solid #2f3650", borderRadius: 6, padding: "3px 10px", color: "#a78bfa", cursor: "pointer", fontSize: 11, fontWeight: 600 }}> AI Suggest</button>
+                      style={{ background: "none", border: "1px solid #1e1e1e", borderRadius: 6, padding: "3px 10px", color: "#a78bfa", cursor: "pointer", fontSize: 11, fontWeight: 600 }}> AI Suggest</button>
                   </div>
                   <textarea value={form.metaDescription} onChange={e => setForm(f => ({ ...f, metaDescription: e.target.value }))}
-                    rows={3} style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has("metaDescription") ? "#f87171" : "#2f3650"}`, borderRadius: 8, padding: "10px 14px", color: "#e5e7eb", fontSize: 14, outline: "none", resize: "vertical", lineHeight: 1.5, boxSizing: "border-box" }} />
+                    rows={3} style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has("metaDescription") ? "#f87171" : "#1e1e1e"}`, borderRadius: 8, padding: "10px 14px", color: "#e5e7eb", fontSize: 14, outline: "none", resize: "vertical", lineHeight: 1.5, boxSizing: "border-box" }} />
                   <CharBar value={form.metaDescription} min={130} max={165} label="130165 chars" />
                   {result && issueFields.has("metaDescription") && <div style={{ marginTop: 6, fontSize: 12, color: "#f87171" }}> {result.issues.find(i => i.field === "metaDescription")?.msg}</div>}
                 </div>
               </div>
 
               {/* Heading structure */}
-              <div style={{ background: "#1e2a3a", border: `1px solid ${issueFields.has("h1") || issueFields.has("h2Count") || issueFields.has("h3Count") ? "#f87171" : "#2f3650"}`, borderRadius: 14, padding: 20 }}>
+              <div style={{ background: "#1e2a3a", border: `1px solid ${issueFields.has("h1") || issueFields.has("h2Count") || issueFields.has("h3Count") ? "#f87171" : "#1e1e1e"}`, borderRadius: 14, padding: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                   <span style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>Heading Structure</span>
                   {(issueFields.has("h1") || issueFields.has("h2Count")) && <span style={{ fontSize: 11, background: "#2d1515", color: "#f87171", border: "1px solid #f8717140", borderRadius: 4, padding: "2px 8px", fontWeight: 600 }}>Issues Found</span>}
@@ -337,28 +337,28 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
                   <div style={{ gridColumn: "span 2" }}>
                     <label style={{ display: "block", fontSize: 12, color: issueFields.has("h1") ? "#f87171" : "#64748b", marginBottom: 5, fontWeight: issueFields.has("h1") ? 700 : 400 }}>H1 Text {issueFields.has("h1") && ""}</label>
                     <input value={form.h1} onChange={e => setForm(f => ({ ...f, h1: e.target.value }))}
-                      style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has("h1") ? "#f87171" : "#2f3650"}`, borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                      style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has("h1") ? "#f87171" : "#1e1e1e"}`, borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
                     {result && issueFields.has("h1") && <div style={{ marginTop: 4, fontSize: 11, color: "#f87171" }}> {result.issues.find(i => i.field === "h1")?.msg}</div>}
                   </div>
                   {[{ key: "h2Count", label: "H2 Count" }, { key: "h3Count", label: "H3 Count" }].map(({ key, label }) => (
                     <div key={key}>
                       <label style={{ display: "block", fontSize: 12, color: issueFields.has(key) ? "#f87171" : "#64748b", marginBottom: 5 }}>{label} {issueFields.has(key) && ""}</label>
                       <input type="number" value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} placeholder="0"
-                        style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has(key) ? "#f87171" : "#2f3650"}`, borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                        style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has(key) ? "#f87171" : "#1e1e1e"}`, borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Content & Links */}
-              <div style={{ background: "#1e2a3a", border: `1px solid ${issueFields.has("wordCount") || issueFields.has("imagesWithAlt") ? "#fbbf24" : "#2f3650"}`, borderRadius: 14, padding: 20 }}>
+              <div style={{ background: "#1e2a3a", border: `1px solid ${issueFields.has("wordCount") || issueFields.has("imagesWithAlt") ? "#fbbf24" : "#1e1e1e"}`, borderRadius: 14, padding: 20 }}>
                 <div style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 14 }}>Content & Links</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
                   {[{ key: "wordCount", label: "Word Count" }, { key: "internalLinks", label: "Internal Links" }, { key: "externalLinks", label: "External Links" }, { key: "imageCount", label: "Images Total" }, { key: "imagesWithAlt", label: "Images w/ Alt" }].map(({ key, label }) => (
                     <div key={key}>
                       <label style={{ display: "block", fontSize: 12, color: issueFields.has(key) ? "#fbbf24" : "#64748b", marginBottom: 5, fontWeight: issueFields.has(key) ? 700 : 400 }}>{label} {issueFields.has(key) && ""}</label>
                       <input type="number" value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} placeholder="0"
-                        style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has(key) ? "#fbbf24" : "#2f3650"}`, borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                        style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has(key) ? "#fbbf24" : "#1e1e1e"}`, borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
                       {result && issueFields.has(key) && <div style={{ marginTop: 3, fontSize: 10, color: "#fbbf24", lineHeight: 1.3 }}>{result.issues.find(i => i.field === key)?.msg}</div>}
                     </div>
                   ))}
@@ -366,18 +366,18 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
               </div>
 
               {/* Technical */}
-              <div style={{ background: "#1e2a3a", border: `1px solid ${issueFields.has("canonicalUrl") || issueFields.has("schemaMarkup") ? "#60a5fa" : "#2f3650"}`, borderRadius: 14, padding: 20 }}>
+              <div style={{ background: "#1e2a3a", border: `1px solid ${issueFields.has("canonicalUrl") || issueFields.has("schemaMarkup") ? "#60a5fa" : "#1e1e1e"}`, borderRadius: 14, padding: 20 }}>
                 <div style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 14 }}>Technical SEO</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <div>
                     <label style={{ display: "block", fontSize: 12, color: issueFields.has("canonicalUrl") ? "#60a5fa" : "#64748b", marginBottom: 5, fontWeight: issueFields.has("canonicalUrl") ? 700 : 400 }}>Canonical URL {issueFields.has("canonicalUrl") && " not detected on page"}</label>
                     <input value={form.canonicalUrl} onChange={e => setForm(f => ({ ...f, canonicalUrl: e.target.value }))} placeholder="https://yourstore.myshopify.com/pages/slug"
-                      style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has("canonicalUrl") ? "#60a5fa" : "#2f3650"}`, borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                      style={{ width: "100%", background: "#0f172a", border: `1px solid ${issueFields.has("canonicalUrl") ? "#60a5fa" : "#1e1e1e"}`, borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
                   </div>
                   <div>
                     <label style={{ display: "block", fontSize: 12, color: "#64748b", marginBottom: 5 }}>Target Keywords (comma-separated)</label>
                     <input value={form.keywords} onChange={e => setForm(f => ({ ...f, keywords: e.target.value }))} placeholder="ski wax, fast wax, snowboard accessories"
-                      style={{ width: "100%", background: "#0f172a", border: "1px solid #2f3650", borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                      style={{ width: "100%", background: "#0f172a", border: "1px solid #1e1e1e", borderRadius: 8, padding: "9px 12px", color: "#e5e7eb", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
                   </div>
                   <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 14, color: issueFields.has("schemaMarkup") ? "#60a5fa" : "#94a3b8" }}>
                     <input type="checkbox" checked={!!form.schemaMarkup} onChange={e => setForm(f => ({ ...f, schemaMarkup: e.target.checked ? "yes" : "" }))} style={{ width: 16, height: 16, cursor: "pointer" }} />
@@ -390,7 +390,7 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
 
               <div style={{ display: "flex", gap: 12 }}>
                 <button onClick={() => { setForm(EMPTY_FORM); setResult(null); setError(""); setFetchStatus(null); }}
-                  style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 10, padding: "12px 20px", color: "#94a3b8", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Clear</button>
+                  style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 10, padding: "12px 20px", color: "#94a3b8", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Clear</button>
                 <button onClick={runAnalysis} disabled={loading}
                   style={{ flex: 1, background: loading ? "#374151" : "linear-gradient(135deg, #7fffd4, #22d3ee)", border: "none", borderRadius: 10, padding: "13px", color: "#0f172a", fontWeight: 800, cursor: loading ? "wait" : "pointer", fontSize: 15 }}>
                   {loading ? " Analysing" : " Run SEO Analysis"}
@@ -404,7 +404,7 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
 
             {result && (
               <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+                <div style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 14, padding: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
                   <ScoreRing score={result.score} />
                   <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 6 }}>
                     {["high", "medium", "low"].map(sv => {
@@ -421,7 +421,7 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
                 </div>
 
                 {result.issues.length > 0 && (
-                  <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 20 }}>
+                  <div style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 14, padding: 20 }}>
                     <div style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>All Issues</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {result.issues.map((issue, i) => (
@@ -436,12 +436,12 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
                   </div>
                 )}
 
-                <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 20 }}>
+                <div style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 14, padding: 20 }}>
                   <div style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Google Preview</div>
                   <GooglePreview title={form.title} description={form.metaDescription} url={form.url || form.canonicalUrl} />
                 </div>
 
-                <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 20 }}>
+                <div style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 14, padding: 20 }}>
                   <div style={{ fontWeight: 700, color: "#94a3b8", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Checks</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                     {[
@@ -470,7 +470,7 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#e5e7eb" }}>Analysis History</h2>
-              <button onClick={loadHistory} style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 10, padding: "8px 16px", color: "#7fffd4", cursor: "pointer", fontSize: 13, fontWeight: 600 }}> Refresh</button>
+              <button onClick={loadHistory} style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 10, padding: "8px 16px", color: "#7fffd4", cursor: "pointer", fontSize: 13, fontWeight: 600 }}> Refresh</button>
             </div>
             {historyLoading ? <div style={{ color: "#64748b", textAlign: "center", padding: "40px 0" }}>Loading</div>
             : history.length === 0 ? (
@@ -484,7 +484,7 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
                 {[...history].reverse().map((item, i) => {
                   const sc = item.score; const colour = sc >= 80 ? "#4ade80" : sc >= 55 ? "#fbbf24" : sc > 0 ? "#f87171" : "#475569";
                   return (
-                    <div key={item.id || i} style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: "18px 22px", display: "flex", alignItems: "center", gap: 18 }}>
+                    <div key={item.id || i} style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 14, padding: "18px 22px", display: "flex", alignItems: "center", gap: 18 }}>
                       <div style={{ textAlign: "center", minWidth: 52 }}>
                         <div style={{ fontSize: 24, fontWeight: 900, color: colour }}>{sc || ""}</div>
                         <div style={{ fontSize: 10, color: "#475569", fontWeight: 600 }}>SCORE</div>
@@ -499,7 +499,7 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
                       </div>
                       <div style={{ display: "flex", gap: 8 }}>
                         <button onClick={() => loadFromHistory(item)} style={{ background: "rgba(127,255,212,0.1)", border: "1px solid rgba(127,255,212,0.3)", borderRadius: 8, padding: "7px 14px", color: "#7fffd4", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Load</button>
-                        <button onClick={() => copyText(JSON.stringify(item, null, 2))} style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 8, padding: "7px 14px", color: "#94a3b8", cursor: "pointer", fontSize: 13 }}>Copy</button>
+                        <button onClick={() => copyText(JSON.stringify(item, null, 2))} style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 8, padding: "7px 14px", color: "#94a3b8", cursor: "pointer", fontSize: 13 }}>Copy</button>
                       </div>
                     </div>
                   );
@@ -515,24 +515,24 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
             <p style={{ margin: "0 0 24px", fontSize: 14, color: "#64748b" }}>Generate titles, meta descriptions, H1s, schema markup and keyword ideas with AI.</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
               {[{ key: "general", label: " General" }, { key: "title", label: " Titles" }, { key: "metaDesc", label: " Meta Descs" }, { key: "h1", label: " H1s" }, { key: "schema", label: " Schema" }, { key: "keywords", label: " Keywords" }].map(({ key, label }) => (
-                <button key={key} onClick={() => setAiContext(key)} style={{ background: aiContext === key ? "#7fffd4" : "#1e2a3a", border: `1px solid ${aiContext === key ? "#7fffd4" : "#2f3650"}`, borderRadius: 8, padding: "8px 16px", color: aiContext === key ? "#0f172a" : "#94a3b8", cursor: "pointer", fontSize: 13, fontWeight: aiContext === key ? 700 : 500 }}>{label}</button>
+                <button key={key} onClick={() => setAiContext(key)} style={{ background: aiContext === key ? "#7fffd4" : "#1e2a3a", border: `1px solid ${aiContext === key ? "#7fffd4" : "#1e1e1e"}`, borderRadius: 8, padding: "8px 16px", color: aiContext === key ? "#0f172a" : "#94a3b8", cursor: "pointer", fontSize: 13, fontWeight: aiContext === key ? 700 : 500 }}>{label}</button>
               ))}
             </div>
             {result && (
-              <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: 13, color: "#64748b" }}>
+              <div style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: 13, color: "#64748b" }}>
                 <span style={{ color: "#7fffd4", fontWeight: 600 }}>Context:</span> {result.input.title || result.input.url}  Score: <span style={{ color: result.score >= 80 ? "#4ade80" : "#fbbf24", fontWeight: 700 }}>{result.score}</span>  {result.issues.length} issues
               </div>
             )}
-            <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 20, marginBottom: 16 }}>
+            <div style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 14, padding: 20, marginBottom: 16 }}>
               <textarea value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} rows={4} placeholder="Describe your page or paste specific content for AI to optimise..."
-                style={{ width: "100%", background: "#0f172a", border: "1px solid #2f3650", borderRadius: 8, padding: "10px 14px", color: "#e5e7eb", fontSize: 14, outline: "none", resize: "vertical", lineHeight: 1.5, boxSizing: "border-box" }} />
+                style={{ width: "100%", background: "#0f172a", border: "1px solid #1e1e1e", borderRadius: 8, padding: "10px 14px", color: "#e5e7eb", fontSize: 14, outline: "none", resize: "vertical", lineHeight: 1.5, boxSizing: "border-box" }} />
               <button onClick={runAI} disabled={aiLoading || !aiPrompt.trim()}
                 style={{ marginTop: 12, background: aiLoading ? "#374151" : "linear-gradient(135deg, #7fffd4, #22d3ee)", border: "none", borderRadius: 10, padding: "11px 28px", color: "#0f172a", fontWeight: 800, cursor: aiLoading ? "wait" : "pointer", fontSize: 14, opacity: !aiPrompt.trim() ? 0.5 : 1 }}>
                 {aiLoading ? " Generating" : " Generate"}
               </button>
             </div>
             {aiReply && (
-              <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 20 }}>
+              <div style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 14, padding: 20 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                   <span style={{ fontWeight: 700, color: "#7fffd4", fontSize: 15 }}>AI Response</span>
                   <button onClick={() => copyText(aiReply)} style={{ background: "rgba(127,255,212,0.1)", border: "1px solid rgba(127,255,212,0.3)", borderRadius: 8, padding: "5px 14px", color: "#7fffd4", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Copy</button>
@@ -548,14 +548,14 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
             <h2 style={{ margin: "0 0 20px", fontSize: 20, fontWeight: 800, color: "#e5e7eb" }}>Analytics</h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16, marginBottom: 28 }}>
               {[{ label: "Total Analyses", value: history.length, color: "#7fffd4" }, { label: "Avg SEO Score", value: history.filter(h => h.score).length ? Math.round(history.filter(h => h.score).reduce((s, h) => s + h.score, 0) / history.filter(h => h.score).length) : "", color: "#a78bfa" }, { label: "Score  80", value: history.filter(h => h.score >= 80).length, color: "#4ade80" }, { label: "Score < 55", value: history.filter(h => h.score > 0 && h.score < 55).length, color: "#f87171" }, { label: "Events", value: analyticsData.length, color: "#fbbf24" }].map(s => (
-                <div key={s.label} style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: "20px 22px" }}>
+                <div key={s.label} style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 14, padding: "20px 22px" }}>
                   <div style={{ fontSize: 28, fontWeight: 800, color: s.color }}>{s.value}</div>
                   <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>{s.label}</div>
                 </div>
               ))}
             </div>
             {history.length > 0 && (
-              <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 24, marginBottom: 20 }}>
+              <div style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 14, padding: 24, marginBottom: 20 }}>
                 <h3 style={{ margin: "0 0 16px", fontSize: 16, fontWeight: 700, color: "#e5e7eb" }}>Score Distribution</h3>
                 {[{ label: "Excellent (80100)", min: 80, max: 100, colour: "#4ade80" }, { label: "Good (5579)", min: 55, max: 79, colour: "#a3e635" }, { label: "Needs Work (3554)", min: 35, max: 54, colour: "#fbbf24" }, { label: "Poor (034)", min: 0, max: 34, colour: "#f87171" }].map(band => {
                   const count = history.filter(h => h.score >= band.min && h.score <= band.max).length;
@@ -575,7 +575,7 @@ export default function OnPageSEOEngine({ initialUrl, onUrlConsumed }) {
               </div>
             )}
             {analyticsData.length > 0 && (
-              <div style={{ background: "#1e2a3a", border: "1px solid #2f3650", borderRadius: 14, padding: 24 }}>
+              <div style={{ background: "#1e2a3a", border: "1px solid #1e1e1e", borderRadius: 14, padding: 24 }}>
                 <h3 style={{ margin: "0 0 14px", fontSize: 16, fontWeight: 700, color: "#e5e7eb" }}>Recent Events</h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {[...analyticsData].reverse().slice(0, 15).map((ev, i) => (

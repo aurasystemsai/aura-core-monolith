@@ -24,7 +24,7 @@ export default function LocalSEOToolkit() {
         <li>Import/export data, analyze trends, and optimize for local search</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#23263a', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#0a0a0a', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
@@ -98,7 +98,7 @@ export default function LocalSEOToolkit() {
       {/* GMB Data */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>GMB Data</div>
-        <div style={{ fontSize: 15, color: '#23263a' }}>
+        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
           {gmb.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(gmb, null, 2)}</pre>
           ) : (
@@ -109,7 +109,7 @@ export default function LocalSEOToolkit() {
       {/* Citations */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Citations</div>
-        <div style={{ fontSize: 15, color: '#23263a' }}>
+        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
           {citations.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(citations, null, 2)}</pre>
           ) : (
@@ -120,7 +120,7 @@ export default function LocalSEOToolkit() {
       {/* Reviews */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Reviews</div>
-        <div style={{ fontSize: 15, color: '#23263a' }}>
+        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
           {reviews.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(reviews, null, 2)}</pre>
           ) : (
@@ -131,7 +131,7 @@ export default function LocalSEOToolkit() {
       {/* Local Rankings */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Local Rankings</div>
-        <div style={{ fontSize: 15, color: '#23263a' }}>
+        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
           {rankings.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(rankings, null, 2)}</pre>
           ) : (
@@ -150,7 +150,7 @@ export default function LocalSEOToolkit() {
       {/* Analytics Dashboard */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
-        <div style={{ fontSize: 15, color: '#23263a' }}>
+        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
           {analytics.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
           ) : (

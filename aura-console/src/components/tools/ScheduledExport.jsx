@@ -22,7 +22,7 @@ export default function ScheduledExport() {
         <li>Import/export export configs, analyze usage</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#23263a', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#0a0a0a', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
@@ -69,7 +69,7 @@ export default function ScheduledExport() {
       {/* Exports Table */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Exports</div>
-        <div style={{ fontSize: 15, color: '#23263a' }}>
+        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
           {exports.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(exports, null, 2)}</pre>
           ) : (
@@ -80,7 +80,7 @@ export default function ScheduledExport() {
       {/* Formats Table */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Formats</div>
-        <div style={{ fontSize: 15, color: '#23263a' }}>
+        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
           {formats.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(formats, null, 2)}</pre>
           ) : (
@@ -91,7 +91,7 @@ export default function ScheduledExport() {
       {/* Delivery Options Table */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Delivery Options</div>
-        <div style={{ fontSize: 15, color: '#23263a' }}>
+        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
           {deliveryOptions.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(deliveryOptions, null, 2)}</pre>
           ) : (
@@ -110,7 +110,7 @@ export default function ScheduledExport() {
       {/* Analytics Dashboard */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
-        <div style={{ fontSize: 15, color: '#23263a' }}>
+        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
           {analytics.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
           ) : (

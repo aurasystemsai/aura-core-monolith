@@ -82,7 +82,7 @@ export default function AuraOperationsAI() {
         <li>Review analytics, export results, and view history</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#23263a', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#0a0a0a', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
@@ -106,7 +106,7 @@ export default function AuraOperationsAI() {
       <button
         onClick={handleRun}
         disabled={loading || !input}
-        style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: "pointer", boxShadow: "0 2px 12px #22d3ee55" }}
+        style={{ background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: "pointer", boxShadow: "0 2px 12px #22d3ee55" }}
       >
         {loading ? "Running..." : "Run Tool"}
       </button>
@@ -114,7 +114,7 @@ export default function AuraOperationsAI() {
       {response && (
         <div style={{ marginTop: 32, background: "#232336", borderRadius: 12, padding: 24, color: '#e5e7eb' }}>
           <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>AI Response:</div>
-          <div style={{ fontSize: 16, color: "#23263a" }}>{response}</div>
+          <div style={{ fontSize: 16, color: "#0a0a0a" }}>{response}</div>
         </div>
       )}
 

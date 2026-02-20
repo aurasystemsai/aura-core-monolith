@@ -136,7 +136,7 @@ export default function AllTools({ setActiveSection }) {
             onClick={() => setActiveCategory(cat.id)}
             style={{
               padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              border: `1px solid ${activeCategory === cat.id ? '#7fffd4' : '#2f3650'}`,
+              border: `1px solid ${activeCategory === cat.id ? '#7fffd4' : '#1e1e1e'}`,
               background: activeCategory === cat.id ? '#7fffd422' : 'transparent',
               color: activeCategory === cat.id ? '#7fffd4' : '#94a3b8',
             }}
@@ -280,8 +280,8 @@ export default function AllTools({ setActiveSection }) {
           flex: 1;
           padding: 12px 16px;
           border-radius: 10px;
-          border: 1px solid #2f3650;
-          background: #1a1d2e;
+          border: 1px solid #1e1e1e;
+          background: #111111;
           color: #e5e7eb;
           font-size: 15px;
         }
@@ -295,8 +295,8 @@ export default function AllTools({ setActiveSection }) {
         .sort-select {
           padding: 12px 16px;
           border-radius: 10px;
-          border: 1px solid #2f3650;
-          background: #1a1d2e;
+          border: 1px solid #1e1e1e;
+          background: #111111;
           color: #e5e7eb;
           font-size: 15px;
           cursor: pointer;
@@ -325,8 +325,8 @@ export default function AllTools({ setActiveSection }) {
         }
 
         .tool-card {
-          background: #1a1d2e;
-          border: 1px solid #2f3650;
+          background: #111111;
+          border: 1px solid #1e1e1e;
           border-radius: 16px;
           padding: 24px;
           cursor: pointer;

@@ -110,7 +110,7 @@ export default function SERPTracker() {
   }, []);
 
   return (
-    <div style={{ background: "#23263a", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ background: "#0a0a0a", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
       <BackButton />
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 8 }}>SERP Tracker</h2>
       <div style={{ marginBottom: 10, color: "#0ea5e9", fontWeight: 600 }}>
@@ -125,8 +125,8 @@ export default function SERPTracker() {
         aria-label="Query input"
       />
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={handleTrack} disabled={loading || !input} style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Tracking..." : "AI Track"}</button>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
+        <button onClick={handleTrack} disabled={loading || !input} style={{ background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Tracking..." : "AI Track"}</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import history" />
         <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
         {exported && <a href={exported} download="serp-tracker-history.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
@@ -146,7 +146,7 @@ export default function SERPTracker() {
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>History</div>
         <ul style={{ paddingLeft: 18 }}>
           {history.map(h => (
-            <div key={h.id} style={{ background: "#23263a", borderRadius: 8, padding: "12px 16px", border: "1px solid #2f3a50", marginBottom: 8 }}>
+            <div key={h.id} style={{ background: "#0a0a0a", borderRadius: 8, padding: "12px 16px", border: "1px solid #2f3a50", marginBottom: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
                 <span style={{ fontWeight: 700, color: "#e2e8f0" }}>{h.query || h.site || h.keyword}</span>
                 <span style={{ color: "#64748b" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : `#${h.id}`}</span>

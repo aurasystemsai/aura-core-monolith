@@ -14,11 +14,11 @@ const options = {
   scales: {
     x: { 
       ticks: { color: '#94a3b8' },
-      grid: { color: '#2f3650' },
+      grid: { color: '#1e1e1e' },
     },
     y: { 
       ticks: { color: '#94a3b8' },
-      grid: { color: '#2f3650' },
+      grid: { color: '#1e1e1e' },
     },
   },
 };

@@ -192,7 +192,7 @@ export default function ReportingIntegrations() {
         <li>Import/export notification configs, analyze usage</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#23263a', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#0a0a0a', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
@@ -701,7 +701,7 @@ export default function ReportingIntegrations() {
       </div>
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Notifications</div>
-        <div style={{ fontSize: 15, color: '#23263a' }}>
+        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
           {notifications.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(notifications, null, 2)}</pre>
           ) : (
@@ -719,7 +719,7 @@ export default function ReportingIntegrations() {
             ))}
           </div>
         </div>
-        <div style={{ fontSize: 15, color: '#23263a' }}>
+        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
           {channels.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(channels, null, 2)}</pre>
           ) : (
@@ -741,7 +741,7 @@ export default function ReportingIntegrations() {
       {/* Alerts Table */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Alerts</div>
-        <div style={{ fontSize: 15, color: '#23263a' }}>
+        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
           {alerts.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(alerts, null, 2)}</pre>
           ) : (
@@ -931,7 +931,7 @@ export default function ReportingIntegrations() {
       {/* Analytics Dashboard */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
-        <div style={{ fontSize: 15, color: '#23263a' }}>
+        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
           {analytics.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
           ) : (

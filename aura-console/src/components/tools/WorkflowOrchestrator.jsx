@@ -758,7 +758,7 @@ export default function WorkflowOrchestrator() {
         <li>Preview the payload and require approvals before production.</li>
         <li>Version your orchestration with tags and keep a recent history.</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Got it</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Got it</button>
     </div>
   );
 
@@ -1295,7 +1295,7 @@ export default function WorkflowOrchestrator() {
           </div>
           <ul style={{ listStyle: "none", padding: 0 }}>
             {steps.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.config.toLowerCase().includes(searchTerm.toLowerCase())).map(step => (
-              <li key={step.id} style={{ marginBottom: 8, background: selectedStep === step.id ? "#23263a" : "#18181b", borderRadius: 8, padding: 10, cursor: "pointer", border: selectedStep === step.id ? "2px solid #6366f1" : "1px solid #23263a", display: "flex", alignItems: "center", gap: 8 }} onClick={() => setSelectedStep(step.id)}>
+              <li key={step.id} style={{ marginBottom: 8, background: selectedStep === step.id ? "#0a0a0a" : "#18181b", borderRadius: 8, padding: 10, cursor: "pointer", border: selectedStep === step.id ? "2px solid #6366f1" : "1px solid #0a0a0a", display: "flex", alignItems: "center", gap: 8 }} onClick={() => setSelectedStep(step.id)}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#9ca3af", fontSize: 12 }} onClick={e => e.stopPropagation()}>
                     <input type="checkbox" checked={selectedStepIds.includes(step.id)} onChange={() => handleToggleSelect(step.id)} />
@@ -1308,9 +1308,9 @@ export default function WorkflowOrchestrator() {
                   ) : null}
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
-                  <button onClick={e => { e.stopPropagation(); handleReorder(step.id, "up"); }} disabled={isViewer} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>↑</button>
-                  <button onClick={e => { e.stopPropagation(); handleReorder(step.id, "down"); }} disabled={isViewer} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #23263a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>↓</button>
-                  {steps.length > 1 && <button onClick={e => { e.stopPropagation(); handleRemoveStep(step.id); }} disabled={isViewer} style={{ background: "#111827", color: "#fca5a5", border: "1px solid #23263a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>✕</button>}
+                  <button onClick={e => { e.stopPropagation(); handleReorder(step.id, "up"); }} disabled={isViewer} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #0a0a0a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>↑</button>
+                  <button onClick={e => { e.stopPropagation(); handleReorder(step.id, "down"); }} disabled={isViewer} style={{ background: "#111827", color: "#e5e7eb", border: "1px solid #0a0a0a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>↓</button>
+                  {steps.length > 1 && <button onClick={e => { e.stopPropagation(); handleRemoveStep(step.id); }} disabled={isViewer} style={{ background: "#111827", color: "#fca5a5", border: "1px solid #0a0a0a", borderRadius: 6, padding: "4px 8px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>✕</button>}
                 </div>
               </li>
             ))}
@@ -1348,13 +1348,13 @@ export default function WorkflowOrchestrator() {
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Step Configuration</div>
           {steps.map(step => step.id === selectedStep && (
             <div key={step.id}>
-              <input value={step.name} onChange={e => handleStepChange(step.id, { name: e.target.value })} disabled={isViewer} style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 8, background: "#18181b", color: "#e5e7eb", opacity: isViewer ? 0.6 : 1 }} />
-              <select value={step.type} onChange={e => handleStepChange(step.id, { type: e.target.value })} disabled={isViewer} style={{ marginBottom: 8, width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 8, background: "#18181b", color: "#e5e7eb", opacity: isViewer ? 0.6 : 1 }}>
+              <input value={step.name} onChange={e => handleStepChange(step.id, { name: e.target.value })} disabled={isViewer} style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, width: "100%", borderRadius: 6, border: "1px solid #0a0a0a", padding: 8, background: "#18181b", color: "#e5e7eb", opacity: isViewer ? 0.6 : 1 }} />
+              <select value={step.type} onChange={e => handleStepChange(step.id, { type: e.target.value })} disabled={isViewer} style={{ marginBottom: 8, width: "100%", borderRadius: 6, border: "1px solid #0a0a0a", padding: 8, background: "#18181b", color: "#e5e7eb", opacity: isViewer ? 0.6 : 1 }}>
                 <option value="trigger">Trigger</option>
                 <option value="action">Action</option>
                 <option value="condition">Condition</option>
               </select>
-              <textarea value={step.config} onChange={e => handleStepChange(step.id, { config: e.target.value })} disabled={isViewer} rows={5} style={{ width: "100%", borderRadius: 6, border: "1px solid #23263a", padding: 10, background: "#23263a", color: "#e5e7eb", opacity: isViewer ? 0.6 : 1 }} placeholder={step.type === "trigger" ? "Describe the trigger (e.g. 'Order placed with AOV > $50')" : "Describe the action (e.g. 'Send Slack notification to #ops')"} />
+              <textarea value={step.config} onChange={e => handleStepChange(step.id, { config: e.target.value })} disabled={isViewer} rows={5} style={{ width: "100%", borderRadius: 6, border: "1px solid #0a0a0a", padding: 10, background: "#0a0a0a", color: "#e5e7eb", opacity: isViewer ? 0.6 : 1 }} placeholder={step.type === "trigger" ? "Describe the trigger (e.g. 'Order placed with AOV > $50')" : "Describe the action (e.g. 'Send Slack notification to #ops')"} />
               <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {step.type === "trigger" && triggerTemplates.map(t => (
                   <button key={t.label} onClick={() => handleStepChange(step.id, { config: t.config, name: t.label })} disabled={isViewer} style={{ background: "#111827", color: "#a5f3fc", border: "1px solid #273449", borderRadius: 999, padding: "6px 10px", cursor: isViewer ? "not-allowed" : "pointer", opacity: isViewer ? 0.6 : 1 }}>{t.label}</button>

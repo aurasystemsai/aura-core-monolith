@@ -12,8 +12,8 @@ function Spinner() {
 				style={{
 					width: 38,
 					height: 38,
-					border: "4px solid #7fffd4",
-					borderTop: "4px solid #23263a",
+					border: "4px solid #ffffff",
+					borderTop: "4px solid #1e1e1e",
 					borderRadius: "50%",
 					animation: "spin 1s linear infinite",
 				}}
@@ -30,8 +30,8 @@ const QuickActionCard = ({ icon, title, description, onClick, color = "#7fffd4" 
 	<div
 		onClick={onClick}
 		style={{
-			background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
-			border: "1px solid #2f3650",
+			background: "#111111",
+			border: "1px solid #1e1e1e",
 			borderRadius: 16,
 			padding: 20,
 			cursor: "pointer",
@@ -43,8 +43,8 @@ const QuickActionCard = ({ icon, title, description, onClick, color = "#7fffd4" 
 		className="quick-action-card"
 	>
 		<div style={{ fontSize: 32 }}>{icon}</div>
-		<div style={{ fontWeight: 700, color: "#e5e7eb", fontSize: 16 }}>{title}</div>
-		<div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.4 }}>{description}</div>
+		<div style={{ fontWeight: 700, color: "#f0f0f0", fontSize: 16 }}>{title}</div>
+		<div style={{ fontSize: 13, color: "#888888", lineHeight: 1.4 }}>{description}</div>
 	</div>
 );
 
@@ -52,8 +52,8 @@ const QuickActionCard = ({ icon, title, description, onClick, color = "#7fffd4" 
 const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, upgradeRequired = false, tooltip = null }) => (
 	<div
 		style={{
-			background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
-			border: "1px solid #2f3650",
+			background: "#111111",
+			border: "1px solid #1e1e1e",
 			borderRadius: 16,
 			padding: 24,
 			display: "flex",
@@ -65,17 +65,17 @@ const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, u
 	>
 		<div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
 			<div style={{ flex: 1 }}>
-				<div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+				<div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#888888", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
 					{label}
 					{tooltip && (
 						<span title={tooltip} style={{ cursor: "help", fontSize: 12, opacity: 0.7 }}>ℹ️</span>
 					)}
 				</div>
-				<div style={{ fontSize: upgradeRequired ? 18 : 36, fontWeight: 900, color: upgradeRequired ? "#ff9800" : "#e5e7eb", marginTop: 8 }}>
+				<div style={{ fontSize: upgradeRequired ? 18 : 36, fontWeight: 900, color: upgradeRequired ? "#ff9800" : "#f0f0f0", marginTop: 8 }}>
 					{value}
 				</div>
 				{subtitle && (
-					<div style={{ fontSize: 11, color: "#64748b", marginTop: 4, lineHeight: 1.4 }}>
+					<div style={{ fontSize: 11, color: "#555555", marginTop: 4, lineHeight: 1.4 }}>
 						{subtitle}
 					</div>
 				)}
@@ -84,7 +84,7 @@ const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, u
 						<span style={{ color: trend === "up" ? "#22d37f" : "#ff4d4f", fontSize: 14, fontWeight: 700 }}>
 							{trend === "up" ? "↑" : "↓"} {change}
 						</span>
-						<span style={{ fontSize: 12, color: "#64748b" }}>vs last period</span>
+						<span style={{ fontSize: 12, color: "#555555" }}>vs last period</span>
 					</div>
 				)}
 				{upgradeRequired && (
@@ -120,7 +120,7 @@ const ActivityItem = ({ icon, title, timestamp, type }) => (
 			display: "flex",
 			gap: 12,
 			padding: "12px 0",
-			borderBottom: "1px solid #2f3650",
+			borderBottom: "1px solid #1e1e1e",
 		}}
 	>
 		<div
@@ -128,7 +128,7 @@ const ActivityItem = ({ icon, title, timestamp, type }) => (
 				width: 40,
 				height: 40,
 				borderRadius: 10,
-				background: "#2f3650",
+				background: "#1e1e1e",
 				display: "flex",
 				alignItems: "center",
 				justifyContent: "center",
@@ -138,14 +138,14 @@ const ActivityItem = ({ icon, title, timestamp, type }) => (
 			{icon}
 		</div>
 		<div style={{ flex: 1 }}>
-			<div style={{ fontSize: 14, color: "#e5e7eb", fontWeight: 600 }}>{title}</div>
-			<div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>{timestamp}</div>
+			<div style={{ fontSize: 14, color: "#f0f0f0", fontWeight: 600 }}>{title}</div>
+			<div style={{ fontSize: 12, color: "#555555", marginTop: 2 }}>{timestamp}</div>
 		</div>
 		<div
 			style={{
 				fontSize: 11,
-				color: "#94a3b8",
-				background: "#2f3650",
+				color: "#888888",
+				background: "#1e1e1e",
 				padding: "4px 8px",
 				borderRadius: 6,
 				height: "fit-content",
@@ -629,8 +629,8 @@ const Dashboard = ({ setActiveSection }) => {
 		<div
 			className="stat-card"
 			style={{
-				background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
-				border: "1px solid #2f3650",
+				background: "#111111",
+				border: "1px solid #1e1e1e",
 				borderRadius: 16,
 				padding: 20,
 				minHeight: 120,
@@ -639,7 +639,7 @@ const Dashboard = ({ setActiveSection }) => {
 			<div style={{ 
 				height: 16, 
 				width: "60%", 
-				background: "linear-gradient(90deg, #2f3650 0%, #3a4565 50%, #2f3650 100%)",
+				background: "linear-gradient(90deg, #1e1e1e 0%, #3a4565 50%, #1e1e1e 100%)",
 				backgroundSize: "200% 100%",
 				animation: "shimmer 1.5s infinite",
 				borderRadius: 4,
@@ -648,7 +648,7 @@ const Dashboard = ({ setActiveSection }) => {
 			<div style={{ 
 				height: 32, 
 				width: "40%", 
-				background: "linear-gradient(90deg, #2f3650 0%, #3a4565 50%, #2f3650 100%)",
+				background: "linear-gradient(90deg, #1e1e1e 0%, #3a4565 50%, #1e1e1e 100%)",
 				backgroundSize: "200% 100%",
 				animation: "shimmer 1.5s infinite",
 				borderRadius: 4,
@@ -666,7 +666,7 @@ const Dashboard = ({ setActiveSection }) => {
 					}
 				`}</style>
 				<div style={{ marginBottom: 32 }}>
-					<h1 style={{ fontSize: 32, fontWeight: 900, color: "#e5e7eb", margin: 0 }}>
+					<h1 style={{ fontSize: 32, fontWeight: 900, color: "#f0f0f0", margin: 0 }}>
 						Loading Dashboard...
 					</h1>
 				</div>
@@ -775,9 +775,9 @@ const Dashboard = ({ setActiveSection }) => {
 			{/* SEO Scan Modal */}
 			{showScanModal && (
 				<div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:10000, display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
-					<div style={{ background:'#1a1d2e', border:'1px solid #2f3650', borderRadius:20, width:'100%', maxWidth:720, maxHeight:'88vh', display:'flex', flexDirection:'column', animation:'modalIn 0.25s ease' }}>
+					<div style={{ background:'#111111', border:'1px solid #1e1e1e', borderRadius:20, width:'100%', maxWidth:720, maxHeight:'88vh', display:'flex', flexDirection:'column', animation:'modalIn 0.25s ease' }}>
 						{/* Modal header */}
-						<div style={{ padding:'24px 28px 20px', borderBottom:'1px solid #2f3650', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+						<div style={{ padding:'24px 28px 20px', borderBottom:'1px solid #1e1e1e', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
 							<div style={{ display:'flex', alignItems:'center', gap:14 }}>
 								{scanningInProgress ? (
 									<div style={{ width:36, height:36, border:'3px solid #7fffd4', borderTop:'3px solid transparent', borderRadius:'50%', animation:'spin 0.9s linear infinite', flexShrink:0 }} />
@@ -785,10 +785,10 @@ const Dashboard = ({ setActiveSection }) => {
 									<span style={{ fontSize:32 }}>✅</span>
 								)}
 								<div>
-									<h2 style={{ color:'#e5e7eb', fontWeight:800, fontSize:20, margin:0 }}>
+									<h2 style={{ color:'#f0f0f0', fontWeight:800, fontSize:20, margin:0 }}>
 										{scanningInProgress ? 'Scanning your site...' : `Scan Complete — ${crawlResults?.totalIssues || 0} Issues Found`}
 									</h2>
-									<p style={{ color:'#94a3b8', fontSize:13, margin:'3px 0 0 0' }}>
+									<p style={{ color:'#888888', fontSize:13, margin:'3px 0 0 0' }}>
 										{scanningInProgress
 											? `Checking pages for SEO issues — this takes a minute or two`
 											: `${crawlResults?.pagesScanned} pages scanned • ${crawlResults?.high} high • ${crawlResults?.medium} medium • ${crawlResults?.low} low`}
@@ -796,7 +796,7 @@ const Dashboard = ({ setActiveSection }) => {
 								</div>
 							</div>
 							{!scanningInProgress && (
-								<button onClick={() => setShowScanModal(false)} style={{ background:'#2f3650', border:'none', color:'#94a3b8', borderRadius:8, padding:'8px 16px', cursor:'pointer', fontSize:14, fontWeight:600 }}>Close</button>
+								<button onClick={() => setShowScanModal(false)} style={{ background:'#1e1e1e', border:'none', color:'#888888', borderRadius:8, padding:'8px 16px', cursor:'pointer', fontSize:14, fontWeight:600 }}>Close</button>
 							)}
 						</div>
 
@@ -819,7 +819,7 @@ const Dashboard = ({ setActiveSection }) => {
 								</div>
 								{scanRemainingTime > 0 && (
 									<div style={{ marginTop:20, textAlign:'center', color:'#475569', fontSize:13 }}>
-										Estimated time remaining: <span style={{ color:'#94a3b8', fontWeight:600 }}>{Math.floor(scanRemainingTime/60)}:{String(scanRemainingTime%60).padStart(2,'0')}</span>
+										Estimated time remaining: <span style={{ color:'#888888', fontWeight:600 }}>{Math.floor(scanRemainingTime/60)}:{String(scanRemainingTime%60).padStart(2,'0')}</span>
 									</div>
 								)}
 							</div>
@@ -846,11 +846,11 @@ const Dashboard = ({ setActiveSection }) => {
 												style={{ background:'#0f172a', border:`1px solid ${issue.severity==='high'?'#e53e3e':issue.severity==='medium'?'#f59e0b':'#4ade80'}`, borderRadius:10, padding:'12px 16px', display:'flex', alignItems:'flex-start', gap:12, cursor: issue.fix ? 'pointer' : 'default' }}>
 												<span style={{ fontSize:16, marginTop:1 }}>{issue.severity==='high'?'🔴':issue.severity==='medium'?'🟡':'🟢'}</span>
 												<div style={{ flex:1, minWidth:0 }}>
-													<div style={{ color:'#e5e7eb', fontWeight:600, fontSize:14, display:'flex', alignItems:'center', gap:8 }}>
+													<div style={{ color:'#f0f0f0', fontWeight:600, fontSize:14, display:'flex', alignItems:'center', gap:8 }}>
 														{issue.type}
 														{issue.fix && <span style={{ fontSize:11, color:'#7fffd4', background:'rgba(127,255,212,0.1)', border:'1px solid rgba(127,255,212,0.3)', borderRadius:4, padding:'1px 7px', fontWeight:500 }}>Click to fix →</span>}
 													</div>
-													<div style={{ color:'#94a3b8', fontSize:13, marginTop:2 }}>{issue.detail}</div>
+													<div style={{ color:'#888888', fontSize:13, marginTop:2 }}>{issue.detail}</div>
 													<div style={{ color:'#475569', fontSize:12, marginTop:4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{issue.page}</div>
 												</div>
 											</div>
@@ -894,10 +894,10 @@ const Dashboard = ({ setActiveSection }) => {
 					<div style={{ display: "flex", alignItems: "center", gap: 16 }}>
 						<img src="/logo-aura.png" alt="AURA" style={{ height: 48, width: 48, objectFit: "contain", borderRadius: 12 }} />
 						<div>
-							<h1 style={{ fontSize: 32, fontWeight: 900, color: "#e5e7eb", margin: 0, letterSpacing: "-0.02em" }}>
+							<h1 style={{ fontSize: 32, fontWeight: 900, color: "#f0f0f0", margin: 0, letterSpacing: "-0.02em" }}>
 								Dashboard Overview
 							</h1>
-							<p style={{ fontSize: 14, color: "#94a3b8", margin: "4px 0 0 0" }}>
+							<p style={{ fontSize: 14, color: "#888888", margin: "4px 0 0 0" }}>
 								{shop.name || "My Store"} • {shop.domain || "—"}
 							</p>
 						</div>
@@ -908,11 +908,11 @@ const Dashboard = ({ setActiveSection }) => {
 							value={timePeriod}
 							onChange={(e) => setTimePeriod(Number(e.target.value))}
 							style={{
-								background: "#1a1d2e",
-								border: "1px solid #2f3650",
+								background: "#111111",
+								border: "1px solid #1e1e1e",
 								borderRadius: 8,
 								padding: "10px 16px",
-								color: "#e5e7eb",
+								color: "#f0f0f0",
 								fontSize: 14,
 								fontWeight: 600,
 								cursor: "pointer",
@@ -927,8 +927,8 @@ const Dashboard = ({ setActiveSection }) => {
 						<button
 							onClick={() => setAutoRefresh(!autoRefresh)}
 							style={{
-								background: autoRefresh ? "#7fffd4" : "#1a1d2e",
-								border: "1px solid #2f3650",
+								background: autoRefresh ? "#7fffd4" : "#111111",
+								border: "1px solid #1e1e1e",
 								borderRadius: 8,
 								padding: "10px 16px",
 								color: autoRefresh ? "#0f172a" : "#7fffd4",
@@ -947,8 +947,8 @@ const Dashboard = ({ setActiveSection }) => {
 						<button
 							onClick={() => fetchStats()}
 							style={{
-								background: "#1a1d2e",
-								border: "1px solid #2f3650",
+								background: "#111111",
+								border: "1px solid #1e1e1e",
 								borderRadius: 8,
 								padding: "10px 16px",
 								color: "#7fffd4",
@@ -988,8 +988,8 @@ const Dashboard = ({ setActiveSection }) => {
 			{/* AI Copilot Section */}
 			<div
 				style={{
-					background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
-					border: "1px solid #2f3650",
+					background: "#111111",
+					border: "1px solid #1e1e1e",
 					borderRadius: 16,
 					padding: 24,
 					marginBottom: 32,
@@ -997,7 +997,7 @@ const Dashboard = ({ setActiveSection }) => {
 			>
 				<div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
 					<div style={{ fontSize: 28 }}>🤖</div>
-					<h2 style={{ fontSize: 20, fontWeight: 700, color: "#e5e7eb", margin: 0 }}>AI Copilot Assistant</h2>
+					<h2 style={{ fontSize: 20, fontWeight: 700, color: "#f0f0f0", margin: 0 }}>AI Copilot Assistant</h2>
 				</div>
 				<div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
 					<input
@@ -1009,9 +1009,9 @@ const Dashboard = ({ setActiveSection }) => {
 							flex: 1,
 							borderRadius: 10,
 							padding: "14px 16px",
-							border: "2px solid #2f3650",
+							border: "2px solid #1e1e1e",
 							background: "#0f1324",
-							color: "#e5e7eb",
+							color: "#f0f0f0",
 							fontSize: 15,
 							outline: "none",
 						}}
@@ -1042,13 +1042,13 @@ const Dashboard = ({ setActiveSection }) => {
 							padding: 16,
 							background: "#0f1324",
 							borderRadius: 10,
-							border: "1px solid #2f3650",
+							border: "1px solid #1e1e1e",
 						}}
 					>
 						<div style={{ fontSize: 12, color: "#7fffd4", fontWeight: 700, marginBottom: 8, textTransform: "uppercase" }}>
 							AI Response
 						</div>
-						<div style={{ color: "#e5e7eb", fontSize: 14, lineHeight: 1.6 }}>{copilotReply}</div>
+						<div style={{ color: "#f0f0f0", fontSize: 14, lineHeight: 1.6 }}>{copilotReply}</div>
 					</div>
 				)}
 			</div>
@@ -1071,7 +1071,7 @@ const Dashboard = ({ setActiveSection }) => {
 							}}
 						>
 							<span style={{ fontSize: 20 }}>{alert.type === "danger" ? "🚨" : "⚠️"}</span>
-							<span style={{ color: "#e5e7eb", fontSize: 14, fontWeight: 600 }}>{alert.message}</span>
+							<span style={{ color: "#f0f0f0", fontSize: 14, fontWeight: 600 }}>{alert.message}</span>
 						</div>
 					))}
 				</div>
@@ -1081,14 +1081,14 @@ const Dashboard = ({ setActiveSection }) => {
 			{recommendations.length > 0 && (
 				<div
 					style={{
-						background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
-						border: "1px solid #2f3650",
+						background: "#111111",
+						border: "1px solid #1e1e1e",
 						borderRadius: 16,
 						padding: 24,
 						marginBottom: 32,
 					}}
 				>
-					<h3 style={{ fontSize: 18, fontWeight: 700, color: "#e5e7eb", margin: "0 0 16px 0" }}>
+					<h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f0", margin: "0 0 16px 0" }}>
 						💡 Smart Recommendations
 					</h3>
 					<div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -1097,7 +1097,7 @@ const Dashboard = ({ setActiveSection }) => {
 								key={idx}
 								style={{
 									background: "#0f1324",
-									border: "1px solid #2f3650",
+									border: "1px solid #1e1e1e",
 									borderRadius: 10,
 									padding: 16,
 									display: "flex",
@@ -1108,7 +1108,7 @@ const Dashboard = ({ setActiveSection }) => {
 							>
 								<div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1 }}>
 									<span style={{ fontSize: 24 }}>{rec.icon}</span>
-									<span style={{ color: "#e5e7eb", fontSize: 14 }}>{rec.text}</span>
+									<span style={{ color: "#f0f0f0", fontSize: 14 }}>{rec.text}</span>
 								</div>
 								<button
 									onClick={() => setActiveSection && setActiveSection(rec.link)}
@@ -1197,11 +1197,11 @@ const Dashboard = ({ setActiveSection }) => {
 
 			{/* SEO Crawl Results Panel */}
 			{crawlResults && (
-				<div style={{ background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)", border: "1px solid #2f3650", borderRadius: 16, padding: 24, marginBottom: 32 }}>
+				<div style={{ background: "#111111", border: "1px solid #1e1e1e", borderRadius: 16, padding: 24, marginBottom: 32 }}>
 					<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
 						<div>
-							<h3 style={{ color: "#e5e7eb", fontWeight: 700, fontSize: 18, margin: 0 }}>🔍 SEO Scan Results</h3>
-							<p style={{ color: "#94a3b8", fontSize: 13, margin: "4px 0 0 0" }}>
+							<h3 style={{ color: "#f0f0f0", fontWeight: 700, fontSize: 18, margin: 0 }}>🔍 SEO Scan Results</h3>
+							<p style={{ color: "#888888", fontSize: 13, margin: "4px 0 0 0" }}>
 								{crawlResults.pagesScanned} pages scanned • Last scan: {lastScanTime}
 							</p>
 						</div>
@@ -1215,7 +1215,7 @@ const Dashboard = ({ setActiveSection }) => {
 							<span style={{ background: "#1a2315", border: "1px solid #4ade80", color: "#86efac", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
 								🟢 {crawlResults.low} Low
 							</span>
-							<button onClick={() => setCrawlResults(null)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 20, lineHeight: 1 }}>×</button>
+							<button onClick={() => setCrawlResults(null)} style={{ background: "none", border: "none", color: "#888888", cursor: "pointer", fontSize: 20, lineHeight: 1 }}>×</button>
 						</div>
 					</div>
 					{crawlResults.totalIssues === 0 ? (
@@ -1244,7 +1244,7 @@ const Dashboard = ({ setActiveSection }) => {
 										{issue.severity === 'high' ? '🔴' : issue.severity === 'medium' ? '🟡' : '🟢'}
 									</span>
 									<div style={{ flex: 1, minWidth: 0 }}>
-										<div style={{ color: "#e5e7eb", fontWeight: 600, fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
+										<div style={{ color: "#f0f0f0", fontWeight: 600, fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
 											{issue.type}
 											{issue.fix && (
 												<span style={{ fontSize: 11, color: "#7fffd4", background: "rgba(127,255,212,0.1)", border: "1px solid rgba(127,255,212,0.3)", borderRadius: 4, padding: "1px 7px", fontWeight: 500 }}>
@@ -1252,7 +1252,7 @@ const Dashboard = ({ setActiveSection }) => {
 												</span>
 											)}
 										</div>
-										<div style={{ color: "#94a3b8", fontSize: 13, marginTop: 2 }}>{issue.detail}</div>
+										<div style={{ color: "#888888", fontSize: 13, marginTop: 2 }}>{issue.detail}</div>
 										<div style={{ color: "#475569", fontSize: 12, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{issue.page}</div>
 									</div>
 								</div>
@@ -1266,7 +1266,7 @@ const Dashboard = ({ setActiveSection }) => {
 			{healthScore && (
 				<div
 					style={{
-						background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
+						background: "#111111",
 						border: `2px solid ${healthScore.grade === 'A' ? '#7fffd4' : healthScore.grade === 'B' ? '#4ade80' : healthScore.grade === 'C' ? '#fbbf24' : healthScore.grade === 'D' ? '#fb923c' : '#ef4444'}`,
 						borderRadius: 16,
 						padding: 24,
@@ -1279,10 +1279,10 @@ const Dashboard = ({ setActiveSection }) => {
 					}}
 				>
 					<div style={{ flex: 1, minWidth: 200 }}>
-						<h3 style={{ fontSize: 20, fontWeight: 700, color: "#e5e7eb", margin: "0 0 8px 0" }}>
+						<h3 style={{ fontSize: 20, fontWeight: 700, color: "#f0f0f0", margin: "0 0 8px 0" }}>
 							🏆 Store Health Score
 						</h3>
-						<p style={{ fontSize: 14, color: "#94a3b8", margin: 0 }}>
+						<p style={{ fontSize: 14, color: "#888888", margin: 0 }}>
 							Based on revenue, orders, and SEO performance
 						</p>
 					</div>
@@ -1295,7 +1295,7 @@ const Dashboard = ({ setActiveSection }) => {
 						}}>
 							{healthScore.grade}
 						</div>
-						<div style={{ fontSize: 14, color: "#94a3b8", marginTop: 8 }}>
+						<div style={{ fontSize: 14, color: "#888888", marginTop: 8 }}>
 							{healthScore.score}/100
 						</div>
 					</div>
@@ -1305,26 +1305,26 @@ const Dashboard = ({ setActiveSection }) => {
 			{/* Goal Tracking */}
 			<div
 				style={{
-					background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
-					border: "1px solid #2f3650",
+					background: "#111111",
+					border: "1px solid #1e1e1e",
 					borderRadius: 16,
 					padding: 24,
 					marginBottom: 32,
 				}}
 			>
-				<h3 style={{ fontSize: 18, fontWeight: 700, color: "#e5e7eb", margin: "0 0 20px 0" }}>
+				<h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f0", margin: "0 0 20px 0" }}>
 					🎯 Monthly Goals
 				</h3>
 				<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20 }}>
 					{/* Revenue Goal */}
 					<div>
 						<div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-							<span style={{ color: "#94a3b8", fontSize: 13 }}>Revenue Goal</span>
-							<span style={{ color: "#e5e7eb", fontSize: 13, fontWeight: 600 }}>
+							<span style={{ color: "#888888", fontSize: 13 }}>Revenue Goal</span>
+							<span style={{ color: "#f0f0f0", fontSize: 13, fontWeight: 600 }}>
 								{stats.revenueRaw ? `$${stats.revenueRaw.toFixed(0)}` : "$0"} / ${goals.revenue}
 							</span>
 						</div>
-						<div style={{ background: "#2f3650", height: 8, borderRadius: 4, overflow: "hidden" }}>
+						<div style={{ background: "#1e1e1e", height: 8, borderRadius: 4, overflow: "hidden" }}>
 							<div style={{ 
 								background: "#7fffd4", 
 								height: "100%", 
@@ -1336,12 +1336,12 @@ const Dashboard = ({ setActiveSection }) => {
 					{/* Orders Goal */}
 					<div>
 						<div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-							<span style={{ color: "#94a3b8", fontSize: 13 }}>Orders Goal</span>
-							<span style={{ color: "#e5e7eb", fontSize: 13, fontWeight: 600 }}>
+							<span style={{ color: "#888888", fontSize: 13 }}>Orders Goal</span>
+							<span style={{ color: "#f0f0f0", fontSize: 13, fontWeight: 600 }}>
 								{stats.orders || 0} / {goals.orders}
 							</span>
 						</div>
-						<div style={{ background: "#2f3650", height: 8, borderRadius: 4, overflow: "hidden" }}>
+						<div style={{ background: "#1e1e1e", height: 8, borderRadius: 4, overflow: "hidden" }}>
 							<div style={{ 
 								background: "#4ade80", 
 								height: "100%", 
@@ -1353,12 +1353,12 @@ const Dashboard = ({ setActiveSection }) => {
 					{/* Conversion Goal */}
 					<div>
 						<div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-							<span style={{ color: "#94a3b8", fontSize: 13 }}>Conversion Goal</span>
-							<span style={{ color: "#e5e7eb", fontSize: 13, fontWeight: 600 }}>
+							<span style={{ color: "#888888", fontSize: 13 }}>Conversion Goal</span>
+							<span style={{ color: "#f0f0f0", fontSize: 13, fontWeight: 600 }}>
 								{stats.conversion || "0%"} / {goals.conversion}%
 							</span>
 						</div>
-						<div style={{ background: "#2f3650", height: 8, borderRadius: 4, overflow: "hidden" }}>
+						<div style={{ background: "#1e1e1e", height: 8, borderRadius: 4, overflow: "hidden" }}>
 							<div style={{ 
 								background: "#fbbf24", 
 								height: "100%", 
@@ -1379,13 +1379,13 @@ const Dashboard = ({ setActiveSection }) => {
 				<div>
 					<div
 						style={{
-							background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
-							border: "1px solid #2f3650",
+							background: "#111111",
+							border: "1px solid #1e1e1e",
 							borderRadius: 16,
 							padding: 24,
 						}}
 					>
-						<h3 style={{ fontSize: 18, fontWeight: 700, color: "#e5e7eb", margin: "0 0 20px 0" }}>
+						<h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f0", margin: "0 0 20px 0" }}>
 							📊 Performance Analytics
 						</h3>
 						<Suspense fallback={<Spinner />}>
@@ -1399,20 +1399,20 @@ const Dashboard = ({ setActiveSection }) => {
 					{/* Activity Feed */}
 					<div
 						style={{
-							background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
-							border: "1px solid #2f3650",
+							background: "#111111",
+							border: "1px solid #1e1e1e",
 							borderRadius: 16,
 							padding: 24,
 						}}
 					>
-						<h3 style={{ fontSize: 18, fontWeight: 700, color: "#e5e7eb", margin: "0 0 20px 0" }}>⚡ Recent Activity</h3>
+						<h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f0", margin: "0 0 20px 0" }}>⚡ Recent Activity</h3>
 						<div>
 							{recentActivity.length > 0 ? (
 								recentActivity.map((activity, idx) => (
 									<ActivityItem key={idx} {...activity} />
 								))
 							) : (
-								<div style={{ textAlign: "center", color: "#94a3b8", padding: "20px 0" }}>
+								<div style={{ textAlign: "center", color: "#888888", padding: "20px 0" }}>
 									<div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
 									<div style={{ fontSize: 14 }}>No recent activity</div>
 								</div>
@@ -1423,10 +1423,10 @@ const Dashboard = ({ setActiveSection }) => {
 								width: "100%",
 								marginTop: 16,
 								padding: "10px",
-								background: "#2f3650",
+								background: "#1e1e1e",
 								border: "1px solid #3a4565",
 								borderRadius: 8,
-								color: "#e5e7eb",
+								color: "#f0f0f0",
 								fontSize: 14,
 								fontWeight: 600,
 								cursor: "pointer",
@@ -1440,13 +1440,13 @@ const Dashboard = ({ setActiveSection }) => {
 					{/* Top Products Widget */}
 					<div
 						style={{
-							background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
-							border: "1px solid #2f3650",
+							background: "#111111",
+							border: "1px solid #1e1e1e",
 							borderRadius: 16,
 							padding: 24,
 						}}
 					>
-						<h3 style={{ fontSize: 18, fontWeight: 700, color: "#e5e7eb", margin: "0 0 20px 0" }}>
+						<h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f0", margin: "0 0 20px 0" }}>
 							🏆 Top Products
 						</h3>
 						{topProducts.length > 0 ? (
@@ -1460,23 +1460,23 @@ const Dashboard = ({ setActiveSection }) => {
 											gap: 12,
 											padding: 12,
 											background: "#0f1324",
-											border: "1px solid #2f3650",
+											border: "1px solid #1e1e1e",
 											borderRadius: 8,
 										}}
 									>
 										<div style={{ 
 											fontSize: 20, 
 											fontWeight: 900,
-											color: idx === 0 ? "#fbbf24" : "#94a3b8",
+											color: idx === 0 ? "#fbbf24" : "#888888",
 											minWidth: 24,
 										}}>
 											#{idx + 1}
 										</div>
 										<div style={{ flex: 1 }}>
-											<div style={{ fontSize: 14, fontWeight: 600, color: "#e5e7eb", marginBottom: 4 }}>
+											<div style={{ fontSize: 14, fontWeight: 600, color: "#f0f0f0", marginBottom: 4 }}>
 												{product.title || "Untitled Product"}
 											</div>
-											<div style={{ fontSize: 12, color: "#64748b" }}>
+											<div style={{ fontSize: 12, color: "#555555" }}>
 												{product.variants?.[0]?.price ? `$${product.variants[0].price}` : "No price"}
 											</div>
 										</div>
@@ -1484,7 +1484,7 @@ const Dashboard = ({ setActiveSection }) => {
 								))}
 							</div>
 						) : (
-							<div style={{ textAlign: "center", color: "#94a3b8", padding: "20px 0" }}>
+							<div style={{ textAlign: "center", color: "#888888", padding: "20px 0" }}>
 								<div style={{ fontSize: 32, marginBottom: 8 }}>📦</div>
 								<div style={{ fontSize: 14 }}>No products available</div>
 							</div>
@@ -1495,13 +1495,13 @@ const Dashboard = ({ setActiveSection }) => {
 					{underperformingProducts.length > 0 && (
 						<div
 							style={{
-								background: "linear-gradient(135deg, #1a1d2e 0%, #232842 100%)",
+								background: "#111111",
 								border: "1px solid #fb923c",
 								borderRadius: 16,
 								padding: 24,
 							}}
 						>
-							<h3 style={{ fontSize: 18, fontWeight: 700, color: "#e5e7eb", margin: "0 0 20px 0" }}>
+							<h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f0", margin: "0 0 20px 0" }}>
 								⚠️ Needs Attention
 							</h3>
 							<div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -1520,7 +1520,7 @@ const Dashboard = ({ setActiveSection }) => {
 									>
 										<span style={{ fontSize: 20 }}>⚠️</span>
 										<div style={{ flex: 1 }}>
-											<div style={{ fontSize: 14, fontWeight: 600, color: "#e5e7eb", marginBottom: 4 }}>
+											<div style={{ fontSize: 14, fontWeight: 600, color: "#f0f0f0", marginBottom: 4 }}>
 												{product.title || "Untitled Product"}
 											</div>
 											<div style={{ fontSize: 12, color: "#fb923c" }}>
@@ -1553,7 +1553,7 @@ const Dashboard = ({ setActiveSection }) => {
 
 			{/* Quick Actions */}
 			<div style={{ marginBottom: 32 }}>
-				<h3 style={{ fontSize: 20, fontWeight: 700, color: "#e5e7eb", marginBottom: 20 }}>🚀 Quick Actions</h3>
+				<h3 style={{ fontSize: 20, fontWeight: 700, color: "#f0f0f0", marginBottom: 20 }}>🚀 Quick Actions</h3>
 				<div
 					style={{
 						display: "grid",

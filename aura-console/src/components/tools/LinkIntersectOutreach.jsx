@@ -13,7 +13,7 @@ function FeedbackModal({ open, onClose, onSubmit }) {
         <textarea value={feedback} onChange={e => setFeedback(e.target.value)} style={{ width: "100%", minHeight: 80, borderRadius: 8, border: "1px solid #ccc", marginBottom: 18 }} placeholder="Your feedback..." />
         <div style={{ display: "flex", gap: 12 }}>
           <button onClick={() => onSubmit(feedback)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, cursor: "pointer" }}>Submit</button>
-          <button onClick={onClose} style={{ background: "#e5e7eb", color: "#23263a", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+          <button onClick={onClose} style={{ background: "#e5e7eb", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, cursor: "pointer" }}>Cancel</button>
         </div>
       </div>
     </div>
@@ -146,14 +146,14 @@ export default function LinkIntersectOutreach() {
   };
 
   const onboardingContent = (
-    <div style={{ padding: 24, background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Link Intersect & Outreach</h3>
       <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#334155", fontSize: 16 }}>
         <li>Find link opportunities and manage outreach</li>
         <li>Export, share, and review outreach history</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
     </div>
   );
 
@@ -165,15 +165,15 @@ export default function LinkIntersectOutreach() {
       borderRadius: 18,
       boxShadow: "0 2px 24px #0002",
       padding: 36,
-      color: darkMode ? "#a3e635" : accessibilityMode ? "#23263a" : "#23263a",
+      color: darkMode ? "#a3e635" : accessibilityMode ? "#0a0a0a" : "#0a0a0a",
       fontFamily: 'Inter, sans-serif',
       transition: "background 0.3s, color 0.3s"
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Link Intersect & Outreach</h2>
         <div style={{ display: "flex", gap: 10 }}>
-          <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
-          <button onClick={toggleAccessibility} aria-label="Toggle accessibility mode" style={{ background: accessibilityMode ? "#a3e635" : "#e0e7ff", color: accessibilityMode ? "#23263a" : "#6366f1", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Accessibility</button>
+          <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
+          <button onClick={toggleAccessibility} aria-label="Toggle accessibility mode" style={{ background: accessibilityMode ? "#a3e635" : "#e0e7ff", color: accessibilityMode ? "#0a0a0a" : "#6366f1", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Accessibility</button>
           <button onClick={() => setShowHelp(true)} aria-label="Help" style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}><FiHelpCircle /></button>
         </div>
       </div>
@@ -182,20 +182,20 @@ export default function LinkIntersectOutreach() {
       </div>
       <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
         <button onClick={() => setShowOnboarding(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
-        <button onClick={fetchAnalytics} style={{ background: "#eab308", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}><FiBarChart2 /> Analytics</button>
-        <label style={{ background: "#a3e635", color: "#23263a", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>
+        <button onClick={fetchAnalytics} style={{ background: "#eab308", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}><FiBarChart2 /> Analytics</button>
+        <label style={{ background: "#a3e635", color: "#0a0a0a", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>
           <FiUpload /> Import
           <input type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} disabled={importing} />
         </label>
-        <button onClick={handleExport} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }} disabled={exporting}><FiDownload /> Export</button>
+        <button onClick={handleExport} style={{ background: "#a3e635", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }} disabled={exporting}><FiDownload /> Export</button>
         <button onClick={() => setShowFeedback(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}><FiBell /> Feedback</button>
-        <button onClick={checkRBAC} style={{ background: "#e0e7ff", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>RBAC</button>
-        <button onClick={fetchCompliance} style={{ background: "#e0e7ff", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Compliance</button>
-        <button onClick={runPlugin} style={{ background: "#e0e7ff", color: "#23263a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}><FiSettings /> Plugin</button>
+        <button onClick={checkRBAC} style={{ background: "#e0e7ff", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>RBAC</button>
+        <button onClick={fetchCompliance} style={{ background: "#e0e7ff", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Compliance</button>
+        <button onClick={runPlugin} style={{ background: "#e0e7ff", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}><FiSettings /> Plugin</button>
       </div>
       {notification && <div style={{ color: "#22c55e", marginBottom: 10 }}>{notification}</div>}
       {showHelp && (
-        <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 12, padding: 24, marginBottom: 18 }}>
+        <div style={{ background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, padding: 24, marginBottom: 18 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22 }}>Help & Documentation</h3>
           <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#334155", fontSize: 16 }}>
             <li>How to use link intersect and outreach features</li>
@@ -204,12 +204,12 @@ export default function LinkIntersectOutreach() {
             <li>Integrating plugins and webhooks</li>
             <li>Contact support for advanced help</li>
           </ul>
-          <button onClick={() => setShowHelp(false)} style={{ marginTop: 18, background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Close Help</button>
+          <button onClick={() => setShowHelp(false)} style={{ marginTop: 18, background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Close Help</button>
         </div>
       )}
       {showFeedback && <FeedbackModal open={showFeedback} onClose={() => setShowFeedback(false)} onSubmit={handleFeedbackSubmit} />}
       {showAnalytics && (
-        <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 12, padding: 24, marginBottom: 18 }}>
+        <div style={{ background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, padding: 24, marginBottom: 18 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22 }}>Analytics Dashboard</h3>
           <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#334155", fontSize: 16 }}>
             {analytics.map((a, i) => (
@@ -219,28 +219,28 @@ export default function LinkIntersectOutreach() {
               </li>
             ))}
           </ul>
-          <button onClick={() => setShowAnalytics(false)} style={{ marginTop: 18, background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Close Analytics</button>
+          <button onClick={() => setShowAnalytics(false)} style={{ marginTop: 18, background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Close Analytics</button>
         </div>
       )}
       {complianceInfo && (
-        <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 12, padding: 24, marginBottom: 18 }}>
+        <div style={{ background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, padding: 24, marginBottom: 18 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22 }}>Compliance Information</h3>
           <pre style={{ fontSize: 15 }}>{JSON.stringify(complianceInfo, null, 2)}</pre>
-          <button onClick={() => setComplianceInfo(null)} style={{ marginTop: 18, background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Close</button>
+          <button onClick={() => setComplianceInfo(null)} style={{ marginTop: 18, background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Close</button>
         </div>
       )}
       {rbacStatus && (
-        <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 12, padding: 24, marginBottom: 18 }}>
+        <div style={{ background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, padding: 24, marginBottom: 18 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22 }}>RBAC Status</h3>
           <div style={{ fontSize: 15 }}>{rbacStatus}</div>
-          <button onClick={() => setRbacStatus(null)} style={{ marginTop: 18, background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Close</button>
+          <button onClick={() => setRbacStatus(null)} style={{ marginTop: 18, background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Close</button>
         </div>
       )}
       {pluginStatus && (
-        <div style={{ background: darkMode ? "#23263a" : "#f1f5f9", borderRadius: 12, padding: 24, marginBottom: 18 }}>
+        <div style={{ background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, padding: 24, marginBottom: 18 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22 }}>Plugin Status</h3>
           <div style={{ fontSize: 15 }}>{pluginStatus}</div>
-          <button onClick={() => setPluginStatus(null)} style={{ marginTop: 18, background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Close</button>
+          <button onClick={() => setPluginStatus(null)} style={{ marginTop: 18, background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Close</button>
         </div>
       )}
       {showOnboarding && onboardingContent}
@@ -248,11 +248,11 @@ export default function LinkIntersectOutreach() {
         value={query}
         onChange={e => setQuery(e.target.value)}
         type="text"
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#a3e635" : "#23263a" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#0a0a0a" : "#fff", color: darkMode ? "#a3e635" : "#0a0a0a" }}
         placeholder="Enter domains or keywords for link intersect..."
         aria-label="Link intersect input"
       />
-      <button onClick={handleAnalyze} disabled={loading || !query} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Analyzing..." : "Analyze"}</button>
+      <button onClick={handleAnalyze} disabled={loading || !query} style={{ background: "#a3e635", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Analyzing..." : "Analyze"}</button>
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {result && (
         <div style={{ background: "#1e2235", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #2f3a50" }}>
@@ -268,7 +268,7 @@ export default function LinkIntersectOutreach() {
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Outreach History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, i) => (
-              <div key={i} style={{ background: "#23263a", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2f3a50" }}>
+              <div key={i} style={{ background: "#0a0a0a", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2f3a50" }}>
                 <div style={{ fontWeight: 600, fontSize: 13, color: "#e2e8f0" }}>{h.query}</div>
                 <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>{JSON.stringify(h.result).slice(0, 150)}{JSON.stringify(h.result).length > 150 ? "…" : ""}</div>
               </div>

@@ -133,7 +133,7 @@ export default function TechnicalSEOAuditor() {
       style={{
         
         margin: "40px auto",
-        background: "#23263a",
+        background: "#0a0a0a",
         color: "#f3f4f6",
         borderRadius: 16,
         boxShadow: "0 2px 16px #0001",
@@ -152,7 +152,7 @@ export default function TechnicalSEOAuditor() {
         value={input}
         onChange={e => setInput(e.target.value)}
         rows={3}
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#23263a", color: "#f3f4f6" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#0a0a0a", color: "#f3f4f6" }}
         placeholder="Paste your site URL or technical details here..."
         aria-label="Site input"
       />
@@ -198,7 +198,7 @@ export default function TechnicalSEOAuditor() {
       <button
         onClick={handleRun}
         disabled={loading || !input}
-        style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: "pointer", boxShadow: "0 2px 12px #22d3ee55", marginRight: 12 }}
+        style={{ background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: "pointer", boxShadow: "0 2px 12px #22d3ee55", marginRight: 12 }}
         aria-label="Run audit"
       >
         Audit
@@ -206,7 +206,7 @@ export default function TechnicalSEOAuditor() {
       <button
         onClick={handleExport}
         disabled={!response}
-        style={{ background: "#e0e7ff", color: "#23263a", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: response ? "pointer" : "not-allowed", marginRight: 12 }}
+        style={{ background: "#e0e7ff", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: response ? "pointer" : "not-allowed", marginRight: 12 }}
         aria-label="Export report"
       >
         Export
@@ -214,14 +214,14 @@ export default function TechnicalSEOAuditor() {
       <button
         onClick={handleShare}
         disabled={!reportUrl}
-        style={{ background: "#bae6fd", color: "#23263a", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: reportUrl ? "pointer" : "not-allowed", marginRight: 12 }}
+        style={{ background: "#bae6fd", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: reportUrl ? "pointer" : "not-allowed", marginRight: 12 }}
         aria-label="Share report"
       >
         Share
       </button>
       <button
         onClick={() => setInput("")}
-        style={{ background: "#fca5a5", color: "#23263a", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
+        style={{ background: "#fca5a5", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
         aria-label="Reset"
       >
         Reset
@@ -234,7 +234,7 @@ export default function TechnicalSEOAuditor() {
         <div style={{ marginTop: 24, background: "#1e2235", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8, color: "#7fffd4" }}>Analytics</div>
           <div style={{ display: "flex", gap: 12 }}>
-            <div style={{ background: "#23263a", borderRadius: 8, padding: "12px 20px", border: "1px solid #2f3a50" }}>
+            <div style={{ background: "#0a0a0a", borderRadius: 8, padding: "12px 20px", border: "1px solid #2f3a50" }}>
               <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Events</div>
               <div style={{ fontSize: 24, fontWeight: 800, color: "#7fffd4" }}>{analytics.length}</div>
             </div>
@@ -242,13 +242,13 @@ export default function TechnicalSEOAuditor() {
         </div>
       )}
       {response && (
-        <div style={{ marginTop: 32, background: darkMode ? "#23263a" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+        <div style={{ marginTop: 32, background: darkMode ? "#0a0a0a" : "#f8fafc", borderRadius: 12, padding: 24 }}>
           <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>Audit Report:</div>
-          <div style={{ fontSize: 16, color: darkMode ? "#e0e7ff" : "#23263a" }}>{response}</div>
+          <div style={{ fontSize: 16, color: darkMode ? "#e0e7ff" : "#0a0a0a" }}>{response}</div>
         </div>
       )}
       {history.length > 0 && (
-        <div style={{ marginTop: 32, background: darkMode ? "#23263a" : "#f8fafc", borderRadius: 12, padding: 20 }}>
+        <div style={{ marginTop: 32, background: darkMode ? "#0a0a0a" : "#f8fafc", borderRadius: 12, padding: 20 }}>
           <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Audit History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, i) => (
@@ -271,7 +271,7 @@ export default function TechnicalSEOAuditor() {
       )}
       <form
         onSubmit={e => { e.preventDefault(); handleFeedback(); }}
-        style={{ marginTop: 32, background: darkMode ? "#23263a" : "#f8fafc", borderRadius: 12, padding: 20 }}
+        style={{ marginTop: 32, background: darkMode ? "#0a0a0a" : "#f8fafc", borderRadius: 12, padding: 20 }}
         aria-label="Send feedback"
       >
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
@@ -279,13 +279,13 @@ export default function TechnicalSEOAuditor() {
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 12, background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#f3f4f6" : "#23263a" }}
+          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 12, background: darkMode ? "#0a0a0a" : "#fff", color: darkMode ? "#f3f4f6" : "#0a0a0a" }}
           placeholder="Share your feedback or suggestions..."
           aria-label="Feedback input"
         />
         <button
           type="submit"
-          style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
+          style={{ background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
         >
           Send Feedback
         </button>

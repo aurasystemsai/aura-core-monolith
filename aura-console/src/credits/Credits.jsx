@@ -86,7 +86,7 @@ const Credits = () => {
                 <td style={{padding:'4px 8px'}}>Run up to 2 core systems, shared queue, email/SEO tasks, email support</td>
               </tr>
               <tr style={{background:'rgba(127,255,212,0.18)',border:'2px solid #7fffd4'}}>
-                <td style={{padding:'4px 8px',fontWeight:900}}><b>Pro <span style={{background:'#7fffd4',color:'#23263a',borderRadius:6,padding:'2px 8px',fontSize:13,marginLeft:4}}>Popular</span></b></td>
+                <td style={{padding:'4px 8px',fontWeight:900}}><b>Pro <span style={{background:'#7fffd4',color:'#0a0a0a',borderRadius:6,padding:'2px 8px',fontSize:13,marginLeft:4}}>Popular</span></b></td>
                 <td style={{padding:'4px 8px',fontWeight:900}}>£99</td>
                 <td style={{padding:'4px 8px',fontWeight:900}}>5,000</td>
                 <td style={{padding:'4px 8px'}}>Growing brands</td>

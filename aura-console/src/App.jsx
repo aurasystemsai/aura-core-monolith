@@ -189,7 +189,7 @@ class ErrorBoundary extends React.Component {
       return (
         <div style={{
           color: '#ff4d4f',
-          background: '#23263a',
+          background: '#0a0a0a',
           padding: 48,
           borderRadius: 18,
           margin: '64px auto',

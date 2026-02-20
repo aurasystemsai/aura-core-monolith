@@ -103,7 +103,7 @@ export default function SiteAuditHealth() {
   };
 
   return (
-    <div style={{ background: "#23263a", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: "Inter, sans-serif" }}>
+    <div style={{ background: "#0a0a0a", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: "Inter, sans-serif" }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 6 }}>Site Audit & Health</h2>
       <p style={{ color: "#94a3b8", marginBottom: 20, fontSize: 14 }}>Enter a site URL to run a comprehensive AI-powered health and SEO audit.</p>
       <input
@@ -116,7 +116,7 @@ export default function SiteAuditHealth() {
         onKeyDown={e => e.key === "Enter" && !loading && input && handleAudit()}
       />
       <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
-        <button onClick={handleAudit} disabled={loading || !input} style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 15, cursor: loading || !input ? "not-allowed" : "pointer", opacity: loading || !input ? 0.6 : 1 }}>
+        <button onClick={handleAudit} disabled={loading || !input} style={{ background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 15, cursor: loading || !input ? "not-allowed" : "pointer", opacity: loading || !input ? 0.6 : 1 }}>
           {loading ? "Auditing…" : "Run Audit"}
         </button>
         <button onClick={() => fileInputRef.current?.click()} style={{ background: "#334155", color: "#f3f4f6", border: "1px solid #475569", borderRadius: 8, padding: "10px 18px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Import</button>
@@ -152,7 +152,7 @@ export default function SiteAuditHealth() {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {history.map((h, i) => (
-              <div key={h.id || i} style={{ background: "#23263a", borderRadius: 8, padding: "12px 16px", border: "1px solid #2f3a50" }}>
+              <div key={h.id || i} style={{ background: "#0a0a0a", borderRadius: 8, padding: "12px 16px", border: "1px solid #2f3a50" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
                   <span style={{ fontWeight: 700, color: "#e2e8f0" }}>{h.site}</span>
                   <span style={{ color: "#64748b" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : `#${i+1}`}</span>

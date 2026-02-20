@@ -49,7 +49,7 @@ function IssueCard({ issue, pageUrl }) {
         <button
           onClick={handleGenerate}
           disabled={fixing}
-          style={{ marginLeft: "auto", background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 6, padding: "3px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+          style={{ marginLeft: "auto", background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 6, padding: "3px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
         >{fixing ? "…" : "Generate Fix"}</button>
       </div>
       <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.5 }}>{issue.detail}</div>
@@ -76,7 +76,7 @@ function KeywordPresencePanel({ keywords, keywordPresence }) {
       <div style={{ fontWeight: 700, fontSize: 12, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Keyword Presence Check</div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {(keywordPresence || []).map(kp => (
-          <div key={kp.keyword} style={{ background: "#23263a", borderRadius: 8, padding: "6px 12px", border: "1px solid #2f3a50", fontSize: 13 }}>
+          <div key={kp.keyword} style={{ background: "#0a0a0a", borderRadius: 8, padding: "6px 12px", border: "1px solid #2f3a50", fontSize: 13 }}>
             <span style={{ fontWeight: 600, color: "#e2e8f0" }}>{kp.keyword}</span>
             <span style={{ marginLeft: 8, color: kp.inTitle ? "#22c55e" : "#ef4444", fontSize: 11, fontWeight: 700 }}>Title {kp.inTitle ? "✓" : "✗"}</span>
             <span style={{ marginLeft: 6, color: kp.inDesc ? "#22c55e" : "#ef4444", fontSize: 11, fontWeight: 700 }}>Desc {kp.inDesc ? "✓" : "✗"}</span>
@@ -92,7 +92,7 @@ function PageSection({ page, keywords }) {
   const issues = page.issues || [];
 
   return (
-    <div style={{ background: "#23263a", borderRadius: 10, border: "1px solid #2f3a50", marginBottom: 12 }}>
+    <div style={{ background: "#0a0a0a", borderRadius: 10, border: "1px solid #2f3a50", marginBottom: 12 }}>
       <button
         onClick={() => setOpen(o => !o)}
         style={{ width: "100%", background: "none", border: "none", color: "#e2e8f0", padding: "12px 16px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
@@ -216,7 +216,7 @@ export default function SEOSiteCrawler() {
   const totalIssues = result?.totalIssues || 0;
 
   return (
-    <div style={{ background: "#23263a", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: "Inter, sans-serif" }}>
+    <div style={{ background: "#0a0a0a", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: "Inter, sans-serif" }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 4 }}>SEO Site Crawler</h2>
       <div style={{ marginBottom: 20, color: "#0ea5e9", fontWeight: 600 }}>
         🕷️ Crawl, analyze, and fix site SEO issues with AI-powered suggestions.
@@ -260,10 +260,10 @@ export default function SEOSiteCrawler() {
 
       {/* Action Buttons */}
       <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
-        <button onClick={handleCrawl} disabled={loading || !input.trim()} style={{ background: loading ? "#374151" : "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "11px 26px", fontWeight: 700, fontSize: 15, cursor: loading || !input.trim() ? "not-allowed" : "pointer" }}>
+        <button onClick={handleCrawl} disabled={loading || !input.trim()} style={{ background: loading ? "#374151" : "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "11px 26px", fontWeight: 700, fontSize: 15, cursor: loading || !input.trim() ? "not-allowed" : "pointer" }}>
           {loading ? "Crawling…" : "🕷️ Crawl & Analyze"}
         </button>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#23263a", border: "none", borderRadius: 8, padding: "11px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Import</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "11px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} />
         <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "11px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Export</button>
         {exported && <a href={exported} download="seo-crawler-history.json" style={{ padding: "11px 14px", color: "#0ea5e9", fontWeight: 600, fontSize: 14, textDecoration: "none" }}>↓ Download</a>}
@@ -319,7 +319,7 @@ export default function SEOSiteCrawler() {
           {history.map(h => {
             const r = h.result || {};
             return (
-              <div key={h.id} style={{ background: "#23263a", borderRadius: 8, padding: "12px 16px", border: "1px solid #2f3a50", marginBottom: 8 }}>
+              <div key={h.id} style={{ background: "#0a0a0a", borderRadius: 8, padding: "12px 16px", border: "1px solid #2f3a50", marginBottom: 8 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4, flexWrap: "wrap", gap: 4 }}>
                   <span style={{ fontWeight: 700, color: "#e2e8f0" }}>{h.site}</span>
                   <span style={{ color: "#64748b" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : `#${h.id}`}</span>

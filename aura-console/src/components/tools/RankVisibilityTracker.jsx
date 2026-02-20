@@ -108,8 +108,8 @@ export default function RankVisibilityTracker() {
       style={{
         
         margin: "40px auto",
-        background: darkMode ? "#23263a" : "#fff",
-        color: darkMode ? "#f3f4f6" : "#23263a",
+        background: darkMode ? "#0a0a0a" : "#fff",
+        color: darkMode ? "#f3f4f6" : "#0a0a0a",
         borderRadius: 16,
         boxShadow: "0 2px 16px #0001",
         padding: 32,
@@ -122,7 +122,7 @@ export default function RankVisibilityTracker() {
         <button
           aria-label="Toggle dark mode"
           onClick={() => setDarkMode(d => !d)}
-          style={{ background: darkMode ? "#f3f4f6" : "#23263a", color: darkMode ? "#23263a" : "#f3f4f6", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
+          style={{ background: darkMode ? "#f3f4f6" : "#0a0a0a", color: darkMode ? "#0a0a0a" : "#f3f4f6", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
         >
           {darkMode ? "Light" : "Dark"}
         </button>
@@ -134,7 +134,7 @@ export default function RankVisibilityTracker() {
         value={input}
         onChange={e => setInput(e.target.value)}
         rows={3}
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#f3f4f6" : "#23263a" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#0a0a0a" : "#fff", color: darkMode ? "#f3f4f6" : "#0a0a0a" }}
         placeholder="Type your keyword or URL here..."
         aria-label="Keyword or URL input"
       />
@@ -182,7 +182,7 @@ export default function RankVisibilityTracker() {
       <button
         onClick={handleRun}
         disabled={loading || !input}
-        style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: "pointer", boxShadow: "0 2px 12px #22d3ee55", marginRight: 12 }}
+        style={{ background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: "pointer", boxShadow: "0 2px 12px #22d3ee55", marginRight: 12 }}
         aria-label="Run tracking"
       >
         Track
@@ -190,7 +190,7 @@ export default function RankVisibilityTracker() {
       <button
         onClick={handleExport}
         disabled={!response}
-        style={{ background: "#e0e7ff", color: "#23263a", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: response ? "pointer" : "not-allowed", marginRight: 12 }}
+        style={{ background: "#e0e7ff", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: response ? "pointer" : "not-allowed", marginRight: 12 }}
         aria-label="Export report"
       >
         Export
@@ -198,14 +198,14 @@ export default function RankVisibilityTracker() {
       <button
         onClick={handleShare}
         disabled={!reportUrl}
-        style={{ background: "#bae6fd", color: "#23263a", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: reportUrl ? "pointer" : "not-allowed", marginRight: 12 }}
+        style={{ background: "#bae6fd", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: reportUrl ? "pointer" : "not-allowed", marginRight: 12 }}
         aria-label="Share report"
       >
         Share
       </button>
       <button
         onClick={() => setInput("")}
-        style={{ background: "#fca5a5", color: "#23263a", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
+        style={{ background: "#fca5a5", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
         aria-label="Reset"
       >
         Reset
@@ -221,13 +221,13 @@ export default function RankVisibilityTracker() {
         </div>
       )}
       {response && (
-        <div style={{ marginTop: 32, background: darkMode ? "#23263a" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+        <div style={{ marginTop: 32, background: darkMode ? "#0a0a0a" : "#f8fafc", borderRadius: 12, padding: 24 }}>
           <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>Rank Report:</div>
-          <div style={{ fontSize: 16, color: darkMode ? "#e0e7ff" : "#23263a" }}>{response}</div>
+          <div style={{ fontSize: 16, color: darkMode ? "#e0e7ff" : "#0a0a0a" }}>{response}</div>
         </div>
       )}
       {history.length > 0 && (
-        <div style={{ marginTop: 32, background: darkMode ? "#23263a" : "#f8fafc", borderRadius: 12, padding: 20 }}>
+        <div style={{ marginTop: 32, background: darkMode ? "#0a0a0a" : "#f8fafc", borderRadius: 12, padding: 20 }}>
           <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Report History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, i) => (
@@ -250,7 +250,7 @@ export default function RankVisibilityTracker() {
       )}
       <form
         onSubmit={e => { e.preventDefault(); handleFeedback(); }}
-        style={{ marginTop: 32, background: darkMode ? "#23263a" : "#f8fafc", borderRadius: 12, padding: 20 }}
+        style={{ marginTop: 32, background: darkMode ? "#0a0a0a" : "#f8fafc", borderRadius: 12, padding: 20 }}
         aria-label="Send feedback"
       >
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
@@ -258,13 +258,13 @@ export default function RankVisibilityTracker() {
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 12, background: darkMode ? "#23263a" : "#fff", color: darkMode ? "#f3f4f6" : "#23263a" }}
+          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 12, background: darkMode ? "#0a0a0a" : "#fff", color: darkMode ? "#f3f4f6" : "#0a0a0a" }}
           placeholder="Share your feedback or suggestions..."
           aria-label="Feedback input"
         />
         <button
           type="submit"
-          style={{ background: "#7fffd4", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
+          style={{ background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
         >
           Send Feedback
         </button>

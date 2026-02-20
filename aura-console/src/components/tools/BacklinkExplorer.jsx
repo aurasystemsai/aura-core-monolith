@@ -36,14 +36,14 @@ export default function BacklinkExplorer() {
   };
 
   const onboardingContent = (
-    <div style={{ padding: 24, background: "#23263a", color: "#f3f4f6", borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: "#0a0a0a", color: "#f3f4f6", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Backlink Explorer</h3>
       <ul style={{ margin: "16px 0 0 18px", color: "#a3e635", fontSize: 16 }}>
         <li>Analyze backlinks, referring domains, anchor text, and toxic links</li>
         <li>Export, import, and review analysis history</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#23263a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
               </div>
             );
   }
@@ -85,7 +85,7 @@ export default function BacklinkExplorer() {
     <div style={{
       
       margin: "40px auto",
-      background: "#23263a",
+      background: "#0a0a0a",
       borderRadius: 18,
       boxShadow: "0 2px 24px #0002",
       padding: 36,
@@ -106,11 +106,11 @@ export default function BacklinkExplorer() {
         value={domain}
         onChange={e => setDomain(e.target.value)}
         type="text"
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#23263a", color: "#a3e635" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#0a0a0a", color: "#a3e635" }}
         placeholder="Enter domain to analyze backlinks..."
         aria-label="Domain input"
       />
-      <button onClick={handleAnalyze} disabled={loading || !domain} style={{ background: "#a3e635", color: "#23263a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Analyzing..." : "Analyze"}</button>
+      <button onClick={handleAnalyze} disabled={loading || !domain} style={{ background: "#a3e635", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Analyzing..." : "Analyze"}</button>
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {result && (
         <div style={{ background: "#1e2235", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #2f3a50" }}>
@@ -126,7 +126,7 @@ export default function BacklinkExplorer() {
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analysis History</div>
                   <ul style={{ paddingLeft: 18 }}>
                     {history.map((h, i) => (
-                    <div key={i} style={{ background: "#23263a", borderRadius: 8, padding: "12px 16px", border: "1px solid #2f3a50", marginBottom: 8 }}>
+                    <div key={i} style={{ background: "#0a0a0a", borderRadius: 8, padding: "12px 16px", border: "1px solid #2f3a50", marginBottom: 8 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
                         <span style={{ fontWeight: 700, color: "#e2e8f0" }}>{h.domain}</span>
                         <span style={{ color: "#64748b" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : `#${i+1}`}</span>

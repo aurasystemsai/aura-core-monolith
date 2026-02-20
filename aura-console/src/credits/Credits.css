@@ -2,7 +2,7 @@
 .aura-credits-shell {
   max-width: 420px;
   margin: 64px auto;
-  background: var(--bg-alt, #23263a);
+  background: var(--bg-alt, #0a0a0a);
   border-radius: 16px;
   box-shadow: 0 4px 24px #0003;
   padding: 44px 32px 32px 32px;

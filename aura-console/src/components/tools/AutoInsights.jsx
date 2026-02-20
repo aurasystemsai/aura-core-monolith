@@ -246,7 +246,7 @@ export default function AutoInsights() {
               <button className="aura-btn" style={{ background: '#0b1221', color: '#fbbf24', border: '1px solid #334155' }} onClick={() => setIncidentMode(true)}>Open incident</button>
             </div>
           </div>
-          <button className="aura-btn" style={{ background: '#7fffd4', color: '#23263a', fontWeight: 800 }} onClick={simulateIngest}>Refresh data</button>
+          <button className="aura-btn" style={{ background: '#7fffd4', color: '#0a0a0a', fontWeight: 800 }} onClick={simulateIngest}>Refresh data</button>
         </div>
       </div>
 
@@ -270,11 +270,11 @@ export default function AutoInsights() {
               <option>Startup</option>
               <option>Agency</option>
             </select>
-            <button className="aura-btn" style={{ background: "#7fffd4", color: "#23263a", fontWeight: 700 }} onClick={handleFilter}>Filter</button>
+            <button className="aura-btn" style={{ background: "#7fffd4", color: "#0a0a0a", fontWeight: 700 }} onClick={handleFilter}>Filter</button>
           </div>
           {compatibilityIssue && <div style={{ color: '#fbbf24', fontSize: 13, marginBottom: 10 }}>Guardrail: {compatibilityIssue}</div>}
           {/* Analytics Chart Placeholder */}
-          <div style={{ background: "#23263a", borderRadius: 18, padding: 24, minHeight: 180, marginBottom: 18 }}>
+          <div style={{ background: "#0a0a0a", borderRadius: 18, padding: 24, minHeight: 180, marginBottom: 18 }}>
             <div style={{ fontWeight: 700, color: "#7fffd4", fontSize: 18 }}>Analytics & Trends</div>
             <div style={{ color: "#b6eaff", fontSize: 15 }}>Visualize trends, opportunities, risks (chart here)</div>
           </div>
@@ -287,11 +287,11 @@ export default function AutoInsights() {
         </div>
         {/* Alerts & Integrations */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 18 }}>
-          <div style={{ background: "#23263a", borderRadius: 18, padding: 18 }}>
+          <div style={{ background: "#0a0a0a", borderRadius: 18, padding: 18 }}>
             <div style={{ fontWeight: 700, color: "#7fffd4", fontSize: 18 }}>Real-Time Alerts</div>
             <div style={{ color: "#b6eaff", fontSize: 15 }}>Slack, Email, In-app notifications for new insights and trends</div>
           </div>
-          <div style={{ background: "#23263a", borderRadius: 18, padding: 18 }}>
+          <div style={{ background: "#0a0a0a", borderRadius: 18, padding: 18 }}>
             <div style={{ fontWeight: 700, color: "#7fffd4", fontSize: 18 }}>Integrations</div>
             <div style={{ color: "#b6eaff", fontSize: 15 }}>CRM, Analytics, Marketing, Data Warehouse</div>
           </div>
@@ -303,17 +303,17 @@ export default function AutoInsights() {
         <h2 style={{ fontWeight: 800, fontSize: 26, color: "var(--text-primary)", marginBottom: 18 }}>Insight Projects & AI Recommendations</h2>
         <div style={{ display: "flex", gap: 24 }}>
           {/* Kanban Board Placeholder */}
-          <div style={{ flex: 2, background: "#23263a", borderRadius: 18, padding: 24, minHeight: 220 }}>
+          <div style={{ flex: 2, background: "#0a0a0a", borderRadius: 18, padding: 24, minHeight: 220 }}>
             <div style={{ fontWeight: 700, color: "#7fffd4", fontSize: 18 }}>Kanban Board</div>
             <div style={{ color: "#b6eaff", fontSize: 15 }}>Visualize insight-driven projects, tasks, and progress (kanban UI here)</div>
           </div>
           {/* AI Recommendations & Bulk Actions */}
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 18 }}>
-            <div style={{ background: "#23263a", borderRadius: 18, padding: 18 }}>
+            <div style={{ background: "#0a0a0a", borderRadius: 18, padding: 18 }}>
               <div style={{ fontWeight: 700, color: "#7fffd4", fontSize: 18 }}>AI Recommendations</div>
               <div style={{ color: "#b6eaff", fontSize: 15 }}>Next-best-action suggestions for business strategy</div>
             </div>
-            <div style={{ background: "#23263a", borderRadius: 18, padding: 18 }}>
+            <div style={{ background: "#0a0a0a", borderRadius: 18, padding: 18 }}>
               <div style={{ fontWeight: 700, color: "#7fffd4", fontSize: 18 }}>Bulk Actions</div>
               <div style={{ color: "#b6eaff", fontSize: 15 }}>Apply actions to multiple insights at once</div>
             </div>
@@ -325,16 +325,16 @@ export default function AutoInsights() {
       <div className="autoinsights-analytics-reporting" style={{ padding: "32px 48px" }}>
         <h2 style={{ fontWeight: 800, fontSize: 26, color: "var(--text-primary)", marginBottom: 18 }}>Analytics & Executive Reporting</h2>
         <div style={{ display: "flex", gap: 24 }}>
-          <div style={{ flex: 2, background: "#23263a", borderRadius: 18, padding: 24, minHeight: 180 }}>
+          <div style={{ flex: 2, background: "#0a0a0a", borderRadius: 18, padding: 24, minHeight: 180 }}>
             <div style={{ fontWeight: 700, color: "#7fffd4", fontSize: 18 }}>Visual Analytics Dashboard</div>
             <div style={{ color: "#b6eaff", fontSize: 15 }}>Charts, heatmaps, funnel views, trend lines (dashboard UI here)</div>
           </div>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 18 }}>
-            <div style={{ background: "#23263a", borderRadius: 18, padding: 18 }}>
+            <div style={{ background: "#0a0a0a", borderRadius: 18, padding: 18 }}>
               <div style={{ fontWeight: 700, color: "#7fffd4", fontSize: 18 }}>Executive Summaries</div>
               <div style={{ color: "#b6eaff", fontSize: 15 }}>Automated, AI-generated insights for leadership</div>
             </div>
-            <div style={{ background: "#23263a", borderRadius: 18, padding: 18 }}>
+            <div style={{ background: "#0a0a0a", borderRadius: 18, padding: 18 }}>
               <div style={{ fontWeight: 700, color: "#7fffd4", fontSize: 18 }}>Export & Sharing</div>
               <div style={{ color: "#b6eaff", fontSize: 15 }}>PDF, CSV, scheduled reports, live links</div>
               <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -369,16 +369,16 @@ export default function AutoInsights() {
       <div className="autoinsights-feedback-collab" style={{ padding: "32px 48px" }}>
         <h2 style={{ fontWeight: 800, fontSize: 26, color: "var(--text-primary)", marginBottom: 18 }}>Feedback & Collaboration</h2>
         <div style={{ display: "flex", gap: 24 }}>
-          <div style={{ flex: 2, background: "#23263a", borderRadius: 18, padding: 24, minHeight: 120 }}>
+          <div style={{ flex: 2, background: "#0a0a0a", borderRadius: 18, padding: 24, minHeight: 120 }}>
             <div style={{ fontWeight: 700, color: "#7fffd4", fontSize: 18 }}>Embedded Feedback</div>
             <div style={{ color: "#b6eaff", fontSize: 15 }}>In-app surveys, NPS, CSAT, post-insight feedback</div>
           </div>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 18 }}>
-            <div style={{ background: "#23263a", borderRadius: 18, padding: 18 }}>
+            <div style={{ background: "#0a0a0a", borderRadius: 18, padding: 18 }}>
               <div style={{ fontWeight: 700, color: "#7fffd4", fontSize: 18 }}>Collaboration</div>
               <div style={{ color: "#b6eaff", fontSize: 15 }}>Team notes, tagging, @mentions, audit logs</div>
             </div>
-            <div style={{ background: "#23263a", borderRadius: 18, padding: 18 }}>
+            <div style={{ background: "#0a0a0a", borderRadius: 18, padding: 18 }}>
               <div style={{ fontWeight: 700, color: "#7fffd4", fontSize: 18 }}>Security & Compliance</div>
               <div style={{ color: "#b6eaff", fontSize: 15 }}>Role-based access, GDPR, audit logs</div>
             </div>
@@ -389,7 +389,7 @@ export default function AutoInsights() {
       {/* Pinboard & Attribution */}
       <div style={{ padding: "0 48px 24px" }}>
         <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'minmax(240px, 1.2fr) minmax(240px, 1fr)' }}>
-          <div style={{ background: '#23263a', borderRadius: 18, padding: 18 }}>
+          <div style={{ background: '#0a0a0a', borderRadius: 18, padding: 18 }}>
             <div style={{ fontWeight: 800, color: '#7fffd4', fontSize: 18, marginBottom: 8 }}>Pinboard</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
               <input className="aura-input" style={{ flex: 1 }} value={commentDraft} onChange={e => setCommentDraft(e.target.value)} placeholder="Add a note/comment before pinning" />
@@ -410,7 +410,7 @@ export default function AutoInsights() {
               </div>
             )}
           </div>
-          <div style={{ background: '#23263a', borderRadius: 18, padding: 18 }}>
+          <div style={{ background: '#0a0a0a', borderRadius: 18, padding: 18 }}>
             <div style={{ fontWeight: 800, color: '#7fffd4', fontSize: 18, marginBottom: 8 }}>Why this insight?</div>
             <div style={{ color: '#b6eaff', fontSize: 15 }}>Attribution and feature importance</div>
             <div style={{ marginTop: 8, display: 'grid', gap: 8 }}>
@@ -432,7 +432,7 @@ export default function AutoInsights() {
       {/* Explainability & Anomalies */}
       <div style={{ padding: "0 48px 24px" }}>
         <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'minmax(240px, 1fr) minmax(240px, 1fr)' }}>
-          <div style={{ background: '#23263a', borderRadius: 18, padding: 18 }}>
+          <div style={{ background: '#0a0a0a', borderRadius: 18, padding: 18 }}>
             <div style={{ fontWeight: 800, color: '#7fffd4', fontSize: 18, marginBottom: 8 }}>Why did this change?</div>
             <ul style={{ margin: 0, paddingLeft: 18, color: '#b6eaff', lineHeight: 1.6 }}>
               <li>Top driver: Paid search CPC +12%</li>
@@ -441,7 +441,7 @@ export default function AutoInsights() {
             </ul>
             <button className="aura-btn" style={{ marginTop: 10 }} onClick={() => { recordHistory('Requested explainability summary'); recordTrace('explainability', {}); }}>Explain more</button>
           </div>
-          <div style={{ background: '#23263a', borderRadius: 18, padding: 18 }}>
+          <div style={{ background: '#0a0a0a', borderRadius: 18, padding: 18 }}>
             <div style={{ fontWeight: 800, color: '#7fffd4', fontSize: 18, marginBottom: 8 }}>Anomaly stream</div>
             <div style={{ display: 'grid', gap: 10 }}>
               {anomalies.map(a => (
@@ -456,7 +456,7 @@ export default function AutoInsights() {
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <button className="aura-btn" style={{ background: '#1f2937', color: '#e5e7eb', border: '1px solid #334155' }} onClick={() => recordHistory(`Acknowledged anomaly: ${a.label}`)}>Acknowledge</button>
                     <button className="aura-btn" style={{ background: '#0ea5e9', color: '#fff' }} onClick={() => routeAlert('slack')}>Route to Slack</button>
-                    <button className="aura-btn" style={{ background: '#7fffd4', color: '#23263a' }} onClick={() => routeAlert('email')}>Email alert</button>
+                    <button className="aura-btn" style={{ background: '#7fffd4', color: '#0a0a0a' }} onClick={() => routeAlert('email')}>Email alert</button>
                     <button className="aura-btn" style={{ background: '#b91c1c', color: '#fff' }} onClick={() => suppressAnomaly(a.id)}>Suppress</button>
                   </div>
                 </div>
@@ -468,7 +468,7 @@ export default function AutoInsights() {
 
       {/* Comparison & AI Assist */}
       <div style={{ padding: "0 48px 36px", display: 'grid', gap: 18, gridTemplateColumns: 'minmax(260px, 1fr) minmax(260px, 1fr)' }}>
-        <div style={{ background: '#23263a', borderRadius: 18, padding: 18 }}>
+        <div style={{ background: '#0a0a0a', borderRadius: 18, padding: 18 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <div style={{ fontWeight: 800, color: '#7fffd4', fontSize: 18 }}>Comparison mode</div>
             <select className="aura-input" value={comparison} onChange={e => setComparison(e.target.value)} style={{ width: 140 }}>
@@ -485,13 +485,13 @@ export default function AutoInsights() {
           </div>
           <button className="aura-btn" style={{ marginTop: 10 }} onClick={() => recordHistory('Exported comparison CSV')}>Export comparison CSV</button>
         </div>
-        <div style={{ background: '#23263a', borderRadius: 18, padding: 18, display: 'grid', gap: 10 }}>
+        <div style={{ background: '#0a0a0a', borderRadius: 18, padding: 18, display: 'grid', gap: 10 }}>
           <div style={{ fontWeight: 800, color: '#7fffd4', fontSize: 18 }}>AI assist</div>
           <button className="aura-btn" onClick={() => recordHistory('AI summary generated')}>Summarize this view</button>
           <button className="aura-btn" onClick={() => recordHistory('Next best actions suggested')}>Suggest next best actions</button>
           <div style={{ color: '#9ca3af', fontSize: 13 }}>Actions consider current filters and segment.</div>
         </div>
-        <div style={{ background: '#23263a', borderRadius: 18, padding: 18, display: 'grid', gap: 10 }}>
+        <div style={{ background: '#0a0a0a', borderRadius: 18, padding: 18, display: 'grid', gap: 10 }}>
           <div style={{ fontWeight: 800, color: '#7fffd4', fontSize: 18 }}>Scenario simulator</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
             <input className="aura-input" type="number" value={scenario.shift} onChange={e => setScenario(prev => ({ ...prev, shift: Number(e.target.value) || 0 }))} style={{ width: 100 }} />

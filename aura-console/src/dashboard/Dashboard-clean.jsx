@@ -11,7 +11,7 @@ function Spinner() {
         width: 38,
         height: 38,
         border: '4px solid #7fffd4',
-        borderTop: '4px solid #23263a',
+        borderTop: '4px solid #0a0a0a',
         borderRadius: '50%',
         animation: 'spin 1s linear infinite',
       }} />
@@ -118,7 +118,7 @@ const Dashboard = ({ setActiveSection }) => {
         padding: '40px 32px',
         marginBottom: 32,
         boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-        background: 'linear-gradient(120deg, #232b3b 70%, #1a1d2e 100%)',
+        background: 'linear-gradient(120deg, #232b3b 70%, #111111 100%)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
           <img src="/logo-aura.png" alt="AURA Logo" style={{ height: 56, width: 56, objectFit: 'contain', borderRadius: 12 }} />
@@ -133,7 +133,7 @@ const Dashboard = ({ setActiveSection }) => {
           borderRadius: 16,
           boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
           padding: '24px',
-          border: '1px solid #2f3650',
+          border: '1px solid #1e1e1e',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div>
@@ -147,7 +147,7 @@ const Dashboard = ({ setActiveSection }) => {
             background: '#0f1324',
             borderRadius: 12,
             padding: '16px',
-            border: '1px solid #2f3650',
+            border: '1px solid #1e1e1e',
           }}>
             <div style={{ fontWeight: 700, color: '#7fffd4', marginBottom: 12, fontSize: 15 }}>Ask AI Copilot</div>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -160,7 +160,7 @@ const Dashboard = ({ setActiveSection }) => {
                   flex: 1,
                   borderRadius: 10,
                   padding: '10px 12px',
-                  border: '1px solid #2f3650',
+                  border: '1px solid #1e1e1e',
                   background: '#0f1324',
                   color: '#e8f2ff',
                   fontSize: 14,
@@ -211,7 +211,7 @@ const Dashboard = ({ setActiveSection }) => {
               onClick={() => setActiveSection && setActiveSection('tools')} 
               style={{
                 flex: 1,
-                background: '#2f3650',
+                background: '#1e1e1e',
                 color: '#e8f2ff',
                 border: '1px solid #3a4565',
                 borderRadius: 8,

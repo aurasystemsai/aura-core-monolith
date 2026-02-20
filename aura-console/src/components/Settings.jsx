@@ -369,7 +369,7 @@ const Settings = ({ setActiveSection }) => {
         </div>
 
         {/* ── Billing & Plan ── */}
-        <div style={{ background: '#1a1d2e', padding: 32, borderRadius: 12, border: '1px solid #2f3650', marginBottom: 24 }}>
+        <div style={{ background: '#111111', padding: 32, borderRadius: 12, border: '1px solid #1e1e1e', marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
             <div>
               <h2 style={{ margin: 0, color: '#e5e7eb', fontSize: 22, fontWeight: 800 }}>Billing &amp; Plan</h2>
@@ -400,7 +400,7 @@ const Settings = ({ setActiveSection }) => {
                 const isUpgrading = upgrading === plan.id;
                 const isDowngrade = planIndex < currentPlanIndex;
                 return (
-                  <div key={plan.id} style={{ background: isCurrent ? `${plan.colour}12` : '#0f172a', border: `2px solid ${isCurrent ? plan.colour : '#2f3650'}`, borderRadius: 14, padding: 24, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                  <div key={plan.id} style={{ background: isCurrent ? `${plan.colour}12` : '#0f172a', border: `2px solid ${isCurrent ? plan.colour : '#1e1e1e'}`, borderRadius: 14, padding: 24, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                     {plan.badge && (
                       <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: plan.colour, color: '#0f172a', fontSize: 11, fontWeight: 800, padding: '3px 12px', borderRadius: 20, whiteSpace: 'nowrap' }}>{plan.badge}</div>
                     )}
@@ -511,10 +511,10 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .settings-section {
-          background: #1a1d2e;
+          background: #111111;
           padding: 32px;
           border-radius: 12px;
-          border: 1px solid #2f3650;
+          border: 1px solid #1e1e1e;
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
           margin-bottom: 24px;
         }
@@ -531,7 +531,7 @@ const Settings = ({ setActiveSection }) => {
         .icon-circle {
           width: 80px;
           height: 80px;
-          background: #2f3650;
+          background: #1e1e1e;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -566,7 +566,7 @@ const Settings = ({ setActiveSection }) => {
         .shop-domain-input {
           width: 100%;
           padding: 12px;
-          border: 2px solid #2f3650;
+          border: 2px solid #1e1e1e;
           border-radius: 8px;
           font-size: 16px;
           background: #0f1324;
@@ -580,7 +580,7 @@ const Settings = ({ setActiveSection }) => {
 
         .btn-primary {
           background: #7fffd4;
-          color: #23263a;
+          color: #0a0a0a;
           padding: 12px 32px;
           border: none;
           border-radius: 8px;
@@ -612,7 +612,7 @@ const Settings = ({ setActiveSection }) => {
           margin-right: auto;
           padding: 16px;
           background: #0f1324;
-          border: 1px solid #2f3650;
+          border: 1px solid #1e1e1e;
           border-radius: 8px;
           color: #cbd5e1;
         }
@@ -633,7 +633,7 @@ const Settings = ({ setActiveSection }) => {
         .connection-status {
           text-align: center;
           padding-bottom: 24px;
-          border-bottom: 1px solid #2f3650;
+          border-bottom: 1px solid #1e1e1e;
         }
 
         .connected-shopify-card h3 {
@@ -662,7 +662,7 @@ const Settings = ({ setActiveSection }) => {
           display: flex;
           justify-content: space-between;
           padding: 12px 0;
-          border-bottom: 1px solid #2f3650;
+          border-bottom: 1px solid #1e1e1e;
           color: #cbd5e1;
         }
 
@@ -692,7 +692,7 @@ const Settings = ({ setActiveSection }) => {
 
         .sync-buttons button {
           padding: 12px 24px;
-          background: #2f3650;
+          background: #1e1e1e;
           border: none;
           border-radius: 8px;
           cursor: pointer;
@@ -737,7 +737,7 @@ const Settings = ({ setActiveSection }) => {
         .setting-group {
           margin: 24px 0;
           padding: 24px 0;
-          border-bottom: 1px solid #2f3650;
+          border-bottom: 1px solid #1e1e1e;
         }
 
         .setting-group h3 {
@@ -754,8 +754,8 @@ const Settings = ({ setActiveSection }) => {
 
         /* Modern Card Styles */
         .setting-card {
-          background: #1a1d2e;
-          border: 1px solid #2f3650;
+          background: #111111;
+          border: 1px solid #1e1e1e;
           border-radius: 16px;
           margin-bottom: 24px;
           overflow: hidden;
@@ -772,15 +772,15 @@ const Settings = ({ setActiveSection }) => {
           align-items: center;
           gap: 16px;
           padding: 24px;
-          border-bottom: 1px solid #2f3650;
-          background: linear-gradient(135deg, #1a1d2e 0%, #232842 100%);
+          border-bottom: 1px solid #1e1e1e;
+          background: #111111;
         }
 
         .header-icon {
           font-size: 32px;
           width: 56px;
           height: 56px;
-          background: #2f3650;
+          background: #1e1e1e;
           border-radius: 12px;
           display: flex;
           align-items: center;
@@ -809,7 +809,7 @@ const Settings = ({ setActiveSection }) => {
           gap: 12px;
           margin-top: 24px;
           padding-top: 24px;
-          border-top: 1px solid #2f3650;
+          border-top: 1px solid #1e1e1e;
         }
 
         /* API Key Section */
@@ -830,7 +830,7 @@ const Settings = ({ setActiveSection }) => {
           gap: 12px;
           align-items: center;
           background: #0f1324;
-          border: 2px solid #2f3650;
+          border: 2px solid #1e1e1e;
           border-radius: 8px;
           padding: 16px;
         }
@@ -852,7 +852,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .btn-icon-action {
-          background: #2f3650;
+          background: #1e1e1e;
           border: none;
           border-radius: 6px;
           padding: 8px 12px;
@@ -867,7 +867,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .btn-secondary-small {
-          background: #2f3650;
+          background: #1e1e1e;
           color: #e5e7eb;
           border: none;
           border-radius: 6px;

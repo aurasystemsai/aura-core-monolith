@@ -44,8 +44,8 @@ export default function WinbackFeatureCard({ title, description, icon, children,
                 key={a.label + i}
                 onClick={a.onClick}
                 style={{
-                  background: a.color || (darkMode ? '#23263a' : '#7fffd4'),
-                  color: darkMode ? '#a3e635' : '#23263a',
+                  background: a.color || (darkMode ? '#0a0a0a' : '#7fffd4'),
+                  color: darkMode ? '#a3e635' : '#0a0a0a',
                   border: 'none',
                   borderRadius: 8,
                   padding: '8px 18px',

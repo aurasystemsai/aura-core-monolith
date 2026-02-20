@@ -358,7 +358,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .step-circle.active {
           background: #7fffd4;
-          color: #23263a;
+          color: #0a0a0a;
         }
 
         .step-circle.completed {
@@ -395,7 +395,7 @@ const OnboardingWizard = ({ onComplete }) => {
           font-size: 42px;
           font-weight: 700;
           margin: 0 0 8px 0;
-          color: #23263a;
+          color: #0a0a0a;
         }
 
         .subtitle {
@@ -590,7 +590,7 @@ const OnboardingWizard = ({ onComplete }) => {
           top: -12px;
           right: 24px;
           background: #7fffd4;
-          color: #23263a;
+          color: #0a0a0a;
           padding: 6px 12px;
           border-radius: 12px;
           font-size: 12px;
@@ -647,7 +647,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .plan-card.selected .select-indicator {
           background: #7fffd4;
-          color: #23263a;
+          color: #0a0a0a;
         }
 
         .wizard-footer {
@@ -674,7 +674,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .btn-primary {
           background: #7fffd4;
-          color: #23263a;
+          color: #0a0a0a;
           padding: 14px 32px;
           border: none;
           border-radius: 8px;
