@@ -1,28 +1,28 @@
 ﻿:root {
   /* Base layers — clear surface hierarchy like Linear/Vercel */
-  --bg:            #09090b;   /* zinc-950 — page background */
-  --bg-surface:    #18181b;   /* zinc-900 — cards, panels */
-  --bg-elevated:   #27272a;   /* zinc-800 — inputs, hover, nested sections */
-  --bg-alt:        #27272a;
+  --bg:            #0d0d11;   /* zinc-950 — page background */
+  --bg-surface:    #1a1c25;   /* zinc-900 — cards, panels */
+  --bg-elevated:   #222535;   /* zinc-800 — inputs, hover, nested sections */
+  --bg-alt:        #222535;
 
   /* Borders — always visible, never harsh */
-  --border-subtle: #27272a;
-  --border:        #3f3f46;   /* zinc-700 */
-  --border-strong: #52525b;   /* zinc-600 */
+  --border-subtle: #222535;
+  --border:        #353848;   /* zinc-700 */
+  --border-strong: #454860;   /* zinc-600 */
 
   /* Text hierarchy */
-  --text:          #fafafa;   /* zinc-50  — primary */
-  --text-secondary:#a1a1aa;   /* zinc-400 — labels, secondary */
-  --muted:         #71717a;   /* zinc-500 — placeholder, disabled */
+  --text:          #f9fafb;   /* zinc-50  — primary */
+  --text-secondary:#a8adc4;   /* zinc-400 — labels, secondary */
+  --muted:         #8b8fa8;   /* zinc-500 — placeholder, disabled */
 
   /* Accent — indigo (professional, not garish) */
-  --accent:        #818cf8;   /* indigo-400 */
+  --accent:        #6366f1;   /* indigo-400 */
   --accent-hover:  #6366f1;   /* indigo-500 */
   --accent-soft:   rgba(99, 102, 241, 0.12);
   --accent-text:   #e0e7ff;   /* indigo-100 */
 
   /* Card alias */
-  --card:          #18181b;
+  --card:          #1a1c25;
 
   /* Status */
   --success:       #4ade80;
@@ -51,7 +51,7 @@ body,
 
 body {
   font-family: var(--font);
-  background: #09090b;
+  background: #0d0d11;
   color: var(--text);
 }
 
@@ -81,8 +81,8 @@ body {
 .base-row {
   display: flex;
   gap: 8px;
-  border: 1px solid #3f3f46;
-  background: #18181b;
+  border: 1px solid #353848;
+  background: #1a1c25;
   color: var(--text);
 }
 .base-row .branding .logo {
@@ -191,7 +191,7 @@ body {
   padding: 7px 16px;
   font-size: 14px;
   background: var(--accent);
-  color: #09090b;
+  color: #0d0d11;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
@@ -286,7 +286,7 @@ body {
 .pane {
   display: flex;
   flex-direction: column;
-  background: #09090b;
+  background: #0d0d11;
   border-radius: 16px;
   border: 1px solid var(--border);
   overflow: hidden;

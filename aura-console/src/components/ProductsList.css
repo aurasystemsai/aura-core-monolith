@@ -97,27 +97,27 @@
   min-width: 900px;
 }
 .pl-table thead {
-  background: #18181b;
+  background: #1a1c25;
   color: #fff;
   font-size: 15px;
 }
 .pl-table th, .pl-table td {
   padding: 14px 10px;
   text-align: left;
-  border-bottom: 1px solid #18181b;
+  border-bottom: 1px solid #1a1c25;
 }
 .pl-row--expanded {
-  background: #18181b !important;
+  background: #1a1c25 !important;
 }
 .pl-row {
-  background: #18181b;
+  background: #1a1c25;
 }
 .pl-table tr {
-  background: #18181b;
+  background: #1a1c25;
   transition: background 0.15s;
 }
 .pl-table tr:hover, .pl-table tr:focus-within {
-  background: #09090b !important;
+  background: #0d0d11 !important;
 }
 .pl-product-cell {
   font-weight: 600;
@@ -154,8 +154,8 @@
   font-size: 13px;
 }
 .pl-keyword-pill {
-  background: #09090b;
-  color: #818cf8;
+  background: #0d0d11;
+  color: #6366f1;
   border-radius: 4px;
   padding: 2px 6px;
   margin-right: 4px;
@@ -165,9 +165,9 @@
   transition: background 0.15s, color 0.15s;
 }
 .pl-keyword-pill:hover, .pl-keyword-pill:focus {
-  background: #18181b;
+  background: #1a1c25;
   color: #fff;
-  border-color: #818cf8;
+  border-color: #6366f1;
 }
 .pl-actions-cell {
   min-width: 120px;
@@ -191,12 +191,12 @@
   font-weight: 700;
 }
 .pl-btn--save {
-  background: #818cf8;
+  background: #6366f1;
   color: #222;
   font-weight: 700;
 }
 .pl-btn--cancel {
-  background: #18181b;
+  background: #1a1c25;
   color: #fff;
 }
 .pl-btn--ai {
@@ -220,7 +220,7 @@
 .pl-tip--warn { color: #ffe97f; }
 .pl-tip-detail { color: #aaa; }
 .pl-debug-panel {
-  background: #18181b;
+  background: #1a1c25;
   color: #fff;
   font-size: 13px;
   padding: 16px;

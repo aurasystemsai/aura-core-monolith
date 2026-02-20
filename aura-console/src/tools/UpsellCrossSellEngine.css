@@ -188,7 +188,7 @@
 }
 
 .Polaris-Button--primary:hover {
-  background: linear-gradient(to bottom, #4959bd, #52525b);
+  background: linear-gradient(to bottom, #4959bd, #454860);
   box-shadow: 0 4px 8px rgba(92, 106, 196, 0.3);
   transform: translateY(-1px);
 }
@@ -258,7 +258,7 @@
 
 .Polaris-Label {
   font-weight: 500;
-  color: #27272a;
+  color: #222535;
   margin-bottom: 0.375rem;
 }
 
@@ -446,7 +446,7 @@
 }
 
 .recovery-step strong {
-  color: #27272a;
+  color: #222535;
   font-weight: 600;
 }
 
@@ -563,12 +563,12 @@
 
 @media (prefers-color-scheme: dark) {
   .upsell-cross-sell-engine {
-    background: #27272a;
+    background: #222535;
     color: #e1e3e5;
   }
   
   .Polaris-Card {
-    background: #27272a;
+    background: #222535;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   }
   
@@ -578,7 +578,7 @@
   }
   
   .Polaris-DataTable__Cell {
-    border-bottom-color: #3f3f46;
+    border-bottom-color: #353848;
   }
   
   .Polaris-DataTable tr:hover {
@@ -588,7 +588,7 @@
   .Polaris-TextField__Input,
   .Polaris-Select__Input {
     background: #333;
-    border-color: #52525b;
+    border-color: #454860;
     color: #e1e3e5;
   }
   

@@ -544,21 +544,21 @@ export default function AdvancedAnalyticsAttribution() {
     padding: 24,
     display: "grid",
     gap: 16,
-    background: theme === "high" ? "#09090b" : theme === "light" ? "#f6f7fb" : "#18181b",
-    color: theme === "light" ? "#18181b" : undefined,
+    background: theme === "high" ? "#0d0d11" : theme === "light" ? "#f6f7fb" : "#1a1c25",
+    color: theme === "light" ? "#1a1c25" : undefined,
   };
 
   return (
     <div style={containerStyle}>
       {devSandbox && (
-        <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 12, padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <div>
             <div style={{ fontWeight: 800, color: "#f59e0b" }}>Sandbox mode</div>
-            <div style={{ color: "#a1a1aa", fontSize: 13 }}>Attribution runs are blocked in dev. Switch to Stage/Prod to execute models.</div>
+            <div style={{ color: "#a8adc4", fontSize: 13 }}>Attribution runs are blocked in dev. Switch to Stage/Prod to execute models.</div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button onClick={() => setEnv("stage")} style={{ background: "#27272a", color: "#fafafa", border: "1px solid #52525b", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Switch to Stage</button>
-            <button onClick={() => setEnv("prod")} style={{ background: "#22c55e", color: "#18181b", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Go Prod</button>
+            <button onClick={() => setEnv("stage")} style={{ background: "#222535", color: "#f9fafb", border: "1px solid #454860", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Switch to Stage</button>
+            <button onClick={() => setEnv("prod")} style={{ background: "#22c55e", color: "#1a1c25", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, cursor: "pointer" }}>Go Prod</button>
           </div>
         </div>
       )}
@@ -567,9 +567,9 @@ export default function AdvancedAnalyticsAttribution() {
         <div style={{ color: "#b8c2d0" }}>
           Ingest Shopify + ads + offline events, run attribution models, and view performance, journeys, and cohorts.
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", color: "#a1a1aa", fontSize: 12 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", color: "#a8adc4", fontSize: 12 }}>
           <span>Locale</span>
-          <select value={locale} onChange={(e) => setLocale(e.target.value)} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 8px", fontWeight: 700 }}>
+          <select value={locale} onChange={(e) => setLocale(e.target.value)} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 8px", fontWeight: 700 }}>
             <option value="en">English</option>
             <option value="es">Español</option>
             <option value="fr">Français</option>
@@ -578,7 +578,7 @@ export default function AdvancedAnalyticsAttribution() {
             <input type="checkbox" checked={highContrast} onChange={(e) => setHighContrast(e.target.checked)} />
             High contrast
           </label>
-            <select value={theme} onChange={(e) => setTheme(e.target.value)} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 8px", fontWeight: 700 }}>
+            <select value={theme} onChange={(e) => setTheme(e.target.value)} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 8px", fontWeight: 700 }}>
               <option value="dark">Dark</option>
               <option value="high">High contrast</option>
               <option value="light">Light</option>
@@ -587,76 +587,76 @@ export default function AdvancedAnalyticsAttribution() {
             <input type="checkbox" checked={maskPii} onChange={(e) => setMaskPii(e.target.checked)} />
             Mask PII
           </label>
-          <span style={{ background: "#18181b", padding: "4px 8px", borderRadius: 8, border: "1px solid #27272a" }}>Accessibility: {accessibility.issues} issues / {accessibility.warnings} warnings</span>
-          <span style={{ background: "#18181b", padding: "4px 8px", borderRadius: 8, border: "1px solid #27272a" }}>Presence: {presence.map(p => p.name).join(" · ")}</span>
+          <span style={{ background: "#1a1c25", padding: "4px 8px", borderRadius: 8, border: "1px solid #222535" }}>Accessibility: {accessibility.issues} issues / {accessibility.warnings} warnings</span>
+          <span style={{ background: "#1a1c25", padding: "4px 8px", borderRadius: 8, border: "1px solid #222535" }}>Presence: {presence.map(p => p.name).join(" · ")}</span>
         </div>
       </div>
 
-      <div style={{ display: "grid", gap: 8, background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 12 }}>
+      <div style={{ display: "grid", gap: 8, background: "#1a1c25", border: "1px solid #222535", borderRadius: 12, padding: 12 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <span style={{ fontWeight: 800, color: guardrails.status === "block" ? "#f87171" : guardrails.status === "warn" ? "#fbbf24" : "#22c55e" }}>
               Guardrails: {guardrails.summary}
             </span>
-            <span style={{ background: slaSummary.status === "breach" ? "#3b1d1d" : slaSummary.status === "warn" ? "#3b2f1d" : "#123025", color: "#fafafa", padding: "6px 10px", borderRadius: 10, fontSize: 12, border: "1px solid #27272a" }}>
+            <span style={{ background: slaSummary.status === "breach" ? "#3b1d1d" : slaSummary.status === "warn" ? "#3b2f1d" : "#123025", color: "#f9fafb", padding: "6px 10px", borderRadius: 10, fontSize: 12, border: "1px solid #222535" }}>
               SLA {slaSummary.label} · {slaSummary.detail}
             </span>
-            <span style={{ background: "#18181b", color: "#fafafa", padding: "6px 10px", borderRadius: 10, fontSize: 12, border: "1px solid #27272a" }}>
+            <span style={{ background: "#1a1c25", color: "#f9fafb", padding: "6px 10px", borderRadius: 10, fontSize: 12, border: "1px solid #222535" }}>
               Owner: {owner || "Unassigned"}
             </span>
-            <span style={{ background: "#18181b", color: "#fafafa", padding: "6px 10px", borderRadius: 10, fontSize: 12, border: "1px solid #27272a" }}>
+            <span style={{ background: "#1a1c25", color: "#f9fafb", padding: "6px 10px", borderRadius: 10, fontSize: 12, border: "1px solid #222535" }}>
               Role: {rbacRole}
             </span>
             {maintenance.locked && (
-              <span style={{ background: "#3b1d1d", color: "#f87171", padding: "6px 10px", borderRadius: 10, fontSize: 12, border: "1px solid #27272a" }}>
+              <span style={{ background: "#3b1d1d", color: "#f87171", padding: "6px 10px", borderRadius: 10, fontSize: 12, border: "1px solid #222535" }}>
                 Locked: {maintenance.message}
               </span>
             )}
-            {shareToken && <span style={{ background: "#18181b", color: "#fafafa", padding: "6px 10px", borderRadius: 10, fontSize: 12, border: "1px solid #27272a" }}>Share: {shareToken}</span>}
+            {shareToken && <span style={{ background: "#1a1c25", color: "#f9fafb", padding: "6px 10px", borderRadius: 10, fontSize: 12, border: "1px solid #222535" }}>Share: {shareToken}</span>}
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button onClick={() => copyText(`Guardrails: ${guardrails.summary}`, "Guardrails") } style={{ background: "#18181b", color: "#fafafa", border: "1px solid #18181b", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Copy guardrails</button>
-            <button onClick={() => copyText(`SLA ${slaSummary.label} - ${slaSummary.detail}`, "SLA") } style={{ background: "#18181b", color: "#fafafa", border: "1px solid #18181b", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Copy SLA</button>
-            <button onClick={saveDraft} style={{ background: "#22c55e", color: "#18181b", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Save draft</button>
-            <button onClick={loadDraft} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #18181b", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load draft</button>
+            <button onClick={() => copyText(`Guardrails: ${guardrails.summary}`, "Guardrails") } style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #1a1c25", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Copy guardrails</button>
+            <button onClick={() => copyText(`SLA ${slaSummary.label} - ${slaSummary.detail}`, "SLA") } style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #1a1c25", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Copy SLA</button>
+            <button onClick={saveDraft} style={{ background: "#22c55e", color: "#1a1c25", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Save draft</button>
+            <button onClick={loadDraft} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #1a1c25", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load draft</button>
           </div>
         </div>
         <div style={{ display: "grid", gap: 6 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <label style={{ color: "#a1a1aa", fontSize: 12 }}>Owner</label>
-            <input value={owner} onChange={(e) => setOwner(e.target.value)} placeholder="owner@brand.com" style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "8px 10px", minWidth: 200 }} />
-            <label style={{ color: "#a1a1aa", fontSize: 12 }}>Freshness (m)</label>
-            <input type="number" value={sla.minutes} onChange={(e) => setSla(prev => ({ ...prev, minutes: Number(e.target.value) || 0 }))} style={{ width: 80, background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "8px 10px" }} />
-            <label style={{ color: "#a1a1aa", fontSize: 12 }}>Target</label>
-            <input type="number" value={sla.target} onChange={(e) => setSla(prev => ({ ...prev, target: Number(e.target.value) || 0 }))} style={{ width: 80, background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "8px 10px" }} />
-            <label style={{ color: "#a1a1aa", fontSize: 12 }}>Role</label>
-            <select value={rbacRole} onChange={(e) => setRbacRole(e.target.value)} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 8px", fontWeight: 700 }}>
+            <label style={{ color: "#a8adc4", fontSize: 12 }}>Owner</label>
+            <input value={owner} onChange={(e) => setOwner(e.target.value)} placeholder="owner@brand.com" style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "8px 10px", minWidth: 200 }} />
+            <label style={{ color: "#a8adc4", fontSize: 12 }}>Freshness (m)</label>
+            <input type="number" value={sla.minutes} onChange={(e) => setSla(prev => ({ ...prev, minutes: Number(e.target.value) || 0 }))} style={{ width: 80, background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "8px 10px" }} />
+            <label style={{ color: "#a8adc4", fontSize: 12 }}>Target</label>
+            <input type="number" value={sla.target} onChange={(e) => setSla(prev => ({ ...prev, target: Number(e.target.value) || 0 }))} style={{ width: 80, background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "8px 10px" }} />
+            <label style={{ color: "#a8adc4", fontSize: 12 }}>Role</label>
+            <select value={rbacRole} onChange={(e) => setRbacRole(e.target.value)} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 8px", fontWeight: 700 }}>
               <option value="viewer">Viewer</option>
               <option value="editor">Editor</option>
               <option value="admin">Admin</option>
             </select>
-            <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#a1a1aa", fontSize: 12 }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#a8adc4", fontSize: 12 }}>
               <input type="checkbox" checked={maintenance.locked} onChange={(e) => setMaintenance(prev => ({ ...prev, locked: e.target.checked }))} />Lock for maintenance
             </label>
-            <label style={{ color: "#a1a1aa", fontSize: 12 }}>Reviewer</label>
-            <input value={reviewer} onChange={(e) => setReviewer(e.target.value)} placeholder="reviewer@brand.com" style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "8px 10px", minWidth: 180 }} />
-            <select value={reviewStatus} onChange={(e) => setReviewStatus(e.target.value)} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 8px", fontWeight: 700 }}>
+            <label style={{ color: "#a8adc4", fontSize: 12 }}>Reviewer</label>
+            <input value={reviewer} onChange={(e) => setReviewer(e.target.value)} placeholder="reviewer@brand.com" style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "8px 10px", minWidth: 180 }} />
+            <select value={reviewStatus} onChange={(e) => setReviewStatus(e.target.value)} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 8px", fontWeight: 700 }}>
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
               <option value="changes">Changes requested</option>
             </select>
           </div>
-          <div style={{ height: 8, background: "#18181b", borderRadius: 6, overflow: "hidden", border: "1px solid #27272a" }}>
+          <div style={{ height: 8, background: "#1a1c25", borderRadius: 6, overflow: "hidden", border: "1px solid #222535" }}>
             <div style={{ width: `${progress}%`, background: progress > 80 ? "#22c55e" : progress > 60 ? "#fbbf24" : "#f87171", height: "100%" }} />
           </div>
-          <div style={{ color: "#a1a1aa", fontSize: 12, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+          <div style={{ color: "#a8adc4", fontSize: 12, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
             <span>Validation readiness: {progress}% {unsaved ? "· Unsaved" : ""} {draftSavedAt ? `· Draft ${draftSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""} {copyStatus ? `· ${copyStatus}` : ""}</span>
-            <select value={guardrailConfig.warnSize} onChange={(e) => setGuardrailConfig(cfg => ({ ...cfg, warnSize: Number(e.target.value) }))} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 8px", fontSize: 12 }}>
+            <select value={guardrailConfig.warnSize} onChange={(e) => setGuardrailConfig(cfg => ({ ...cfg, warnSize: Number(e.target.value) }))} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 8px", fontSize: 12 }}>
               <option value={5000}>Warn @5k</option>
               <option value={7000}>Warn @7k</option>
               <option value={9000}>Warn @9k</option>
             </select>
-            <select value={guardrailConfig.blockSize} onChange={(e) => setGuardrailConfig(cfg => ({ ...cfg, blockSize: Number(e.target.value) }))} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 8px", fontSize: 12 }}>
+            <select value={guardrailConfig.blockSize} onChange={(e) => setGuardrailConfig(cfg => ({ ...cfg, blockSize: Number(e.target.value) }))} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 8px", fontSize: 12 }}>
               <option value={8000}>Block @8k</option>
               <option value={9000}>Block @9k</option>
               <option value={11000}>Block @11k</option>
@@ -671,7 +671,7 @@ export default function AdvancedAnalyticsAttribution() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           rows={3}
-          style={{ width: "100%", padding: 12, borderRadius: 8, border: "1px solid #2c3a4d", background: "#18181b", color: "#e9efff" }}
+          style={{ width: "100%", padding: 12, borderRadius: 8, border: "1px solid #2c3a4d", background: "#1a1c25", color: "#e9efff" }}
           title="Enter the natural language question to guide attribution analysis"
         />
       </div>
@@ -682,110 +682,110 @@ export default function AdvancedAnalyticsAttribution() {
           value={payload}
           onChange={(e) => { setUndoStack(prev => [payload, ...prev].slice(0, 10)); setRedoStack([]); setPayload(e.target.value); }}
           rows={18}
-          style={{ width: "100%", padding: 12, borderRadius: 8, border: "1px solid #2c3a4d", background: "#18181b", color: "#e9efff", fontFamily: "monospace" }}
+          style={{ width: "100%", padding: 12, borderRadius: 8, border: "1px solid #2c3a4d", background: "#1a1c25", color: "#e9efff", fontFamily: "monospace" }}
           title="Edit or paste your attribution payload"
         />
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <select value={env} onChange={(e) => setEnv(e.target.value)} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "10px 12px", fontWeight: 700 }}>
+          <select value={env} onChange={(e) => setEnv(e.target.value)} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "10px 12px", fontWeight: 700 }}>
             <option value="dev">Dev</option>
             <option value="stage">Stage</option>
             <option value="prod">Prod</option>
           </select>
-          <select value={model} onChange={(e) => { setModel(e.target.value); syncPayloadField("model", e.target.value); updateOnboarding("Select model"); }} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "10px 12px", fontWeight: 700 }}>
+          <select value={model} onChange={(e) => { setModel(e.target.value); syncPayloadField("model", e.target.value); updateOnboarding("Select model"); }} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "10px 12px", fontWeight: 700 }}>
             <option value="first-touch">First touch</option>
             <option value="last-touch">Last touch</option>
             <option value="linear">Linear</option>
             <option value="data-driven">Data-driven</option>
           </select>
-          <select value={layoutPreset} onChange={(e) => setLayoutPreset(e.target.value)} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "10px 12px", fontWeight: 700 }}>
+          <select value={layoutPreset} onChange={(e) => setLayoutPreset(e.target.value)} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "10px 12px", fontWeight: 700 }}>
             <option value="balanced">Layout: Balanced</option>
             <option value="compact">Layout: Compact</option>
             <option value="wide">Layout: Wide</option>
           </select>
-          <select value={modelLibrary[0]?.name || ""} onChange={(e) => setModelLibrary([{ name: e.target.value, version: "1.0" }, ...modelLibrary.slice(1)])} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "10px 12px", fontWeight: 700 }}>
+          <select value={modelLibrary[0]?.name || ""} onChange={(e) => setModelLibrary([{ name: e.target.value, version: "1.0" }, ...modelLibrary.slice(1)])} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "10px 12px", fontWeight: 700 }}>
             {modelLibrary.map(m => <option key={m.name} value={m.name}>{`Model lib: ${m.name} (${m.version})`}</option>)}
           </select>
-          <select value={cohortKey} onChange={(e) => { setCohortKey(e.target.value); syncPayloadField("cohortKey", e.target.value); }} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "10px 12px", fontWeight: 700 }}>
+          <select value={cohortKey} onChange={(e) => { setCohortKey(e.target.value); syncPayloadField("cohortKey", e.target.value); }} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "10px 12px", fontWeight: 700 }}>
             <option value="channel">Cohort: channel</option>
             <option value="campaign">Cohort: campaign</option>
             <option value="geo">Cohort: geo</option>
             <option value="source_name">Cohort: source</option>
           </select>
-          <button onClick={run} disabled={loading || devSandbox || guardrailBlock || isReadonly} style={{ padding: "10px 14px", borderRadius: 8, border: "none", background: devSandbox || guardrailBlock || isReadonly ? "#27272a" : "#22d3ee", color: devSandbox || guardrailBlock || isReadonly ? "#a1a1aa" : "#09090b", fontWeight: 800, cursor: loading || devSandbox || guardrailBlock || isReadonly ? "not-allowed" : "pointer", opacity: loading || devSandbox || guardrailBlock || isReadonly ? 0.7 : 1 }}>
+          <button onClick={run} disabled={loading || devSandbox || guardrailBlock || isReadonly} style={{ padding: "10px 14px", borderRadius: 8, border: "none", background: devSandbox || guardrailBlock || isReadonly ? "#222535" : "#22d3ee", color: devSandbox || guardrailBlock || isReadonly ? "#a8adc4" : "#0d0d11", fontWeight: 800, cursor: loading || devSandbox || guardrailBlock || isReadonly ? "not-allowed" : "pointer", opacity: loading || devSandbox || guardrailBlock || isReadonly ? 0.7 : 1 }}>
             {isReadonly ? "Read-only" : devSandbox ? "Sandbox (set Stage)" : loading ? "Running..." : guardrailBlock ? "Trim payload" : "Run Attribution"}
           </button>
-          <button onClick={() => { setPayload(JSON.stringify(samplePayload, null, 2)); setModel(samplePayload.model); setCohortKey(samplePayload.cohortKey); setJourneyDepth(3); }} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#18181b", color: "#e9efff", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={() => { setPayload(JSON.stringify(samplePayload, null, 2)); setModel(samplePayload.model); setCohortKey(samplePayload.cohortKey); setJourneyDepth(3); }} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#1a1c25", color: "#e9efff", fontWeight: 700, cursor: "pointer" }}>
             Reset Sample
           </button>
-          <button onClick={() => { setPayload(JSON.stringify(offlineMmmTemplate, null, 2)); setModel(offlineMmmTemplate.model); setCohortKey(offlineMmmTemplate.cohortKey); setJourneyDepth(2); setQuery("Blend offline POS + MMM channels and show ROAS/CAC."); }} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#18181b", color: "#fafafa", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={() => { setPayload(JSON.stringify(offlineMmmTemplate, null, 2)); setModel(offlineMmmTemplate.model); setCohortKey(offlineMmmTemplate.cohortKey); setJourneyDepth(2); setQuery("Blend offline POS + MMM channels and show ROAS/CAC."); }} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#1a1c25", color: "#f9fafb", fontWeight: 700, cursor: "pointer" }}>
             Load offline/MMM template
           </button>
-          <button onClick={validatePayload} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#18181b", color: "#fafafa", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={validatePayload} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#1a1c25", color: "#f9fafb", fontWeight: 700, cursor: "pointer" }}>
             Validate payload
           </button>
-          <button onClick={toggleJourneys} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: journeyDepth === 0 ? "#27272a" : "#22c55e", color: journeyDepth === 0 ? "#fafafa" : "#18181b", fontWeight: 800, cursor: "pointer" }}>
+          <button onClick={toggleJourneys} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: journeyDepth === 0 ? "#222535" : "#22c55e", color: journeyDepth === 0 ? "#f9fafb" : "#1a1c25", fontWeight: 800, cursor: "pointer" }}>
             {journeyDepth === 0 ? "Skip journeys" : `Journeys depth ${journeyDepth}`}
           </button>
-          <button onClick={() => { if (undoStack.length === 0) return; const [latest, ...rest] = undoStack; setRedoStack(prev => [payload, ...prev].slice(0, 10)); setPayload(latest); setUndoStack(rest); logAudit("undo_payload", {}); }} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: undoStack.length ? "#18181b" : "#27272a", color: "#fafafa", fontWeight: 700, cursor: undoStack.length ? "pointer" : "not-allowed", opacity: undoStack.length ? 1 : 0.5 }}>
+          <button onClick={() => { if (undoStack.length === 0) return; const [latest, ...rest] = undoStack; setRedoStack(prev => [payload, ...prev].slice(0, 10)); setPayload(latest); setUndoStack(rest); logAudit("undo_payload", {}); }} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: undoStack.length ? "#1a1c25" : "#222535", color: "#f9fafb", fontWeight: 700, cursor: undoStack.length ? "pointer" : "not-allowed", opacity: undoStack.length ? 1 : 0.5 }}>
             Undo payload
           </button>
-          <button onClick={() => { if (redoStack.length === 0) return; const [latest, ...rest] = redoStack; setUndoStack(prev => [payload, ...prev].slice(0, 10)); setPayload(latest); setRedoStack(rest); logAudit("redo_payload", {}); }} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: redoStack.length ? "#18181b" : "#27272a", color: "#fafafa", fontWeight: 700, cursor: redoStack.length ? "pointer" : "not-allowed", opacity: redoStack.length ? 1 : 0.5 }}>
+          <button onClick={() => { if (redoStack.length === 0) return; const [latest, ...rest] = redoStack; setUndoStack(prev => [payload, ...prev].slice(0, 10)); setPayload(latest); setRedoStack(rest); logAudit("redo_payload", {}); }} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: redoStack.length ? "#1a1c25" : "#222535", color: "#f9fafb", fontWeight: 700, cursor: redoStack.length ? "pointer" : "not-allowed", opacity: redoStack.length ? 1 : 0.5 }}>
             Redo payload
           </button>
-          <button onClick={() => { try { const parsed = JSON.parse(payload); setPayload(JSON.stringify(parsed, null, 2).slice(0, 5000)); logAudit("quick_trim", { from: payloadSize }); } catch (e) { setError("Trim failed"); } }} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#18181b", color: "#fafafa", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={() => { try { const parsed = JSON.parse(payload); setPayload(JSON.stringify(parsed, null, 2).slice(0, 5000)); logAudit("quick_trim", { from: payloadSize }); } catch (e) { setError("Trim failed"); } }} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#1a1c25", color: "#f9fafb", fontWeight: 700, cursor: "pointer" }}>
             Quick trim 5k
           </button>
-          <button onClick={() => { detectPii(); setTimeout(() => copyText(JSON.stringify(piiFindings, null, 2), "PII"), 200); }} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#18181b", color: "#fafafa", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={() => { detectPii(); setTimeout(() => copyText(JSON.stringify(piiFindings, null, 2), "PII"), 200); }} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#1a1c25", color: "#f9fafb", fontWeight: 700, cursor: "pointer" }}>
             Scan & copy PII
           </button>
-          <button onClick={exportWithCompliance} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#18181b", color: "#fafafa", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={exportWithCompliance} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#1a1c25", color: "#f9fafb", fontWeight: 700, cursor: "pointer" }}>
             Export with compliance
           </button>
-          <button onClick={exportCsv} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#18181b", color: "#fafafa", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={exportCsv} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#1a1c25", color: "#f9fafb", fontWeight: 700, cursor: "pointer" }}>
             Export CSV
           </button>
-          <button onClick={generatePdfReport} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#18181b", color: "#fafafa", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={generatePdfReport} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#1a1c25", color: "#f9fafb", fontWeight: 700, cursor: "pointer" }}>
             Export PDF
           </button>
-          <button onClick={generateShareToken} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#18181b", color: "#fafafa", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={generateShareToken} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #2c3a4d", background: "#1a1c25", color: "#f9fafb", fontWeight: 700, cursor: "pointer" }}>
             Share link
           </button>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", color: "#a1a1aa", fontSize: 12 }}>
-          <textarea value={payloadImportText} onChange={(e) => setPayloadImportText(e.target.value)} placeholder="Bulk import payload JSON" rows={3} style={{ minWidth: 260, background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: 8, fontFamily: "monospace" }} />
-          <button onClick={() => { try { const parsed = JSON.parse(payloadImportText); setPayload(JSON.stringify(parsed, null, 2)); logAudit("payload_import", {}); } catch (err) { setError("Payload import failed"); } }} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Import payload</button>
-          <button onClick={() => { copyText(payload, "Payload JSON"); logAudit("payload_export", {}); }} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Copy payload</button>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", color: "#a8adc4", fontSize: 12 }}>
+          <textarea value={payloadImportText} onChange={(e) => setPayloadImportText(e.target.value)} placeholder="Bulk import payload JSON" rows={3} style={{ minWidth: 260, background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: 8, fontFamily: "monospace" }} />
+          <button onClick={() => { try { const parsed = JSON.parse(payloadImportText); setPayload(JSON.stringify(parsed, null, 2)); logAudit("payload_import", {}); } catch (err) { setError("Payload import failed"); } }} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Import payload</button>
+          <button onClick={() => { copyText(payload, "Payload JSON"); logAudit("payload_export", {}); }} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Copy payload</button>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", color: "#a1a1aa", fontSize: 12 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", color: "#a8adc4", fontSize: 12 }}>
           <span>Size: {payloadSize} chars</span>
           <span>Est. runtime: ~{estimatedRuntime}s</span>
           {guardrailBlock && <span style={{ color: "#f87171", fontWeight: 700 }}>Guardrail: trim payload to run</span>}
-          <span style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8, padding: "4px 8px", color: "#fafafa" }}>Model: {model}</span>
-          <span style={{ background: apiHealth.status === "healthy" ? "#123025" : "#3b1d1d", border: "1px solid #27272a", borderRadius: 8, padding: "4px 8px", color: "#fafafa" }}>API latency ~{apiHealth.latencyMs}ms</span>
-          <span style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 8, padding: "4px 8px", color: "#fafafa" }}>Retention: {retention.days}d ({retention.pii})</span>
+          <span style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 8, padding: "4px 8px", color: "#f9fafb" }}>Model: {model}</span>
+          <span style={{ background: apiHealth.status === "healthy" ? "#123025" : "#3b1d1d", border: "1px solid #222535", borderRadius: 8, padding: "4px 8px", color: "#f9fafb" }}>API latency ~{apiHealth.latencyMs}ms</span>
+          <span style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 8, padding: "4px 8px", color: "#f9fafb" }}>Retention: {retention.days}d ({retention.pii})</span>
         </div>
         {error && (
           <div style={{ color: "#ff8a8a", fontWeight: 700, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span>{error}</span>
             {quickFixForIssue(error) === "reset-sample" && (
-              <button onClick={() => setPayload(JSON.stringify(samplePayload, null, 2))} style={{ background: "#22c55e", color: "#18181b", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix: Reset sample</button>
+              <button onClick={() => setPayload(JSON.stringify(samplePayload, null, 2))} style={{ background: "#22c55e", color: "#1a1c25", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix: Reset sample</button>
             )}
             {quickFixForIssue(error) === "trim-payload" && (
-              <button onClick={() => setPayload(prev =>JSON.stringify(JSON.parse(prev), null, 2).slice(0, 4000))} style={{ background: "#22c55e", color: "#18181b", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix: Trim payload</button>
+              <button onClick={() => setPayload(prev =>JSON.stringify(JSON.parse(prev), null, 2).slice(0, 4000))} style={{ background: "#22c55e", color: "#1a1c25", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix: Trim payload</button>
             )}
             {quickFixForIssue(error) === "rewrite-query" && (
-              <button onClick={() => setQuery("Summarize top channels and biggest churn risk segments." )} style={{ background: "#22c55e", color: "#18181b", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix: Use safer query</button>
+              <button onClick={() => setQuery("Summarize top channels and biggest churn risk segments." )} style={{ background: "#22c55e", color: "#1a1c25", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Fix: Use safer query</button>
             )}
           </div>
         )}
         {payloadSize > 4000 && <div style={{ color: "#fbbf24", fontSize: 13 }}>Perf detail: large payload ({payloadSize} chars) — consider trimming for faster runs.</div>}
         {validation && (
-          <div style={{ marginTop: 6, background: validation.status === "ok" ? "#18181b" : "#27272a", border: "1px solid #27272a", borderRadius: 10, padding: 10, display: "grid", gap: 6 }}>
+          <div style={{ marginTop: 6, background: validation.status === "ok" ? "#1a1c25" : "#222535", border: "1px solid #222535", borderRadius: 10, padding: 10, display: "grid", gap: 6 }}>
             <div style={{ color: validation.status === "ok" ? "#22c55e" : validation.status === "warn" ? "#fbbf24" : "#f87171", fontWeight: 800 }}>
               {validation.status === "ok" ? "Payload valid" : validation.status === "warn" ? "Warnings" : "Errors"}
             </div>
             {validation.stats && (
-              <div style={{ color: "#a1a1aa", fontSize: 13 }}>Orders {validation.stats.orders} · Ads {validation.stats.ads} · Offline {validation.stats.offline}</div>
+              <div style={{ color: "#a8adc4", fontSize: 13 }}>Orders {validation.stats.orders} · Ads {validation.stats.ads} · Offline {validation.stats.offline}</div>
             )}
             {validation.issues && validation.issues.length > 0 && (
               <ul style={{ margin: 0, paddingLeft: 16, color: validation.status === "warn" ? "#fbbf24" : "#f87171", fontSize: 13 }}>
@@ -794,19 +794,19 @@ export default function AdvancedAnalyticsAttribution() {
             )}
           </div>
         )}
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", color: "#a1a1aa", fontSize: 13 }}>
-          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: 10, minWidth: 200 }}>
-            <div style={{ fontWeight: 700, color: "#fafafa" }}>PII findings</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", color: "#a8adc4", fontSize: 13 }}>
+          <div style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 10, padding: 10, minWidth: 200 }}>
+            <div style={{ fontWeight: 700, color: "#f9fafb" }}>PII findings</div>
             {piiFindings.length === 0 ? <div>No emails detected</div> : <ul style={{ margin: 6, paddingLeft: 16 }}>{piiFindings.map((p, i) => <li key={i}>{maskEmail(p)}</li>)}</ul>}
           </div>
-          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: 10, minWidth: 200 }}>
-            <div style={{ fontWeight: 700, color: "#fafafa" }}>SLA & freshness</div>
+          <div style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 10, padding: 10, minWidth: 200 }}>
+            <div style={{ fontWeight: 700, color: "#f9fafb" }}>SLA & freshness</div>
             <div>Status: {slaSummary.detail}</div>
             <div>Minutes: {sla.minutes} / Target {sla.target}</div>
             <div>Cadence: {schedule.cadence}</div>
           </div>
-          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: 10, minWidth: 200 }}>
-            <div style={{ fontWeight: 700, color: "#fafafa" }}>Data summary</div>
+          <div style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 10, padding: 10, minWidth: 200 }}>
+            <div style={{ fontWeight: 700, color: "#f9fafb" }}>Data summary</div>
             <div>Size: {payloadSize} chars</div>
             <div>Model: {model}</div>
             <div>Cohort: {cohortKey}</div>
@@ -814,19 +814,19 @@ export default function AdvancedAnalyticsAttribution() {
             <div>Review: {reviewStatus}</div>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", color: "#a1a1aa", fontSize: 12 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", color: "#a8adc4", fontSize: 12 }}>
           <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <input type="checkbox" checked={showCodeLines} onChange={(e) => setShowCodeLines(e.target.checked)} />Show code lines
           </label>
           <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <input type="checkbox" checked={showSyntaxView} onChange={(e) => setShowSyntaxView(e.target.checked)} />Syntax highlight
           </label>
-          <button onClick={() => { setModelImportText(JSON.stringify(modelLibrary, null, 2)); }} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Export models JSON</button>
-          <button onClick={() => { try { const parsed = JSON.parse(modelImportText); if (Array.isArray(parsed)) setModelLibrary(parsed); } catch (err) { setError("Model import failed"); } }} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Import models</button>
-          <textarea value={modelImportText} onChange={(e) => setModelImportText(e.target.value)} placeholder="Paste model library JSON" rows={3} style={{ minWidth: 260, background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: 8, fontFamily: "monospace" }} />
+          <button onClick={() => { setModelImportText(JSON.stringify(modelLibrary, null, 2)); }} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Export models JSON</button>
+          <button onClick={() => { try { const parsed = JSON.parse(modelImportText); if (Array.isArray(parsed)) setModelLibrary(parsed); } catch (err) { setError("Model import failed"); } }} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Import models</button>
+          <textarea value={modelImportText} onChange={(e) => setModelImportText(e.target.value)} placeholder="Paste model library JSON" rows={3} style={{ minWidth: 260, background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: 8, fontFamily: "monospace" }} />
         </div>
         {(showCodeLines || showSyntaxView) && (
-          <pre style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: 10, color: "#dbeafe", maxHeight: 260, overflow: "auto", fontSize: 12 }}>
+          <pre style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 10, padding: 10, color: "#dbeafe", maxHeight: 260, overflow: "auto", fontSize: 12 }}>
             {showSyntaxView
               ? <span dangerouslySetInnerHTML={{ __html: highlightJson(payload) }} />
               : payload.split("\n").map((line, idx) => `${String(idx + 1).padStart(3, " ")}: ${line}`).join("\n")}
@@ -834,122 +834,122 @@ export default function AdvancedAnalyticsAttribution() {
         )}
       </div>
 
-      <div style={{ display: "grid", gap: 10, background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 12 }}>
+      <div style={{ display: "grid", gap: 10, background: "#1a1c25", border: "1px solid #222535", borderRadius: 12, padding: 12 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <div style={{ fontWeight: 800, color: "#fafafa" }}>Budget shift simulator</div>
-          <div style={{ color: "#a1a1aa", fontSize: 12 }}>Model: {model} · Cohort: {cohortKey}</div>
+          <div style={{ fontWeight: 800, color: "#f9fafb" }}>Budget shift simulator</div>
+          <div style={{ color: "#a8adc4", fontSize: 12 }}>Model: {model} · Cohort: {cohortKey}</div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <select value={budgetShift.channel} onChange={e => setBudgetShift(prev => ({ ...prev, channel: e.target.value }))} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "8px 12px", fontWeight: 700 }}>
+          <select value={budgetShift.channel} onChange={e => setBudgetShift(prev => ({ ...prev, channel: e.target.value }))} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "8px 12px", fontWeight: 700 }}>
             <option value="google-ads">Google Ads</option>
             <option value="email">Email</option>
             <option value="organic">Organic</option>
             <option value="meta-ads">Meta Ads</option>
           </select>
-          <input type="number" value={budgetShift.delta} onChange={e => setBudgetShift(prev => ({ ...prev, delta: Number(e.target.value) || 0 }))} style={{ width: 90, background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "8px 10px" }} />
-          <span style={{ color: "#a1a1aa", fontSize: 13 }}>% budget shift</span>
-          <button onClick={simulateBudgetShift} style={{ background: "#22c55e", color: "#18181b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Simulate</button>
+          <input type="number" value={budgetShift.delta} onChange={e => setBudgetShift(prev => ({ ...prev, delta: Number(e.target.value) || 0 }))} style={{ width: 90, background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "8px 10px" }} />
+          <span style={{ color: "#a8adc4", fontSize: 13 }}>% budget shift</span>
+          <button onClick={simulateBudgetShift} style={{ background: "#22c55e", color: "#1a1c25", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Simulate</button>
         </div>
         {budgetShift.uplift && (
-          <div style={{ color: "#fafafa", fontSize: 14 }}>
+          <div style={{ color: "#f9fafb", fontSize: 14 }}>
             Projected {budgetShift.channel}: ${budgetShift.uplift.revenue.toFixed(0)} · {budgetShift.uplift.count} conversions
           </div>
         )}
-        {result?.performance && <div style={{ color: "#a1a1aa", fontSize: 12 }}>Using latest run performance as baseline.</div>}
+        {result?.performance && <div style={{ color: "#a8adc4", fontSize: 12 }}>Using latest run performance as baseline.</div>}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button onClick={addScenarioComparison} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Add scenario</button>
-          <button onClick={runAnomalyDetection} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Detect anomalies</button>
-          <button onClick={runIntegrationTests} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Run integration tests</button>
-          <button onClick={sendScheduledReport} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Send scheduled report</button>
+          <button onClick={addScenarioComparison} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Add scenario</button>
+          <button onClick={runAnomalyDetection} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Detect anomalies</button>
+          <button onClick={runIntegrationTests} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Run integration tests</button>
+          <button onClick={sendScheduledReport} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Send scheduled report</button>
         </div>
         {scenarioCompare.length > 0 && (
-          <div style={{ color: "#a1a1aa", fontSize: 12 }}>Scenarios: {scenarioCompare.map(s => s.desc).join(" · ")}</div>
+          <div style={{ color: "#a8adc4", fontSize: 12 }}>Scenarios: {scenarioCompare.map(s => s.desc).join(" · ")}</div>
         )}
         {anomalies.length > 0 && (
           <div style={{ color: "#fbbf24", fontSize: 12 }}>Anomalies: {anomalies.join("; ")}</div>
         )}
         {integrationTests.length > 0 && (
-          <div style={{ color: "#a1a1aa", fontSize: 12 }}>Tests: {integrationTests.map(t => `${t.name}:${t.status}`).join(" · ")}</div>
+          <div style={{ color: "#a8adc4", fontSize: 12 }}>Tests: {integrationTests.map(t => `${t.name}:${t.status}`).join(" · ")}</div>
         )}
       </div>
 
-      <div style={{ display: "grid", gap: 8, background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 12 }}>
+      <div style={{ display: "grid", gap: 8, background: "#1a1c25", border: "1px solid #222535", borderRadius: 12, padding: 12 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <div style={{ fontWeight: 800, color: "#fafafa" }}>Layout (simulated drag)</div>
-          <div style={{ color: "#a1a1aa", fontSize: 12 }}>Preset: {layoutPreset}</div>
+          <div style={{ fontWeight: 800, color: "#f9fafb" }}>Layout (simulated drag)</div>
+          <div style={{ color: "#a8adc4", fontSize: 12 }}>Preset: {layoutPreset}</div>
         </div>
         <div style={{ display: "grid", gap: 6 }}>
           {layoutPanels.map((p, idx) => (
-            <div key={p} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "8px 10px" }}>
-              <span style={{ color: "#fafafa" }}>{p}</span>
+            <div key={p} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#1a1c25", border: "1px solid #222535", borderRadius: 10, padding: "8px 10px" }}>
+              <span style={{ color: "#f9fafb" }}>{p}</span>
               <div style={{ display: "flex", gap: 6 }}>
-                <button onClick={() => movePanel(idx, -1)} disabled={idx === 0} style={{ background: "#27272a", color: "#fafafa", border: "1px solid #52525b", borderRadius: 8, padding: "4px 8px", fontWeight: 700, cursor: idx === 0 ? "not-allowed" : "pointer", opacity: idx === 0 ? 0.5 : 1 }}>↑</button>
-                <button onClick={() => movePanel(idx, 1)} disabled={idx === layoutPanels.length - 1} style={{ background: "#27272a", color: "#fafafa", border: "1px solid #52525b", borderRadius: 8, padding: "4px 8px", fontWeight: 700, cursor: idx === layoutPanels.length - 1 ? "not-allowed" : "pointer", opacity: idx === layoutPanels.length - 1 ? 0.5 : 1 }}>↓</button>
+                <button onClick={() => movePanel(idx, -1)} disabled={idx === 0} style={{ background: "#222535", color: "#f9fafb", border: "1px solid #454860", borderRadius: 8, padding: "4px 8px", fontWeight: 700, cursor: idx === 0 ? "not-allowed" : "pointer", opacity: idx === 0 ? 0.5 : 1 }}>↑</button>
+                <button onClick={() => movePanel(idx, 1)} disabled={idx === layoutPanels.length - 1} style={{ background: "#222535", color: "#f9fafb", border: "1px solid #454860", borderRadius: 8, padding: "4px 8px", fontWeight: 700, cursor: idx === layoutPanels.length - 1 ? "not-allowed" : "pointer", opacity: idx === layoutPanels.length - 1 ? 0.5 : 1 }}>↓</button>
               </div>
             </div>
           ))}
         </div>
-        <div style={{ color: "#a1a1aa", fontSize: 12 }}>Reorder panels to simulate drag-and-drop layout.</div>
+        <div style={{ color: "#a8adc4", fontSize: 12 }}>Reorder panels to simulate drag-and-drop layout.</div>
       </div>
 
-      <div style={{ display: "grid", gap: 10, background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 12 }}>
+      <div style={{ display: "grid", gap: 10, background: "#1a1c25", border: "1px solid #222535", borderRadius: 12, padding: 12 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <div style={{ fontWeight: 800, color: "#fafafa" }}>AI suggestions & notifications</div>
-          <div style={{ color: "#a1a1aa", fontSize: 12 }}>Plugins: {plugins.filter(p => p.enabled).length}/{plugins.length}</div>
+          <div style={{ fontWeight: 800, color: "#f9fafb" }}>AI suggestions & notifications</div>
+          <div style={{ color: "#a8adc4", fontSize: 12 }}>Plugins: {plugins.filter(p => p.enabled).length}/{plugins.length}</div>
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: 10, minWidth: 220 }}>
-            <div style={{ fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>AI Suggestions</div>
-            {aiSuggestions.length === 0 ? <div style={{ color: "#a1a1aa", fontSize: 12 }}>No suggestions</div> : (
-              <ul style={{ margin: 0, paddingLeft: 16, color: "#a1a1aa", fontSize: 13 }}>
+          <div style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 10, padding: 10, minWidth: 220 }}>
+            <div style={{ fontWeight: 700, color: "#f9fafb", marginBottom: 6 }}>AI Suggestions</div>
+            {aiSuggestions.length === 0 ? <div style={{ color: "#a8adc4", fontSize: 12 }}>No suggestions</div> : (
+              <ul style={{ margin: 0, paddingLeft: 16, color: "#a8adc4", fontSize: 13 }}>
                 {aiSuggestions.map(s => (
                   <li key={s.id} style={{ marginBottom: 4 }}>
                     {s.text}
-                    <button onClick={() => { setQuery(prev => `${prev}\n${s.text}`); updateOnboarding("Applied suggestion"); }} style={{ marginLeft: 6, background: "#22c55e", color: "#18181b", border: "none", borderRadius: 6, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Apply</button>
+                    <button onClick={() => { setQuery(prev => `${prev}\n${s.text}`); updateOnboarding("Applied suggestion"); }} style={{ marginLeft: 6, background: "#22c55e", color: "#1a1c25", border: "none", borderRadius: 6, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>Apply</button>
                   </li>
                 ))}
               </ul>
             )}
           </div>
-          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: 10, minWidth: 220 }}>
-            <div style={{ fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>Plugins</div>
+          <div style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 10, padding: 10, minWidth: 220 }}>
+            <div style={{ fontWeight: 700, color: "#f9fafb", marginBottom: 6 }}>Plugins</div>
             {plugins.map(p => (
-              <label key={p.name} style={{ display: "flex", alignItems: "center", gap: 6, color: "#fafafa", fontSize: 13, marginBottom: 4 }}>
+              <label key={p.name} style={{ display: "flex", alignItems: "center", gap: 6, color: "#f9fafb", fontSize: 13, marginBottom: 4 }}>
                 <input type="checkbox" checked={p.enabled} onChange={() => togglePlugin(p.name)} /> {p.name}
               </label>
             ))}
-            <div style={{ color: "#a1a1aa", fontSize: 12, marginTop: 6 }}>Plugins extend the tool; enable with caution.</div>
+            <div style={{ color: "#a8adc4", fontSize: 12, marginTop: 6 }}>Plugins extend the tool; enable with caution.</div>
           </div>
-          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: 10, minWidth: 220 }}>
-            <div style={{ fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>Notification rules</div>
+          <div style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 10, padding: 10, minWidth: 220 }}>
+            <div style={{ fontWeight: 700, color: "#f9fafb", marginBottom: 6 }}>Notification rules</div>
             {notificationRules.map((r, idx) => (
-              <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, color: "#fafafa", fontSize: 13, marginBottom: 4 }}>
+              <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, color: "#f9fafb", fontSize: 13, marginBottom: 4 }}>
                 <span>{r.channel}: {r.rule}</span>
-                <button onClick={() => toggleNotificationRule(idx)} style={{ background: r.muted ? "#27272a" : "#22c55e", color: r.muted ? "#a1a1aa" : "#18181b", border: "none", borderRadius: 6, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>{r.muted ? "Unmute" : "Mute"}</button>
+                <button onClick={() => toggleNotificationRule(idx)} style={{ background: r.muted ? "#222535" : "#22c55e", color: r.muted ? "#a8adc4" : "#1a1c25", border: "none", borderRadius: 6, padding: "2px 8px", fontWeight: 700, cursor: "pointer" }}>{r.muted ? "Unmute" : "Mute"}</button>
               </div>
             ))}
-            <div style={{ color: "#a1a1aa", fontSize: 12, marginTop: 6 }}>Use rules to alert on SLA breaches or failures.</div>
+            <div style={{ color: "#a8adc4", fontSize: 12, marginTop: 6 }}>Use rules to alert on SLA breaches or failures.</div>
           </div>
         </div>
       </div>
 
-      <div style={{ display: "grid", gap: 10, background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 12 }}>
-        <div style={{ fontWeight: 800, color: "#fafafa" }}>Lineage, retention, onboarding</div>
+      <div style={{ display: "grid", gap: 10, background: "#1a1c25", border: "1px solid #222535", borderRadius: 12, padding: 12 }}>
+        <div style={{ fontWeight: 800, color: "#f9fafb" }}>Lineage, retention, onboarding</div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: 10, minWidth: 220 }}>
-            <div style={{ fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>Lineage</div>
-            <ul style={{ margin: 0, paddingLeft: 16, color: "#a1a1aa", fontSize: 13 }}>
+          <div style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 10, padding: 10, minWidth: 220 }}>
+            <div style={{ fontWeight: 700, color: "#f9fafb", marginBottom: 6 }}>Lineage</div>
+            <ul style={{ margin: 0, paddingLeft: 16, color: "#a8adc4", fontSize: 13 }}>
               {lineage.map((l, i) => <li key={i}>{l}</li>)}
             </ul>
           </div>
-          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: 10, minWidth: 220 }}>
-            <div style={{ fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>Retention</div>
-            <div style={{ color: "#a1a1aa", fontSize: 13 }}>Data: {retention.days} days</div>
-            <div style={{ color: "#a1a1aa", fontSize: 13 }}>PII: {retention.pii}</div>
+          <div style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 10, padding: 10, minWidth: 220 }}>
+            <div style={{ fontWeight: 700, color: "#f9fafb", marginBottom: 6 }}>Retention</div>
+            <div style={{ color: "#a8adc4", fontSize: 13 }}>Data: {retention.days} days</div>
+            <div style={{ color: "#a8adc4", fontSize: 13 }}>PII: {retention.pii}</div>
           </div>
-          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: 10, minWidth: 220 }}>
-            <div style={{ fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>Onboarding</div>
-            <ul style={{ margin: 0, paddingLeft: 16, color: "#a1a1aa", fontSize: 13 }}>
+          <div style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 10, padding: 10, minWidth: 220 }}>
+            <div style={{ fontWeight: 700, color: "#f9fafb", marginBottom: 6 }}>Onboarding</div>
+            <ul style={{ margin: 0, paddingLeft: 16, color: "#a8adc4", fontSize: 13 }}>
               {onboarding.checklist.map(item => (
                 <li key={item}>
                   <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -958,11 +958,11 @@ export default function AdvancedAnalyticsAttribution() {
                 </li>
               ))}
             </ul>
-            <div style={{ color: "#a1a1aa", fontSize: 12 }}>Done: {onboarding.done.length}/{onboarding.checklist.length}</div>
+            <div style={{ color: "#a8adc4", fontSize: 12 }}>Done: {onboarding.done.length}/{onboarding.checklist.length}</div>
           </div>
-          <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: 10, minWidth: 220 }}>
-            <div style={{ fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>Changelog</div>
-            <ul style={{ margin: 0, paddingLeft: 16, color: "#a1a1aa", fontSize: 13 }}>
+          <div style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 10, padding: 10, minWidth: 220 }}>
+            <div style={{ fontWeight: 700, color: "#f9fafb", marginBottom: 6 }}>Changelog</div>
+            <ul style={{ margin: 0, paddingLeft: 16, color: "#a8adc4", fontSize: 13 }}>
               {changelog.map((c, i) => <li key={i}>{c.version}: {c.note}</li>)}
             </ul>
           </div>
@@ -972,39 +972,39 @@ export default function AdvancedAnalyticsAttribution() {
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
         <BackButton />
         {validation?.status === "warn" && <span style={{ color: "#fbbf24", fontSize: 12 }}>Warnings present; review before running.</span>}
-        <button onClick={() => { window.open("mailto:analytics@brand.com?subject=Attribution%20Feedback", "_blank"); logAudit("feedback", {}); }} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>
+        <button onClick={() => { window.open("mailto:analytics@brand.com?subject=Attribution%20Feedback", "_blank"); logAudit("feedback", {}); }} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>
           Send feedback
         </button>
-        <button onClick={() => { const snap = { at: Date.now(), payload: JSON.parse(payload || "{}"), query, model, cohortKey, reviewer, reviewStatus }; setVersions(prev => [snap, ...prev].slice(0, 5)); logAudit("version_save", {}); }} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>
+        <button onClick={() => { const snap = { at: Date.now(), payload: JSON.parse(payload || "{}"), query, model, cohortKey, reviewer, reviewStatus }; setVersions(prev => [snap, ...prev].slice(0, 5)); logAudit("version_save", {}); }} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>
           Save version
         </button>
         {versions.length > 0 && (
-          <button onClick={() => { const v = versions[0]; restoreSnapshot(v); setReviewStatus(v.reviewStatus || reviewStatus); setReviewer(v.reviewer || reviewer); logAudit("version_restore", {}); }} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={() => { const v = versions[0]; restoreSnapshot(v); setReviewStatus(v.reviewStatus || reviewStatus); setReviewer(v.reviewer || reviewer); logAudit("version_restore", {}); }} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>
             Restore latest
           </button>
         )}
       </div>
 
       {history.length > 0 && (
-        <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
+        <div style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <div style={{ fontWeight: 800, color: "#fafafa" }}>Recent runs</div>
-            <div style={{ color: "#a1a1aa", fontSize: 12 }}>Last {Math.min(3, history.length)} shown</div>
+            <div style={{ fontWeight: 800, color: "#f9fafb" }}>Recent runs</div>
+            <div style={{ color: "#a8adc4", fontSize: 12 }}>Last {Math.min(3, history.length)} shown</div>
           </div>
           <div style={{ display: "grid", gap: 8 }}>
             {history.slice(0, 3).map((h, idx) => (
-              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "8px 10px" }}>
+              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#1a1c25", border: "1px solid #222535", borderRadius: 10, padding: "8px 10px" }}>
                 <div>
-                  <div style={{ fontWeight: 700, color: "#fafafa" }}>{h.query?.slice(0, 40) || "Run"}{h.query?.length > 40 ? "…" : ""}</div>
-                  <div style={{ color: "#a1a1aa", fontSize: 12 }}>{h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "recent"} · {h.env} · {h.hash || "h-na"}</div>
+                  <div style={{ fontWeight: 700, color: "#f9fafb" }}>{h.query?.slice(0, 40) || "Run"}{h.query?.length > 40 ? "…" : ""}</div>
+                  <div style={{ color: "#a8adc4", fontSize: 12 }}>{h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "recent"} · {h.env} · {h.hash || "h-na"}</div>
                   {h.metrics && (
-                    <div style={{ color: "#a1a1aa", fontSize: 12 }}>ROAS {h.metrics.roas ?? "-"} · CAC {h.metrics.cac ?? "-"} · Spend {h.metrics.spend ?? "-"}</div>
+                    <div style={{ color: "#a8adc4", fontSize: 12 }}>ROAS {h.metrics.roas ?? "-"} · CAC {h.metrics.cac ?? "-"} · Spend {h.metrics.spend ?? "-"}</div>
                   )}
                 </div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  <button onClick={() => restoreSnapshot(h)} style={{ background: "#27272a", color: "#fafafa", border: "1px solid #52525b", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load</button>
-                  <button onClick={() => { restoreSnapshot(h); setTimeout(() => run(), 0); }} disabled={devSandbox} style={{ background: devSandbox ? "#27272a" : "#22c55e", color: devSandbox ? "#a1a1aa" : "#18181b", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: devSandbox ? "not-allowed" : "pointer", opacity: devSandbox ? 0.6 : 1 }}>{devSandbox ? "Sandbox" : "Re-run"}</button>
-                  <button onClick={() => { exportUrl && window.open(exportUrl, "_blank"); }} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #52525b", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Open export</button>
+                  <button onClick={() => restoreSnapshot(h)} style={{ background: "#222535", color: "#f9fafb", border: "1px solid #454860", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load</button>
+                  <button onClick={() => { restoreSnapshot(h); setTimeout(() => run(), 0); }} disabled={devSandbox} style={{ background: devSandbox ? "#222535" : "#22c55e", color: devSandbox ? "#a8adc4" : "#1a1c25", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: devSandbox ? "not-allowed" : "pointer", opacity: devSandbox ? 0.6 : 1 }}>{devSandbox ? "Sandbox" : "Re-run"}</button>
+                  <button onClick={() => { exportUrl && window.open(exportUrl, "_blank"); }} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #454860", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Open export</button>
                 </div>
               </div>
             ))}
@@ -1012,13 +1012,13 @@ export default function AdvancedAnalyticsAttribution() {
         </div>
       )}
       {result && (
-        <div style={{ display: "grid", gap: 12, background: "#18181b", border: "1px solid #18181b", borderRadius: 10, padding: 16 }}>
+        <div style={{ display: "grid", gap: 12, background: "#1a1c25", border: "1px solid #1a1c25", borderRadius: 10, padding: 16 }}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ color: "#fafafa", fontWeight: 800 }}>Run results</div>
+            <div style={{ color: "#f9fafb", fontWeight: 800 }}>Run results</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-              <button onClick={exportResult} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Export JSON</button>
+              <button onClick={exportResult} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Export JSON</button>
               {exportUrl && <a href={exportUrl} download="attribution-result.json" style={{ color: "#22c55e", textDecoration: "underline", fontSize: 13 }}>Download</a>}
-              <span style={{ color: "#a1a1aa", fontSize: 12 }}>Journeys {journeyDepth === 0 ? "off" : `depth ${journeyDepth}`}</span>
+              <span style={{ color: "#a8adc4", fontSize: 12 }}>Journeys {journeyDepth === 0 ? "off" : `depth ${journeyDepth}`}</span>
             </div>
           </div>
           {result.insights && (
@@ -1032,7 +1032,7 @@ export default function AdvancedAnalyticsAttribution() {
               <div style={{ fontWeight: 800, marginBottom: 6 }}>Performance by Channel</div>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
-                  <tr style={{ textAlign: "left", borderBottom: "1px solid #18181b" }}>
+                  <tr style={{ textAlign: "left", borderBottom: "1px solid #1a1c25" }}>
                     <th style={{ padding: "6px 4px" }}>Channel</th>
                     <th style={{ padding: "6px 4px" }}>Revenue</th>
                     <th style={{ padding: "6px 4px" }}>Count</th>
@@ -1040,7 +1040,7 @@ export default function AdvancedAnalyticsAttribution() {
                 </thead>
                 <tbody>
                   {Object.entries(result.performance).map(([channel, stats]) => (
-                    <tr key={channel} style={{ borderBottom: "1px solid #27272a" }}>
+                    <tr key={channel} style={{ borderBottom: "1px solid #222535" }}>
                       <td style={{ padding: "6px 4px" }}>{channel}</td>
                       <td style={{ padding: "6px 4px" }}>${stats.revenue.toFixed(2)}</td>
                       <td style={{ padding: "6px 4px" }}>{stats.count}</td>
@@ -1049,16 +1049,16 @@ export default function AdvancedAnalyticsAttribution() {
                 </tbody>
               </table>
               <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                <div style={{ color: "#a1a1aa", fontSize: 12 }}>API usage: {apiUsage.used}/{apiUsage.quota}</div>
-                <button onClick={() => setApiUsage(u => ({ ...u, used: Math.max(0, u.used - 200) }))} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Reduce usage</button>
-                <button onClick={() => setApiUsage(u => ({ ...u, used: u.used + 200 }))} style={{ background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Consume usage</button>
+                <div style={{ color: "#a8adc4", fontSize: 12 }}>API usage: {apiUsage.used}/{apiUsage.quota}</div>
+                <button onClick={() => setApiUsage(u => ({ ...u, used: Math.max(0, u.used - 200) }))} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Reduce usage</button>
+                <button onClick={() => setApiUsage(u => ({ ...u, used: u.used + 200 }))} style={{ background: "#1a1c25", color: "#f9fafb", border: "1px solid #222535", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Consume usage</button>
               </div>
             </div>
           )}
           {result.result && (
             <div>
               <div style={{ fontWeight: 800, marginBottom: 6 }}>Attribution Result</div>
-              <pre style={{ background: "#09090b", border: "1px solid #18181b", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 260, overflow: "auto" }}>
+              <pre style={{ background: "#0d0d11", border: "1px solid #1a1c25", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 260, overflow: "auto" }}>
                 {JSON.stringify(result.result, null, 2)}
               </pre>
             </div>
@@ -1066,7 +1066,7 @@ export default function AdvancedAnalyticsAttribution() {
           {result.journeys && (
             <div>
               <div style={{ fontWeight: 800, marginBottom: 6 }}>Journeys</div>
-              <pre style={{ background: "#09090b", border: "1px solid #18181b", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 260, overflow: "auto" }}>
+              <pre style={{ background: "#0d0d11", border: "1px solid #1a1c25", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 260, overflow: "auto" }}>
                 {JSON.stringify(result.journeys, null, 2)}
               </pre>
             </div>
@@ -1074,31 +1074,31 @@ export default function AdvancedAnalyticsAttribution() {
           {result.cohorts && (
             <div>
               <div style={{ fontWeight: 800, marginBottom: 6 }}>Cohorts</div>
-              <pre style={{ background: "#09090b", border: "1px solid #18181b", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 200, overflow: "auto" }}>
+              <pre style={{ background: "#0d0d11", border: "1px solid #1a1c25", borderRadius: 8, padding: 12, color: "#dbeafe", maxHeight: 200, overflow: "auto" }}>
                 {JSON.stringify(result.cohorts, null, 2)}
               </pre>
             </div>
           )}
           {shareToken && (
-            <div style={{ color: "#a1a1aa", fontSize: 12 }}>Share link: {`${window.location.origin}/share/${shareToken}`}</div>
+            <div style={{ color: "#a8adc4", fontSize: 12 }}>Share link: {`${window.location.origin}/share/${shareToken}`}</div>
           )}
         </div>
       )}
 
       {auditLog.length > 0 && (
-        <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
+        <div style={{ background: "#1a1c25", border: "1px solid #222535", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <div style={{ fontWeight: 800, color: "#fafafa" }}>Audit log</div>
-            <div style={{ color: "#a1a1aa", fontSize: 12 }}>Recent {Math.min(8, auditLog.length)} events</div>
+            <div style={{ fontWeight: 800, color: "#f9fafb" }}>Audit log</div>
+            <div style={{ color: "#a8adc4", fontSize: 12 }}>Recent {Math.min(8, auditLog.length)} events</div>
           </div>
           <div style={{ display: "grid", gap: 6 }}>
             {auditLog.slice(0, 8).map((entry, idx) => (
-              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap", background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "6px 10px" }}>
+              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap", background: "#1a1c25", border: "1px solid #222535", borderRadius: 10, padding: "6px 10px" }}>
                 <div>
-                  <div style={{ fontWeight: 700, color: "#fafafa" }}>{entry.event}</div>
-                  <div style={{ color: "#a1a1aa", fontSize: 12 }}>{new Date(entry.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {entry.env}</div>
+                  <div style={{ fontWeight: 700, color: "#f9fafb" }}>{entry.event}</div>
+                  <div style={{ color: "#a8adc4", fontSize: 12 }}>{new Date(entry.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {entry.env}</div>
                 </div>
-                <div style={{ color: "#a1a1aa", fontSize: 12 }}>{entry.meta ? JSON.stringify(entry.meta) : ""}</div>
+                <div style={{ color: "#a8adc4", fontSize: 12 }}>{entry.meta ? JSON.stringify(entry.meta) : ""}</div>
               </div>
             ))}
           </div>

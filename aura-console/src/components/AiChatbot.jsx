@@ -40,15 +40,15 @@ export default function AiChatbot({ coreUrl }) {
   };
 
   return (
-    <div style={{ maxWidth: 500, margin: '40px auto', background: '#18181b', borderRadius: 12, padding: 24 }}>
-      <h2 style={{ color: '#818cf8' }}>AI Chatbot</h2>
+    <div style={{ maxWidth: 500, margin: '40px auto', background: '#1a1c25', borderRadius: 12, padding: 24 }}>
+      <h2 style={{ color: '#6366f1' }}>AI Chatbot</h2>
       <div style={{ minHeight: 200, background: 'var(--background-tertiary)', borderRadius: 8, padding: 12, marginBottom: 16, color: 'var(--text-primary)', fontSize: 15 }}>
         {messages.slice(1).map((m, i) => (
           <div key={i} style={{ margin: '8px 0', color: m.role === 'user' ? 'var(--text-accent)' : 'var(--text-primary)' }}>
             <b>{m.role === 'user' ? 'You' : 'AI'}:</b> {m.content}
           </div>
         ))}
-        {loading && <div style={{ color: '#818cf8' }}>AI is typing…</div>}
+        {loading && <div style={{ color: '#6366f1' }}>AI is typing…</div>}
       </div>
       <form onSubmit={sendMessage} style={{ display: 'flex', gap: 8 }}>
         <input
@@ -58,7 +58,7 @@ export default function AiChatbot({ coreUrl }) {
           style={{ flex: 1, padding: 10, borderRadius: 6, border: 0 }}
           disabled={loading}
         />
-        <button type="submit" style={{ background: '#818cf8', color: '#18181b', fontWeight: 700, border: 0, borderRadius: 6, padding: '0 18px' }} disabled={loading}>
+        <button type="submit" style={{ background: '#6366f1', color: '#1a1c25', fontWeight: 700, border: 0, borderRadius: 6, padding: '0 18px' }} disabled={loading}>
           Send
         </button>
       </form>

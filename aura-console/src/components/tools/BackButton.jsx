@@ -23,7 +23,7 @@ export default function BackButton({ style = {}, label = "← Go Back", onClick 
     <button
       onClick={handleClick}
       style={{
-        background: "#18181b",
+        background: "#1a1c25",
         color: "#a5f3fc",
         border: "none",
         borderRadius: 8,

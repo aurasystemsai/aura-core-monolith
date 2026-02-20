@@ -4,8 +4,8 @@
 
 .email-automation-builder {
   --primary-color: #6366f1;
-  --primary-dark: #71717a;
-  --primary-light: #818cf8;
+  --primary-dark: #8b8fa8;
+  --primary-light: #6366f1;
   --success-color: #059669;
   --warning-color: #d97706;
   --danger-color: #dc2626;
@@ -14,14 +14,14 @@
   --bg-primary: #ffffff;
   --bg-secondary: #f9fafb;
   --bg-tertiary: #f3f4f6;
-  --bg-dark: #27272a;
+  --bg-dark: #222535;
   
-  --text-primary: #27272a;
-  --text-secondary: #71717a;
-  --text-tertiary: #a1a1aa;
+  --text-primary: #222535;
+  --text-secondary: #8b8fa8;
+  --text-tertiary: #a8adc4;
   
-  --border-color: #fafafa;
-  --border-dark: #e4e4e7;
+  --border-color: #f9fafb;
+  --border-dark: #e9ebf5;
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);

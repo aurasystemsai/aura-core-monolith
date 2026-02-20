@@ -212,11 +212,11 @@ export default function ReportingAlerts() {
   return (
     <div style={{ padding: 24 }}>
       {devSandbox && (
-        <Card style={{ marginBottom: 12, background: "#18181b", borderColor: "#27272a" }}>
+        <Card style={{ marginBottom: 12, background: "#1a1c25", borderColor: "#222535" }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <div>
               <div style={{ fontWeight: 800, color: '#f59e0b' }}>Sandbox mode</div>
-              <div style={{ color: '#a1a1aa' }}>Exports and feedback are blocked. Switch env to Stage/Prod.</div>
+              <div style={{ color: '#a8adc4' }}>Exports and feedback are blocked. Switch env to Stage/Prod.</div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <Button onClick={() => setEnv('stage')}>Stage</Button>
@@ -232,7 +232,7 @@ export default function ReportingAlerts() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontWeight: 700 }}>Sync health</div>
-              <div style={{ color: '#71717a', fontSize: 12 }}>Last success {syncHealth.lastSuccess ? new Date(syncHealth.lastSuccess).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
+              <div style={{ color: '#8b8fa8', fontSize: 12 }}>Last success {syncHealth.lastSuccess ? new Date(syncHealth.lastSuccess).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
             </div>
             <Tag color={syncHealth.status === 'healthy' ? 'green' : 'red'}>{syncHealth.status}</Tag>
           </div>
@@ -240,7 +240,7 @@ export default function ReportingAlerts() {
         </Card>
         <Card style={{ minWidth: 220, marginBottom: 0 }}>
           <div style={{ fontWeight: 700 }}>Safety</div>
-          <div style={{ color: '#71717a', fontSize: 12 }}>Protect deletes and allow undo</div>
+          <div style={{ color: '#8b8fa8', fontSize: 12 }}>Protect deletes and allow undo</div>
           <div style={{ marginTop: 6, display: 'flex', gap: 8, alignItems: 'center' }}>
             <Switch checked={destructiveEnabled} onChange={setDestructiveEnabled} checkedChildren="Destructive on" unCheckedChildren="Locked" />
             <Button size="small" disabled={!undoStack.length} onClick={undoLast}>Undo</Button>
@@ -295,8 +295,8 @@ export default function ReportingAlerts() {
                 <b>Recommendation:</b> <span>Suggested threshold: 95th percentile</span>
               </div>
             </div>
-            <div style={{ marginTop: 12, background: '#18181b', padding: 10, borderRadius: 8, border: '1px solid #27272a' }}>
-              <div style={{ fontWeight: 700, color: '#fafafa' }}>Severity routing</div>
+            <div style={{ marginTop: 12, background: '#1a1c25', padding: 10, borderRadius: 8, border: '1px solid #222535' }}>
+              <div style={{ fontWeight: 700, color: '#f9fafb' }}>Severity routing</div>
               <Select size="small" value={routingPreset} onChange={applyPreset} style={{ width: 240, marginTop: 6 }}
                 options={[
                   { value: 'high-sms-slack', label: 'High: SMS + Slack + Email' },
@@ -304,13 +304,13 @@ export default function ReportingAlerts() {
                   { value: 'low-email', label: 'Low: Email only' }
                 ]}
               />
-              <div style={{ display: 'flex', gap: 12, marginTop: 10, flexWrap: 'wrap', color: '#fafafa', fontSize: 13 }}>
+              <div style={{ display: 'flex', gap: 12, marginTop: 10, flexWrap: 'wrap', color: '#f9fafb', fontSize: 13 }}>
                 <div>Cooldown (min): <input type="number" min="1" value={cooldownMinutes} onChange={e => setCooldownMinutes(Number(e.target.value) || 1)} style={{ width: 70 }} /></div>
                 <div>Dedupe window (min): <input type="number" min="1" value={dedupeMinutes} onChange={e => setDedupeMinutes(Number(e.target.value) || 1)} style={{ width: 70 }} /></div>
                 <Button size="small" onClick={() => setSnoozedUntil(new Date(Date.now() + 60 * 60 * 1000))}>Snooze 1h</Button>
                 {snoozedUntil && <span style={{ color: '#fbbf24' }}>Snoozed until {snoozedUntil.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
               </div>
-              <div style={{ marginTop: 10, display: 'flex', gap: 12, flexWrap: 'wrap', color: '#fafafa', fontSize: 13 }}>
+              <div style={{ marginTop: 10, display: 'flex', gap: 12, flexWrap: 'wrap', color: '#f9fafb', fontSize: 13 }}>
                 <div>Quiet hours: <input value={quietHours.start} onChange={e => setQuietHours(q => ({ ...q, start: e.target.value }))} style={{ width: 70 }} /> - <input value={quietHours.end} onChange={e => setQuietHours(q => ({ ...q, end: e.target.value }))} style={{ width: 70 }} /> {quietHours.tz}</div>
                 <div>Maintenance: <Switch size="small" checked={maintenance.active} onChange={v => setMaintenance(m => ({ ...m, active: v }))} /> {maintenance.window}</div>
               </div>
@@ -321,7 +321,7 @@ export default function ReportingAlerts() {
               <div style={{ marginTop: 6, display: 'grid', gap: 6 }}>
                 {escalationPolicy.map((step, idx) => (
                   <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ color: '#18181b', fontWeight: 600 }}>{step.channel}</span>
+                    <span style={{ color: '#1a1c25', fontWeight: 600 }}>{step.channel}</span>
                     <span style={{ color: '#475569', fontSize: 12 }}>after {step.after} min</span>
                   </div>
                 ))}
@@ -365,7 +365,7 @@ export default function ReportingAlerts() {
             <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: idx === history.slice(0,5).length -1 ? 'none' : '1px solid #f3f4f6' }}>
               <div>
                 <div style={{ fontWeight: 600 }}>{h.summary}</div>
-                <div style={{ color: '#71717a', fontSize: 12 }}>{new Date(h.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {h.env}</div>
+                <div style={{ color: '#8b8fa8', fontSize: 12 }}>{new Date(h.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {h.env}</div>
               </div>
               <Button size="small" icon={<ReloadOutlined />} onClick={() => notification.info({ message: 'Replayed', description: h.summary })}>Replay</Button>
             </div>
@@ -375,19 +375,19 @@ export default function ReportingAlerts() {
 
       <Card title="Debug panel" style={{ marginBottom: 16 }} extra={<Button size="small" onClick={() => setShowDebug(v => !v)}>{showDebug ? 'Hide' : 'Show'}</Button>}>
         {showDebug ? (
-          traceEvents.length === 0 ? <div style={{ color: '#71717a' }}>Interact to capture traces. Ctrl+D toggles.</div> : (
+          traceEvents.length === 0 ? <div style={{ color: '#8b8fa8' }}>Interact to capture traces. Ctrl+D toggles.</div> : (
             <div style={{ display: 'grid', gap: 8 }}>
               {traceEvents.map((t, idx) => (
                 <div key={idx} style={{ padding: 8, border: '1px solid #f3f4f6', borderRadius: 8 }}>
                   <div style={{ fontWeight: 700 }}>{t.event}</div>
-                  <div style={{ color: '#71717a', fontSize: 12 }}>{new Date(t.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {t.env} · {t.shop}</div>
-                  <div style={{ color: '#71717a', fontSize: 12, wordBreak: 'break-word' }}>{JSON.stringify(t.meta)}</div>
+                  <div style={{ color: '#8b8fa8', fontSize: 12 }}>{new Date(t.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {t.env} · {t.shop}</div>
+                  <div style={{ color: '#8b8fa8', fontSize: 12, wordBreak: 'break-word' }}>{JSON.stringify(t.meta)}</div>
                 </div>
               ))}
             </div>
           )
         ) : (
-          <div style={{ color: '#71717a' }}>Tracing captures saves, deletes, exports, simulations.</div>
+          <div style={{ color: '#8b8fa8' }}>Tracing captures saves, deletes, exports, simulations.</div>
         )}
       </Card>
 

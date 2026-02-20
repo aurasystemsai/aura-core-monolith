@@ -14,19 +14,19 @@
   /* Neutral Colors */
   --gray-50: #f9fafb;
   --gray-100: #f3f4f6;
-  --gray-200: #fafafa;
-  --gray-300: #e4e4e7;
-  --gray-400: #a1a1aa;
-  --gray-500: #71717a;
-  --gray-600: #52525b;
-  --gray-700: #52525b;
-  --gray-800: #27272a;
-  --gray-900: #18181b;
+  --gray-200: #f9fafb;
+  --gray-300: #e9ebf5;
+  --gray-400: #a8adc4;
+  --gray-500: #8b8fa8;
+  --gray-600: #454860;
+  --gray-700: #454860;
+  --gray-800: #222535;
+  --gray-900: #1a1c25;
 
   /* Dark Mode Colors */
-  --dark-bg: #18181b;
-  --dark-surface: #27272a;
-  --dark-border: #52525b;
+  --dark-bg: #1a1c25;
+  --dark-surface: #222535;
+  --dark-border: #454860;
   --dark-text: #cbd5e1;
 
   /* Spacing */

@@ -155,9 +155,9 @@ export default function BlogSEO() {
         ))}
       </div>
       {activeTab && (
-        <div style={{ background: "#27272a", borderRadius: 10, padding: "14px 18px", marginBottom: 20, border: "1px solid #27272a", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ color: "#818cf8", fontWeight: 700, fontSize: 14 }}>Active: {activeTab}</span>
-          <button onClick={() => setActiveTab(null)} style={{ background: "transparent", border: "1px solid #52525b", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Close </button>
+        <div style={{ background: "#222535", borderRadius: 10, padding: "14px 18px", marginBottom: 20, border: "1px solid #222535", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ color: "#6366f1", fontWeight: 700, fontSize: 14 }}>Active: {activeTab}</span>
+          <button onClick={() => setActiveTab(null)} style={{ background: "transparent", border: "1px solid #454860", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Close </button>
         </div>
       )}
 

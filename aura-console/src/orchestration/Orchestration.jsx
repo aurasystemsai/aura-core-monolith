@@ -26,7 +26,7 @@ const Orchestration = () => {
           display: 'inline-block',
           marginLeft: 8,
           fontSize: 18,
-          color: '#818cf8',
+          color: '#6366f1',
           cursor: 'help',
         }}
         title="This panel lets you automate, pause, or resume key workflows that keep your store running smoothly. Hover each item for details.">

@@ -5,11 +5,11 @@ import useAdvancedPersonalizationSocket from "./AdvancedPersonalizationSocket";
 
 const THEMES = {
   dark: {
-    bg: "#18181b",
-    card: "#18181b",
-    border: "#27272a",
-    text: "#fafafa",
-    muted: "#a1a1aa",
+    bg: "#1a1c25",
+    card: "#1a1c25",
+    border: "#222535",
+    text: "#f9fafb",
+    muted: "#a8adc4",
     accent: "#7c3aed",
     success: "#22c55e",
     warning: "#f59e0b",
@@ -19,7 +19,7 @@ const THEMES = {
     bg: "#f8fafc",
     card: "#ffffff",
     border: "#dbeafe",
-    text: "#18181b",
+    text: "#1a1c25",
     muted: "#475569",
     accent: "#2563eb",
     success: "#16a34a",
@@ -27,7 +27,7 @@ const THEMES = {
     danger: "#dc2626",
   },
   audit: {
-    bg: "#18181b",
+    bg: "#1a1c25",
     card: "#0f2529",
     border: "#17424a",
     text: "#d8f3ff",
@@ -246,7 +246,7 @@ export default function AdvancedPersonalizationEngine() {
             <option value="light">Light</option>
             <option value="audit">Audit</option>
           </select>
-          <button onClick={saveVersion} style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${palette.accent}`, background: palette.accent, color: "#18181b", fontWeight: 800, cursor: "pointer" }}>Save Version</button>
+          <button onClick={saveVersion} style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${palette.accent}`, background: palette.accent, color: "#1a1c25", fontWeight: 800, cursor: "pointer" }}>Save Version</button>
           <button onClick={copyShare} style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${palette.border}`, background: palette.card, color: palette.text, fontWeight: 700, cursor: "pointer" }}>Copy Share</button>
         </div>
       </div>
@@ -269,7 +269,7 @@ export default function AdvancedPersonalizationEngine() {
               <li>Collaboration: approvals, audit log, share links.</li>
             </ul>
             <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
-              <button onClick={() => setShowOnboarding(false)} style={{ background: palette.accent, color: "#18181b", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: "pointer" }}>Start</button>
+              <button onClick={() => setShowOnboarding(false)} style={{ background: palette.accent, color: "#1a1c25", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: "pointer" }}>Start</button>
               <button onClick={() => setRulesText(JSON.stringify(DEFAULT_RULES, null, 2))} style={{ background: "transparent", color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: "10px 18px", fontWeight: 700, cursor: "pointer" }}>Reset rules</button>
             </div>
           </div>
@@ -355,7 +355,7 @@ export default function AdvancedPersonalizationEngine() {
                   <div style={{ fontWeight: 800 }}>{rec.title}</div>
                   <div style={{ color: palette.muted, fontSize: 12 }}>{rec.channel} · {rec.lift}</div>
                 </div>
-                <button onClick={() => promoteRecommendation(rec)} style={{ background: palette.accent, color: "#18181b", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Promote</button>
+                <button onClick={() => promoteRecommendation(rec)} style={{ background: palette.accent, color: "#1a1c25", border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 800, cursor: "pointer" }}>Promote</button>
               </div>
             ))}
           </div>
@@ -565,7 +565,7 @@ export default function AdvancedPersonalizationEngine() {
             placeholder="Share feedback or requests"
             aria-label="Feedback"
           />
-          <button type="submit" style={{ background: palette.accent, color: "#18181b", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: "pointer" }}>Send Feedback</button>
+          <button type="submit" style={{ background: palette.accent, color: "#1a1c25", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: "pointer" }}>Send Feedback</button>
           {error && <div style={{ color: palette.danger, marginTop: 8 }}>{error}</div>}
         </form>
 

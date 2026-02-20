@@ -110,7 +110,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
         <div style={{ fontSize: 11, color: "#fecaca" }}>{t(error) || error}</div>
       )}
       {!loading && !error && projects.length === 0 && (
-        <div style={{ fontSize: 12, color: "#e4e4e7", marginTop: 8 }}>{t('project_switcher_no_projects')}</div>
+        <div style={{ fontSize: 12, color: "#e9ebf5", marginTop: 8 }}>{t('project_switcher_no_projects')}</div>
       )}
     </div>
   );
@@ -125,7 +125,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
       <div
         style={{
           fontSize: 11,
-          color: "#a1a1aa",
+          color: "#a8adc4",
           marginTop: 2,
           wordBreak: "break-all",
         }}
@@ -166,7 +166,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
             padding: "8px 9px",
             borderRadius: 10,
             border: "1px solid rgba(55,65,81,0.9)",
-            background: "#09090b",
+            background: "#0d0d11",
             maxHeight: 180,
             overflowY: "auto",
             fontSize: 12,
@@ -177,7 +177,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
               fontSize: 11,
               textTransform: "uppercase",
               letterSpacing: "0.16em",
-              color: "#71717a",
+              color: "#8b8fa8",
               marginBottom: 6,
             }}
           >
@@ -185,7 +185,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
           </div>
 
           {loading && (
-            <div style={{ fontSize: 11, color: "#a1a1aa" }}>
+            <div style={{ fontSize: 11, color: "#a8adc4" }}>
               Loading projects from Core…
             </div>
           )}
@@ -195,7 +195,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
           )}
 
           {!loading && !error && projects.length === 0 && (
-            <div style={{ fontSize: 11, color: "#a1a1aa" }}>
+            <div style={{ fontSize: 11, color: "#a8adc4" }}>
               No projects found in Core yet. Use “Connect store” first.
             </div>
           )}
@@ -230,7 +230,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
                         background: isActive
                           ? "rgba(34,211,238,0.12)"
                           : "rgba(15,23,42,0.98)",
-                        color: isActive ? "#fafafa" : "#e4e4e7",
+                        color: isActive ? "#f9fafb" : "#e9ebf5",
                         padding: "6px 7px",
                         cursor: isActive ? "default" : "pointer",
                         fontSize: 12,
@@ -255,7 +255,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
                       <div
                         style={{
                           fontSize: 11,
-                          color: "#a1a1aa",
+                          color: "#a8adc4",
                           marginTop: 1,
                           wordBreak: "break-all",
                         }}

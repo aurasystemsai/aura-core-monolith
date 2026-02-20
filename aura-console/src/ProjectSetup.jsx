@@ -147,7 +147,7 @@ function ProjectSetup({ coreUrl, onConnected }) {
             style={{
               marginTop: 8,
               fontSize: 11,
-              color: "#a1a1aa",
+              color: "#a8adc4",
               lineHeight: 1.4,
             }}
           >

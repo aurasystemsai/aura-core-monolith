@@ -193,7 +193,7 @@ function ContentIngestor({ coreUrl, projectId }) {
               display: 'inline-block',
               marginLeft: 8,
               fontSize: 18,
-              color: '#818cf8',
+              color: '#6366f1',
               cursor: 'help',
             }}
             title="Paste your product, blog, or page URLs here to add them to the system for SEO and content health checks.">
@@ -202,7 +202,7 @@ function ContentIngestor({ coreUrl, projectId }) {
           </h2>
           <p className="card-subtitle">
             This pushes URLs into Core so the <strong>Content Health</strong> table can audit real pages/posts/products. Paste your URLs below and click ingest.
-            <span style={{color:'#818cf8',marginLeft:8,cursor:'help'}} title="After ingesting, go to Content Health and hit Refresh to see your new items.">?</span>
+            <span style={{color:'#6366f1',marginLeft:8,cursor:'help'}} title="After ingesting, go to Content Health and hit Refresh to see your new items.">?</span>
           </p>
         </div>
 
@@ -210,7 +210,7 @@ function ContentIngestor({ coreUrl, projectId }) {
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <div style={{ minWidth: 220 }}>
               <div className="filters-label" title="Choose a default type for pasted URLs">Default type
-                <span style={{color:'#818cf8',marginLeft:4,cursor:'help'}} title="If you only paste URLs, this type will be used for all of them. Change to 'product', 'blog', etc as needed.">?</span>
+                <span style={{color:'#6366f1',marginLeft:4,cursor:'help'}} title="If you only paste URLs, this type will be used for all of them. Change to 'product', 'blog', etc as needed.">?</span>
               </div>
               <select
                 className="inspector-input"
@@ -232,7 +232,7 @@ function ContentIngestor({ coreUrl, projectId }) {
 
             <div style={{ flex: 1, minWidth: 260 }}>
               <div className="filters-label" title="Shows the current state of your input and ingestion">Status
-                <span style={{color:'#818cf8',marginLeft:4,cursor:'help'}} title="See if your input is valid, and how many lines will be ingested.">?</span>
+                <span style={{color:'#6366f1',marginLeft:4,cursor:'help'}} title="See if your input is valid, and how many lines will be ingested.">?</span>
               </div>
               <div className={chipClass} style={{ marginTop: 4 }}>
                 {status.message ||

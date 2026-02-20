@@ -14,14 +14,14 @@ export default function InternalLinkingSuggestions() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#3f3f46', borderRadius: 12, marginBottom: 18, color: '#fafafa' }}>
+    <div style={{ padding: 24, background: '#353848', borderRadius: 12, marginBottom: 18, color: '#f9fafb' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Internal Linking Suggestions</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#52525b', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#454860', fontSize: 16 }}>
         <li>Generate, import, and manage internal link suggestions with AI</li>
         <li>Analyze link graph, anchor text, and SEO impact</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#09090b', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#0d0d11', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
@@ -92,7 +92,7 @@ export default function InternalLinkingSuggestions() {
       {/* Suggestions Table */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Suggestions</div>
-        <div style={{ fontSize: 15, color: '#09090b' }}>
+        <div style={{ fontSize: 15, color: '#0d0d11' }}>
           {suggestions.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(suggestions, null, 2)}</pre>
           ) : (
@@ -111,7 +111,7 @@ export default function InternalLinkingSuggestions() {
       {/* Analytics Dashboard */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
-        <div style={{ fontSize: 15, color: '#09090b' }}>
+        <div style={{ fontSize: 15, color: '#0d0d11' }}>
           {analytics.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
           ) : (
@@ -120,7 +120,7 @@ export default function InternalLinkingSuggestions() {
         </div>
       </div>
       {/* Feedback */}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#3f3f46', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#353848', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}

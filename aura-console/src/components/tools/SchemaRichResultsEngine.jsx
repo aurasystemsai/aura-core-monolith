@@ -109,7 +109,7 @@ export default function SchemaRichResultsEngine() {
   }, []);
 
   return (
-    <div style={{ background: "#09090b", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ background: "#0d0d11", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 8 }}>Schema Rich Results Engine</h2>
       <div style={{ marginBottom: 10, color: "#0ea5e9", fontWeight: 600 }}>
         <span role="img" aria-label="sparkles"></span>Generate, manage, and analyze schema rich results with AI and analytics.
@@ -123,18 +123,18 @@ export default function SchemaRichResultsEngine() {
         aria-label="Schema input"
       />
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={handleRun} disabled={loading || !input} style={{ background: "#818cf8", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Generating..." : "AI Generate"}</button>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
+        <button onClick={handleRun} disabled={loading || !input} style={{ background: "#6366f1", color: "#0d0d11", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Generating..." : "AI Generate"}</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0d0d11", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import history" />
         <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
         {exported && <a href={exported} download="schema-rich-results-history.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {response && (
-        <div style={{ background: "#27272a", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #27272a" }}>
+        <div style={{ background: "#222535", borderRadius: 10, padding: 16, marginBottom: 12, border: "1px solid #222535" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <span style={{ fontWeight: 700, color: "#818cf8", fontSize: 14 }}>AI Schema Report</span>
-            <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #52525b", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
+            <span style={{ fontWeight: 700, color: "#6366f1", fontSize: 14 }}>AI Schema Report</span>
+            <button onClick={() => navigator.clipboard?.writeText(response)} style={{ background: "transparent", border: "1px solid #454860", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Copy</button>
           </div>
           <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, fontSize: 14, color: "#e2e8f0" }}>{response}</div>
         </div>
@@ -144,7 +144,7 @@ export default function SchemaRichResultsEngine() {
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>History</div>
         <ul style={{ paddingLeft: 18 }}>
         {history.map(h => (
-          <div key={h.id} style={{ background: "#09090b", borderRadius: 8, padding: "12px 16px", border: "1px solid #27272a", marginBottom: 8 }}>
+          <div key={h.id} style={{ background: "#0d0d11", borderRadius: 8, padding: "12px 16px", border: "1px solid #222535", marginBottom: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
               <span style={{ fontWeight: 700, color: "#e2e8f0" }}>{h.schema ? h.schema.slice(0, 60) + "…" : `Schema #${h.id}`}</span>
               <span style={{ color: "#64748b" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : ""}</span>
@@ -155,13 +155,13 @@ export default function SchemaRichResultsEngine() {
         </ul>
       </div>
       <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-        <div style={{ background: "#27272a", borderRadius: 10, padding: "12px 20px", border: "1px solid #27272a" }}>
+        <div style={{ background: "#222535", borderRadius: 10, padding: "12px 20px", border: "1px solid #222535" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Schemas Generated</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#818cf8", marginTop: 2 }}>{history.length}</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{history.length}</div>
         </div>
-        <div style={{ background: "#27272a", borderRadius: 10, padding: "12px 20px", border: "1px solid #27272a" }}>
+        <div style={{ background: "#222535", borderRadius: 10, padding: "12px 20px", border: "1px solid #222535" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#818cf8", marginTop: 2 }}>{analytics.length}</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#6366f1", marginTop: 2 }}>{analytics.length}</div>
         </div>
       </div>
     </div>

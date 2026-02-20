@@ -129,7 +129,7 @@ function AbandonedCheckoutWinbackLegacy() {
 
   // Render category navigation bar
   const renderCategoryNav = () => (
-    <div style={{ display: 'flex', gap: 12, marginBottom: 24, borderBottom: '2px solid #3f3f46', paddingBottom: 12 }}>
+    <div style={{ display: 'flex', gap: 12, marginBottom: 24, borderBottom: '2px solid #353848', paddingBottom: 12 }}>
       {categories.map(cat => (
         <button
           key={cat.id}
@@ -138,9 +138,9 @@ function AbandonedCheckoutWinbackLegacy() {
             setActiveTab(tabs[cat.id][0].id);
           }}
           style={{
-            background: activeCategory === cat.id ? '#6366f1' : '#18181b',
-            color: '#fafafa',
-            border: activeCategory === cat.id ? '2px solid #6366f1' : '1px solid #3f3f46',
+            background: activeCategory === cat.id ? '#6366f1' : '#1a1c25',
+            color: '#f9fafb',
+            border: activeCategory === cat.id ? '2px solid #6366f1' : '1px solid #353848',
             borderRadius: 8,
             padding: '10px 20px',
             fontWeight: 700,
@@ -172,9 +172,9 @@ function AbandonedCheckoutWinbackLegacy() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
-              background: activeTab === tab.id ? '#3f3f46' : '#18181b',
-              color: activeTab === tab.id ? '#6366f1' : '#fafafa',
-              border: activeTab === tab.id ? '2px solid #6366f1' : '1px solid #3f3f46',
+              background: activeTab === tab.id ? '#353848' : '#1a1c25',
+              color: activeTab === tab.id ? '#6366f1' : '#f9fafb',
+              border: activeTab === tab.id ? '2px solid #6366f1' : '1px solid #353848',
               borderRadius: 6,
               padding: '8px 16px',
               fontWeight: 600,
@@ -305,9 +305,9 @@ function AbandonedCheckoutWinbackLegacy() {
   };
 
   return (
-    <div style={{ padding: 24, background: '#0f0f14', minHeight: '100vh', color: '#fafafa' }}>
+    <div style={{ padding: 24, background: '#0f0f14', minHeight: '100vh', color: '#f9fafb' }}>
       <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 8 }}>Abandoned Checkout Winback</h1>
-      <p style={{ fontSize: 16, color: '#a1a1aa', marginBottom: 24 }}>
+      <p style={{ fontSize: 16, color: '#a8adc4', marginBottom: 24 }}>
         AI-powered revenue recovery platform with 184 endpoints across 7 world-class categories
       </p>
       
@@ -351,8 +351,8 @@ function RecoveryCampaignsTab({ campaigns, setCampaigns }) {
         + New Campaign
       </button>
       
-      <table style={{ width: '100%', borderCollapse: 'collapse', background: '#3f3f46', borderRadius: 10, overflow: 'hidden' }}>
-        <thead style={{ background: '#18181b' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', background: '#353848', borderRadius: 10, overflow: 'hidden' }}>
+        <thead style={{ background: '#1a1c25' }}>
           <tr>
             <th style={{ padding: 12, textAlign: 'left' }}>Campaign Name</th>
             <th style={{ padding: 12, textAlign: 'left' }}>Status</th>
@@ -365,14 +365,14 @@ function RecoveryCampaignsTab({ campaigns, setCampaigns }) {
           {campaigns.length === 0 ? (
             <tr><td colSpan={5} style={{ padding: 24, textAlign: 'center', color: '#64748b' }}>No campaigns yet. Create your first campaign!</td></tr>
           ) : campaigns.map((campaign, idx) => (
-            <tr key={idx} style={{ borderTop: '1px solid #18181b' }}>
+            <tr key={idx} style={{ borderTop: '1px solid #1a1c25' }}>
               <td style={{ padding: 12 }}>{campaign.name}</td>
               <td style={{ padding: 12 }}><span style={{ background: campaign.status === 'active' ? '#22c55e' : '#64748b', color: '#fff', padding: '4px 12px', borderRadius: 6, fontSize: 13 }}>{campaign.status}</span></td>
               <td style={{ padding: 12 }}>{campaign.recoveryRate || 'N/A'}</td>
               <td style={{ padding: 12 }}>${campaign.revenue || 0}</td>
               <td style={{ padding: 12 }}>
-                <button style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
-                <button style={{ background: '#3f3f46', color: '#ef4444', border: '1px solid #3f3f46', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                <button style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
+                <button style={{ background: '#353848', color: '#ef4444', border: '1px solid #353848', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Delete</button>
               </td>
             </tr>
           ))}
@@ -386,7 +386,7 @@ function CustomerSegmentsTab({ segments, setSegments }) {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Customer Segments</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Create behavioral segments to target specific customer groups</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Create behavioral segments to target specific customer groups</p>
       <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
         + New Segment
       </button>
@@ -401,7 +401,7 @@ function CartInventoryTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Cart Inventory</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>View all abandoned carts awaiting recovery</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>View all abandoned carts awaiting recovery</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Cart inventory coming soon...
       </div>
@@ -413,7 +413,7 @@ function TemplatesTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Templates</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Email and SMS templates for recovery campaigns</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Email and SMS templates for recovery campaigns</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Template library coming soon...
       </div>
@@ -425,7 +425,7 @@ function SchedulesTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Schedules</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Schedule automated recovery campaigns</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Schedule automated recovery campaigns</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Scheduling coming soon...
       </div>
@@ -437,7 +437,7 @@ function BulkActionsTab({ campaigns, setCampaigns }) {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Bulk Actions</h2>
-      <p style={{ color:'#a1a1aa', marginBottom: 18 }}>Perform bulk operations on multiple campaigns</p>
+      <p style={{ color:'#a8adc4', marginBottom: 18 }}>Perform bulk operations on multiple campaigns</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Bulk actions coming soon...
       </div>
@@ -449,7 +449,7 @@ function CampaignHistoryTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Campaign History</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Review past campaign performance</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Review past campaign performance</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Campaign history coming soon...
       </div>
@@ -461,16 +461,16 @@ function QuickActionsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Quick Actions</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>One-click recovery actions for instant results</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>One-click recovery actions for instant results</p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 18, marginTop: 24 }}>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
           <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Send SMS to High-Value Carts</h3>
-          <p style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 12 }}>Instantly recover carts over $100</p>
+          <p style={{ fontSize: 14, color: '#a8adc4', marginBottom: 12 }}>Instantly recover carts over $100</p>
           <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontWeight: 600, cursor: 'pointer' }}>Send Now</button>
         </div>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
           <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Email Abandoned &lt;24h</h3>
-          <p style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 12 }}>Target recent abandoners</p>
+          <p style={{ fontSize: 14, color: '#a8adc4', marginBottom: 12 }}>Target recent abandoners</p>
           <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontWeight: 600, cursor: 'pointer' }}>Send Now</button>
         </div>
       </div>
@@ -486,7 +486,7 @@ function ABTestingTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>A/B Testing</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Run experiments to optimize recovery strategies</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Run experiments to optimize recovery strategies</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         A/B testing framework coming soon...
       </div>
@@ -498,7 +498,7 @@ function IncentiveOptimizerTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Incentive Optimizer</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>AI-powered optimal discount calculation</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>AI-powered optimal discount calculation</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Incentive optimizer coming soon...
       </div>
@@ -510,7 +510,7 @@ function ChannelPerformanceTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Channel Performance</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Compare performance across email, SMS, and push</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Compare performance across email, SMS, and push</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Channel analytics coming soon...
       </div>
@@ -522,7 +522,7 @@ function TimingAnalysisTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Timing Analysis</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Discover optimal contact timing for each segment</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Discover optimal contact timing for each segment</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Timing analysis coming soon...
       </div>
@@ -534,7 +534,7 @@ function MessageOptimizationTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Message Optimization</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Test message variants and subject lines</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Test message variants and subject lines</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Message optimization coming soon...
       </div>
@@ -546,7 +546,7 @@ function ConversionFunnelsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Conversion Funnels</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Analyze conversion paths and drop-off points</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Analyze conversion paths and drop-off points</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Funnel analysis coming soon...
       </div>
@@ -558,7 +558,7 @@ function RecommendationsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>AI Recommendations</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Get AI-powered optimization recommendations</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Get AI-powered optimization recommendations</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Recommendations engine coming soon...
       </div>
@@ -574,7 +574,7 @@ function AIOrchestrationTab({ workflows, setWorkflows }) {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>AI Orchestration</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Smart recovery workflows powered by AI</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Smart recovery workflows powered by AI</p>
       <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
         + New Workflow
       </button>
@@ -584,13 +584,13 @@ function AIOrchestrationTab({ workflows, setWorkflows }) {
         ) : (
           <div style={{ display: 'grid', gap: 12 }}>
             {workflows.map((wf, idx) => (
-              <div key={idx} style={{ background: '#3f3f46', padding: 18, borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div key={idx} style={{ background: '#353848', padding: 18, borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontWeight: 700 }}>{wf.name}</div>
-                  <div style={{ fontSize: 14, color: '#a1a1aa' }}>Status: {wf.status}</div>
+                  <div style={{ fontSize: 14, color: '#a8adc4' }}>Status: {wf.status}</div>
                 </div>
                 <div>
-                  <button style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Edit</button>
+                  <button style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Edit</button>
                 </div>
               </div>
             ))}
@@ -605,7 +605,7 @@ function PredictiveIntentTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Predictive Intent</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Customer purchase probability scores</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Customer purchase probability scores</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Intent scoring coming soon...
       </div>
@@ -617,7 +617,7 @@ function DynamicPricingTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Dynamic Pricing</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Real-time discount optimization</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Real-time discount optimization</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Dynamic pricing coming soon...
       </div>
@@ -629,7 +629,7 @@ function MultiChannelTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Multi-Channel Orchestration</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Coordinate recovery across email, SMS, and push</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Coordinate recovery across email, SMS, and push</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Multi-channel tools coming soon...
       </div>
@@ -641,7 +641,7 @@ function CustomScriptsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Custom Scripts</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Developer-defined custom logic</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Developer-defined custom logic</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Script editor coming soon...
       </div>
@@ -653,7 +653,7 @@ function AdvancedFiltersTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Advanced Filters</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 18 }}>Complex segmentation rules</p>
+      <p style={{ color: '#a8adc4', marginBottom: 18 }}>Complex segmentation rules</p>
       <div style={{ marginTop: 24, color: '#64748b', textAlign: 'center', padding: 32 }}>
         Advanced filtering coming soon...
       </div>
@@ -691,13 +691,13 @@ function ExportImportTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Export/Import</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Export campaigns, segments, and workflows for backup or migration</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Export campaigns, segments, and workflows for backup or migration</p>
       
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10, marginBottom: 24 }}>
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10, marginBottom: 24 }}>
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Export Data</h3>
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600 }}>Data Type</label>
-          <select value={exportType} onChange={(e) => setExportType(e.target.value)} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 300 }}>
+          <select value={exportType} onChange={(e) => setExportType(e.target.value)} style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 300 }}>
             <option value="campaigns">Campaigns</option>
             <option value="segments">Segments</option>
             <option value="workflows">AI Workflows</option>
@@ -707,7 +707,7 @@ function ExportImportTab() {
         </div>
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600 }}>Format</label>
-          <select value={exportFormat} onChange={(e) => setExportFormat(e.target.value)} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 300 }}>
+          <select value={exportFormat} onChange={(e) => setExportFormat(e.target.value)} style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 300 }}>
             <option value="json">JSON</option>
             <option value="csv">CSV</option>
             <option value="xlsx">Excel</option>
@@ -718,9 +718,9 @@ function ExportImportTab() {
         </button>
       </div>
 
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Import Data</h3>
-        <p style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 16 }}>Upload a JSON or CSV file to import campaigns, segments, or workflows</p>
+        <p style={{ fontSize: 14, color: '#a8adc4', marginBottom: 16 }}>Upload a JSON or CSV file to import campaigns, segments, or workflows</p>
         <input type="file" accept=".json,.csv,.xlsx" style={{ marginBottom: 12 }} />
         <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
           Import
@@ -755,12 +755,12 @@ function APIPlaygroundTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>API Playground</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Test all 184 Abandoned Checkout Winback API endpoints</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Test all 184 Abandoned Checkout Winback API endpoints</p>
       
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600 }}>HTTP Method</label>
-          <select value={method} onChange={(e) => setMethod(e.target.value)} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 200 }}>
+          <select value={method} onChange={(e) => setMethod(e.target.value)} style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 200 }}>
             <option value="GET">GET</option>
             <option value="POST">POST</option>
             <option value="PUT">PUT</option>
@@ -770,13 +770,13 @@ function APIPlaygroundTab() {
         
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600 }}>Endpoint</label>
-          <input type="text" value={endpoint} onChange={(e) => setEndpoint(e.target.value)} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', fontFamily: 'monospace' }} />
+          <input type="text" value={endpoint} onChange={(e) => setEndpoint(e.target.value)} style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', fontFamily: 'monospace' }} />
         </div>
 
         {method !== 'GET' && (
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600 }}>Request Body (JSON)</label>
-            <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={8} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '10px 14px', fontSize: 14, width: '100%', fontFamily: 'monospace' }} />
+            <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={8} style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '10px 14px', fontSize: 14, width: '100%', fontFamily: 'monospace' }} />
           </div>
         )}
 
@@ -787,7 +787,7 @@ function APIPlaygroundTab() {
         {response && (
           <div>
             <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600 }}>Response</label>
-            <pre style={{ background: '#18181b', color: '#22c55e', border: '1px solid #3f3f46', borderRadius: 6, padding: 16, fontSize: 13, fontFamily: 'monospace', overflowX: 'auto', maxHeight: 400, overflowY: 'auto' }}>
+            <pre style={{ background: '#1a1c25', color: '#22c55e', border: '1px solid #353848', borderRadius: 6, padding: 16, fontSize: 13, fontFamily: 'monospace', overflowX: 'auto', maxHeight: 400, overflowY: 'auto' }}>
               {response}
             </pre>
           </div>
@@ -816,17 +816,17 @@ function WebhooksTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Webhooks</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Configure webhooks for real-time events</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Configure webhooks for real-time events</p>
       
       <button onClick={() => setShowForm(!showForm)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 24 }}>
         + New Webhook
       </button>
 
       {showForm && (
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10, marginBottom: 24 }}>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10, marginBottom: 24 }}>
           <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Create Webhook</h3>
-          <input type="text" placeholder="Webhook URL" style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', marginBottom: 12 }} />
-          <select style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', marginBottom: 12 }}>
+          <input type="text" placeholder="Webhook URL" style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', marginBottom: 12 }} />
+          <select style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', marginBottom: 12 }}>
             <option>Select Event</option>
             <option>cart.abandoned</option>
             <option>campaign.sent</option>
@@ -834,13 +834,13 @@ function WebhooksTab() {
           </select>
           <div style={{ display: 'flex', gap: 12 }}>
             <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontWeight: 600, cursor: 'pointer' }}>Create</button>
-            <button onClick={() => setShowForm(false)} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '8px 16px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+            <button onClick={() => setShowForm(false)} style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '8px 16px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
           </div>
         </div>
       )}
 
-      <table style={{ width: '100%', borderCollapse: 'collapse', background: '#3f3f46', borderRadius: 10, overflow: 'hidden' }}>
-        <thead style={{ background: '#18181b' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', background: '#353848', borderRadius: 10, overflow: 'hidden' }}>
+        <thead style={{ background: '#1a1c25' }}>
           <tr>
             <th style={{ padding: 12, textAlign: 'left' }}>URL</th>
             <th style={{ padding: 12, textAlign: 'left' }}>Event</th>
@@ -852,12 +852,12 @@ function WebhooksTab() {
           {webhooks.length === 0 ? (
             <tr><td colSpan={4} style={{ padding: 24, textAlign: 'center', color: '#64748b' }}>No webhooks configured</td></tr>
           ) : webhooks.map((wh, idx) => (
-            <tr key={idx} style={{ borderTop: '1px solid #18181b' }}>
+            <tr key={idx} style={{ borderTop: '1px solid #1a1c25' }}>
               <td style={{ padding: 12, fontFamily: 'monospace', fontSize: 13 }}>{wh.url}</td>
               <td style={{ padding: 12 }}>{wh.event}</td>
               <td style={{ padding: 12 }}><span style={{ background: wh.active ? '#22c55e' : '#64748b', color: '#fff', padding: '4px 12px', borderRadius: 6, fontSize: 13 }}>{wh.active ? 'Active' : 'Inactive'}</span></td>
               <td style={{ padding: 12 }}>
-                <button style={{ background: '#18181b', color: '#ef4444', border: '1px solid #3f3f46', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                <button style={{ background: '#1a1c25', color: '#ef4444', border: '1px solid #353848', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Delete</button>
               </td>
             </tr>
           ))}
@@ -878,11 +878,11 @@ function IntegrationsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Integrations</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Connect third-party platforms</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Connect third-party platforms</p>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 18 }}>
         {integrations.map((int, idx) => (
-          <div key={idx} style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+          <div key={idx} style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>{int.icon}</div>
             <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{int.name}</h3>
             <div style={{ marginBottom: 16 }}>
@@ -904,11 +904,11 @@ function MigrationToolsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Migration Tools</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Migrate data from other platforms</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Migrate data from other platforms</p>
       
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Platform Migration</h3>
-        <select style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 300, marginBottom: 16 }}>
+        <select style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 300, marginBottom: 16 }}>
           <option>Select Source Platform</option>
           <option>Mailchimp</option>
           <option>Klaviyo</option>
@@ -947,28 +947,28 @@ function RealTimeDashboardTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Real-Time Dashboard</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Live performance metrics updated every 5 seconds</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Live performance metrics updated every 5 seconds</p>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 18, marginBottom: 24 }}>
-        <div style={{ background: '#3f3f46', padding: 20, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 6 }}>Carts Abandoned (24h)</div>
-          <div style={{ fontSize: 32, fontWeight: 800, color: '#fafafa' }}>{stats.cartsAbandoned}</div>
+        <div style={{ background: '#353848', padding: 20, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 6 }}>Carts Abandoned (24h)</div>
+          <div style={{ fontSize: 32, fontWeight: 800, color: '#f9fafb' }}>{stats.cartsAbandoned}</div>
         </div>
-        <div style={{ background: '#3f3f46', padding: 20, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 6 }}>Recoveries In Progress</div>
+        <div style={{ background: '#353848', padding: 20, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 6 }}>Recoveries In Progress</div>
           <div style={{ fontSize: 32, fontWeight: 800, color: '#6366f1' }}>{stats.recoveriesInProgress}</div>
         </div>
-        <div style={{ background: '#3f3f46', padding: 20, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 6 }}>Revenue Recovered</div>
+        <div style={{ background: '#353848', padding: 20, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 6 }}>Revenue Recovered</div>
           <div style={{ fontSize: 32, fontWeight: 800, color: '#22c55e' }}>${stats.revenue}</div>
         </div>
-        <div style={{ background: '#3f3f46', padding: 20, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 6 }}>Conversion Rate</div>
+        <div style={{ background: '#353848', padding: 20, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 6 }}>Conversion Rate</div>
           <div style={{ fontSize: 32, fontWeight: 800, color: '#f59e0b' }}>{stats.conversionRate}%</div>
         </div>
       </div>
 
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Live Activity Feed</h3>
         <div style={{ fontSize: 14, color: '#64748b', textAlign: 'center', padding: 32 }}>Real-time cart events will appear here...</div>
       </div>
@@ -980,29 +980,29 @@ function PerformanceMetricsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Performance Metrics</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Key performance indicators</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Key performance indicators</p>
       
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ borderBottom: '2px solid #18181b' }}>
+            <tr style={{ borderBottom: '2px solid #1a1c25' }}>
               <th style={{ padding: 12, textAlign: 'left' }}>Metric</th>
               <th style={{ padding: 12, textAlign: 'right' }}>Value</th>
               <th style={{ padding: 12, textAlign: 'right' }}>Trend</th>
             </tr>
           </thead>
           <tbody>
-            <tr style={{ borderBottom: '1px solid #18181b' }}>
+            <tr style={{ borderBottom: '1px solid #1a1c25' }}>
               <td style={{ padding: 12 }}>Average Response Time</td>
               <td style={{ padding: 12, textAlign: 'right', fontWeight: 700 }}>142ms</td>
               <td style={{ padding: 12, textAlign: 'right', color: '#22c55e' }}>↓ 5%</td>
             </tr>
-            <tr style={{ borderBottom: '1px solid #18181b' }}>
+            <tr style={{ borderBottom: '1px solid #1a1c25' }}>
               <td style={{ padding: 12 }}>API Call Success Rate</td>
               <td style={{ padding: 12, textAlign: 'right', fontWeight: 700 }}>99.7%</td>
               <td style={{ padding: 12, textAlign: 'right', color: '#22c55e' }}>↑ 0.2%</td>
             </tr>
-            <tr style={{ borderBottom: '1px solid #18181b' }}>
+            <tr style={{ borderBottom: '1px solid #1a1c25' }}>
               <td style={{ padding: 12 }}>Recovery Email Deliverability</td>
               <td style={{ padding: 12, textAlign: 'right', fontWeight: 700 }}>98.3%</td>
               <td style={{ padding: 12, textAlign: 'right', color: '#22c55e' }}>↑ 1.1%</td>
@@ -1037,18 +1037,18 @@ function ActivityLogTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Activity Log</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Complete audit trail of all system events</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Complete audit trail of all system events</p>
       
-      <div style={{ background: '#3f3f46', borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{ background: '#353848', borderRadius: 10, overflow: 'hidden' }}>
         {activities.length === 0 ? (
           <div style={{ padding: 32, textAlign: 'center', color: '#64748b' }}>No activities yet</div>
         ) : (
           activities.map((activity, idx) => (
-            <div key={idx} style={{ padding: 16, borderBottom: idx < activities.length - 1 ? '1px solid #18181b' : 'none' }}>
+            <div key={idx} style={{ padding: 16, borderBottom: idx < activities.length - 1 ? '1px solid #1a1c25' : 'none' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                 <div>
                   <div style={{ fontWeight: 600, marginBottom: 4 }}>{activity.action}</div>
-                  <div style={{ fontSize: 14, color: '#a1a1aa' }}>{activity.details}</div>
+                  <div style={{ fontSize: 14, color: '#a8adc4' }}>{activity.details}</div>
                 </div>
                 <div style={{ fontSize: 13, color: '#64748b' }}>{activity.timestamp}</div>
               </div>
@@ -1078,7 +1078,7 @@ function AlertsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Alerts</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Active system alerts and notifications</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Active system alerts and notifications</p>
       
       <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 18 }}>
         + Create Alert Rule
@@ -1086,15 +1086,15 @@ function AlertsTab() {
 
       <div style={{ display: 'grid', gap: 12 }}>
         {alerts.length === 0 ? (
-          <div style={{ background: '#3f3f46', padding: 32, borderRadius: 10, textAlign: 'center', color: '#64748b' }}>No active alerts</div>
+          <div style={{ background: '#353848', padding: 32, borderRadius: 10, textAlign: 'center', color: '#64748b' }}>No active alerts</div>
         ) : alerts.map((alert, idx) => (
-          <div key={idx} style={{ background: '#3f3f46', padding: 18, borderRadius: 10, borderLeft: `4px solid ${alert.severity === 'critical' ? '#ef4444' : alert.severity === 'warning' ? '#f59e0b' : '#6366f1'}` }}>
+          <div key={idx} style={{ background: '#353848', padding: 18, borderRadius: 10, borderLeft: `4px solid ${alert.severity === 'critical' ? '#ef4444' : alert.severity === 'warning' ? '#f59e0b' : '#6366f1'}` }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div style={{ fontWeight: 700, marginBottom: 4 }}>{alert.title}</div>
-                <div style={{ fontSize: 14, color: '#a1a1aa' }}>{alert.message}</div>
+                <div style={{ fontSize: 14, color: '#a8adc4' }}>{alert.message}</div>
               </div>
-              <button style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Dismiss</button>
+              <button style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Dismiss</button>
             </div>
           </div>
         ))}
@@ -1107,9 +1107,9 @@ function ErrorTrackingTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Error Tracking</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Monitor and debug system errors</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Monitor and debug system errors</p>
       
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
         <div style={{ fontSize: 14, color: '#64748b', textAlign: 'center', padding: 32 }}>No errors detected in the last 24 hours </div>
       </div>
     </div>
@@ -1134,19 +1134,19 @@ function HealthStatusTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Health Status</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Overall system health and availability</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Overall system health and availability</p>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 18 }}>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 8 }}>System Status</div>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 8 }}>System Status</div>
           <div style={{ fontSize: 24, fontWeight: 800, color: '#22c55e' }}> {health.status.toUpperCase()}</div>
         </div>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 8 }}>Uptime (30 days)</div>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 8 }}>Uptime (30 days)</div>
           <div style={{ fontSize: 24, fontWeight: 800 }}>{health.uptime}</div>
         </div>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 8 }}>Last Health Check</div>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 8 }}>Last Health Check</div>
           <div style={{ fontSize: 24, fontWeight: 800 }}>{health.lastCheck}</div>
         </div>
       </div>
@@ -1176,16 +1176,16 @@ function GeneralSettingsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>General Settings</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Basic configuration and preferences</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Basic configuration and preferences</p>
       
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
         <div style={{ marginBottom: 18 }}>
           <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600 }}>Shop Name</label>
-          <input type="text" value={settings.shopName} onChange={(e) => setSettings({...settings, shopName: e.target.value})} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 400 }} />
+          <input type="text" value={settings.shopName} onChange={(e) => setSettings({...settings, shopName: e.target.value})} style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 400 }} />
         </div>
         <div style={{ marginBottom: 18 }}>
           <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600 }}>Timezone</label>
-          <select value={settings.timezone} onChange={(e) => setSettings({...settings, timezone: e.target.value})} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 400 }}>
+          <select value={settings.timezone} onChange={(e) => setSettings({...settings, timezone: e.target.value})} style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 400 }}>
             <option value="UTC">UTC</option>
             <option value="America/New_York">Eastern Time</option>
             <option value="America/Los_Angeles">Pacific Time</option>
@@ -1193,7 +1193,7 @@ function GeneralSettingsTab() {
         </div>
         <div style={{ marginBottom: 18 }}>
           <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600 }}>Currency</label>
-          <select value={settings.currency} onChange={(e) => setSettings({...settings, currency: e.target.value})} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 400 }}>
+          <select value={settings.currency} onChange={(e) => setSettings({...settings, currency: e.target.value})} style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 400 }}>
             <option value="USD">USD ($)</option>
             <option value="EUR">EUR (€)</option>
             <option value="GBP">GBP (£)</option>
@@ -1223,20 +1223,20 @@ function BrandsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Brand Management</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>White-label branding and customization</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>White-label branding and customization</p>
       
       <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 24 }}>+ Add Brand</button>
 
       <div style={{ display: 'grid', gap: 18 }}>
         {brands.length === 0 ? (
-          <div style={{ background: '#3f3f46', padding: 32, borderRadius: 10, textAlign: 'center', color: '#64748b' }}>No brands configured</div>
+          <div style={{ background: '#353848', padding: 32, borderRadius: 10, textAlign: 'center', color: '#64748b' }}>No brands configured</div>
         ) : brands.map((brand, idx) => (
-          <div key={idx} style={{ background: '#3f3f46', padding: 20, borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div key={idx} style={{ background: '#353848', padding: 20, borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontWeight: 700, marginBottom: 4 }}>{brand.name}</div>
-              <div style={{ fontSize: 14, color: '#a1a1aa' }}>Primary: {brand.primaryColor} • Logo: {brand.logoUrl || 'Not set'}</div>
+              <div style={{ fontSize: 14, color: '#a8adc4' }}>Primary: {brand.primaryColor} • Logo: {brand.logoUrl || 'Not set'}</div>
             </div>
-            <button style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Edit</button>
+            <button style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Edit</button>
           </div>
         ))}
       </div>
@@ -1262,12 +1262,12 @@ function TeamsPermissionsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Teams & Permissions</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Role-based access control (RBAC)</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Role-based access control (RBAC)</p>
       
       <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 24 }}>+ New Team</button>
 
-      <table style={{ width: '100%', borderCollapse: 'collapse', background: '#3f3f46', borderRadius: 10, overflow: 'hidden' }}>
-        <thead style={{ background: '#18181b' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', background: '#353848', borderRadius: 10, overflow: 'hidden' }}>
+        <thead style={{ background: '#1a1c25' }}>
           <tr>
             <th style={{ padding: 12, textAlign: 'left' }}>Team Name</th>
             <th style={{ padding: 12, textAlign: 'left' }}>Members</th>
@@ -1279,12 +1279,12 @@ function TeamsPermissionsTab() {
           {teams.length === 0 ? (
             <tr><td colSpan={4} style={{ padding: 24, textAlign: 'center', color: '#64748b' }}>No teams created</td></tr>
           ) : teams.map((team, idx) => (
-            <tr key={idx} style={{ borderTop: '1px solid #18181b' }}>
+            <tr key={idx} style={{ borderTop: '1px solid #1a1c25' }}>
               <td style={{ padding: 12 }}>{team.name}</td>
               <td style={{ padding: 12 }}>{team.memberCount || 0}</td>
               <td style={{ padding: 12 }}>{team.role || 'Viewer'}</td>
               <td style={{ padding: 12 }}>
-                <button style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Manage</button>
+                <button style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Manage</button>
               </td>
             </tr>
           ))}
@@ -1312,15 +1312,15 @@ function ComplianceTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Compliance</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>GDPR consent management and privacy settings</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>GDPR consent management and privacy settings</p>
       
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10, marginBottom: 24 }}>
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10, marginBottom: 24 }}>
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>GDPR Consent Records</h3>
         <div style={{ fontSize: 14, color: '#64748b', marginBottom: 16 }}>Total Consent Records: {consent.length}</div>
         <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Export Consent Data</button>
       </div>
 
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Privacy Settings</h3>
         <label style={{ display: 'flex', alignItems: 'center', marginBottom: 12, cursor: 'pointer' }}>
           <input type="checkbox" style={{ marginRight: 12 }} />
@@ -1358,20 +1358,20 @@ function LocalizationTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Localization</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Multi-language support and regional settings</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Multi-language support and regional settings</p>
       
       <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 24 }}>+ Add Language</button>
 
       <div style={{ display: 'grid', gap: 12 }}>
         {locales.length === 0 ? (
-          <div style={{ background: '#3f3f46', padding: 32, borderRadius: 10, textAlign: 'center', color: '#64748b' }}>No locales configured. Add your first language!</div>
+          <div style={{ background: '#353848', padding: 32, borderRadius: 10, textAlign: 'center', color: '#64748b' }}>No locales configured. Add your first language!</div>
         ) : locales.map((locale, idx) => (
-          <div key={idx} style={{ background: '#3f3f46', padding: 18, borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div key={idx} style={{ background: '#353848', padding: 18, borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontWeight: 700 }}>{locale.name}</div>
-              <div style={{ fontSize: 14, color: '#a1a1aa' }}>Code: {locale.code} • {locale.enabled ? 'Enabled' : 'Disabled'}</div>
+              <div style={{ fontSize: 14, color: '#a8adc4' }}>Code: {locale.code} • {locale.enabled ? 'Enabled' : 'Disabled'}</div>
             </div>
-            <button style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Edit</button>
+            <button style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Edit</button>
           </div>
         ))}
       </div>
@@ -1397,12 +1397,12 @@ function APIKeysTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>API Keys</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Manage API credentials and access tokens</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Manage API credentials and access tokens</p>
       
       <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 24 }}>+ Generate New Key</button>
 
-      <table style={{ width: '100%', borderCollapse: 'collapse', background: '#3f3f46', borderRadius: 10, overflow: 'hidden' }}>
-        <thead style={{ background: '#18181b' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', background: '#353848', borderRadius: 10, overflow: 'hidden' }}>
+        <thead style={{ background: '#1a1c25' }}>
           <tr>
             <th style={{ padding: 12, textAlign: 'left' }}>Key Name</th>
             <th style={{ padding: 12, textAlign: 'left' }}>API Key</th>
@@ -1414,12 +1414,12 @@ function APIKeysTab() {
           {apiKeys.length === 0 ? (
             <tr><td colSpan={4} style={{ padding: 24, textAlign: 'center', color: '#64748b' }}>No API keys generated</td></tr>
           ) : apiKeys.map((key, idx) => (
-            <tr key={idx} style={{ borderTop: '1px solid #18181b' }}>
+            <tr key={idx} style={{ borderTop: '1px solid #1a1c25' }}>
               <td style={{ padding: 12 }}>{key.name}</td>
               <td style={{ padding: 12, fontFamily: 'monospace', fontSize: 13 }}>{key.key.substring(0, 20)}...</td>
               <td style={{ padding: 12 }}>{key.createdAt}</td>
               <td style={{ padding: 12 }}>
-                <button style={{ background: '#18181b', color: '#ef4444', border: '1px solid #3f3f46', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Revoke</button>
+                <button style={{ background: '#1a1c25', color: '#ef4444', border: '1px solid #353848', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Revoke</button>
               </td>
             </tr>
           ))}
@@ -1451,24 +1451,24 @@ function RevenueForecastingTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Revenue Forecasting</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>AI-powered revenue predictions and trend analysis</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>AI-powered revenue predictions and trend analysis</p>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 18, marginBottom: 24 }}>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 6 }}>Current Month (Projected)</div>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 6 }}>Current Month (Projected)</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#22c55e' }}>${forecast.currentMonth}</div>
         </div>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 6 }}>Next Month Forecast</div>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 6 }}>Next Month Forecast</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#6366f1' }}>${forecast.nextMonth}</div>
         </div>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 6 }}>Next Quarter Forecast</div>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 6 }}>Next Quarter Forecast</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#f59e0b' }}>${forecast.nextQuarter}</div>
         </div>
       </div>
 
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Revenue Trend Chart</h3>
         <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
           Chart visualization coming soon...
@@ -1496,19 +1496,19 @@ function CLVAnalyticsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Customer Lifetime Value (CLV) Analytics</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Predictive customer value modeling and segmentation</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Predictive customer value modeling and segmentation</p>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 18 }}>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 6 }}>Average CLV</div>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 6 }}>Average CLV</div>
           <div style={{ fontSize: 28, fontWeight: 800 }}>${clvStats.averageCLV}</div>
         </div>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 6 }}>Top Segment CLV</div>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 6 }}>Top Segment CLV</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#22c55e' }}>${clvStats.topSegmentCLV}</div>
         </div>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 6 }}>Low Segment CLV</div>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 6 }}>Low Segment CLV</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#ef4444' }}>${clvStats.lowSegmentCLV}</div>
         </div>
       </div>
@@ -1534,23 +1534,23 @@ function CollaborationTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Collaboration</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Team comments, approvals, and shared workflows</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Team comments, approvals, and shared workflows</p>
       
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10, marginBottom: 24 }}>
-        <textarea placeholder="Add a comment..." rows={3} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', marginBottom: 12 }} />
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10, marginBottom: 24 }}>
+        <textarea placeholder="Add a comment..." rows={3} style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', marginBottom: 12 }} />
         <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Post Comment</button>
       </div>
 
       <div style={{ display: 'grid', gap: 12 }}>
         {comments.length === 0 ? (
-          <div style={{ background: '#3f3f46', padding: 32, borderRadius: 10, textAlign: 'center', color: '#64748b' }}>No comments yet</div>
+          <div style={{ background: '#353848', padding: 32, borderRadius: 10, textAlign: 'center', color: '#64748b' }}>No comments yet</div>
         ) : comments.map((comment, idx) => (
-          <div key={idx} style={{ background: '#3f3f46', padding: 18, borderRadius: 10 }}>
+          <div key={idx} style={{ background: '#353848', padding: 18, borderRadius: 10 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
               <div style={{ fontWeight: 700 }}>{comment.author}</div>
               <div style={{ fontSize: 13, color: '#64748b' }}>{comment.timestamp}</div>
             </div>
-            <div style={{ fontSize: 15, color: '#fafafa' }}>{comment.text}</div>
+            <div style={{ fontSize: 15, color: '#f9fafb' }}>{comment.text}</div>
           </div>
         ))}
       </div>
@@ -1576,33 +1576,33 @@ function SecurityCenterTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Security Center</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Security dashboard, encryption, and audit logs</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Security dashboard, encryption, and audit logs</p>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 18, marginBottom: 24 }}>
-        <div style={{ background: '#3f3f46', padding: 20, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 6 }}>Encryption Status</div>
+        <div style={{ background: '#353848', padding: 20, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 6 }}>Encryption Status</div>
           <div style={{ fontSize: 24, fontWeight: 800, color: '#22c55e' }}>Enabled</div>
         </div>
-        <div style={{ background: '#3f3f46', padding: 20, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 6 }}>API Key Security</div>
+        <div style={{ background: '#353848', padding: 20, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 6 }}>API Key Security</div>
           <div style={{ fontSize: 24, fontWeight: 800, color: '#22c55e' }}>Secure</div>
         </div>
-        <div style={{ background: '#3f3f46', padding: 20, borderRadius: 10 }}>
-          <div style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 6 }}>RBAC Status</div>
+        <div style={{ background: '#353848', padding: 20, borderRadius: 10 }}>
+          <div style={{ fontSize: 14, color: '#a8adc4', marginBottom: 6 }}>RBAC Status</div>
           <div style={{ fontSize: 24, fontWeight: 800, color: '#22c55e' }}>Active</div>
         </div>
       </div>
 
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Recent Audit Logs</h3>
         {auditLogs.length === 0 ? (
           <div style={{ color: '#64748b', textAlign: 'center', padding: 32 }}>No audit logs yet</div>
         ) : (
           <div style={{ fontSize: 14 }}>
             {auditLogs.slice(0, 5).map((log, idx) => (
-              <div key={idx} style={{ padding: '10px 0', borderBottom: idx < 4 ? '1px solid #18181b' : 'none' }}>
+              <div key={idx} style={{ padding: '10px 0', borderBottom: idx < 4 ? '1px solid #1a1c25' : 'none' }}>
                 <div style={{ fontWeight: 600 }}>{log.event}</div>
-                <div style={{ color: '#a1a1aa', fontSize: 13 }}>{log.user} • {log.timestamp}</div>
+                <div style={{ color: '#a8adc4', fontSize: 13 }}>{log.user} • {log.timestamp}</div>
               </div>
             ))}
           </div>
@@ -1630,30 +1630,30 @@ function DeveloperPlatformTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Developer Platform</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Custom scripts, webhooks, event streaming, and API tools</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Custom scripts, webhooks, event streaming, and API tools</p>
       
       <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 24 }}>+ New Custom Script</button>
 
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10, marginBottom: 24 }}>
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10, marginBottom: 24 }}>
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Active Custom Scripts</h3>
         {scripts.length === 0 ? (
           <div style={{ color: '#64748b', textAlign: 'center', padding: 32 }}>No custom scripts. Create one to extend functionality!</div>
         ) : (
           <div style={{ display: 'grid', gap: 12 }}>
             {scripts.map((script, idx) => (
-              <div key={idx} style={{ background: '#18181b', padding: 18, borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div key={idx} style={{ background: '#1a1c25', padding: 18, borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontWeight: 700 }}>{script.name}</div>
-                  <div style={{ fontSize: 14, color: '#a1a1aa' }}>Trigger: {script.trigger}</div>
+                  <div style={{ fontSize: 14, color: '#a8adc4' }}>Trigger: {script.trigger}</div>
                 </div>
-                <button style={{ background: '#3f3f46', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Edit</button>
+                <button style={{ background: '#353848', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Edit</button>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+      <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Quick Links</h3>
         <div style={{ display: 'grid', gap: 12 }}>
           <a href="#" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 15 }}>→ API Documentation (184 endpoints)</a>
@@ -1670,27 +1670,27 @@ function EnterpriseReportingTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 18 }}>Enterprise Reporting</h2>
-      <p style={{ color: '#a1a1aa', marginBottom: 24 }}>Advanced analytics, custom reports, and executive dashboards</p>
+      <p style={{ color: '#a8adc4', marginBottom: 24 }}>Advanced analytics, custom reports, and executive dashboards</p>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 18 }}>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
           <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>Executive Summary</h3>
-          <p style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 16 }}>High-level KPIs and revenue insights</p>
+          <p style={{ fontSize: 14, color: '#a8adc4', marginBottom: 16 }}>High-level KPIs and revenue insights</p>
           <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontWeight: 600, cursor: 'pointer' }}>Generate Report</button>
         </div>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
           <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>Campaign Performance</h3>
-          <p style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 16 }}>Detailed campaign analytics</p>
+          <p style={{ fontSize: 14, color: '#a8adc4', marginBottom: 16 }}>Detailed campaign analytics</p>
           <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontWeight: 600, cursor: 'pointer' }}>Generate Report</button>
         </div>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
           <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>Revenue Attribution</h3>
-          <p style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 16 }}>Multi-touch attribution modeling</p>
+          <p style={{ fontSize: 14, color: '#a8adc4', marginBottom: 16 }}>Multi-touch attribution modeling</p>
           <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontWeight: 600, cursor: 'pointer' }}>Generate Report</button>
         </div>
-        <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
+        <div style={{ background: '#353848', padding: 24, borderRadius: 10 }}>
           <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>Customer Insights</h3>
-          <p style={{ fontSize: 14, color: '#a1a1aa', marginBottom: 16 }}>Behavioral trends and segmentation</p>
+          <p style={{ fontSize: 14, color: '#a8adc4', marginBottom: 16 }}>Behavioral trends and segmentation</p>
           <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontWeight: 600, cursor: 'pointer' }}>Generate Report</button>
         </div>
       </div>
@@ -1722,7 +1722,7 @@ function OnboardingBanner() {
           3. Analyze performance and iterate.<br />
         </span>
       </div>
-      <button onClick={handleDismiss} style={{ background: '#18181b', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 16px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginLeft: 18 }}>Dismiss</button>
+      <button onClick={handleDismiss} style={{ background: '#1a1c25', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 16px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginLeft: 18 }}>Dismiss</button>
     </div>
   );
 }
@@ -1749,9 +1749,9 @@ function CustomerLifecycleBar({ segments, onFilter, selectedStage }) {
           key={stage.key}
           onClick={() => onFilter(stage.key)}
           style={{
-            background: selectedStage === stage.key ? '#3f3f46' : '#18181b',
-            color: '#fafafa',
-            border: selectedStage === stage.key ? '2px solid #6366f1' : '1px solid #3f3f46',
+            background: selectedStage === stage.key ? '#353848' : '#1a1c25',
+            color: '#f9fafb',
+            border: selectedStage === stage.key ? '2px solid #6366f1' : '1px solid #353848',
             borderRadius: 8,
             padding: '10px 18px',
             fontWeight: 600,
@@ -1767,7 +1767,7 @@ function CustomerLifecycleBar({ segments, onFilter, selectedStage }) {
           title={stage.desc + ' (Click to filter segments by this stage)'}
         >
           <span title={stage.desc}>{stage.label}</span>
-          <span style={{ fontSize: 13, fontWeight: 400, color: '#a1a1aa' }} title="Number of segments in this stage">{counts[stage.key] || 0} segments</span>
+          <span style={{ fontSize: 13, fontWeight: 400, color: '#a8adc4' }} title="Number of segments in this stage">{counts[stage.key] || 0} segments</span>
         </button>
       ))}
     </div>
@@ -1873,14 +1873,14 @@ function NotificationsSection() {
   return (
     <section aria-label="Notifications">
       <WinbackFeatureCard title="Notifications" description="Manage notification preferences and delivery channels." icon="" />
-      <div style={{ background: '#27272a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
+      <div style={{ background: '#222535', color: '#f9fafb', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <div style={{ fontWeight: 700, fontSize: 20 }}>Your Notifications</div>
           <button onClick={() => setShowNotificationModal(true)} style={{ background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ New Notification</button>
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--background-secondary)', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
           <thead>
-            <tr style={{ background: '#3f3f46', color: '#aaa' }}>
+            <tr style={{ background: '#353848', color: '#aaa' }}>
               <th><input type="checkbox" checked={notificationsList.length > 0 && notificationsList.every(n => n.selected)} onChange={e => selectAllNotifications(e.target.checked)} aria-label="Select all notifications" /></th>
               <th>Name</th>
               <th>Channel</th>
@@ -1921,7 +1921,7 @@ function NotificationsSection() {
         {/* Notification Modal (Add/Edit) */}
         {showNotificationModal && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-            <div style={{ background: 'var(--background-secondary, #27272a)', color: 'var(--text-primary, #fafafa)', borderRadius: 14, padding: 32, minWidth: 400, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+            <div style={{ background: 'var(--background-secondary, #222535)', color: 'var(--text-primary, #f9fafb)', borderRadius: 14, padding: 32, minWidth: 400, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 8px 40px #0008', position: 'relative' }}>
               <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingNotification ? 'Edit Notification' : 'New Notification'}</h3>
               <form onSubmit={e => { e.preventDefault(); saveNotification(editingNotification ? editingNotification : { name: '', channel: 'email', message: '', status: 'enabled', created: new Date().toISOString().slice(0, 10) }); }}>
                 <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-notification-name">Name</label>
@@ -1948,9 +1948,9 @@ function NotificationsSection() {
                   <option value="disabled">Disabled</option>
                 </select>
                 {/* Delivery Preview & Test Send */}
-                <div style={{ background: 'var(--background-tertiary, #3f3f46)', borderRadius: 8, padding: 12, marginBottom: 16, color: 'var(--text-primary, #fafafa)' }}>
+                <div style={{ background: 'var(--background-tertiary, #353848)', borderRadius: 8, padding: 12, marginBottom: 16, color: 'var(--text-primary, #f9fafb)' }}>
                   <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Preview <span style={{ color: '#64748b', fontWeight: 400, fontSize: 13 }} title="See how your message will appear.">(?)</span></div>
-                  <div style={{ fontFamily: 'monospace', fontSize: 15, whiteSpace: 'pre-wrap', background: 'var(--background-secondary, #27272a)', borderRadius: 6, padding: 10, minHeight: 40, color: 'var(--text-primary, #fafafa)', border: '1px solid #333' }}>{editingNotification ? editingNotification.message : ''}</div>
+                  <div style={{ fontFamily: 'monospace', fontSize: 15, whiteSpace: 'pre-wrap', background: 'var(--background-secondary, #222535)', borderRadius: 6, padding: 10, minHeight: 40, color: 'var(--text-primary, #f9fafb)', border: '1px solid #333' }}>{editingNotification ? editingNotification.message : ''}</div>
                   <button type="button" onClick={() => alert('Test send feature coming soon!')} style={{ marginTop: 10, background: 'var(--button-primary-bg)', color: 'var(--button-primary-text)', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }} title="Send a test notification to yourself">Send Test</button>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
@@ -1977,17 +1977,17 @@ function SegmentStatistics({ segments }) {
     : '0.00';
   return (
     <div style={{ display: 'flex', gap: 24, margin: '18px 0' }}>
-      <div style={{ background: '#3f3f46', border: '1px solid #3f3f46', borderRadius: 10, padding: 18, minWidth: 140 }}>
-        <div style={{ fontSize: 13, color: '#a1a1aa' }}>Total Segments</div>
-        <div style={{ fontSize: 22, fontWeight: 600, color: '#fafafa' }}>{totalSegments}</div>
+      <div style={{ background: '#353848', border: '1px solid #353848', borderRadius: 10, padding: 18, minWidth: 140 }}>
+        <div style={{ fontSize: 13, color: '#a8adc4' }}>Total Segments</div>
+        <div style={{ fontSize: 22, fontWeight: 600, color: '#f9fafb' }}>{totalSegments}</div>
       </div>
-      <div style={{ background: '#3f3f46', border: '1px solid #3f3f46', borderRadius: 10, padding: 18, minWidth: 140 }}>
-        <div style={{ fontSize: 13, color: '#a1a1aa' }}>Total Customers</div>
-        <div style={{ fontSize: 22, fontWeight: 600, color: '#fafafa' }}>{totalCustomers}</div>
+      <div style={{ background: '#353848', border: '1px solid #353848', borderRadius: 10, padding: 18, minWidth: 140 }}>
+        <div style={{ fontSize: 13, color: '#a8adc4' }}>Total Customers</div>
+        <div style={{ fontSize: 22, fontWeight: 600, color: '#f9fafb' }}>{totalCustomers}</div>
       </div>
-      <div style={{ background: '#3f3f46', border: '1px solid #3f3f46', borderRadius: 10, padding: 18, minWidth: 140 }}>
-        <div style={{ fontSize: 13, color: '#a1a1aa' }}>Avg. Winback Rate</div>
-        <div style={{ fontSize: 22, fontWeight: 600, color: '#fafafa' }}>{avgWinbackRate}%</div>
+      <div style={{ background: '#353848', border: '1px solid #353848', borderRadius: 10, padding: 18, minWidth: 140 }}>
+        <div style={{ fontSize: 13, color: '#a8adc4' }}>Avg. Winback Rate</div>
+        <div style={{ fontSize: 22, fontWeight: 600, color: '#f9fafb' }}>{avgWinbackRate}%</div>
       </div>
     </div>
   );
@@ -2087,7 +2087,7 @@ function ComplianceSection() {
       {complianceError && <div style={{ color: '#ef4444', fontWeight: 600, marginBottom: 12 }}>{complianceError}</div>}
       {complianceSuccess && <div style={{ color: '#22c55e', fontWeight: 600, marginBottom: 12 }}>{complianceSuccess}</div>}
       {showAudit && (
-        <div style={{ background: '#18181b', borderRadius: 10, padding: 18, marginTop: 18, maxHeight: 320, overflowY: 'auto' }}>
+        <div style={{ background: '#1a1c25', borderRadius: 10, padding: 18, marginTop: 18, maxHeight: 320, overflowY: 'auto' }}>
           <h4 style={{ fontWeight: 700, fontSize: 18, marginBottom: 10 }}>Audit Log</h4>
           <table style={{ width: '100%', color: '#fff', fontSize: 15 }}>
             <thead>
@@ -2104,7 +2104,7 @@ function ComplianceSection() {
               {auditLog.length === 0 ? (
                 <tr><td colSpan={6} style={{ color: '#64748b', padding: 18 }}>No audit log entries.</td></tr>
               ) : auditLog.map((log, i) => (
-                <tr key={i} style={{ borderTop: '1px solid #3f3f46' }}>
+                <tr key={i} style={{ borderTop: '1px solid #353848' }}>
                   <td>{log.timestamp || '-'}</td>
                   <td>{log.user || '-'}</td>
                   <td>{log.action || '-'}</td>
@@ -2130,14 +2130,14 @@ function AbandonedCheckoutWinback() {
           return (
             <section aria-label="A/B Testing">
               <WinbackFeatureCard title="A/B Testing" description="Run experiments to optimize winback strategies." icon="" />
-              <div style={{ background: '#27272a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
+              <div style={{ background: '#222535', color: '#f9fafb', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <div style={{ fontWeight: 700, fontSize: 20 }}>Your Experiments</div>
                   <button onClick={() => setShowExperimentModal(true)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>+ New Experiment</button>
                 </div>
-                <table style={{ width: '100%', borderCollapse: 'collapse', background: '#3f3f46', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', background: '#353848', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
                   <thead>
-                    <tr style={{ background: '#18181b' }}>
+                    <tr style={{ background: '#1a1c25' }}>
                       <th><input type="checkbox" checked={experimentsList.length > 0 && experimentsList.every(e => e.selected)} onChange={e => selectAllExperiments(e.target.checked)} aria-label="Select all experiments" /></th>
                       <th>Name</th>
                       <th>Segment</th>
@@ -2153,7 +2153,7 @@ function AbandonedCheckoutWinback() {
                     {experimentsList.length === 0 ? (
                       <tr><td colSpan={9} style={{ textAlign: 'center', color: '#64748b', padding: 24 }}>No experiments yet.</td></tr>
                     ) : experimentsList.map(exp => (
-                      <tr key={exp.id} style={{ background: exp.selected ? '#18181b' : undefined }}>
+                      <tr key={exp.id} style={{ background: exp.selected ? '#1a1c25' : undefined }}>
                         <td><input type="checkbox" checked={!!exp.selected} onChange={() => toggleSelectExperiment(exp.id)} aria-label={`Select experiment ${exp.name}`} /></td>
                         <td>{exp.name}</td>
                         <td>{exp.segment}</td>
@@ -2163,8 +2163,8 @@ function AbandonedCheckoutWinback() {
                         <td>{exp.created}</td>
                         <td>{exp.results ? `A: ${exp.results.winbackRateA}% | B: ${exp.results.winbackRateB}%` : '-'}</td>
                         <td>
-                          <button onClick={() => openExperimentModal(exp)} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '4px 12px', fontWeight: 500, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
-                          <button onClick={() => setExperimentsList(list => list.filter(x => x.id !== exp.id))} style={{ background: '#3f3f46', color: '#ef4444', border: '1px solid #3f3f46', borderRadius: 6, padding: '4px 12px', fontWeight: 500, fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                          <button onClick={() => openExperimentModal(exp)} style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '4px 12px', fontWeight: 500, fontSize: 14, cursor: 'pointer', marginRight: 6 }}>Edit</button>
+                          <button onClick={() => setExperimentsList(list => list.filter(x => x.id !== exp.id))} style={{ background: '#353848', color: '#ef4444', border: '1px solid #353848', borderRadius: 6, padding: '4px 12px', fontWeight: 500, fontSize: 14, cursor: 'pointer' }}>Delete</button>
                         </td>
                       </tr>
                     ))}
@@ -2177,7 +2177,7 @@ function AbandonedCheckoutWinback() {
                 {/* Experiment Modal (Add/Edit) */}
                 {showExperimentModal && (
                   <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                    <div style={{ background: '#3f3f46', color: '#fafafa', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
+                    <div style={{ background: '#353848', color: '#f9fafb', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative' }}>
                       <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingExperiment ? 'Edit Experiment' : 'New Experiment'}</h3>
                       <form onSubmit={e => { e.preventDefault(); saveExperiment(editingExperiment ? editingExperiment : { name: '', segment: '', variantA: '', variantB: '', status: 'draft', created: new Date().toISOString().slice(0, 10), results: null }); }}>
                         <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-experiment-name">Name</label>
@@ -2195,7 +2195,7 @@ function AbandonedCheckoutWinback() {
                           <option value="completed">Completed</option>
                         </select>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-                          <button type="button" onClick={closeExperimentModal} style={{ background: '#3f3f46', color: '#fafafa', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
+                          <button type="button" onClick={closeExperimentModal} style={{ background: '#353848', color: '#f9fafb', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Cancel</button>
                           <button type="submit" style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>{editingExperiment ? 'Save Changes' : 'Create Experiment'}</button>
                         </div>
                       </form>
@@ -2463,7 +2463,7 @@ function AbandonedCheckoutWinback() {
           </div>
           {error && <div style={{ color: '#f87171', marginBottom: 12 }}>{error}</div>}
           {loading ? <div>Loading...</div> : (
-            <table style={{ width: '100%', color: '#fff', fontSize: 15, background: '#18181b', borderRadius: 10 }}>
+            <table style={{ width: '100%', color: '#fff', fontSize: 15, background: '#1a1c25', borderRadius: 10 }}>
               <thead>
                 <tr style={{ color: '#aaa', textAlign: 'left' }}>
                   <th>Trigger</th>
@@ -2578,7 +2578,7 @@ function AbandonedCheckoutWinback() {
           />
           {error && <div style={{ color: '#f87171', marginBottom: 12 }}>{error}</div>}
           {loading ? <div>Loading...</div> : (
-            <table style={{ width: '100%', color: '#fff', fontSize: 15, background: '#18181b', borderRadius: 10 }}>
+            <table style={{ width: '100%', color: '#fff', fontSize: 15, background: '#1a1c25', borderRadius: 10 }}>
               <thead>
                 <tr style={{ color: '#aaa', textAlign: 'left' }}>
                   <th>Service</th>
@@ -2590,7 +2590,7 @@ function AbandonedCheckoutWinback() {
               </thead>
               <tbody>
                 {filtered.map(integration => (
-                  <tr key={integration.id} style={{ borderTop: '1px solid #3f3f46' }}>
+                  <tr key={integration.id} style={{ borderTop: '1px solid #353848' }}>
                     <td>{integration.name}</td>
                     <td>{integration.description}</td>
                     <td>{integration.connected ? 'Connected' : 'Not Connected'}</td>
@@ -2612,7 +2612,7 @@ function AbandonedCheckoutWinback() {
           {/* Add Integration Modal */}
           {showAddModal && (
             <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-              <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
+              <div style={{ background: '#1a1c25', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#f9fafb' }}>
                 <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18, color: '#fff' }}>Add Integration</h3>
                 <div style={{ marginBottom: 18 }}>
                   {availableIntegrations.map(intg => (
@@ -2627,7 +2627,7 @@ function AbandonedCheckoutWinback() {
                         style={{ marginRight: 10 }}
                       />
                       <label htmlFor={`add-intg-${intg.id}`} style={{ fontWeight: 600, fontSize: 16, color: '#fff' }}>{intg.name}</label>
-                      <span style={{ marginLeft: 8, color: '#a1a1aa', fontSize: 14 }}>{intg.description}</span>
+                      <span style={{ marginLeft: 8, color: '#a8adc4', fontSize: 14 }}>{intg.description}</span>
                     </div>
                   ))}
                 </div>
@@ -2670,15 +2670,15 @@ function AbandonedCheckoutWinback() {
 
     // --- Main component return
     return (
-      <div style={{ minHeight: '100vh', background: '#18181b', width: '100%' }}>
+      <div style={{ minHeight: '100vh', background: '#1a1c25', width: '100%' }}>
         {/* Top Tab Navigation */}
         <nav aria-label="Winback flagship navigation" style={{
           display: 'flex',
           justifyContent: 'flex-start',
           alignItems: 'center',
           gap: 0,
-          background: '#18181b',
-          borderBottom: '1px solid #3f3f46',
+          background: '#1a1c25',
+          borderBottom: '1px solid #353848',
           padding: '0 0 0 12px',
           position: 'sticky',
           top: 0,
@@ -2689,7 +2689,7 @@ function AbandonedCheckoutWinback() {
               key={section.key}
               onClick={() => setActiveSection(section.key)}
               style={{
-                background: activeSection === section.key ? '#3f3f46' : 'none',
+                background: activeSection === section.key ? '#353848' : 'none',
                 color: activeSection === section.key ? '#fff' : '#cbd5e1',
                 border: 'none',
                 borderBottom: activeSection === section.key ? '3px solid #0ea5e9' : '3px solid transparent',
@@ -2716,7 +2716,7 @@ function AbandonedCheckoutWinback() {
             {/* --- Custom Segment Builder --- */}
             <div style={{ marginBottom: 28 }}>
               <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Custom Segment Builder</h4>
-              <div style={{ fontSize: 15, color: '#a1a1aa', marginTop: 6, marginBottom: 10 }}>
+              <div style={{ fontSize: 15, color: '#a8adc4', marginTop: 6, marginBottom: 10 }}>
                 Build your own segment by combining rules and filters. Mix purchase history, engagement, demographics, and more.
               </div>
               <CustomSegmentBuilder onCreate={segment => setSegmentsList(list => [...list, { ...segment, id: Date.now(), created: new Date().toISOString().slice(0, 10), selected: false }])} />
@@ -2733,7 +2733,7 @@ function AbandonedCheckoutWinback() {
                     value={aiSegmentPrompt || ''}
                     onChange={e => setAISegmentPrompt(e.target.value)}
                     placeholder="Describe your segment (e.g. 'VIPs who abandoned cart')"
-                    style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #333', fontSize: 15, background: '#18181b', color: '#fafafa' }}
+                    style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #333', fontSize: 15, background: '#1a1c25', color: '#f9fafb' }}
                   />
                   <button
                     onClick={async () => {
@@ -2760,7 +2760,7 @@ function AbandonedCheckoutWinback() {
                 </div>
                 {aiSegmentError && <div style={{ color: '#f87171', marginTop: 8 }}>{aiSegmentError}</div>}
                 {aiSegmentResult && (
-                  <div style={{ marginTop: 16, background: '#18181b', borderRadius: 8, padding: 14, color: '#a7f3d0' }}>
+                  <div style={{ marginTop: 16, background: '#1a1c25', borderRadius: 8, padding: 14, color: '#a7f3d0' }}>
                     <div style={{ fontWeight: 600, fontSize: 16 }}>AI Suggestion:</div>
                     <pre style={{ margin: 0, fontSize: 15, color: '#a7f3d0' }}>{JSON.stringify(aiSegmentResult, null, 2)}</pre>
                     <button
@@ -2786,7 +2786,7 @@ function AbandonedCheckoutWinback() {
               {/* --- Dynamic & Real-Time Segments --- */}
               <div style={{ marginBottom: 28 }}>
                 <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Dynamic & Real-Time Segments</h4>
-                <div style={{ fontSize: 15, color: '#a1a1aa', marginTop: 6, marginBottom: 10 }}>
+                <div style={{ fontSize: 15, color: '#a8adc4', marginTop: 6, marginBottom: 10 }}>
                   Segments update automatically as customer data changes. Segments are kept in sync with your store and customer activity in real time.
                 </div>
                 <button
@@ -2803,14 +2803,14 @@ function AbandonedCheckoutWinback() {
                   }}
                   style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 8 }}
                 >Refresh Segments from Store</button>
-                <div style={{ fontSize: 14, color: '#a1a1aa' }}>
+                <div style={{ fontSize: 14, color: '#a8adc4' }}>
                   (Segments reflect live store/customer data.)
                 </div>
               </div>
               {/* --- Pre-Built Segment Templates --- */}
               <div style={{ marginBottom: 28 }}>
                 <h4 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Pre-Built Segment Templates</h4>
-                <div style={{ fontSize: 15, color: '#a1a1aa', marginTop: 6, marginBottom: 10 }}>
+                <div style={{ fontSize: 15, color: '#a8adc4', marginTop: 6, marginBottom: 10 }}>
                   Quickly add common segments with one click. Templates are based on best practices from top ecommerce platforms.
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
@@ -2835,9 +2835,9 @@ function AbandonedCheckoutWinback() {
                           selected: false
                         }
                       ])}
-                      style={{ background: '#18181b', color: '#fff', border: '1px solid #333', borderRadius: 8, padding: '10px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', minWidth: 180, textAlign: 'left' }}
+                      style={{ background: '#1a1c25', color: '#fff', border: '1px solid #333', borderRadius: 8, padding: '10px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', minWidth: 180, textAlign: 'left' }}
                       title={tpl.description}
-                    >{tpl.name}<br /><span style={{ fontWeight: 400, fontSize: 13, color: '#a1a1aa' }}>{tpl.description}</span></button>
+                    >{tpl.name}<br /><span style={{ fontWeight: 400, fontSize: 13, color: '#a8adc4' }}>{tpl.description}</span></button>
                   ))}
                 </div>
               </div>
@@ -2860,12 +2860,12 @@ function AbandonedCheckoutWinback() {
                 </div>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15 }}>
                   <thead>
-                    <tr style={{ background: '#18181b' }}>
-                      <th style={{ fontWeight: 600, fontSize: 14, color: '#a1a1aa', padding: '12px 8px', borderBottom: '1px solid #3f3f46' }}><input type="checkbox" checked={segmentsList.every(s => s.selected)} onChange={e => selectAllSegments(e.target.checked)} aria-label="Select all segments" /></th>
-                      <th style={{ fontWeight: 600, fontSize: 14, color: '#a1a1aa', padding: '12px 8px', borderBottom: '1px solid #3f3f46' }}>Name</th>
-                      <th style={{ fontWeight: 600, fontSize: 14, color: '#a1a1aa', padding: '12px 8px', borderBottom: '1px solid #3f3f46' }}>Rule</th>
-                      <th style={{ fontWeight: 600, fontSize: 14, color: '#a1a1aa', padding: '12px 8px', borderBottom: '1px solid #3f3f46' }}>Created</th>
-                      <th style={{ fontWeight: 600, fontSize: 14, color: '#a1a1aa', padding: '12px 8px', borderBottom: '1px solid #3f3f46' }}>Actions</th>
+                    <tr style={{ background: '#1a1c25' }}>
+                      <th style={{ fontWeight: 600, fontSize: 14, color: '#a8adc4', padding: '12px 8px', borderBottom: '1px solid #353848' }}><input type="checkbox" checked={segmentsList.every(s => s.selected)} onChange={e => selectAllSegments(e.target.checked)} aria-label="Select all segments" /></th>
+                      <th style={{ fontWeight: 600, fontSize: 14, color: '#a8adc4', padding: '12px 8px', borderBottom: '1px solid #353848' }}>Name</th>
+                      <th style={{ fontWeight: 600, fontSize: 14, color: '#a8adc4', padding: '12px 8px', borderBottom: '1px solid #353848' }}>Rule</th>
+                      <th style={{ fontWeight: 600, fontSize: 14, color: '#a8adc4', padding: '12px 8px', borderBottom: '1px solid #353848' }}>Created</th>
+                      <th style={{ fontWeight: 600, fontSize: 14, color: '#a8adc4', padding: '12px 8px', borderBottom: '1px solid #353848' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2874,22 +2874,22 @@ function AbandonedCheckoutWinback() {
                     ) : segmentsList
                         .filter(s => !lifecycleFilter || (s.lifecycleStage === lifecycleFilter))
                         .map(s => (
-                          <tr key={s.id} style={{ borderBottom: '1px solid #3f3f46' }}>
+                          <tr key={s.id} style={{ borderBottom: '1px solid #353848' }}>
                             <td style={{ padding: '12px 8px' }}><input type="checkbox" checked={!!s.selected} onChange={() => toggleSelectSegment(s.id)} aria-label={`Select segment ${s.name}`} /></td>
                             <td style={{ padding: '12px 8px', fontWeight: 500 }}>{s.name}</td>
-                            <td style={{ padding: '12px 8px', color: '#fafafa' }}>{s.rule}</td>
-                            <td style={{ padding: '12px 8px', color: '#a1a1aa' }}>{s.created}</td>
+                            <td style={{ padding: '12px 8px', color: '#f9fafb' }}>{s.rule}</td>
+                            <td style={{ padding: '12px 8px', color: '#a8adc4' }}>{s.created}</td>
                             <td style={{ verticalAlign: 'top', padding: '12px 8px', minWidth: 320 }}>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 8 }}>
-                                <button onClick={() => openSegmentModal(s)} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '4px 12px', fontWeight: 500, fontSize: 14, cursor: 'pointer' }}>Edit</button>
-                                <button onClick={() => setSegmentsList(list => list.filter(x => x.id !== s.id))} style={{ background: '#3f3f46', color: '#ef4444', border: '1px solid #3f3f46', borderRadius: 6, padding: '4px 12px', fontWeight: 500, fontSize: 14, cursor: 'pointer' }}>Delete</button>
+                                <button onClick={() => openSegmentModal(s)} style={{ background: '#1a1c25', color: '#f9fafb', border: '1px solid #353848', borderRadius: 6, padding: '4px 12px', fontWeight: 500, fontSize: 14, cursor: 'pointer' }}>Edit</button>
+                                <button onClick={() => setSegmentsList(list => list.filter(x => x.id !== s.id))} style={{ background: '#353848', color: '#ef4444', border: '1px solid #353848', borderRadius: 6, padding: '4px 12px', fontWeight: 500, fontSize: 14, cursor: 'pointer' }}>Delete</button>
                                 <SegmentQuickActions segment={s} onSend={handleSendWinback} onPreview={handlePreviewWinback} />
                                 <SegmentPerformanceInsights segment={s} />
                               </div>
-                              <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid #3f3f46' }}>
+                              <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid #353848' }}>
                                 <SegmentAutomations segment={s} onUpdate={automation => handleUpdateAutomation(s.id, automation)} />
                               </div>
-                              <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid #3f3f46', display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                              <div style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid #353848', display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                                 <CrossChannelTargeting segment={s} onUpdate={channels => handleUpdateChannels(s.id, channels)} />
                                 <IncludeExcludeToggle segment={s} onUpdate={mode => handleUpdateIncludeMode(s.id, mode)} />
                               </div>
@@ -2909,7 +2909,7 @@ function AbandonedCheckoutWinback() {
               {/* Segment Modal (Add/Edit) */}
               {showSegmentModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
+                  <div style={{ background: '#1a1c25', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#f9fafb' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingSegment ? 'Edit Segment' : 'New Segment'}</h3>
                     <form onSubmit={e => { e.preventDefault(); saveSegment(editingSegment ? editingSegment : { name: '', rule: '', created: new Date().toISOString().slice(0, 10) }); }}>
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-segment-name">Name</label>
@@ -2931,7 +2931,7 @@ function AbandonedCheckoutWinback() {
         {activeSection === 'templates' && (
           <section aria-label="Templates">
             <WinbackFeatureCard title="Templates" description="Manage and create message templates for campaigns." icon="" />
-            <div style={{ background: '#27272a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
+            <div style={{ background: '#222535', color: '#f9fafb', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
               <WinbackFeatureCard title="Templates" description="Manage and create message templates for campaigns." icon="" />
               {/* Templates Table & Bulk Actions */}
               <div style={{ marginTop: 24, marginBottom: 32 }}>
@@ -2976,7 +2976,7 @@ function AbandonedCheckoutWinback() {
               {/* Template Modal (Add/Edit) */}
               {showTemplateModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
+                  <div style={{ background: '#1a1c25', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#f9fafb' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingTemplate ? 'Edit Template' : 'New Template'}</h3>
                     <form onSubmit={e => { e.preventDefault(); saveTemplate(editingTemplate ? editingTemplate : { name: '', channel: 'email', content: '', created: new Date().toISOString().slice(0, 10) }); }}>
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-template-name">Name</label>
@@ -3003,7 +3003,7 @@ function AbandonedCheckoutWinback() {
         {activeSection === 'abTesting' && (
           <section aria-label="A/B Testing">
             <WinbackFeatureCard title="A/B Testing" description="Run experiments to optimize winback strategies." icon="" />
-            <div style={{ background: '#27272a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
+            <div style={{ background: '#222535', color: '#f9fafb', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 24, marginBottom: 24 }}>
               <WinbackFeatureCard title="A/B Testing" description="Run experiments to optimize winback strategies." icon="" />
               {/* Experiments Table & Bulk Actions */}
               <div style={{ marginTop: 24, marginBottom: 32 }}>
@@ -3050,7 +3050,7 @@ function AbandonedCheckoutWinback() {
               {/* Experiment Modal (Add/Edit) */}
               {showExperimentModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
+                  <div style={{ background: '#1a1c25', borderRadius: 14, padding: 32, minWidth: 400, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#f9fafb' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>{editingExperiment ? 'Edit Experiment' : 'New Experiment'}</h3>
                     <form onSubmit={e => { e.preventDefault(); saveExperiment(editingExperiment ? editingExperiment : { name: '', variantA: '', variantB: '', status: 'draft', created: new Date().toISOString().slice(0, 10) }); }}>
                       <label style={{ fontWeight: 600, fontSize: 15, marginBottom: 4, display: 'block' }} htmlFor="modal-experiment-name">Name</label>
@@ -3081,19 +3081,19 @@ function AbandonedCheckoutWinback() {
             <WinbackFeatureCard title="Analytics" description="View performance metrics and insights for your campaigns." icon="" />
             {/* Analytics Summary Cards */}
             <div style={{ display: 'flex', gap: 24, margin: '24px 0' }}>
-              <div style={{ background: '#3f3f46', borderRadius: 10, padding: 18, minWidth: 180 }}>
+              <div style={{ background: '#353848', borderRadius: 10, padding: 18, minWidth: 180 }}>
                 <div style={{ fontSize: 13, color: '#aaa' }}>Recovered Revenue</div>
                 <div style={{ fontSize: 28, fontWeight: 700, color: '#22c55e' }}>
                   ${analytics.reduce((sum, e) => sum + (e.recoveredRevenue || 0), 0).toLocaleString()}
                 </div>
               </div>
-              <div style={{ background: '#3f3f46', borderRadius: 10, padding: 18, minWidth: 180 }}>
+              <div style={{ background: '#353848', borderRadius: 10, padding: 18, minWidth: 180 }}>
                 <div style={{ fontSize: 13, color: '#aaa' }}>Emails Sent</div>
                 <div style={{ fontSize: 28, fontWeight: 700, color: '#6366f1' }}>
                   {analytics.reduce((sum, e) => sum + (e.emailsSent || 0), 0).toLocaleString()}
                 </div>
               </div>
-              <div style={{ background: '#3f3f46', borderRadius: 10, padding: 18, minWidth: 180 }}>
+              <div style={{ background: '#353848', borderRadius: 10, padding: 18, minWidth: 180 }}>
                 <div style={{ fontSize: 13, color: '#aaa' }}>Conversions</div>
                 <div style={{ fontSize: 28, fontWeight: 700, color: '#f59e42' }}>
                   {analytics.reduce((sum, e) => sum + (e.conversions || 0), 0).toLocaleString()}
@@ -3103,7 +3103,7 @@ function AbandonedCheckoutWinback() {
             {/* Analytics Chart */}
             <WinbackAnalyticsChart data={analytics} />
             {/* Analytics Table */}
-            <div style={{ background: '#18181b', borderRadius: 10, padding: 18, marginTop: 18 }}>
+            <div style={{ background: '#1a1c25', borderRadius: 10, padding: 18, marginTop: 18 }}>
               <table style={{ width: '100%', color: '#fff', fontSize: 15 }}>
                 <thead>
                   <tr style={{ color: '#aaa', textAlign: 'left' }}>
@@ -3115,7 +3115,7 @@ function AbandonedCheckoutWinback() {
                 </thead>
                 <tbody>
                   {analytics.map((e, i) => (
-                    <tr key={i} style={{ borderTop: '1px solid #3f3f46' }}>
+                    <tr key={i} style={{ borderTop: '1px solid #353848' }}>
                       <td>{e.timestamp || e.date || ''}</td>
                       <td>${(e.recoveredRevenue || 0).toLocaleString()}</td>
                       <td>{e.emailsSent || 0}</td>
@@ -3140,14 +3140,14 @@ function AbandonedCheckoutWinback() {
 
         {activeSection === 'activityLog' && (
           <section aria-label="Activity Log">
-            <div style={{ background: '#27272a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 32, marginBottom: 24, marginTop: 18 }}>
+            <div style={{ background: '#222535', color: '#f9fafb', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 32, marginBottom: 24, marginTop: 18 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
                 <div style={{ fontWeight: 700, fontSize: 22 }}>Activity Log</div>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button onClick={exportActivityLog} style={{ background: 'var(--button-secondary-bg)', color: 'var(--button-secondary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Export CSV</button>
                   <div style={{ position: 'relative' }}>
                     <button style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 14px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Columns </button>
-                    <div style={{ position: 'absolute', top: 36, right: 0, background: '#27272a', color: '#fafafa', borderRadius: 8, boxShadow: '0 2px 8px #0008', padding: 12, zIndex: 10 }}>
+                    <div style={{ position: 'absolute', top: 36, right: 0, background: '#222535', color: '#f9fafb', borderRadius: 8, boxShadow: '0 2px 8px #0008', padding: 12, zIndex: 10 }}>
                       {activityLogColumns.map(col => (
                         <label key={col.key} style={{ display: 'block', fontSize: 15, fontWeight: 500, marginBottom: 4 }}>
                           <input type="checkbox" checked={col.visible} onChange={() => toggleColumn(col.key)} style={{ marginRight: 6 }} /> {col.label}
@@ -3157,19 +3157,19 @@ function AbandonedCheckoutWinback() {
                   </div>
                 </div>
               </div>
-              <input type="text" placeholder="Search actions, users, details..." value={activityLogSearch} onChange={e => setActivityLogSearch(e.target.value)} style={{ width: '100%', marginBottom: 18, padding: 10, borderRadius: 8, border: '1px solid #333', background: '#27272a', color: '#fafafa', fontSize: 15 }} />
+              <input type="text" placeholder="Search actions, users, details..." value={activityLogSearch} onChange={e => setActivityLogSearch(e.target.value)} style={{ width: '100%', marginBottom: 18, padding: 10, borderRadius: 8, border: '1px solid #333', background: '#222535', color: '#f9fafb', fontSize: 15 }} />
               <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
-                <input type="text" placeholder="Filter by user" value={activityLogFilters.user} onChange={e => setActivityLogFilters(f => ({ ...f, user: e.target.value }))} style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #333', background: '#27272a', color: '#fafafa', fontSize: 14 }} />
-                <input type="text" placeholder="Filter by action" value={activityLogFilters.action} onChange={e => setActivityLogFilters(f => ({ ...f, action: e.target.value }))} style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #333', background: '#27272a', color: '#fafafa', fontSize: 14 }} />
-                <input type="text" placeholder="Filter by type" value={activityLogFilters.type} onChange={e => setActivityLogFilters(f => ({ ...f, type: e.target.value }))} style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #333', background: '#27272a', color: '#fafafa', fontSize: 14 }} />
-                <input type="text" placeholder="Filter by campaign" value={activityLogFilters.campaignId} onChange={e => setActivityLogFilters(f => ({ ...f, campaignId: e.target.value }))} style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #333', background: '#27272a', color: '#fafafa', fontSize: 14 }} />
+                <input type="text" placeholder="Filter by user" value={activityLogFilters.user} onChange={e => setActivityLogFilters(f => ({ ...f, user: e.target.value }))} style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #333', background: '#222535', color: '#f9fafb', fontSize: 14 }} />
+                <input type="text" placeholder="Filter by action" value={activityLogFilters.action} onChange={e => setActivityLogFilters(f => ({ ...f, action: e.target.value }))} style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #333', background: '#222535', color: '#f9fafb', fontSize: 14 }} />
+                <input type="text" placeholder="Filter by type" value={activityLogFilters.type} onChange={e => setActivityLogFilters(f => ({ ...f, type: e.target.value }))} style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #333', background: '#222535', color: '#f9fafb', fontSize: 14 }} />
+                <input type="text" placeholder="Filter by campaign" value={activityLogFilters.campaignId} onChange={e => setActivityLogFilters(f => ({ ...f, campaignId: e.target.value }))} style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid #333', background: '#222535', color: '#f9fafb', fontSize: 14 }} />
               </div>
               {/* Table and details modal logic assumed present in your state/logic */}
               {/* Example Table UI: */}
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--background-secondary)', borderRadius: 10, overflow: 'hidden', fontSize: 15 }}>
                   <thead>
-                    <tr style={{ background: '#3f3f46', color: '#aaa' }}>
+                    <tr style={{ background: '#353848', color: '#aaa' }}>
                       {activityLogColumns.filter(c => c.visible).map(col => (
                         <th key={col.key} style={{ padding: 8, textAlign: 'left' }}>{col.label}</th>
                       ))}
@@ -3178,7 +3178,7 @@ function AbandonedCheckoutWinback() {
                   </thead>
                   <tbody>
                     {filteredActivityLog.map(log => (
-                      <tr key={log.id} style={{ borderBottom: '1px solid #3f3f46' }}>
+                      <tr key={log.id} style={{ borderBottom: '1px solid #353848' }}>
                         {activityLogColumns.filter(c => c.visible).map(col => (
                           <td key={col.key} style={{ padding: 8 }}>{log[col.key] || '-'}</td>
                         ))}
@@ -3193,9 +3193,9 @@ function AbandonedCheckoutWinback() {
               {/* Log Details Modal */}
               {showLogDetails && logDetails && (
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-                  <div style={{ background: 'var(--background-secondary, #27272a)', color: 'var(--text-primary, #fafafa)', borderRadius: 14, padding: 32, minWidth: 400, maxHeight: '90vh', overflowY: 'auto' }}>
+                  <div style={{ background: 'var(--background-secondary, #222535)', color: 'var(--text-primary, #f9fafb)', borderRadius: 14, padding: 32, minWidth: 400, maxHeight: '90vh', overflowY: 'auto' }}>
                     <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Log Entry Details</h3>
-                    <pre style={{ background: '#27272a', color: '#fafafa', borderRadius: 8, padding: 16, fontSize: 15, maxHeight: 400, overflow: 'auto' }}>{JSON.stringify(logDetails, null, 2)}</pre>
+                    <pre style={{ background: '#222535', color: '#f9fafb', borderRadius: 8, padding: 16, fontSize: 15, maxHeight: 400, overflow: 'auto' }}>{JSON.stringify(logDetails, null, 2)}</pre>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
                       <button onClick={closeLogDetails} style={{ background: 'var(--button-tertiary-bg)', color: 'var(--button-tertiary-text)', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Close</button>
                     </div>
@@ -3208,7 +3208,7 @@ function AbandonedCheckoutWinback() {
         {activeSection === 'compliance' && (
           <section aria-label="Compliance">
             <WinbackFeatureCard title="Compliance Center" description="GDPR/CCPA tools, opt-out, audit logs, data export/delete, and deliverability best practices." icon="️" />
-            <div style={{ background: '#27272a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 32, marginBottom: 24, marginTop: 18 }}>
+            <div style={{ background: '#222535', color: '#f9fafb', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 32, marginBottom: 24, marginTop: 18 }}>
               <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Compliance Tools</h3>
               <ComplianceSection />
             </div>
@@ -3228,7 +3228,7 @@ function AbandonedCheckoutWinback() {
               <WinbackHelpDocs />
               <div style={{ marginTop: 32 }}>
                 <h4 style={{ fontWeight: 700, fontSize: 18, marginBottom: 12 }}>Frequently Asked Questions</h4>
-                <ul style={{ fontSize: 15, color: '#52525b', paddingLeft: 24 }}>
+                <ul style={{ fontSize: 15, color: '#454860', paddingLeft: 24 }}>
                   <li><b>How do I create a winback campaign?</b>Use the Campaigns section to create, schedule, and manage campaigns. Click '+ New Campaign' to get started.</li>
                   <li><b>Can I automate cart recovery?</b>Yes! Use the Automation section to set up triggers and actions for cart recovery workflows.</li>
                   <li><b>How do I connect integrations?</b>Go to Integrations and click '+ Connect Integration' to link third-party services like Shopify or Klaviyo.</li>
@@ -3289,19 +3289,19 @@ function CustomSegmentBuilder({ onCreate }) {
     setRules([{ field: "purchaseCount", op: ">", value: "1" }]);
   };
   return (
-    <div style={{ background: '#18181b', borderRadius: 8, padding: 16, marginTop: 8 }}>
+    <div style={{ background: '#1a1c25', borderRadius: 8, padding: 16, marginTop: 8 }}>
       <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
-        <input value={name} onChange={e => setName(e.target.value)} placeholder="Segment name" style={{ flex: 2, padding: 8, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#3f3f46', color: '#fafafa' }} />
+        <input value={name} onChange={e => setName(e.target.value)} placeholder="Segment name" style={{ flex: 2, padding: 8, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#353848', color: '#f9fafb' }} />
       </div>
       {rules.map((r, idx) => (
         <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-          <select value={r.field} onChange={e => handleRuleChange(idx, 'field', e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#3f3f46', color: '#fafafa' }}>
+          <select value={r.field} onChange={e => handleRuleChange(idx, 'field', e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#353848', color: '#f9fafb' }}>
             {fields.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
           </select>
-          <select value={r.op} onChange={e => handleRuleChange(idx, 'op', e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#3f3f46', color: '#fafafa' }}>
+          <select value={r.op} onChange={e => handleRuleChange(idx, 'op', e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#353848', color: '#f9fafb' }}>
             {ops.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
-          <input value={r.value} onChange={e => handleRuleChange(idx, 'value', e.target.value)} placeholder="Value" style={{ flex: 1, padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#3f3f46', color: '#fafafa' }} />
+          <input value={r.value} onChange={e => handleRuleChange(idx, 'value', e.target.value)} placeholder="Value" style={{ flex: 1, padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#353848', color: '#f9fafb' }} />
           {rules.length > 1 && <button onClick={() => removeRule(idx)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Remove</button>}
         </div>
       ))}
@@ -3325,24 +3325,24 @@ function SegmentAutomations({ segment, onUpdate }) {
           <span style={{ color: '#f87171', fontSize: 13 }}>No automations</span>
         ) : (
           automations.map((a, idx) => (
-            <span key={idx} style={{ background: '#3f3f46', color: '#fff', borderRadius: 6, padding: '2px 10px', fontSize: 13, fontWeight: 600, marginRight: 4 }}>{a.type}</span>
+            <span key={idx} style={{ background: '#353848', color: '#fff', borderRadius: 6, padding: '2px 10px', fontSize: 13, fontWeight: 600, marginRight: 4 }}>{a.type}</span>
           ))
         )}
         <button onClick={() => setShowModal(true)} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Automate</button>
       </div>
       {showModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-          <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
+          <div style={{ background: '#1a1c25', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#f9fafb' }}>
             <h3 style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Segment Automations</h3>
             <div style={{ marginBottom: 12 }}>
               <label>Add Automation</label>
-              <select id="automation-type" style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#3f3f46', color: '#fafafa', marginBottom: 12 }}>
+              <select id="automation-type" style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#353848', color: '#f9fafb', marginBottom: 12 }}>
                 <option value="email">Send Email</option>
                 <option value="sms">Send SMS</option>
                 <option value="push">Send Push</option>
                 <option value="webhook">Trigger Webhook</option>
               </select>
-              <input id="automation-detail" placeholder="Details (e.g. template, URL)" style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#3f3f46', color: '#fafafa', marginBottom: 12 }} />
+              <input id="automation-detail" placeholder="Details (e.g. template, URL)" style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333', fontSize: 15, background: '#353848', color: '#f9fafb', marginBottom: 12 }} />
               <button onClick={() => {
                 const type = document.getElementById('automation-type').value;
                 const detail = document.getElementById('automation-detail').value;
@@ -3359,7 +3359,7 @@ function SegmentAutomations({ segment, onUpdate }) {
                 <div style={{ color: '#f87171', fontSize: 14 }}>None</div>
               ) : (
                 automations.map((a, idx) => (
-                  <div key={idx} style={{ background: '#3f3f46', color: '#fff', borderRadius: 6, padding: '6px 10px', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>
+                  <div key={idx} style={{ background: '#353848', color: '#fff', borderRadius: 6, padding: '6px 10px', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>
                     {a.type}: {a.detail}
                   </div>
                 ))
@@ -3393,13 +3393,13 @@ function CrossChannelTargeting({ segment, onUpdate }) {
   };
   return (
     <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center' }}>
-      <span style={{ fontSize: 13, color: '#a1a1aa', fontWeight: 600 }}>Channels:</span>
+      <span style={{ fontSize: 13, color: '#a8adc4', fontWeight: 600 }}>Channels:</span>
       {allChannels.map(ch => (
         <button
           key={ch.key}
           onClick={() => toggleChannel(ch.key)}
           style={{
-            background: channels.includes(ch.key) ? ch.color : '#3f3f46',
+            background: channels.includes(ch.key) ? ch.color : '#353848',
             color: channels.includes(ch.key) ? '#fff' : ch.color,
             border: 'none',
             borderRadius: 6,
@@ -3429,7 +3429,7 @@ function SegmentPerformanceInsights({ segment }) {
       <button onClick={() => setShow(true)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '2px 10px', fontWeight: 600, fontSize: 13, cursor: 'pointer', marginLeft: 6 }}>Performance</button>
       {show && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#0008', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} role="dialog" aria-modal="true">
-          <div style={{ background: '#18181b', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#fafafa' }}>
+          <div style={{ background: '#1a1c25', borderRadius: 14, padding: 32, minWidth: 340, boxShadow: '0 8px 40px #0008', position: 'relative', color: '#f9fafb' }}>
             <h3 style={{ fontWeight: 800, fontSize: 20, marginBottom: 18 }}>Segment Performance</h3>
             <div style={{ marginBottom: 12 }}><b>Open Rate:</b> {data.openRate}%</div>
             <div style={{ marginBottom: 12 }}><b>Click Rate:</b> {data.clickRate}%</div>
@@ -3454,11 +3454,11 @@ function IncludeExcludeToggle({ segment, onUpdate }) {
   };
   return (
     <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center' }}>
-      <span style={{ fontSize: 13, color: '#a1a1aa', fontWeight: 600 }}>Mode:</span>
+      <span style={{ fontSize: 13, color: '#a8adc4', fontWeight: 600 }}>Mode:</span>
       <button
         onClick={() => handleToggle('include')}
         style={{
-          background: mode === 'include' ? '#22c55e' : '#3f3f46',
+          background: mode === 'include' ? '#22c55e' : '#353848',
           color: mode === 'include' ? '#fff' : '#22c55e',
           border: 'none',
           borderRadius: 6,
@@ -3474,7 +3474,7 @@ function IncludeExcludeToggle({ segment, onUpdate }) {
       <button
         onClick={() => handleToggle('exclude')}
         style={{
-          background: mode === 'exclude' ? '#ef4444' : '#3f3f46',
+          background: mode === 'exclude' ? '#ef4444' : '#353848',
           color: mode === 'exclude' ? '#fff' : '#ef4444',
           border: 'none',
           borderRadius: 6,
@@ -3509,12 +3509,12 @@ function StoreLanguageSelector({ segment, onUpdate }) {
   };
   return (
     <div style={{ marginTop: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
-      <span style={{ fontSize: 13, color: '#a1a1aa', fontWeight: 600 }}>Store:</span>
-      <select value={store} onChange={e => handleChange('store', e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 13, background: '#3f3f46', color: '#fafafa' }}>
+      <span style={{ fontSize: 13, color: '#a8adc4', fontWeight: 600 }}>Store:</span>
+      <select value={store} onChange={e => handleChange('store', e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 13, background: '#353848', color: '#f9fafb' }}>
         {stores.map(s => <option key={s} value={s}>{s}</option>)}
       </select>
-      <span style={{ fontSize: 13, color: '#a1a1aa', fontWeight: 600 }}>Language:</span>
-      <select value={language} onChange={e => handleChange('language', e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 13, background: '#3f3f46', color: '#fafafa' }}>
+      <span style={{ fontSize: 13, color: '#a8adc4', fontWeight: 600 }}>Language:</span>
+      <select value={language} onChange={e => handleChange('language', e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #333', fontSize: 13, background: '#353848', color: '#f9fafb' }}>
         {languages.map(l => <option key={l.key} value={l.key}>{l.label}</option>)}
       </select>
     </div>

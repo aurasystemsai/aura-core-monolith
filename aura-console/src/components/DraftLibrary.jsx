@@ -89,7 +89,7 @@ function DraftLibrary({ coreUrl, projectId }) {
       <div className="draft-library-list" role="region" aria-label="Drafts List">
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ fontWeight: 700 }} title="All your saved blog/article drafts appear here. Click one to view or copy.">Drafts
-            <span style={{color:'#818cf8',marginLeft:4,cursor:'help'}} title="This list shows all drafts saved by the Blog Draft Engine. Click a draft to view details and copy content.">?</span>
+            <span style={{color:'#6366f1',marginLeft:4,cursor:'help'}} title="This list shows all drafts saved by the Blog Draft Engine. Click a draft to view details and copy content.">?</span>
           </div>
           <button
             className="button button--ghost button--tiny"

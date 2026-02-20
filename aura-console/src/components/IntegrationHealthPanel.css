@@ -1,5 +1,5 @@
 ﻿﻿.integration-health-card {
-  background: #09090b;
+  background: #0d0d11;
   border-radius: 16px;
   box-shadow: 0 2px 12px #0003;
   padding: 24px 32px 18px 32px;
@@ -14,7 +14,7 @@
 .integration-health-chip {
   display: flex;
   align-items: center;
-  background: #18181b;
+  background: #1a1c25;
   border-radius: 24px;
   padding: 8px 18px 8px 12px;
   font-weight: 600;
@@ -26,14 +26,14 @@
 }
 .integration-health-chip--ok {
   background: #1e2e1e;
-  color: #818cf8;
+  color: #6366f1;
 }
 .integration-health-chip--error {
   background: #2e1e1e;
   color: #ff4d4f;
 }
 .integration-health-chip--loading {
-  background: #18181b;
+  background: #1a1c25;
   color: #ffe066;
 }
 .integration-health-dot {
@@ -45,7 +45,7 @@
   box-shadow: 0 0 6px #0005;
 }
 .integration-health-chip--ok .integration-health-dot {
-  background: #818cf8;
+  background: #6366f1;
 }
 .integration-health-chip--error .integration-health-dot {
   background: #ff4d4f;

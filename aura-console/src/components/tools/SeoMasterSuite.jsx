@@ -228,7 +228,7 @@ export default function SeoMasterSuite() {
         </button>
       </div>
       {keywords.length > 0 && (
-        <div style={{ background: '#27272a', borderRadius: 12, padding: 16 }}>
+        <div style={{ background: '#222535', borderRadius: 12, padding: 16 }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid #333' }}>
@@ -288,7 +288,7 @@ export default function SeoMasterSuite() {
       <p style={{ color: '#888', marginBottom: 24 }}>
         Multi-model AI with intelligent routing, ensemble, and cascade strategies
       </p>
-      <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
+      <div style={{ background: '#222535', borderRadius: 12, padding: 24 }}>
         <h3 style={{ marginBottom: 16 }}>Available Models</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
           {aiModels.map(model => (
@@ -318,7 +318,7 @@ export default function SeoMasterSuite() {
       <p style={{ color: '#888', marginBottom: 24 }}>
         Live cursors, editing, comments, and team workflows
       </p>
-      <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
+      <div style={{ background: '#222535', borderRadius: 12, padding: 24 }}>
         <h3 style={{ marginBottom: 16 }}>Active Users ({activeUsers.length})</h3>
         {activeUsers.length === 0 && (
           <p style={{ color: '#666' }}>No other users currently active</p>
@@ -334,15 +334,15 @@ export default function SeoMasterSuite() {
         SSO, MFA, RBAC, and compliance management
       </p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
-        <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#222535', borderRadius: 12, padding: 24 }}>
           <h3 style={{ marginBottom: 8 }}>SSO Status</h3>
           <div style={{ color: '#10b981', fontWeight: 600 }}>Configured</div>
         </div>
-        <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#222535', borderRadius: 12, padding: 24 }}>
           <h3 style={{ marginBottom: 8 }}>MFA</h3>
           <div style={{ color: '#10b981', fontWeight: 600 }}>Enabled</div>
         </div>
-        <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#222535', borderRadius: 12, padding: 24 }}>
           <h3 style={{ marginBottom: 8 }}>Compliance</h3>
           <div style={{ color: '#10b981', fontWeight: 600 }}>SOC 2, GDPR</div>
         </div>
@@ -358,13 +358,13 @@ export default function SeoMasterSuite() {
       </p>
       {analytics && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 16 }}>
-          <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
+          <div style={{ background: '#222535', borderRadius: 12, padding: 24 }}>
             <h3 style={{ fontSize: 14, color: '#888', marginBottom: 8 }}>Total Keywords</h3>
             <div style={{ fontSize: 32, fontWeight: 700, color: accentColor }}>
               {analytics.totalKeywords?.toLocaleString() || '0'}
             </div>
           </div>
-          <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
+          <div style={{ background: '#222535', borderRadius: 12, padding: 24 }}>
             <h3 style={{ fontSize: 14, color: '#888', marginBottom: 8 }}>Optimizations</h3>
             <div style={{ fontSize: 32, fontWeight: 700, color: '#10b981' }}>
               {analytics.totalOptimizations?.toLocaleString() || '0'}
@@ -398,7 +398,7 @@ export default function SeoMasterSuite() {
     <div style={containerStyle}>
       {/* Header */}
       <div style={{
-        background: theme === 'dark' ? '#27272a' : '#f5f5f5',
+        background: theme === 'dark' ? '#222535' : '#f5f5f5',
         borderBottom: `1px solid ${theme === 'dark' ? '#333' : '#ddd'}`,
         padding: '16px 24px'
       }}>
@@ -412,7 +412,7 @@ export default function SeoMasterSuite() {
 
       {/* Category Navigation */}
       <div style={{
-        background: theme === 'dark' ? '#09090b' : '#fafafa',
+        background: theme === 'dark' ? '#0d0d11' : '#f9fafb',
         borderBottom: `1px solid ${theme === 'dark' ? '#333' : '#ddd'}`,
         padding: '0 24px',
         display: 'flex',
@@ -446,7 +446,7 @@ export default function SeoMasterSuite() {
 
       {/* Tab Navigation */}
       <div style={{
-        background: theme === 'dark' ? '#09090b' : '#fafafa',
+        background: theme === 'dark' ? '#0d0d11' : '#f9fafb',
         borderBottom: `1px solid ${theme === 'dark' ? '#333' : '#ddd'}`,
         padding: '0 24px',
         display: 'flex',
@@ -458,7 +458,7 @@ export default function SeoMasterSuite() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
-              background: activeTab === tab.id ? theme === 'dark' ? '#27272a' : '#fff' : 'transparent',
+              background: activeTab === tab.id ? theme === 'dark' ? '#222535' : '#fff' : 'transparent',
               color: activeTab === tab.id ? accentColor : '#888',
               border: 'none',
               borderBottom: activeTab === tab.id ? `2px solid ${accentColor}` : '2px solid transparent',

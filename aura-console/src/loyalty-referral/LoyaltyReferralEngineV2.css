@@ -129,7 +129,7 @@
 .tier-progress-bar {
   position: relative;
   height: 12px;
-  background: #e4e4e7;
+  background: #e9ebf5;
   border-radius: 10px;
   overflow: hidden;
   margin: 1rem 0;
@@ -171,7 +171,7 @@
    ============================================================================ */
 
 .reward-card {
-  border: 1px solid #e4e4e7;
+  border: 1px solid #e9ebf5;
   border-radius: 12px;
   padding: 1.5rem;
   transition: all 0.3s ease;
@@ -270,7 +270,7 @@
   background: white;
   padding: 0.5rem 1rem;
   border-radius: 6px;
-  border: 1px dashed #e4e4e7;
+  border: 1px dashed #e9ebf5;
   font-weight: 600;
   letter-spacing: 2px;
 }
@@ -339,7 +339,7 @@
 .referral-tracking-table td {
   padding: 0.75rem;
   text-align: left;
-  border-bottom: 1px solid #fafafa;
+  border-bottom: 1px solid #f9fafb;
 }
 
 .referral-tracking-table th {
@@ -367,7 +367,7 @@
   top: 50%;
   transform: translateY(-50%);
   font-size: 2rem;
-  color: #e4e4e7;
+  color: #e9ebf5;
 }
 
 .funnel-stage:last-child::after {
@@ -382,7 +382,7 @@
 
 .funnel-label {
   font-size: 0.9rem;
-  color: #71717a;
+  color: #8b8fa8;
   margin-top: 0.5rem;
 }
 
@@ -402,7 +402,7 @@
   padding: 1.5rem;
   background: white;
   border-radius: 12px;
-  border: 2px solid #fafafa;
+  border: 2px solid #f9fafb;
   transition: all 0.3s ease;
 }
 
@@ -428,7 +428,7 @@
 
 .badge-description {
   font-size: 0.85rem;
-  color: #71717a;
+  color: #8b8fa8;
 }
 
 .badge-unlock-animation {
@@ -486,7 +486,7 @@
 
 .challenge-progress-bg {
   fill: none;
-  stroke: #fafafa;
+  stroke: #f9fafb;
   stroke-width: 8;
 }
 
@@ -609,7 +609,7 @@
 
 .campaign-status-badge.active { background: #d1fae5; color: #065f46; }
 .campaign-status-badge.paused { background: #fef3c7; color: #92400e; }
-.campaign-status-badge.ended { background: #fafafa; color: #52525b; }
+.campaign-status-badge.ended { background: #f9fafb; color: #454860; }
 
 .campaign-flow-diagram {
   display: flex;
@@ -627,12 +627,12 @@
   padding: 1rem;
   background: white;
   border-radius: 8px;
-  border: 2px solid #fafafa;
+  border: 2px solid #f9fafb;
 }
 
 .flow-arrow {
   font-size: 1.5rem;
-  color: #a1a1aa;
+  color: #a8adc4;
 }
 
 /* ============================================================================
@@ -676,7 +676,7 @@
 
 .metric-label {
   font-size: 0.9rem;
-  color: #71717a;
+  color: #8b8fa8;
 }
 
 .metric-change {
@@ -703,7 +703,7 @@
   padding: 1.5rem;
   background: white;
   border-radius: 12px;
-  border: 2px solid #fafafa;
+  border: 2px solid #f9fafb;
   transition: all 0.3s ease;
   cursor: pointer;
 }
@@ -798,18 +798,18 @@
   .campaign-card,
   .analytics-chart-container,
   .tier-progress-container {
-    background: #27272a;
-    border-color: #52525b;
-    color: #fafafa;
+    background: #222535;
+    border-color: #454860;
+    color: #f9fafb;
   }
   
   .metric-box {
-    background: #52525b;
-    color: #fafafa;
+    background: #454860;
+    color: #f9fafb;
   }
   
   .leaderboard-row:hover {
-    background: #52525b;
+    background: #454860;
   }
 }
 

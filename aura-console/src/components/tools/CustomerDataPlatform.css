@@ -89,7 +89,7 @@
   font-size: 36px;
   font-weight: 700;
   margin-bottom: 4px;
-  color: #27272a;
+  color: #222535;
 }
 
 .metric-detail {
@@ -193,7 +193,7 @@
 
 .btn-secondary {
   background: #e2e8f0;
-  color: #27272a;
+  color: #222535;
   border: none;
   border-radius: 8px;
   padding: 10px 20px;
@@ -280,7 +280,7 @@
 
 .segment-badge {
   background: #dbeafe;
-  color: #52525b;
+  color: #454860;
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 12px;
@@ -371,7 +371,7 @@
 
 .segment-size {
   background: #dbeafe;
-  color: #52525b;
+  color: #454860;
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 12px;
