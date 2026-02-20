@@ -1,4 +1,4 @@
-﻿/* Revenue Dashboard Styles */
+﻿﻿/* Revenue Dashboard Styles */
 
 .revenue-dashboard {
   padding: 24px;
@@ -20,7 +20,7 @@
 .revenue-dashboard-header h1 {
   font-size: 28px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #343434;
   margin: 0;
 }
 
@@ -141,7 +141,7 @@
 .summary-card .card-value {
   font-size: 32px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #343434;
   margin-bottom: 4px;
 }
 
@@ -168,7 +168,7 @@
   font-size: 18px;
   font-weight: 600;
   margin: 0 0 20px 0;
-  color: #1a1a1a;
+  color: #343434;
 }
 
 /* Growth Metrics */
@@ -183,7 +183,7 @@
   font-size: 18px;
   font-weight: 600;
   margin: 0 0 20px 0;
-  color: #1a1a1a;
+  color: #343434;
 }
 
 .metrics-grid {
@@ -221,7 +221,7 @@
 .metric-card .value {
   font-size: 24px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #343434;
   margin-bottom: 4px;
 }
 
@@ -240,7 +240,7 @@
 .streams-tab h2 {
   font-size: 22px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #343434;
   margin: 0;
 }
 
@@ -275,7 +275,7 @@
   padding: 16px;
   border-bottom: 1px solid #f0f0f0;
   font-size: 14px;
-  color: #1a1a1a;
+  color: #343434;
 }
 
 .streams-table tbody tr:hover {
@@ -318,7 +318,7 @@
   font-size: 18px;
   font-weight: 600;
   margin: 0 0 20px 0;
-  color: #1a1a1a;
+  color: #343434;
 }
 
 .cohort-analysis {
@@ -332,7 +332,7 @@
   font-size: 18px;
   font-weight: 600;
   margin: 0 0 20px 0;
-  color: #1a1a1a;
+  color: #343434;
 }
 
 .cohort-table {
@@ -399,7 +399,7 @@
 .projections-tab h2 {
   font-size: 22px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #343434;
   margin: 0;
 }
 
@@ -428,7 +428,7 @@
 .projection-card .value {
   font-size: 32px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #343434;
   margin-bottom: 4px;
 }
 
@@ -449,7 +449,7 @@
   font-size: 16px;
   font-weight: 600;
   margin: 0 0 12px 0;
-  color: #1a1a1a;
+  color: #343434;
 }
 
 .projection-assumptions ul {

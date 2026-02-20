@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "../../api";
 
 const CACHE_KEY = "paw:last-run";
@@ -58,7 +58,7 @@ const Sparkline = ({ series, metric, reduceMotion }) => {
   const width = 160;
   const height = 60;
   if (!series || series.length === 0) return null;
-  const values = series.map((p) => Number(p.predicted));
+  const values = series.map((p) =>Number(p.predicted));
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
@@ -543,7 +543,7 @@ export default function PredictiveAnalyticsWidgets() {
   const exportCsv = (rows, headers, filename) => {
     if (!rows || !rows.length) return;
     const csv = [headers.join(",")].concat(
-      rows.map((r) => headers.map((h) => JSON.stringify(r[h] ?? "")).join(","))
+      rows.map((r) => headers.map((h) =>JSON.stringify(r[h] ?? "")).join(","))
     ).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);

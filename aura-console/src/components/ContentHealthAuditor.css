@@ -1,4 +1,4 @@
-﻿.cha-wrap {
+﻿﻿.cha-wrap {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -10,9 +10,9 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  background: #111111;
+  background: #282828;
   border-radius: 16px;
-  box-shadow: 0 2px 16px 0 #111111;
+  box-shadow: 0 2px 16px 0 #282828;
   padding: 20px 32px;
   margin-bottom: 32px;
 }
@@ -65,8 +65,8 @@
 }
 
 .cha-summary-item {
-  border: 1px solid #333333;
-  background: #111111;
+  border: 1px solid #4a4a4a;
+  background: #282828;
   border-radius: 14px;
   padding: 10px 12px;
   min-width: 140px;
@@ -95,7 +95,7 @@
 
 .cha-error {
   border: 1px solid #ef4444;
-  background: #111111;
+  background: #282828;
   border-radius: 14px;
   padding: 12px;
 }
@@ -112,10 +112,10 @@
 }
 
 .cha-table-wrap {
-  border: 1px solid #333333;
+  border: 1px solid #4a4a4a;
   border-radius: 16px;
   overflow: hidden;
-  background: #111111;
+  background: #282828;
 }
 
 .cha-table {
@@ -127,15 +127,15 @@
 .cha-table thead th {
   text-align: left;
   padding: 10px 12px;
-  border-bottom: 1px solid #333333;
+  border-bottom: 1px solid #4a4a4a;
   opacity: 0.8;
   font-weight: 650;
-  background: #111111;
+  background: #282828;
 }
 
 .cha-table tbody td {
   padding: 10px 12px;
-  border-bottom: 1px solid #111111;
+  border-bottom: 1px solid #282828;
   vertical-align: top;
 }
 
@@ -176,8 +176,8 @@
   font-size: 11px;
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid #333333;
-  background: #111111;
+  border: 1px solid #4a4a4a;
+  background: #282828;
   opacity: 0.95;
 }
 
@@ -197,23 +197,23 @@
   border-radius: 999px;
   font-weight: 700;
   font-size: 12px;
-  border: 1px solid #333333;
-  background: #111111;
+  border: 1px solid #4a4a4a;
+  background: #282828;
 }
 
 .score-badge--bad {
   border-color: #ef4444;
-  background: #111111;
+  background: #282828;
 }
 
 .score-badge--warn {
   border-color: #f59e42;
-  background: #111111;
+  background: #282828;
 }
 
 .score-badge--good {
   border-color: #22c55e;
-  background: #111111;
+  background: #282828;
 }
 
 .cha-footer {

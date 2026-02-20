@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿﻿import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 
@@ -14,11 +14,11 @@ const options = {
   scales: {
     x: { 
       ticks: { color: '#94a3b8' },
-      grid: { color: '#1e1e1e' },
+      grid: { color: '#2e2e2e' },
     },
     y: { 
       ticks: { color: '#94a3b8' },
-      grid: { color: '#1e1e1e' },
+      grid: { color: '#2e2e2e' },
     },
   },
 };
@@ -113,7 +113,7 @@ export default function DashboardCharts() {
           padding: '60px 0',
           fontSize: 14,
         }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>📊</div>
+          
           Loading chart data...
         </div>
       )}

@@ -1,4 +1,4 @@
-
+﻿
 import React from "react";
 
 export default function WinbackEmptyState({ title, description, action, onAction, icon, darkMode: propDarkMode }) {
@@ -14,7 +14,7 @@ export default function WinbackEmptyState({ title, description, action, onAction
         borderRadius: 16,
         padding: 48,
         textAlign: 'center',
-        color: darkMode ? '#a3e635' : '#0a0a0a',
+        color: darkMode ? '#a3e635' : '#141414',
         margin: '32px 0',
         outline: 'none',
         boxShadow: darkMode ? '0 2px 24px #22d3ee33' : '0 2px 16px #0001',
@@ -32,7 +32,7 @@ export default function WinbackEmptyState({ title, description, action, onAction
           onClick={onAction}
           style={{
             background: '#7fffd4',
-            color: '#0a0a0a',
+            color: '#141414',
             border: 'none',
             borderRadius: 8,
             padding: '12px 32px',

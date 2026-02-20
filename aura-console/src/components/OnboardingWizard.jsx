@@ -1,4 +1,4 @@
-// Onboarding Wizard - 3-Step Setup Flow
+﻿// Onboarding Wizard - 3-Step Setup Flow
 // Guides new users through connecting Shopify and choosing a plan
 
 import React, { useState } from 'react';
@@ -170,22 +170,22 @@ const OnboardingWizard = ({ onComplete }) => {
               
               <div className="features-grid">
                 <div className="feature-card">
-                  <div className="feature-icon">🤖</div>
+                  <div className="feature-icon"></div>
                   <h3>AI-Powered Tools</h3>
                   <p>20+ enterprise tools including automatic SEO scanning on setup</p>
                 </div>
                 <div className="feature-card">
-                  <div className="feature-icon">📊</div>
+                  <div className="feature-icon"></div>
                   <h3>Advanced Analytics</h3>
                   <p>Real-time insights and predictive analytics for growth</p>
                 </div>
                 <div className="feature-card">
-                  <div className="feature-icon">⚡</div>
+                  <div className="feature-icon"></div>
                   <h3>Automation</h3>
                   <p>Set it and forget it - let AI handle the repetitive tasks</p>
                 </div>
                 <div className="feature-card">
-                  <div className="feature-icon">💰</div>
+                  <div className="feature-icon"></div>
                   <h3>Revenue Growth</h3>
                   <p>Proven strategies to increase AOV, conversions, and LTV</p>
                 </div>
@@ -216,11 +216,11 @@ const OnboardingWizard = ({ onComplete }) => {
                   </div>
 
                   <button onClick={connectShopify} className="btn-shopify">
-                    <FaShopify /> Connect to Shopify
+                    <FaShopify />Connect to Shopify
                   </button>
 
                   <div className="privacy-notice">
-                    🔒 We only request the minimum permissions needed. Your data is encrypted and secure.
+                     We only request the minimum permissions needed. Your data is encrypted and secure.
                   </div>
 
                   <div className="skip-link">
@@ -231,7 +231,7 @@ const OnboardingWizard = ({ onComplete }) => {
                 </div>
               ) : (
                 <div className="shopify-connected">
-                  <div className="success-icon">✓</div>
+                  <div className="success-icon"></div>
                   <h3>Successfully Connected!</h3>
                   <p>Your Shopify store is now connected to Aura.</p>
                 </div>
@@ -270,7 +270,7 @@ const OnboardingWizard = ({ onComplete }) => {
                     </ul>
 
                     <div className="select-indicator">
-                      {selectedPlan === plan.id ? '✓ Selected' : 'Select Plan'}
+                      {selectedPlan === plan.id ? ' Selected' : 'Select Plan'}
                     </div>
                   </div>
                 ))}
@@ -358,7 +358,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .step-circle.active {
           background: #7fffd4;
-          color: #0a0a0a;
+          color: #141414;
         }
 
         .step-circle.completed {
@@ -395,7 +395,7 @@ const OnboardingWizard = ({ onComplete }) => {
           font-size: 42px;
           font-weight: 700;
           margin: 0 0 8px 0;
-          color: #0a0a0a;
+          color: #141414;
         }
 
         .subtitle {
@@ -590,7 +590,7 @@ const OnboardingWizard = ({ onComplete }) => {
           top: -12px;
           right: 24px;
           background: #7fffd4;
-          color: #0a0a0a;
+          color: #141414;
           padding: 6px 12px;
           border-radius: 12px;
           font-size: 12px;
@@ -647,7 +647,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .plan-card.selected .select-indicator {
           background: #7fffd4;
-          color: #0a0a0a;
+          color: #141414;
         }
 
         .wizard-footer {
@@ -674,7 +674,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .btn-primary {
           background: #7fffd4;
-          color: #0a0a0a;
+          color: #141414;
           padding: 14px 32px;
           border: none;
           border-radius: 8px;

@@ -1,4 +1,4 @@
-﻿/* A/B Testing Suite - Enterprise Console CSS */
+﻿﻿/* A/B Testing Suite - Enterprise Console CSS */
 
 .ab-testing-suite {
   padding: 24px;
@@ -18,7 +18,7 @@
 .ab-testing-suite .tool-header h1 {
   font-size: 32px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #343434;
   margin: 0;
 }
 
@@ -84,7 +84,7 @@
 .ab-testing-suite .card-header {
   font-size: 18px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #343434;
   margin-bottom: 16px;
 }
 
@@ -118,7 +118,7 @@
 .ab-testing-suite .stat-value {
   font-size: 32px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #343434;
   margin-bottom: 4px;
 }
 
@@ -148,7 +148,7 @@
   display: block;
   font-size: 14px;
   font-weight: 500;
-  color: #333333;
+  color: #4a4a4a;
   margin-bottom: 8px;
 }
 
@@ -196,7 +196,7 @@
 }
 
 .ab-testing-suite .btn-primary:hover {
-  background: #555555;
+  background: #777777;
 }
 
 .ab-testing-suite .btn-secondary {
@@ -262,7 +262,7 @@
 .ab-testing-suite .experiment-name {
   font-size: 18px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #343434;
   margin-bottom: 4px;
 }
 
@@ -322,7 +322,7 @@
 .ab-testing-suite .variant-name {
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #343434;
   margin-bottom: 12px;
   display: flex;
   align-items: center;
@@ -347,7 +347,7 @@
 
 .ab-testing-suite .metric-value {
   font-weight: 600;
-  color: #1a1a1a;
+  color: #343434;
 }
 
 /* Statistical Results */
@@ -373,7 +373,7 @@
 
 .ab-testing-suite .results-table td {
   font-size: 14px;
-  color: #1a1a1a;
+  color: #343434;
 }
 
 .ab-testing-suite .significance-badge {
@@ -466,7 +466,7 @@
 
 .ab-testing-suite .alert-info {
   background: #dbeafe;
-  color: #333333;
+  color: #4a4a4a;
   border: 1px solid #3b82f6;
 }
 

@@ -1,4 +1,4 @@
-// aura-console/src/components/FixQueue.jsx
+﻿// aura-console/src/components/FixQueue.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./FixQueue.css";
 
@@ -77,7 +77,7 @@ export default function FixQueue({ coreUrl, projectId }) {
 
   const [selected, setSelected] = useState({});
   const selectedIds = useMemo(
-    () => Object.entries(selected).filter(([, v]) => v).map(([k]) => Number(k)),
+    () =>Object.entries(selected).filter(([, v]) => v).map(([k]) =>Number(k)),
     [selected]
   );
 

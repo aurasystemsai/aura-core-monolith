@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import './Orchestration.css';
 
 const initialWorkflows = [
@@ -30,7 +30,7 @@ const Orchestration = () => {
           cursor: 'help',
         }}
         title="This panel lets you automate, pause, or resume key workflows that keep your store running smoothly. Hover each item for details.">
-          ⓘ
+          
         </span>
       </h2>
       <div className="aura-orchestration-list">
@@ -55,7 +55,7 @@ const Orchestration = () => {
         ))}
       </div>
       <div className="aura-orchestration-note" title="Workflows are automated processes that help keep your store optimized. You can pause or activate them at any time.">
-        <strong>Tip:</strong> Workflows are automated processes (like SEO fixes or product syncs) that run in the background. Use the buttons to pause or activate each one. Hover any label or button for a quick explanation.
+        <strong>Tip:</strong>Workflows are automated processes (like SEO fixes or product syncs) that run in the background. Use the buttons to pause or activate each one. Hover any label or button for a quick explanation.
       </div>
     </div>
   );

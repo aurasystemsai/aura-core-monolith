@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { Card, Button, Table, Input, Tabs, Progress, notification } from "antd";
 import { BarChartOutlined, InfoCircleOutlined, ShareAltOutlined, QuestionCircleOutlined, DownloadOutlined } from "@ant-design/icons";
 
@@ -38,10 +38,10 @@ export default function CustomerJourneyMapping() {
   return (
     <div style={{ padding: 24 }}>
       <Card
-        title={<span><BarChartOutlined /> Customer Journey Mapping</span>}
+        title={<span><BarChartOutlined />Customer Journey Mapping</span>}
         extra={<Button icon={<DownloadOutlined />} loading={exporting} onClick={handleExport} />}>
         <Tabs activeKey={tab} onChange={setTab}>
-          <Tabs.TabPane tab={<span><BarChartOutlined /> Map</span>} key="map">
+          <Tabs.TabPane tab={<span><BarChartOutlined />Map</span>} key="map">
             <Input.TextArea
               value={input}
               onChange={e => setInput(e.target.value)}
@@ -73,7 +73,7 @@ export default function CustomerJourneyMapping() {
               </div>
             </div>
           </Tabs.TabPane>
-          <Tabs.TabPane tab={<span><InfoCircleOutlined /> Onboarding</span>} key="onboarding">
+          <Tabs.TabPane tab={<span><InfoCircleOutlined />Onboarding</span>} key="onboarding">
             <div style={{ padding: 24 }}>
               <h3>How to Use Customer Journey Mapping</h3>
               <ol>
@@ -84,7 +84,7 @@ export default function CustomerJourneyMapping() {
               <Button icon={<QuestionCircleOutlined />} style={{ marginTop: 16 }}>View Documentation</Button>
             </div>
           </Tabs.TabPane>
-          <Tabs.TabPane tab={<span><ShareAltOutlined /> Feedback</span>} key="feedback">
+          <Tabs.TabPane tab={<span><ShareAltOutlined />Feedback</span>} key="feedback">
             <div style={{ padding: 24 }}>
               <h3>Feedback & Suggestions</h3>
               <Input.TextArea rows={4} value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Share your feedback or feature requests..." style={{ marginBottom: 12 }} />

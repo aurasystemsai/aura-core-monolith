@@ -1,4 +1,4 @@
-// aura-console/src/components/tools/AdvancedPersonalizationAnomalyBanner.jsx
+﻿// aura-console/src/components/tools/AdvancedPersonalizationAnomalyBanner.jsx
 // Banner for anomaly detection in analytics
 import React from 'react';
 
@@ -13,7 +13,7 @@ export default function AdvancedPersonalizationAnomalyBanner({ analytics }) {
   if (!anomaly) return null;
   return (
     <div style={{ background: '#fef3c7', color: '#b45309', borderRadius: 8, padding: 12, marginBottom: 18, fontWeight: 600 }}>
-      ⚠️ {anomaly}
+      ️ {anomaly}
     </div>
   );
 }

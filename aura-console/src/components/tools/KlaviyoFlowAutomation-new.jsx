@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './KlaviyoFlowAutomation.css';
 
@@ -13,7 +13,7 @@ const KlaviyoFlowAutomation = () => {
   const categories = {
     'flow-builder': {
       name: 'Flow Builder',
-      icon: '🔄',
+      icon: '',
       tabs: [
         { id: 'flow-templates', label: 'Flow Templates', endpoint: '/flow-templates' },
         { id: 'flows', label: 'Flows', endpoint: '/flows' },
@@ -24,7 +24,7 @@ const KlaviyoFlowAutomation = () => {
     },
     'messaging': {
       name: 'Messaging',
-      icon: '📧',
+      icon: '',
       tabs: [
         { id: 'email-templates', label: 'Email Templates', endpoint: '/email-templates' },
         { id: 'sms-templates', label: 'SMS Templates', endpoint: '/sms-templates' },
@@ -36,7 +36,7 @@ const KlaviyoFlowAutomation = () => {
     },
     'contacts-segments': {
       name: 'Contacts & Segments',
-      icon: '👥',
+      icon: '',
       tabs: [
         { id: 'contacts', label: 'Contacts', endpoint: '/contacts' },
         { id: 'segments', label: 'Segments', endpoint: '/segments' },
@@ -47,7 +47,7 @@ const KlaviyoFlowAutomation = () => {
     },
     'analytics': {
       name: 'Analytics & Reporting',
-      icon: '📊',
+      icon: '',
       tabs: [
         { id: 'metrics', label: 'Metrics', endpoint: '/metrics' },
         { id: 'reports', label: 'Reports', endpoint: '/reports' },
@@ -59,7 +59,7 @@ const KlaviyoFlowAutomation = () => {
     },
     'ai-personalization': {
       name: 'AI & Personalization',
-      icon: '🤖',
+      icon: '',
       tabs: [
         { id: 'predictions', label: 'Predictions', endpoint: '/predictions' },
         { id: 'personalization-rules', label: 'Personalization Rules', endpoint: '/personalization-rules' },
@@ -70,7 +70,7 @@ const KlaviyoFlowAutomation = () => {
     },
     'automation': {
       name: 'Automation & Scheduling',
-      icon: '⚙️',
+      icon: '️',
       tabs: [
         { id: 'automation-rules', label: 'Automation Rules', endpoint: '/automation-rules' },
         { id: 'schedules', label: 'Schedules', endpoint: '/schedules' },
@@ -81,7 +81,7 @@ const KlaviyoFlowAutomation = () => {
     },
     'integrations': {
       name: 'Integrations & Settings',
-      icon: '🔌',
+      icon: '',
       tabs: [
         { id: 'integrations', label: 'Integrations', endpoint: '/integrations' },
         { id: 'webhooks', label: 'Webhooks', endpoint: '/webhooks' },
@@ -92,7 +92,7 @@ const KlaviyoFlowAutomation = () => {
     },
     'advanced': {
       name: 'Advanced Features',
-      icon: '🚀',
+      icon: '',
       tabs: [
         { id: 'versions', label: 'Version History', endpoint: '/versions' },
         { id: 'templates-library', label: 'Templates Library', endpoint: '/templates' },

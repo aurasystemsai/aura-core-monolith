@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Loyalty & Referral Programs - World-Class Platform
  * 
  * Tool 3 of 77 - Frontend Implementation (Week 4-6)
@@ -1979,7 +1979,7 @@ const LoyaltyReferralPrograms = () => {
                 {referralAnalytics.viralLoop?.kFactor?.toFixed(2) || '0.00'}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {referralAnalytics.viralLoop?.kFactor > 1 ? 'Viral growth! 🚀' : 'Not yet viral'}
+                {referralAnalytics.viralLoop?.kFactor > 1 ? 'Viral growth! ' : 'Not yet viral'}
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>

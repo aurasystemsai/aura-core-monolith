@@ -1,4 +1,4 @@
-﻿// Billing & Subscription Management UI
+﻿﻿// Billing & Subscription Management UI
 // Shopify App Billing integration for plan management
 
 import React, { useState, useEffect } from 'react';
@@ -370,7 +370,7 @@ const Billing = () => {
           padding: 32px;
           max-width: 1200px;
           margin: 0 auto;
-          background: #111111;
+          background: #282828;
           min-height: 100vh;
         }
 
@@ -393,8 +393,8 @@ const Billing = () => {
         .current-plan-card,
         .usage-card,
         .invoices-card {
-          background: #111111;
-          border: 1px solid #1e1e1e;
+          background: #282828;
+          border: 1px solid #2e2e2e;
           padding: 24px;
           border-radius: 12px;
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
@@ -418,7 +418,7 @@ const Billing = () => {
           justify-content: space-between;
           align-items: center;
           padding-bottom: 16px;
-          border-bottom: 1px solid #1e1e1e;
+          border-bottom: 1px solid #2e2e2e;
         }
 
         .plan-header h2 {
@@ -474,7 +474,7 @@ const Billing = () => {
           display: flex;
           justify-content: space-between;
           padding: 12px 0;
-          border-bottom: 1px solid #1e1e1e;
+          border-bottom: 1px solid #2e2e2e;
           color: #cbd5e1;
         }
 
@@ -486,7 +486,7 @@ const Billing = () => {
 
         .btn-primary {
           background: #7fffd4;
-          color: #0a0a0a;
+          color: #141414;
           padding: 12px 32px;
           border: none;
           border-radius: 8px;
@@ -526,8 +526,8 @@ const Billing = () => {
 
         .usage-stat {
           padding: 16px;
-          background: #111111;
-          border: 1px solid #1e1e1e;
+          background: #282828;
+          border: 1px solid #2e2e2e;
           border-radius: 8px;
         }
 
@@ -545,7 +545,7 @@ const Billing = () => {
 
         .progress-bar {
           height: 8px;
-          background: #1e1e1e;
+          background: #2e2e2e;
           border-radius: 4px;
           margin-top: 8px;
           overflow: hidden;
@@ -558,7 +558,7 @@ const Billing = () => {
         }
 
         .btn-secondary {
-          background: #1e1e1e;
+          background: #2e2e2e;
           color: #f0f0f0;
           padding: 12px 24px;
           border: none;
@@ -569,7 +569,7 @@ const Billing = () => {
         }
 
         .btn-secondary:hover {
-          background: #222222;
+          background: #3c3c3c;
         }
 
         .invoices-table {
@@ -585,14 +585,14 @@ const Billing = () => {
         .invoices-table th {
           text-align: left;
           padding: 12px;
-          background: #111111;
+          background: #282828;
           font-weight: 600;
           color: #94a3b8;
         }
 
         .invoices-table td {
           padding: 12px;
-          border-bottom: 1px solid #1e1e1e;
+          border-bottom: 1px solid #2e2e2e;
           color: #cbd5e1;
         }
 
@@ -607,7 +607,7 @@ const Billing = () => {
         }
 
         .btn-icon:hover {
-          background: #1e1e1e;
+          background: #2e2e2e;
         }
 
         .modal-overlay {
@@ -624,8 +624,8 @@ const Billing = () => {
         }
 
         .modal-content {
-          background: #111111;
-          border: 1px solid #1e1e1e;
+          background: #282828;
+          border: 1px solid #2e2e2e;
           padding: 32px;
           border-radius: 16px;
           max-width: 1000px;
@@ -667,8 +667,8 @@ const Billing = () => {
         }
 
         .plan-card {
-          background: #111111;
-          border: 2px solid #1e1e1e;
+          background: #282828;
+          border: 2px solid #2e2e2e;
           border-radius: 12px;
           padding: 24px;
           position: relative;
@@ -688,7 +688,7 @@ const Billing = () => {
           top: -12px;
           right: 24px;
           background: #7fffd4;
-          color: #0a0a0a;
+          color: #141414;
           padding: 4px 12px;
           border-radius: 12px;
           font-size: 12px;
@@ -748,7 +748,7 @@ const Billing = () => {
         }
 
         .btn-current {
-          background: #1e1e1e;
+          background: #2e2e2e;
           color: #64748b;
           cursor: not-allowed;
         }

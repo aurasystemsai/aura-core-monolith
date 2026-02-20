@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from "react";
+﻿﻿import React, { useState, useEffect, useMemo } from "react";
 import { apiFetch } from "../api";
 import usePlan, { canUseTool, requiredPlanFor, PLAN_LABEL, PLAN_PRICE, PLAN_COLOUR } from "../hooks/usePlan";
 
@@ -136,7 +136,7 @@ export default function AllTools({ setActiveSection }) {
             onClick={() => setActiveCategory(cat.id)}
             style={{
               padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              border: `1px solid ${activeCategory === cat.id ? '#7fffd4' : '#1e1e1e'}`,
+              border: `1px solid ${activeCategory === cat.id ? '#7fffd4' : '#2e2e2e'}`,
               background: activeCategory === cat.id ? '#7fffd422' : 'transparent',
               color: activeCategory === cat.id ? '#7fffd4' : '#94a3b8',
             }}
@@ -147,9 +147,9 @@ export default function AllTools({ setActiveSection }) {
         {(searchTerm || activeCategory !== 'all') && (
           <button
             onClick={() => { setSearchTerm(''); setActiveCategory('all'); }}
-            style={{ padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: '1px solid #333333', background: 'transparent', color: '#64748b' }}
+            style={{ padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: '1px solid #4a4a4a', background: 'transparent', color: '#64748b' }}
           >
-            Clear filters ✕
+            Clear filters 
           </button>
         )}
       </div>
@@ -157,10 +157,10 @@ export default function AllTools({ setActiveSection }) {
       {/* Tool Grid */}
       {sortedModules.length === 0 && (
         <div style={{ textAlign: 'center', padding: '80px 20px', color: '#64748b' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
+          
           <div style={{ fontSize: 18, fontWeight: 700, color: '#94a3b8', marginBottom: 8 }}>No tools found</div>
           <div style={{ fontSize: 14 }}>Try a different search term or category</div>
-          <button onClick={() => { setSearchTerm(''); setActiveCategory('all'); }} style={{ marginTop: 20, padding: '8px 20px', borderRadius: 8, border: '1px solid #333333', background: 'transparent', color: '#7fffd4', fontWeight: 700, cursor: 'pointer' }}>Clear filters</button>
+          <button onClick={() => { setSearchTerm(''); setActiveCategory('all'); }} style={{ marginTop: 20, padding: '8px 20px', borderRadius: 8, border: '1px solid #4a4a4a', background: 'transparent', color: '#7fffd4', fontWeight: 700, cursor: 'pointer' }}>Clear filters</button>
         </div>
       )}
       <div className="all-tools-grid">
@@ -177,7 +177,7 @@ export default function AllTools({ setActiveSection }) {
             >
               {locked && (
                 <div style={{ position: "absolute", inset: 0, borderRadius: "inherit", background: "rgba(15,23,42,0.82)", backdropFilter: "blur(2px)", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: 12, textAlign: "center" }}>
-                  <span style={{ fontSize: 28 }}>🔒</span>
+                  <span style={{ fontSize: 28 }}></span>
                   <span style={{ fontSize: 13, fontWeight: 800, color: PLAN_COLOUR[reqPlan] }}>{PLAN_LABEL[reqPlan]} Plan</span>
                   <span style={{ fontSize: 11, color: "#94a3b8" }}>from {PLAN_PRICE[reqPlan]}</span>
                   <span style={{ fontSize: 11, color: "#7fffd4", fontWeight: 700, marginTop: 2 }}>Upgrade Plan →</span>
@@ -206,7 +206,7 @@ export default function AllTools({ setActiveSection }) {
                   className="doc-link"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  📄 Docs
+                   Docs
                 </a>
               )}
             </div>
@@ -219,7 +219,7 @@ export default function AllTools({ setActiveSection }) {
           padding: 32px;
           max-width: 1400px;
           margin: 0 auto;
-          background: #111111;
+          background: #282828;
           min-height: 100vh;
         }
 
@@ -280,8 +280,8 @@ export default function AllTools({ setActiveSection }) {
           flex: 1;
           padding: 12px 16px;
           border-radius: 10px;
-          border: 1px solid #1e1e1e;
-          background: #111111;
+          border: 1px solid #2e2e2e;
+          background: #282828;
           color: #f0f0f0;
           font-size: 15px;
         }
@@ -295,8 +295,8 @@ export default function AllTools({ setActiveSection }) {
         .sort-select {
           padding: 12px 16px;
           border-radius: 10px;
-          border: 1px solid #1e1e1e;
-          background: #111111;
+          border: 1px solid #2e2e2e;
+          background: #282828;
           color: #f0f0f0;
           font-size: 15px;
           cursor: pointer;
@@ -307,7 +307,7 @@ export default function AllTools({ setActiveSection }) {
           border-radius: 10px;
           border: none;
           background: linear-gradient(135deg, #7fffd4 0%, #22d3ee 100%);
-          color: #111111;
+          color: #282828;
           font-weight: 700;
           font-size: 15px;
           cursor: pointer;
@@ -325,8 +325,8 @@ export default function AllTools({ setActiveSection }) {
         }
 
         .tool-card {
-          background: #111111;
-          border: 1px solid #1e1e1e;
+          background: #282828;
+          border: 1px solid #2e2e2e;
           border-radius: 16px;
           padding: 24px;
           cursor: pointer;
@@ -386,12 +386,12 @@ export default function AllTools({ setActiveSection }) {
 
         .status-new {
           background: #22d3ee;
-          color: #111111;
+          color: #282828;
         }
 
         .status-beta {
           background: #f59e0b;
-          color: #111111;
+          color: #282828;
         }
 
         .doc-link {

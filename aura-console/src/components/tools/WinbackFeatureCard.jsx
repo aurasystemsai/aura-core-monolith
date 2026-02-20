@@ -1,4 +1,4 @@
-﻿
+﻿﻿
 import React, { useState } from "react";
 
 export default function WinbackFeatureCard({ title, description, icon, children, actions = [], darkMode: propDarkMode }) {
@@ -15,7 +15,7 @@ export default function WinbackFeatureCard({ title, description, icon, children,
       onFocus={() => setHover(true)}
       onBlur={() => setHover(false)}
       style={{
-        background: '#232323',
+        background: '#313131',
         borderRadius: 16,
         boxShadow: hover ? '0 4px 24px #22d3ee33' : '0 2px 16px #0001',
         padding: 24,
@@ -44,8 +44,8 @@ export default function WinbackFeatureCard({ title, description, icon, children,
                 key={a.label + i}
                 onClick={a.onClick}
                 style={{
-                  background: a.color || (darkMode ? '#0a0a0a' : '#7fffd4'),
-                  color: darkMode ? '#a3e635' : '#0a0a0a',
+                  background: a.color || (darkMode ? '#141414' : '#7fffd4'),
+                  color: darkMode ? '#a3e635' : '#141414',
                   border: 'none',
                   borderRadius: 8,
                   padding: '8px 18px',

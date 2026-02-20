@@ -1,4 +1,4 @@
-﻿/* Customer Support AI V2 - Enterprise Styling */
+﻿﻿/* Customer Support AI V2 - Enterprise Styling */
 
 /* Stats Grid */
 .stats-grid {
@@ -44,7 +44,7 @@
 }
 
 .ticket-card.status-closed {
-  border-left-color: #666666;
+  border-left-color: #777777;
 }
 
 /* Status Badges */
@@ -69,12 +69,12 @@
 
 .status-badge.resolved {
   background: #dbeafe;
-  color: #333333;
+  color: #4a4a4a;
 }
 
 .status-badge.closed {
   background: #f0f0f0;
-  color: #1a1a1a;
+  color: #343434;
 }
 
 /* Priority Indicators */
@@ -94,7 +94,7 @@
 }
 
 .priority-indicator.urgent::before {
-  content: '🔴';
+  content: '';
 }
 
 .priority-indicator.high {
@@ -103,25 +103,25 @@
 }
 
 .priority-indicator.high::before {
-  content: '🟠';
+  content: '';
 }
 
 .priority-indicator.medium {
   background: #bfdbfe;
-  color: #333333;
+  color: #4a4a4a;
 }
 
 .priority-indicator.medium::before {
-  content: '🔵';
+  content: '';
 }
 
 .priority-indicator.low {
   background: #f0f0f0;
-  color: #333333;
+  color: #4a4a4a;
 }
 
 .priority-indicator.low::before {
-  content: '⚪';
+  content: '';
 }
 
 /* SLA Breach Indicators */
@@ -336,7 +336,7 @@
 }
 
 .achievement-badge.common {
-  border-color: #888888;
+  border-color: #9a9a9a;
 }
 
 .achievement-badge.rare {
@@ -390,7 +390,7 @@
 }
 
 .leaderboard-rank.rank-2 {
-  color: #888888;
+  color: #9a9a9a;
 }
 
 .leaderboard-rank.rank-3 {
@@ -478,7 +478,7 @@
   left: 50%;
   transform: translateX(-50%);
   font-size: 1.5rem;
-  color: #888888;
+  color: #9a9a9a;
 }
 
 .macro-action-step:last-child::after {
@@ -527,12 +527,12 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: #666666;
+  color: #777777;
   font-size: 0.875rem;
 }
 
 .view-count::before {
-  content: '👁';
+  content: '';
 }
 
 .featured-badge {
@@ -547,7 +547,7 @@
 }
 
 .featured-badge::before {
-  content: '⭐ ';
+  content: ' ';
 }
 
 /* Omnichannel */
@@ -619,21 +619,21 @@
 
 .message-status {
   font-size: 0.75rem;
-  color: #888888;
+  color: #9a9a9a;
   margin-top: 0.25rem;
 }
 
 .message-status.read::before {
-  content: '✓✓ ';
+  content: ' ';
   color: #3b82f6;
 }
 
 .message-status.delivered::before {
-  content: '✓✓ ';
+  content: ' ';
 }
 
 .message-status.sent::before {
-  content: '✓ ';
+  content: ' ';
 }
 
 /* AI Insights */
@@ -726,7 +726,7 @@
 }
 
 .insight-card.low {
-  border-left-color: #666666;
+  border-left-color: #777777;
 }
 
 /* Responsive Design */
@@ -758,25 +758,25 @@
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   .ticket-card {
-    background: #1a1a1a;
+    background: #343434;
   }
   
   .qa-review-card {
-    background: #1a1a1a;
-    border-color: #333333;
+    background: #343434;
+    border-color: #4a4a4a;
   }
   
   .article-card {
-    background: #1a1a1a;
-    border-color: #333333;
+    background: #343434;
+    border-color: #4a4a4a;
   }
   
   .message-bubble.customer {
-    background: #333333;
+    background: #4a4a4a;
   }
   
   .insight-card {
-    background: #1a1a1a;
+    background: #343434;
   }
 }
 

@@ -1,4 +1,4 @@
-﻿import React from "react";
+﻿﻿import React from "react";
 
 export default function ScheduledExport() {
   const [showOnboarding, setShowOnboarding] = React.useState(true);
@@ -14,15 +14,15 @@ export default function ScheduledExport() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#222222', borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
+    <div style={{ padding: 24, background: '#3c3c3c', borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Scheduled Export</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#333333', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#4a4a4a', fontSize: 16 }}>
         <li>Schedule PDF/CSV exports of reports and dashboards</li>
         <li>Select formats and delivery options</li>
         <li>Import/export export configs, analyze usage</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#0a0a0a', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#141414', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
@@ -41,7 +41,7 @@ export default function ScheduledExport() {
     const blob = new Blob([JSON.stringify(exports, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     setExported(url);
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    setTimeout(() =>URL.revokeObjectURL(url), 10000);
   };
 
   // Feedback
@@ -69,7 +69,7 @@ export default function ScheduledExport() {
       {/* Exports Table */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Exports</div>
-        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
+        <div style={{ fontSize: 15, color: '#141414' }}>
           {exports.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(exports, null, 2)}</pre>
           ) : (
@@ -80,7 +80,7 @@ export default function ScheduledExport() {
       {/* Formats Table */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Formats</div>
-        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
+        <div style={{ fontSize: 15, color: '#141414' }}>
           {formats.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(formats, null, 2)}</pre>
           ) : (
@@ -91,7 +91,7 @@ export default function ScheduledExport() {
       {/* Delivery Options Table */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Delivery Options</div>
-        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
+        <div style={{ fontSize: 15, color: '#141414' }}>
           {deliveryOptions.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(deliveryOptions, null, 2)}</pre>
           ) : (
@@ -110,7 +110,7 @@ export default function ScheduledExport() {
       {/* Analytics Dashboard */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
-        <div style={{ fontSize: 15, color: '#0a0a0a' }}>
+        <div style={{ fontSize: 15, color: '#141414' }}>
           {analytics.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
           ) : (
@@ -119,7 +119,7 @@ export default function ScheduledExport() {
         </div>
       </div>
       {/* Feedback */}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#222222', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#3c3c3c', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   Page,
   Layout,
@@ -286,7 +286,7 @@ export default function ReviewsUGCEngineV2() {
                   <p>Total Reviews</p>
                 </div>
                 <div className="stat-card gradient-blue">
-                  <h3>{dashboardStats.averageRating.toFixed(1)} ★</h3>
+                  <h3>{dashboardStats.averageRating.toFixed(1)} </h3>
                   <p>Average Rating</p>
                 </div>
                 <div className="stat-card gradient-pink">
@@ -355,7 +355,7 @@ function ReviewListTab({ reviews, setReviews, showToast }) {
           rows={reviews.map((r) => [
             r.customerName || r.customerId,
             r.productId,
-            `${r.rating} ★`,
+            `${r.rating} `,
             r.status,
             new Date(r.createdAt).toLocaleDateString(),
           ])}

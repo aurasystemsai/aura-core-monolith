@@ -1,4 +1,4 @@
-﻿
+﻿﻿
 import React from "react";
 import { apiFetch } from "../../api";
 import BackButton from "./BackButton";
@@ -110,7 +110,7 @@ export default function WebhookApiTriggers() {
     a.href = url;
     a.download = "webhook-api-preflight.json";
     a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    setTimeout(() =>URL.revokeObjectURL(url), 2000);
   };
 
   const attachPreflightForReviewer = () => {
@@ -127,7 +127,7 @@ export default function WebhookApiTriggers() {
     a.href = url;
     a.download = "webhook-api-preflight-review.json";
     a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    setTimeout(() =>URL.revokeObjectURL(url), 2000);
   };
   const [lastDeleted, setLastDeleted] = React.useState(null);
   const [trash, setTrash] = React.useState({ webhooks: [], apis: [] });
@@ -193,7 +193,7 @@ export default function WebhookApiTriggers() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#111111', borderRadius: 12, marginBottom: 18, color: '#f0f0f0', border: '1px solid #1a1a1a' }}>
+    <div style={{ padding: 24, background: '#282828', borderRadius: 12, marginBottom: 18, color: '#f0f0f0', border: '1px solid #343434' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Webhook & API Triggers</h3>
       <ul style={{ margin: '16px 0 0 18px', color: '#e0e0e0', fontSize: 16 }}>
         <li>Set up webhook listeners and API integrations</li>
@@ -235,7 +235,7 @@ export default function WebhookApiTriggers() {
       const blob = new Blob([JSON.stringify({ webhooks: data.webhooks || data.items || [], apis: data.apis || [] }, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       setExported(url);
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
+      setTimeout(() =>URL.revokeObjectURL(url), 10000);
     } catch (err) {
       setError(err.message);
     }
@@ -855,19 +855,19 @@ export default function WebhookApiTriggers() {
 
   // Main UI
   return (
-    <div style={{ padding: 24, background: '#0d0d0d', color: '#f0f0f0', borderRadius: 16, border: '1px solid #1a1a1a', boxShadow: '0 12px 48px #0007' }}>
+    <div style={{ padding: 24, background: '#181818', color: '#f0f0f0', borderRadius: 16, border: '1px solid #343434', boxShadow: '0 12px 48px #0007' }}>
       <BackButton />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18, color: '#a5f3fc' }}>Webhook & API Triggers</h2>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: '8px 12px', fontWeight: 700 }}>
+          <select value={env} onChange={e => setEnv(e.target.value)} style={{ background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: '8px 12px', fontWeight: 700 }}>
             <option value="dev">Dev</option><option value="stage">Stage</option><option value="prod">Prod</option>
           </select>
-          <input value={versionTag} onChange={e => setVersionTag(e.target.value)} placeholder="Version tag" style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: '8px 12px', minWidth: 120 }} />
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 10, padding: '6px 10px', fontWeight: 700 }}>
-            <input type="checkbox" checked={approvalRequired} onChange={e => setApprovalRequired(e.target.checked)} /> Approvals
+          <input value={versionTag} onChange={e => setVersionTag(e.target.value)} placeholder="Version tag" style={{ background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: '8px 12px', minWidth: 120 }} />
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#282828', border: '1px solid #343434', borderRadius: 10, padding: '6px 10px', fontWeight: 700 }}>
+            <input type="checkbox" checked={approvalRequired} onChange={e => setApprovalRequired(e.target.checked)} />Approvals
           </label>
-          <input value={approverEmail} onChange={e => setApproverEmail(e.target.value)} placeholder="Approver email" style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: '8px 12px', minWidth: 180 }} />
+          <input value={approverEmail} onChange={e => setApproverEmail(e.target.value)} placeholder="Approver email" style={{ background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: '8px 12px', minWidth: 180 }} />
         </div>
       </div>
 
@@ -875,29 +875,29 @@ export default function WebhookApiTriggers() {
       {showOnboarding && onboardingContent}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, marginBottom: 16 }}>
-        <div style={{ background: '#111111', borderRadius: 12, padding: 14, border: '1px solid #1a1a1a' }}>
+        <div style={{ background: '#282828', borderRadius: 12, padding: 14, border: '1px solid #343434' }}>
           <div style={{ fontWeight: 700, marginBottom: 6, color: '#f0f0f0' }}>Webhook Config</div>
-          <input value={webhookInput} onChange={e => setWebhookInput(e.target.value)} placeholder="Webhook URL" style={{ width: '100%', fontSize: 15, padding: 10, borderRadius: 10, border: '1px solid #1a1a1a', background: '#111111', color: '#f0f0f0', marginBottom: 10 }} />
+          <input value={webhookInput} onChange={e => setWebhookInput(e.target.value)} placeholder="Webhook URL" style={{ width: '100%', fontSize: 15, padding: 10, borderRadius: 10, border: '1px solid #343434', background: '#282828', color: '#f0f0f0', marginBottom: 10 }} />
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button onClick={handleAddWebhook} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 700, cursor: 'pointer' }}>{saving ? 'Saving…' : 'Add Webhook'}</button>
-            <button onClick={handleUpdateWebhook} style={{ background: '#f59e0b', color: '#111111', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>Update Selected</button>
+            <button onClick={handleUpdateWebhook} style={{ background: '#f59e0b', color: '#282828', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>Update Selected</button>
             {selectedWebhookId && <span style={{ color: '#e0e0e0', fontSize: 13 }}>Editing ID {selectedWebhookId.slice(0, 8)}… · rev {selectedWebhookRevision ?? '—'}</span>}
           </div>
         </div>
-        <div style={{ background: '#111111', borderRadius: 12, padding: 14, border: '1px solid #1a1a1a' }}>
+        <div style={{ background: '#282828', borderRadius: 12, padding: 14, border: '1px solid #343434' }}>
           <div style={{ fontWeight: 700, marginBottom: 6, color: '#f0f0f0' }}>API Trigger</div>
-          <input value={apiInput} onChange={e => setApiInput(e.target.value)} placeholder="API endpoint" style={{ width: '100%', fontSize: 15, padding: 10, borderRadius: 10, border: '1px solid #1a1a1a', background: '#111111', color: '#f0f0f0', marginBottom: 10 }} />
+          <input value={apiInput} onChange={e => setApiInput(e.target.value)} placeholder="API endpoint" style={{ width: '100%', fontSize: 15, padding: 10, borderRadius: 10, border: '1px solid #343434', background: '#282828', color: '#f0f0f0', marginBottom: 10 }} />
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button onClick={handleAddApi} style={{ background: '#22c55e', color: '#111111', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>{saving ? 'Saving…' : 'Add API'}</button>
+            <button onClick={handleAddApi} style={{ background: '#22c55e', color: '#282828', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>{saving ? 'Saving…' : 'Add API'}</button>
             <button onClick={handleUpdateApi} style={{ background: '#6366f1', color: '#f0f0f0', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>Update Selected</button>
             {selectedApiId && <span style={{ color: '#e0e0e0', fontSize: 13 }}>Editing ID {selectedApiId.slice(0, 8)}… · rev {selectedApiRevision ?? '—'}</span>}
           </div>
         </div>
-        <div style={{ background: '#111111', borderRadius: 12, padding: 14, border: '1px solid #1a1a1a' }}>
+        <div style={{ background: '#282828', borderRadius: 12, padding: 14, border: '1px solid #343434' }}>
           <div style={{ fontWeight: 700, marginBottom: 6, color: '#f0f0f0' }}>Guardrails</div>
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6, color: '#e0e0e0', fontSize: 14, marginBottom: 6 }}>
             Preset
-            <select value={guardrailPreset} onChange={e => applyPreset(e.target.value)} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: 8 }}>
+            <select value={guardrailPreset} onChange={e => applyPreset(e.target.value)} style={{ background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: 8 }}>
               <option value="conservative">Conservative</option>
               <option value="standard">Standard</option>
               <option value="aggressive">Aggressive</option>
@@ -905,44 +905,44 @@ export default function WebhookApiTriggers() {
           </label>
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6, color: '#e0e0e0', fontSize: 14 }}>
             Rate limit (req/min)
-            <input type="number" value={rateLimit} onChange={e => setRateLimit(Number(e.target.value))} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: 8 }} />
+            <input type="number" value={rateLimit} onChange={e => setRateLimit(Number(e.target.value))} style={{ background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: 8 }} />
           </label>
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6, color: '#e0e0e0', fontSize: 14, marginTop: 8 }}>
             Concurrency limit
-            <input type="number" value={concurrencyLimit} onChange={e => setConcurrencyLimit(Number(e.target.value))} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: 8 }} />
+            <input type="number" value={concurrencyLimit} onChange={e => setConcurrencyLimit(Number(e.target.value))} style={{ background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: 8 }} />
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, color: '#e0e0e0' }}>
-            <input type="checkbox" checked={circuitBreakerEnabled} onChange={e => setCircuitBreakerEnabled(e.target.checked)} /> Circuit breaker enabled
+            <input type="checkbox" checked={circuitBreakerEnabled} onChange={e => setCircuitBreakerEnabled(e.target.checked)} />Circuit breaker enabled
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, color: '#e0e0e0' }}>
-            <input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} /> Enabled
+            <input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} />Enabled
           </label>
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6, color: '#e0e0e0', fontSize: 14, marginTop: 8 }}>
             Canary rollout (% of traffic)
-            <input type="number" value={canaryPercent} onChange={e => setCanaryPercent(Number(e.target.value))} min={0} max={100} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: 8 }} />
+            <input type="number" value={canaryPercent} onChange={e => setCanaryPercent(Number(e.target.value))} min={0} max={100} style={{ background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: 8 }} />
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, color: '#e0e0e0' }}>
-            <input type="checkbox" checked={shadowMode} onChange={e => setShadowMode(e.target.checked)} /> Shadow mode (observe only)
+            <input type="checkbox" checked={shadowMode} onChange={e => setShadowMode(e.target.checked)} />Shadow mode (observe only)
           </label>
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6, color: '#e0e0e0', fontSize: 14, marginTop: 8 }}>
             Performance budget (ms)
-            <input type="number" value={performanceBudgetMs} onChange={e => setPerformanceBudgetMs(Number(e.target.value))} placeholder="e.g., 500" style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: 8 }} />
+            <input type="number" value={performanceBudgetMs} onChange={e => setPerformanceBudgetMs(Number(e.target.value))} placeholder="e.g., 500" style={{ background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: 8 }} />
           </label>
           <button onClick={handleApplyPresetAll} style={{ marginTop: 10, background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 12px', fontWeight: 700, cursor: 'pointer' }}>Apply preset to all</button>
         </div>
-        <div style={{ background: '#111111', borderRadius: 12, padding: 14, border: '1px solid #1a1a1a' }}>
+        <div style={{ background: '#282828', borderRadius: 12, padding: 14, border: '1px solid #343434' }}>
           <div style={{ fontWeight: 700, marginBottom: 6, color: '#f0f0f0' }}>Access & Security</div>
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6, color: '#e0e0e0', fontSize: 14 }}>
             IP allow list (comma-separated)
-            <textarea value={ipAllow} onChange={e => setIpAllow(e.target.value)} rows={2} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: 8 }} />
+            <textarea value={ipAllow} onChange={e => setIpAllow(e.target.value)} rows={2} style={{ background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: 8 }} />
           </label>
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6, color: '#e0e0e0', fontSize: 14, marginTop: 8 }}>
             IP deny list (comma-separated)
-            <textarea value={ipDeny} onChange={e => setIpDeny(e.target.value)} rows={2} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: 8 }} />
+            <textarea value={ipDeny} onChange={e => setIpDeny(e.target.value)} rows={2} style={{ background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: 8 }} />
           </label>
           { (selectedWebhookId || selectedApiId) && (
             <div style={{ marginTop: 10, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-              <button onClick={() => handleRotateSecret(selectedWebhookId ? 'webhook' : 'api', selectedWebhookId || selectedApiId)} style={{ background: '#14b8a6', color: '#111111', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>Rotate Secret</button>
+              <button onClick={() => handleRotateSecret(selectedWebhookId ? 'webhook' : 'api', selectedWebhookId || selectedApiId)} style={{ background: '#14b8a6', color: '#282828', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>Rotate Secret</button>
               {signaturePreview && <span style={{ color: '#e0e0e0', fontSize: 13 }}>New secret ({signaturePreview.method}): {signaturePreview.secret}</span>}
             </div>
           )}
@@ -950,19 +950,19 @@ export default function WebhookApiTriggers() {
       </div>
 
       <div style={{ marginBottom: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 }}>
-        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ background: '#282828', border: '1px solid #343434', borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, color: '#f0f0f0', marginBottom: 6 }}>Data Contract</div>
-          <textarea value={schemaJson} onChange={e => setSchemaJson(e.target.value)} rows={6} style={{ width: '100%', background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: 10 }} />
+          <textarea value={schemaJson} onChange={e => setSchemaJson(e.target.value)} rows={6} style={{ width: '100%', background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: 10 }} />
           <button onClick={() => handleFormatJson('schema')} style={{ marginTop: 8, background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Format JSON</button>
         </div>
-        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ background: '#282828', border: '1px solid #343434', borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, color: '#f0f0f0', marginBottom: 6 }}>Simulation</div>
-          <textarea value={testPayload} onChange={e => setTestPayload(e.target.value)} rows={5} style={{ width: '100%', background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: 10 }} />
+          <textarea value={testPayload} onChange={e => setTestPayload(e.target.value)} rows={5} style={{ width: '100%', background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: 10 }} />
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
-            <button onClick={handleSimulate} style={{ background: '#22c55e', color: '#111111', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>Run Simulation</button>
+            <button onClick={handleSimulate} style={{ background: '#22c55e', color: '#282828', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>Run Simulation</button>
             <button onClick={() => handleFormatJson('payload')} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 12px', fontWeight: 700, cursor: 'pointer' }}>Format JSON</button>
             {recentPayloads.map((p, idx) => (
-              <button key={idx} onClick={() => setTestPayload(p)} style={{ background: '#1a1a1a', color: '#e0e0e0', border: '1px solid #333333', borderRadius: 10, padding: '6px 10px', fontSize: 12, cursor: 'pointer' }}>Load recent #{idx + 1}</button>
+              <button key={idx} onClick={() => setTestPayload(p)} style={{ background: '#343434', color: '#e0e0e0', border: '1px solid #4a4a4a', borderRadius: 10, padding: '6px 10px', fontSize: 12, cursor: 'pointer' }}>Load recent #{idx + 1}</button>
             ))}
           </div>
           {simulation && (
@@ -973,32 +973,32 @@ export default function WebhookApiTriggers() {
             </div>
           )}
         </div>
-        <div style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ background: '#282828', border: '1px solid #343434', borderRadius: 12, padding: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
             <div style={{ fontWeight: 700, color: '#f0f0f0' }}>Validation & Preflight</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               {preflightStatus && (
-                <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 999, border: '1px solid #1a1a1a', background: preflightStatus.ok ? '#111111' : '#1a1a1a', color: preflightStatus.ok ? '#22c55e' : preflightStatus.issues ? '#fcd34d' : '#f87171', fontWeight: 800, fontSize: 12 }}>
+                <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 999, border: '1px solid #343434', background: preflightStatus.ok ? '#282828' : '#343434', color: preflightStatus.ok ? '#22c55e' : preflightStatus.issues ? '#fcd34d' : '#f87171', fontWeight: 800, fontSize: 12 }}>
                   <span style={{ width: 10, height: 10, borderRadius: '50%', background: preflightStatus.ok ? '#22c55e' : preflightStatus.issues ? '#f59e0b' : '#ef4444' }} />
                   <span>{preflightStatus.ok ? 'Preflight pass' : preflightStatus.issues ? `${preflightStatus.issues} issues` : 'Preflight failed'}</span>
-                  {preflightStatus.ts ? <span style={{ color: '#888888', fontWeight: 600 }}>· {new Date(preflightStatus.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span> : null}
+                  {preflightStatus.ts ? <span style={{ color: '#9a9a9a', fontWeight: 600 }}>· {new Date(preflightStatus.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span> : null}
                   <button onClick={() => setShowPreflightPopover(v => !v)} style={{ background: 'transparent', border: 'none', color: '#f0f0f0', cursor: 'pointer', fontWeight: 800 }}>Trace</button>
-                  <button onClick={clearPreflightStatus} style={{ marginLeft: 2, background: 'transparent', border: 'none', color: '#888888', cursor: 'pointer', fontWeight: 800 }}>Clear</button>
+                  <button onClick={clearPreflightStatus} style={{ marginLeft: 2, background: 'transparent', border: 'none', color: '#9a9a9a', cursor: 'pointer', fontWeight: 800 }}>Clear</button>
                   <button onClick={downloadPreflightReport} style={{ background: 'transparent', border: 'none', color: '#67e8f9', cursor: 'pointer', fontWeight: 800 }}>Save</button>
                   {showPreflightPopover && (
-                    <div style={{ position: 'absolute', top: '110%', right: 0, minWidth: 220, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 10, padding: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.4)', zIndex: 10 }}>
+                    <div style={{ position: 'absolute', top: '110%', right: 0, minWidth: 220, background: '#282828', border: '1px solid #343434', borderRadius: 10, padding: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.4)', zIndex: 10 }}>
                       <div style={{ fontWeight: 800, color: '#fcd34d', marginBottom: 6 }}>Preflight issues</div>
-                      <div style={{ color: '#888888', fontSize: 12, marginBottom: 6 }}>Why this matters: keeps webhook/API rollouts safe for Shopify traffic.</div>
+                      <div style={{ color: '#9a9a9a', fontSize: 12, marginBottom: 6 }}>Why this matters: keeps webhook/API rollouts safe for Shopify traffic.</div>
                       {preflightIssues.length === 0 ? <div style={{ color: '#22c55e' }}>Clear</div> : (
                         <ul style={{ margin: 0, paddingLeft: 16, color: '#f0f0f0', maxHeight: 160, overflow: 'auto' }}>
                           {preflightIssues.slice(0, 6).map((p, i) => <li key={i}>{p}</li>)}
-                          {preflightIssues.length > 6 && <li style={{ color: '#888888' }}>…{preflightIssues.length - 6} more</li>}
+                          {preflightIssues.length > 6 && <li style={{ color: '#9a9a9a' }}>…{preflightIssues.length - 6} more</li>}
                         </ul>
                       )}
                       <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        <button onClick={() => applyQuickFix('approver')} style={{ background: '#0ea5e9', color: '#111111', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Add approver</button>
-                        <button onClick={() => applyQuickFix('prod-note')} style={{ background: '#f59e0b', color: '#111111', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Hardening defaults</button>
-                        <button onClick={() => applyQuickFix('trigger-action')} style={{ background: '#22c55e', color: '#111111', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Schema + payload</button>
+                        <button onClick={() => applyQuickFix('approver')} style={{ background: '#0ea5e9', color: '#282828', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Add approver</button>
+                        <button onClick={() => applyQuickFix('prod-note')} style={{ background: '#f59e0b', color: '#282828', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Hardening defaults</button>
+                        <button onClick={() => applyQuickFix('trigger-action')} style={{ background: '#22c55e', color: '#282828', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Schema + payload</button>
                         <button onClick={() => applyQuickFix('dedupe-labels')} style={{ background: '#6366f1', color: '#f0f0f0', border: 'none', borderRadius: 8, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Clean IPs</button>
                       </div>
                       {preflightTrace.length > 0 && (
@@ -1008,7 +1008,7 @@ export default function WebhookApiTriggers() {
                             {preflightTrace.slice(0, 5).map((t, i) => (
                               <li key={i}>{t.label}: {t.issues?.join('; ')}</li>
                             ))}
-                            {preflightTrace.length > 5 && <li style={{ color: '#888888' }}>…{preflightTrace.length - 5} more</li>}
+                            {preflightTrace.length > 5 && <li style={{ color: '#9a9a9a' }}>…{preflightTrace.length - 5} more</li>}
                           </ul>
                         </div>
                       )}
@@ -1016,16 +1016,16 @@ export default function WebhookApiTriggers() {
                   )}
                 </span>
               )}
-              <button onClick={runPreflight} style={{ background: '#1a1a1a', color: '#fcd34d', border: '1px solid #333333', borderRadius: 10, padding: '6px 10px', fontWeight: 700, cursor: 'pointer' }}>Run Preflight</button>
-              <button onClick={runDryRun} style={{ background: '#22c55e', color: '#111111', border: 'none', borderRadius: 10, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Dry-run (dev)</button>
-              <button onClick={rollbackToLastRun} disabled={!lastRunSnapshot} style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: '6px 10px', fontWeight: 800, cursor: lastRunSnapshot ? 'pointer' : 'not-allowed', opacity: lastRunSnapshot ? 1 : 0.5 }}>Rollback to last run</button>
+              <button onClick={runPreflight} style={{ background: '#343434', color: '#fcd34d', border: '1px solid #4a4a4a', borderRadius: 10, padding: '6px 10px', fontWeight: 700, cursor: 'pointer' }}>Run Preflight</button>
+              <button onClick={runDryRun} style={{ background: '#22c55e', color: '#282828', border: 'none', borderRadius: 10, padding: '6px 10px', fontWeight: 800, cursor: 'pointer' }}>Dry-run (dev)</button>
+              <button onClick={rollbackToLastRun} disabled={!lastRunSnapshot} style={{ background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: '6px 10px', fontWeight: 800, cursor: lastRunSnapshot ? 'pointer' : 'not-allowed', opacity: lastRunSnapshot ? 1 : 0.5 }}>Rollback to last run</button>
             </div>
           </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-              <input value={reviewerEmail} onChange={e => setReviewerEmail(e.target.value)} placeholder="Reviewer email" style={{ background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: '6px 10px', minWidth: 200 }} />
-              <button onClick={attachPreflightForReviewer} style={{ background: '#8b5cf6', color: '#111111', border: 'none', borderRadius: 10, padding: '8px 12px', fontWeight: 800, cursor: 'pointer' }}>Attach preflight</button>
-              <span style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 999, padding: '6px 10px', color: (!enabled) ? '#f97316' : '#22c55e', fontWeight: 700 }}>Disabled: {!enabled ? 'Yes' : 'No'}</span>
-              <span style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 999, padding: '6px 10px', color: (rateLimit > 150 || concurrencyLimit > 8 || (performanceBudgetMs && performanceBudgetMs > 800)) ? '#f97316' : '#22c55e', fontWeight: 700 }}>Perf guardrail: {(rateLimit > 150 || concurrencyLimit > 8 || (performanceBudgetMs && performanceBudgetMs > 800)) ? 'tighten' : 'OK'}</span>
+              <input value={reviewerEmail} onChange={e => setReviewerEmail(e.target.value)} placeholder="Reviewer email" style={{ background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: '6px 10px', minWidth: 200 }} />
+              <button onClick={attachPreflightForReviewer} style={{ background: '#8b5cf6', color: '#282828', border: 'none', borderRadius: 10, padding: '8px 12px', fontWeight: 800, cursor: 'pointer' }}>Attach preflight</button>
+              <span style={{ background: '#282828', border: '1px solid #343434', borderRadius: 999, padding: '6px 10px', color: (!enabled) ? '#f97316' : '#22c55e', fontWeight: 700 }}>Disabled: {!enabled ? 'Yes' : 'No'}</span>
+              <span style={{ background: '#282828', border: '1px solid #343434', borderRadius: 999, padding: '6px 10px', color: (rateLimit > 150 || concurrencyLimit > 8 || (performanceBudgetMs && performanceBudgetMs > 800)) ? '#f97316' : '#22c55e', fontWeight: 700 }}>Perf guardrail: {(rateLimit > 150 || concurrencyLimit > 8 || (performanceBudgetMs && performanceBudgetMs > 800)) ? 'tighten' : 'OK'}</span>
             </div>
           {validationIssues.length === 0 ? <div style={{ color: '#22c55e' }}>No blocking issues.</div> : (
             <ul style={{ margin: 0, paddingLeft: 18, color: '#fca5a5' }}>{validationIssues.map((v, i) => <li key={i}>{v}</li>)}</ul>
@@ -1034,7 +1034,7 @@ export default function WebhookApiTriggers() {
             <div style={{ marginTop: 8, color: '#fbbf24' }}>Schema warnings: {schemaWarnings.join(', ')}</div>
           ) : null}
           {preflightIssues.length > 0 && (
-            <div style={{ marginTop: 10, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 10, padding: 10 }}>
+            <div style={{ marginTop: 10, background: '#282828', border: '1px solid #343434', borderRadius: 10, padding: 10 }}>
               <div style={{ color: '#fcd34d', fontWeight: 800 }}>Preflight Issues</div>
               <ul style={{ margin: 6, paddingLeft: 18, color: '#f0f0f0' }}>
                 {preflightIssues.map((issue, idx) => <li key={idx}>{issue}</li>)}
@@ -1042,12 +1042,12 @@ export default function WebhookApiTriggers() {
             </div>
           )}
           {preflightTrace.length > 0 && (
-            <div style={{ marginTop: 10, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 10, padding: 10 }}>
+            <div style={{ marginTop: 10, background: '#282828', border: '1px solid #343434', borderRadius: 10, padding: 10 }}>
               <div style={{ color: '#a5f3fc', fontWeight: 800 }}>Preflight Trace</div>
               <ul style={{ margin: 6, paddingLeft: 12, color: '#f0f0f0', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {preflightTrace.map((item, idx) => {
                   const color = item.status === 'pass' ? '#22c55e' : item.status === 'warn' ? '#f59e0b' : '#f87171';
-                  const symbol = item.status === 'pass' ? '✓' : item.status === 'warn' ? '!' : '✕';
+                  const symbol = item.status === 'pass' ? '' : item.status === 'warn' ? '!' : '';
                   return (
                     <li key={idx} style={{ listStyle: 'none', display: 'flex', gap: 8, alignItems: 'center' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: '50%', background: color }}>{symbol}</span>
@@ -1069,18 +1069,18 @@ export default function WebhookApiTriggers() {
         {exported && <a href={exported} download="webhooks.json" style={{ marginLeft: 12, color: '#22c55e', textDecoration: 'underline' }}>Download Export</a>}
       </div>
 
-      <div style={{ marginBottom: 20, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+      <div style={{ marginBottom: 20, background: '#282828', border: '1px solid #343434', borderRadius: 12, padding: 12 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: '#f0f0f0' }}>Webhooks</div>
         <div style={{ fontSize: 15, color: '#e0e0e0' }}>
           {loading ? <span>Loading…</span> : webhooks.length ? (
             <div style={{ display: 'grid', gap: 10 }}>
               {webhooks.map(w => (
-                <div key={w.id} style={{ padding: 12, borderRadius: 10, border: '1px solid #1a1a1a', background: '#111111' }}>
-                  <div style={{ fontWeight: 700, color: '#f0f0f0' }}>{w.url || 'Webhook'} <span style={{ color: '#888888', fontWeight: 500 }}>· {w.env}/{w.version} · {w.status} · rev {w.revision}</span></div>
+                <div key={w.id} style={{ padding: 12, borderRadius: 10, border: '1px solid #343434', background: '#282828' }}>
+                  <div style={{ fontWeight: 700, color: '#f0f0f0' }}>{w.url || 'Webhook'} <span style={{ color: '#9a9a9a', fontWeight: 500 }}>· {w.env}/{w.version} · {w.status} · rev {w.revision}</span></div>
                   <div style={{ color: '#e0e0e0', fontSize: 14 }}>Enabled: {w.enabled === false ? 'No' : 'Yes'} · Guardrails: rate {w.guardrails?.rateLimit ?? '—'} req/min, concurrency {w.guardrails?.concurrencyLimit ?? '—'}, circuit breaker {w.guardrails?.circuitBreakerEnabled ? 'on' : 'off'}</div>
-                  <div style={{ color: '#888888', fontSize: 13 }}>Canary: {w.canaryPercent ?? 0}% · Shadow: {w.shadowMode ? 'on' : 'off'} · Perf budget: {w.performanceBudgetMs || '—'}ms</div>
-                  <div style={{ color: '#888888', fontSize: 13 }}>IP allow: {(w.ipAllow || []).join(', ') || '—'} · IP deny: {(w.ipDeny || []).join(', ') || '—'}</div>
-                  <div style={{ color: '#888888', fontSize: 13 }}>Last success: {w.lastSuccessAt || '—'} · Last failure: {w.lastFailureAt || '—'}</div>
+                  <div style={{ color: '#9a9a9a', fontSize: 13 }}>Canary: {w.canaryPercent ?? 0}% · Shadow: {w.shadowMode ? 'on' : 'off'} · Perf budget: {w.performanceBudgetMs || '—'}ms</div>
+                  <div style={{ color: '#9a9a9a', fontSize: 13 }}>IP allow: {(w.ipAllow || []).join(', ') || '—'} · IP deny: {(w.ipDeny || []).join(', ') || '—'}</div>
+                  <div style={{ color: '#9a9a9a', fontSize: 13 }}>Last success: {w.lastSuccessAt || '—'} · Last failure: {w.lastFailureAt || '—'}</div>
                   {w.warnings?.length ? (
                     <div style={{ color: '#fbbf24', fontSize: 14 }}>
                       <span style={{ background: '#f59e0b22', border: '1px solid #f59e0b55', borderRadius: 8, padding: '2px 8px', marginRight: 6 }}>At risk</span>
@@ -1089,8 +1089,8 @@ export default function WebhookApiTriggers() {
                   ) : null}
                   <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
                     <button onClick={() => handleSelectWebhook(w)} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 10, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Edit</button>
-                    <button onClick={() => handleRotateSecret('webhook', w.id)} style={{ background: '#14b8a6', color: '#111111', border: 'none', borderRadius: 10, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Rotate Secret</button>
-                    <button onClick={() => apiFetch(`/api/webhook-api-triggers/webhooks/${w.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: !(w.enabled === false) }) }).then(loadData)} style={{ background: '#1a1a1a', color: '#e0e0e0', border: '1px solid #333333', borderRadius: 10, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>{w.enabled === false ? 'Enable' : 'Disable'}</button>
+                    <button onClick={() => handleRotateSecret('webhook', w.id)} style={{ background: '#14b8a6', color: '#282828', border: 'none', borderRadius: 10, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Rotate Secret</button>
+                    <button onClick={() => apiFetch(`/api/webhook-api-triggers/webhooks/${w.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: !(w.enabled === false) }) }).then(loadData)} style={{ background: '#343434', color: '#e0e0e0', border: '1px solid #4a4a4a', borderRadius: 10, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>{w.enabled === false ? 'Enable' : 'Disable'}</button>
                     <button onClick={() => handleDeleteWebhook(w.id)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 10, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Delete</button>
                   </div>
                 </div>
@@ -1102,18 +1102,18 @@ export default function WebhookApiTriggers() {
         </div>
       </div>
 
-      <div style={{ marginBottom: 20, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+      <div style={{ marginBottom: 20, background: '#282828', border: '1px solid #343434', borderRadius: 12, padding: 12 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: '#f0f0f0' }}>APIs</div>
         <div style={{ fontSize: 15, color: '#e0e0e0' }}>
           {loading ? <span>Loading…</span> : apis.length ? (
             <div style={{ display: 'grid', gap: 10 }}>
               {apis.map(a => (
-                <div key={a.id} style={{ padding: 12, borderRadius: 10, border: '1px solid #1a1a1a', background: '#111111' }}>
-                  <div style={{ fontWeight: 700, color: '#f0f0f0' }}>{a.endpoint || 'API'} <span style={{ color: '#888888', fontWeight: 500 }}>· {a.env}/{a.version} · {a.status} · rev {a.revision}</span></div>
+                <div key={a.id} style={{ padding: 12, borderRadius: 10, border: '1px solid #343434', background: '#282828' }}>
+                  <div style={{ fontWeight: 700, color: '#f0f0f0' }}>{a.endpoint || 'API'} <span style={{ color: '#9a9a9a', fontWeight: 500 }}>· {a.env}/{a.version} · {a.status} · rev {a.revision}</span></div>
                   <div style={{ color: '#e0e0e0', fontSize: 14 }}>Enabled: {a.enabled === false ? 'No' : 'Yes'} · Guardrails: rate {a.guardrails?.rateLimit ?? '—'} req/min, concurrency {a.guardrails?.concurrencyLimit ?? '—'}, circuit breaker {a.guardrails?.circuitBreakerEnabled ? 'on' : 'off'}</div>
-                  <div style={{ color: '#888888', fontSize: 13 }}>Canary: {a.canaryPercent ?? 0}% · Shadow: {a.shadowMode ? 'on' : 'off'} · Perf budget: {a.performanceBudgetMs || '—'}ms</div>
-                  <div style={{ color: '#888888', fontSize: 13 }}>IP allow: {(a.ipAllow || []).join(', ') || '—'} · IP deny: {(a.ipDeny || []).join(', ') || '—'}</div>
-                  <div style={{ color: '#888888', fontSize: 13 }}>Last success: {a.lastSuccessAt || '—'} · Last failure: {a.lastFailureAt || '—'}</div>
+                  <div style={{ color: '#9a9a9a', fontSize: 13 }}>Canary: {a.canaryPercent ?? 0}% · Shadow: {a.shadowMode ? 'on' : 'off'} · Perf budget: {a.performanceBudgetMs || '—'}ms</div>
+                  <div style={{ color: '#9a9a9a', fontSize: 13 }}>IP allow: {(a.ipAllow || []).join(', ') || '—'} · IP deny: {(a.ipDeny || []).join(', ') || '—'}</div>
+                  <div style={{ color: '#9a9a9a', fontSize: 13 }}>Last success: {a.lastSuccessAt || '—'} · Last failure: {a.lastFailureAt || '—'}</div>
                   {a.warnings?.length ? (
                     <div style={{ color: '#fbbf24', fontSize: 14 }}>
                       <span style={{ background: '#f59e0b22', border: '1px solid #f59e0b55', borderRadius: 8, padding: '2px 8px', marginRight: 6 }}>At risk</span>
@@ -1122,8 +1122,8 @@ export default function WebhookApiTriggers() {
                   ) : null}
                   <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
                     <button onClick={() => handleSelectApi(a)} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 10, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Edit</button>
-                    <button onClick={() => handleRotateSecret('api', a.id)} style={{ background: '#14b8a6', color: '#111111', border: 'none', borderRadius: 10, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Rotate Secret</button>
-                    <button onClick={() => apiFetch(`/api/webhook-api-triggers/apis/${a.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: !(a.enabled === false) }) }).then(loadData)} style={{ background: '#1a1a1a', color: '#e0e0e0', border: '1px solid #333333', borderRadius: 10, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>{a.enabled === false ? 'Enable' : 'Disable'}</button>
+                    <button onClick={() => handleRotateSecret('api', a.id)} style={{ background: '#14b8a6', color: '#282828', border: 'none', borderRadius: 10, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Rotate Secret</button>
+                    <button onClick={() => apiFetch(`/api/webhook-api-triggers/apis/${a.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: !(a.enabled === false) }) }).then(loadData)} style={{ background: '#343434', color: '#e0e0e0', border: '1px solid #4a4a4a', borderRadius: 10, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>{a.enabled === false ? 'Enable' : 'Disable'}</button>
                     <button onClick={() => handleDeleteApi(a.id)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 10, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Delete</button>
                   </div>
                 </div>
@@ -1135,14 +1135,14 @@ export default function WebhookApiTriggers() {
         </div>
       </div>
 
-      <div style={{ marginBottom: 24, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+      <div style={{ marginBottom: 24, background: '#282828', border: '1px solid #343434', borderRadius: 12, padding: 12 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: '#f0f0f0' }}>Analytics</div>
         <div style={{ fontSize: 15, color: '#e0e0e0' }}>
           {analyticsLoading ? <span>Loading analytics…</span> : analytics.length ? (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 10 }}>
                 {Object.entries(analyticsSummary).map(([k, v]) => (
-                  <div key={k} style={{ background: '#111111', border: '1px solid #1a1a1a', borderRadius: 10, padding: 8 }}>
+                  <div key={k} style={{ background: '#282828', border: '1px solid #343434', borderRadius: 10, padding: 8 }}>
                     <div style={{ color: '#a5f3fc', fontWeight: 700 }}>{k}</div>
                     <div style={{ color: '#f0f0f0', fontSize: 22 }}>{v}</div>
                   </div>
@@ -1157,7 +1157,7 @@ export default function WebhookApiTriggers() {
       </div>
 
       {(selectedWebhookId || selectedApiId) && (
-        <div style={{ marginBottom: 20, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+        <div style={{ marginBottom: 20, background: '#282828', border: '1px solid #343434', borderRadius: 12, padding: 12 }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: '#f0f0f0' }}>Revision history & comments</div>
           <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
             <div>
@@ -1170,7 +1170,7 @@ export default function WebhookApiTriggers() {
                     </li>
                   ))}
                 </ul>
-              ) : <div style={{ color: '#888888' }}>No history yet.</div>}
+              ) : <div style={{ color: '#9a9a9a' }}>No history yet.</div>}
             </div>
             <div>
               <div style={{ color: '#e0e0e0', marginBottom: 6, fontWeight: 600 }}>Comments</div>
@@ -1182,9 +1182,9 @@ export default function WebhookApiTriggers() {
                     </li>
                   ))}
                 </ul>
-              ) : <div style={{ color: '#888888' }}>No comments yet.</div>}
+              ) : <div style={{ color: '#9a9a9a' }}>No comments yet.</div>}
               <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-                <input value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="Add comment" style={{ flex: 1, minWidth: 200, background: '#111111', color: '#f0f0f0', border: '1px solid #1a1a1a', borderRadius: 10, padding: '8px 12px' }} />
+                <input value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="Add comment" style={{ flex: 1, minWidth: 200, background: '#282828', color: '#f0f0f0', border: '1px solid #343434', borderRadius: 10, padding: '8px 12px' }} />
                 <button onClick={handleAddComment} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 12px', fontWeight: 700, cursor: 'pointer' }}>Comment</button>
               </div>
             </div>
@@ -1192,46 +1192,46 @@ export default function WebhookApiTriggers() {
         </div>
       )}
 
-      <div style={{ marginBottom: 20, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12 }}>
+      <div style={{ marginBottom: 20, background: '#282828', border: '1px solid #343434', borderRadius: 12, padding: 12 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: '#f0f0f0' }}>Trash</div>
         <div style={{ display: 'grid', gap: 10 }}>
           {(trash.webhooks?.length ? trash.webhooks : []).map(t => (
-            <div key={t.id} style={{ border: '1px dashed #333333', borderRadius: 10, padding: 10, color: '#e0e0e0' }}>
+            <div key={t.id} style={{ border: '1px dashed #4a4a4a', borderRadius: 10, padding: 10, color: '#e0e0e0' }}>
               <div>{t.url || 'Webhook'} · rev {t.revision} · deleted {t.deletedAt}</div>
-              <button onClick={() => apiFetch(`/api/webhook-api-triggers/webhooks/${t.id}/restore`, { method: 'POST' }).then(loadData)} style={{ marginTop: 6, background: '#22c55e', color: '#111111', border: 'none', borderRadius: 8, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Restore</button>
+              <button onClick={() => apiFetch(`/api/webhook-api-triggers/webhooks/${t.id}/restore`, { method: 'POST' }).then(loadData)} style={{ marginTop: 6, background: '#22c55e', color: '#282828', border: 'none', borderRadius: 8, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Restore</button>
             </div>
           ))}
           {(trash.apis?.length ? trash.apis : []).map(t => (
-            <div key={t.id} style={{ border: '1px dashed #333333', borderRadius: 10, padding: 10, color: '#e0e0e0' }}>
+            <div key={t.id} style={{ border: '1px dashed #4a4a4a', borderRadius: 10, padding: 10, color: '#e0e0e0' }}>
               <div>{t.endpoint || 'API'} · rev {t.revision} · deleted {t.deletedAt}</div>
-              <button onClick={() => apiFetch(`/api/webhook-api-triggers/apis/${t.id}/restore`, { method: 'POST' }).then(loadData)} style={{ marginTop: 6, background: '#22c55e', color: '#111111', border: 'none', borderRadius: 8, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Restore</button>
+              <button onClick={() => apiFetch(`/api/webhook-api-triggers/apis/${t.id}/restore`, { method: 'POST' }).then(loadData)} style={{ marginTop: 6, background: '#22c55e', color: '#282828', border: 'none', borderRadius: 8, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Restore</button>
             </div>
           ))}
-          {!trash.webhooks?.length && !trash.apis?.length && <div style={{ color: '#888888' }}>Trash is empty.</div>}
+          {!trash.webhooks?.length && !trash.apis?.length && <div style={{ color: '#9a9a9a' }}>Trash is empty.</div>}
         </div>
       </div>
 
       {lastDeleted && (
-        <div style={{ marginBottom: 16, background: '#111111', border: '1px solid #1a1a1a', borderRadius: 12, padding: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        <div style={{ marginBottom: 16, background: '#282828', border: '1px solid #343434', borderRadius: 12, padding: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
           <div style={{ color: '#fbbf24', fontWeight: 700 }}>Deleted a {lastDeleted.kind}. Undo?</div>
-          <button onClick={handleUndoDelete} style={{ background: '#22c55e', color: '#111111', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>Undo Delete</button>
+          <button onClick={handleUndoDelete} style={{ background: '#22c55e', color: '#282828', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>Undo Delete</button>
         </div>
       )}
 
-      <form onSubmit={e => { e.preventDefault(); validate(); handleFeedback(); }} style={{ marginTop: 12, background: '#111111', borderRadius: 12, padding: 20, border: '1px solid #1a1a1a' }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); validate(); handleFeedback(); }} style={{ marginTop: 12, background: '#282828', borderRadius: 12, padding: 20, border: '1px solid #343434' }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8, color: '#f0f0f0' }}>Feedback</div>
         <textarea
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           rows={3}
-          style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 10, border: '1px solid #1a1a1a', marginBottom: 12, background: '#111111', color: '#f0f0f0' }}
+          style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 10, border: '1px solid #343434', marginBottom: 12, background: '#282828', color: '#f0f0f0' }}
           placeholder="Share your feedback or suggestions..."
           aria-label="Feedback"
         />
         <button type="submit" style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 10, padding: '7px 18px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Send Feedback</button>
         {error && <div style={{ color: '#ef4444', marginTop: 8 }}>{error}</div>}
       </form>
-      <div style={{ marginTop: 16, fontSize: 13, color: '#888888', textAlign: 'center' }}>
+      <div style={{ marginTop: 16, fontSize: 13, color: '#9a9a9a', textAlign: 'center' }}>
         <span>Accessibility: WCAG 2.1, keyboard navigation, color contrast. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
       </div>
     </div>

@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from "react";
+﻿﻿import React, { useState, useRef, useEffect } from "react";
 import { apiFetch } from "../../api";
 
 const SEV_COLORS = { high: "#ef4444", medium: "#f59e0b", low: "#22c55e" };
@@ -7,9 +7,9 @@ const SEV_BG = { high: "#3f1315", medium: "#3d2a0a", low: "#0d2218" };
 function SeverityBadge({ sev }) {
   return (
     <span style={{
-      background: SEV_BG[sev] || "#1e1e1e",
+      background: SEV_BG[sev] || "#2e2e2e",
       color: SEV_COLORS[sev] || "#94a3b8",
-      border: `1px solid ${SEV_COLORS[sev] || "#333333"}`,
+      border: `1px solid ${SEV_COLORS[sev] || "#4a4a4a"}`,
       borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 700,
       textTransform: "uppercase", letterSpacing: 0.5,
     }}>{sev}</span>
@@ -42,14 +42,14 @@ function IssueCard({ issue, pageUrl }) {
   };
 
   return (
-    <div style={{ background: SEV_BG[issue.severity] || "#1e1e1e", borderRadius: 8, padding: "10px 14px", border: `1px solid ${SEV_COLORS[issue.severity] || "#333333"}22`, marginBottom: 8 }}>
+    <div style={{ background: SEV_BG[issue.severity] || "#2e2e2e", borderRadius: 8, padding: "10px 14px", border: `1px solid ${SEV_COLORS[issue.severity] || "#4a4a4a"}22`, marginBottom: 8 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
         <SeverityBadge sev={issue.severity} />
         <span style={{ fontWeight: 700, color: "#e2e8f0", fontSize: 13 }}>{issue.type}</span>
         <button
           onClick={handleGenerate}
           disabled={fixing}
-          style={{ marginLeft: "auto", background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 6, padding: "3px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+          style={{ marginLeft: "auto", background: "#7fffd4", color: "#141414", border: "none", borderRadius: 6, padding: "3px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
         >{fixing ? "…" : "Generate Fix"}</button>
       </div>
       <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.5 }}>{issue.detail}</div>
@@ -59,9 +59,9 @@ function IssueCard({ issue, pageUrl }) {
         </div>
       )}
       {suggestion && (
-        <div style={{ marginTop: 8, background: "#1e1e1e", borderRadius: 6, padding: "8px 12px", border: "1px solid #1e1e1e", fontSize: 13, color: "#7fffd4", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+        <div style={{ marginTop: 8, background: "#2e2e2e", borderRadius: 6, padding: "8px 12px", border: "1px solid #2e2e2e", fontSize: 13, color: "#7fffd4", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
           {suggestion}
-          <button onClick={() => navigator.clipboard?.writeText(suggestion)} style={{ display: "block", marginTop: 6, background: "transparent", border: "1px solid #333333", borderRadius: 5, padding: "2px 10px", color: "#64748b", fontSize: 11, cursor: "pointer" }}>Copy</button>
+          <button onClick={() => navigator.clipboard?.writeText(suggestion)} style={{ display: "block", marginTop: 6, background: "transparent", border: "1px solid #4a4a4a", borderRadius: 5, padding: "2px 10px", color: "#64748b", fontSize: 11, cursor: "pointer" }}>Copy</button>
         </div>
       )}
       {fixErr && <div style={{ color: "#ef4444", fontSize: 12, marginTop: 6 }}>{fixErr}</div>}
@@ -72,14 +72,14 @@ function IssueCard({ issue, pageUrl }) {
 function KeywordPresencePanel({ keywords, keywordPresence }) {
   if (!keywords || keywords.length === 0) return null;
   return (
-    <div style={{ background: "#111111", borderRadius: 8, padding: "10px 14px", marginBottom: 10, border: "1px solid #1e1e1e" }}>
+    <div style={{ background: "#282828", borderRadius: 8, padding: "10px 14px", marginBottom: 10, border: "1px solid #2e2e2e" }}>
       <div style={{ fontWeight: 700, fontSize: 12, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Keyword Presence Check</div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {(keywordPresence || []).map(kp => (
-          <div key={kp.keyword} style={{ background: "#0a0a0a", borderRadius: 8, padding: "6px 12px", border: "1px solid #1e1e1e", fontSize: 13 }}>
+          <div key={kp.keyword} style={{ background: "#141414", borderRadius: 8, padding: "6px 12px", border: "1px solid #2e2e2e", fontSize: 13 }}>
             <span style={{ fontWeight: 600, color: "#e2e8f0" }}>{kp.keyword}</span>
-            <span style={{ marginLeft: 8, color: kp.inTitle ? "#22c55e" : "#ef4444", fontSize: 11, fontWeight: 700 }}>Title {kp.inTitle ? "✓" : "✗"}</span>
-            <span style={{ marginLeft: 6, color: kp.inDesc ? "#22c55e" : "#ef4444", fontSize: 11, fontWeight: 700 }}>Desc {kp.inDesc ? "✓" : "✗"}</span>
+            <span style={{ marginLeft: 8, color: kp.inTitle ? "#22c55e" : "#ef4444", fontSize: 11, fontWeight: 700 }}>Title {kp.inTitle ? "" : ""}</span>
+            <span style={{ marginLeft: 6, color: kp.inDesc ? "#22c55e" : "#ef4444", fontSize: 11, fontWeight: 700 }}>Desc {kp.inDesc ? "" : ""}</span>
           </div>
         ))}
       </div>
@@ -92,7 +92,7 @@ function PageSection({ page, keywords }) {
   const issues = page.issues || [];
 
   return (
-    <div style={{ background: "#0a0a0a", borderRadius: 10, border: "1px solid #1e1e1e", marginBottom: 12 }}>
+    <div style={{ background: "#141414", borderRadius: 10, border: "1px solid #2e2e2e", marginBottom: 12 }}>
       <button
         onClick={() => setOpen(o => !o)}
         style={{ width: "100%", background: "none", border: "none", color: "#e2e8f0", padding: "12px 16px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
@@ -105,14 +105,14 @@ function PageSection({ page, keywords }) {
           {issues.filter(i => i.severity === "high").length > 0 && <span style={{ color: "#ef4444", fontWeight: 700, fontSize: 12 }}>{issues.filter(i => i.severity === "high").length} High</span>}
           {issues.filter(i => i.severity === "medium").length > 0 && <span style={{ color: "#f59e0b", fontWeight: 700, fontSize: 12 }}>{issues.filter(i => i.severity === "medium").length} Med</span>}
           {issues.filter(i => i.severity === "low").length > 0 && <span style={{ color: "#22c55e", fontWeight: 700, fontSize: 12 }}>{issues.filter(i => i.severity === "low").length} Low</span>}
-          <span style={{ color: "#64748b", fontSize: 16 }}>{open ? "▲" : "▼"}</span>
+          <span style={{ color: "#64748b", fontSize: 16 }}>{open ? "" : ""}</span>
         </div>
       </button>
       {open && (
         <div style={{ padding: "0 16px 16px" }}>
           <KeywordPresencePanel keywords={keywords} keywordPresence={page.keywordPresence} />
           {issues.length === 0 ? (
-            <div style={{ color: "#22c55e", fontWeight: 600, fontSize: 13 }}>✓ No issues found on this page</div>
+            <div style={{ color: "#22c55e", fontWeight: 600, fontSize: 13 }}>No issues found on this page</div>
           ) : (
             issues.map((issue, i) => <IssueCard key={i} issue={issue} pageUrl={page.url} />)
           )}
@@ -209,17 +209,17 @@ export default function SEOSiteCrawler() {
     const blob = new Blob([JSON.stringify(history, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     setExported(url);
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    setTimeout(() =>URL.revokeObjectURL(url), 10000);
   };
 
   const pages = result?.pages || [];
   const totalIssues = result?.totalIssues || 0;
 
   return (
-    <div style={{ background: "#0a0a0a", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: "Inter, sans-serif" }}>
+    <div style={{ background: "#141414", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: "Inter, sans-serif" }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 4 }}>SEO Site Crawler</h2>
       <div style={{ marginBottom: 20, color: "#0ea5e9", fontWeight: 600 }}>
-        🕷️ Crawl, analyze, and fix site SEO issues with AI-powered suggestions.
+        ️ Crawl, analyze, and fix site SEO issues with AI-powered suggestions.
       </div>
 
       {/* URL Input */}
@@ -229,7 +229,7 @@ export default function SEOSiteCrawler() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && handleCrawl()}
-          style={{ width: "100%", fontSize: 15, padding: "10px 14px", borderRadius: 8, border: "1px solid #333333", background: "#1e1e1e", color: "#f3f4f6", boxSizing: "border-box" }}
+          style={{ width: "100%", fontSize: 15, padding: "10px 14px", borderRadius: 8, border: "1px solid #4a4a4a", background: "#2e2e2e", color: "#f3f4f6", boxSizing: "border-box" }}
           placeholder="https://yourstore.myshopify.com"
           aria-label="Site URL"
         />
@@ -240,9 +240,9 @@ export default function SEOSiteCrawler() {
         <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#94a3b8", marginBottom: 6 }}>
           Focus Keywords <span style={{ fontWeight: 400, color: "#64748b" }}>(press Enter or comma to add)</span>
         </label>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, background: "#1e1e1e", borderRadius: 8, border: "1px solid #333333", padding: "8px 10px", minHeight: 44, alignItems: "center" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, background: "#2e2e2e", borderRadius: 8, border: "1px solid #4a4a4a", padding: "8px 10px", minHeight: 44, alignItems: "center" }}>
           {keywords.map(kw => (
-            <span key={kw} style={{ background: "#1e1e1e", color: "#7fffd4", borderRadius: 20, padding: "3px 11px 3px 12px", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+            <span key={kw} style={{ background: "#2e2e2e", color: "#7fffd4", borderRadius: 20, padding: "3px 11px 3px 12px", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
               {kw}
               <button onClick={() => removeKeyword(kw)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
             </span>
@@ -260,10 +260,10 @@ export default function SEOSiteCrawler() {
 
       {/* Action Buttons */}
       <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
-        <button onClick={handleCrawl} disabled={loading || !input.trim()} style={{ background: loading ? "#333333" : "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "11px 26px", fontWeight: 700, fontSize: 15, cursor: loading || !input.trim() ? "not-allowed" : "pointer" }}>
-          {loading ? "Crawling…" : "🕷️ Crawl & Analyze"}
+        <button onClick={handleCrawl} disabled={loading || !input.trim()} style={{ background: loading ? "#4a4a4a" : "#7fffd4", color: "#141414", border: "none", borderRadius: 8, padding: "11px 26px", fontWeight: 700, fontSize: 15, cursor: loading || !input.trim() ? "not-allowed" : "pointer" }}>
+          {loading ? "Crawling…" : "️ Crawl & Analyze"}
         </button>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "11px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Import</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#141414", border: "none", borderRadius: 8, padding: "11px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} />
         <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "11px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Export</button>
         {exported && <a href={exported} download="seo-crawler-history.json" style={{ padding: "11px 14px", color: "#0ea5e9", fontWeight: 600, fontSize: 14, textDecoration: "none" }}>↓ Download</a>}
@@ -283,7 +283,7 @@ export default function SEOSiteCrawler() {
               { label: "Medium", value: result.medium, color: "#f59e0b" },
               { label: "Low", value: result.low, color: "#22c55e" },
             ].map(s => (
-              <div key={s.label} style={{ background: "#1e1e1e", borderRadius: 10, padding: "10px 18px", border: "1px solid #1e1e1e", textAlign: "center" }}>
+              <div key={s.label} style={{ background: "#2e2e2e", borderRadius: 10, padding: "10px 18px", border: "1px solid #2e2e2e", textAlign: "center" }}>
                 <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
                 <div style={{ fontSize: 24, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value ?? 0}</div>
               </div>
@@ -302,11 +302,11 @@ export default function SEOSiteCrawler() {
 
       {/* Stats */}
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 20 }}>
-        <div style={{ background: "#1e1e1e", borderRadius: 10, padding: "10px 18px", border: "1px solid #1e1e1e" }}>
+        <div style={{ background: "#2e2e2e", borderRadius: 10, padding: "10px 18px", border: "1px solid #2e2e2e" }}>
           <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Crawls</div>
           <div style={{ fontSize: 24, fontWeight: 800, color: "#7fffd4", marginTop: 2 }}>{history.length}</div>
         </div>
-        <div style={{ background: "#1e1e1e", borderRadius: 10, padding: "10px 18px", border: "1px solid #1e1e1e" }}>
+        <div style={{ background: "#2e2e2e", borderRadius: 10, padding: "10px 18px", border: "1px solid #2e2e2e" }}>
           <div style={{ fontSize: 10, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
           <div style={{ fontSize: 24, fontWeight: 800, color: "#7fffd4", marginTop: 2 }}>{analytics.length}</div>
         </div>
@@ -314,12 +314,12 @@ export default function SEOSiteCrawler() {
 
       {/* History */}
       {history.length > 0 && (
-        <div style={{ background: "#111111", borderRadius: 12, padding: 18 }}>
+        <div style={{ background: "#282828", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: "#7fffd4" }}>Crawl History</div>
           {history.map(h => {
             const r = h.result || {};
             return (
-              <div key={h.id} style={{ background: "#0a0a0a", borderRadius: 8, padding: "12px 16px", border: "1px solid #1e1e1e", marginBottom: 8 }}>
+              <div key={h.id} style={{ background: "#141414", borderRadius: 8, padding: "12px 16px", border: "1px solid #2e2e2e", marginBottom: 8 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4, flexWrap: "wrap", gap: 4 }}>
                   <span style={{ fontWeight: 700, color: "#e2e8f0" }}>{h.site}</span>
                   <span style={{ color: "#64748b" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : `#${h.id}`}</span>

@@ -1,8 +1,8 @@
-﻿:root {
-  --bg: #0a0a0a;
-  --bg-alt: #111111;
-  --card: #161616;
-  --border: #242424;
+﻿﻿:root {
+  --bg: #141414;
+  --bg-alt: #282828;
+  --card: #212121;
+  --border: #323232;
   --text: #f0f0f0;
   --muted: #6b6b6b;
   --accent: #ffffff;
@@ -30,7 +30,7 @@ body,
 
 body {
   font-family: var(--font);
-  background: #0a0a0a;
+  background: #141414;
   color: var(--text);
 }
 
@@ -170,7 +170,7 @@ body {
   padding: 7px 16px;
   font-size: 14px;
   background: var(--accent);
-  color: #0a0a0a;
+  color: #141414;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
@@ -265,7 +265,7 @@ body {
 .pane {
   display: flex;
   flex-direction: column;
-  background: #0a0a0a;
+  background: #141414;
   border-radius: 16px;
   border: 1px solid var(--border);
   overflow: hidden;

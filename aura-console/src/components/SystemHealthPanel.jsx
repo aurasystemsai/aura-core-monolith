@@ -1,4 +1,4 @@
-// aura-console/src/SystemHealthPanel.jsx
+﻿// aura-console/src/SystemHealthPanel.jsx
 import React from "react";
 import "./SystemHealthPanel.css";
 
@@ -34,7 +34,7 @@ function SystemHealthPanel({ coreStatus, coreStatusLabel, lastRunAt }) {
             cursor: 'help',
           }}
           title="This panel shows if your backend (AURA Core API) is working. If it's green, all features should work. If not, check your server or API key.">
-            ⓘ
+            
           </span>
         </h2>
         <p className="card-subtitle">

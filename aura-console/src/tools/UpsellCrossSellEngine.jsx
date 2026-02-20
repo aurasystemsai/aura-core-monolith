@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   Card,
   Page,
@@ -597,7 +597,7 @@ function UpsellCrossSellEngine() {
                   <div><strong>Orders:</strong> 15</div>
                   <div><strong>Avg Order Value:</strong> $156.38</div>
                   <div><strong>RFM Score:</strong> 445 (Champion)</div>
-                  <div><strong>Segments:</strong> High-Value, Frequent Buyer</div>
+                  <div><strong>Segments:</strong>High-Value, Frequent Buyer</div>
                 </Stack>
               </div>
             </Card.Section>
@@ -691,15 +691,15 @@ function UpsellCrossSellEngine() {
           <Card sectioned title="Recovery Sequence">
             <Stack vertical>
               <div className="recovery-step">
-                <strong>Step 1:</strong> Email after 1 hour
+                <strong>Step 1:</strong>Email after 1 hour
                 <Badge status="success">Active</Badge>
               </div>
               <div className="recovery-step">
-                <strong>Step 2:</strong> Email after 24 hours with 10% discount
+                <strong>Step 2:</strong>Email after 24 hours with 10% discount
                 <Badge status="success">Active</Badge>
               </div>
               <div className="recovery-step">
-                <strong>Step 3:</strong> SMS after 72 hours
+                <strong>Step 3:</strong>SMS after 72 hours
                 <Badge status="success">Active</Badge>
               </div>
               <Button primary fullWidth>Edit Sequence</Button>

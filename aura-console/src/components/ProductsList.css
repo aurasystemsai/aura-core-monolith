@@ -1,4 +1,4 @@
-﻿.pl-fatal {
+﻿﻿.pl-fatal {
   color: #ff5c7a;
   padding: 32px;
   text-align: center;
@@ -97,27 +97,27 @@
   min-width: 900px;
 }
 .pl-table thead {
-  background: #111111;
+  background: #282828;
   color: #fff;
   font-size: 15px;
 }
 .pl-table th, .pl-table td {
   padding: 14px 10px;
   text-align: left;
-  border-bottom: 1px solid #111111;
+  border-bottom: 1px solid #282828;
 }
 .pl-row--expanded {
-  background: #111111 !important;
+  background: #282828 !important;
 }
 .pl-row {
-  background: #111111;
+  background: #282828;
 }
 .pl-table tr {
-  background: #111111;
+  background: #282828;
   transition: background 0.15s;
 }
 .pl-table tr:hover, .pl-table tr:focus-within {
-  background: #0a0a0a !important;
+  background: #141414 !important;
 }
 .pl-product-cell {
   font-weight: 600;
@@ -154,7 +154,7 @@
   font-size: 13px;
 }
 .pl-keyword-pill {
-  background: #0a0a0a;
+  background: #141414;
   color: #7fffd4;
   border-radius: 4px;
   padding: 2px 6px;
@@ -165,7 +165,7 @@
   transition: background 0.15s, color 0.15s;
 }
 .pl-keyword-pill:hover, .pl-keyword-pill:focus {
-  background: #111111;
+  background: #282828;
   color: #fff;
   border-color: #7fffd4;
 }
@@ -196,7 +196,7 @@
   font-weight: 700;
 }
 .pl-btn--cancel {
-  background: #111111;
+  background: #282828;
   color: #fff;
 }
 .pl-btn--ai {
@@ -220,7 +220,7 @@
 .pl-tip--warn { color: #ffe97f; }
 .pl-tip-detail { color: #aaa; }
 .pl-debug-panel {
-  background: #111111;
+  background: #282828;
   color: #fff;
   font-size: 13px;
   padding: 16px;

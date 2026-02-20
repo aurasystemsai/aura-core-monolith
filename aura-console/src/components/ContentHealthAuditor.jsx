@@ -1,4 +1,4 @@
-// TODO: Refactor this component to match the new ProductsList.jsx standards:
+﻿// TODO: Refactor this component to match the new ProductsList.jsx standards:
 // - Show actionable tips for each issue
 // - Highlight missing primary keyword in title/meta
 // - Show current/target values for each field
@@ -209,7 +209,7 @@ export default function ContentHealthAuditor({ coreUrl, projectId }) {
           cursor: 'help',
         }}
         title="This panel checks your products, blogs, and pages for SEO and content issues. Use the filters and tips to improve your store's health.">
-          ⓘ
+          
         </span>
       </h1>
       <div className="cha-toolbar">

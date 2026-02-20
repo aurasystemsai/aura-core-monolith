@@ -1,6 +1,6 @@
-﻿:root {
+﻿﻿:root {
   --brief-bg: #05080f;
-  --brief-panel: #111111;
+  --brief-panel: #282828;
   --brief-border: rgba(255, 255, 255, 0.08);
   --brief-text: #e8eefc;
   --brief-muted: #9ab0d6;
@@ -16,7 +16,7 @@
 .brief-shell {
   background: radial-gradient(circle at 10% 20%, rgba(108, 229, 242, 0.12), transparent 26%),
     radial-gradient(circle at 80% 0%, rgba(123, 108, 255, 0.12), transparent 30%),
-    linear-gradient(145deg, #05080f 0%, #0d0d0d 100%);
+    linear-gradient(145deg, #05080f 0%, #181818 100%);
   color: var(--brief-text);
   padding: 20px;
   border-radius: 16px;
@@ -128,7 +128,7 @@
 .brief-tab-chip {
   border-radius: 10px;
   padding: 8px 10px;
-  background: #111111;
+  background: #282828;
   border: 1px solid var(--brief-border);
   font-weight: 700;
   color: var(--brief-text);
@@ -237,7 +237,7 @@
 .brief-select {
   border-radius: 10px;
   border: 1px solid var(--brief-border);
-  background: #111111;
+  background: #282828;
   color: var(--brief-text);
   padding: 10px;
   font-size: 14px;
@@ -411,7 +411,7 @@
 }
 
 .brief-modal-container {
-  background: linear-gradient(180deg, #111111 0%, #111111 100%);
+  background: linear-gradient(180deg, #282828 0%, #282828 100%);
   border: 1px solid var(--brief-border);
   border-radius: 16px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
@@ -845,7 +845,7 @@
 }
 
 .brief-search-bar::before {
-  content: "🔍";
+  content: "";
   position: absolute;
   left: 12px;
   top: 50%;
@@ -898,7 +898,7 @@
   left: 50%;
   transform: translateX(-50%) translateY(-8px);
   padding: 8px 12px;
-  background: #111111;
+  background: #282828;
   border: 1px solid var(--brief-border);
   border-radius: 8px;
   font-size: 12px;
@@ -967,7 +967,7 @@
   top: 100%;
   right: 0;
   margin-top: 8px;
-  background: #111111;
+  background: #282828;
   border: 1px solid var(--brief-border);
   border-radius: 12px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);

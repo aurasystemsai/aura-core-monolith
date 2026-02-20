@@ -1,14 +1,14 @@
-﻿
+﻿﻿
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import BackButton from "./BackButton";
 
 const THEMES = {
   dark: {
-    bg: "#111111",
-    card: "#111111",
-    border: "#1a1a1a",
+    bg: "#282828",
+    card: "#282828",
+    border: "#343434",
     text: "#f0f0f0",
-    muted: "#888888",
+    muted: "#9a9a9a",
     accent: "#7dd3fc",
     positive: "#22c55e",
     warning: "#f59e0b",
@@ -18,7 +18,7 @@ const THEMES = {
     bg: "#f8fafc",
     card: "#ffffff",
     border: "#dbeafe",
-    text: "#111111",
+    text: "#282828",
     muted: "#475569",
     accent: "#0ea5e9",
     positive: "#16a34a",
@@ -26,7 +26,7 @@ const THEMES = {
     danger: "#ef4444",
   },
   audit: {
-    bg: "#111111",
+    bg: "#282828",
     card: "#0f2529",
     border: "#17424a",
     text: "#d8f3ff",
@@ -259,7 +259,7 @@ export default function AdvancedFinanceInventoryPlanning() {
     const blob = new Blob([JSON.stringify(history, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     setExportedHistoryUrl(url);
-    setTimeout(() => URL.revokeObjectURL(url), 12000);
+    setTimeout(() =>URL.revokeObjectURL(url), 12000);
   };
 
   const handleImportConfig = (e) => {
@@ -286,7 +286,7 @@ export default function AdvancedFinanceInventoryPlanning() {
     a.href = url;
     a.download = "finance-inventory-scenarios.json";
     a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 8000);
+    setTimeout(() =>URL.revokeObjectURL(url), 8000);
   };
 
   const handleFeedback = async () => {
@@ -368,7 +368,7 @@ export default function AdvancedFinanceInventoryPlanning() {
           onClick={() => setShowOnboarding(false)}
           style={{
             background: palette.accent,
-            color: "#111111",
+            color: "#282828",
             border: "none",
             borderRadius: 10,
             padding: "10px 18px",
@@ -426,7 +426,7 @@ export default function AdvancedFinanceInventoryPlanning() {
           </button>
           <button
             onClick={saveVersion}
-            style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${palette.accent}`, background: palette.accent, color: "#111111", fontWeight: 800, cursor: "pointer" }}
+            style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${palette.accent}`, background: palette.accent, color: "#282828", fontWeight: 800, cursor: "pointer" }}
           >
             Save Version
           </button>
@@ -484,7 +484,7 @@ export default function AdvancedFinanceInventoryPlanning() {
               <button
                 onClick={handleAnalyze}
                 disabled={loading || !query}
-                style={{ background: palette.accent, color: "#111111", border: `1px solid ${palette.accent}`, borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: loading || !query ? "not-allowed" : "pointer" }}
+                style={{ background: palette.accent, color: "#282828", border: `1px solid ${palette.accent}`, borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: loading || !query ? "not-allowed" : "pointer" }}
               >
                 {loading ? "Analyzing..." : "Analyze"}
               </button>
@@ -506,7 +506,7 @@ export default function AdvancedFinanceInventoryPlanning() {
         </div>
 
         {result && (
-          <div style={{ ...paletteCard, background: theme === "light" ? "#ecfeff" : "#111111" }}>
+          <div style={{ ...paletteCard, background: theme === "light" ? "#ecfeff" : "#282828" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
               <div style={{ fontWeight: 800 }}>Analysis Result — {activeScenarioData?.name}</div>
               <span style={{ color: palette.muted, fontSize: 12 }}>{new Date().toLocaleTimeString()}</span>
@@ -871,7 +871,7 @@ export default function AdvancedFinanceInventoryPlanning() {
             placeholder="Share your feedback or suggestions..."
             aria-label="Feedback"
           />
-          <button type="submit" style={{ background: palette.accent, color: "#111111", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: "pointer" }}>Send Feedback</button>
+          <button type="submit" style={{ background: palette.accent, color: "#282828", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, cursor: "pointer" }}>Send Feedback</button>
           {error && <div style={{ color: palette.danger, marginTop: 8 }}>{error}</div>}
         </form>
 

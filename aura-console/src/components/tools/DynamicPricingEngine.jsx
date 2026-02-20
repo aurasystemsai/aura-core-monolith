@@ -1,4 +1,4 @@
-// ================================================================
+﻿// ================================================================
 // DYNAMIC PRICING ENGINE - ENTERPRISE REACT COMPONENT
 // ================================================================
 // Comprehensive 42-tab interface across 8 categories:
@@ -1504,7 +1504,7 @@ export default function DynamicPricingEngine() {
       )}
 
       <div className="dpe-header">
-        <h1>🎯 Dynamic Pricing Engine</h1>
+        <h1>Dynamic Pricing Engine</h1>
         <p className="dpe-tagline">Enterprise-grade AI-powered pricing optimization platform</p>
       </div>
 

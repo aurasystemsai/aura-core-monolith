@@ -1,4 +1,4 @@
-// aura-console/src/components/ContentIngestor.jsx
+﻿// aura-console/src/components/ContentIngestor.jsx
 import React, { useMemo, useState } from "react";
 import "./ContentIngestor.css";
 
@@ -197,7 +197,7 @@ function ContentIngestor({ coreUrl, projectId }) {
               cursor: 'help',
             }}
             title="Paste your product, blog, or page URLs here to add them to the system for SEO and content health checks.">
-              ⓘ
+              
             </span>
           </h2>
           <p className="card-subtitle">

@@ -1,10 +1,10 @@
-﻿
+﻿﻿
 import React, { useState, useEffect, useRef } from "react";
 
 export default function ToolScaffold({ toolId, toolName, fields }) {
   // Removed CSRF token logic (not needed)
   const safeFields = Array.isArray(fields) ? fields : [];
-  const [form, setForm] = useState(() => Object.fromEntries(safeFields.map(f => [f.name, f.defaultValue || ""])));
+  const [form, setForm] = useState(() =>Object.fromEntries(safeFields.map(f => [f.name, f.defaultValue || ""])));
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -96,7 +96,7 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
       className="tool-generic"
       style={{
         background: darkMode ? "#18181b" : "#fff",
-        color: darkMode ? "#a3e635" : "#0a0a0a",
+        color: darkMode ? "#a3e635" : "#141414",
         borderRadius: 16,
         boxShadow: "0 2px 16px #0001",
         padding: 32,
@@ -109,13 +109,13 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h2>{toolName}</h2>
-        <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
+        <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#141414", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
       </div>
       <button onClick={() => setShowHelp(h => !h)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 12 }}>{showHelp ? "Hide" : "Show"} Help</button>
       {showHelp && (
-        <div style={{ background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 16 }}>
+        <div style={{ background: darkMode ? "#141414" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 16 }}>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>How to use {toolName}</div>
-          <ul style={{ margin: 0, paddingLeft: 18, color: darkMode ? "#a3e635" : "#333333", fontSize: 15 }}>
+          <ul style={{ margin: 0, paddingLeft: 18, color: darkMode ? "#a3e635" : "#4a4a4a", fontSize: 15 }}>
             <li>Fill out all required fields and click Run Tool.</li>
             <li>Advanced fields: file upload, select, date, textarea, etc. are supported.</li>
             <li>Results and errors will appear below the form.</li>
@@ -144,7 +144,7 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
             {validation[f.name] && <div style={{ color: "#ef4444", fontSize: 13 }}>{validation[f.name]}</div>}
           </div>
         ))}
-        <button type="submit" disabled={loading} style={{ marginTop: 12, background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 2px 12px #22d3ee55" }}>
+        <button type="submit" disabled={loading} style={{ marginTop: 12, background: "#7fffd4", color: "#141414", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 2px 12px #22d3ee55" }}>
           {loading ? "Running..." : "Run Tool"}
         </button>
       </form>
@@ -152,19 +152,19 @@ export default function ToolScaffold({ toolId, toolName, fields }) {
       {result && (
         <div style={{ marginTop: 24 }}>
           <h3>Result</h3>
-          <pre style={{ background: darkMode ? "#0a0a0a" : "#222", color: darkMode ? "#a3e635" : "#7fffd4", padding: 12, borderRadius: 6, overflowX: "auto" }}>
+          <pre style={{ background: darkMode ? "#141414" : "#222", color: darkMode ? "#a3e635" : "#7fffd4", padding: 12, borderRadius: 6, overflowX: "auto" }}>
             {JSON.stringify(result, null, 2)}
           </pre>
         </div>
       )}
-      <div style={{ marginTop: 32, background: darkMode ? "#0a0a0a" : "#f8fafc", borderRadius: 12, padding: 20 }}>
+      <div style={{ marginTop: 32, background: darkMode ? "#141414" : "#f8fafc", borderRadius: 12, padding: 20 }}>
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
           <input
             value={feedback}
             onChange={e => setFeedback(e.target.value)}
             placeholder="Share feedback or suggestions..."
-            style={{ flex: 1, fontSize: 15, padding: 8, borderRadius: 8, border: darkMode ? "1px solid #333" : "1px solid #ccc", background: darkMode ? "#0a0a0a" : "#fff", color: darkMode ? "#a3e635" : "#0a0a0a" }}
+            style={{ flex: 1, fontSize: 15, padding: 8, borderRadius: 8, border: darkMode ? "1px solid #333" : "1px solid #ccc", background: darkMode ? "#141414" : "#fff", color: darkMode ? "#a3e635" : "#141414" }}
             aria-label="Feedback input"
           />
           <button onClick={handleFeedback} disabled={loading || !feedback} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>Send</button>

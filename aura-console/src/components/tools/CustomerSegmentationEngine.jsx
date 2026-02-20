@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { Card, Button, Table, Input, Tabs, Progress, notification } from "antd";
 import { BarChartOutlined, InfoCircleOutlined, ShareAltOutlined, QuestionCircleOutlined, DownloadOutlined } from "@ant-design/icons";
 
@@ -41,10 +41,10 @@ export default function CustomerSegmentationEngine() {
   return (
     <div style={{ padding: 24 }}>
       <Card
-        title={<span><BarChartOutlined /> Customer Segmentation Engine</span>}
+        title={<span><BarChartOutlined />Customer Segmentation Engine</span>}
         extra={<Button icon={<DownloadOutlined />} loading={exporting} onClick={handleExport} />}>
         <Tabs activeKey={tab} onChange={setTab}>
-          <Tabs.TabPane tab={<span><BarChartOutlined /> Segment</span>} key="segment">
+          <Tabs.TabPane tab={<span><BarChartOutlined />Segment</span>} key="segment">
             <Input.TextArea
               value={input}
               onChange={e => setInput(e.target.value)}
@@ -72,7 +72,7 @@ export default function CustomerSegmentationEngine() {
               </div>
             </div>
           </Tabs.TabPane>
-          <Tabs.TabPane tab={<span><InfoCircleOutlined /> Onboarding</span>} key="onboarding">
+          <Tabs.TabPane tab={<span><InfoCircleOutlined />Onboarding</span>} key="onboarding">
             <div style={{ padding: 24 }}>
               <h3>How to Use Customer Segmentation Engine</h3>
               <ol>
@@ -83,7 +83,7 @@ export default function CustomerSegmentationEngine() {
               <Button icon={<QuestionCircleOutlined />} style={{ marginTop: 16 }}>View Documentation</Button>
             </div>
           </Tabs.TabPane>
-          <Tabs.TabPane tab={<span><ShareAltOutlined /> Feedback</span>} key="feedback">
+          <Tabs.TabPane tab={<span><ShareAltOutlined />Feedback</span>} key="feedback">
             <div style={{ padding: 24 }}>
               <h3>Feedback & Suggestions</h3>
               <Input.TextArea rows={4} value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Share your feedback or feature requests..." style={{ marginBottom: 12 }} />

@@ -1,4 +1,4 @@
-// Example: Protected Tool Page with Access Control
+﻿// Example: Protected Tool Page with Access Control
 import React, { useState } from 'react';
 import { ProtectedTool, UsageLimitWarning, PlanBadge } from './UpgradePrompt';
 import { useUsageLimits } from '../hooks/usePlanAccess';
@@ -55,12 +55,12 @@ function ToolsDashboard() {
   const { accessibleTools, plan } = usePlanAccess();
   
   const allTools = [
-    { id: 'product-seo', name: 'Product SEO', category: 'free', icon: '🛍️' },
-    { id: 'blog-seo', name: 'Blog SEO', category: 'free', icon: '📝' },
-    { id: 'abandoned-checkout', name: 'Abandoned Checkout', category: 'professional', icon: '🛒' },
-    { id: 'reviews-ugc', name: 'Reviews & UGC', category: 'professional', icon: '⭐' },
-    { id: 'ai-support-assistant', name: 'AI Support Assistant', category: 'enterprise', icon: '🤖' },
-    { id: 'advanced-analytics', name: 'Advanced Analytics', category: 'enterprise', icon: '📊' },
+    { id: 'product-seo', name: 'Product SEO', category: 'free', icon: '️' },
+    { id: 'blog-seo', name: 'Blog SEO', category: 'free', icon: '' },
+    { id: 'abandoned-checkout', name: 'Abandoned Checkout', category: 'professional', icon: '' },
+    { id: 'reviews-ugc', name: 'Reviews & UGC', category: 'professional', icon: '' },
+    { id: 'ai-support-assistant', name: 'AI Support Assistant', category: 'enterprise', icon: '' },
+    { id: 'advanced-analytics', name: 'Advanced Analytics', category: 'enterprise', icon: '' },
   ];
   
   const isAccessible = (toolId) => {

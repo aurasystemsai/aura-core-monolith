@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+﻿﻿import React, { useState, useEffect } from "react";
 import { Card, Button, Table, Modal, Input, Select, Switch, Tooltip, notification, Tabs, Progress, Tag } from "antd";
 import { DownloadOutlined, PlusOutlined, BellOutlined, BarChartOutlined, InfoCircleOutlined, ReloadOutlined, QuestionCircleOutlined, ShareAltOutlined, SettingOutlined } from "@ant-design/icons";
 
@@ -212,11 +212,11 @@ export default function ReportingAlerts() {
   return (
     <div style={{ padding: 24 }}>
       {devSandbox && (
-        <Card style={{ marginBottom: 12, background: "#111111", borderColor: "#1a1a1a" }}>
+        <Card style={{ marginBottom: 12, background: "#282828", borderColor: "#343434" }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <div>
               <div style={{ fontWeight: 800, color: '#f59e0b' }}>Sandbox mode</div>
-              <div style={{ color: '#888888' }}>Exports and feedback are blocked. Switch env to Stage/Prod.</div>
+              <div style={{ color: '#9a9a9a' }}>Exports and feedback are blocked. Switch env to Stage/Prod.</div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <Button onClick={() => setEnv('stage')}>Stage</Button>
@@ -232,7 +232,7 @@ export default function ReportingAlerts() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontWeight: 700 }}>Sync health</div>
-              <div style={{ color: '#666666', fontSize: 12 }}>Last success {syncHealth.lastSuccess ? new Date(syncHealth.lastSuccess).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
+              <div style={{ color: '#777777', fontSize: 12 }}>Last success {syncHealth.lastSuccess ? new Date(syncHealth.lastSuccess).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
             </div>
             <Tag color={syncHealth.status === 'healthy' ? 'green' : 'red'}>{syncHealth.status}</Tag>
           </div>
@@ -240,7 +240,7 @@ export default function ReportingAlerts() {
         </Card>
         <Card style={{ minWidth: 220, marginBottom: 0 }}>
           <div style={{ fontWeight: 700 }}>Safety</div>
-          <div style={{ color: '#666666', fontSize: 12 }}>Protect deletes and allow undo</div>
+          <div style={{ color: '#777777', fontSize: 12 }}>Protect deletes and allow undo</div>
           <div style={{ marginTop: 6, display: 'flex', gap: 8, alignItems: 'center' }}>
             <Switch checked={destructiveEnabled} onChange={setDestructiveEnabled} checkedChildren="Destructive on" unCheckedChildren="Locked" />
             <Button size="small" disabled={!undoStack.length} onClick={undoLast}>Undo</Button>
@@ -248,7 +248,7 @@ export default function ReportingAlerts() {
         </Card>
       </div>
       <Card
-        title={<span><BellOutlined /> Reporting Alerts</span>}
+        title={<span><BellOutlined />Reporting Alerts</span>}
         extra={<>
           <Tooltip title="Export Alerts"><Button icon={<DownloadOutlined />} loading={exporting} onClick={handleExport} /></Tooltip>
           <Tooltip title="Export audit log"><Button icon={<DownloadOutlined />} style={{ marginLeft: 8 }} onClick={() => {
@@ -258,7 +258,7 @@ export default function ReportingAlerts() {
             link.href = url;
             link.download = 'alerts-audit.json';
             link.click();
-            setTimeout(() => URL.revokeObjectURL(url), 8000);
+            setTimeout(() =>URL.revokeObjectURL(url), 8000);
             recordTrace('audit_export', { count: auditLog.length });
           }} />
           </Tooltip>
@@ -267,7 +267,7 @@ export default function ReportingAlerts() {
         style={{ marginBottom: 24 }}
       >
         <Tabs activeKey={tab} onChange={setTab}>
-          <Tabs.TabPane tab={<span><BarChartOutlined /> Alerts</span>} key="alerts">
+          <Tabs.TabPane tab={<span><BarChartOutlined />Alerts</span>} key="alerts">
             <Table
               columns={columns}
               dataSource={alerts}
@@ -295,7 +295,7 @@ export default function ReportingAlerts() {
                 <b>Recommendation:</b> <span>Suggested threshold: 95th percentile</span>
               </div>
             </div>
-            <div style={{ marginTop: 12, background: '#111111', padding: 10, borderRadius: 8, border: '1px solid #1a1a1a' }}>
+            <div style={{ marginTop: 12, background: '#282828', padding: 10, borderRadius: 8, border: '1px solid #343434' }}>
               <div style={{ fontWeight: 700, color: '#f0f0f0' }}>Severity routing</div>
               <Select size="small" value={routingPreset} onChange={applyPreset} style={{ width: 240, marginTop: 6 }}
                 options={[
@@ -321,7 +321,7 @@ export default function ReportingAlerts() {
               <div style={{ marginTop: 6, display: 'grid', gap: 6 }}>
                 {escalationPolicy.map((step, idx) => (
                   <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ color: '#111111', fontWeight: 600 }}>{step.channel}</span>
+                    <span style={{ color: '#282828', fontWeight: 600 }}>{step.channel}</span>
                     <span style={{ color: '#475569', fontSize: 12 }}>after {step.after} min</span>
                   </div>
                 ))}
@@ -329,7 +329,7 @@ export default function ReportingAlerts() {
               <Button size="small" icon={<ReloadOutlined />} style={{ marginTop: 6 }} onClick={() => { notification.info({ message: 'Escalation simulated' }); recordTrace('escalation_simulated', { policy: escalationPolicy.length }); }}>Test escalation</Button>
             </div>
           </Tabs.TabPane>
-          <Tabs.TabPane tab={<span><InfoCircleOutlined /> Onboarding</span>} key="onboarding">
+          <Tabs.TabPane tab={<span><InfoCircleOutlined />Onboarding</span>} key="onboarding">
             <div style={{ padding: 24 }}>
               <h3>How to Use Reporting Alerts</h3>
               <ol>
@@ -342,7 +342,7 @@ export default function ReportingAlerts() {
               <Button icon={<QuestionCircleOutlined />} style={{ marginTop: 16 }}>View Documentation</Button>
             </div>
           </Tabs.TabPane>
-          <Tabs.TabPane tab={<span><ShareAltOutlined /> Feedback</span>} key="feedback">
+          <Tabs.TabPane tab={<span><ShareAltOutlined />Feedback</span>} key="feedback">
             <div style={{ padding: 24 }}>
               <h3>Feedback & Suggestions</h3>
               <Input.TextArea rows={4} value={feedbackText} onChange={e => setFeedbackText(e.target.value)} placeholder="Share your feedback or feature requests..." style={{ marginBottom: 12 }} />
@@ -365,7 +365,7 @@ export default function ReportingAlerts() {
             <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: idx === history.slice(0,5).length -1 ? 'none' : '1px solid #f3f4f6' }}>
               <div>
                 <div style={{ fontWeight: 600 }}>{h.summary}</div>
-                <div style={{ color: '#666666', fontSize: 12 }}>{new Date(h.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {h.env}</div>
+                <div style={{ color: '#777777', fontSize: 12 }}>{new Date(h.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {h.env}</div>
               </div>
               <Button size="small" icon={<ReloadOutlined />} onClick={() => notification.info({ message: 'Replayed', description: h.summary })}>Replay</Button>
             </div>
@@ -375,19 +375,19 @@ export default function ReportingAlerts() {
 
       <Card title="Debug panel" style={{ marginBottom: 16 }} extra={<Button size="small" onClick={() => setShowDebug(v => !v)}>{showDebug ? 'Hide' : 'Show'}</Button>}>
         {showDebug ? (
-          traceEvents.length === 0 ? <div style={{ color: '#666666' }}>Interact to capture traces. Ctrl+D toggles.</div> : (
+          traceEvents.length === 0 ? <div style={{ color: '#777777' }}>Interact to capture traces. Ctrl+D toggles.</div> : (
             <div style={{ display: 'grid', gap: 8 }}>
               {traceEvents.map((t, idx) => (
                 <div key={idx} style={{ padding: 8, border: '1px solid #f3f4f6', borderRadius: 8 }}>
                   <div style={{ fontWeight: 700 }}>{t.event}</div>
-                  <div style={{ color: '#666666', fontSize: 12 }}>{new Date(t.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {t.env} · {t.shop}</div>
-                  <div style={{ color: '#666666', fontSize: 12, wordBreak: 'break-word' }}>{JSON.stringify(t.meta)}</div>
+                  <div style={{ color: '#777777', fontSize: 12 }}>{new Date(t.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {t.env} · {t.shop}</div>
+                  <div style={{ color: '#777777', fontSize: 12, wordBreak: 'break-word' }}>{JSON.stringify(t.meta)}</div>
                 </div>
               ))}
             </div>
           )
         ) : (
-          <div style={{ color: '#666666' }}>Tracing captures saves, deletes, exports, simulations.</div>
+          <div style={{ color: '#777777' }}>Tracing captures saves, deletes, exports, simulations.</div>
         )}
       </Card>
 

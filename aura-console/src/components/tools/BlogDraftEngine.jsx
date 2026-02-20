@@ -1,4 +1,4 @@
-
+﻿
 import React, { useEffect, useMemo, useState } from "react";
 import BackButton from "./BackButton";
 import { apiFetch } from "../../api";
@@ -337,7 +337,7 @@ export default function BlogDraftEngine() {
                         <td>{idea.intentScore || "--"}</td>
                         <td><span className="bde-tag">{idea.status}</span></td>
                         <td>
-                          <button className="bde-icon-btn" onClick={() => deleteItem("idea", idea.id)}>🗑️</button>
+                          <button className="bde-icon-btn" onClick={() => deleteItem("idea", idea.id)}>️</button>
                         </td>
                       </tr>
                     ))
@@ -381,7 +381,7 @@ export default function BlogDraftEngine() {
                         <td>{brief.targetWords || 1500}</td>
                         <td><span className="bde-pill success">{brief.grade || "B"}</span></td>
                         <td>
-                          <button className="bde-icon-btn" onClick={() => deleteItem("brief", brief.id)}>🗑️</button>
+                          <button className="bde-icon-btn" onClick={() => deleteItem("brief", brief.id)}>️</button>
                         </td>
                       </tr>
                     ))
@@ -427,8 +427,8 @@ export default function BlogDraftEngine() {
                         <td>{d.readabilityScore || "--"}</td>
                         <td>v{d.version || 1}</td>
                         <td>
-                          <button className="bde-icon-btn" onClick={() => setSelectedItem(d)}>👁️</button>
-                          <button className="bde-icon-btn" onClick={() => deleteItem("draft", d.id)}>🗑️</button>
+                          <button className="bde-icon-btn" onClick={() => setSelectedItem(d)}>️</button>
+                          <button className="bde-icon-btn" onClick={() => deleteItem("draft", d.id)}>️</button>
                         </td>
                       </tr>
                     ))
@@ -494,7 +494,7 @@ export default function BlogDraftEngine() {
                     <span>Priority: {task.priority || "Medium"}</span>
                   </div>
                   <div className="bde-task-actions">
-                    <button className="bde-icon-btn" onClick={() => deleteItem("task", task.id)}>🗑️</button>
+                    <button className="bde-icon-btn" onClick={() => deleteItem("task", task.id)}>️</button>
                   </div>
                 </div>
               ))}
@@ -529,7 +529,7 @@ export default function BlogDraftEngine() {
               </div>
             </div>
             <div className="bde-chart-placeholder">
-              <p>📊 Performance trend chart (30-day rolling)</p>
+              <p>Performance trend chart (30-day rolling)</p>
             </div>
           </div>
         );
@@ -606,22 +606,22 @@ export default function BlogDraftEngine() {
             <div className="bde-health-grid">
               <div className="bde-health-card">
                 <h4>API Status</h4>
-                <span className="bde-health-status success">● Operational</span>
+                <span className="bde-health-status success">Operational</span>
                 <p>Uptime: 99.9%</p>
               </div>
               <div className="bde-health-card">
                 <h4>Database</h4>
-                <span className="bde-health-status success">● Connected</span>
+                <span className="bde-health-status success">Connected</span>
                 <p>Latency: 12ms</p>
               </div>
               <div className="bde-health-card">
                 <h4>AI Providers</h4>
-                <span className="bde-health-status success">● 3/3 Online</span>
+                <span className="bde-health-status success"> 3/3 Online</span>
                 <p>Avg Response: 0.9s</p>
               </div>
               <div className="bde-health-card">
                 <h4>Queue</h4>
-                <span className="bde-health-status success">● Processing</span>
+                <span className="bde-health-status success">Processing</span>
                 <p>Jobs: {stats?.queueJobs || 0}</p>
               </div>
             </div>
@@ -674,7 +674,7 @@ export default function BlogDraftEngine() {
                   onClick={() => { setActiveGroup(group); setActiveTab(item); }}
                 >
                   <span>{item}</span>
-                  {activeTab === item && <span>✓</span>}
+                  {activeTab === item && <span></span>}
                 </div>
               ))}
             </div>

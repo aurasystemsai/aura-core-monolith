@@ -1,4 +1,4 @@
-﻿// Settings Page - Shopify Integration
+﻿﻿// Settings Page - Shopify Integration
 // Platform configuration and integrations management
 
 import React, { useState, useEffect } from 'react';
@@ -254,7 +254,7 @@ const Settings = ({ setActiveSection }) => {
             
             {!shopifyConnected ? (
               <div className="connect-shopify-card">
-                <div className="icon-circle">🛍️</div>
+                <div className="icon-circle">️</div>
                 <h3>Connect Your Shopify Store</h3>
                 <p>Connect your Shopify store to unlock all platform features</p>
                 
@@ -316,7 +316,7 @@ const Settings = ({ setActiveSection }) => {
                   </div>
                 )}
 
-                <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #1e1e1e' }}>
+                <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #2e2e2e' }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#94a3b8', marginBottom: 10 }}>Data Synchronisation</div>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {['products','orders','customers','inventory'].map(type => {
@@ -328,14 +328,14 @@ const Settings = ({ setActiveSection }) => {
                             onClick={() => syncShopifyData(type)}
                             disabled={!!st}
                             style={{
-                              background: st === 'done' ? '#052e16' : st === 'error' ? '#2d1515' : '#1e1e1e',
-                              border: `1px solid ${st === 'done' ? '#16a34a' : st === 'error' ? '#f87171' : '#333333'}`,
+                              background: st === 'done' ? '#052e16' : st === 'error' ? '#2d1515' : '#2e2e2e',
+                              border: `1px solid ${st === 'done' ? '#16a34a' : st === 'error' ? '#f87171' : '#4a4a4a'}`,
                               color: st === 'done' ? '#4ade80' : st === 'error' ? '#f87171' : '#94a3b8',
                               borderRadius: 8, padding: '7px 14px', fontSize: 13,
                               cursor: st ? 'wait' : 'pointer', whiteSpace: 'nowrap'
                             }}
                           >
-                            {st === 'loading' ? `Syncing ${type}…` : st === 'done' ? `✓ ${type}` : st === 'error' ? `✗ ${type}` : `Sync ${type}`}
+                            {st === 'loading' ? `Syncing ${type}…` : st === 'done' ? ` ${type}` : st === 'error' ? ` ${type}` : `Sync ${type}`}
                           </button>
                           {msg && st && st !== 'loading' && (
                             <div style={{ fontSize: 11, color: st === 'done' ? '#4ade80' : '#f87171', marginTop: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -358,7 +358,7 @@ const Settings = ({ setActiveSection }) => {
                     <button
                       onClick={disconnectShopify}
                       disabled={saving}
-                      style={{ background: 'none', border: '1px solid #333333', color: '#64748b', borderRadius: 8, padding: '7px 14px', fontSize: 12, cursor: 'pointer' }}
+                      style={{ background: 'none', border: '1px solid #4a4a4a', color: '#64748b', borderRadius: 8, padding: '7px 14px', fontSize: 12, cursor: 'pointer' }}
                     >
                       Disconnect store
                     </button>
@@ -368,15 +368,15 @@ const Settings = ({ setActiveSection }) => {
             )}
         </div>
 
-        {/* ── Billing & Plan ── */}
-        <div style={{ background: '#111111', padding: 32, borderRadius: 12, border: '1px solid #1e1e1e', marginBottom: 24 }}>
+        {/*  Billing & Plan  */}
+        <div style={{ background: '#282828', padding: 32, borderRadius: 12, border: '1px solid #2e2e2e', marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
             <div>
               <h2 style={{ margin: 0, color: '#f0f0f0', fontSize: 22, fontWeight: 800 }}>Billing &amp; Plan</h2>
               <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: 14 }}>Billing is handled securely through Shopify — no card details stored here.</p>
             </div>
             {subscription && (
-              <div style={{ background: '#111111', border: `2px solid ${PLANS.find(p => p.id === subscription.plan_id)?.colour || '#4ade80'}`, borderRadius: 10, padding: '8px 20px', textAlign: 'center' }}>
+              <div style={{ background: '#282828', border: `2px solid ${PLANS.find(p => p.id === subscription.plan_id)?.colour || '#4ade80'}`, borderRadius: 10, padding: '8px 20px', textAlign: 'center' }}>
                 <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Current Plan</div>
                 <div style={{ fontSize: 18, fontWeight: 900, color: PLANS.find(p => p.id === subscription.plan_id)?.colour || '#4ade80', marginTop: 2 }}>
                   {PLANS.find(p => p.id === subscription.plan_id)?.name || subscription.plan_id}
@@ -400,9 +400,9 @@ const Settings = ({ setActiveSection }) => {
                 const isUpgrading = upgrading === plan.id;
                 const isDowngrade = planIndex < currentPlanIndex;
                 return (
-                  <div key={plan.id} style={{ background: isCurrent ? `${plan.colour}12` : '#111111', border: `2px solid ${isCurrent ? plan.colour : '#1e1e1e'}`, borderRadius: 14, padding: 24, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                  <div key={plan.id} style={{ background: isCurrent ? `${plan.colour}12` : '#282828', border: `2px solid ${isCurrent ? plan.colour : '#2e2e2e'}`, borderRadius: 14, padding: 24, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                     {plan.badge && (
-                      <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: plan.colour, color: '#111111', fontSize: 11, fontWeight: 800, padding: '3px 12px', borderRadius: 20, whiteSpace: 'nowrap' }}>{plan.badge}</div>
+                      <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: plan.colour, color: '#282828', fontSize: 11, fontWeight: 800, padding: '3px 12px', borderRadius: 20, whiteSpace: 'nowrap' }}>{plan.badge}</div>
                     )}
                     <div style={{ fontSize: 18, fontWeight: 800, color: plan.colour, marginBottom: 4 }}>{plan.name}</div>
                     <div style={{ marginBottom: 16 }}>
@@ -413,19 +413,19 @@ const Settings = ({ setActiveSection }) => {
                     <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', flex: 1 }}>
                       {plan.features.map((f, i) => (
                         <li key={i} style={{ fontSize: 13, color: '#94a3b8', padding: '4px 0', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                          <span style={{ color: plan.colour, flexShrink: 0 }}>✓</span> {f}
+                          <span style={{ color: plan.colour, flexShrink: 0 }}></span> {f}
                         </li>
                       ))}
                     </ul>
                     {isCurrent ? (
-                      <div style={{ textAlign: 'center', padding: '10px', background: `${plan.colour}20`, borderRadius: 8, color: plan.colour, fontWeight: 700, fontSize: 14 }}>✓ Current Plan</div>
+                      <div style={{ textAlign: 'center', padding: '10px', background: `${plan.colour}20`, borderRadius: 8, color: plan.colour, fontWeight: 700, fontSize: 14 }}>Current Plan</div>
                     ) : (
                       <button
                         onClick={() => subscribePlan(plan.id)}
                         disabled={!!upgrading}
-                        style={{ background: isUpgrading ? '#333333' : plan.colour, border: 'none', borderRadius: 8, padding: '11px', color: '#111111', fontWeight: 800, cursor: upgrading ? 'wait' : 'pointer', fontSize: 14, opacity: upgrading && !isUpgrading ? 0.5 : 1 }}
+                        style={{ background: isUpgrading ? '#4a4a4a' : plan.colour, border: 'none', borderRadius: 8, padding: '11px', color: '#282828', fontWeight: 800, cursor: upgrading ? 'wait' : 'pointer', fontSize: 14, opacity: upgrading && !isUpgrading ? 0.5 : 1 }}
                       >
-                        {isUpgrading ? '⏳ Redirecting to Shopify…' : isDowngrade ? `Downgrade to ${plan.name}` : `Upgrade to ${plan.name} →`}
+                        {isUpgrading ? ' Redirecting to Shopify…' : isDowngrade ? `Downgrade to ${plan.name}` : `Upgrade to ${plan.name} →`}
                       </button>
                     )}
                   </div>
@@ -441,7 +441,7 @@ const Settings = ({ setActiveSection }) => {
           <h2>Developer Access</h2>
           <div className="setting-card">
               <div className="card-header">
-                <div className="header-icon">🔑</div>
+                <div className="header-icon"></div>
                 <div>
                   <h3>API Access</h3>
                   <p className="card-subtitle">Manage your API keys for programmatic access</p>
@@ -460,21 +460,21 @@ const Settings = ({ setActiveSection }) => {
                         onClick={() => setApiKeyRevealed(!apiKeyRevealed)}
                         title={apiKeyRevealed ? 'Hide' : 'Reveal'}
                       >
-                        {apiKeyRevealed ? '👁️' : '👁️‍🗨️'}
+                        {apiKeyRevealed ? '️' : '️‍️'}
                       </button>
                       <button 
                         className="btn-icon-action" 
                         onClick={copyApiKey}
                         title="Copy to clipboard"
                       >
-                        📋
+                        
                       </button>
                       <button 
                         className="btn-secondary-small" 
                         onClick={regenerateApiKey}
                         disabled={saving}
                       >
-                        🔄 Regenerate
+                         Regenerate
                       </button>
                     </div>
                   </div>
@@ -490,7 +490,7 @@ const Settings = ({ setActiveSection }) => {
           padding: 32px;
           max-width: 1200px;
           margin: 0 auto;
-          background: #111111;
+          background: #282828;
           min-height: 100vh;
         }
 
@@ -511,10 +511,10 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .settings-section {
-          background: #111111;
+          background: #282828;
           padding: 32px;
           border-radius: 12px;
-          border: 1px solid #1e1e1e;
+          border: 1px solid #2e2e2e;
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
           margin-bottom: 24px;
         }
@@ -531,7 +531,7 @@ const Settings = ({ setActiveSection }) => {
         .icon-circle {
           width: 80px;
           height: 80px;
-          background: #1e1e1e;
+          background: #2e2e2e;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -566,10 +566,10 @@ const Settings = ({ setActiveSection }) => {
         .shop-domain-input {
           width: 100%;
           padding: 12px;
-          border: 2px solid #1e1e1e;
+          border: 2px solid #2e2e2e;
           border-radius: 8px;
           font-size: 16px;
-          background: #111111;
+          background: #282828;
           color: #f0f0f0;
         }
 
@@ -580,7 +580,7 @@ const Settings = ({ setActiveSection }) => {
 
         .btn-primary {
           background: #7fffd4;
-          color: #0a0a0a;
+          color: #141414;
           padding: 12px 32px;
           border: none;
           border-radius: 8px;
@@ -611,8 +611,8 @@ const Settings = ({ setActiveSection }) => {
           margin-left: auto;
           margin-right: auto;
           padding: 16px;
-          background: #111111;
-          border: 1px solid #1e1e1e;
+          background: #282828;
+          border: 1px solid #2e2e2e;
           border-radius: 8px;
           color: #cbd5e1;
         }
@@ -633,7 +633,7 @@ const Settings = ({ setActiveSection }) => {
         .connection-status {
           text-align: center;
           padding-bottom: 24px;
-          border-bottom: 1px solid #1e1e1e;
+          border-bottom: 1px solid #2e2e2e;
         }
 
         .connected-shopify-card h3 {
@@ -662,7 +662,7 @@ const Settings = ({ setActiveSection }) => {
           display: flex;
           justify-content: space-between;
           padding: 12px 0;
-          border-bottom: 1px solid #1e1e1e;
+          border-bottom: 1px solid #2e2e2e;
           color: #cbd5e1;
         }
 
@@ -692,7 +692,7 @@ const Settings = ({ setActiveSection }) => {
 
         .sync-buttons button {
           padding: 12px 24px;
-          background: #1e1e1e;
+          background: #2e2e2e;
           border: none;
           border-radius: 8px;
           cursor: pointer;
@@ -702,7 +702,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .sync-buttons button:hover {
-          background: #222222;
+          background: #3c3c3c;
         }
 
         .danger-zone {
@@ -737,7 +737,7 @@ const Settings = ({ setActiveSection }) => {
         .setting-group {
           margin: 24px 0;
           padding: 24px 0;
-          border-bottom: 1px solid #1e1e1e;
+          border-bottom: 1px solid #2e2e2e;
         }
 
         .setting-group h3 {
@@ -754,8 +754,8 @@ const Settings = ({ setActiveSection }) => {
 
         /* Modern Card Styles */
         .setting-card {
-          background: #111111;
-          border: 1px solid #1e1e1e;
+          background: #282828;
+          border: 1px solid #2e2e2e;
           border-radius: 16px;
           margin-bottom: 24px;
           overflow: hidden;
@@ -763,7 +763,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .setting-card:hover {
-          border-color: #222222;
+          border-color: #3c3c3c;
           box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
@@ -772,15 +772,15 @@ const Settings = ({ setActiveSection }) => {
           align-items: center;
           gap: 16px;
           padding: 24px;
-          border-bottom: 1px solid #1e1e1e;
-          background: #111111;
+          border-bottom: 1px solid #2e2e2e;
+          background: #282828;
         }
 
         .header-icon {
           font-size: 32px;
           width: 56px;
           height: 56px;
-          background: #1e1e1e;
+          background: #2e2e2e;
           border-radius: 12px;
           display: flex;
           align-items: center;
@@ -809,7 +809,7 @@ const Settings = ({ setActiveSection }) => {
           gap: 12px;
           margin-top: 24px;
           padding-top: 24px;
-          border-top: 1px solid #1e1e1e;
+          border-top: 1px solid #2e2e2e;
         }
 
         /* API Key Section */
@@ -829,8 +829,8 @@ const Settings = ({ setActiveSection }) => {
           display: flex;
           gap: 12px;
           align-items: center;
-          background: #111111;
-          border: 2px solid #1e1e1e;
+          background: #282828;
+          border: 2px solid #2e2e2e;
           border-radius: 8px;
           padding: 16px;
         }
@@ -852,7 +852,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .btn-icon-action {
-          background: #1e1e1e;
+          background: #2e2e2e;
           border: none;
           border-radius: 6px;
           padding: 8px 12px;
@@ -862,12 +862,12 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .btn-icon-action:hover {
-          background: #222222;
+          background: #3c3c3c;
           transform: scale(1.05);
         }
 
         .btn-secondary-small {
-          background: #1e1e1e;
+          background: #2e2e2e;
           color: #f0f0f0;
           border: none;
           border-radius: 6px;
@@ -879,7 +879,7 @@ const Settings = ({ setActiveSection }) => {
         }
 
         .btn-secondary-small:hover {
-          background: #222222;
+          background: #3c3c3c;
         }
 
         .btn-secondary-small:disabled {

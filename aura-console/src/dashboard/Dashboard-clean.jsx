@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, Suspense, lazy } from "react";
+﻿﻿import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch } from "../api";
 import { sendCopilotMessage } from "../core/advancedAiClient";
 import IntegrationHealthPanel from "../components/IntegrationHealthPanel";
@@ -11,7 +11,7 @@ function Spinner() {
         width: 38,
         height: 38,
         border: '4px solid #7fffd4',
-        borderTop: '4px solid #0a0a0a',
+        borderTop: '4px solid #141414',
         borderRadius: '50%',
         animation: 'spin 1s linear infinite',
       }} />
@@ -118,7 +118,7 @@ const Dashboard = ({ setActiveSection }) => {
         padding: '40px 32px',
         marginBottom: 32,
         boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-        background: 'linear-gradient(120deg, #111111 70%, #111111 100%)',
+        background: 'linear-gradient(120deg, #282828 70%, #282828 100%)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
           <img src="/logo-aura.png" alt="AURA Logo" style={{ height: 56, width: 56, objectFit: 'contain', borderRadius: 12 }} />
@@ -129,11 +129,11 @@ const Dashboard = ({ setActiveSection }) => {
         </div>
 
         <div style={{
-          background: '#1e1e1e',
+          background: '#2e2e2e',
           borderRadius: 16,
           boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
           padding: '24px',
-          border: '1px solid #1e1e1e',
+          border: '1px solid #2e2e2e',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div>
@@ -144,10 +144,10 @@ const Dashboard = ({ setActiveSection }) => {
           </div>
 
           <div style={{
-            background: '#111111',
+            background: '#282828',
             borderRadius: 12,
             padding: '16px',
-            border: '1px solid #1e1e1e',
+            border: '1px solid #2e2e2e',
           }}>
             <div style={{ fontWeight: 700, color: '#7fffd4', marginBottom: 12, fontSize: 15 }}>Ask AI Copilot</div>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -160,8 +160,8 @@ const Dashboard = ({ setActiveSection }) => {
                   flex: 1,
                   borderRadius: 10,
                   padding: '10px 12px',
-                  border: '1px solid #1e1e1e',
-                  background: '#111111',
+                  border: '1px solid #2e2e2e',
+                  background: '#282828',
                   color: '#e8f2ff',
                   fontSize: 14,
                 }}
@@ -170,8 +170,8 @@ const Dashboard = ({ setActiveSection }) => {
                 onClick={handleCopilotAsk}
                 disabled={copilotLoading}
                 style={{
-                  background: copilotLoading ? '#222222' : '#7fffd4',
-                  color: '#111111',
+                  background: copilotLoading ? '#3c3c3c' : '#7fffd4',
+                  color: '#282828',
                   border: 'none',
                   borderRadius: 10,
                   fontWeight: 800,
@@ -196,7 +196,7 @@ const Dashboard = ({ setActiveSection }) => {
               style={{
                 flex: 1,
                 background: '#7fffd4',
-                color: '#111111',
+                color: '#282828',
                 border: 'none',
                 borderRadius: 8,
                 fontWeight: 700,
@@ -211,9 +211,9 @@ const Dashboard = ({ setActiveSection }) => {
               onClick={() => setActiveSection && setActiveSection('tools')} 
               style={{
                 flex: 1,
-                background: '#1e1e1e',
+                background: '#2e2e2e',
                 color: '#e8f2ff',
-                border: '1px solid #222222',
+                border: '1px solid #3c3c3c',
                 borderRadius: 8,
                 fontWeight: 700,
                 padding: '10px 16px',
@@ -246,7 +246,7 @@ const Dashboard = ({ setActiveSection }) => {
             key={stat.label}
             className="aura-dashboard-stat"
             style={{
-              background: '#111111',
+              background: '#282828',
               borderRadius: '16px',
               boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
               padding: '24px',

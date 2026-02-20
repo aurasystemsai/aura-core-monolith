@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+﻿﻿import React, { useState } from 'react';
 
 export default function AiChatbot({ coreUrl }) {
   const [messages, setMessages] = useState([
@@ -40,7 +40,7 @@ export default function AiChatbot({ coreUrl }) {
   };
 
   return (
-    <div style={{ maxWidth: 500, margin: '40px auto', background: '#111111', borderRadius: 12, padding: 24 }}>
+    <div style={{ maxWidth: 500, margin: '40px auto', background: '#282828', borderRadius: 12, padding: 24 }}>
       <h2 style={{ color: '#7fffd4' }}>AI Chatbot</h2>
       <div style={{ minHeight: 200, background: 'var(--background-tertiary)', borderRadius: 8, padding: 12, marginBottom: 16, color: 'var(--text-primary)', fontSize: 15 }}>
         {messages.slice(1).map((m, i) => (
@@ -58,7 +58,7 @@ export default function AiChatbot({ coreUrl }) {
           style={{ flex: 1, padding: 10, borderRadius: 6, border: 0 }}
           disabled={loading}
         />
-        <button type="submit" style={{ background: '#7fffd4', color: '#111111', fontWeight: 700, border: 0, borderRadius: 6, padding: '0 18px' }} disabled={loading}>
+        <button type="submit" style={{ background: '#7fffd4', color: '#282828', fontWeight: 700, border: 0, borderRadius: 6, padding: '0 18px' }} disabled={loading}>
           Send
         </button>
       </form>

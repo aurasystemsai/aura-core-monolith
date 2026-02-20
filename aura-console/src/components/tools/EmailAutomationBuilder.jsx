@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿﻿import React, { useState, useEffect } from 'react';
 import { apiFetch } from '../../api';
 
 // Main Email Automation Builder Component with 8-Category, 42-Tab Enterprise Structure
@@ -9,14 +9,14 @@ export default function EmailAutomationBuilder() {
 
   // 8 Enterprise Categories
   const categories = [
-    { id: 'campaigns', label: 'Campaigns', icon: '📧', count: 6 },
-    { id: 'ai-orchestration', label: 'AI Orchestration', icon: '🤖', count: 6 },
-    { id: 'workflows', label: 'Workflows', icon: '⚡', count: 6 },
-    { id: 'multichannel', label: 'Multi-Channel', icon: '📱', count: 5 },
-    { id: 'analytics', label: 'Analytics', icon: '📊', count: 6 },
-    { id: 'testing', label: 'Testing & Optimization', icon: '🎯', count: 6 },
-    { id: 'settings', label: 'Settings & Admin', icon: '⚙️', count: 4 },
-    { id: 'advanced', label: 'Advanced', icon: '🚀', count: 3 },
+    { id: 'campaigns', label: 'Campaigns', icon: '', count: 6 },
+    { id: 'ai-orchestration', label: 'AI Orchestration', icon: '', count: 6 },
+    { id: 'workflows', label: 'Workflows', icon: '', count: 6 },
+    { id: 'multichannel', label: 'Multi-Channel', icon: '', count: 5 },
+    { id: 'analytics', label: 'Analytics', icon: '', count: 6 },
+    { id: 'testing', label: 'Testing & Optimization', icon: '', count: 6 },
+    { id: 'settings', label: 'Settings & Admin', icon: '️', count: 4 },
+    { id: 'advanced', label: 'Advanced', icon: '', count: 3 },
   ];
 
   // 42 Tabs organized by category
@@ -134,7 +134,7 @@ export default function EmailAutomationBuilder() {
           }}
           style={{
             background: activeCategory === cat.id ? '#6366f1' : '#f3f4f6',
-            color: activeCategory === cat.id ? '#fff' : '#1a1a1a',
+            color: activeCategory === cat.id ? '#fff' : '#343434',
             border: 'none',
             borderRadius: 8,
             padding: '10px 18px',
@@ -150,7 +150,7 @@ export default function EmailAutomationBuilder() {
           <span>{cat.icon}</span>
           <span>{cat.label}</span>
           <span style={{ 
-            background: activeCategory === cat.id ? '#555555' : '#f0f0f0',
+            background: activeCategory === cat.id ? '#777777' : '#f0f0f0',
             borderRadius: 12,
             padding: '2px 8px',
             fontSize: 12,
@@ -170,7 +170,7 @@ export default function EmailAutomationBuilder() {
           onClick={() => setActiveTab(tab.id)}
           style={{
             background: activeTab === tab.id ? '#ede9fe' : '#fff',
-            color: '#1a1a1a',
+            color: '#343434',
             border: activeTab === tab.id ? '2px solid #6366f1' : '1px solid #f0f0f0',
             borderRadius: 10,
             padding: 16,
@@ -182,7 +182,7 @@ export default function EmailAutomationBuilder() {
           }}
         >
           <div style={{ fontWeight: 700, marginBottom: 4 }}>{tab.label}</div>
-          <div style={{ fontSize: 13, color: '#666666' }}>{tab.description}</div>
+          <div style={{ fontSize: 13, color: '#777777' }}>{tab.description}</div>
         </button>
       ))}
     </div>
@@ -248,7 +248,7 @@ export default function EmailAutomationBuilder() {
     if (activeCategory === 'advanced' && activeTab === 'custom-fields') return <CustomFieldsTab />;
     if (activeCategory === 'advanced' && activeTab === 'automation-rules') return <CustomAutomationTab />;
     
-    return <div style={{ color: '#666666', padding: 32, textAlign: 'center' }}>Tab content coming soon...</div>;
+    return <div style={{ color: '#777777', padding: 32, textAlign: 'center' }}>Tab content coming soon...</div>;
   };
 
   return (
@@ -256,8 +256,8 @@ export default function EmailAutomationBuilder() {
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 32, fontWeight: 800, color: '#1a1a1a', marginBottom: 8 }}>📧 Email Automation Builder</h1>
-          <p style={{ fontSize: 16, color: '#666666' }}>Enterprise email marketing automation platform with AI orchestration, workflows, and multi-channel delivery</p>
+          <h1 style={{ fontSize: 32, fontWeight: 800, color: '#343434', marginBottom: 8 }}>Email Automation Builder</h1>
+          <p style={{ fontSize: 16, color: '#777777' }}>Enterprise email marketing automation platform with AI orchestration, workflows, and multi-channel delivery</p>
         </div>
 
         {/* Category Navigation */}
@@ -267,7 +267,7 @@ export default function EmailAutomationBuilder() {
         {renderTabNav()}
 
         {/* Loading & Error States */}
-        {loading && <div style={{ color: '#666666', padding: 24, textAlign: 'center' }}>Loading...</div>}
+        {loading && <div style={{ color: '#777777', padding: 24, textAlign: 'center' }}>Loading...</div>}
         {error && <div style={{ color: '#dc2626', padding: 24, textAlign: 'center', background: '#fee2e2', borderRadius: 8, marginBottom: 24 }}>Error: {error}</div>}
 
         {/* Tab Content */}
@@ -314,19 +314,19 @@ function CampaignOverviewTab({ campaigns, setCampaigns }) {
       {/* Stats Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
         <div style={{ background: '#ede9fe', borderRadius: 10, padding: 20 }}>
-          <div style={{ fontSize: 14, color: '#666666', marginBottom: 4 }}>Total Campaigns</div>
+          <div style={{ fontSize: 14, color: '#777777', marginBottom: 4 }}>Total Campaigns</div>
           <div style={{ fontSize: 28, fontWeight: 700, color: '#6366f1' }}>{campaigns.length}</div>
         </div>
         <div style={{ background: '#dbeafe', borderRadius: 10, padding: 20 }}>
-          <div style={{ fontSize: 14, color: '#666666', marginBottom: 4 }}>Emails Sent</div>
+          <div style={{ fontSize: 14, color: '#777777', marginBottom: 4 }}>Emails Sent</div>
           <div style={{ fontSize: 28, fontWeight: 700, color: '#2563eb' }}>{campaigns.reduce((sum, c) => sum + c.sent, 0).toLocaleString()}</div>
         </div>
         <div style={{ background: '#d1fae5', borderRadius: 10, padding: 20 }}>
-          <div style={{ fontSize: 14, color: '#666666', marginBottom: 4 }}>Avg Open Rate</div>
+          <div style={{ fontSize: 14, color: '#777777', marginBottom: 4 }}>Avg Open Rate</div>
           <div style={{ fontSize: 28, fontWeight: 700, color: '#059669' }}>{(campaigns.reduce((sum, c) => sum + c.openRate, 0) / (campaigns.length || 1)).toFixed(1)}%</div>
         </div>
         <div style={{ background: '#fef3c7', borderRadius: 10, padding: 20 }}>
-          <div style={{ fontSize: 14, color: '#666666', marginBottom: 4 }}>Total Revenue</div>
+          <div style={{ fontSize: 14, color: '#777777', marginBottom: 4 }}>Total Revenue</div>
           <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>${campaigns.reduce((sum, c) => sum + c.revenue, 0).toLocaleString()}</div>
         </div>
       </div>
@@ -335,13 +335,13 @@ function CampaignOverviewTab({ campaigns, setCampaigns }) {
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ borderBottom: '2px solid #f0f0f0' }}>
-            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#666666' }}>Campaign Name</th>
-            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#666666' }}>Status</th>
-            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#666666' }}>Sent</th>
-            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#666666' }}>Open Rate</th>
-            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#666666' }}>Click Rate</th>
-            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#666666' }}>Revenue</th>
-            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#666666' }}>Actions</th>
+            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#777777' }}>Campaign Name</th>
+            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#777777' }}>Status</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#777777' }}>Sent</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#777777' }}>Open Rate</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#777777' }}>Click Rate</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#777777' }}>Revenue</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#777777' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -485,8 +485,8 @@ function EmailTemplatesTab() {
         {templates.map(template => (
           <div key={template.id} style={{ background: '#f9fafb', borderRadius: 10, padding: 20, border: '1px solid #f0f0f0' }}>
             <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{template.name}</div>
-            <div style={{ fontSize: 14, color: '#666666', marginBottom: 12 }}>{template.category}</div>
-            <div style={{ fontSize: 13, color: '#888888', marginBottom: 16 }}>Modified: {template.lastModified}</div>
+            <div style={{ fontSize: 14, color: '#777777', marginBottom: 12 }}>{template.category}</div>
+            <div style={{ fontSize: 13, color: '#9a9a9a', marginBottom: 16 }}>Modified: {template.lastModified}</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button style={{ flex: 1, background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px', cursor: 'pointer' }}>Edit</button>
               <button style={{ flex: 1, background: '#f3f4f6', border: 'none', borderRadius: 6, padding: '8px', cursor: 'pointer' }}>Preview</button>
@@ -502,8 +502,8 @@ function EmailSequencesTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Email Sequences</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Create multi-email sequences with automated timing and triggers.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Create multi-email sequences with automated timing and triggers.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Email sequence builder coming soon...
       </div>
     </div>
@@ -530,17 +530,17 @@ function AudienceSegmentsTab({ segments, setSegments }) {
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ borderBottom: '2px solid #f0f0f0' }}>
-            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#666666' }}>Segment Name</th>
-            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#666666' }}>Rule</th>
-            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#666666' }}>Count</th>
-            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#666666' }}>Actions</th>
+            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#777777' }}>Segment Name</th>
+            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#777777' }}>Rule</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#777777' }}>Count</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#777777' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {segments.map(segment => (
             <tr key={segment.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
               <td style={{ padding: 12, fontWeight: 500 }}>{segment.name}</td>
-              <td style={{ padding: 12, color: '#666666' }}>{segment.rule}</td>
+              <td style={{ padding: 12, color: '#777777' }}>{segment.rule}</td>
               <td style={{ padding: 12, textAlign: 'right' }}>{segment.count.toLocaleString()}</td>
               <td style={{ padding: 12, textAlign: 'right' }}>
                 <button style={{ background: '#f3f4f6', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer' }}>Edit</button>
@@ -557,8 +557,8 @@ function PersonalizationTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Personalization Engine</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Dynamic content and personalization tokens for hyper-targeted emails.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Dynamic content and personalization tokens for hyper-targeted emails.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Personalization engine coming soon...
       </div>
     </div>
@@ -573,20 +573,20 @@ function SmartSendTimeTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Smart Send Time Optimization</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>AI-powered optimal send time prediction for each subscriber.</p>
+      <p style={{ color: '#777777', marginBottom: 24 }}>AI-powered optimal send time prediction for each subscriber.</p>
       <div style={{ background: '#ede9fe', borderRadius: 10, padding: 24, marginBottom: 20 }}>
-        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>🤖 AI Send Time Recommendations</h3>
+        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>AI Send Time Recommendations</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
           <div style={{ background: '#fff', borderRadius: 8, padding: 16 }}>
-            <div style={{ fontSize: 14, color: '#666666', marginBottom: 4 }}>Optimal Hour</div>
+            <div style={{ fontSize: 14, color: '#777777', marginBottom: 4 }}>Optimal Hour</div>
             <div style={{ fontSize: 24, fontWeight: 700, color: '#6366f1' }}>2:00 PM</div>
           </div>
           <div style={{ background: '#fff', borderRadius: 8, padding: 16 }}>
-            <div style={{ fontSize: 14, color: '#666666', marginBottom: 4 }}>Predicted Open Rate</div>
+            <div style={{ fontSize: 14, color: '#777777', marginBottom: 4 }}>Predicted Open Rate</div>
             <div style={{ fontSize: 24, fontWeight: 700, color: '#059669' }}>46.2%</div>
           </div>
           <div style={{ background: '#fff', borderRadius: 8, padding: 16 }}>
-            <div style={{ fontSize: 14, color: '#666666', marginBottom: 4 }}>Timezone</div>
+            <div style={{ fontSize: 14, color: '#777777', marginBottom: 4 }}>Timezone</div>
             <div style={{ fontSize: 24, fontWeight: 700, color: '#2563eb' }}>EST</div>
           </div>
         </div>
@@ -621,7 +621,7 @@ function ContentGenerationTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>AI Content Generation</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Generate email copy using AI.</p>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Generate email copy using AI.</p>
       <div style={{ marginBottom: 20 }}>
         <label style={{ display: 'block', fontWeight: 600, marginBottom: 8 }}>Describe your email</label>
         <textarea
@@ -647,8 +647,8 @@ function SubjectLineOptimizerTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Subject Line Optimizer</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>AI-powered subject line analysis and suggestions.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>AI-powered subject line analysis and suggestions.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Subject line optimizer coming soon...
       </div>
     </div>
@@ -659,8 +659,8 @@ function PredictiveAnalyticsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Predictive Analytics</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Predict engagement, churn risk, and conversion probability.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Predict engagement, churn risk, and conversion probability.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Predictive analytics dashboard coming soon...
       </div>
     </div>
@@ -671,8 +671,8 @@ function AutoOptimizationTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Auto-Optimization</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Self-tuning campaigns that automatically optimize for performance.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Self-tuning campaigns that automatically optimize for performance.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Auto-optimization settings coming soon...
       </div>
     </div>
@@ -689,7 +689,7 @@ function AIRecommendationsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>AI Recommendations</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Actionable insights to improve your email performance.</p>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Actionable insights to improve your email performance.</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {recommendations.map(rec => (
           <div key={rec.id} style={{ background: '#f9fafb', borderRadius: 10, padding: 20, border: '1px solid #f0f0f0' }}>
@@ -697,7 +697,7 @@ function AIRecommendationsTab() {
               <span style={{ background: '#ede9fe', color: '#6366f1', padding: '4px 12px', borderRadius: 12, fontSize: 13, fontWeight: 600 }}>{rec.type}</span>
               <span style={{ background: '#d1fae5', color: '#059669', padding: '4px 12px', borderRadius: 12, fontSize: 13, fontWeight: 600 }}>{rec.impact}</span>
             </div>
-            <div style={{ fontSize: 15, color: '#1a1a1a', marginBottom: 12 }}>{rec.recommendation}</div>
+            <div style={{ fontSize: 15, color: '#343434', marginBottom: 12 }}>{rec.recommendation}</div>
             <button style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', cursor: 'pointer', fontSize: 14 }}>Apply</button>
           </div>
         ))}
@@ -730,18 +730,18 @@ function WorkflowBuilderTab({ workflows, setWorkflows }) {
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ borderBottom: '2px solid #f0f0f0' }}>
-            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#666666' }}>Workflow Name</th>
-            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#666666' }}>Trigger</th>
-            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#666666' }}>Status</th>
-            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#666666' }}>Total Runs</th>
-            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#666666' }}>Actions</th>
+            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#777777' }}>Workflow Name</th>
+            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#777777' }}>Trigger</th>
+            <th style={{ padding: 12, textAlign: 'left', fontWeight: 600, color: '#777777' }}>Status</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#777777' }}>Total Runs</th>
+            <th style={{ padding: 12, textAlign: 'right', fontWeight: 600, color: '#777777' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {workflows.map(workflow => (
             <tr key={workflow.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
               <td style={{ padding: 12, fontWeight: 500 }}>{workflow.name}</td>
-              <td style={{ padding: 12, color: '#666666' }}>{workflow.trigger}</td>
+              <td style={{ padding: 12, color: '#777777' }}>{workflow.trigger}</td>
               <td style={{ padding: 12 }}>
                 <span style={{ 
                   background: workflow.status === 'active' ? '#d1fae5' : '#fee2e2',
@@ -768,8 +768,8 @@ function TriggersEventsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Triggers & Events</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Configure automation triggers based on user behavior and events.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Configure automation triggers based on user behavior and events.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Trigger configuration coming soon...
       </div>
     </div>
@@ -780,8 +780,8 @@ function ConditionalLogicTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Conditional Logic</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Add smart branching and decision points to workflows.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Add smart branching and decision points to workflows.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Conditional logic builder coming soon...
       </div>
     </div>
@@ -792,8 +792,8 @@ function ActionsLibraryTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Actions Library</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Browse available actions for your workflows.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Browse available actions for your workflows.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Actions library coming soon...
       </div>
     </div>
@@ -804,8 +804,8 @@ function WorkflowMonitoringTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Workflow Monitoring</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Monitor active workflows and execution status in real-time.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Monitor active workflows and execution status in real-time.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Workflow monitoring dashboard coming soon...
       </div>
     </div>
@@ -816,8 +816,8 @@ function ExecutionHistoryTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Execution History</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>View past workflow executions and debug logs.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>View past workflow executions and debug logs.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Execution history coming soon...
       </div>
     </div>
@@ -832,8 +832,8 @@ function SMSCampaignsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>SMS Campaigns</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Create and manage SMS text message campaigns.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Create and manage SMS text message campaigns.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         SMS campaign builder coming soon...
       </div>
     </div>
@@ -844,8 +844,8 @@ function PushNotificationsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Push Notifications</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Send mobile and web push notifications.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Send mobile and web push notifications.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Push notification builder coming soon...
       </div>
     </div>
@@ -856,8 +856,8 @@ function WebhooksTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Webhooks</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Configure webhooks for external integrations.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Configure webhooks for external integrations.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Webhook configuration coming soon...
       </div>
     </div>
@@ -868,8 +868,8 @@ function ChannelOrchestrationTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Channel Orchestration</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Coordinate campaigns across email, SMS, and push.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Coordinate campaigns across email, SMS, and push.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Multi-channel orchestration coming soon...
       </div>
     </div>
@@ -880,8 +880,8 @@ function ChannelPreferencesTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Channel Preferences</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Manage customer communication channel preferences.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Manage customer communication channel preferences.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Channel preference center coming soon...
       </div>
     </div>
@@ -896,27 +896,27 @@ function AnalyticsDashboardTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Analytics Dashboard</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Real-time email marketing performance metrics.</p>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Real-time email marketing performance metrics.</p>
       
       {/* Key Metrics */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
         <div style={{ background: '#ede9fe', borderRadius: 10, padding: 20 }}>
-          <div style={{ fontSize: 14, color: '#666666', marginBottom: 4 }}>Open Rate</div>
+          <div style={{ fontSize: 14, color: '#777777', marginBottom: 4 }}>Open Rate</div>
           <div style={{ fontSize: 28, fontWeight: 700, color: '#6366f1' }}>42.3%</div>
           <div style={{ fontSize: 12, color: '#059669', marginTop: 4 }}>↑ 5.2% from last month</div>
         </div>
         <div style={{ background: '#dbeafe', borderRadius: 10, padding: 20 }}>
-          <div style={{ fontSize: 14, color: '#666666', marginBottom: 4 }}>Click Rate</div>
+          <div style={{ fontSize: 14, color: '#777777', marginBottom: 4 }}>Click Rate</div>
           <div style={{ fontSize: 28, fontWeight: 700, color: '#2563eb' }}>8.7%</div>
           <div style={{ fontSize: 12, color: '#059669', marginTop: 4 }}>↑ 2.1% from last month</div>
         </div>
         <div style={{ background: '#d1fae5', borderRadius: 10, padding: 20 }}>
-          <div style={{ fontSize: 14, color: '#666666', marginBottom: 4 }}>Conversion Rate</div>
+          <div style={{ fontSize: 14, color: '#777777', marginBottom: 4 }}>Conversion Rate</div>
           <div style={{ fontSize: 28, fontWeight: 700, color: '#059669' }}>3.2%</div>
           <div style={{ fontSize: 12, color: '#dc2626', marginTop: 4 }}>↓ 0.4% from last month</div>
         </div>
         <div style={{ background: '#fef3c7', borderRadius: 10, padding: 20 }}>
-          <div style={{ fontSize: 14, color: '#666666', marginBottom: 4 }}>Revenue</div>
+          <div style={{ fontSize: 14, color: '#777777', marginBottom: 4 }}>Revenue</div>
           <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>$57,681</div>
           <div style={{ fontSize: 12, color: '#059669', marginTop: 4 }}>↑ 12.3% from last month</div>
         </div>
@@ -929,8 +929,8 @@ function CampaignReportsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Campaign Reports</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Detailed performance reports for each campaign.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Detailed performance reports for each campaign.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Campaign reports coming soon...
       </div>
     </div>
@@ -941,8 +941,8 @@ function RevenueAttributionTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Revenue Attribution</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Track revenue generated by email campaigns.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Track revenue generated by email campaigns.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Revenue attribution dashboard coming soon...
       </div>
     </div>
@@ -953,8 +953,8 @@ function EngagementMetricsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Engagement Metrics</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Analyze opens, clicks, and engagement trends.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Analyze opens, clicks, and engagement trends.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Engagement analytics coming soon...
       </div>
     </div>
@@ -965,8 +965,8 @@ function DeliverabilityTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Deliverability</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Monitor inbox placement and deliverability metrics.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Monitor inbox placement and deliverability metrics.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Deliverability dashboard coming soon...
       </div>
     </div>
@@ -977,8 +977,8 @@ function DataExportTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Data Export</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Export analytics data in various formats.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Export analytics data in various formats.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Data export tools coming soon...
       </div>
     </div>
@@ -993,8 +993,8 @@ function ABTestingTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>A/B Testing</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Run split tests to optimize email performance.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Run split tests to optimize email performance.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         A/B testing interface coming soon...
       </div>
     </div>
@@ -1005,8 +1005,8 @@ function MultivariateTestingTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Multivariate Testing</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Test multiple variables simultaneously.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Test multiple variables simultaneously.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Multivariate testing coming soon...
       </div>
     </div>
@@ -1017,8 +1017,8 @@ function ExperimentsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Experiments</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Manage all active and past experiments.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Manage all active and past experiments.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Experiment management coming soon...
       </div>
     </div>
@@ -1029,8 +1029,8 @@ function FrequencyOptimizationTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Frequency Optimization</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Find the optimal send frequency for your audience.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Find the optimal send frequency for your audience.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Frequency optimizer coming soon...
       </div>
     </div>
@@ -1041,8 +1041,8 @@ function ContentTestingTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Content Testing</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Test different content variations.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Test different content variations.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Content testing tools coming soon...
       </div>
     </div>
@@ -1053,8 +1053,8 @@ function TestResultsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Test Results</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>View results and insights from all tests.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>View results and insights from all tests.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Test results dashboard coming soon...
       </div>
     </div>
@@ -1069,8 +1069,8 @@ function GeneralSettingsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>General Settings</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Configure basic email automation settings.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Configure basic email automation settings.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         General settings coming soon...
       </div>
     </div>
@@ -1081,8 +1081,8 @@ function TeamPermissionsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Team & Permissions</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Manage team members and role-based access control.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Manage team members and role-based access control.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Team management coming soon...
       </div>
     </div>
@@ -1093,8 +1093,8 @@ function ComplianceGDPRTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Compliance & GDPR</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Legal compliance, consent management, and GDPR tools.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Legal compliance, consent management, and GDPR tools.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Compliance tools coming soon...
       </div>
     </div>
@@ -1105,8 +1105,8 @@ function IntegrationsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Integrations</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Connect third-party apps and services.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Connect third-party apps and services.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Integrations marketplace coming soon...
       </div>
     </div>
@@ -1121,8 +1121,8 @@ function APIDeveloperTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>API & Developer</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>API documentation, keys, and developer tools.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>API documentation, keys, and developer tools.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Developer portal coming soon...
       </div>
     </div>
@@ -1133,8 +1133,8 @@ function CustomFieldsTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Custom Fields</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Create and manage custom data fields for subscribers.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Create and manage custom data fields for subscribers.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Custom fields manager coming soon...
       </div>
     </div>
@@ -1145,8 +1145,8 @@ function CustomAutomationTab() {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Custom Automation Rules</h2>
-      <p style={{ color: '#666666', marginBottom: 24 }}>Build advanced custom automation logic.</p>
-      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#666666' }}>
+      <p style={{ color: '#777777', marginBottom: 24 }}>Build advanced custom automation logic.</p>
+      <div style={{ background: '#f9fafb', borderRadius: 10, padding: 32, textAlign: 'center', color: '#777777' }}>
         Custom automation builder coming soon...
       </div>
     </div>

@@ -1,4 +1,4 @@
-﻿/* ================================================================
+﻿﻿/* ================================================================
    KLAVIYO FLOW AUTOMATION - COMPREHENSIVE STYLES
    ================================================================ */
 
@@ -15,7 +15,7 @@
 
 .klaviyo-sidebar {
   width: 280px;
-  background: #111111;
+  background: #282828;
   color: #fff;
   overflow-y: auto;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
@@ -776,7 +776,7 @@ code {
 }
 
 .klaviyo-sidebar::-webkit-scrollbar-track {
-  background: #222222;
+  background: #3c3c3c;
 }
 
 .klaviyo-sidebar::-webkit-scrollbar-thumb {

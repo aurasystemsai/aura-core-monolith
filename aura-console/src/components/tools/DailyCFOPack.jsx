@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef } from "react";
+﻿﻿import React, { useState, useRef } from "react";
 
 export default function DailyCFOPack() {
   const [input, setInput] = useState("");
@@ -50,20 +50,20 @@ export default function DailyCFOPack() {
     const blob = new Blob([report], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     setExported(url);
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    setTimeout(() =>URL.revokeObjectURL(url), 10000);
   };
 
   // Onboarding
   const onboardingContent = (
-    <div style={{ padding: 24, background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: darkMode ? "#141414" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Daily CFO Pack</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#333333", fontSize: 16 }}>
+      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#4a4a4a", fontSize: 16 }}>
         <li>Generate daily financial reports and insights with AI</li>
         <li>Import/export data and review analytics</li>
         <li>Collaborate and share with your team</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#141414", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
     </div>
   );
 
@@ -75,16 +75,16 @@ export default function DailyCFOPack() {
       borderRadius: 18,
       boxShadow: "0 2px 24px #0002",
       padding: 36,
-      color: darkMode ? "#a3e635" : "#0a0a0a",
+      color: darkMode ? "#a3e635" : "#141414",
       fontFamily: 'Inter, sans-serif',
       transition: "background 0.3s, color 0.3s"
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Daily CFO Pack</h2>
-        <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#0a0a0a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
+        <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#141414", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
       </div>
       <div style={{ marginBottom: 10, color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>
-        <span role="img" aria-label="money">💸</span> Generate daily financial reports and insights with AI.
+        <span role="img" aria-label="money"></span>Generate daily financial reports and insights with AI.
       </div>
       <button onClick={() => setShowOnboarding(true)} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}
@@ -92,27 +92,27 @@ export default function DailyCFOPack() {
         value={input}
         onChange={e => setInput(e.target.value)}
         rows={4}
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#0a0a0a" : "#fff", color: darkMode ? "#a3e635" : "#0a0a0a" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#141414" : "#fff", color: darkMode ? "#a3e635" : "#141414" }}
         placeholder="Paste or describe your financial data here..."
         aria-label="Financial data input"
       />
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={handleGenerate} disabled={loading || !input} style={{ background: "#a3e635", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Generating..." : "AI Generate"}</button>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
+        <button onClick={handleGenerate} disabled={loading || !input} style={{ background: "#a3e635", color: "#141414", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Generating..." : "AI Generate"}</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#141414", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".txt,.csv,.xlsx" style={{ display: "none" }} onChange={handleImport} aria-label="Import data" />
         <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
         {exported && <a href={exported} download="cfo-report.txt" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {report && (
-        <div style={{ background: darkMode ? "#0a0a0a" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635" : "#0a0a0a" }}>
+        <div style={{ background: darkMode ? "#141414" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635" : "#141414" }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Report:</div>
           <div>{report}</div>
         </div>
       )}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {history.length > 0 && (
-        <div style={{ marginTop: 24, background: darkMode ? "#333333" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: darkMode ? "#4a4a4a" : "#f3f4f6", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Report History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, i) => (
@@ -126,11 +126,11 @@ export default function DailyCFOPack() {
       )}
       {analytics && (
         <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-          <div style={{ background: "#1e1e1e", borderRadius: 10, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
+          <div style={{ background: "#2e2e2e", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e2e2e" }}>
             <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Total Reports</div>
             <div style={{ fontSize: 26, fontWeight: 800, color: darkMode ? "#a3e635" : "#7fffd4", marginTop: 2 }}>{history.length}</div>
           </div>
-          <div style={{ background: "#1e1e1e", borderRadius: 10, padding: "12px 20px", border: "1px solid #1e1e1e" }}>
+          <div style={{ background: "#2e2e2e", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e2e2e" }}>
             <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Events</div>
             <div style={{ fontSize: 26, fontWeight: 800, color: darkMode ? "#a3e635" : "#7fffd4", marginTop: 2 }}>{typeof analytics === "object" ? Object.keys(analytics).length : 1}</div>
           </div>

@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from "react";
+﻿﻿import React, { useState, useRef, useEffect } from "react";
 import { apiFetch } from "../../api";
 import OnboardingChecklist from "../../onboarding/OnboardingChecklist";
 import BackButton from "./BackButton";
@@ -93,7 +93,7 @@ export default function ABTestingSuite() {
       <div className="abtest-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <h2 style={{ fontWeight: 800, fontSize: 36 }}>
           A/B Testing Suite
-          <span title="Flagship enterprise-grade A/B testing tool. Every feature is best-in-class." style={{ marginLeft: 10, fontSize: 22, color: '#38bdf8', cursor: 'help' }}>ⓘ</span>
+          <span title="Flagship enterprise-grade A/B testing tool. Every feature is best-in-class." style={{ marginLeft: 10, fontSize: 22, color: '#38bdf8', cursor: 'help' }}></span>
         </h2>
         <BackButton />
         <div style={{ display: 'flex', gap: 12 }}>
@@ -105,7 +105,7 @@ export default function ABTestingSuite() {
         {showChecklist && <OnboardingChecklist forceShow onClose={() => setShowChecklist(false)} />}
       {showOnboarding && (
         <div className="abtest-onboarding">
-          <h3>Welcome to the Flagship A/B Testing Suite <span title="Get started by building your first test. Use the visual builder and advanced controls below." style={{ color: '#38bdf8', fontSize: 18, marginLeft: 6, cursor: 'help' }}>ⓘ</span></h3>
+          <h3>Welcome to the Flagship A/B Testing Suite <span title="Get started by building your first test. Use the visual builder and advanced controls below." style={{ color: '#38bdf8', fontSize: 18, marginLeft: 6, cursor: 'help' }}></span></h3>
           <ul>
             <li>Visual test builder (drag-and-drop, WYSIWYG)</li>
             <li>Advanced targeting, segmentation, and personalization</li>
@@ -123,7 +123,7 @@ export default function ABTestingSuite() {
             {aiLoading ? 'Getting Suggestions…' : 'AI: Suggest Variants & Optimize'}
           </button>
           {aiSuggestions && (
-            <div style={{ background: '#1a1a1a', color: '#38bdf8', borderRadius: 8, padding: 14, marginTop: 10, whiteSpace: 'pre-line', fontSize: 15 }}>
+            <div style={{ background: '#343434', color: '#38bdf8', borderRadius: 8, padding: 14, marginTop: 10, whiteSpace: 'pre-line', fontSize: 15 }}>
               <strong>AI Suggestions:</strong>
               <div>{aiSuggestions}</div>
             </div>
@@ -131,38 +131,38 @@ export default function ABTestingSuite() {
           {error && <div style={{ color: '#ef4444', marginTop: 8 }}>{error}</div>}
         </div>
         {/* Visual Editor with live preview and drag-and-drop shell */}
-        <div style={{ flex: 2, background: '#111111', borderRadius: 16, padding: 28, minHeight: 420 }}>
+        <div style={{ flex: 2, background: '#282828', borderRadius: 16, padding: 28, minHeight: 420 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 18 }}>Visual Test Builder</h3>
           <div style={{ display: 'flex', gap: 18 }}>
             {/* Variant List */}
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600, marginBottom: 8 }}>
                 Variants
-                <span title="Create multiple variants to test. Each variant can have different content, design, or logic." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
+                <span title="Create multiple variants to test. Each variant can have different content, design, or logic." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}></span>
               </div>
               {variants.map((v, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                  <input value={v.name} onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, name: e.target.value } : vv))} placeholder={`Variant ${String.fromCharCode(65 + i)}`} style={{ fontSize: 15, padding: 8, borderRadius: 8, border: '1px solid #333333', width: 90 }} aria-label={`Variant ${String.fromCharCode(65 + i)}`} />
+                  <input value={v.name} onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, name: e.target.value } : vv))} placeholder={`Variant ${String.fromCharCode(65 + i)}`} style={{ fontSize: 15, padding: 8, borderRadius: 8, border: '1px solid #4a4a4a', width: 90 }} aria-label={`Variant ${String.fromCharCode(65 + i)}`} />
                   <button onClick={() => setVariants(variants.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', color: '#ef4444', fontWeight: 700, fontSize: 18, cursor: 'pointer' }} title="Remove">×</button>
                 </div>
               ))}
               <button onClick={() => setVariants([...variants, { name: `Variant ${String.fromCharCode(65 + variants.length)}`, content: "" }])} className="btn btn-tertiary" style={{ marginTop: 6, width: '100%' }}>Add Variant</button>
             </div>
             {/* Drag-and-drop/Preview Area */}
-            <div style={{ flex: 2, minHeight: 220, border: '2px dashed #333333', borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#1a1a1a' }}>
+            <div style={{ flex: 2, minHeight: 220, border: '2px dashed #4a4a4a', borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#343434' }}>
               <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>
                 Live Preview
-                <span title="See how each variant will look and behave. Edit content live." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
+                <span title="See how each variant will look and behave. Edit content live." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}></span>
               </div>
               <div style={{ display: 'flex', gap: 12, width: '100%' }}>
                 {variants.map((v, i) => (
-                  <div key={i} style={{ flex: 1, background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 120, marginBottom: 8, boxShadow: '0 2px 8px #0002' }}>
+                  <div key={i} style={{ flex: 1, background: '#343434', borderRadius: 8, padding: 16, minHeight: 120, marginBottom: 8, boxShadow: '0 2px 8px #0002' }}>
                     <div style={{ fontWeight: 700, marginBottom: 6 }}>{v.name}</div>
                     <textarea
                       value={v.content}
                       onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, content: e.target.value } : vv))}
                       placeholder="Variant content (HTML, text, etc.)"
-                      style={{ width: '100%', minHeight: 60, borderRadius: 6, border: '1px solid #333333', padding: 8, fontSize: 15, background: '#111111', color: '#e0e6ed' }}
+                      style={{ width: '100%', minHeight: 60, borderRadius: 6, border: '1px solid #4a4a4a', padding: 8, fontSize: 15, background: '#282828', color: '#e0e6ed' }}
                     />
                   </div>
                 ))}
@@ -171,24 +171,24 @@ export default function ABTestingSuite() {
           </div>
         </div>
         {/* Test Details, Targeting, Scheduling, Feature Flags */}
-        <div style={{ flex: 1, background: '#1e1e1e', borderRadius: 16, padding: 28 }}>
+        <div style={{ flex: 1, background: '#2e2e2e', borderRadius: 16, padding: 28 }}>
           <h4 style={{ fontWeight: 700, fontSize: 18, marginBottom: 12 }}>
             Test Details
-            <span title="Name your test for easy tracking and reporting." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
+            <span title="Name your test for easy tracking and reporting." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}></span>
           </h4>
-          <input value={testName} onChange={e => setTestName(e.target.value)} placeholder="Test name" style={{ fontSize: 16, padding: 10, borderRadius: 8, border: '1px solid #333333', width: '100%', marginBottom: 16 }} aria-label="Test name" />
+          <input value={testName} onChange={e => setTestName(e.target.value)} placeholder="Test name" style={{ fontSize: 16, padding: 10, borderRadius: 8, border: '1px solid #4a4a4a', width: '100%', marginBottom: 16 }} aria-label="Test name" />
           {/* Advanced targeting & segmentation */}
           <div style={{ marginBottom: 18 }}>
             <h4 style={{ fontWeight: 600, fontSize: 16 }}>
               Targeting & Segmentation
-              <span title="Choose who will see this test. Combine audience, device, geo, and behavioral rules for precision." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
+              <span title="Choose who will see this test. Combine audience, device, geo, and behavioral rules for precision." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}></span>
             </h4>
             <div style={{ color: '#64748b', fontSize: 15, marginBottom: 8 }}>Define who will see this test. Combine multiple rules for precise targeting.</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {/* Audience Targeting */}
               <div>
                 <label style={{ fontWeight: 500 }}>Audience:</label>
-                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #333333' }}>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #4a4a4a' }}>
                   <option>All Visitors</option>
                   <option>Returning Customers</option>
                   <option>First-time Visitors</option>
@@ -199,7 +199,7 @@ export default function ABTestingSuite() {
               {/* Device Targeting */}
               <div>
                 <label style={{ fontWeight: 500 }}>Device:</label>
-                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #333333' }}>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #4a4a4a' }}>
                   <option>All Devices</option>
                   <option>Desktop</option>
                   <option>Mobile</option>
@@ -209,7 +209,7 @@ export default function ABTestingSuite() {
               {/* Geo Targeting */}
               <div>
                 <label style={{ fontWeight: 500 }}>Location:</label>
-                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #333333' }}>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #4a4a4a' }}>
                   <option>All Countries</option>
                   <option>United States</option>
                   <option>Canada</option>
@@ -221,7 +221,7 @@ export default function ABTestingSuite() {
               {/* Behavioral Targeting */}
               <div>
                 <label style={{ fontWeight: 500 }}>Behavior:</label>
-                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #333333' }}>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #4a4a4a' }}>
                   <option>All Users</option>
                   <option>Cart Abandoners</option>
                   <option>High Spenders</option>
@@ -235,7 +235,7 @@ export default function ABTestingSuite() {
           <div style={{ marginBottom: 18 }}>
             <h4 style={{ fontWeight: 600, fontSize: 16 }}>
               Scheduling & Automation
-              <span title="Set start/end dates and automate experiment workflows." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
+              <span title="Set start/end dates and automate experiment workflows." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}></span>
             </h4>
             <div style={{ color: '#64748b', fontSize: 15 }}>Set start/end dates, automate experiment workflows (coming soon).</div>
           </div>
@@ -243,7 +243,7 @@ export default function ABTestingSuite() {
           <div style={{ marginBottom: 18 }}>
             <h4 style={{ fontWeight: 600, fontSize: 16 }}>
               Feature Flags & Rollouts
-              <span title="Manage progressive rollouts and feature toggles for safe deployments." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}>ⓘ</span>
+              <span title="Manage progressive rollouts and feature toggles for safe deployments." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}></span>
             </h4>
             <div style={{ color: '#64748b', fontSize: 15 }}>Progressive rollouts, feature toggles, and flag controls (coming soon).</div>
           </div>
@@ -251,15 +251,15 @@ export default function ABTestingSuite() {
       </section>
 
       {/* --- Analytics & Insights --- */}
-      <section className="abtest-analytics" style={{ background: '#111111', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+      <section className="abtest-analytics" style={{ background: '#282828', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         {liveUpdate && (
-          <div style={{ background: '#38bdf8', color: '#111111', borderRadius: 8, padding: 12, marginBottom: 18, fontWeight: 600 }}>
-            <span role="img" aria-label="Live">🔴</span> Live Update: {typeof liveUpdate === 'string' ? liveUpdate : JSON.stringify(liveUpdate)}
+          <div style={{ background: '#38bdf8', color: '#282828', borderRadius: 8, padding: 12, marginBottom: 18, fontWeight: 600 }}>
+            <span role="img" aria-label="Live"></span>Live Update: {typeof liveUpdate === 'string' ? liveUpdate : JSON.stringify(liveUpdate)}
           </div>
         )}
         <div style={{ marginBottom: 18 }}>
           <strong>Variant Performance (Live):</strong>
-          <table style={{ width: '100%', marginTop: 8, background: '#1a1a1a', borderRadius: 8, color: '#e0e6ed', fontSize: 15 }}>
+          <table style={{ width: '100%', marginTop: 8, background: '#343434', borderRadius: 8, color: '#e0e6ed', fontSize: 15 }}>
             <thead>
               <tr style={{ color: '#38bdf8' }}>
                 <th style={{ padding: 6 }}>Variant</th>
@@ -283,21 +283,21 @@ export default function ABTestingSuite() {
           {/* Conversion Rate Chart */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Conversion Rate</div>
-            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
+            <div style={{ background: '#343434', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
               {/* Live chart integration required. No placeholder. */}
             </div>
           </div>
           {/* Engagement Chart */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Engagement</div>
-            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
+            <div style={{ background: '#343434', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
               {/* Live chart integration required. No placeholder. */}
             </div>
           </div>
           {/* AI Insights */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>AI Insights</div>
-            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
+            <div style={{ background: '#343434', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
               {/* Live AI insights only. No static winner or recommendation. */}
             </div>
           </div>
@@ -305,17 +305,17 @@ export default function ABTestingSuite() {
       </section>
 
       {/* --- Collaboration, Comments, Versioning --- */}
-      <section className="abtest-collab" style={{ background: '#1e1e1e', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+      <section className="abtest-collab" style={{ background: '#2e2e2e', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 14 }}>Collaboration & Version History</h3>
         <div style={{ display: 'flex', gap: 32 }}>
           {/* Comments & Approvals */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Comments & Approvals</div>
-            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
+            <div style={{ background: '#343434', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
               <div style={{ marginBottom: 8 }}><strong>Jane:</strong> "Ready for launch?" <span style={{ color: '#38bdf8', fontSize: 13 }}>2m ago</span></div>
               <div style={{ marginBottom: 8 }}><strong>Alex:</strong> "Approved. Roll out to 50%." <span style={{ color: '#0ea5e9', fontSize: 13 }}>1m ago</span></div>
               <form style={{ marginTop: 12 }}>
-                <input type="text" placeholder="Add a comment..." style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #333333', fontSize: 15 }} />
+                <input type="text" placeholder="Add a comment..." style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #4a4a4a', fontSize: 15 }} />
                 <button type="submit" className="btn btn-secondary" style={{ marginTop: 6, width: '100%' }}>Comment</button>
               </form>
             </div>
@@ -323,16 +323,16 @@ export default function ABTestingSuite() {
           {/* Activity Log */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Activity Log</div>
-            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
-              <div>✔️ Test created by Jane <span style={{ color: '#38bdf8', fontSize: 13 }}>5m ago</span></div>
-              <div>✔️ Variant B edited by Alex <span style={{ color: '#38bdf8', fontSize: 13 }}>3m ago</span></div>
-              <div>✔️ Approved by Alex <span style={{ color: '#0ea5e9', fontSize: 13 }}>1m ago</span></div>
+            <div style={{ background: '#343434', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
+              <div>️ Test created by Jane <span style={{ color: '#38bdf8', fontSize: 13 }}>5m ago</span></div>
+              <div>️ Variant B edited by Alex <span style={{ color: '#38bdf8', fontSize: 13 }}>3m ago</span></div>
+              <div>️ Approved by Alex <span style={{ color: '#0ea5e9', fontSize: 13 }}>1m ago</span></div>
             </div>
           </div>
           {/* Rollback & Versioning */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Rollback & Versioning</div>
-            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
+            <div style={{ background: '#343434', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
               <div><strong>Current Version:</strong> v1.2</div>
               <div style={{ marginTop: 8 }}>Previous: <button className="btn btn-tertiary" style={{ fontSize: 14, marginRight: 8 }}>v1.1</button> <button className="btn btn-tertiary" style={{ fontSize: 14 }}>v1.0</button></div>
               <div style={{ marginTop: 10, color: '#38bdf8' }}>Restore a previous version instantly.</div>
@@ -342,13 +342,13 @@ export default function ABTestingSuite() {
       </section>
 
       {/* --- Integrations & API --- */}
-      <section className="abtest-integrations" style={{ background: '#111111', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+      <section className="abtest-integrations" style={{ background: '#282828', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 14 }}>Integrations & API</h3>
         <div style={{ display: 'flex', gap: 32 }}>
           {/* Shopify Integration */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Shopify</div>
-            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
+            <div style={{ background: '#343434', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
               <div>Connected store: <strong>{window?.AURA_SHOP_DOMAIN || ''}</strong></div>
               <button className="btn btn-secondary" style={{ marginTop: 10 }}>Manage Connection</button>
             </div>
@@ -356,7 +356,7 @@ export default function ABTestingSuite() {
           {/* Analytics & CDP Integration */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Analytics & CDP</div>
-            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
+            <div style={{ background: '#343434', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
               <div>Google Analytics, Segment, Amplitude</div>
               <button className="btn btn-secondary" style={{ marginTop: 10 }}>Configure Integrations</button>
             </div>
@@ -364,7 +364,7 @@ export default function ABTestingSuite() {
           {/* Webhooks & API Access */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Webhooks & API</div>
-            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
+            <div style={{ background: '#343434', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
               <div>Push results to external systems</div>
               <button className="btn btn-secondary" style={{ marginTop: 10 }}>Manage Webhooks</button>
             </div>
@@ -373,7 +373,7 @@ export default function ABTestingSuite() {
       </section>
 
       {/* --- Security, Compliance, Accessibility --- */}
-      <section className="abtest-security" style={{ background: '#1e1e1e', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+      <section className="abtest-security" style={{ background: '#2e2e2e', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 14 }}>Security, Compliance & Accessibility</h3>
         <div style={{ color: '#64748b', fontSize: 16, minHeight: 60 }}>
           <span>SSO, RBAC, audit logs, GDPR/CCPA/HIPAA, and accessibility dashboards coming soon.</span>
@@ -381,14 +381,14 @@ export default function ABTestingSuite() {
       </section>
 
       {/* --- Feedback & Support --- */}
-      <section className="abtest-feedback" style={{ background: '#111111', borderRadius: 16, padding: 32, marginBottom: 24 }}>
+      <section className="abtest-feedback" style={{ background: '#282828', borderRadius: 16, padding: 32, marginBottom: 24 }}>
         <h4 style={{ fontWeight: 700, fontSize: 17, marginBottom: 10 }}>Feedback</h4>
         <form onSubmit={e => { e.preventDefault(); /* TODO: handleFeedback */ }}>
           <textarea
             value={feedback}
             onChange={e => setFeedback(e.target.value)}
             rows={3}
-            style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid #333333', marginBottom: 12 }}
+            style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid #4a4a4a', marginBottom: 12 }}
             placeholder="Share your feedback or suggestions..."
             aria-label="Feedback"
           />

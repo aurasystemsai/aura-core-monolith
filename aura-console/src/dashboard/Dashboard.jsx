@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, Suspense, lazy } from "react";
+﻿﻿import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch } from "../api";
 import { sendCopilotMessage } from "../core/advancedAiClient";
 import IntegrationHealthPanel from "../components/IntegrationHealthPanel";
@@ -13,7 +13,7 @@ function Spinner() {
 					width: 38,
 					height: 38,
 					border: "4px solid #ffffff",
-					borderTop: "4px solid #1e1e1e",
+					borderTop: "4px solid #2e2e2e",
 					borderRadius: "50%",
 					animation: "spin 1s linear infinite",
 				}}
@@ -30,8 +30,8 @@ const QuickActionCard = ({ icon, title, description, onClick, color = "#7fffd4" 
 	<div
 		onClick={onClick}
 		style={{
-			background: "#111111",
-			border: "1px solid #1e1e1e",
+			background: "#282828",
+			border: "1px solid #2e2e2e",
 			borderRadius: 16,
 			padding: 20,
 			cursor: "pointer",
@@ -44,7 +44,7 @@ const QuickActionCard = ({ icon, title, description, onClick, color = "#7fffd4" 
 	>
 		<div style={{ fontSize: 32 }}>{icon}</div>
 		<div style={{ fontWeight: 700, color: "#f0f0f0", fontSize: 16 }}>{title}</div>
-		<div style={{ fontSize: 13, color: "#888888", lineHeight: 1.4 }}>{description}</div>
+		<div style={{ fontSize: 13, color: "#9a9a9a", lineHeight: 1.4 }}>{description}</div>
 	</div>
 );
 
@@ -52,8 +52,8 @@ const QuickActionCard = ({ icon, title, description, onClick, color = "#7fffd4" 
 const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, upgradeRequired = false, tooltip = null }) => (
 	<div
 		style={{
-			background: "#111111",
-			border: "1px solid #1e1e1e",
+			background: "#282828",
+			border: "1px solid #2e2e2e",
 			borderRadius: 16,
 			padding: 24,
 			display: "flex",
@@ -65,7 +65,7 @@ const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, u
 	>
 		<div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
 			<div style={{ flex: 1 }}>
-				<div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#888888", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+				<div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#9a9a9a", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
 					{label}
 					{tooltip && (
 						<span title={tooltip} style={{ cursor: "help", fontSize: 12, opacity: 0.7 }}>ℹ️</span>
@@ -75,7 +75,7 @@ const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, u
 					{value}
 				</div>
 				{subtitle && (
-					<div style={{ fontSize: 11, color: "#555555", marginTop: 4, lineHeight: 1.4 }}>
+					<div style={{ fontSize: 11, color: "#777777", marginTop: 4, lineHeight: 1.4 }}>
 						{subtitle}
 					</div>
 				)}
@@ -84,7 +84,7 @@ const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, u
 						<span style={{ color: trend === "up" ? "#22d37f" : "#ff4d4f", fontSize: 14, fontWeight: 700 }}>
 							{trend === "up" ? "↑" : "↓"} {change}
 						</span>
-						<span style={{ fontSize: 12, color: "#555555" }}>vs last period</span>
+						<span style={{ fontSize: 12, color: "#777777" }}>vs last period</span>
 					</div>
 				)}
 				{upgradeRequired && (
@@ -120,7 +120,7 @@ const ActivityItem = ({ icon, title, timestamp, type }) => (
 			display: "flex",
 			gap: 12,
 			padding: "12px 0",
-			borderBottom: "1px solid #1e1e1e",
+			borderBottom: "1px solid #2e2e2e",
 		}}
 	>
 		<div
@@ -128,7 +128,7 @@ const ActivityItem = ({ icon, title, timestamp, type }) => (
 				width: 40,
 				height: 40,
 				borderRadius: 10,
-				background: "#1e1e1e",
+				background: "#2e2e2e",
 				display: "flex",
 				alignItems: "center",
 				justifyContent: "center",
@@ -139,13 +139,13 @@ const ActivityItem = ({ icon, title, timestamp, type }) => (
 		</div>
 		<div style={{ flex: 1 }}>
 			<div style={{ fontSize: 14, color: "#f0f0f0", fontWeight: 600 }}>{title}</div>
-			<div style={{ fontSize: 12, color: "#555555", marginTop: 2 }}>{timestamp}</div>
+			<div style={{ fontSize: 12, color: "#777777", marginTop: 2 }}>{timestamp}</div>
 		</div>
 		<div
 			style={{
 				fontSize: 11,
-				color: "#888888",
-				background: "#1e1e1e",
+				color: "#9a9a9a",
+				background: "#2e2e2e",
 				padding: "4px 8px",
 				borderRadius: 6,
 				height: "fit-content",
@@ -286,24 +286,24 @@ const Dashboard = ({ setActiveSection }) => {
 					const ordersDetailRes = await apiFetch("/api/analytics/orders?limit=5&details=true");
 					if (ordersDetailRes.orders && Array.isArray(ordersDetailRes.orders)) {
 						const activities = ordersDetailRes.orders.map((order, idx) => ({
-							icon: "🛒",
+							icon: "",
 							title: `Order #${order.order_number || order.id || idx + 1}`,
 							timestamp: order.created_at ? new Date(order.created_at).toLocaleString() : "Recently",
 							type: "Order",
 						}));
 						setRecentActivity(activities.length > 0 ? activities : [
-							{ icon: "📦", title: "No recent orders", timestamp: "—", type: "Info" }
+							{ icon: "", title: "No recent orders", timestamp: "—", type: "Info" }
 						]);
 					} else {
 						// Fallback to generic activity
 						setRecentActivity([
-							{ icon: "📦", title: "Awaiting order data", timestamp: "—", type: "Info" }
+							{ icon: "", title: "Awaiting order data", timestamp: "—", type: "Info" }
 						]);
 					}
 				} catch (ordersErr) {
 					console.warn("Failed to fetch recent orders:", ordersErr);
 					setRecentActivity([
-						{ icon: "⚠️", title: "Unable to load recent activity", timestamp: "—", type: "Error" }
+						{ icon: "️", title: "Unable to load recent activity", timestamp: "—", type: "Error" }
 					]);
 				}
 
@@ -404,19 +404,19 @@ const Dashboard = ({ setActiveSection }) => {
 		const recs = [];
 		// SEO Issues - trigger if any issues exist (lowered threshold for dev stores)
 		if (statsData.seoIssues >= 1) {
-			recs.push({ icon: "🔍", text: "You have " + statsData.seoIssues + " SEO issue" + (statsData.seoIssues > 1 ? "s" : "") + ". Fix them to improve search rankings.", action: "Fix SEO Issues", link: "seo" });
+			recs.push({ icon: "", text: "You have " + statsData.seoIssues + " SEO issue" + (statsData.seoIssues > 1 ? "s" : "") + ". Fix them to improve search rankings.", action: "Fix SEO Issues", link: "seo" });
 		}
 		// Conversion - trigger if 0% or undefined or < 2%
 		if (!statsData.conversion || statsData.conversion === "0%" || parseFloat(statsData.conversion) < 2) {
-			recs.push({ icon: "📈", text: "Low conversion rate. Consider A/B testing your product pages and improving CTAs.", action: "Optimize Conversion", link: "tools" });
+			recs.push({ icon: "", text: "Low conversion rate. Consider A/B testing your product pages and improving CTAs.", action: "Optimize Conversion", link: "tools" });
 		}
 		// Low orders
 		if (statsData.orders < 10) {
-			recs.push({ icon: "📧", text: "Boost sales with targeted email campaigns to your customers.", action: "Create Campaign", link: "tools" });
+			recs.push({ icon: "", text: "Boost sales with targeted email campaigns to your customers.", action: "Create Campaign", link: "tools" });
 		}
 		// Underperforming products
 		if (underperformingProducts.length > 0) {
-			recs.push({ icon: "⚠️", text: underperformingProducts.length + " product" + (underperformingProducts.length > 1 ? "s" : "") + " need attention (low price or missing data).", action: "View Products", link: "products" });
+			recs.push({ icon: "️", text: underperformingProducts.length + " product" + (underperformingProducts.length > 1 ? "s" : "") + " need attention (low price or missing data).", action: "View Products", link: "products" });
 		}
 		setRecommendations(recs.slice(0, 3));
 	};
@@ -629,8 +629,8 @@ const Dashboard = ({ setActiveSection }) => {
 		<div
 			className="stat-card"
 			style={{
-				background: "#111111",
-				border: "1px solid #1e1e1e",
+				background: "#282828",
+				border: "1px solid #2e2e2e",
 				borderRadius: 16,
 				padding: 20,
 				minHeight: 120,
@@ -639,7 +639,7 @@ const Dashboard = ({ setActiveSection }) => {
 			<div style={{ 
 				height: 16, 
 				width: "60%", 
-				background: "linear-gradient(90deg, #1e1e1e 0%, #222222 50%, #1e1e1e 100%)",
+				background: "linear-gradient(90deg, #2e2e2e 0%, #3c3c3c 50%, #2e2e2e 100%)",
 				backgroundSize: "200% 100%",
 				animation: "shimmer 1.5s infinite",
 				borderRadius: 4,
@@ -648,7 +648,7 @@ const Dashboard = ({ setActiveSection }) => {
 			<div style={{ 
 				height: 32, 
 				width: "40%", 
-				background: "linear-gradient(90deg, #1e1e1e 0%, #222222 50%, #1e1e1e 100%)",
+				background: "linear-gradient(90deg, #2e2e2e 0%, #3c3c3c 50%, #2e2e2e 100%)",
 				backgroundSize: "200% 100%",
 				animation: "shimmer 1.5s infinite",
 				borderRadius: 4,
@@ -658,7 +658,7 @@ const Dashboard = ({ setActiveSection }) => {
 
 	if (loading) {
 		return (
-			<div className="aura-dashboard-shell" style={{ padding: "24px", background: "#111111", minHeight: "100vh" }}>
+			<div className="aura-dashboard-shell" style={{ padding: "24px", background: "#282828", minHeight: "100vh" }}>
 				<style>{`
 					@keyframes shimmer {
 						0% { background-position: 200% 0; }
@@ -709,7 +709,7 @@ const Dashboard = ({ setActiveSection }) => {
 	};
 
 	return (
-		<div className="aura-dashboard-shell" style={{ padding: "24px", background: "#111111", minHeight: "100vh" }}>
+		<div className="aura-dashboard-shell" style={{ padding: "24px", background: "#282828", minHeight: "100vh" }}>
 			<style>{`
 				.quick-action-card:hover {
 					transform: translateY(-4px);
@@ -718,7 +718,7 @@ const Dashboard = ({ setActiveSection }) => {
 				}
 				.stat-card:hover {
 					box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-					border-color: #222222;
+					border-color: #3c3c3c;
 				}
 				
 				/* Mobile Responsive Styles */
@@ -766,7 +766,7 @@ const Dashboard = ({ setActiveSection }) => {
 				}
 				.aura-toast { animation: toastIn 0.3s ease; }
 				@keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
-					.seo-issue-row:hover { background: #161616 !important; transform: translateX(2px); }
+					.seo-issue-row:hover { background: #212121 !important; transform: translateX(2px); }
 			@keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
 			@keyframes scanSlide { from{opacity:0;transform:translateY(-6px);} to{opacity:1;transform:translateY(0);} }
 			@keyframes modalIn { from{opacity:0;transform:scale(0.96);} to{opacity:1;transform:scale(1);} }
@@ -775,20 +775,20 @@ const Dashboard = ({ setActiveSection }) => {
 			{/* SEO Scan Modal */}
 			{showScanModal && (
 				<div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:10000, display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
-					<div style={{ background:'#111111', border:'1px solid #1e1e1e', borderRadius:20, width:'100%', maxWidth:720, maxHeight:'88vh', display:'flex', flexDirection:'column', animation:'modalIn 0.25s ease' }}>
+					<div style={{ background:'#282828', border:'1px solid #2e2e2e', borderRadius:20, width:'100%', maxWidth:720, maxHeight:'88vh', display:'flex', flexDirection:'column', animation:'modalIn 0.25s ease' }}>
 						{/* Modal header */}
-						<div style={{ padding:'24px 28px 20px', borderBottom:'1px solid #1e1e1e', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+						<div style={{ padding:'24px 28px 20px', borderBottom:'1px solid #2e2e2e', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
 							<div style={{ display:'flex', alignItems:'center', gap:14 }}>
 								{scanningInProgress ? (
 									<div style={{ width:36, height:36, border:'3px solid #7fffd4', borderTop:'3px solid transparent', borderRadius:'50%', animation:'spin 0.9s linear infinite', flexShrink:0 }} />
 								) : (
-									<span style={{ fontSize:32 }}>✅</span>
+									<span style={{ fontSize:32 }}></span>
 								)}
 								<div>
 									<h2 style={{ color:'#f0f0f0', fontWeight:800, fontSize:20, margin:0 }}>
 										{scanningInProgress ? 'Scanning your site...' : `Scan Complete — ${crawlResults?.totalIssues || 0} Issues Found`}
 									</h2>
-									<p style={{ color:'#888888', fontSize:13, margin:'3px 0 0 0' }}>
+									<p style={{ color:'#9a9a9a', fontSize:13, margin:'3px 0 0 0' }}>
 										{scanningInProgress
 											? `Checking pages for SEO issues — this takes a minute or two`
 											: `${crawlResults?.pagesScanned} pages scanned • ${crawlResults?.high} high • ${crawlResults?.medium} medium • ${crawlResults?.low} low`}
@@ -796,14 +796,14 @@ const Dashboard = ({ setActiveSection }) => {
 								</div>
 							</div>
 							{!scanningInProgress && (
-								<button onClick={() => setShowScanModal(false)} style={{ background:'#1e1e1e', border:'none', color:'#888888', borderRadius:8, padding:'8px 16px', cursor:'pointer', fontSize:14, fontWeight:600 }}>Close</button>
+								<button onClick={() => setShowScanModal(false)} style={{ background:'#2e2e2e', border:'none', color:'#9a9a9a', borderRadius:8, padding:'8px 16px', cursor:'pointer', fontSize:14, fontWeight:600 }}>Close</button>
 							)}
 						</div>
 
 						{/* Scanning progress view */}
 						{scanningInProgress && (
 							<div style={{ padding:'20px 28px', flex:1, overflowY:'auto' }}>
-								<div style={{ background:'#111111', borderRadius:12, padding:'14px 18px', marginBottom:16, display:'flex', alignItems:'center', gap:10 }}>
+								<div style={{ background:'#282828', borderRadius:12, padding:'14px 18px', marginBottom:16, display:'flex', alignItems:'center', gap:10 }}>
 									<span style={{ width:8, height:8, background:'#7fffd4', borderRadius:'50%', animation:'pulse-dot 1s ease infinite', flexShrink:0 }} />
 									<span style={{ color:'#7fffd4', fontSize:13, fontFamily:'monospace', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
 										{scanningPage || 'Initialising scanner...'}
@@ -813,13 +813,13 @@ const Dashboard = ({ setActiveSection }) => {
 									{[...scanLog].reverse().map((entry, i) => (
 										<div key={i} style={{ display:'flex', alignItems:'center', gap:10, animation:'scanSlide 0.3s ease', opacity: i === 0 ? 1 : Math.max(0.2, 1 - i * 0.07) }}>
 											<span style={{ fontSize:11, color:'#475569', fontFamily:'monospace', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{entry.url}</span>
-											<span style={{ fontSize:11, color:'#4ade80', flexShrink:0 }}>✓ scanned</span>
+											<span style={{ fontSize:11, color:'#4ade80', flexShrink:0 }}> scanned</span>
 										</div>
 									))}
 								</div>
 								{scanRemainingTime > 0 && (
 									<div style={{ marginTop:20, textAlign:'center', color:'#475569', fontSize:13 }}>
-										Estimated time remaining: <span style={{ color:'#888888', fontWeight:600 }}>{Math.floor(scanRemainingTime/60)}:{String(scanRemainingTime%60).padStart(2,'0')}</span>
+										Estimated time remaining: <span style={{ color:'#9a9a9a', fontWeight:600 }}>{Math.floor(scanRemainingTime/60)}:{String(scanRemainingTime%60).padStart(2,'0')}</span>
 									</div>
 								)}
 							</div>
@@ -830,27 +830,27 @@ const Dashboard = ({ setActiveSection }) => {
 							<div style={{ flex:1, overflowY:'auto', padding:'0 28px 24px' }}>
 								{/* Severity badges */}
 								<div style={{ display:'flex', gap:10, padding:'16px 0', flexWrap:'wrap' }}>
-									<span style={{ background:'#2d1515', border:'1px solid #e53e3e', color:'#fc8181', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}>🔴 {crawlResults.high} High</span>
-									<span style={{ background:'#2d2210', border:'1px solid #f59e0b', color:'#fbbf24', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}>🟡 {crawlResults.medium} Medium</span>
-									<span style={{ background:'#1a2315', border:'1px solid #4ade80', color:'#86efac', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}>🟢 {crawlResults.low} Low</span>
+									<span style={{ background:'#2d1515', border:'1px solid #e53e3e', color:'#fc8181', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}> {crawlResults.high} High</span>
+									<span style={{ background:'#2d2210', border:'1px solid #f59e0b', color:'#fbbf24', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}> {crawlResults.medium} Medium</span>
+									<span style={{ background:'#1a2315', border:'1px solid #4ade80', color:'#86efac', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}> {crawlResults.low} Low</span>
 									<span style={{ marginLeft:'auto', color:'#475569', fontSize:13, alignSelf:'center' }}>{crawlResults.pagesScanned} pages scanned • {lastScanTime}</span>
 								</div>
 								{crawlResults.totalIssues === 0 ? (
-									<div style={{ textAlign:'center', padding:'48px 0', color:'#7fffd4', fontSize:16 }}>✅ No SEO issues found — your site looks great!</div>
+									<div style={{ textAlign:'center', padding:'48px 0', color:'#7fffd4', fontSize:16 }}>No SEO issues found — your site looks great!</div>
 								) : (
 									<div style={{ display:'flex', flexDirection:'column', gap:8 }}>
 										{crawlResults.issues.map((issue, i) => (
 											<div key={i}
 												onClick={() => { if (issue.fix && setActiveSection) { setActiveSection(issue.fix, issue.page); setShowScanModal(false); } }}
 												className="seo-issue-row"
-												style={{ background:'#111111', border:`1px solid ${issue.severity==='high'?'#e53e3e':issue.severity==='medium'?'#f59e0b':'#4ade80'}`, borderRadius:10, padding:'12px 16px', display:'flex', alignItems:'flex-start', gap:12, cursor: issue.fix ? 'pointer' : 'default' }}>
-												<span style={{ fontSize:16, marginTop:1 }}>{issue.severity==='high'?'🔴':issue.severity==='medium'?'🟡':'🟢'}</span>
+												style={{ background:'#282828', border:`1px solid ${issue.severity==='high'?'#e53e3e':issue.severity==='medium'?'#f59e0b':'#4ade80'}`, borderRadius:10, padding:'12px 16px', display:'flex', alignItems:'flex-start', gap:12, cursor: issue.fix ? 'pointer' : 'default' }}>
+												<span style={{ fontSize:16, marginTop:1 }}>{issue.severity==='high'?'':issue.severity==='medium'?'':''}</span>
 												<div style={{ flex:1, minWidth:0 }}>
 													<div style={{ color:'#f0f0f0', fontWeight:600, fontSize:14, display:'flex', alignItems:'center', gap:8 }}>
 														{issue.type}
 														{issue.fix && <span style={{ fontSize:11, color:'#7fffd4', background:'rgba(127,255,212,0.1)', border:'1px solid rgba(127,255,212,0.3)', borderRadius:4, padding:'1px 7px', fontWeight:500 }}>Click to fix →</span>}
 													</div>
-													<div style={{ color:'#888888', fontSize:13, marginTop:2 }}>{issue.detail}</div>
+													<div style={{ color:'#9a9a9a', fontSize:13, marginTop:2 }}>{issue.detail}</div>
 													<div style={{ color:'#475569', fontSize:12, marginTop:4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{issue.page}</div>
 												</div>
 											</div>
@@ -880,7 +880,7 @@ const Dashboard = ({ setActiveSection }) => {
 						alignItems: "center",
 						gap: 10,
 					}}>
-						<span style={{ fontSize: 18 }}>{toast.type === 'error' ? '⚠️' : '✅'}</span>
+						<span style={{ fontSize: 18 }}>{toast.type === 'error' ? '️' : ''}</span>
 						<span>{toast.message}</span>
 						<button onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
 							style={{ marginLeft: "auto", background: "none", border: "none", color: "inherit", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 0 0 8px", opacity: 0.7 }}>×</button>
@@ -897,7 +897,7 @@ const Dashboard = ({ setActiveSection }) => {
 							<h1 style={{ fontSize: 32, fontWeight: 900, color: "#f0f0f0", margin: 0, letterSpacing: "-0.02em" }}>
 								Dashboard Overview
 							</h1>
-							<p style={{ fontSize: 14, color: "#888888", margin: "4px 0 0 0" }}>
+							<p style={{ fontSize: 14, color: "#9a9a9a", margin: "4px 0 0 0" }}>
 								{shop.name || "My Store"} • {shop.domain || "—"}
 							</p>
 						</div>
@@ -908,8 +908,8 @@ const Dashboard = ({ setActiveSection }) => {
 							value={timePeriod}
 							onChange={(e) => setTimePeriod(Number(e.target.value))}
 							style={{
-								background: "#111111",
-								border: "1px solid #1e1e1e",
+								background: "#282828",
+								border: "1px solid #2e2e2e",
 								borderRadius: 8,
 								padding: "10px 16px",
 								color: "#f0f0f0",
@@ -927,11 +927,11 @@ const Dashboard = ({ setActiveSection }) => {
 						<button
 							onClick={() => setAutoRefresh(!autoRefresh)}
 							style={{
-								background: autoRefresh ? "#7fffd4" : "#111111",
-								border: "1px solid #1e1e1e",
+								background: autoRefresh ? "#7fffd4" : "#282828",
+								border: "1px solid #2e2e2e",
 								borderRadius: 8,
 								padding: "10px 16px",
-								color: autoRefresh ? "#111111" : "#7fffd4",
+								color: autoRefresh ? "#282828" : "#7fffd4",
 								fontSize: 14,
 								fontWeight: 600,
 								cursor: "pointer",
@@ -941,14 +941,14 @@ const Dashboard = ({ setActiveSection }) => {
 							}}
 							title={autoRefresh ? "Auto-refresh ON (30s)" : "Auto-refresh OFF"}
 						>
-							🔄 {autoRefresh ? "ON" : "OFF"}
+							 {autoRefresh ? "ON" : "OFF"}
 						</button>
 						{/* Refresh Button */}
 						<button
 							onClick={() => fetchStats()}
 							style={{
-								background: "#111111",
-								border: "1px solid #1e1e1e",
+								background: "#282828",
+								border: "1px solid #2e2e2e",
 								borderRadius: 8,
 								padding: "10px 16px",
 								color: "#7fffd4",
@@ -971,7 +971,7 @@ const Dashboard = ({ setActiveSection }) => {
 								border: "none",
 								borderRadius: 8,
 								padding: "10px 20px",
-								color: "#111111",
+								color: "#282828",
 								fontSize: 14,
 								fontWeight: 700,
 								cursor: "pointer",
@@ -979,7 +979,7 @@ const Dashboard = ({ setActiveSection }) => {
 							}}
 							title="Export Stats to CSV"
 						>
-							📊 Export CSV
+							 Export CSV
 						</button>
 					</div>
 				</div>
@@ -988,15 +988,15 @@ const Dashboard = ({ setActiveSection }) => {
 			{/* AI Copilot Section */}
 			<div
 				style={{
-					background: "#111111",
-					border: "1px solid #1e1e1e",
+					background: "#282828",
+					border: "1px solid #2e2e2e",
 					borderRadius: 16,
 					padding: 24,
 					marginBottom: 32,
 				}}
 			>
 				<div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-					<div style={{ fontSize: 28 }}>🤖</div>
+					
 					<h2 style={{ fontSize: 20, fontWeight: 700, color: "#f0f0f0", margin: 0 }}>AI Copilot Assistant</h2>
 				</div>
 				<div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
@@ -1009,8 +1009,8 @@ const Dashboard = ({ setActiveSection }) => {
 							flex: 1,
 							borderRadius: 10,
 							padding: "14px 16px",
-							border: "2px solid #1e1e1e",
-							background: "#111111",
+							border: "2px solid #2e2e2e",
+							background: "#282828",
 							color: "#f0f0f0",
 							fontSize: 15,
 							outline: "none",
@@ -1020,8 +1020,8 @@ const Dashboard = ({ setActiveSection }) => {
 						onClick={handleCopilotAsk}
 						disabled={copilotLoading}
 						style={{
-							background: copilotLoading ? "#222222" : "#7fffd4",
-							color: "#111111",
+							background: copilotLoading ? "#3c3c3c" : "#7fffd4",
+							color: "#282828",
 							border: "none",
 							borderRadius: 10,
 							fontWeight: 800,
@@ -1032,7 +1032,7 @@ const Dashboard = ({ setActiveSection }) => {
 							transition: "all 0.2s",
 						}}
 					>
-						{copilotLoading ? "⏳ Thinking..." : "✨ Ask"}
+						{copilotLoading ? " Thinking..." : " Ask"}
 					</button>
 				</div>
 				{copilotReply && (
@@ -1040,9 +1040,9 @@ const Dashboard = ({ setActiveSection }) => {
 						style={{
 							marginTop: 16,
 							padding: 16,
-							background: "#111111",
+							background: "#282828",
 							borderRadius: 10,
-							border: "1px solid #1e1e1e",
+							border: "1px solid #2e2e2e",
 						}}
 					>
 						<div style={{ fontSize: 12, color: "#7fffd4", fontWeight: 700, marginBottom: 8, textTransform: "uppercase" }}>
@@ -1070,7 +1070,7 @@ const Dashboard = ({ setActiveSection }) => {
 								gap: 12,
 							}}
 						>
-							<span style={{ fontSize: 20 }}>{alert.type === "danger" ? "🚨" : "⚠️"}</span>
+							<span style={{ fontSize: 20 }}>{alert.type === "danger" ? "" : "️"}</span>
 							<span style={{ color: "#f0f0f0", fontSize: 14, fontWeight: 600 }}>{alert.message}</span>
 						</div>
 					))}
@@ -1081,23 +1081,23 @@ const Dashboard = ({ setActiveSection }) => {
 			{recommendations.length > 0 && (
 				<div
 					style={{
-						background: "#111111",
-						border: "1px solid #1e1e1e",
+						background: "#282828",
+						border: "1px solid #2e2e2e",
 						borderRadius: 16,
 						padding: 24,
 						marginBottom: 32,
 					}}
 				>
 					<h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f0", margin: "0 0 16px 0" }}>
-						💡 Smart Recommendations
+						 Smart Recommendations
 					</h3>
 					<div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 						{recommendations.map((rec, idx) => (
 							<div
 								key={idx}
 								style={{
-									background: "#111111",
-									border: "1px solid #1e1e1e",
+									background: "#282828",
+									border: "1px solid #2e2e2e",
 									borderRadius: 10,
 									padding: 16,
 									display: "flex",
@@ -1114,7 +1114,7 @@ const Dashboard = ({ setActiveSection }) => {
 									onClick={() => setActiveSection && setActiveSection(rec.link)}
 									style={{
 										background: "#7fffd4",
-										color: "#111111",
+										color: "#282828",
 										border: "none",
 										borderRadius: 8,
 										padding: "8px 16px",
@@ -1144,33 +1144,33 @@ const Dashboard = ({ setActiveSection }) => {
 				<StatCard 
 					label="Total Revenue" 
 					value={stats.revenue || (stats.revenue === "$0" ? "$0" : "—")} 
-					icon="💰"
+					icon=""
 					tooltip="Total sales revenue for the selected period"
 					subtitle={(!stats.revenue || stats.revenue === "$0" || stats.revenue === "—") ? "No revenue data available" : null}
 				/>
 				<StatCard 
 					label="Orders" 
 					value={stats.orders !== null && stats.orders !== undefined ? stats.orders : "—"} 
-					icon="📦"
+					icon=""
 					tooltip="Number of orders placed"
 					subtitle={(stats.orders === 0 || stats.orders === null) ? "No orders yet" : null}
 				/>
 				<StatCard 
 					label="Average Order Value" 
 					value={stats.aov || "—"} 
-					icon="💵"
+					icon=""
 					tooltip="Average revenue per order (Revenue ÷ Orders)"
 				/>
 				<StatCard 
 					label="Conversion Rate" 
 					value={stats.conversion || "—"} 
-					icon="📈"
+					icon=""
 					tooltip="Percentage of visitors who made a purchase"
 				/>
 				<StatCard 
 					label="Visitors" 
 					value={stats.visitors || "—"} 
-					icon="👥"
+					icon=""
 					tooltip="Total store visitors for the selected period"
 					upgradeRequired={stats.visitorsUpgradeRequired}
 					subtitle={
@@ -1184,43 +1184,43 @@ const Dashboard = ({ setActiveSection }) => {
 				<StatCard 
 					label="Products" 
 					value={stats.products !== null ? stats.products : "—"} 
-					icon="🛍️"
+					icon="️"
 					tooltip="Total number of products in your catalog"
 				/>
 				<StatCard 
 					label="SEO Issues" 
 					value={stats.seoIssues !== null ? stats.seoIssues : "—"} 
-					icon="🔍"
+					icon=""
 					tooltip="Number of SEO issues that need attention"
 				/>
 			</div>
 
 			{/* SEO Crawl Results Panel */}
 			{crawlResults && (
-				<div style={{ background: "#111111", border: "1px solid #1e1e1e", borderRadius: 16, padding: 24, marginBottom: 32 }}>
+				<div style={{ background: "#282828", border: "1px solid #2e2e2e", borderRadius: 16, padding: 24, marginBottom: 32 }}>
 					<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
 						<div>
-							<h3 style={{ color: "#f0f0f0", fontWeight: 700, fontSize: 18, margin: 0 }}>🔍 SEO Scan Results</h3>
-							<p style={{ color: "#888888", fontSize: 13, margin: "4px 0 0 0" }}>
+							<h3 style={{ color: "#f0f0f0", fontWeight: 700, fontSize: 18, margin: 0 }}>SEO Scan Results</h3>
+							<p style={{ color: "#9a9a9a", fontSize: 13, margin: "4px 0 0 0" }}>
 								{crawlResults.pagesScanned} pages scanned • Last scan: {lastScanTime}
 							</p>
 						</div>
 						<div style={{ display: "flex", gap: 12, alignItems: "center" }}>
 							<span style={{ background: "#2d1515", border: "1px solid #e53e3e", color: "#fc8181", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
-								🔴 {crawlResults.high} High
+								 {crawlResults.high} High
 							</span>
 							<span style={{ background: "#2d2210", border: "1px solid #f59e0b", color: "#fbbf24", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
-								🟡 {crawlResults.medium} Medium
+								 {crawlResults.medium} Medium
 							</span>
 							<span style={{ background: "#1a2315", border: "1px solid #4ade80", color: "#86efac", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
-								🟢 {crawlResults.low} Low
+								 {crawlResults.low} Low
 							</span>
-							<button onClick={() => setCrawlResults(null)} style={{ background: "none", border: "none", color: "#888888", cursor: "pointer", fontSize: 20, lineHeight: 1 }}>×</button>
+							<button onClick={() => setCrawlResults(null)} style={{ background: "none", border: "none", color: "#9a9a9a", cursor: "pointer", fontSize: 20, lineHeight: 1 }}>×</button>
 						</div>
 					</div>
 					{crawlResults.totalIssues === 0 ? (
 						<div style={{ textAlign: "center", padding: "32px 0", color: "#7fffd4", fontSize: 16 }}>
-							✅ No SEO issues found — your site looks great!
+							 No SEO issues found — your site looks great!
 						</div>
 					) : (
 						<div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 400, overflowY: "auto" }}>
@@ -1228,7 +1228,7 @@ const Dashboard = ({ setActiveSection }) => {
 								<div key={i}
 									onClick={() => issue.fix && setActiveSection && setActiveSection(issue.fix, issue.page)}
 									style={{
-										background: "#111111",
+										background: "#282828",
 										border: `1px solid ${issue.severity === 'high' ? '#e53e3e' : issue.severity === 'medium' ? '#f59e0b' : '#4ade80'}`,
 										borderRadius: 10,
 										padding: "12px 16px",
@@ -1241,7 +1241,7 @@ const Dashboard = ({ setActiveSection }) => {
 									className="seo-issue-row"
 								>
 									<span style={{ fontSize: 16, marginTop: 1 }}>
-										{issue.severity === 'high' ? '🔴' : issue.severity === 'medium' ? '🟡' : '🟢'}
+										{issue.severity === 'high' ? '' : issue.severity === 'medium' ? '' : ''}
 									</span>
 									<div style={{ flex: 1, minWidth: 0 }}>
 										<div style={{ color: "#f0f0f0", fontWeight: 600, fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
@@ -1252,7 +1252,7 @@ const Dashboard = ({ setActiveSection }) => {
 												</span>
 											)}
 										</div>
-										<div style={{ color: "#888888", fontSize: 13, marginTop: 2 }}>{issue.detail}</div>
+										<div style={{ color: "#9a9a9a", fontSize: 13, marginTop: 2 }}>{issue.detail}</div>
 										<div style={{ color: "#475569", fontSize: 12, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{issue.page}</div>
 									</div>
 								</div>
@@ -1266,7 +1266,7 @@ const Dashboard = ({ setActiveSection }) => {
 			{healthScore && (
 				<div
 					style={{
-						background: "#111111",
+						background: "#282828",
 						border: `2px solid ${healthScore.grade === 'A' ? '#7fffd4' : healthScore.grade === 'B' ? '#4ade80' : healthScore.grade === 'C' ? '#fbbf24' : healthScore.grade === 'D' ? '#fb923c' : '#ef4444'}`,
 						borderRadius: 16,
 						padding: 24,
@@ -1280,9 +1280,9 @@ const Dashboard = ({ setActiveSection }) => {
 				>
 					<div style={{ flex: 1, minWidth: 200 }}>
 						<h3 style={{ fontSize: 20, fontWeight: 700, color: "#f0f0f0", margin: "0 0 8px 0" }}>
-							🏆 Store Health Score
+							 Store Health Score
 						</h3>
-						<p style={{ fontSize: 14, color: "#888888", margin: 0 }}>
+						<p style={{ fontSize: 14, color: "#9a9a9a", margin: 0 }}>
 							Based on revenue, orders, and SEO performance
 						</p>
 					</div>
@@ -1295,7 +1295,7 @@ const Dashboard = ({ setActiveSection }) => {
 						}}>
 							{healthScore.grade}
 						</div>
-						<div style={{ fontSize: 14, color: "#888888", marginTop: 8 }}>
+						<div style={{ fontSize: 14, color: "#9a9a9a", marginTop: 8 }}>
 							{healthScore.score}/100
 						</div>
 					</div>
@@ -1305,26 +1305,26 @@ const Dashboard = ({ setActiveSection }) => {
 			{/* Goal Tracking */}
 			<div
 				style={{
-					background: "#111111",
-					border: "1px solid #1e1e1e",
+					background: "#282828",
+					border: "1px solid #2e2e2e",
 					borderRadius: 16,
 					padding: 24,
 					marginBottom: 32,
 				}}
 			>
 				<h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f0", margin: "0 0 20px 0" }}>
-					🎯 Monthly Goals
+					 Monthly Goals
 				</h3>
 				<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20 }}>
 					{/* Revenue Goal */}
 					<div>
 						<div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-							<span style={{ color: "#888888", fontSize: 13 }}>Revenue Goal</span>
+							<span style={{ color: "#9a9a9a", fontSize: 13 }}>Revenue Goal</span>
 							<span style={{ color: "#f0f0f0", fontSize: 13, fontWeight: 600 }}>
 								{stats.revenueRaw ? `$${stats.revenueRaw.toFixed(0)}` : "$0"} / ${goals.revenue}
 							</span>
 						</div>
-						<div style={{ background: "#1e1e1e", height: 8, borderRadius: 4, overflow: "hidden" }}>
+						<div style={{ background: "#2e2e2e", height: 8, borderRadius: 4, overflow: "hidden" }}>
 							<div style={{ 
 								background: "#7fffd4", 
 								height: "100%", 
@@ -1336,12 +1336,12 @@ const Dashboard = ({ setActiveSection }) => {
 					{/* Orders Goal */}
 					<div>
 						<div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-							<span style={{ color: "#888888", fontSize: 13 }}>Orders Goal</span>
+							<span style={{ color: "#9a9a9a", fontSize: 13 }}>Orders Goal</span>
 							<span style={{ color: "#f0f0f0", fontSize: 13, fontWeight: 600 }}>
 								{stats.orders || 0} / {goals.orders}
 							</span>
 						</div>
-						<div style={{ background: "#1e1e1e", height: 8, borderRadius: 4, overflow: "hidden" }}>
+						<div style={{ background: "#2e2e2e", height: 8, borderRadius: 4, overflow: "hidden" }}>
 							<div style={{ 
 								background: "#4ade80", 
 								height: "100%", 
@@ -1353,12 +1353,12 @@ const Dashboard = ({ setActiveSection }) => {
 					{/* Conversion Goal */}
 					<div>
 						<div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-							<span style={{ color: "#888888", fontSize: 13 }}>Conversion Goal</span>
+							<span style={{ color: "#9a9a9a", fontSize: 13 }}>Conversion Goal</span>
 							<span style={{ color: "#f0f0f0", fontSize: 13, fontWeight: 600 }}>
 								{stats.conversion || "0%"} / {goals.conversion}%
 							</span>
 						</div>
-						<div style={{ background: "#1e1e1e", height: 8, borderRadius: 4, overflow: "hidden" }}>
+						<div style={{ background: "#2e2e2e", height: 8, borderRadius: 4, overflow: "hidden" }}>
 							<div style={{ 
 								background: "#fbbf24", 
 								height: "100%", 
@@ -1379,14 +1379,14 @@ const Dashboard = ({ setActiveSection }) => {
 				<div>
 					<div
 						style={{
-							background: "#111111",
-							border: "1px solid #1e1e1e",
+							background: "#282828",
+							border: "1px solid #2e2e2e",
 							borderRadius: 16,
 							padding: 24,
 						}}
 					>
 						<h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f0", margin: "0 0 20px 0" }}>
-							📊 Performance Analytics
+							 Performance Analytics
 						</h3>
 						<Suspense fallback={<Spinner />}>
 							<DashboardCharts />
@@ -1399,21 +1399,21 @@ const Dashboard = ({ setActiveSection }) => {
 					{/* Activity Feed */}
 					<div
 						style={{
-							background: "#111111",
-							border: "1px solid #1e1e1e",
+							background: "#282828",
+							border: "1px solid #2e2e2e",
 							borderRadius: 16,
 							padding: 24,
 						}}
 					>
-						<h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f0", margin: "0 0 20px 0" }}>⚡ Recent Activity</h3>
+						<h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f0", margin: "0 0 20px 0" }}>Recent Activity</h3>
 						<div>
 							{recentActivity.length > 0 ? (
 								recentActivity.map((activity, idx) => (
 									<ActivityItem key={idx} {...activity} />
 								))
 							) : (
-								<div style={{ textAlign: "center", color: "#888888", padding: "20px 0" }}>
-									<div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
+								<div style={{ textAlign: "center", color: "#9a9a9a", padding: "20px 0" }}>
+									
 									<div style={{ fontSize: 14 }}>No recent activity</div>
 								</div>
 							)}
@@ -1423,8 +1423,8 @@ const Dashboard = ({ setActiveSection }) => {
 								width: "100%",
 								marginTop: 16,
 								padding: "10px",
-								background: "#1e1e1e",
-								border: "1px solid #222222",
+								background: "#2e2e2e",
+								border: "1px solid #3c3c3c",
 								borderRadius: 8,
 								color: "#f0f0f0",
 								fontSize: 14,
@@ -1440,14 +1440,14 @@ const Dashboard = ({ setActiveSection }) => {
 					{/* Top Products Widget */}
 					<div
 						style={{
-							background: "#111111",
-							border: "1px solid #1e1e1e",
+							background: "#282828",
+							border: "1px solid #2e2e2e",
 							borderRadius: 16,
 							padding: 24,
 						}}
 					>
 						<h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f0", margin: "0 0 20px 0" }}>
-							🏆 Top Products
+							 Top Products
 						</h3>
 						{topProducts.length > 0 ? (
 							<div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -1459,15 +1459,15 @@ const Dashboard = ({ setActiveSection }) => {
 											alignItems: "center",
 											gap: 12,
 											padding: 12,
-											background: "#111111",
-											border: "1px solid #1e1e1e",
+											background: "#282828",
+											border: "1px solid #2e2e2e",
 											borderRadius: 8,
 										}}
 									>
 										<div style={{ 
 											fontSize: 20, 
 											fontWeight: 900,
-											color: idx === 0 ? "#fbbf24" : "#888888",
+											color: idx === 0 ? "#fbbf24" : "#9a9a9a",
 											minWidth: 24,
 										}}>
 											#{idx + 1}
@@ -1476,7 +1476,7 @@ const Dashboard = ({ setActiveSection }) => {
 											<div style={{ fontSize: 14, fontWeight: 600, color: "#f0f0f0", marginBottom: 4 }}>
 												{product.title || "Untitled Product"}
 											</div>
-											<div style={{ fontSize: 12, color: "#555555" }}>
+											<div style={{ fontSize: 12, color: "#777777" }}>
 												{product.variants?.[0]?.price ? `$${product.variants[0].price}` : "No price"}
 											</div>
 										</div>
@@ -1484,8 +1484,8 @@ const Dashboard = ({ setActiveSection }) => {
 								))}
 							</div>
 						) : (
-							<div style={{ textAlign: "center", color: "#888888", padding: "20px 0" }}>
-								<div style={{ fontSize: 32, marginBottom: 8 }}>📦</div>
+							<div style={{ textAlign: "center", color: "#9a9a9a", padding: "20px 0" }}>
+								
 								<div style={{ fontSize: 14 }}>No products available</div>
 							</div>
 						)}
@@ -1495,14 +1495,14 @@ const Dashboard = ({ setActiveSection }) => {
 					{underperformingProducts.length > 0 && (
 						<div
 							style={{
-								background: "#111111",
+								background: "#282828",
 								border: "1px solid #fb923c",
 								borderRadius: 16,
 								padding: 24,
 							}}
 						>
 							<h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f0", margin: "0 0 20px 0" }}>
-								⚠️ Needs Attention
+								️ Needs Attention
 							</h3>
 							<div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 								{underperformingProducts.map((product, idx) => (
@@ -1513,12 +1513,12 @@ const Dashboard = ({ setActiveSection }) => {
 											alignItems: "center",
 											gap: 12,
 											padding: 12,
-											background: "#111111",
+											background: "#282828",
 											border: "1px solid #3a2d1a",
 											borderRadius: 8,
 										}}
 									>
-										<span style={{ fontSize: 20 }}>⚠️</span>
+										<span style={{ fontSize: 20 }}>️</span>
 										<div style={{ flex: 1 }}>
 											<div style={{ fontSize: 14, fontWeight: 600, color: "#f0f0f0", marginBottom: 4 }}>
 												{product.title || "Untitled Product"}
@@ -1553,7 +1553,7 @@ const Dashboard = ({ setActiveSection }) => {
 
 			{/* Quick Actions */}
 			<div style={{ marginBottom: 32 }}>
-				<h3 style={{ fontSize: 20, fontWeight: 700, color: "#f0f0f0", marginBottom: 20 }}>🚀 Quick Actions</h3>
+				<h3 style={{ fontSize: 20, fontWeight: 700, color: "#f0f0f0", marginBottom: 20 }}>Quick Actions</h3>
 				<div
 					style={{
 						display: "grid",
@@ -1562,7 +1562,7 @@ const Dashboard = ({ setActiveSection }) => {
 					}}
 				>
 					<QuickActionCard
-						icon={scanningInProgress ? "⏳" : "🔍"}
+						icon={scanningInProgress ? "" : ""}
 						title={scanningInProgress ? "Scanning..." : "Run SEO Scan"}
 						description={
 							scanningInProgress && scanRemainingTime > 0
@@ -1576,25 +1576,25 @@ const Dashboard = ({ setActiveSection }) => {
 						onClick={runSeoScan}
 					/>
 					<QuickActionCard
-						icon="✍️"
+						icon="️"
 						title="Generate Content"
 						description="Create AI-powered product descriptions and blog posts"
 						onClick={() => setActiveSection && setActiveSection("tools")}
 					/>
 					<QuickActionCard
-						icon="🔧"
+						icon=""
 						title="Fix SEO Issues"
 						description={`Fix ${stats.seoIssues || 0} SEO issues to improve rankings`}
 						onClick={() => setActiveSection && setActiveSection("seo")}
 					/>
 					<QuickActionCard
-						icon="📧"
+						icon=""
 						title="Email Campaign"
 						description="Create and schedule automated email sequences"
 						onClick={() => setActiveSection && setActiveSection("tools")}
 					/>
 					<QuickActionCard
-						icon="📊"
+						icon=""
 						title="Analytics Report"
 						description="View detailed insights and performance metrics"
 						onClick={() => setActiveSection && setActiveSection("tools")}

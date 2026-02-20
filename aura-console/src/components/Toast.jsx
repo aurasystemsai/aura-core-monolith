@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 
 export default function Toast({ message, type = 'info', onClose, duration = 5000 }) {
   if (!message) return null;
@@ -22,7 +22,7 @@ export default function Toast({ message, type = 'info', onClose, duration = 5000
     }}>
       <span style={{ flex: 1 }}>{message}</span>
       {onClose && (
-        <button onClick={onClose} style={{ background: 'none', color, border: 'none', fontWeight: 700, fontSize: 18, cursor: 'pointer', lineHeight: 1, padding: 0, flexShrink: 0 }} aria-label="Close">✕</button>
+        <button onClick={onClose} style={{ background: 'none', color, border: 'none', fontWeight: 700, fontSize: 18, cursor: 'pointer', lineHeight: 1, padding: 0, flexShrink: 0 }} aria-label="Close"></button>
       )}
     </div>
   );

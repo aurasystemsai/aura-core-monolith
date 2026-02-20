@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef } from "react";
+﻿﻿import React, { useState, useRef } from "react";
 
 export default function AuraOperationsAI() {
   const [input, setInput] = useState("");
@@ -54,7 +54,7 @@ export default function AuraOperationsAI() {
     const blob = new Blob([JSON.stringify(history, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     setExported(url);
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    setTimeout(() =>URL.revokeObjectURL(url), 10000);
   };
 
   // Feedback handler
@@ -75,14 +75,14 @@ export default function AuraOperationsAI() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#222222', borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
+    <div style={{ padding: 24, background: '#3c3c3c', borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Aura Operations AI</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#333333', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#4a4a4a', fontSize: 16 }}>
         <li>Enter an operations question or task to get AI-powered solutions</li>
         <li>Review analytics, export results, and view history</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#0a0a0a', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#141414', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
@@ -106,15 +106,15 @@ export default function AuraOperationsAI() {
       <button
         onClick={handleRun}
         disabled={loading || !input}
-        style={{ background: "#7fffd4", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: "pointer", boxShadow: "0 2px 12px #22d3ee55" }}
+        style={{ background: "#7fffd4", color: "#141414", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: "pointer", boxShadow: "0 2px 12px #22d3ee55" }}
       >
         {loading ? "Running..." : "Run Tool"}
       </button>
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
       {response && (
-        <div style={{ marginTop: 32, background: "#222222", borderRadius: 12, padding: 24, color: '#f0f0f0' }}>
+        <div style={{ marginTop: 32, background: "#3c3c3c", borderRadius: 12, padding: 24, color: '#f0f0f0' }}>
           <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>AI Response:</div>
-          <div style={{ fontSize: 16, color: "#0a0a0a" }}>{response}</div>
+          <div style={{ fontSize: 16, color: "#141414" }}>{response}</div>
         </div>
       )}
 

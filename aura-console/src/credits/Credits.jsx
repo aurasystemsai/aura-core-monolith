@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+﻿﻿import React, { useState } from 'react';
 import './Credits.css';
 
 const Credits = () => {
@@ -20,30 +20,30 @@ const Credits = () => {
 
   return (
     <div className="credits-card">
-      <h2 className="credits-title">Credits <span className="credits-guide" title="Credits are used to run automations and AI-powered features. You can always buy more if you run low.">🛈</span></h2>
+      <h2 className="credits-title">Credits <span className="credits-guide" title="Credits are used to run automations and AI-powered features. You can always buy more if you run low."></span></h2>
       <div className="aura-credits-balance">
-        <span className="aura-credits-label">Current Credits <span className="credits-guide" title="This is how many credits you have left to use for automations and AI tools.">🛈</span></span>
+        <span className="aura-credits-label">Current Credits <span className="credits-guide" title="This is how many credits you have left to use for automations and AI tools."></span></span>
         <span className="aura-credits-value">{credits}</span>
       </div>
       <div className="aura-credits-usage">
-        <span className="aura-credits-label">Used This Month <span className="credits-guide" title="How many credits you’ve spent this month. Each automation or AI action uses a small number of credits.">🛈</span></span>
+        <span className="aura-credits-label">Used This Month <span className="credits-guide" title="How many credits you’ve spent this month. Each automation or AI action uses a small number of credits."></span></span>
         <span className="aura-credits-value aura-credits-used">{used}</span>
       </div>
       <div className="aura-credits-progress">
         <div className="aura-credits-bar-bg">
           <div className="aura-credits-bar" style={{ width: `${Math.min(100, (used / (credits + used)) * 100)}%` }} />
         </div>
-        <span className="aura-credits-bar-label">Total Credits: {used + credits} <span className="credits-guide" title="Total credits is your current plus used. You can always top up.">🛈</span></span>
+        <span className="aura-credits-bar-label">Total Credits: {used + credits} <span className="credits-guide" title="Total credits is your current plus used. You can always top up."></span></span>
       </div>
       <button className="credits-btn" onClick={handleBuyCredits} disabled={loading} title="Buy more credits to keep using all features. You’ll never be charged automatically.">
         {loading ? 'Processing...' : 'Buy 100 Credits'}
       </button>
       {error && <div className="aura-credits-error">{error}</div>}
 
-      <div className="aura-credits-pricing" style={{margin:'28px 0 12px',padding:'18px 18px 12px',background:'#111111',borderRadius:14}}>
+      <div className="aura-credits-pricing" style={{margin:'28px 0 12px',padding:'18px 18px 12px',background:'#282828',borderRadius:14}}>
         <div style={{fontWeight:700,fontSize:17,marginBottom:8,display:'flex',alignItems:'center',gap:8}}>
           Credit Pricing & Usage
-          <span className="credits-guide" title="How much credits cost and what you can do with them">🛈</span>
+          <span className="credits-guide" title="How much credits cost and what you can do with them"></span>
         </div>
         <div style={{fontSize:15,marginBottom:10}}>
           <b>Credit Bundles:</b><br/>
@@ -56,7 +56,7 @@ const Credits = () => {
           <span style={{color:'#7fffd4'}}>No pay-as-you-go. Try the free tier or upgrade for more power.</span>
         </div>
 
-        <div style={{background:'#111111',borderRadius:10,padding:'22px 22px 18px',margin:'22px 0 0',fontSize:15,boxShadow:'0 4px 32px #0004'}}>
+        <div style={{background:'#282828',borderRadius:10,padding:'22px 22px 18px',margin:'22px 0 0',fontSize:15,boxShadow:'0 4px 32px #0004'}}>
           <div style={{fontWeight:700,fontSize:16,marginBottom:8,color:'#7fffd4'}}>Need more credits or advanced features?</div>
           <div style={{fontSize:14,margin:'0 0 18px',color:'#fff'}}>Explore all plans and features below. No pay-as-you-go—just a free tier to try, and simple subscriptions when you’re ready for more.</div>
           <b>Plans & Features</b>
@@ -86,7 +86,7 @@ const Credits = () => {
                 <td style={{padding:'4px 8px'}}>Run up to 2 core systems, shared queue, email/SEO tasks, email support</td>
               </tr>
               <tr style={{background:'rgba(127,255,212,0.18)',border:'2px solid #7fffd4'}}>
-                <td style={{padding:'4px 8px',fontWeight:900}}><b>Pro <span style={{background:'#7fffd4',color:'#0a0a0a',borderRadius:6,padding:'2px 8px',fontSize:13,marginLeft:4}}>Popular</span></b></td>
+                <td style={{padding:'4px 8px',fontWeight:900}}><b>Pro <span style={{background:'#7fffd4',color:'#141414',borderRadius:6,padding:'2px 8px',fontSize:13,marginLeft:4}}>Popular</span></b></td>
                 <td style={{padding:'4px 8px',fontWeight:900}}>£99</td>
                 <td style={{padding:'4px 8px',fontWeight:900}}>5,000</td>
                 <td style={{padding:'4px 8px'}}>Growing brands</td>
@@ -110,7 +110,7 @@ const Credits = () => {
           </table>
           <div style={{fontSize:13,opacity:0.8,margin:'-10px 0 10px 0'}}>* All paid plans include access to the AURA systems library, shared docs, async onboarding, secure API connections, and no per-seat fees. Free plan is for onboarding only.</div>
           <div style={{fontSize:13,opacity:0.8,margin:'0 0 10px 0'}}>Want to try everything? <b>New users get a free 3-day Pro trial</b>—no credit card required. After the trial, you’ll continue on the Basic (Free) plan unless you upgrade.</div>
-          <div style={{fontSize:15,margin:'18px 0 10px',background:'#111111',borderRadius:10,padding:'14px 16px',color:'#fff',boxShadow:'0 2px 12px #22d3ee33'}}>
+          <div style={{fontSize:15,margin:'18px 0 10px',background:'#282828',borderRadius:10,padding:'14px 16px',color:'#fff',boxShadow:'0 2px 12px #22d3ee33'}}>
             <b style={{color:'#7fffd4'}}>What our customers say:</b><br/>
             <span style={{fontStyle:'italic',color:'#fff'}}>“We replaced three tools and boosted efficiency immediately. It felt like hiring an ops team overnight.”</span><br/>
             <span style={{fontSize:13,opacity:0.85}}>— Elena Rodriguez, Product Manager</span>
@@ -121,16 +121,16 @@ const Credits = () => {
           </div>
           <div style={{fontSize:14,margin:'10px 0 8px'}}>
             <b>What can you automate?</b><br/>
-            <span style={{color:'#7fffd4'}}>Search & SEO:</span> Product SEO Engine, Schema, Blog Engine, Alt-text Labeller<br/>
-            <span style={{color:'#7fffd4'}}>Email & Retention:</span> Automation Builder, Abandoned Checkout AI, Review Flows<br/>
-            <span style={{color:'#7fffd4'}}>Support & CX:</span> Inbox Reply Assistant, AI Support Agent, Returns Automation<br/>
-            <span style={{color:'#7fffd4'}}>Ops & Reporting:</span> Feed Hygiene Monitor, Rank Tracker, Daily CFO Pack
+            <span style={{color:'#7fffd4'}}>Search & SEO:</span>Product SEO Engine, Schema, Blog Engine, Alt-text Labeller<br/>
+            <span style={{color:'#7fffd4'}}>Email & Retention:</span>Automation Builder, Abandoned Checkout AI, Review Flows<br/>
+            <span style={{color:'#7fffd4'}}>Support & CX:</span>Inbox Reply Assistant, AI Support Agent, Returns Automation<br/>
+            <span style={{color:'#7fffd4'}}>Ops & Reporting:</span>Feed Hygiene Monitor, Rank Tracker, Daily CFO Pack
           </div>
           <div style={{fontSize:14,margin:'10px 0 8px'}}>
-            <b>Why upgrade?</b> Unlock unlimited or high-volume usage, get priority support and advanced analytics, access all automation systems and integrations, and scale your business with zero manual work.
+            <b>Why upgrade?</b>Unlock unlimited or high-volume usage, get priority support and advanced analytics, access all automation systems and integrations, and scale your business with zero manual work.
           </div>
           <div style={{fontSize:13,opacity:0.85}}>
-            <b>Need more?</b> Top up credits from £9 / 1,000 or <a href="https://aurasystemsai.com/get-started" style={{color:'#7fffd4',textDecoration:'underline'}}>contact us</a> for custom plans.<br/>
+            <b>Need more?</b>Top up credits from £9 / 1,000 or <a href="https://aurasystemsai.com/get-started" style={{color:'#7fffd4',textDecoration:'underline'}}>contact us</a> for custom plans.<br/>
             <span style={{color:'#7fffd4'}}>Ready to upgrade?</span> <a href="https://aurasystemsai.com/get-started" style={{color:'#7fffd4',textDecoration:'underline'}}>Get started here</a>.
           </div>
         </div>
@@ -150,12 +150,12 @@ const Credits = () => {
           </tbody>
         </table>
         <div style={{fontSize:13,opacity:0.85}}>
-          <b>Tip:</b> You can always see how many credits an action will use before confirming.<br/>
+          <b>Tip:</b>You can always see how many credits an action will use before confirming.<br/>
           <span style={{color:'#7fffd4'}}>No hidden fees. No subscriptions. Credits never expire.</span>
         </div>
       </div>
 
-      <div className="aura-credits-note">You can buy more credits at any time. <span className="credits-guide" title="Credits are only used when you run automations or AI tools. You’ll always see your balance here.">🛈</span> Credits are used for automation and AI-powered features.</div>
+      <div className="aura-credits-note">You can buy more credits at any time. <span className="credits-guide" title="Credits are only used when you run automations or AI tools. You’ll always see your balance here."></span>Credits are used for automation and AI-powered features.</div>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-﻿
+﻿﻿
 import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import Chart from "chart.js/auto";
@@ -118,7 +118,7 @@ export default function SelfServiceAnalytics() {
     let prevTotal = null;
     let delta = null;
     if (compare) {
-      const prev = data.map(v => Math.round(v * (0.75 + Math.random() * 0.2)));
+      const prev = data.map(v =>Math.round(v * (0.75 + Math.random() * 0.2)));
       prevTotal = prev.reduce((a, b) => a + b, 0);
       delta = prevTotal === 0 ? null : Math.round(((total - prevTotal) / prevTotal) * 100);
     }
@@ -281,7 +281,7 @@ export default function SelfServiceAnalytics() {
     const blob = new Blob([JSON.stringify({ query, dataset }, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     setShareUrl(url);
-    setTimeout(() => URL.revokeObjectURL(url), 20000);
+    setTimeout(() =>URL.revokeObjectURL(url), 20000);
   };
 
   useEffect(() => {
@@ -452,7 +452,7 @@ export default function SelfServiceAnalytics() {
         <div>
           <label>Compare</label><br />
           <label style={{ fontSize: 12 }}>
-            <input type="checkbox" checked={comparePrev} onChange={e => setComparePrev(e.target.checked)} /> WoW/prev period
+            <input type="checkbox" checked={comparePrev} onChange={e => setComparePrev(e.target.checked)} />WoW/prev period
           </label>
         </div>
         <div>
@@ -613,8 +613,8 @@ export default function SelfServiceAnalytics() {
               key={c.id}
               className="chart-result"
               style={{
-                background: "#111111",
-                border: "1px solid #1a1a1a",
+                background: "#282828",
+                border: "1px solid #343434",
                 color: "#f0f0f0",
                 borderRadius: 6,
                 padding: 10,
@@ -642,8 +642,8 @@ export default function SelfServiceAnalytics() {
               key={v.id}
               className="saved-view"
               style={{
-                background: "#111111",
-                border: "1px solid #1a1a1a",
+                background: "#282828",
+                border: "1px solid #343434",
                 color: "#f0f0f0",
                 borderRadius: 6,
                 padding: 10,
@@ -693,8 +693,8 @@ export default function SelfServiceAnalytics() {
               key={s.id}
               className="schedule"
               style={{
-                background: "#111111",
-                border: "1px solid #1a1a1a",
+                background: "#282828",
+                border: "1px solid #343434",
                 color: "#f0f0f0",
                 borderRadius: 6,
                 padding: 10,
@@ -732,8 +732,8 @@ export default function SelfServiceAnalytics() {
                   key={i}
                   className="history-item"
                   style={{
-                    background: "#111111",
-                    border: "1px solid #1a1a1a",
+                    background: "#282828",
+                    border: "1px solid #343434",
                     color: "#f0f0f0",
                     borderRadius: 6,
                     padding: 10,
@@ -756,7 +756,7 @@ export default function SelfServiceAnalytics() {
               key={i}
               className="alert-item"
               style={{
-                background: "#1a1a1a",
+                background: "#343434",
                 border: "1px solid #eab308",
                 color: "#fef08a",
                 borderRadius: 6,
@@ -795,7 +795,7 @@ export default function SelfServiceAnalytics() {
               a.href = url;
               a.download = "analytics-export.csv";
               a.click();
-              setTimeout(() => URL.revokeObjectURL(url), 20000);
+              setTimeout(() =>URL.revokeObjectURL(url), 20000);
             }}
             disabled={!chartPreview || !chartPreview.labels || !chartPreview.datasets}
           >Export CSV</button>

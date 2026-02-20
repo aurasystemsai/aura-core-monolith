@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import './BlogDraftEngineV2.css';
 
 const BlogDraftEngineV2 = () => {
@@ -11,13 +11,13 @@ const BlogDraftEngineV2 = () => {
   const [loading, setLoading] = useState(false);
 
   const categories = [
-    { id: 'manage', name: 'Manage', icon: '📝' },
-    { id: 'optimize', name: 'Optimize', icon: '🎯' },
-    { id: 'advanced', name: 'Advanced', icon: '⚡' },
-    { id: 'tools', name: 'Tools', icon: '🛠️' },
-    { id: 'monitoring', name: 'Monitoring', icon: '📊' },
-    { id: 'settings', name: 'Settings', icon: '⚙️' },
-    { id: 'world-class', name: 'World-Class', icon: '🌟' }
+    { id: 'manage', name: 'Manage', icon: '' },
+    { id: 'optimize', name: 'Optimize', icon: '' },
+    { id: 'advanced', name: 'Advanced', icon: '' },
+    { id: 'tools', name: 'Tools', icon: '️' },
+    { id: 'monitoring', name: 'Monitoring', icon: '' },
+    { id: 'settings', name: 'Settings', icon: '️' },
+    { id: 'world-class', name: 'World-Class', icon: '' }
   ];
 
   const tabs = {
@@ -339,10 +339,10 @@ const BlogDraftEngineV2 = () => {
   return (
     <div className="blog-draft-engine-v2">
       <div className="header">
-        <h1>📝 Blog Draft Engine V2</h1>
+        <h1>Blog Draft Engine V2</h1>
         <div className="header-actions">
-          <button className="btn-icon">🔔</button>
-          <button className="btn-icon">👤</button>
+          <button className="btn-icon"></button>
+          <button className="btn-icon"></button>
         </div>
       </div>
 

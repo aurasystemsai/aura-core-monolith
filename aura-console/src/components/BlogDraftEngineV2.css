@@ -1,4 +1,4 @@
-﻿/* Blog Draft Engine V2 - Comprehensive Styling */
+﻿﻿/* Blog Draft Engine V2 - Comprehensive Styling */
 
 :root {
   /* Brand Colors */
@@ -16,17 +16,17 @@
   --gray-100: #f3f4f6;
   --gray-200: #f0f0f0;
   --gray-300: #dddddd;
-  --gray-400: #888888;
-  --gray-500: #666666;
-  --gray-600: #444444;
-  --gray-700: #333333;
-  --gray-800: #1a1a1a;
-  --gray-900: #111111;
+  --gray-400: #9a9a9a;
+  --gray-500: #777777;
+  --gray-600: #555555;
+  --gray-700: #4a4a4a;
+  --gray-800: #343434;
+  --gray-900: #282828;
 
   /* Dark Mode Colors */
-  --dark-bg: #111111;
-  --dark-surface: #1a1a1a;
-  --dark-border: #333333;
+  --dark-bg: #282828;
+  --dark-surface: #343434;
+  --dark-border: #4a4a4a;
   --dark-text: #cbd5e1;
 
   /* Spacing */

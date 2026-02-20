@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿﻿import React, { useState, useEffect } from 'react';
 import { apiFetch } from '../../api';
 
 /**
@@ -66,58 +66,58 @@ export default function SeoMasterSuite() {
   
   const tabGroups = {
     manage: [
-      { id: 'keywords-research', label: 'Keywords Research', icon: '🔍' },
-      { id: 'keywords-tracker', label: 'Rank Tracker', icon: '📊' },
-      { id: 'content-analysis', label: 'Content Analysis', icon: '📝' },
-      { id: 'schema-manager', label: 'Schema Manager', icon: '🏷️' },
-      { id: 'local-seo', label: 'Local SEO', icon: '📍' },
-      { id: 'entities', label: 'Entity Explorer', icon: '🔗' },
+      { id: 'keywords-research', label: 'Keywords Research', icon: '' },
+      { id: 'keywords-tracker', label: 'Rank Tracker', icon: '' },
+      { id: 'content-analysis', label: 'Content Analysis', icon: '' },
+      { id: 'schema-manager', label: 'Schema Manager', icon: '️' },
+      { id: 'local-seo', label: 'Local SEO', icon: '' },
+      { id: 'entities', label: 'Entity Explorer', icon: '' },
     ],
     optimize: [
-      { id: 'on-page-optimization', label: 'On-Page Optimizer', icon: '⚡' },
-      { id: 'content-scoring', label: 'Content Scoring', icon: '💯' },
-      { id: 'bulk-optimization', label: 'Bulk Optimization', icon: '📦' },
-      { id: 'competitor-analysis', label: 'Competitor Analysis', icon: '🎯' },
-      { id: 'opportunity-finder', label: 'Opportunity Finder', icon: '💎' },
+      { id: 'on-page-optimization', label: 'On-Page Optimizer', icon: '' },
+      { id: 'content-scoring', label: 'Content Scoring', icon: '' },
+      { id: 'bulk-optimization', label: 'Bulk Optimization', icon: '' },
+      { id: 'competitor-analysis', label: 'Competitor Analysis', icon: '' },
+      { id: 'opportunity-finder', label: 'Opportunity Finder', icon: '' },
     ],
     advanced: [
-      { id: 'ai-generation', label: 'AI Content Generation', icon: '🤖' },
-      { id: 'predictive-analytics', label: 'Predictive Analytics', icon: '📈' },
-      { id: 'topic-clustering', label: 'Topic Clustering', icon: '🧩' },
-      { id: 'semantic-analysis', label: 'Semantic Analysis', icon: '🧠' },
-      { id: 'serp-features', label: 'SERP Features', icon: '🎪' },
+      { id: 'ai-generation', label: 'AI Content Generation', icon: '' },
+      { id: 'predictive-analytics', label: 'Predictive Analytics', icon: '' },
+      { id: 'topic-clustering', label: 'Topic Clustering', icon: '' },
+      { id: 'semantic-analysis', label: 'Semantic Analysis', icon: '' },
+      { id: 'serp-features', label: 'SERP Features', icon: '' },
     ],
     tools: [
-      { id: 'templates', label: 'Templates Library', icon: '📚' },
-      { id: 'bulk-import', label: 'Bulk Import/Export', icon: '📥' },
-      { id: 'custom-fields', label: 'Custom Fields', icon: '🏗️' },
-      { id: 'tags', label: 'Tags & Labels', icon: '🏷️' },
-      { id: 'integrations', label: 'Integrations', icon: '🔌' },
+      { id: 'templates', label: 'Templates Library', icon: '' },
+      { id: 'bulk-import', label: 'Bulk Import/Export', icon: '' },
+      { id: 'custom-fields', label: 'Custom Fields', icon: '️' },
+      { id: 'tags', label: 'Tags & Labels', icon: '️' },
+      { id: 'integrations', label: 'Integrations', icon: '' },
     ],
     monitoring: [
-      { id: 'analytics-dashboard', label: 'Analytics Dashboard', icon: '📊' },
-      { id: 'sla-monitoring', label: 'SLA Monitoring', icon: '⏱️' },
-      { id: 'audit-logs', label: 'Audit Logs', icon: '📋' },
-      { id: 'activity-timeline', label: 'Activity Timeline', icon: '⏳' },
-      { id: 'performance-metrics', label: 'Performance Metrics', icon: '🚀' },
+      { id: 'analytics-dashboard', label: 'Analytics Dashboard', icon: '' },
+      { id: 'sla-monitoring', label: 'SLA Monitoring', icon: '️' },
+      { id: 'audit-logs', label: 'Audit Logs', icon: '' },
+      { id: 'activity-timeline', label: 'Activity Timeline', icon: '' },
+      { id: 'performance-metrics', label: 'Performance Metrics', icon: '' },
     ],
     settings: [
-      { id: 'preferences', label: 'Preferences', icon: '⚙️' },
-      { id: 'api-keys', label: 'API Keys', icon: '🔑' },
-      { id: 'webhooks', label: 'Webhooks', icon: '🪝' },
-      { id: 'backup-restore', label: 'Backup & Restore', icon: '💾' },
-      { id: 'notifications', label: 'Notifications', icon: '🔔' },
+      { id: 'preferences', label: 'Preferences', icon: '️' },
+      { id: 'api-keys', label: 'API Keys', icon: '' },
+      { id: 'webhooks', label: 'Webhooks', icon: '' },
+      { id: 'backup-restore', label: 'Backup & Restore', icon: '' },
+      { id: 'notifications', label: 'Notifications', icon: '' },
     ],
     'world-class': [
-      { id: 'ai-orchestration', label: 'AI Orchestration', icon: '🎼' },
-      { id: 'collaboration', label: 'Real-time Collaboration', icon: '👥' },
-      { id: 'security', label: 'Security Dashboard', icon: '🔐' },
-      { id: 'bi-predictive', label: 'Predictive BI', icon: '🔮' },
-      { id: 'developer-platform', label: 'Developer Platform', icon: '👨‍💻' },
-      { id: 'ai-training', label: 'AI Training', icon: '🎓' },
-      { id: 'white-label', label: 'White-Label', icon: '🎨' },
-      { id: 'apm', label: 'APM Monitoring', icon: '📡' },
-      { id: 'edge-computing', label: 'Edge Computing', icon: '🌐' },
+      { id: 'ai-orchestration', label: 'AI Orchestration', icon: '' },
+      { id: 'collaboration', label: 'Real-time Collaboration', icon: '' },
+      { id: 'security', label: 'Security Dashboard', icon: '' },
+      { id: 'bi-predictive', label: 'Predictive BI', icon: '' },
+      { id: 'developer-platform', label: 'Developer Platform', icon: '‍' },
+      { id: 'ai-training', label: 'AI Training', icon: '' },
+      { id: 'white-label', label: 'White-Label', icon: '' },
+      { id: 'apm', label: 'APM Monitoring', icon: '' },
+      { id: 'edge-computing', label: 'Edge Computing', icon: '' },
     ],
   };
 
@@ -228,7 +228,7 @@ export default function SeoMasterSuite() {
         </button>
       </div>
       {keywords.length > 0 && (
-        <div style={{ background: '#1a1a1a', borderRadius: 12, padding: 16 }}>
+        <div style={{ background: '#343434', borderRadius: 12, padding: 16 }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid #333' }}>
@@ -288,7 +288,7 @@ export default function SeoMasterSuite() {
       <p style={{ color: '#888', marginBottom: 24 }}>
         Multi-model AI with intelligent routing, ensemble, and cascade strategies
       </p>
-      <div style={{ background: '#1a1a1a', borderRadius: 12, padding: 24 }}>
+      <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
         <h3 style={{ marginBottom: 16 }}>Available Models</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
           {aiModels.map(model => (
@@ -318,7 +318,7 @@ export default function SeoMasterSuite() {
       <p style={{ color: '#888', marginBottom: 24 }}>
         Live cursors, editing, comments, and team workflows
       </p>
-      <div style={{ background: '#1a1a1a', borderRadius: 12, padding: 24 }}>
+      <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
         <h3 style={{ marginBottom: 16 }}>Active Users ({activeUsers.length})</h3>
         {activeUsers.length === 0 && (
           <p style={{ color: '#666' }}>No other users currently active</p>
@@ -334,17 +334,17 @@ export default function SeoMasterSuite() {
         SSO, MFA, RBAC, and compliance management
       </p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
-        <div style={{ background: '#1a1a1a', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
           <h3 style={{ marginBottom: 8 }}>SSO Status</h3>
-          <div style={{ color: '#10b981', fontWeight: 600 }}>✓ Configured</div>
+          <div style={{ color: '#10b981', fontWeight: 600 }}>Configured</div>
         </div>
-        <div style={{ background: '#1a1a1a', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
           <h3 style={{ marginBottom: 8 }}>MFA</h3>
-          <div style={{ color: '#10b981', fontWeight: 600 }}>✓ Enabled</div>
+          <div style={{ color: '#10b981', fontWeight: 600 }}>Enabled</div>
         </div>
-        <div style={{ background: '#1a1a1a', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
           <h3 style={{ marginBottom: 8 }}>Compliance</h3>
-          <div style={{ color: '#10b981', fontWeight: 600 }}>✓ SOC 2, GDPR</div>
+          <div style={{ color: '#10b981', fontWeight: 600 }}>SOC 2, GDPR</div>
         </div>
       </div>
     </div>
@@ -358,13 +358,13 @@ export default function SeoMasterSuite() {
       </p>
       {analytics && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 16 }}>
-          <div style={{ background: '#1a1a1a', borderRadius: 12, padding: 24 }}>
+          <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
             <h3 style={{ fontSize: 14, color: '#888', marginBottom: 8 }}>Total Keywords</h3>
             <div style={{ fontSize: 32, fontWeight: 700, color: accentColor }}>
               {analytics.totalKeywords?.toLocaleString() || '0'}
             </div>
           </div>
-          <div style={{ background: '#1a1a1a', borderRadius: 12, padding: 24 }}>
+          <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
             <h3 style={{ fontSize: 14, color: '#888', marginBottom: 8 }}>Optimizations</h3>
             <div style={{ fontSize: 32, fontWeight: 700, color: '#10b981' }}>
               {analytics.totalOptimizations?.toLocaleString() || '0'}
@@ -377,7 +377,7 @@ export default function SeoMasterSuite() {
 
   const renderPlaceholder = () => (
     <div style={{ padding: 48, textAlign: 'center' }}>
-      <div style={{ fontSize: 48, marginBottom: 16 }}>🚧</div>
+      
       <h3 style={{ color: accentColor, marginBottom: 8 }}>Coming Soon</h3>
       <p style={{ color: '#888' }}>This feature is under construction</p>
     </div>
@@ -398,12 +398,12 @@ export default function SeoMasterSuite() {
     <div style={containerStyle}>
       {/* Header */}
       <div style={{
-        background: theme === 'dark' ? '#1a1a1a' : '#f5f5f5',
+        background: theme === 'dark' ? '#343434' : '#f5f5f5',
         borderBottom: `1px solid ${theme === 'dark' ? '#333' : '#ddd'}`,
         padding: '16px 24px'
       }}>
         <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>
-          🎯 SEO Master Suite
+           SEO Master Suite
         </h1>
         <p style={{ margin: '8px 0 0', color: '#888', fontSize: 14 }}>
           Unified platform for all SEO operations • 8 tools consolidated
@@ -458,7 +458,7 @@ export default function SeoMasterSuite() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
-              background: activeTab === tab.id ? theme === 'dark' ? '#1a1a1a' : '#fff' : 'transparent',
+              background: activeTab === tab.id ? theme === 'dark' ? '#343434' : '#fff' : 'transparent',
               color: activeTab === tab.id ? accentColor : '#888',
               border: 'none',
               borderBottom: activeTab === tab.id ? `2px solid ${accentColor}` : '2px solid transparent',

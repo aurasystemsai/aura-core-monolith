@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useRef, useState } from "react";
+﻿﻿import React, { useMemo, useRef, useState } from "react";
 import BackButton from "./BackButton";
 import "../../blog-seo/BlogSEOEngine.css";
 
@@ -147,7 +147,7 @@ export default function BlogSEO() {
                   style={{ cursor: "pointer", opacity: activeTab && activeTab !== item ? 0.6 : 1 }}
                 >
                   <span>{item}</span>
-                  <span>{activeTab === item ? "✓" : "↗"}</span>
+                  <span>{activeTab === item ? "" : "↗"}</span>
                 </div>
               ))}
             </div>
@@ -155,9 +155,9 @@ export default function BlogSEO() {
         ))}
       </div>
       {activeTab && (
-        <div style={{ background: "#1e1e1e", borderRadius: 10, padding: "14px 18px", marginBottom: 20, border: "1px solid #1e1e1e", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ background: "#2e2e2e", borderRadius: 10, padding: "14px 18px", marginBottom: 20, border: "1px solid #2e2e2e", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ color: "#7fffd4", fontWeight: 700, fontSize: 14 }}>Active: {activeTab}</span>
-          <button onClick={() => setActiveTab(null)} style={{ background: "transparent", border: "1px solid #333333", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Close ✕</button>
+          <button onClick={() => setActiveTab(null)} style={{ background: "transparent", border: "1px solid #4a4a4a", borderRadius: 6, padding: "4px 12px", color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>Close </button>
         </div>
       )}
 
@@ -193,7 +193,7 @@ export default function BlogSEO() {
           </div>
           <div className="blogseo-actions" style={{ marginTop: 8 }}>
             <button className="blogseo-btn" onClick={addCluster}>Add cluster</button>
-            <button className="blogseo-btn" onClick={() => setReadiness((r) => Math.min(100, r + 4))}>Mark coverage ↑</button>
+            <button className="blogseo-btn" onClick={() => setReadiness((r) =>Math.min(100, r + 4))}>Mark coverage ↑</button>
           </div>
         </div>
 
@@ -253,7 +253,7 @@ export default function BlogSEO() {
             ))}
           </div>
           <div className="blogseo-actions" style={{ marginTop: 8 }}>
-            <button className="blogseo-btn" onClick={() => setReadiness((r) => Math.min(100, r + 6))}>Approve sprint</button>
+            <button className="blogseo-btn" onClick={() => setReadiness((r) =>Math.min(100, r + 6))}>Approve sprint</button>
             <button className="blogseo-btn" onClick={() => logNote("New linking sprint created")}>New sprint</button>
           </div>
         </div>

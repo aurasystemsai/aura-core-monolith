@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import './UpsellCrossSellEngine.css';
 
 const UpsellCrossSellEngine = () => {
@@ -456,9 +456,9 @@ const UpsellCrossSellEngine = () => {
           It implements the Apriori algorithm for market basket analysis and calculates association rules with three key metrics:
         </p>
         <ul>
-          <li><strong>Support:</strong> How often products appear together (frequency)</li>
-          <li><strong>Confidence:</strong> Probability that product B is bought when product A is purchased</li>
-          <li><strong>Lift:</strong> How much more likely is B to be bought with A compared to random (lift &gt; 1 = positive correlation)</li>
+          <li><strong>Support:</strong>How often products appear together (frequency)</li>
+          <li><strong>Confidence:</strong>Probability that product B is bought when product A is purchased</li>
+          <li><strong>Lift:</strong>How much more likely is B to be bought with A compared to random (lift &gt; 1 = positive correlation)</li>
         </ul>
       </div>
     </div>
@@ -557,11 +557,11 @@ const UpsellCrossSellEngine = () => {
                 <div className="free-shipping-nudge">
                   {opt.freeShipping.qualified ? (
                     <div className="qualified">
-                      ✓ {opt.freeShipping.message}
+                       {opt.freeShipping.message}
                     </div>
                   ) : (
                     <div className="not-qualified">
-                      🚚 {opt.freeShipping.message}
+                       {opt.freeShipping.message}
                     </div>
                   )}
                 </div>
@@ -728,13 +728,13 @@ const UpsellCrossSellEngine = () => {
   return (
     <div className="upsell-cross-sell-engine">
       <div className="tool-header">
-        <h1>🎯 Upsell & Cross-Sell Engine</h1>
+        <h1>Upsell & Cross-Sell Engine</h1>
         <p>AI-powered recommendation system to maximize AOV and revenue</p>
       </div>
       
       {error && (
         <div className="error-banner">
-          <span>⚠️ {error}</span>
+          <span>️ {error}</span>
           <button onClick={() => setError(null)}>×</button>
         </div>
       )}
@@ -744,37 +744,37 @@ const UpsellCrossSellEngine = () => {
           className={activeTab === 'overview' ? 'active' : ''}
           onClick={() => setActiveTab('overview')}
         >
-          📊 Overview
+           Overview
         </button>
         <button 
           className={activeTab === 'recommendations' ? 'active' : ''}
           onClick={() => setActiveTab('recommendations')}
         >
-          🤖 Recommendations
+           Recommendations
         </button>
         <button 
           className={activeTab === 'affinity' ? 'active' : ''}
           onClick={() => setActiveTab('affinity')}
         >
-          🔗 Affinity Analysis
+           Affinity Analysis
         </button>
         <button 
           className={activeTab === 'cart' ? 'active' : ''}
           onClick={() => setActiveTab('cart')}
         >
-          🛒 Cart Optimization
+           Cart Optimization
         </button>
         <button 
           className={activeTab === 'ml' ? 'active' : ''}
           onClick={() => setActiveTab('ml')}
         >
-          🧠 ML Models
+           ML Models
         </button>
         <button 
           className={activeTab === 'settings' ? 'active' : ''}
           onClick={() => setActiveTab('settings')}
         >
-          ⚙️ Settings
+          ️ Settings
         </button>
       </div>
       

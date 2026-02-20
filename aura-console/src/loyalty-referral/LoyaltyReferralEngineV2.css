@@ -1,4 +1,4 @@
-﻿/**
+﻿﻿/**
  * Loyalty & Referral Program V2 - Enterprise Styling
  * Comprehensive CSS with gradient cards, tier badges, gamification, and responsive design
  */
@@ -382,7 +382,7 @@
 
 .funnel-label {
   font-size: 0.9rem;
-  color: #666666;
+  color: #777777;
   margin-top: 0.5rem;
 }
 
@@ -428,7 +428,7 @@
 
 .badge-description {
   font-size: 0.85rem;
-  color: #666666;
+  color: #777777;
 }
 
 .badge-unlock-animation {
@@ -609,7 +609,7 @@
 
 .campaign-status-badge.active { background: #d1fae5; color: #065f46; }
 .campaign-status-badge.paused { background: #fef3c7; color: #92400e; }
-.campaign-status-badge.ended { background: #f0f0f0; color: #333333; }
+.campaign-status-badge.ended { background: #f0f0f0; color: #4a4a4a; }
 
 .campaign-flow-diagram {
   display: flex;
@@ -632,7 +632,7 @@
 
 .flow-arrow {
   font-size: 1.5rem;
-  color: #888888;
+  color: #9a9a9a;
 }
 
 /* ============================================================================
@@ -676,7 +676,7 @@
 
 .metric-label {
   font-size: 0.9rem;
-  color: #666666;
+  color: #777777;
 }
 
 .metric-change {
@@ -798,18 +798,18 @@
   .campaign-card,
   .analytics-chart-container,
   .tier-progress-container {
-    background: #1a1a1a;
-    border-color: #333333;
+    background: #343434;
+    border-color: #4a4a4a;
     color: #f0f0f0;
   }
   
   .metric-box {
-    background: #333333;
+    background: #4a4a4a;
     color: #f0f0f0;
   }
   
   .leaderboard-row:hover {
-    background: #333333;
+    background: #4a4a4a;
   }
 }
 

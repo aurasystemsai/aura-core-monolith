@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+﻿import React, { useMemo, useRef, useState } from "react";
 import BackButton from "./BackButton";
 import "../../content-brief/AIContentBriefGenerator.css";
 
@@ -259,15 +259,15 @@ export default function AIContentBriefGenerator() {
   };
   
   const getPerformanceChangeIcon = (change) => {
-    if (change > 0) return "📈";
-    if (change < 0) return "📉";
-    return "➡️";
+    if (change > 0) return "";
+    if (change < 0) return "";
+    return "️";
   };
   
   const getComplianceIcon = (status) => {
-    if (status === "passed") return "✅";
-    if (status === "warning") return "⚠️";
-    return "❌";
+    if (status === "passed") return "";
+    if (status === "warning") return "️";
+    return "";
   };
 
   return (
@@ -894,7 +894,7 @@ export default function AIContentBriefGenerator() {
               <div className="brief-alert info" style={{ marginTop: 16 }}>
                 <span className="icon">ℹ️</span>
                 <div>
-                  <strong>Recommendation:</strong> Use GPT-4 for critical content requiring highest reasoning quality. 
+                  <strong>Recommendation:</strong>Use GPT-4 for critical content requiring highest reasoning quality. 
                   Claude 3 offers best balance of quality and cost. Gemini Pro is ideal for high-volume, cost-sensitive tasks.
                 </div>
               </div>
@@ -925,14 +925,14 @@ export default function AIContentBriefGenerator() {
           onClick={() => setShowTaskModal(true)}
           style={{ borderRadius: "50%", width: 48, height: 48, fontSize: 20 }}
         >
-          ✓
+          
         </button>
         <button 
           className="brief-btn" 
           onClick={() => setShowProviderModal(true)}
           style={{ borderRadius: "50%", width: 48, height: 48, fontSize: 18 }}
         >
-          🤖
+          
         </button>
       </div>
 

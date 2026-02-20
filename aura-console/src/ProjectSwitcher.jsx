@@ -1,4 +1,4 @@
-﻿// aura-console/src/ProjectSwitcher.jsx
+﻿﻿// aura-console/src/ProjectSwitcher.jsx
 // -----------------------------------------
 // Sidebar "Connected project" footer
 // Pulls projects from Core /projects API
@@ -125,7 +125,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
       <div
         style={{
           fontSize: 11,
-          color: "#888888",
+          color: "#9a9a9a",
           marginTop: 2,
           wordBreak: "break-all",
         }}
@@ -166,7 +166,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
             padding: "8px 9px",
             borderRadius: 10,
             border: "1px solid rgba(55,65,81,0.9)",
-            background: "#0a0a0a",
+            background: "#141414",
             maxHeight: 180,
             overflowY: "auto",
             fontSize: 12,
@@ -177,7 +177,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
               fontSize: 11,
               textTransform: "uppercase",
               letterSpacing: "0.16em",
-              color: "#666666",
+              color: "#777777",
               marginBottom: 6,
             }}
           >
@@ -185,7 +185,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
           </div>
 
           {loading && (
-            <div style={{ fontSize: 11, color: "#888888" }}>
+            <div style={{ fontSize: 11, color: "#9a9a9a" }}>
               Loading projects from Core…
             </div>
           )}
@@ -195,7 +195,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
           )}
 
           {!loading && !error && projects.length === 0 && (
-            <div style={{ fontSize: 11, color: "#888888" }}>
+            <div style={{ fontSize: 11, color: "#9a9a9a" }}>
               No projects found in Core yet. Use “Connect store” first.
             </div>
           )}
@@ -255,7 +255,7 @@ function ProjectSwitcher({ coreUrl, currentProject, onSelectProject, onDisconnec
                       <div
                         style={{
                           fontSize: 11,
-                          color: "#888888",
+                          color: "#9a9a9a",
                           marginTop: 1,
                           wordBreak: "break-all",
                         }}

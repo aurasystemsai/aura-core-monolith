@@ -1,4 +1,4 @@
-/* Brand Mention Tracker V2 - Enterprise Styling */
+﻿/* Brand Mention Tracker V2 - Enterprise Styling */
 
 /* Stats Grid */
 .bmtv2-stats-grid {
@@ -593,14 +593,14 @@
   .bmtv2-influencer-card,
   .bmtv2-alert-rule,
   .bmtv2-response-card {
-    background: #1e1e1e;
+    background: #2e2e2e;
     border-color: #333;
   }
 
   .bmtv2-chart-placeholder,
   .bmtv2-word-cloud,
   .bmtv2-volume-spike {
-    background: #2a2a2a;
+    background: #383838;
   }
 
   .bmtv2-crisis-card {

@@ -1,10 +1,10 @@
-﻿/* Modern Clean Navigation */
+﻿﻿/* Modern Clean Navigation */
 .top-nav-clean {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #0a0a0a;
-  border-bottom: 1px solid #1a1a1a;
+  background: #141414;
+  border-bottom: 1px solid #343434;
   padding: 0 32px;
   height: 60px;
   position: sticky;
@@ -52,7 +52,7 @@
   background: none;
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease;
-  color: #666666;
+  color: #777777;
   border-radius: 0;
   letter-spacing: 0.01em;
 }
@@ -82,13 +82,13 @@
   padding: 5px 12px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 6px;
-  border: 1px solid #242424;
+  border: 1px solid #323232;
 }
 
 .shop-name {
   font-size: 12px;
   font-weight: 600;
-  color: #aaaaaa;
+  color: #bbbbbb;
 }
 
 /* Loading spinner */
@@ -144,7 +144,7 @@
 }
 .tab-group button:hover:not(.tab-active) {
   color: #7fffd4;
-  background: #222222;
+  background: #3c3c3c;
 }
 .tools-dropdown-category {
   padding: 0 0 6px 0;
@@ -160,7 +160,7 @@
   opacity: 0.85;
 }
 .tools-dropdown-category:not(:last-child) {
-  border-bottom: 1px solid #222222;
+  border-bottom: 1px solid #3c3c3c;
 }
 
 /* Legacy mega menu - hidden */
@@ -187,14 +187,14 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #0a0a0a;
+  background: #141414;
 }
 
 /* Self-Service Analytics theming to match suite */
 .self-service-analytics {
-  background: #111111;
+  background: #282828;
   color: #f0f0f0;
-  border: 1px solid #1a1a1a;
+  border: 1px solid #343434;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
 }
@@ -209,9 +209,9 @@
 .self-service-analytics input,
 .self-service-analytics select,
 .self-service-analytics textarea {
-  background: #111111;
+  background: #282828;
   color: #f0f0f0;
-  border: 1px solid #1a1a1a;
+  border: 1px solid #343434;
   border-radius: 6px;
   padding: 6px 8px;
 }
@@ -224,8 +224,8 @@
 .self-service-analytics .schedule,
 .self-service-analytics .history-item,
 .self-service-analytics .alert-item {
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: #282828;
+  border: 1px solid #343434;
 }
 .self-service-analytics .validation.error { color: #f87171; }
 .self-service-analytics .validation.warn { color: #fbbf24; }
@@ -234,7 +234,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: #0a0a0a;
+  background: #141414;
   margin-left: 0 !important;
 }
 .page-frame {
@@ -259,7 +259,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 0 18px 0;
-  border-bottom: 1px solid #242424;
+  border-bottom: 1px solid #323232;
   margin-bottom: 18px;
   background: transparent;
   border-radius: 0;
@@ -286,7 +286,7 @@
   justify-content: center;
   font-size: 1.7rem;
   font-weight: 900;
-  color: #111111;
+  color: #282828;
   box-shadow: 0 2px 12px #7fffd455;
   margin-right: 8px;
 }
@@ -299,7 +299,7 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #111111 0%, #7fffd4 100%);
+  background: linear-gradient(135deg, #282828 0%, #7fffd4 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -341,15 +341,15 @@ app-loading {
   margin-top: 18px;
 }
 :root {
-  --bg-page: #0a0a0a;
-  --bg-shell: #0a0a0a;
-  --bg-main: #0a0a0a;
+  --bg-page: #141414;
+  --bg-shell: #141414;
+  --bg-main: #141414;
 }
 
 /* Predictive Analytics Widgets */
 .paw-wrapper {
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: #282828;
+  border: 1px solid #343434;
   border-radius: 18px;
   padding: 24px;
   box-shadow: 0 12px 32px #0004;
@@ -371,7 +371,7 @@ app-loading {
 
 .paw-pill {
   background: linear-gradient(120deg, #0ea5e9, #22d3ee);
-  color: #0d0d0d;
+  color: #181818;
   font-weight: 800;
   border-radius: 999px;
   padding: 6px 12px;
@@ -382,8 +382,8 @@ app-loading {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: #282828;
+  border: 1px solid #343434;
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 16px;
@@ -402,8 +402,8 @@ app-loading {
 
 .paw-field input,
 .paw-field select {
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: #282828;
+  border: 1px solid #343434;
   border-radius: 10px;
   padding: 10px 12px;
   color: #e2e8f0;
@@ -412,7 +412,7 @@ app-loading {
 
 .paw-button {
   background: linear-gradient(120deg, #22d3ee, #7c3aed);
-  color: #0d0d0d;
+  color: #181818;
   font-weight: 800;
   border: none;
   border-radius: 12px;
@@ -440,12 +440,12 @@ app-loading {
 .paw-button--ghost {
   background: transparent;
   color: #7dd3fc;
-  border: 1px solid #1a1a1a;
+  border: 1px solid #343434;
   box-shadow: none;
 }
 
 .paw-button--ghost:hover:not(:disabled) {
-  background: #111111;
+  background: #282828;
 }
 
 .paw-error {
@@ -470,8 +470,8 @@ app-loading {
 }
 
 .paw-card {
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: #282828;
+  border: 1px solid #343434;
   border-radius: 12px;
   padding: 14px;
   display: flex;
@@ -509,13 +509,13 @@ app-loading {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, #1a1a1a33, transparent);
+  background: linear-gradient(90deg, transparent, #34343433, transparent);
   animation: paw-shimmer 1.2s linear infinite;
 }
 
 .paw-skeleton-bar {
   height: 14px;
-  background: #111111;
+  background: #282828;
   border-radius: 6px;
 }
 
@@ -525,8 +525,8 @@ app-loading {
 }
 
 .paw-section {
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: #282828;
+  border: 1px solid #343434;
   border-radius: 12px;
   padding: 14px;
 }
@@ -544,8 +544,8 @@ app-loading {
 }
 
 .paw-forecast-card {
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: #282828;
+  border: 1px solid #343434;
   border-radius: 10px;
   padding: 10px;
 }
@@ -557,8 +557,8 @@ app-loading {
 }
 
 .paw-forecast-point {
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: #282828;
+  border: 1px solid #343434;
   border-radius: 8px;
   padding: 8px;
 }
@@ -588,7 +588,7 @@ app-loading {
 }
 
 .paw-actual-point {
-  background: #111111;
+  background: #282828;
   border-color: #0ea5e933;
 }
 
@@ -610,8 +610,8 @@ app-loading {
 .paw-chip-btn {
   padding: 8px 12px;
   border-radius: 999px;
-  border: 1px solid #1a1a1a;
-  background: #111111;
+  border: 1px solid #343434;
+  background: #282828;
   color: #e0e0e0;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease, border 0.15s ease;
@@ -626,8 +626,8 @@ app-loading {
 .paw-chip {
   padding: 8px 12px;
   border-radius: 999px;
-  border: 1px solid #1a1a1a;
-  background: #111111;
+  border: 1px solid #343434;
+  background: #282828;
 }
 
 .paw-chip--medium {
@@ -647,8 +647,8 @@ app-loading {
 }
 
 .paw-playbook-card {
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: #282828;
+  border: 1px solid #343434;
   border-radius: 10px;
   padding: 12px;
   display: flex;
@@ -668,7 +668,7 @@ app-loading {
 }
 
 .paw-alert-preview {
-  background: #111111;
+  background: #282828;
 }
 
 .paw-alert-body {
@@ -679,8 +679,8 @@ app-loading {
 }
 
 .paw-alert-preview-text {
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: #282828;
+  border: 1px solid #343434;
   border-radius: 8px;
   padding: 8px;
 }
@@ -746,8 +746,8 @@ app-loading {
 }
 
 .paw-inline-input input {
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: #282828;
+  border: 1px solid #343434;
   border-radius: 8px;
   padding: 8px;
   color: #e2e8f0;
@@ -763,15 +763,15 @@ app-loading {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: #282828;
+  border: 1px solid #343434;
   border-radius: 10px;
   padding: 10px;
 }
 
 .paw-routing-card input {
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: #282828;
+  border: 1px solid #343434;
   color: #e2e8f0;
   border-radius: 8px;
   padding: 8px;
@@ -819,7 +819,7 @@ app-loading {
 
 .paw-table th,
 .paw-table td {
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid #343434;
   padding: 8px 10px;
   text-align: left;
 }
@@ -842,8 +842,8 @@ app-loading {
 .paw-badge {
   padding: 8px 12px;
   border-radius: 10px;
-  background: #111111;
-  border: 1px solid #1a1a1a;
+  background: #282828;
+  border: 1px solid #343434;
   color: #e0e0e0;
   font-size: 13px;
   box-shadow: inset 0 1px 0 #ffffff08;
@@ -881,9 +881,9 @@ app-loading {
   gap: 10px;
 }
 :root {
-  --surface-sidebar: #0a0a0a;
-  --surface-card: #0a0a0a;
-  --surface-card-elevated: #0a0a0a;
+  --surface-sidebar: #141414;
+  --surface-card: #141414;
+  --surface-card-elevated: #141414;
 
   --border-subtle: rgba(148, 163, 184, 0.3);
   --border-strong: rgba(148, 163, 184, 0.45);
@@ -899,8 +899,8 @@ app-loading {
 
   --text-primary: #f0f0f0;
   --text-secondary: #e0e0e0;
-  --text-muted: #888888;
-  --text-soft: #666666;
+  --text-muted: #9a9a9a;
+  --text-soft: #777777;
 
   --radius-xs: 6px;
   --radius-sm: 10px;
@@ -919,12 +919,12 @@ app-loading {
 }
 
 :root {
-  --bg: #111111;
-  --bg-alt: #111111;
-  --card: #111111;
+  --bg: #282828;
+  --bg-alt: #282828;
+  --card: #282828;
   --text: #f0f0f0;
   --muted: #94a3b8;
-  --border: #1a1a1a;
+  --border: #343434;
   --accent: #22d3ee;
   --accent-2: #6366f1;
   --success: #22c55e;
@@ -938,7 +938,7 @@ body, .app-shell, .app-main {
 }
 
 input, select, textarea, button {
-  background-color: #111111 !important;
+  background-color: #282828 !important;
   color: var(--text) !important;
   border-color: var(--border) !important;
 }
@@ -951,14 +951,14 @@ input, select, textarea, button {
 .app-shell {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, #111111 0, rgba(15, 23, 42, 0.8) 45%, #0a0a0a 100%);
+    radial-gradient(circle at top left, #282828 0, rgba(15, 23, 42, 0.8) 45%, #141414 100%);
 }
 
 /* ================== SIDEBAR ================== */
 
 .side-nav {
-  background: radial-gradient(circle at top, #0a0a0a 0, #0a0a0a 50%, #0a0a0a 100%);
-  border-right: 1px solid #0a0a0a;
+  background: radial-gradient(circle at top, #141414 0, #141414 50%, #141414 100%);
+  border-right: 1px solid #141414;
   padding: 18px 16px 16px;
   display: flex;
   flex-direction: column;
@@ -979,7 +979,7 @@ input, select, textarea, button {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #0a0a0a;
+  color: #141414;
   font-weight: 700;
   font-size: 16px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.7);
@@ -1002,7 +1002,7 @@ input, select, textarea, button {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #0d0d0d;
+  background: #181818;
   min-width: 0;
   align-items: center;
   padding: 32px 0;
@@ -1073,7 +1073,7 @@ input, select, textarea, button {
 
 .app-main {
   background:
-    radial-gradient(circle at top center, #0a0a0a 0, #0a0a0a 40%, #000 100%);
+    radial-gradient(circle at top center, #141414 0, #141414 40%, #000 100%);
   padding: 8px 8px 8px;
   display: flex;
   flex-direction: column;
@@ -1158,7 +1158,7 @@ input, select, textarea, button {
   flex: 1;
   border-radius: 999px;
   border: 1px solid rgba(55, 65, 81, 0.9);
-  background: #0a0a0a;
+  background: #141414;
   color: var(--text-secondary);
   padding: 7px 10px;
   font-size: 12px;
@@ -1178,7 +1178,7 @@ input, select, textarea, button {
   padding: 4px 9px;
   border-radius: 999px;
   border: 1px solid rgba(55, 65, 81, 0.9);
-  background: #0a0a0a;
+  background: #141414;
   font-size: 11px;
   color: var(--text-soft);
 }
@@ -1231,7 +1231,7 @@ input, select, textarea, button {
   padding: 6px 10px;
   border-radius: 10px;
   border: 1px dashed rgba(55, 65, 81, 0.95);
-  background: #0a0a0a;
+  background: #141414;
   min-width: 160px;
 }
 
@@ -1272,7 +1272,7 @@ input, select, textarea, button {
 
 .button--primary {
   background: radial-gradient(circle at 0 0, #fbbf24, #22d3ee);
-  color: #0a0a0a;
+  color: #141414;
   border-color: rgba(248, 250, 252, 0.9);
   box-shadow: 0 16px 40px rgba(8, 47, 73, 0.95);
 }
@@ -1290,7 +1290,7 @@ input, select, textarea, button {
 
 .button--ghost {
   border-color: rgba(148, 163, 184, 0.55);
-  background: #0a0a0a;
+  background: #141414;
   color: var(--text-muted);
 }
 
@@ -1396,7 +1396,7 @@ input, select, textarea, button {
 .pill--active {
   border-color: var(--accent);
   background: radial-gradient(circle at 0 0, var(--accent), #0ea5e9);
-  color: #0a0a0a;
+  color: #141414;
   box-shadow:
     0 0 0 1px rgba(34, 211, 238, 0.5),
     0 10px 24px rgba(8, 47, 73, 0.9);
@@ -1409,7 +1409,7 @@ input, select, textarea, button {
 .app-shell {
   display: flex;
   min-height: 100vh;
-  background: #111111;
+  background: #282828;
 }
 
 /* Sidebar: Reduce width for more central content */
@@ -1419,7 +1419,7 @@ input, select, textarea, button {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #0d0d0d;
+  background: #181818;
   min-width: 0;
   align-items: center;
 }
@@ -1707,7 +1707,7 @@ input, select, textarea, button {
   margin-top: 6px;
   padding: 10px;
   border-radius: 12px;
-  background: #0a0a0a;
+  background: #141414;
   border: 1px solid rgba(31, 41, 55, 1);
   max-height: 220px;
   overflow: auto;
@@ -1742,7 +1742,7 @@ input, select, textarea, button {
 .inspector-textarea {
   border-radius: 9px;
   border: 1px solid rgba(55, 65, 81, 0.95);
-  background: #0a0a0a;
+  background: #141414;
   color: var(--text-secondary);
   padding: 7px 9px;
   font-size: 12px;
@@ -1786,7 +1786,7 @@ input, select, textarea, button {
 .preset-chip {
   border-radius: 999px;
   border: 1px solid rgba(55, 65, 81, 0.95);
-  background: #0a0a0a;
+  background: #141414;
   color: var(--text-muted);
   padding: 4px 9px;
   font-size: 11px;
@@ -1866,7 +1866,7 @@ input, select, textarea, button {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: radial-gradient(circle at top, #111111 0%, #0a0a0a 100%);
+  background: radial-gradient(circle at top, #282828 0%, #141414 100%);
 }
 
 .project-setup-card {
@@ -1886,7 +1886,7 @@ input, select, textarea, button {
 
 .project-setup-card .subtitle {
   font-size: 13px;
-  color: #888888;
+  color: #9a9a9a;
   margin-bottom: 18px;
 }
 
@@ -1908,7 +1908,7 @@ input, select, textarea, button {
 .project-setup-form select {
   border-radius: 8px;
   border: 1px solid rgba(55, 65, 81, 0.95);
-  background: #0a0a0a;
+  background: #141414;
   color: #f0f0f0;
   padding: 8px 10px;
   font-size: 13px;

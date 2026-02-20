@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
+﻿import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import './ProductsList.css';
 import './ProductsList.modern.css'; // Add a new CSS module for world-class polish
 
@@ -558,7 +558,7 @@ const ProductsList = ({ shopDomain, shopToken, plugins = [] }) => {
           <AnalyticsPanel />
           <DebugPanel />
           {/* Plugin extension point: render plugins if any */}
-          {plugins.map((PluginComponent, idx) => PluginComponent ? <PluginComponent key={idx} /> : null)}
+          {plugins.map((PluginComponent, idx) =>PluginComponent ? <PluginComponent key={idx} /> : null)}
         </div>
       </ProductsListContext.Provider>
     );
