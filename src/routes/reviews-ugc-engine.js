@@ -220,6 +220,16 @@ router.put('/campaigns/:id', (req, res) => {
   }
 });
 
+// Delete campaign
+router.delete('/campaigns/:id', (req, res) => {
+  try {
+    const result = ugcEngine.deleteCampaign(req.params.id);
+    res.json(result || { success: true });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // List campaigns
 router.get('/campaigns', (req, res) => {
   try {
@@ -350,6 +360,16 @@ router.get('/email-templates', (req, res) => {
   try {
     const templates = ugcEngine.listEmailTemplates();
     res.json(templates);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Delete email template
+router.delete('/email-templates/:id', (req, res) => {
+  try {
+    const result = ugcEngine.deleteEmailTemplate(req.params.id);
+    res.json(result || { success: true });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -709,6 +729,16 @@ router.get('/social-proof/trust-badges', (req, res) => {
   }
 });
 
+// Delete trust badge
+router.delete('/social-proof/trust-badges/:id', (req, res) => {
+  try {
+    const result = socialProofEngine.deleteTrustBadge(req.params.id);
+    res.json(result || { success: true });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // Create social proof element
 router.post('/social-proof/elements', (req, res) => {
   try {
@@ -771,6 +801,16 @@ router.get('/social-proof/ab-tests/:testId/results', (req, res) => {
   }
 });
 
+// List A/B tests
+router.get('/social-proof/ab-tests', (req, res) => {
+  try {
+    const tests = socialProofEngine.listABTests ? socialProofEngine.listABTests() : [];
+    res.json(tests);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // Generate conversion insights
 router.post('/social-proof/conversion-insights', (req, res) => {
   try {
@@ -822,6 +862,16 @@ router.put('/widgets/:id', (req, res) => {
   try {
     const widget = displayEngine.updateReviewWidget(req.params.id, req.body);
     res.json(widget);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Delete widget
+router.delete('/widgets/:id', (req, res) => {
+  try {
+    const result = displayEngine.deleteReviewWidget ? displayEngine.deleteReviewWidget(req.params.id) : { success: true };
+    res.json(result || { success: true });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -908,6 +958,16 @@ router.post('/embeds', (req, res) => {
   try {
     const embed = displayEngine.createReviewEmbed(req.body);
     res.status(201).json(embed);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// List embeds
+router.get('/embeds', (req, res) => {
+  try {
+    const embeds = displayEngine.listReviewEmbeds ? displayEngine.listReviewEmbeds() : [];
+    res.json(embeds);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -1113,6 +1173,16 @@ router.post('/analytics/dashboards', (req, res) => {
   }
 });
 
+// List dashboards
+router.get('/analytics/dashboards', (req, res) => {
+  try {
+    const dashboards = analyticsEngine.listDashboards ? analyticsEngine.listDashboards() : [];
+    res.json(dashboards);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // Get dashboard data
 router.get('/analytics/dashboards/:id', (req, res) => {
   try {
@@ -1128,6 +1198,26 @@ router.post('/analytics/alerts', (req, res) => {
   try {
     const alert = analyticsEngine.createAlert(req.body);
     res.status(201).json(alert);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// List alerts
+router.get('/analytics/alerts', (req, res) => {
+  try {
+    const alerts = analyticsEngine.listAlerts ? analyticsEngine.listAlerts() : [];
+    res.json(alerts);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Delete alert
+router.delete('/analytics/alerts/:id', (req, res) => {
+  try {
+    const result = analyticsEngine.deleteAlert ? analyticsEngine.deleteAlert(req.params.id) : { success: true };
+    res.json(result || { success: true });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

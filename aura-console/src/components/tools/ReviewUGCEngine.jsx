@@ -1085,7 +1085,7 @@ function DisplayWidgets({ tab }) {
   const flash = (t) => { setMsg(t); setTimeout(() => setMsg(''), 3000); };
   const loadWidgets = useCallback(async () => { try { const d = await apiFetch(`${BASE}/widgets`); setWidgets(Array.isArray(d) ? d : (d.widgets || [])); } catch(e){} }, []);
   const loadCarousels = useCallback(async () => { try { const d = await apiFetch(`${BASE}/carousels`); setCarousels(Array.isArray(d) ? d : (d.carousels || [])); } catch(e){} }, []);
-  const loadEmbeds = useCallback(async () => { try { const d = await apiFetch(`${BASE}/widgets/embeds`); setEmbeds(Array.isArray(d) ? d : (d.embeds || [])); } catch(e){} }, []);
+  const loadEmbeds = useCallback(async () => { try { const d = await apiFetch(`${BASE}/embeds`); setEmbeds(Array.isArray(d) ? d : (d.embeds || [])); } catch(e){} }, []);
   const loadThemes = useCallback(async () => { try { const d = await apiFetch(`${BASE}/themes`); setThemes(Array.isArray(d) ? d : (d.themes || [])); } catch(e){} }, []);
   const loadStats = useCallback(async () => { try { const d = await apiFetch(`${BASE}/display/statistics`); setStats(d); } catch(e){} }, []);
 
