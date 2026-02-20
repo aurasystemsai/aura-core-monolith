@@ -1,4 +1,4 @@
-﻿﻿import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import './Credits.css';
 
 const Credits = () => {
@@ -40,7 +40,7 @@ const Credits = () => {
       </button>
       {error && <div className="aura-credits-error">{error}</div>}
 
-      <div className="aura-credits-pricing" style={{margin:'28px 0 12px',padding:'18px 18px 12px',background:'#1f2433',borderRadius:14}}>
+      <div className="aura-credits-pricing" style={{margin:'28px 0 12px',padding:'18px 18px 12px',background:'#18181b',borderRadius:14}}>
         <div style={{fontWeight:700,fontSize:17,marginBottom:8,display:'flex',alignItems:'center',gap:8}}>
           Credit Pricing & Usage
           <span className="credits-guide" title="How much credits cost and what you can do with them"></span>
@@ -56,7 +56,7 @@ const Credits = () => {
           <span style={{color:'#4f46e5'}}>No pay-as-you-go. Try the free tier or upgrade for more power.</span>
         </div>
 
-        <div style={{background:'#1f2433',borderRadius:10,padding:'22px 22px 18px',margin:'22px 0 0',fontSize:15,boxShadow:'0 4px 32px #0004'}}>
+        <div style={{background:'#18181b',borderRadius:10,padding:'22px 22px 18px',margin:'22px 0 0',fontSize:15,boxShadow:'0 4px 32px #0004'}}>
           <div style={{fontWeight:700,fontSize:16,marginBottom:8,color:'#4f46e5'}}>Need more credits or advanced features?</div>
           <div style={{fontSize:14,margin:'0 0 18px',color:'#fff'}}>Explore all plans and features below. No pay-as-you-go—just a free tier to try, and simple subscriptions when you’re ready for more.</div>
           <b>Plans & Features</b>
@@ -86,7 +86,7 @@ const Credits = () => {
                 <td style={{padding:'4px 8px'}}>Run up to 2 core systems, shared queue, email/SEO tasks, email support</td>
               </tr>
               <tr style={{background:'rgba(127,255,212,0.18)',border:'2px solid #4f46e5'}}>
-                <td style={{padding:'4px 8px',fontWeight:900}}><b>Pro <span style={{background:'#4f46e5',color:'#0a0b0f',borderRadius:6,padding:'2px 8px',fontSize:13,marginLeft:4}}>Popular</span></b></td>
+                <td style={{padding:'4px 8px',fontWeight:900}}><b>Pro <span style={{background:'#4f46e5',color:'#09090b',borderRadius:6,padding:'2px 8px',fontSize:13,marginLeft:4}}>Popular</span></b></td>
                 <td style={{padding:'4px 8px',fontWeight:900}}>£99</td>
                 <td style={{padding:'4px 8px',fontWeight:900}}>5,000</td>
                 <td style={{padding:'4px 8px'}}>Growing brands</td>
@@ -110,7 +110,7 @@ const Credits = () => {
           </table>
           <div style={{fontSize:13,opacity:0.8,margin:'-10px 0 10px 0'}}>* All paid plans include access to the AURA systems library, shared docs, async onboarding, secure API connections, and no per-seat fees. Free plan is for onboarding only.</div>
           <div style={{fontSize:13,opacity:0.8,margin:'0 0 10px 0'}}>Want to try everything? <b>New users get a free 3-day Pro trial</b>—no credit card required. After the trial, you’ll continue on the Basic (Free) plan unless you upgrade.</div>
-          <div style={{fontSize:15,margin:'18px 0 10px',background:'#1f2433',borderRadius:10,padding:'14px 16px',color:'#fff',boxShadow:'0 2px 12px #22d3ee33'}}>
+          <div style={{fontSize:15,margin:'18px 0 10px',background:'#18181b',borderRadius:10,padding:'14px 16px',color:'#fff',boxShadow:'0 2px 12px #22d3ee33'}}>
             <b style={{color:'#4f46e5'}}>What our customers say:</b><br/>
             <span style={{fontStyle:'italic',color:'#fff'}}>“We replaced three tools and boosted efficiency immediately. It felt like hiring an ops team overnight.”</span><br/>
             <span style={{fontSize:13,opacity:0.85}}>— Elena Rodriguez, Product Manager</span>

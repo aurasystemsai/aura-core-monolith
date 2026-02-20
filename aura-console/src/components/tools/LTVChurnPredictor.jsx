@@ -1,4 +1,4 @@
-﻿﻿import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef } from "react";
 import { apiFetch } from "../../api";
 
 export default function LTVChurnPredictor() {
@@ -77,7 +77,7 @@ export default function LTVChurnPredictor() {
   };
 
   return (
-    <div style={{ background: "#0a0b0f", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ background: "#09090b", color: "#f4f4f5", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>LTV/Churn Predictor</h2>
       <div style={{ color: "#0ea5e9", fontWeight: 600, marginBottom: 18 }}>
         <span role="img" aria-label="ltv"></span>Predict lifetime value and churn risk.
@@ -99,7 +99,7 @@ export default function LTVChurnPredictor() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>LTV</div>
           <ul style={{ paddingLeft: 18 }}>
             {ltv.map((l, idx) => (
-              <li key={l.id || idx} style={{ marginBottom: 8, background: "#3a4560", borderRadius: 8, padding: 8, color: '#f6f7fb' }}>{l.name}</li>
+              <li key={l.id || idx} style={{ marginBottom: 8, background: "#3f3f46", borderRadius: 8, padding: 8, color: '#fafafa' }}>{l.name}</li>
             ))}
           </ul>
         </div>
@@ -107,19 +107,19 @@ export default function LTVChurnPredictor() {
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Churn</div>
           <ul style={{ paddingLeft: 18 }}>
             {churn.map((c, idx) => (
-              <li key={c.id || idx} style={{ marginBottom: 8, background: "#1f2433", borderRadius: 8, padding: 8, color: '#4f46e5' }}>{c.name}</li>
+              <li key={c.id || idx} style={{ marginBottom: 8, background: "#18181b", borderRadius: 8, padding: 8, color: '#4f46e5' }}>{c.name}</li>
             ))}
           </ul>
         </div>
       </div>
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import data" />
         <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
         {exported && <a href={exported} download="ltv-churn-predictor.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
       </div>
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      <div style={{ marginTop: 24, fontSize: 13, color: "#64748b", textAlign: "center" }}>Questions? <a href="mailto:support@aura-core.ai" style={{ color: "#0ea5e9", textDecoration: "underline" }}>Contact Support</a></div>
+      <div style={{ marginTop: 24, fontSize: 13, color: "#71717a", textAlign: "center" }}>Questions? <a href="mailto:support@aura-core.ai" style={{ color: "#0ea5e9", textDecoration: "underline" }}>Contact Support</a></div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-﻿﻿/* Upsell Cross-Sell Engine Styles */
+﻿/* Upsell Cross-Sell Engine Styles */
 
 .upsell-cross-sell-engine {
   padding: 24px;
@@ -14,12 +14,12 @@
   font-size: 32px;
   font-weight: 700;
   margin-bottom: 8px;
-  color: #283044;
+  color: #27272a;
 }
 
 .tool-header p {
   font-size: 16px;
-  color: #64748b;
+  color: #71717a;
 }
 
 /* Error Banner */
@@ -48,7 +48,7 @@
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid #e4e4e7;
   flex-wrap: wrap;
 }
 
@@ -58,15 +58,15 @@
   padding: 12px 20px;
   font-size: 15px;
   font-weight: 600;
-  color: #64748b;
+  color: #71717a;
   cursor: pointer;
   border-bottom: 3px solid transparent;
   transition: all 0.2s;
 }
 
 .tabs button:hover {
-  color: #283044;
-  background: #f1f5f9;
+  color: #27272a;
+  background: #f4f4f5;
   border-radius: 8px 8px 0 0;
 }
 
@@ -95,7 +95,7 @@
 
 .metric-card {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e4e4e7;
   border-radius: 12px;
   padding: 20px;
   text-align: center;
@@ -116,14 +116,14 @@
 
 .metric-card p {
   font-size: 14px;
-  color: #64748b;
+  color: #71717a;
   font-weight: 500;
 }
 
 /* Form Sections */
 .form-section {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e4e4e7;
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
@@ -137,7 +137,7 @@
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: #4b5780;
+  color: #52525b;
   margin-bottom: 8px;
 }
 
@@ -147,7 +147,7 @@
   width: 100%;
   padding: 10px 12px;
   font-size: 15px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #d4d4d8;
   border-radius: 8px;
   transition: all 0.2s;
 }
@@ -164,7 +164,7 @@
   display: block;
   margin-top: 4px;
   font-size: 13px;
-  color: #64748b;
+  color: #71717a;
 }
 
 /* Buttons */
@@ -187,24 +187,24 @@
 }
 
 .btn-primary:hover {
-  background: #9aa3b8;
+  background: #71717a;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
 }
 
 .btn-primary:disabled {
-  background: #cbd5e1;
+  background: #d4d4d8;
   cursor: not-allowed;
   transform: none;
 }
 
 .btn-secondary {
-  background: #e2e8f0;
-  color: #4b5780;
+  background: #e4e4e7;
+  color: #52525b;
 }
 
 .btn-secondary:hover {
-  background: #cbd5e1;
+  background: #d4d4d8;
 }
 
 .btn-small {
@@ -215,7 +215,7 @@
 }
 
 .btn-small:hover {
-  background: #9aa3b8;
+  background: #71717a;
 }
 
 /* Data Tables */
@@ -225,11 +225,11 @@
   background: white;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e4e4e7;
 }
 
 .data-table thead {
-  background: #f8fafc;
+  background: #fafafa;
 }
 
 .data-table th {
@@ -237,7 +237,7 @@
   text-align: left;
   font-size: 13px;
   font-weight: 600;
-  color: #475569;
+  color: #52525b;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -245,8 +245,8 @@
 .data-table td {
   padding: 12px 16px;
   font-size: 14px;
-  color: #4b5780;
-  border-top: 1px solid #e2e8f0;
+  color: #52525b;
+  border-top: 1px solid #e4e4e7;
 }
 
 .data-table td.lift {
@@ -255,16 +255,16 @@
 }
 
 .data-table tbody tr:hover {
-  background: #f8fafc;
+  background: #fafafa;
 }
 
 /* Empty State */
 .empty-state {
   padding: 40px;
   text-align: center;
-  color: #94a3b8;
+  color: #a1a1aa;
   font-size: 15px;
-  background: #f8fafc;
+  background: #fafafa;
   border-radius: 8px;
 }
 
@@ -278,7 +278,7 @@
 
 .recommendation-card {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e4e4e7;
   border-radius: 12px;
   padding: 16px;
   transition: all 0.2s;
@@ -292,7 +292,7 @@
 .recommendation-card h4 {
   font-size: 16px;
   font-weight: 700;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 12px;
 }
 
@@ -322,7 +322,7 @@
 
 .recommendation-card .reasoning {
   font-size: 14px;
-  color: #64748b;
+  color: #71717a;
   margin-bottom: 12px;
   line-height: 1.5;
 }
@@ -334,13 +334,13 @@
   padding: 4px 8px;
   border-radius: 4px;
   background: #e0e7ff;
-  color: #4b5780;
+  color: #52525b;
   text-transform: uppercase;
 }
 
 /* Affinity Section */
 .affinity-info {
-  background: #f1f5f9;
+  background: #f4f4f5;
   border-radius: 12px;
   padding: 24px;
   margin-top: 24px;
@@ -349,13 +349,13 @@
 .affinity-info h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 12px;
 }
 
 .affinity-info p {
   font-size: 14px;
-  color: #475569;
+  color: #52525b;
   line-height: 1.6;
   margin-bottom: 12px;
 }
@@ -366,19 +366,19 @@
 
 .affinity-info li {
   font-size: 14px;
-  color: #475569;
+  color: #52525b;
   margin-bottom: 8px;
 }
 
 .affinity-info strong {
-  color: #283044;
+  color: #27272a;
   font-weight: 600;
 }
 
 /* Cart Optimization */
 .optimization-card {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e4e4e7;
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
@@ -387,7 +387,7 @@
 .optimization-card h3 {
   font-size: 20px;
   font-weight: 700;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 16px;
 }
 
@@ -399,7 +399,7 @@
 }
 
 .value-metrics .metric {
-  background: #f8fafc;
+  background: #fafafa;
   border-radius: 8px;
   padding: 16px;
   display: flex;
@@ -413,14 +413,14 @@
 
 .value-metrics .label {
   font-size: 13px;
-  color: #64748b;
+  color: #71717a;
   font-weight: 500;
 }
 
 .value-metrics .value {
   font-size: 24px;
   font-weight: 700;
-  color: #283044;
+  color: #27272a;
 }
 
 .value-metrics .success .value {
@@ -434,7 +434,7 @@
 .suggestions-section h4 {
   font-size: 16px;
   font-weight: 700;
-  color: #4b5780;
+  color: #52525b;
   margin-bottom: 12px;
 }
 
@@ -445,7 +445,7 @@
 }
 
 .suggestion-item {
-  background: #f8fafc;
+  background: #fafafa;
   border-radius: 8px;
   padding: 12px 16px;
 }
@@ -472,7 +472,7 @@
 
 .type-badge.cross-sell {
   background: #e0e7ff;
-  color: #4b5780;
+  color: #52525b;
 }
 
 .suggestion-item .increase,
@@ -484,7 +484,7 @@
 
 .suggestion-item p {
   font-size: 14px;
-  color: #64748b;
+  color: #71717a;
   margin: 0;
 }
 
@@ -517,7 +517,7 @@
 .abandoned-carts-section h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 16px;
 }
 
@@ -531,7 +531,7 @@
 
 .model-card {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e4e4e7;
   border-radius: 12px;
   padding: 20px;
   transition: all 0.2s;
@@ -545,13 +545,13 @@
 .model-card h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 12px;
 }
 
 .model-card p {
   font-size: 14px;
-  color: #64748b;
+  color: #71717a;
   line-height: 1.6;
   margin-bottom: 12px;
 }
@@ -562,12 +562,12 @@
 
 .model-card li {
   font-size: 13px;
-  color: #475569;
+  color: #52525b;
   margin-bottom: 6px;
 }
 
 .training-section {
-  background: #f8fafc;
+  background: #fafafa;
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
@@ -576,19 +576,19 @@
 .training-section h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 8px;
 }
 
 .training-section p {
   font-size: 14px;
-  color: #64748b;
+  color: #71717a;
   margin-bottom: 16px;
 }
 
 .model-performance {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e4e4e7;
   border-radius: 12px;
   padding: 24px;
 }
@@ -596,7 +596,7 @@
 .model-performance h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 20px;
 }
 
@@ -610,7 +610,7 @@
 /* Settings */
 .config-panel {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e4e4e7;
   border-radius: 12px;
   padding: 24px;
 }
@@ -623,7 +623,7 @@
   display: block;
   font-size: 15px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 8px;
 }
 
@@ -632,7 +632,7 @@
   max-width: 400px;
   padding: 10px 12px;
   font-size: 15px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #d4d4d8;
   border-radius: 8px;
 }
 
@@ -640,7 +640,7 @@
   display: block;
   margin-top: 4px;
   font-size: 13px;
-  color: #64748b;
+  color: #71717a;
 }
 
 /* Responsive */

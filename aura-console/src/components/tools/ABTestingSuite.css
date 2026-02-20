@@ -1,4 +1,4 @@
-﻿﻿/* A/B Testing Suite - Enterprise Console CSS */
+﻿/* A/B Testing Suite - Enterprise Console CSS */
 
 .ab-testing-suite {
   padding: 24px;
@@ -12,19 +12,19 @@
   align-items: center;
   margin-bottom: 32px;
   padding-bottom: 16px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid #e4e4e7;
 }
 
 .ab-testing-suite .tool-header h1 {
   font-size: 32px;
   font-weight: 700;
-  color: #283044;
+  color: #27272a;
   margin: 0;
 }
 
 .ab-testing-suite .tool-header .subtitle {
   font-size: 14px;
-  color: #64748b;
+  color: #71717a;
   margin-top: 4px;
 }
 
@@ -33,7 +33,7 @@
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid #e4e4e7;
   overflow-x: auto;
   padding-bottom: 0;
 }
@@ -46,14 +46,14 @@
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  color: #64748b;
+  color: #71717a;
   transition: all 0.2s;
   white-space: nowrap;
 }
 
 .ab-testing-suite .tab:hover {
-  color: #475569;
-  background: #f8fafc;
+  color: #52525b;
+  background: #fafafa;
 }
 
 .ab-testing-suite .tab.active {
@@ -75,7 +75,7 @@
 /* Cards */
 .ab-testing-suite .card {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e4e4e7;
   border-radius: 8px;
   padding: 24px;
   margin-bottom: 16px;
@@ -84,7 +84,7 @@
 .ab-testing-suite .card-header {
   font-size: 18px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 16px;
 }
 
@@ -98,7 +98,7 @@
 /* Stats Cards */
 .ab-testing-suite .stat-card {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e4e4e7;
   border-radius: 8px;
   padding: 20px;
   transition: all 0.2s;
@@ -111,14 +111,14 @@
 
 .ab-testing-suite .stat-label {
   font-size: 14px;
-  color: #64748b;
+  color: #71717a;
   margin-bottom: 8px;
 }
 
 .ab-testing-suite .stat-value {
   font-size: 32px;
   font-weight: 700;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 4px;
 }
 
@@ -148,7 +148,7 @@
   display: block;
   font-size: 14px;
   font-weight: 500;
-  color: #4b5780;
+  color: #52525b;
   margin-bottom: 8px;
 }
 
@@ -157,7 +157,7 @@
 .ab-testing-suite .form-select {
   width: 100%;
   padding: 10px 14px;
-  border: 1px solid #e9ebf5;
+  border: 1px solid #e4e4e7;
   border-radius: 6px;
   font-size: 14px;
   transition: all 0.2s;
@@ -196,16 +196,16 @@
 }
 
 .ab-testing-suite .btn-primary:hover {
-  background: #9aa3b8;
+  background: #71717a;
 }
 
 .ab-testing-suite .btn-secondary {
-  background: #f1f5f9;
-  color: #475569;
+  background: #f4f4f5;
+  color: #52525b;
 }
 
 .ab-testing-suite .btn-secondary:hover {
-  background: #e2e8f0;
+  background: #e4e4e7;
 }
 
 .ab-testing-suite .btn-success {
@@ -240,7 +240,7 @@
 
 .ab-testing-suite .experiment-item {
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e4e4e7;
   border-radius: 8px;
   padding: 20px;
   transition: all 0.2s;
@@ -262,7 +262,7 @@
 .ab-testing-suite .experiment-name {
   font-size: 18px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 4px;
 }
 
@@ -275,8 +275,8 @@
 }
 
 .ab-testing-suite .status-draft {
-  background: #f1f5f9;
-  color: #64748b;
+  background: #f4f4f5;
+  color: #71717a;
 }
 
 .ab-testing-suite .status-running {
@@ -304,7 +304,7 @@
 
 .ab-testing-suite .variant-card {
   background: white;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #e4e4e7;
   border-radius: 8px;
   padding: 20px;
   transition: all 0.2s;
@@ -322,7 +322,7 @@
 .ab-testing-suite .variant-name {
   font-size: 16px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 12px;
   display: flex;
   align-items: center;
@@ -342,12 +342,12 @@
 }
 
 .ab-testing-suite .metric-label {
-  color: #64748b;
+  color: #71717a;
 }
 
 .ab-testing-suite .metric-value {
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
 }
 
 /* Statistical Results */
@@ -361,19 +361,19 @@
 .ab-testing-suite .results-table td {
   padding: 12px;
   text-align: left;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e4e4e7;
 }
 
 .ab-testing-suite .results-table th {
-  background: #f8fafc;
+  background: #fafafa;
   font-weight: 600;
-  color: #475569;
+  color: #52525b;
   font-size: 14px;
 }
 
 .ab-testing-suite .results-table td {
   font-size: 14px;
-  color: #283044;
+  color: #27272a;
 }
 
 .ab-testing-suite .significance-badge {
@@ -389,8 +389,8 @@
 }
 
 .ab-testing-suite .significance-badge.not-significant {
-  background: #f1f5f9;
-  color: #64748b;
+  background: #f4f4f5;
+  color: #71717a;
 }
 
 /* Loading State */
@@ -399,11 +399,11 @@
   justify-content: center;
   align-items: center;
   padding: 40px;
-  color: #64748b;
+  color: #71717a;
 }
 
 .ab-testing-suite .spinner {
-  border: 3px solid #f1f5f9;
+  border: 3px solid #f4f4f5;
   border-top: 3px solid #4f46e5;
   border-radius: 50%;
   width: 40px;
@@ -420,7 +420,7 @@
 .ab-testing-suite .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #64748b;
+  color: #71717a;
 }
 
 .ab-testing-suite .empty-state-icon {
@@ -432,7 +432,7 @@
 .ab-testing-suite .empty-state-title {
   font-size: 18px;
   font-weight: 600;
-  color: #475569;
+  color: #52525b;
   margin-bottom: 8px;
 }
 
@@ -466,7 +466,7 @@
 
 .ab-testing-suite .alert-info {
   background: #dbeafe;
-  color: #4b5780;
+  color: #52525b;
   border: 1px solid #3b82f6;
 }
 

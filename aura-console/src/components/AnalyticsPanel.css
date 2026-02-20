@@ -1,5 +1,5 @@
-﻿﻿.analytics-panel-card {
-  background: #0a0b0f;
+﻿.analytics-panel-card {
+  background: #09090b;
   border-radius: 16px;
   box-shadow: 0 2px 12px #0003;
   padding: 24px 32px 18px 32px;
@@ -12,11 +12,11 @@
   margin-top: 12px;
 }
 .analytics-metric-card {
-  background: #1f2433;
+  background: #18181b;
   border-radius: 14px;
   padding: 18px 28px;
   min-width: 160px;
-  color: #f3f4f6;
+  color: #f4f4f5;
   font-size: 18px;
   font-weight: 700;
   box-shadow: 0 1px 4px #0002;

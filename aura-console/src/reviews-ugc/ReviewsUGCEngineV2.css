@@ -1,4 +1,4 @@
-﻿﻿/* Reviews & UGC Engine V2 Styles */
+﻿/* Reviews & UGC Engine V2 Styles */
 
 /* Tab wrapper with horizontal scrolling */
 .tabs-wrapper {
@@ -8,7 +8,7 @@
 .tabs-wrapper .Polaris-Tabs__Wrapper {
   overflow-x: auto;
   scrollbar-width: thin;
-  scrollbar-color: #5c6ac4 #f4f6f8;
+  scrollbar-color: #6366f1 #f4f4f5;
 }
 
 .tabs-wrapper .Polaris-Tabs__Wrapper::-webkit-scrollbar {
@@ -16,11 +16,11 @@
 }
 
 .tabs-wrapper .Polaris-Tabs__Wrapper::-webkit-scrollbar-track {
-  background: #f4f6f8;
+  background: #f4f4f5;
 }
 
 .tabs-wrapper .Polaris-Tabs__Wrapper::-webkit-scrollbar-thumb {
-  background: #5c6ac4;
+  background: #6366f1;
   border-radius: 4px;
 }
 
@@ -59,7 +59,7 @@
 
 /* Gradient backgrounds */
 .gradient-purple {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
 }
 
 .gradient-blue {
@@ -81,7 +81,7 @@
 /* Review cards */
 .review-card {
   padding: 16px;
-  border: 1px solid #dfe3e8;
+  border: 1px solid #d4d4d8;
   border-radius: 8px;
   margin-bottom: 12px;
   background: white;
@@ -89,7 +89,7 @@
 }
 
 .review-card:hover {
-  border-color: #5c6ac4;
+  border-color: #6366f1;
   box-shadow: 0 2px 8px rgba(92, 106, 196, 0.1);
 }
 
@@ -127,7 +127,7 @@
 .review-content {
   margin: 12px 0;
   line-height: 1.6;
-  color: #283044;
+  color: #27272a;
 }
 
 .review-photos {
@@ -156,7 +156,7 @@
   gap: 16px;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #e1e3e5;
+  border-top: 1px solid #e4e4e7;
 }
 
 .review-helpful-count {
@@ -164,7 +164,7 @@
   align-items: center;
   gap: 4px;
   font-size: 14px;
-  color: #637381;
+  color: #71717a;
 }
 
 /* Moderation queue */
@@ -175,7 +175,7 @@
 
 .moderation-item {
   padding: 16px;
-  border: 1px solid #dfe3e8;
+  border: 1px solid #d4d4d8;
   border-radius: 8px;
   border-left: 4px solid;
   background: white;
@@ -194,7 +194,7 @@
 }
 
 .moderation-item.priority-low {
-  border-left-color: #5c6ac4;
+  border-left-color: #6366f1;
 }
 
 .moderation-item-header {
@@ -237,16 +237,16 @@
 
 .moderation-flag {
   padding: 4px 8px;
-  background: #f4f6f8;
+  background: #f4f4f5;
   border-radius: 4px;
   font-size: 12px;
-  color: #637381;
+  color: #71717a;
 }
 
 /* Campaign cards */
 .campaign-card {
   padding: 16px;
-  border: 1px solid #dfe3e8;
+  border: 1px solid #d4d4d8;
   border-radius: 8px;
   margin-bottom: 12px;
   background: white;
@@ -279,8 +279,8 @@
 }
 
 .campaign-status.draft {
-  background: #f4f6f8;
-  color: #637381;
+  background: #f4f4f5;
+  color: #71717a;
 }
 
 .campaign-channels {
@@ -294,7 +294,7 @@
   height: 32px;
   padding: 6px;
   border-radius: 4px;
-  background: #f4f6f8;
+  background: #f4f4f5;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -307,7 +307,7 @@
   gap: 12px;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #e1e3e5;
+  border-top: 1px solid #e4e4e7;
 }
 
 .campaign-metric {
@@ -317,19 +317,19 @@
 .campaign-metric-value {
   font-size: 24px;
   font-weight: 700;
-  color: #283044;
+  color: #27272a;
 }
 
 .campaign-metric-label {
   font-size: 12px;
-  color: #637381;
+  color: #71717a;
   margin-top: 4px;
 }
 
 /* Widget preview */
 .widget-preview-container {
   padding: 24px;
-  background: #f4f6f8;
+  background: #f4f4f5;
   border-radius: 8px;
   margin: 16px 0;
 }
@@ -339,7 +339,7 @@
   margin: 0 auto;
   padding: 16px;
   background: white;
-  border: 1px solid #dfe3e8;
+  border: 1px solid #d4d4d8;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -347,12 +347,12 @@
 .widget-preview-header {
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e4e4e7;
 }
 
 .widget-review-item {
   padding: 12px;
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e4e4e7;
 }
 
 .widget-review-item:last-child {
@@ -368,7 +368,7 @@
 
 .trust-badge {
   padding: 16px;
-  border: 1px solid #dfe3e8;
+  border: 1px solid #d4d4d8;
   border-radius: 8px;
   text-align: center;
   background: white;
@@ -388,7 +388,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #5c6ac4;
+  background: #6366f1;
   color: white;
   font-size: 24px;
 }
@@ -396,7 +396,7 @@
 .trust-badge-name {
   font-size: 16px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 8px;
 }
 
@@ -410,10 +410,10 @@
 
 .criteria-chip {
   padding: 2px 6px;
-  background: #f4f6f8;
+  background: #f4f4f5;
   border-radius: 3px;
   font-size: 11px;
-  color: #637381;
+  color: #71717a;
 }
 
 /* Sentiment visualization */
@@ -422,7 +422,7 @@
   padding: 20px;
   background: white;
   border-radius: 8px;
-  border: 1px solid #dfe3e8;
+  border: 1px solid #d4d4d8;
 }
 
 .sentiment-breakdown {
@@ -436,7 +436,7 @@
   text-align: center;
   padding: 12px;
   border-radius: 6px;
-  background: #f4f6f8;
+  background: #f4f4f5;
 }
 
 .sentiment-item.positive {
@@ -483,8 +483,8 @@
   border-radius: 16px;
   font-size: 12px;
   font-weight: 500;
-  background: #f4f6f8;
-  color: #283044;
+  background: #f4f4f5;
+  color: #27272a;
 }
 
 .topic-cloud {
@@ -499,7 +499,7 @@
   border-radius: 20px;
   font-size: 13px;
   font-weight: 500;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   color: white;
   opacity: 0.9;
 }
@@ -514,7 +514,7 @@
 
 .analytics-card {
   padding: 20px;
-  border: 1px solid #dfe3e8;
+  border: 1px solid #d4d4d8;
   border-radius: 8px;
   background: white;
 }
@@ -522,18 +522,18 @@
 .analytics-card-title {
   font-size: 16px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 16px;
 }
 
 .chart-placeholder {
   height: 200px;
-  background: #f4f6f8;
+  background: #f4f4f5;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #637381;
+  color: #71717a;
   font-size: 14px;
 }
 
@@ -554,13 +554,13 @@
   min-width: 60px;
   font-size: 14px;
   font-weight: 500;
-  color: #283044;
+  color: #27272a;
 }
 
 .rating-bar-fill {
   flex: 1;
   height: 24px;
-  background: #f4f6f8;
+  background: #f4f4f5;
   border-radius: 4px;
   position: relative;
   overflow: hidden;
@@ -571,7 +571,7 @@
   top: 0;
   left: 0;
   bottom: 0;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #818cf8 0%, #764ba2 100%);
   transition: width 0.3s ease;
 }
 
@@ -579,7 +579,7 @@
   min-width: 50px;
   text-align: right;
   font-size: 13px;
-  color: #637381;
+  color: #71717a;
 }
 
 /* Integration cards */
@@ -591,7 +591,7 @@
 
 .integration-card {
   padding: 20px;
-  border: 1px solid #dfe3e8;
+  border: 1px solid #d4d4d8;
   border-radius: 8px;
   background: white;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -630,8 +630,8 @@
 }
 
 .integration-status.disconnected {
-  background: #f4f6f8;
-  color: #637381;
+  background: #f4f4f5;
+  color: #71717a;
 }
 
 .integration-capabilities {
@@ -643,10 +643,10 @@
 
 .capability-tag {
   padding: 4px 8px;
-  background: #f4f6f8;
+  background: #f4f4f5;
   border-radius: 4px;
   font-size: 11px;
-  color: #637381;
+  color: #71717a;
 }
 
 /* Responsive design */
@@ -700,25 +700,25 @@
   .sentiment-chart,
   .analytics-card,
   .integration-card {
-    background: #283044;
-    border-color: #3a4560;
+    background: #27272a;
+    border-color: #3f3f46;
   }
 
   .review-content,
   .trust-badge-name,
   .analytics-card-title {
-    color: #e1e3e5;
+    color: #e4e4e7;
   }
 
   .moderation-flag,
   .capability-tag,
   .criteria-chip {
-    background: #283044;
+    background: #27272a;
     color: #b8bec5;
   }
 
   .chart-placeholder {
-    background: #283044;
+    background: #27272a;
     color: #b8bec5;
   }
 }
@@ -737,7 +737,7 @@
 
 button:focus,
 a:focus {
-  outline: 2px solid #5c6ac4;
+  outline: 2px solid #6366f1;
   outline-offset: 2px;
 }
 

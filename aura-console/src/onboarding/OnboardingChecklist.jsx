@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 
 const ONBOARDING_STEPS = [
   { key: "run-automation", label: "Run your first automation",
@@ -44,7 +44,7 @@ export default function OnboardingChecklist({ onComplete, forceShow, onClose }) 
 
   return (
     <div style={{
-      position: 'fixed', bottom: 32, right: 32, zIndex: 9999, background: '#0a0b0f', color: '#fff', borderRadius: 14, boxShadow: '0 4px 24px #0008', padding: '24px 32px', minWidth: 260, maxWidth: 360, fontSize: 16, fontWeight: 500, letterSpacing: '0.01em', animation: 'fadeIn 0.4s', border: '1.5px solid #4f46e5',
+      position: 'fixed', bottom: 32, right: 32, zIndex: 9999, background: '#09090b', color: '#fff', borderRadius: 14, boxShadow: '0 4px 24px #0008', padding: '24px 32px', minWidth: 260, maxWidth: 360, fontSize: 16, fontWeight: 500, letterSpacing: '0.01em', animation: 'fadeIn 0.4s', border: '1.5px solid #4f46e5',
     }}>
       <div style={{fontWeight:700, fontSize:18, color:'#4f46e5', marginBottom:10}}>Getting Started</div>
       <ul style={{listStyle:'none', padding:0, margin:0, marginBottom:10}}>

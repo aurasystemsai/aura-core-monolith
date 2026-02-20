@@ -1,4 +1,4 @@
-﻿﻿import React, { useState, useRef, useEffect, useMemo } from "react";
+﻿import React, { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 
 
@@ -1194,7 +1194,7 @@ export default function ImageAltMediaSEO() {
   const SkeletonLoader = ({ count = 3, height = 120 }) => (
     <div>
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} style={{ marginBottom: 16, background: "linear-gradient(90deg, #283044 0%, #4b5780 50%, #283044 100%)", backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite", borderRadius: 16, height, border: "1px solid #4b5780" }}>
+        <div key={i} style={{ marginBottom: 16, background: "linear-gradient(90deg, #27272a 0%, #52525b 50%, #27272a 100%)", backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite", borderRadius: 16, height, border: "1px solid #52525b" }}>
           <style>{`
             @keyframes shimmer {
               0% { background-position: -200% 0; }
@@ -1221,7 +1221,7 @@ export default function ImageAltMediaSEO() {
           background: count > 0 && !aiProgress.show ? "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)" : "rgba(71, 85, 105, 0.8)",
           padding: "16px 24px", 
           borderRadius: 16, 
-          border: "2px solid " + (count > 0 ? "#a855f7" : "#64748b"),
+          border: "2px solid " + (count > 0 ? "#a855f7" : "#71717a"),
           boxShadow: count > 0 ? "0 12px 32px rgba(124, 58, 237, 0.5)" : "0 8px 16px rgba(0,0,0,0.3)",
           cursor: (!count || !roleCanApply || aiProgress.show) ? "not-allowed" : "pointer",
           transition: "all 0.3s ease",
@@ -1235,7 +1235,7 @@ export default function ImageAltMediaSEO() {
           <div style={{ color: "#fff", fontWeight: 800, fontSize: 15, letterSpacing: "0.5px" }}>
             {aiProgress.show ? "PROCESSING..." : "AI BULK GENERATE"}
           </div>
-          <div style={{ color: count > 0 ? "#c084fc" : "#94a3b8", fontSize: 12, fontWeight: 600 }}>
+          <div style={{ color: count > 0 ? "#c084fc" : "#a1a1aa", fontSize: 12, fontWeight: 600 }}>
             {count} image{count !== 1 ? 's' : ''} selected
           </div>
         </div>
@@ -1268,7 +1268,7 @@ export default function ImageAltMediaSEO() {
           background: hasShopifyImages && !shopifyPushProgress.show ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" : "rgba(71, 85, 105, 0.8)",
           padding: "16px 24px", 
           borderRadius: 16, 
-          border: "2px solid " + (hasShopifyImages ? "#10b981" : "#64748b"),
+          border: "2px solid " + (hasShopifyImages ? "#10b981" : "#71717a"),
           boxShadow: hasShopifyImages ? "0 12px 32px rgba(16, 185, 129, 0.5)" : "0 8px 16px rgba(0,0,0,0.3)",
           cursor: (!hasShopifyImages || !roleCanApply || shopifyPushProgress.show) ? "not-allowed" : "pointer",
           transition: "all 0.3s ease",
@@ -1282,7 +1282,7 @@ export default function ImageAltMediaSEO() {
           <div style={{ color: "#fff", fontWeight: 800, fontSize: 15, letterSpacing: "0.5px" }}>
             {shopifyPushProgress.show ? "PUSHING..." : "PUSH TO SHOPIFY"}
           </div>
-          <div style={{ color: hasShopifyImages ? "#6ee7b7" : "#94a3b8", fontSize: 12, fontWeight: 600 }}>
+          <div style={{ color: hasShopifyImages ? "#6ee7b7" : "#a1a1aa", fontSize: 12, fontWeight: 600 }}>
             {shopifyImages.length} of {count} ready
           </div>
         </div>
@@ -1304,12 +1304,12 @@ export default function ImageAltMediaSEO() {
             to { transform: scale(1); opacity: 1; }
           }
         `}</style>
-        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 20, padding: 32, maxWidth: 600, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #475569", animation: "scaleIn 0.3s ease-out" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 600, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f1f5f9" }}>Keyboard Shortcuts</h3>
-            <button onClick={() => setShowKeyboardHelp(false)} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
+            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f4f4f5" }}>Keyboard Shortcuts</h3>
+            <button onClick={() => setShowKeyboardHelp(false)} style={{ background: "transparent", border: "none", color: "#d4d4d8", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
           </div>
-          <div style={{ display: "grid", gap: 12, color: "#e2e8f0" }}>
+          <div style={{ display: "grid", gap: 12, color: "#e4e4e7" }}>
             {[
               { keys: "Ctrl + Shift + A", desc: "Select all images" },
               { keys: "Ctrl + Z", desc: "Undo last action" },
@@ -1318,9 +1318,9 @@ export default function ImageAltMediaSEO() {
               { keys: "Tab", desc: "Navigate sections" },
               { keys: "Enter", desc: "Submit search" }
             ].map(shortcut => (
-              <div key={shortcut.keys} style={{ display: "flex", justifyContent: "space-between", padding: "12px 16px", background: "rgba(15, 23, 42, 0.5)", borderRadius: 12, border: "1px solid #4b5780" }}>
+              <div key={shortcut.keys} style={{ display: "flex", justifyContent: "space-between", padding: "12px 16px", background: "rgba(15, 23, 42, 0.5)", borderRadius: 12, border: "1px solid #52525b" }}>
                 <span style={{ fontWeight: 600 }}>{shortcut.desc}</span>
-                <kbd style={{ background: "#475569", color: "#f1f5f9", padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700, border: "1px solid #64748b" }}>{shortcut.keys}</kbd>
+                <kbd style={{ background: "#52525b", color: "#f4f4f5", padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700, border: "1px solid #71717a" }}>{shortcut.keys}</kbd>
               </div>
             ))}
           </div>
@@ -1334,18 +1334,18 @@ export default function ImageAltMediaSEO() {
     const percentage = aiProgress.total ? Math.round((aiProgress.current / aiProgress.total) * 100) : 0;
     return (
       <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s" }}>
-        <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #7c3aed", animation: "scaleIn 0.3s ease-out" }}>
+        <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #7c3aed", animation: "scaleIn 0.3s ease-out" }}>
           <div style={{ textAlign: "center", marginBottom: 24 }}>
             
-            <h3 style={{ fontSize: 24, fontWeight: 800, margin: "0 0 8px 0", color: "#f1f5f9" }}>AI Processing</h3>
-            <p style={{ fontSize: 14, color: "#cbd5e1", margin: 0 }}>{aiProgress.status}</p>
+            <h3 style={{ fontSize: 24, fontWeight: 800, margin: "0 0 8px 0", color: "#f4f4f5" }}>AI Processing</h3>
+            <p style={{ fontSize: 14, color: "#d4d4d8", margin: 0 }}>{aiProgress.status}</p>
           </div>
           <div style={{ marginBottom: 16 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 14, color: "#e2e8f0" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 14, color: "#e4e4e7" }}>
               <span>{aiProgress.current} of {aiProgress.total}</span>
               <span>{percentage}%</span>
             </div>
-            <div style={{ width: "100%", height: 8, background: "#4b5780", borderRadius: 999, overflow: "hidden" }}>
+            <div style={{ width: "100%", height: 8, background: "#52525b", borderRadius: 999, overflow: "hidden" }}>
               <div style={{ width: `${percentage}%`, height: "100%", background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)", transition: "width 0.3s ease", borderRadius: 999 }}></div>
             </div>
           </div>
@@ -1376,49 +1376,49 @@ export default function ImageAltMediaSEO() {
     
     return (
       <div onClick={() => setAiResults({ show: false, success: 0, failed: 0, items: [] })} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s" }}>
-        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #22c55e", animation: "scaleIn 0.3s ease-out" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #22c55e", animation: "scaleIn 0.3s ease-out" }}>
           <div style={{ textAlign: "center", marginBottom: 24 }}>
             
-            <h3 style={{ fontSize: 28, fontWeight: 800, margin: "0 0 8px 0", color: "#f1f5f9" }}>AI Improvements Complete!</h3>
+            <h3 style={{ fontSize: 28, fontWeight: 800, margin: "0 0 8px 0", color: "#f4f4f5" }}>AI Improvements Complete!</h3>
             <div style={{ display: "flex", gap: 24, justifyContent: "center", marginTop: 16 }}>
               <div style={{ textAlign: "center" }}>
                 <div style={{ fontSize: 32, fontWeight: 800, color: "#22c55e" }}>{aiResults.success}</div>
-                <div style={{ fontSize: 14, color: "#cbd5e1" }}>Improved</div>
+                <div style={{ fontSize: 14, color: "#d4d4d8" }}>Improved</div>
               </div>
               {aiResults.failed > 0 && (
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 32, fontWeight: 800, color: "#ef4444" }}>{aiResults.failed}</div>
-                  <div style={{ fontSize: 14, color: "#cbd5e1" }}>Failed</div>
+                  <div style={{ fontSize: 14, color: "#d4d4d8" }}>Failed</div>
                 </div>
               )}
               {avgScore !== null && (
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 32, fontWeight: 800, color: avgScore >= 80 ? "#22c55e" : avgScore >= 60 ? "#fbbf24" : "#f97316" }}>{avgScore}</div>
-                  <div style={{ fontSize: 14, color: "#cbd5e1" }}>Avg SEO Score</div>
+                  <div style={{ fontSize: 14, color: "#d4d4d8" }}>Avg SEO Score</div>
                 </div>
               )}
             </div>
           </div>
           {aiResults.items.length > 0 && (
             <div style={{ marginTop: 24 }}>
-              <h4 style={{ fontSize: 16, fontWeight: 700, color: "#f1f5f9", marginBottom: 16 }}>Preview (first 5)</h4>
+              <h4 style={{ fontSize: 16, fontWeight: 700, color: "#f4f4f5", marginBottom: 16 }}>Preview (first 5)</h4>
               <div style={{ display: "grid", gap: 16 }}>
                 {aiResults.items.map((item, idx) => (
-                  <div key={idx} style={{ background: "rgba(15, 23, 42, 0.5)", borderRadius: 12, padding: 16, border: "1px solid #4b5780" }}>
+                  <div key={idx} style={{ background: "rgba(15, 23, 42, 0.5)", borderRadius: 12, padding: 16, border: "1px solid #52525b" }}>
                     <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                       {item.url && (
-                        <img src={item.url} alt="" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8, background: "#0b0b0b" }} />
+                        <img src={item.url} alt="" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8, background: "#09090b" }} />
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 6 }}>
+                        <div style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 6 }}>
                           <span style={{ color: "#ef4444" }}>Old:</span> {item.oldAlt}
                         </div>
-                        <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 8 }}>
+                        <div style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 8 }}>
                           <span style={{ color: "#22c55e" }}>New:</span> {item.newAlt}
                         </div>
                         {item.seoScore !== null && item.seoScore !== undefined && (
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{ fontSize: 11, color: "#94a3b8" }}>SEO Score:</span>
+                            <span style={{ fontSize: 11, color: "#a1a1aa" }}>SEO Score:</span>
                             <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 8, background: item.seoScore >= 80 ? "rgba(34, 197, 94, 0.15)" : item.seoScore >= 60 ? "rgba(251, 191, 36, 0.15)" : "rgba(239, 68, 68, 0.15)", border: `1px solid ${item.seoScore >= 80 ? "#22c55e" : item.seoScore >= 60 ? "#fbbf24" : "#ef4444"}` }}>
                               <span style={{ fontSize: 14, fontWeight: 700, color: item.seoScore >= 80 ? "#22c55e" : item.seoScore >= 60 ? "#fbbf24" : "#ef4444" }}>{Math.round(item.seoScore)}</span>
                               <span style={{ fontSize: 10, color: item.seoScore >= 80 ? "#22c55e" : item.seoScore >= 60 ? "#fbbf24" : "#ef4444" }}>/100</span>
@@ -1436,9 +1436,9 @@ export default function ImageAltMediaSEO() {
           <div style={{ marginTop: 24, display: "flex", gap: 12, justifyContent: "center" }}>
             <button 
               onClick={() => setAiResults({ show: false, success: 0, failed: 0, items: [] })} 
-              style={{ background: "#64748b", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 15, cursor: "pointer", transition: "all 0.2s" }}
-              onMouseEnter={e => e.target.style.background = "#475569"}
-              onMouseLeave={e => e.target.style.background = "#64748b"}
+              style={{ background: "#71717a", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 15, cursor: "pointer", transition: "all 0.2s" }}
+              onMouseEnter={e => e.target.style.background = "#52525b"}
+              onMouseLeave={e => e.target.style.background = "#71717a"}
             >
               Reject Changes
             </button>
@@ -1504,23 +1504,23 @@ export default function ImageAltMediaSEO() {
     
     return (
       <div onClick={() => setShopifyPushResults({ show: false, pushed: 0, failed: 0, errors: [] })} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s" }}>
-        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 20, padding: 32, maxWidth: 600, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: `2px solid ${shopifyPushResults.pushed > 0 ? "#10b981" : "#ef4444"}`, animation: "scaleIn 0.3s ease-out" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 600, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: `2px solid ${shopifyPushResults.pushed > 0 ? "#10b981" : "#ef4444"}`, animation: "scaleIn 0.3s ease-out" }}>
           <div style={{ textAlign: "center", marginBottom: 24 }}>
             <div style={{ fontSize: 64, marginBottom: 16 }}>{shopifyPushResults.pushed > 0 ? "" : ""}</div>
-            <h3 style={{ fontSize: 28, fontWeight: 800, margin: "0 0 8px 0", color: "#f1f5f9" }}>
+            <h3 style={{ fontSize: 28, fontWeight: 800, margin: "0 0 8px 0", color: "#f4f4f5" }}>
               {shopifyPushResults.pushed > 0 ? "Shopify Push Complete!" : "Shopify Push Failed"}
             </h3>
             <div style={{ display: "flex", gap: 24, justifyContent: "center", marginTop: 16 }}>
               {shopifyPushResults.pushed > 0 && (
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 32, fontWeight: 800, color: "#10b981" }}>{shopifyPushResults.pushed}</div>
-                  <div style={{ fontSize: 14, color: "#cbd5e1" }}>Pushed to Shopify</div>
+                  <div style={{ fontSize: 14, color: "#d4d4d8" }}>Pushed to Shopify</div>
                 </div>
               )}
               {shopifyPushResults.failed > 0 && (
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 32, fontWeight: 800, color: "#ef4444" }}>{shopifyPushResults.failed}</div>
-                  <div style={{ fontSize: 14, color: "#cbd5e1" }}>Failed</div>
+                  <div style={{ fontSize: 14, color: "#d4d4d8" }}>Failed</div>
                 </div>
               )}
             </div>
@@ -1559,34 +1559,34 @@ export default function ImageAltMediaSEO() {
     
     return (
       <div onClick={() => setManualAiResult({ show: false, result: '', grade: null, lint: null, url: '', oldAlt: '' })} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s" }}>
-        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #8b5cf6", animation: "scaleIn 0.3s ease-out" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #8b5cf6", animation: "scaleIn 0.3s ease-out" }}>
           <div style={{ textAlign: "center", marginBottom: 24 }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>AI Generated</div>
-            <h3 style={{ fontSize: 24, fontWeight: 800, margin: "0 0 8px 0", color: "#f1f5f9" }}>Review Alt Text</h3>
+            <h3 style={{ fontSize: 24, fontWeight: 800, margin: "0 0 8px 0", color: "#f4f4f5" }}>Review Alt Text</h3>
             {seoScore !== null && seoScore !== undefined && (
               <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 32, fontWeight: 800, color: seoScore >= 80 ? "#22c55e" : seoScore >= 60 ? "#fbbf24" : "#f97316" }}>{Math.round(seoScore)}</div>
-                  <div style={{ fontSize: 14, color: "#cbd5e1" }}>SEO Score</div>
+                  <div style={{ fontSize: 14, color: "#d4d4d8" }}>SEO Score</div>
                 </div>
               </div>
             )}
           </div>
           <div style={{ marginTop: 24 }}>
-            <div style={{ background: "rgba(15, 23, 42, 0.5)", borderRadius: 12, padding: 16, border: "1px solid #4b5780", marginBottom: 16 }}>
+            <div style={{ background: "rgba(15, 23, 42, 0.5)", borderRadius: 12, padding: 16, border: "1px solid #52525b", marginBottom: 16 }}>
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                 {manualAiResult.url && (
-                  <img src={manualAiResult.url} alt="" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, background: "#0b0b0b" }} />
+                  <img src={manualAiResult.url} alt="" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, background: "#09090b" }} />
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 6 }}>
+                  <div style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 6 }}>
                     <span style={{ color: "#ef4444" }}>Old:</span> {manualAiResult.oldAlt}
                   </div>
-                  <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 8 }}>
+                  <div style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 8 }}>
                     <span style={{ color: "#22c55e" }}>New:</span> {manualAiResult.result}
                   </div>
                   {seoScore !== null && seoScore !== undefined && (
-                    <div style={{ fontSize: 11, color: "#cbd5e1" }}>
+                    <div style={{ fontSize: 11, color: "#d4d4d8" }}>
                       Quality: {seoScore >= 80 ? "Excellent" : seoScore >= 60 ? "Good" : "Needs Improvement"}
                     </div>
                   )}
@@ -1597,9 +1597,9 @@ export default function ImageAltMediaSEO() {
           <div style={{ marginTop: 24, display: "flex", gap: 12, justifyContent: "center" }}>
             <button 
               onClick={() => setManualAiResult({ show: false, result: '', grade: null, lint: null, url: '', oldAlt: '' })} 
-              style={{ background: "#64748b", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 15, cursor: "pointer", transition: "all 0.2s" }}
-              onMouseEnter={e => e.target.style.background = "#475569"}
-              onMouseLeave={e => e.target.style.background = "#64748b"}
+              style={{ background: "#71717a", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 15, cursor: "pointer", transition: "all 0.2s" }}
+              onMouseEnter={e => e.target.style.background = "#52525b"}
+              onMouseLeave={e => e.target.style.background = "#71717a"}
             >
               Reject
             </button>
@@ -1625,12 +1625,12 @@ export default function ImageAltMediaSEO() {
     if (!showDeleteModal) return null;
     return (
       <div onClick={() => setShowDeleteModal(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.7)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s" }}>
-        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #ef4444", animation: "scaleIn 0.3s ease-out" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #ef4444", animation: "scaleIn 0.3s ease-out" }}>
           <div style={{ fontSize: 48, textAlign: "center", marginBottom: 16, fontWeight: 700, color: "#ef4444" }}>!</div>
-          <h3 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 16px 0", color: "#f1f5f9", textAlign: "center" }}>Confirm Deletion</h3>
-          <p style={{ fontSize: 15, color: "#cbd5e1", marginBottom: 24, textAlign: "center" }}>Are you sure you want to delete {pendingDeleteIds.length} item(s)? This action cannot be undone.</p>
+          <h3 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 16px 0", color: "#f4f4f5", textAlign: "center" }}>Confirm Deletion</h3>
+          <p style={{ fontSize: 15, color: "#d4d4d8", marginBottom: 24, textAlign: "center" }}>Are you sure you want to delete {pendingDeleteIds.length} item(s)? This action cannot be undone.</p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-            <button onClick={() => setShowDeleteModal(false)} style={{ background: "#64748b", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.2s" }}>Cancel</button>
+            <button onClick={() => setShowDeleteModal(false)} style={{ background: "#71717a", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.2s" }}>Cancel</button>
             <button onClick={() => { /* handle delete */ setShowDeleteModal(false); setPendingDeleteIds([]); showToast("Deleted successfully"); }} style={{ background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(239, 68, 68, 0.3)", transition: "all 0.2s" }}>Delete {pendingDeleteIds.length} items</button>
           </div>
         </div>
@@ -1645,7 +1645,7 @@ export default function ImageAltMediaSEO() {
     
     return (
       <div onClick={() => setContextMenu(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1999 }}>
-        <div onClick={e => e.stopPropagation()} style={{ position: "absolute", top: contextMenu.y, left: contextMenu.x, background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 12, boxShadow: "0 12px 32px rgba(0,0,0,0.5)", border: "1px solid #475569", minWidth: 200, animation: "scaleIn 0.15s ease-out" }}>
+        <div onClick={e => e.stopPropagation()} style={{ position: "absolute", top: contextMenu.y, left: contextMenu.x, background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 12, boxShadow: "0 12px 32px rgba(0,0,0,0.5)", border: "1px solid #52525b", minWidth: 200, animation: "scaleIn 0.15s ease-out" }}>
           {[
             { label: pinnedIds.includes(contextMenu.imageId) ? "Unpin" : "Pin", action: () => { togglePin(contextMenu.imageId); setContextMenu(null); } },
             { label: "AI Rewrite", action: () => { handleAiRewriteSingle(img); setContextMenu(null); } },
@@ -1655,7 +1655,7 @@ export default function ImageAltMediaSEO() {
             { label: "Compare", action: () => { setComparisonBefore(img); setShowComparison(true); setContextMenu(null); } },
             { label: "Delete", action: () => { setPendingDeleteIds([contextMenu.imageId]); setShowDeleteModal(true); setContextMenu(null); }, danger: true }
           ].map((item, idx, arr) => (
-            <button key={idx} onClick={item.action} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 16px", background: "transparent", border: "none", borderBottom: idx < arr.length - 1 ? "1px solid #4b5780" : "none", color: item.danger ? "#ef4444" : item.shopify ? "#10b981" : "#e2e8f0", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s", textAlign: "left" }} onMouseEnter={e => e.target.style.background = "rgba(255,255,255,0.1)"} onMouseLeave={e => e.target.style.background = "transparent"}>
+            <button key={idx} onClick={item.action} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "12px 16px", background: "transparent", border: "none", borderBottom: idx < arr.length - 1 ? "1px solid #52525b" : "none", color: item.danger ? "#ef4444" : item.shopify ? "#10b981" : "#e4e4e7", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s", textAlign: "left" }} onMouseEnter={e => e.target.style.background = "rgba(255,255,255,0.1)"} onMouseLeave={e => e.target.style.background = "transparent"}>
               <span>{item.label}</span>
             </button>
           ))}
@@ -1671,10 +1671,10 @@ export default function ImageAltMediaSEO() {
     return (
       <div style={{ position: "relative", width: size, height: size }}>
         <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-          <circle cx={size/2} cy={size/2} r={radius} stroke="#4b5780" strokeWidth={strokeWidth} fill="none" />
+          <circle cx={size/2} cy={size/2} r={radius} stroke="#52525b" strokeWidth={strokeWidth} fill="none" />
           <circle cx={size/2} cy={size/2} r={radius} stroke={color} strokeWidth={strokeWidth} fill="none" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.5s ease" }} />
         </svg>
-        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", fontSize: 16, fontWeight: 800, color: "#f1f5f9" }}>{Math.round(percent)}%</div>
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", fontSize: 16, fontWeight: 800, color: "#f4f4f5" }}>{Math.round(percent)}%</div>
       </div>
     );
   };
@@ -1683,24 +1683,24 @@ export default function ImageAltMediaSEO() {
     if (!showComparison) return null;
     return (
       <div onClick={() => setShowComparison(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.3s" }}>
-        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 20, padding: 32, maxWidth: 900, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #475569", animation: "scaleIn 0.3s ease-out" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 900, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f1f5f9" }}>Before/After Comparison</h3>
-            <button onClick={() => setShowComparison(false)} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
+            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f4f4f5" }}>Before/After Comparison</h3>
+            <button onClick={() => setShowComparison(false)} style={{ background: "transparent", border: "none", color: "#d4d4d8", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#94a3b8", marginBottom: 8 }}>BEFORE</div>
-              <div style={{ background: "#1f2433", borderRadius: 12, padding: 16, border: "2px solid #475569" }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#a1a1aa", marginBottom: 8 }}>BEFORE</div>
+              <div style={{ background: "#18181b", borderRadius: 12, padding: 16, border: "2px solid #52525b" }}>
                 {comparisonBefore?.url && <img src={comparisonBefore.url} alt="Before" style={{ width: "100%", borderRadius: 8, marginBottom: 12 }} />}
-                <div style={{ fontSize: 13, color: "#e2e8f0" }}>{comparisonBefore?.altText || "(no alt text)"}</div>
+                <div style={{ fontSize: 13, color: "#e4e4e7" }}>{comparisonBefore?.altText || "(no alt text)"}</div>
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#94a3b8", marginBottom: 8 }}>AFTER</div>
-              <div style={{ background: "#1f2433", borderRadius: 12, padding: 16, border: "2px solid #10b981" }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#a1a1aa", marginBottom: 8 }}>AFTER</div>
+              <div style={{ background: "#18181b", borderRadius: 12, padding: 16, border: "2px solid #10b981" }}>
                 {comparisonAfter?.url && <img src={comparisonAfter.url} alt="After" style={{ width: "100%", borderRadius: 8, marginBottom: 12 }} />}
-                <div style={{ fontSize: 13, color: "#e2e8f0" }}>{comparisonAfter?.altText || "(no alt text)"}</div>
+                <div style={{ fontSize: 13, color: "#e4e4e7" }}>{comparisonAfter?.altText || "(no alt text)"}</div>
               </div>
             </div>
           </div>
@@ -1714,10 +1714,10 @@ export default function ImageAltMediaSEO() {
     const previewItems = images.filter(img => selectedImageIds.includes(img.id)).slice(0, 10);
     return (
       <div onClick={() => setShowBulkPreview(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.3s", overflow: "auto" }}>
-        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 20, padding: 32, maxWidth: 800, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #475569", animation: "scaleIn 0.3s ease-out" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 800, width: "90%", maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f1f5f9" }}>Bulk Preview ({selectedImageIds.length} items)</h3>
-            <button onClick={() => setShowBulkPreview(false)} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
+            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f4f4f5" }}>Bulk Preview ({selectedImageIds.length} items)</h3>
+            <button onClick={() => setShowBulkPreview(false)} style={{ background: "transparent", border: "none", color: "#d4d4d8", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
           </div>
           <div style={{ marginBottom: 16, padding: 16, background: "rgba(251, 191, 36, 0.1)", borderRadius: 12, border: "1px solid #fbbf24" }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#fbbf24", marginBottom: 8 }}>Will apply:</div>
@@ -1727,18 +1727,18 @@ export default function ImageAltMediaSEO() {
             {previewItems.map(img => {
               const displayName = displayNameForImage(img);
               return (
-                <div key={img.id} style={{ marginBottom: 12, padding: 12, background: "#1f2433", borderRadius: 10, border: "1px solid #4b5780" }}>
-                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4 }}>
+                <div key={img.id} style={{ marginBottom: 12, padding: 12, background: "#18181b", borderRadius: 10, border: "1px solid #52525b" }}>
+                  <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 4 }}>
                     {displayName}{displayName !== img.id ? ` · ID: ${img.id}` : ""}
                   </div>
-                  <div style={{ fontSize: 13, color: "#e2e8f0" }}>Current: {img.altText || "(none)"}</div>
+                  <div style={{ fontSize: 13, color: "#e4e4e7" }}>Current: {img.altText || "(none)"}</div>
                 </div>
               );
             })}
-            {selectedImageIds.length > 10 && <div style={{ fontSize: 12, color: "#94a3b8", textAlign: "center" }}>...and {selectedImageIds.length - 10} more</div>}
+            {selectedImageIds.length > 10 && <div style={{ fontSize: 12, color: "#a1a1aa", textAlign: "center" }}>...and {selectedImageIds.length - 10} more</div>}
           </div>
           <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
-            <button onClick={() => setShowBulkPreview(false)} style={{ background: "#64748b", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Cancel</button>
+            <button onClick={() => setShowBulkPreview(false)} style={{ background: "#71717a", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Cancel</button>
             <button onClick={() => { handleBulkApply(); setShowBulkPreview(false); }} style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)" }}>Apply to {selectedImageIds.length} items</button>
           </div>
         </div>
@@ -1750,24 +1750,24 @@ export default function ImageAltMediaSEO() {
     if (!showUndoHistory) return null;
     return (
       <div onClick={() => setShowUndoHistory(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.3s" }}>
-        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "70vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #475569", animation: "scaleIn 0.3s ease-out" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 700, width: "90%", maxHeight: "70vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f1f5f9" }}>Undo History</h3>
-            <button onClick={() => setShowUndoHistory(false)} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
+            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f4f4f5" }}>Undo History</h3>
+            <button onClick={() => setShowUndoHistory(false)} style={{ background: "transparent", border: "none", color: "#d4d4d8", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
           </div>
           <div style={{ position: "relative", paddingLeft: 32 }}>
-            <div style={{ position: "absolute", left: 8, top: 0, bottom: 0, width: 2, background: "#475569" }} />
+            <div style={{ position: "absolute", left: 8, top: 0, bottom: 0, width: 2, background: "#52525b" }} />
             {undoBuffer.map((item, idx) => (
               <div key={idx} style={{ position: "relative", marginBottom: 20 }}>
-                <div style={{ position: "absolute", left: -28, top: 4, width: 12, height: 12, borderRadius: "50%", background: "#8b5cf6", border: "2px solid #4b5780" }} />
-                <div style={{ padding: "12px 16px", background: "#1f2433", borderRadius: 10, border: "1px solid #4b5780" }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", marginBottom: 4 }}>{item.action || "Change"}</div>
-                  <div style={{ fontSize: 12, color: "#94a3b8" }}>{item.ids?.length || 0} items affected</div>
+                <div style={{ position: "absolute", left: -28, top: 4, width: 12, height: 12, borderRadius: "50%", background: "#8b5cf6", border: "2px solid #52525b" }} />
+                <div style={{ padding: "12px 16px", background: "#18181b", borderRadius: 10, border: "1px solid #52525b" }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#f4f4f5", marginBottom: 4 }}>{item.action || "Change"}</div>
+                  <div style={{ fontSize: 12, color: "#a1a1aa" }}>{item.ids?.length || 0} items affected</div>
                   <button onClick={() => { /* restore this state */ showToast("Restored"); setShowUndoHistory(false); }} style={{ marginTop: 8, background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Restore to this point</button>
                 </div>
               </div>
             ))}
-            {!undoBuffer.length && <div style={{ fontSize: 14, color: "#94a3b8", textAlign: "center", padding: 32 }}>No undo history yet</div>}
+            {!undoBuffer.length && <div style={{ fontSize: 14, color: "#a1a1aa", textAlign: "center", padding: 32 }}>No undo history yet</div>}
           </div>
         </div>
       </div>
@@ -1779,21 +1779,21 @@ export default function ImageAltMediaSEO() {
     const presetColors = ["#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#0ea5e9", "#ef4444"];
     return (
       <div onClick={() => setShowThemePanel(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.7)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.3s" }}>
-        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #475569", animation: "scaleIn 0.3s ease-out" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 32, maxWidth: 500, width: "90%", boxShadow: "0 24px 64px rgba(0,0,0,0.5)", border: "2px solid #52525b", animation: "scaleIn 0.3s ease-out" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f1f5f9" }}>Theme Customization</h3>
-            <button onClick={() => setShowThemePanel(false)} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
+            <h3 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: "#f4f4f5" }}>Theme Customization</h3>
+            <button onClick={() => setShowThemePanel(false)} style={{ background: "transparent", border: "none", color: "#d4d4d8", fontSize: 24, cursor: "pointer", padding: 0 }}></button>
           </div>
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#cbd5e1", marginBottom: 12 }}>Accent Color</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#d4d4d8", marginBottom: 12 }}>Accent Color</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }}>
               {presetColors.map(color => (
-                <button key={color} onClick={() => setAccentColor(color)} style={{ width: 50, height: 50, borderRadius: 12, background: color, border: accentColor === color ? "3px solid #fff" : "2px solid #475569", cursor: "pointer", transition: "transform 0.2s", transform: accentColor === color ? "scale(1.1)" : "scale(1)" }} />
+                <button key={color} onClick={() => setAccentColor(color)} style={{ width: 50, height: 50, borderRadius: 12, background: color, border: accentColor === color ? "3px solid #fff" : "2px solid #52525b", cursor: "pointer", transition: "transform 0.2s", transform: accentColor === color ? "scale(1.1)" : "scale(1)" }} />
               ))}
             </div>
           </div>
           <div style={{ marginBottom: 20 }}>
-            <label style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 14, color: "#e2e8f0" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 14, color: "#e4e4e7" }}>
               <input name="autoSaveEnabled" type="checkbox" checked={autoSaveEnabled} onChange={e => setAutoSaveEnabled(e.target.checked)} />
               <span>Enable auto-save</span>
             </label>
@@ -1827,7 +1827,7 @@ export default function ImageAltMediaSEO() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gap: 4 }}>
         {data.map((value, idx) => (
           <div key={idx} style={{ aspectRatio: "1", background: getColor(value), borderRadius: 4, position: "relative" }} title={`${value}`}>
-            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: value > maxValue * 0.5 ? "#fff" : "#1f2433" }}>{value}</div>
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: value > maxValue * 0.5 ? "#fff" : "#18181b" }}>{value}</div>
           </div>
         ))}
       </div>
@@ -3710,7 +3710,7 @@ export default function ImageAltMediaSEO() {
   
   
   const extractColorPalette = () => {
-    const palette = ["#283044", "#8b5cf6", "#10b981", "#f59e0b"];
+    const palette = ["#27272a", "#8b5cf6", "#10b981", "#f59e0b"];
     setColorPaletteExtraction(true);
     showToast(`Color palette: ${palette.join(', ')}`);
     return palette;
@@ -5497,7 +5497,7 @@ export default function ImageAltMediaSEO() {
   };
   
   const analyzeColoredBackground = (imageId) => {
-    setColoredBackgroundAnalyzer(prev => ({ ...prev, [imageId]: { color: "#f6f7fb" } }));
+    setColoredBackgroundAnalyzer(prev => ({ ...prev, [imageId]: { color: "#fafafa" } }));
     showToast("Background analyzed");
   };
   
@@ -8086,7 +8086,7 @@ export default function ImageAltMediaSEO() {
       approved: "#22c55e",
       pending: "#f59e0b",
       rejected: "#ef4444",
-      draft: "#9aa3b8"
+      draft: "#71717a"
     };
     
     setCustomColorCoding(prev => ({ ...prev, [imageId]: colors[status] || colors.draft }));
@@ -8251,7 +8251,7 @@ export default function ImageAltMediaSEO() {
   };
 
   return (
-    <div style={{ padding: 0, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "linear-gradient(135deg, #1f2433 0%, #283044 100%)", minHeight: "100vh", overflowX: "hidden" }}>
+    <div style={{ padding: 0, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "linear-gradient(135deg, #18181b 0%, #27272a 100%)", minHeight: "100vh", overflowX: "hidden" }}>
       <FloatingAIButtonFallback />
       <FloatingShopifyPushButton />
       <div style={{ position: "sticky", top: 0, zIndex: 999, background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)", padding: "16px 24px", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
@@ -8297,7 +8297,7 @@ export default function ImageAltMediaSEO() {
       {(result || captionResult) && (
         <div style={{ display: "grid", gridTemplateColumns: captionResult ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 12 }}>
           {result ? (
-            <div style={{ background: "#0a0b0f", borderRadius: 10, padding: 16, color: "#a3e635" }} aria-live="polite">
+            <div style={{ background: "#09090b", borderRadius: 10, padding: 16, color: "#a3e635" }} aria-live="polite">
               <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Alt Text</div>
               <div>{result}</div>
               {lint && (
@@ -8318,7 +8318,7 @@ export default function ImageAltMediaSEO() {
                   {sanitized && sanitized !== result && (
                     <div style={{ marginTop: 6 }}>
                       <span style={{ fontWeight: 600 }}>Sanitized:</span> {sanitized}
-                      <button onClick={() => setResult(sanitized)} style={{ marginLeft: 8, background: "#a3e635", color: "#0a0b0f", border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 13 }}>Use sanitized</button>
+                      <button onClick={() => setResult(sanitized)} style={{ marginLeft: 8, background: "#a3e635", color: "#09090b", border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 13 }}>Use sanitized</button>
                     </div>
                   )}
                 </div>
@@ -8326,7 +8326,7 @@ export default function ImageAltMediaSEO() {
               {grade && (
                 <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontWeight: 700 }}>Grade:</span>
-                  <span style={{ padding: "4px 10px", borderRadius: 8, background: grade.grade === 'A' ? '#22c55e' : grade.grade === 'B' ? '#84cc16' : grade.grade === 'C' ? '#fbbf24' : '#ef4444', color: '#0b0b0b', fontWeight: 800 }}>{grade.grade} ({grade.score})</span>
+                  <span style={{ padding: "4px 10px", borderRadius: 8, background: grade.grade === 'A' ? '#22c55e' : grade.grade === 'B' ? '#84cc16' : grade.grade === 'C' ? '#fbbf24' : '#ef4444', color: '#09090b', fontWeight: 800 }}>{grade.grade} ({grade.score})</span>
                 </div>
               )}
               {variants?.length ? (
@@ -8337,16 +8337,16 @@ export default function ImageAltMediaSEO() {
                       const issues = v.lint?.issueCount ?? v.lint?.issues?.length ?? 0;
                       const warnings = v.lint?.warningCount ?? v.lint?.warnings?.length ?? 0;
                       return (
-                        <div key={`${v.label || 'v'}-${idx}`} style={{ border: selectedVariantIdx === idx ? "2px solid #0ea5e9" : "1px solid #555", borderRadius: 10, padding: 10, background: "#283044" }}>
+                        <div key={`${v.label || 'v'}-${idx}`} style={{ border: selectedVariantIdx === idx ? "2px solid #0ea5e9" : "1px solid #555", borderRadius: 10, padding: 10, background: "#27272a" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                             <span style={{ fontWeight: 700 }}>{v.label || `Variant ${idx + 1}`}</span>
-                            {v.grade ? <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 8, background: v.grade.grade === 'A' ? '#22c55e' : v.grade.grade === 'B' ? '#84cc16' : v.grade.grade === 'C' ? '#fbbf24' : '#ef4444', color: '#0b0b0b', fontWeight: 800 }}>{v.grade.grade} ({v.grade.score})</span> : null}
+                            {v.grade ? <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 8, background: v.grade.grade === 'A' ? '#22c55e' : v.grade.grade === 'B' ? '#84cc16' : v.grade.grade === 'C' ? '#fbbf24' : '#ef4444', color: '#09090b', fontWeight: 800 }}>{v.grade.grade} ({v.grade.score})</span> : null}
                           </div>
                           <div style={{ fontSize: 14, marginBottom: 6 }}>{v.altText}</div>
                           <div style={{ fontSize: 12, color: "#a3e635", marginBottom: 8 }}>Issues {issues}; Warnings {warnings}</div>
                           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                             <button onClick={() => applyVariant(idx)} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Use</button>
-                            <button onClick={() => handleCopyText(v.altText, "Variant copied") } style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Copy</button>
+                            <button onClick={() => handleCopyText(v.altText, "Variant copied") } style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Copy</button>
                           </div>
                         </div>
                       );
@@ -8355,15 +8355,15 @@ export default function ImageAltMediaSEO() {
                 </div>
               ) : null}
               <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={handleCopyResult} disabled={!result} style={{ background: "#14b8a6", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
-                <button onClick={handleDownloadResult} disabled={!result} style={{ background: "#e0f2fe", color: "#1f2433", border: "1px solid #bae6fd", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Download .txt</button>
+                <button onClick={handleCopyResult} disabled={!result} style={{ background: "#14b8a6", color: "#09090b", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
+                <button onClick={handleDownloadResult} disabled={!result} style={{ background: "#e0f2fe", color: "#18181b", border: "1px solid #bae6fd", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Download .txt</button>
                 {resultDownloadUrl && <a href={resultDownloadUrl} download="alt-text.txt" style={{ alignSelf: "center", color: "#0ea5e9", fontWeight: 700 }}>Save file</a>}
               </div>
             </div>
           ) : null}
 
           {captionResult ? (
-            <div style={{ background: "#283044", borderRadius: 10, padding: 16, color: "#a3e635" }} aria-live="polite">
+            <div style={{ background: "#27272a", borderRadius: 10, padding: 16, color: "#a3e635" }} aria-live="polite">
               <div style={{ fontWeight: 700, marginBottom: 6 }}>AI Caption</div>
               <div style={{ marginBottom: 6 }}>{captionResult}</div>
               {captionLint && (
@@ -8372,9 +8372,9 @@ export default function ImageAltMediaSEO() {
                 </div>
               )}
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={() => handleCopyText(captionResult, "Caption copied")} style={{ background: "#14b8a6", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Copy caption</button>
+                <button onClick={() => handleCopyText(captionResult, "Caption copied")} style={{ background: "#14b8a6", color: "#09090b", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Copy caption</button>
                 {captionSanitized && captionSanitized !== captionResult ? (
-                  <button onClick={() => setCaptionResult(captionSanitized)} style={{ background: "#e0f2fe", color: "#1f2433", border: "1px solid #bae6fd", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Use sanitized</button>
+                  <button onClick={() => setCaptionResult(captionSanitized)} style={{ background: "#e0f2fe", color: "#18181b", border: "1px solid #bae6fd", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Use sanitized</button>
                 ) : null}
               </div>
             </div>
@@ -8387,19 +8387,19 @@ export default function ImageAltMediaSEO() {
           onChange={e => setImageUrl(e.target.value)}
           placeholder="Image URL (optional but recommended)"
           aria-label="Image URL"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}
         />
 
         {simulationResults?.length ? (
-          <div style={{ marginBottom: 12, background: "#1f2433", borderRadius: 10, padding: 12, border: "1px solid #4b5780" }}>
+          <div style={{ marginBottom: 12, background: "#18181b", borderRadius: 10, padding: 12, border: "1px solid #52525b" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 6 }}>
               <div style={{ fontWeight: 700 }}>Simulation ({simulationResults.length}) {simulationSummary?.hitRateAvg ? `· Hit rate ~${simulationSummary.hitRateAvg}%` : ''}</div>
-              <button onClick={() => { setSimulationResults([]); setSimulationSummary(null); }} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Clear</button>
+              <button onClick={() => { setSimulationResults([]); setSimulationSummary(null); }} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Clear</button>
             </div>
             {simulationSummary?.variants?.length ? (
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6, fontSize: 12, color: "#cbd5e1" }}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6, fontSize: 12, color: "#d4d4d8" }}>
                 {simulationSummary.variants.map(v => (
-                  <span key={v.variant} style={{ background: "#1f2433", border: "1px solid #4b5780", padding: "4px 8px", borderRadius: 8 }}>{v.variant}: {v.hitRate ?? v.hitRateAvg ?? "-"}%</span>
+                  <span key={v.variant} style={{ background: "#18181b", border: "1px solid #52525b", padding: "4px 8px", borderRadius: 8 }}>{v.variant}: {v.hitRate ?? v.hitRateAvg ?? "-"}%</span>
                 ))}
               </div>
             ) : null}
@@ -8409,41 +8409,41 @@ export default function ImageAltMediaSEO() {
                   <div style={{ fontWeight: 600 }}>{r.ok ? "OK" : "Error"} · {r.meta?.url ? shortenUrl(r.meta.url) : 'Item'} {typeof r.hitRate === 'number' ? `· Hit ${r.hitRate}%` : ''} {r.promptVariant ? `· ${r.promptVariant}` : ''}</div>
                   {r.error ? <div style={{ color: "#f87171" }}>{r.error}</div> : null}
                   {r.result ? <div style={{ fontSize: 13 }}>Suggested: {r.result}</div> : null}
-                  {r.diff ? <div style={{ fontSize: 12, color: "#cbd5e1" }}>Δlen {r.diff.lengthDelta}; overlap {r.diff.overlap}</div> : null}
+                  {r.diff ? <div style={{ fontSize: 12, color: "#d4d4d8" }}>Δlen {r.diff.lengthDelta}; overlap {r.diff.overlap}</div> : null}
                 </li>
               ))}
-              {simulationResults.length > 10 ? <li style={{ fontSize: 12, color: "#94a3b8" }}>Showing first 10</li> : null}
+              {simulationResults.length > 10 ? <li style={{ fontSize: 12, color: "#a1a1aa" }}>Showing first 10</li> : null}
             </ul>
           </div>
         ) : null}
 
         {translationResults?.length ? (
-          <div style={{ marginBottom: 12, background: "#1f2433", borderRadius: 10, padding: 12, border: "1px solid #4b5780" }}>
+          <div style={{ marginBottom: 12, background: "#18181b", borderRadius: 10, padding: 12, border: "1px solid #52525b" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 6 }}>
               <div style={{ fontWeight: 700 }}>Translations ({translationResults.length}) → {translateLocale}</div>
-              <button onClick={() => setTranslationResults([])} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Clear</button>
+              <button onClick={() => setTranslationResults([])} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Clear</button>
             </div>
             <ul style={{ margin: 0, paddingLeft: 16 }}>
               {translationResults.slice(0, 10).map((t, idx) => (
                 <li key={`tr-${idx}`} style={{ marginBottom: 6 }}>
                   <div style={{ fontSize: 13 }}>{t.altText || t.error || '(none)'} {t.ok === false ? <span style={{ color: "#f87171" }}>error</span> : null}</div>
-                  {t.lint ? <div style={{ fontSize: 12, color: "#cbd5e1" }}>Len {t.lint.length}; Issues {t.lint.issueCount}; Findings {t.lint.totalFindings}</div> : null}
+                  {t.lint ? <div style={{ fontSize: 12, color: "#d4d4d8" }}>Len {t.lint.length}; Issues {t.lint.issueCount}; Findings {t.lint.totalFindings}</div> : null}
                 </li>
               ))}
-              {translationResults.length > 10 ? <li style={{ fontSize: 12, color: "#94a3b8" }}>Showing first 10</li> : null}
+              {translationResults.length > 10 ? <li style={{ fontSize: 12, color: "#a1a1aa" }}>Showing first 10</li> : null}
             </ul>
           </div>
         ) : null}
 
         {visionResults?.length ? (
-          <div style={{ marginBottom: 12, background: "#1f2433", borderRadius: 10, padding: 12, border: "1px solid #4b5780" }}>
+          <div style={{ marginBottom: 12, background: "#18181b", borderRadius: 10, padding: 12, border: "1px solid #52525b" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 6 }}>
               <div style={{ fontWeight: 700 }}>Vision QC ({visionResults.length})</div>
-              <button onClick={() => setVisionResults([])} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Clear</button>
+              <button onClick={() => setVisionResults([])} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Clear</button>
             </div>
-            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 8, fontSize: 12, color: "#cbd5e1" }}>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 8, fontSize: 12, color: "#d4d4d8" }}>
               <span>Filter</span>
-              <select name="visionFilter" value={visionFilter} onChange={e => setVisionFilter(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #4b5780", background: "#1f2433", color: "#e2e8f0" }}>
+              <select name="visionFilter" value={visionFilter} onChange={e => setVisionFilter(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #52525b", background: "#18181b", color: "#e4e4e7" }}>
                 <option value="all">All</option>
                 <option value="mismatch">Mismatches</option>
                 <option value="ok">Aligned</option>
@@ -8457,13 +8457,13 @@ export default function ImageAltMediaSEO() {
                 if (visionFilter === "low-overlap") return typeof v.overlapScore === 'number' && v.overlapScore < 0.5;
                 return true;
               }).slice(0, 10).map((v, idx) => (
-                <li key={`qc-${idx}`} style={{ marginBottom: 10, background: "#1f2433", borderRadius: 8, padding: 10, border: "1px solid #4b5780" }}>
+                <li key={`qc-${idx}`} style={{ marginBottom: 10, background: "#18181b", borderRadius: 8, padding: 10, border: "1px solid #52525b" }}>
                   <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                     <div style={{ flex: "0 0 120px" }}>
                       {v.url ? (
-                        <img src={v.url} alt="Vision sample" loading="lazy" style={{ width: 120, height: 120, objectFit: "contain", borderRadius: 8, background: "#0b0b0b" }} />
+                        <img src={v.url} alt="Vision sample" loading="lazy" style={{ width: 120, height: 120, objectFit: "contain", borderRadius: 8, background: "#09090b" }} />
                       ) : (
-                        <div style={{ width: 120, height: 120, borderRadius: 8, background: "#1f2433", border: "1px dashed #555", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 12 }}>
+                        <div style={{ width: 120, height: 120, borderRadius: 8, background: "#18181b", border: "1px dashed #555", display: "flex", alignItems: "center", justifyContent: "center", color: "#a1a1aa", fontSize: 12 }}>
                           No image
                         </div>
                       )}
@@ -8472,13 +8472,13 @@ export default function ImageAltMediaSEO() {
                       <div style={{ fontWeight: 600, color: v.mismatch ? "#f97316" : "#a3e635" }}>
                         {v.mismatch ? "Mismatch" : "Looks aligned"} · overlap {v.overlap}
                       </div>
-                      <div style={{ fontSize: 12, color: "#cbd5e1" }}>{v.url ? shortenUrl(v.url) : '(no url)'}</div>
+                      <div style={{ fontSize: 12, color: "#d4d4d8" }}>{v.url ? shortenUrl(v.url) : '(no url)'}</div>
                       <div style={{ fontSize: 12, marginTop: 4 }}>{v.altText || '(none)'}</div>
                     </div>
                   </div>
                 </li>
               ))}
-              {visionResults.length > 10 ? <li style={{ fontSize: 12, color: "#94a3b8" }}>Showing first 10</li> : null}
+              {visionResults.length > 10 ? <li style={{ fontSize: 12, color: "#a1a1aa" }}>Showing first 10</li> : null}
             </ul>
           </div>
         ) : null}
@@ -8489,19 +8489,19 @@ export default function ImageAltMediaSEO() {
           onChange={e => setKeywords(e.target.value)}
           placeholder="Keywords (comma separated)"
           aria-label="Keywords"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635", marginTop: 10 }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635", marginTop: 10 }}
         />
         <input name="brandTerms"
           value={brandTerms}
           onChange={e => setBrandTerms(e.target.value)}
           placeholder="Brand vocabulary (comma separated)"
           aria-label="Brand terms"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635", marginTop: 10, marginBottom: 14 }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635", marginTop: 10, marginBottom: 14 }}
         />
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 8, color: "#a3e635", fontSize: 13 }}>
           <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
             Role
-            <select name="role" value={role} onChange={e => setRole(e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}>
+            <select name="role" value={role} onChange={e => setRole(e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}>
               <option value="admin">admin</option>
               <option value="editor">editor</option>
               <option value="reviewer">reviewer</option>
@@ -8512,12 +8512,12 @@ export default function ImageAltMediaSEO() {
             {roleCanWrite ? "Write actions enabled" : roleCanApprove ? "Reviewer: approve only, no apply" : "Read-only"}
           </span>
         </div>
-          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 10, fontSize: 12, color: "#cbd5e1" }}>
-            <span style={{ fontWeight: 700, color: "#e2e8f0" }}>Prompt variants for simulation</span>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 10, fontSize: 12, color: "#d4d4d8" }}>
+            <span style={{ fontWeight: 700, color: "#e4e4e7" }}>Prompt variants for simulation</span>
             {simulationTones.map(opt => {
               const checked = simulateVariants.includes(opt.key);
               return (
-                <label key={opt.key} style={{ display: "flex", alignItems: "center", gap: 4, background: checked ? "#0ea5e9" : "#283044", color: checked ? "#0b0b0b" : "#e2e8f0", padding: "4px 8px", borderRadius: 8, border: "1px solid #4b5780" }}>
+                <label key={opt.key} style={{ display: "flex", alignItems: "center", gap: 4, background: checked ? "#0ea5e9" : "#27272a", color: checked ? "#09090b" : "#e4e4e7", padding: "4px 8px", borderRadius: 8, border: "1px solid #52525b" }}>
                   <input name={`simulateVariant-${opt.key}`}
                     type="checkbox"
                     checked={checked}
@@ -8531,8 +8531,8 @@ export default function ImageAltMediaSEO() {
                 </label>
               );
             })}
-            <button onClick={() => handleSimulateSelected(simulateVariants.length ? simulateVariants : null)} aria-label="Simulate with selected prompt variants" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#e0e7ff" : "#4b5780", color: roleCanSimulate ? "#283044" : "#94a3b8", border: "1px solid #e9ebf5", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Run sim (variants)</button>
-            <span style={{ fontSize: 11, color: "#94a3b8" }}>Runs each variant separately and aggregates.</span>
+            <button onClick={() => handleSimulateSelected(simulateVariants.length ? simulateVariants : null)} aria-label="Simulate with selected prompt variants" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#e0e7ff" : "#52525b", color: roleCanSimulate ? "#27272a" : "#a1a1aa", border: "1px solid #e4e4e7", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Run sim (variants)</button>
+            <span style={{ fontSize: 11, color: "#a1a1aa" }}>Runs each variant separately and aggregates.</span>
           </div>
           </>
         )}
@@ -8560,32 +8560,32 @@ export default function ImageAltMediaSEO() {
                 onBlur={() => setTimeout(() => setSearchSuggestions([]), 200)}
                 placeholder="Search URL or alt text"
                 aria-label="Search images"
-                style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635", minWidth: 180, position: "relative" }}
+                style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635", minWidth: 180, position: "relative" }}
               />
               {searchSuggestions.length > 0 && (
-                <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#283044", border: "1px solid #475569", borderRadius: 8, marginTop: 4, maxHeight: 200, overflow: "auto", zIndex: 100, boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
+                <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#27272a", border: "1px solid #52525b", borderRadius: 8, marginTop: 4, maxHeight: 200, overflow: "auto", zIndex: 100, boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
                   {searchSuggestions.map((suggestion, idx) => (
-                    <div key={idx} onClick={() => { setImageSearch(suggestion); setSearchSuggestions([]); }} style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13, color: "#e2e8f0", borderBottom: idx < searchSuggestions.length - 1 ? "1px solid #4b5780" : "none", transition: "background 0.15s" }} onMouseEnter={e => e.target.style.background = "#4b5780"} onMouseLeave={e => e.target.style.background = "transparent"}>{suggestion}</div>
+                    <div key={idx} onClick={() => { setImageSearch(suggestion); setSearchSuggestions([]); }} style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13, color: "#e4e4e7", borderBottom: idx < searchSuggestions.length - 1 ? "1px solid #52525b" : "none", transition: "background 0.15s" }} onMouseEnter={e => e.target.style.background = "#52525b"} onMouseLeave={e => e.target.style.background = "transparent"}>{suggestion}</div>
                   ))}
                 </div>
               )}
               <button onClick={handleImageSearchSubmit} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Search</button>
-              <button onClick={handleClearImageSearch} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Clear</button>
+              <button onClick={handleClearImageSearch} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Clear</button>
               <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                 Page size
-                <select name="imageLimit" value={imageLimit} onChange={e => handleImageLimitChange(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}>
+                <select name="imageLimit" value={imageLimit} onChange={e => handleImageLimitChange(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}>
                   {[10, 20, 50, 100, 200].map(opt => <option key={opt} value={opt}>{opt}</option>)}
                 </select>
               </label>
               <button onClick={() => fetchImages(imageOffset, imageLimit, imageSearch)} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Refresh</button>
-              <span style={{ fontSize: 11, color: "#94a3b8" }}>{imageRefreshedAt ? `Updated ${new Date(imageRefreshedAt).toLocaleTimeString()}` : "Not loaded yet"}</span>
+              <span style={{ fontSize: 11, color: "#a1a1aa" }}>{imageRefreshedAt ? `Updated ${new Date(imageRefreshedAt).toLocaleTimeString()}` : "Not loaded yet"}</span>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <input name="shopDomain"
                   value={shopDomain}
                   onChange={e => setShopDomain(e.target.value)}
                   placeholder="shop.myshopify.com"
                   aria-label="Shopify shop domain"
-                  style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635", minWidth: 180 }}
+                  style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635", minWidth: 180 }}
                 />
                 <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                   Max images
@@ -8595,7 +8595,7 @@ export default function ImageAltMediaSEO() {
                   Products
                   <input name="shopifyProductLimit" type="number" min={1} max={5000} value={shopifyProductLimit} onChange={e => setShopifyProductLimit(Math.min(Math.max(Number(e.target.value) || 1, 1), 5000))} style={{ width: 90, padding: "6px 8px", borderRadius: 8, border: "1px solid #555" }} />
                 </label>
-                <button onClick={handleImportShopify} disabled={shopifyImporting} style={{ background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: shopifyImporting ? "wait" : "pointer" }}>{shopifyImporting ? "Importing..." : "Pull from Shopify"}</button>
+                <button onClick={handleImportShopify} disabled={shopifyImporting} style={{ background: "#10b981", color: "#09090b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: shopifyImporting ? "wait" : "pointer" }}>{shopifyImporting ? "Importing..." : "Pull from Shopify"}</button>
               </div>
               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                 <input name="similarityQuery"
@@ -8604,11 +8604,11 @@ export default function ImageAltMediaSEO() {
                   onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleSimilaritySearch(); } }}
                   placeholder="Find similar alt text"
                   aria-label="Similarity search text"
-                  style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635", minWidth: 200 }}
+                  style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635", minWidth: 200 }}
                 />
                 <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                   Top
-                  <select name="similarityLimit" value={similarityLimit} onChange={e => setSimilarityLimit(Math.min(Math.max(Number(e.target.value) || 5, 1), 50))} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}>
+                  <select name="similarityLimit" value={similarityLimit} onChange={e => setSimilarityLimit(Math.min(Math.max(Number(e.target.value) || 5, 1), 50))} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}>
                     {[3, 5, 10, 20, 50].map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
                   <span>results</span>
@@ -8629,23 +8629,23 @@ export default function ImageAltMediaSEO() {
             <span>Showing {images.length} of {imageTotal} images</span>
             <span>Page {currentImagePage} / {totalImagePages}</span>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <button onClick={() => handleImagePageChange(-1)} disabled={currentImagePage <= 1} style={{ background: "linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: currentImagePage <= 1 ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: currentImagePage <= 1 ? 0.5 : 1 }}>← Prev</button>
-              <input name="jumpToPage" type="number" min={1} max={totalImagePages} value={jumpToPage || currentImagePage} onChange={e => setJumpToPage(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const page = Math.min(Math.max(1, Number(jumpToPage) || 1), totalImagePages); setImageOffset((page - 1) * imageLimit); setJumpToPage(""); fetchImages((page - 1) * imageLimit, imageLimit, imageSearch); } }} placeholder="Jump" style={{ width: 60, padding: "6px 8px", borderRadius: 8, border: "2px solid #8b5cf6", background: "#0a0b0f", color: "#a3e635", textAlign: "center", fontWeight: 700 }} />
-              <span style={{ color: "#cbd5e1" }}>/</span>
+              <button onClick={() => handleImagePageChange(-1)} disabled={currentImagePage <= 1} style={{ background: "linear-gradient(135deg, #e4e4e7 0%, #d4d4d8 100%)", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: currentImagePage <= 1 ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: currentImagePage <= 1 ? 0.5 : 1 }}>← Prev</button>
+              <input name="jumpToPage" type="number" min={1} max={totalImagePages} value={jumpToPage || currentImagePage} onChange={e => setJumpToPage(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { const page = Math.min(Math.max(1, Number(jumpToPage) || 1), totalImagePages); setImageOffset((page - 1) * imageLimit); setJumpToPage(""); fetchImages((page - 1) * imageLimit, imageLimit, imageSearch); } }} placeholder="Jump" style={{ width: 60, padding: "6px 8px", borderRadius: 8, border: "2px solid #8b5cf6", background: "#09090b", color: "#a3e635", textAlign: "center", fontWeight: 700 }} />
+              <span style={{ color: "#d4d4d8" }}>/</span>
               <span style={{ fontWeight: 700, color: "#a3e635" }}>{totalImagePages}</span>
-              <button onClick={() => handleImagePageChange(1)} disabled={currentImagePage >= totalImagePages} style={{ background: "linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: currentImagePage >= totalImagePages ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: currentImagePage >= totalImagePages ? 0.5 : 1 }}>Next →</button>
+              <button onClick={() => handleImagePageChange(1)} disabled={currentImagePage >= totalImagePages} style={{ background: "linear-gradient(135deg, #e4e4e7 0%, #d4d4d8 100%)", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 10, padding: "8px 14px", fontWeight: 700, cursor: currentImagePage >= totalImagePages ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: currentImagePage >= totalImagePages ? 0.5 : 1 }}>Next →</button>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10, fontSize: 13, color: "#a3e635" }}>
             <span role="status" aria-live="polite">Selected {selectedImageIds.length}</span>
-            <button onClick={selectPageImages} aria-label="Select all images on this page" style={{ background: "#e0f2fe", color: "#1f2433", border: "1px solid #bae6fd", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: "pointer" }}>Select page</button>
-            <button onClick={clearSelectedImages} aria-label="Clear selected images" disabled={!selectedImageIds.length} style={{ background: "#f8fafc", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: !selectedImageIds.length ? "not-allowed" : "pointer" }}>Clear selection</button>
-            <button onClick={handlePushShopify} aria-label="Push selected alt text to Shopify" disabled={!selectedImageIds.length || shopifyPushing || loading} style={{ background: !selectedImageIds.length || shopifyPushing ? "#4b5780" : "#0ea5e9", color: "#f8fafc", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || shopifyPushing || loading) ? "not-allowed" : "pointer" }}>{shopifyPushing ? "Pushing…" : "Push to Shopify"}</button>
+            <button onClick={selectPageImages} aria-label="Select all images on this page" style={{ background: "#e0f2fe", color: "#18181b", border: "1px solid #bae6fd", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: "pointer" }}>Select page</button>
+            <button onClick={clearSelectedImages} aria-label="Clear selected images" disabled={!selectedImageIds.length} style={{ background: "#fafafa", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: !selectedImageIds.length ? "not-allowed" : "pointer" }}>Clear selection</button>
+            <button onClick={handlePushShopify} aria-label="Push selected alt text to Shopify" disabled={!selectedImageIds.length || shopifyPushing || loading} style={{ background: !selectedImageIds.length || shopifyPushing ? "#52525b" : "#0ea5e9", color: "#fafafa", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || shopifyPushing || loading) ? "not-allowed" : "pointer" }}>{shopifyPushing ? "Pushing…" : "Push to Shopify"}</button>
           </div>
-          <div style={{ marginBottom: 24, background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 20, padding: 24, border: "2px solid #475569", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
+          <div style={{ marginBottom: 24, background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 24, border: "2px solid #52525b", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <div style={{ fontWeight: 800, fontSize: 16, color: "#f1f5f9", display: "flex", alignItems: "center", gap: 8 }}>Bulk Update</div>
-              <button onClick={() => setCollapsedSections(prev => ({ ...prev, bulk: !prev.bulk }))} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 20, cursor: "pointer" }}>{collapsedSections.bulk ? "" : ""}</button>
+              <div style={{ fontWeight: 800, fontSize: 16, color: "#f4f4f5", display: "flex", alignItems: "center", gap: 8 }}>Bulk Update</div>
+              <button onClick={() => setCollapsedSections(prev => ({ ...prev, bulk: !prev.bulk }))} style={{ background: "transparent", border: "none", color: "#d4d4d8", fontSize: 20, cursor: "pointer" }}>{collapsedSections.bulk ? "" : ""}</button>
             </div>
             {!collapsedSections.bulk && (<>
             <textarea name="bulkAltText"
@@ -8654,29 +8654,29 @@ export default function ImageAltMediaSEO() {
               rows={3}
               aria-label="Bulk alt text"
               placeholder="Enter alt text to apply to selected images"
-              style={{ width: "100%", fontSize: 14, padding: 16, borderRadius: 12, border: "2px solid #64748b", background: "#1f2433", color: "#e2e8f0", marginBottom: 12, transition: "all 0.2s", outline: "none" }}
+              style={{ width: "100%", fontSize: 14, padding: 16, borderRadius: 12, border: "2px solid #71717a", background: "#18181b", color: "#e4e4e7", marginBottom: 12, transition: "all 0.2s", outline: "none" }}
               onFocus={e => e.target.style.borderColor = "#8b5cf6"}
-              onBlur={e => e.target.style.borderColor = "#64748b"}
+              onBlur={e => e.target.style.borderColor = "#71717a"}
             />
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-              <button onClick={handleBulkApply} disabled={!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading} style={{ background: roleCanApply ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" : "#4b5780", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading) ? "not-allowed" : "pointer", boxShadow: roleCanApply ? "0 4px 12px rgba(16, 185, 129, 0.3)" : "none", transition: "all 0.2s", transform: "translateY(0)" }} onMouseEnter={e => { if (roleCanApply && selectedImageIds.length && bulkAltText.trim() && !loading) e.target.style.transform = "translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "translateY(0)"}>Apply to selected</button>
+              <button onClick={handleBulkApply} disabled={!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading} style={{ background: roleCanApply ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" : "#52525b", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || !bulkAltText.trim() || loading) ? "not-allowed" : "pointer", boxShadow: roleCanApply ? "0 4px 12px rgba(16, 185, 129, 0.3)" : "none", transition: "all 0.2s", transform: "translateY(0)" }} onMouseEnter={e => { if (roleCanApply && selectedImageIds.length && bulkAltText.trim() && !loading) e.target.style.transform = "translateY(-2px)"; }} onMouseLeave={e => e.target.style.transform = "translateY(0)"}>Apply to selected</button>
               <button onClick={() => { if (selectedImageIds.length && bulkAltText.trim()) setShowBulkPreview(true); }} disabled={!selectedImageIds.length || !bulkAltText.trim()} style={{ background: "rgba(139, 92, 246, 0.2)", color: "#a78bfa", border: "1px solid #8b5cf6", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!selectedImageIds.length || !bulkAltText.trim()) ? "not-allowed" : "pointer", transition: "all 0.2s" }}>Preview</button>
-              <button onClick={handleQueueBulkApproval} aria-label="Queue approval for bulk alt update" disabled={!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()} style={{ background: roleCanApprove ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" : "#4b5780", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()) ? "not-allowed" : "pointer", boxShadow: roleCanApprove ? "0 4px 12px rgba(245, 158, 11, 0.3)" : "none", transition: "all 0.2s" }}>Request approval</button>
-              <button onClick={handleUndo} aria-label="Undo last bulk or AI change" disabled={!undoBuffer.length || loading} title={undoBuffer.length ? `Undo (Ctrl+Z) - ${undoBuffer.length} action${undoBuffer.length > 1 ? 's' : ''} available` : "No actions to undo"} style={{ background: undoBuffer.length ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" : "#4b5780", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!undoBuffer.length || loading) ? "not-allowed" : "pointer", boxShadow: undoBuffer.length ? "0 4px 12px rgba(245, 158, 11, 0.3)" : "none", transition: "all 0.2s" }}>Undo ({undoBuffer.length})</button>
+              <button onClick={handleQueueBulkApproval} aria-label="Queue approval for bulk alt update" disabled={!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()} style={{ background: roleCanApprove ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" : "#52525b", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApprove || !selectedImageIds.length || !bulkAltText.trim()) ? "not-allowed" : "pointer", boxShadow: roleCanApprove ? "0 4px 12px rgba(245, 158, 11, 0.3)" : "none", transition: "all 0.2s" }}>Request approval</button>
+              <button onClick={handleUndo} aria-label="Undo last bulk or AI change" disabled={!undoBuffer.length || loading} title={undoBuffer.length ? `Undo (Ctrl+Z) - ${undoBuffer.length} action${undoBuffer.length > 1 ? 's' : ''} available` : "No actions to undo"} style={{ background: undoBuffer.length ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" : "#52525b", color: "#fff", border: "none", borderRadius: 12, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: (!undoBuffer.length || loading) ? "not-allowed" : "pointer", boxShadow: undoBuffer.length ? "0 4px 12px rgba(245, 158, 11, 0.3)" : "none", transition: "all 0.2s" }}>Undo ({undoBuffer.length})</button>
               {selectedImageIds.length ? <span style={{ fontSize: 12 }}>IDs: {selectedImageIds.slice(0, 6).join(', ')}{selectedImageIds.length > 6 ? '…' : ''}</span> : <span style={{ fontSize: 12 }}>Pick rows to enable bulk update</span>}
-              <span style={{ fontSize: 11, color: "#94a3b8" }}>Shortcuts: Ctrl+Shift+A (select all), Ctrl+Z (undo), Shift+Click (range select)</span>
+              <span style={{ fontSize: 11, color: "#a1a1aa" }}>Shortcuts: Ctrl+Shift+A (select all), Ctrl+Z (undo), Shift+Click (range select)</span>
             </div>
             </>) }
           </div>
           {similarityResults?.length ? (
-            <div style={{ marginBottom: 12, background: "#1f2433", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
+            <div style={{ marginBottom: 12, background: "#18181b", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 6 }}>
                 <div style={{ fontWeight: 700 }}>Similar results for “{similarityQuery.trim()}” (top {similarityLimit})</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 12, color: "#a3e635" }}>Scores show token overlap</span>
-                  <button onClick={handleDownloadSimilarCsv} aria-label="Download similar results as CSV" style={{ background: "#4b5780", color: "#fff", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Download CSV</button>
+                  <button onClick={handleDownloadSimilarCsv} aria-label="Download similar results as CSV" style={{ background: "#52525b", color: "#fff", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Download CSV</button>
                   {similarityDownloadUrl && <a href={similarityDownloadUrl} download="images-similar.csv" style={{ color: "#a3e635", fontWeight: 600 }}>Save CSV</a>}
-                  <button onClick={() => setSimilarityResults([])} aria-label="Clear similar results" style={{ background: "#f8fafc", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Clear</button>
+                  <button onClick={() => setSimilarityResults([])} aria-label="Clear similar results" style={{ background: "#fafafa", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Clear</button>
                 </div>
               </div>
               <ul style={{ margin: 0, paddingLeft: 18 }}>
@@ -8684,8 +8684,8 @@ export default function ImageAltMediaSEO() {
                   <li key={item.id} style={{ marginBottom: 8 }}>
                     <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                       <span style={{ fontWeight: 600 }}>Score {item.score}</span>
-                      <button onClick={() => toggleSelectImage(item.id)} aria-pressed={selectedImageIds.includes(item.id)} aria-label={`Select image ${item.id} from similarity results`} style={{ background: selectedImageIds.includes(item.id) ? "#0ea5e9" : "#e2e8f0", color: selectedImageIds.includes(item.id) ? "#fff" : "#0b0b0b", border: selectedImageIds.includes(item.id) ? "none" : "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{selectedImageIds.includes(item.id) ? "Selected" : "Select"}</button>
-                      <button onClick={() => setBulkAltText(item.altText || "")} style={{ background: "#fef9c3", color: "#0b0b0b", border: "1px solid #facc15", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Use alt for bulk</button>
+                      <button onClick={() => toggleSelectImage(item.id)} aria-pressed={selectedImageIds.includes(item.id)} aria-label={`Select image ${item.id} from similarity results`} style={{ background: selectedImageIds.includes(item.id) ? "#0ea5e9" : "#e4e4e7", color: selectedImageIds.includes(item.id) ? "#fff" : "#09090b", border: selectedImageIds.includes(item.id) ? "none" : "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{selectedImageIds.includes(item.id) ? "Selected" : "Select"}</button>
+                      <button onClick={() => setBulkAltText(item.altText || "")} style={{ background: "#fef9c3", color: "#09090b", border: "1px solid #facc15", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Use alt for bulk</button>
                     </div>
                     <div style={{ fontSize: 13, marginTop: 4 }}><b>ID:</b> {item.id}</div>
                     <div style={{ fontSize: 13 }}><b>Alt:</b> {item.altText || '(none)'}</div>
@@ -8696,12 +8696,12 @@ export default function ImageAltMediaSEO() {
             </div>
           ) : null}
 
-          <div style={{ marginBottom: 24, background: "linear-gradient(135deg, #1f2433 0%, #283044 100%)", borderRadius: 20, padding: 24, border: "2px solid #4b5780", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
+          <div style={{ marginBottom: 24, background: "linear-gradient(135deg, #18181b 0%, #27272a 100%)", borderRadius: 20, padding: 24, border: "2px solid #52525b", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 16 }}>
-              <div style={{ fontWeight: 800, fontSize: 16, color: "#f1f5f9", display: "flex", alignItems: "center", gap: 8 }}>Approval Queue <span style={{ background: "#7c3aed", color: "#fff", fontSize: 12, padding: "2px 10px", borderRadius: 999, fontWeight: 700 }}>{approvalQueue.length}</span></div>
+              <div style={{ fontWeight: 800, fontSize: 16, color: "#f4f4f5", display: "flex", alignItems: "center", gap: 8 }}>Approval Queue <span style={{ background: "#7c3aed", color: "#fff", fontSize: 12, padding: "2px 10px", borderRadius: 999, fontWeight: 700 }}>{approvalQueue.length}</span></div>
               <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                <span style={{ fontSize: 12, color: "#cbd5e1" }}>{roleCanApply ? "Editors/Admins can apply" : roleCanApprove ? "Reviewers can approve; editors apply" : "View-only"}</span>
-                <button onClick={() => setCollapsedSections(prev => ({ ...prev, approval: !prev.approval }))} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 20, cursor: "pointer" }}>{collapsedSections.approval ? "" : ""}</button>
+                <span style={{ fontSize: 12, color: "#d4d4d8" }}>{roleCanApply ? "Editors/Admins can apply" : roleCanApprove ? "Reviewers can approve; editors apply" : "View-only"}</span>
+                <button onClick={() => setCollapsedSections(prev => ({ ...prev, approval: !prev.approval }))} style={{ background: "transparent", border: "none", color: "#d4d4d8", fontSize: 20, cursor: "pointer" }}>{collapsedSections.approval ? "" : ""}</button>
               </div>
             </div>
             {!collapsedSections.approval && (<>
@@ -8711,7 +8711,7 @@ export default function ImageAltMediaSEO() {
                   <li key={entry.id} style={{ marginBottom: 8 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                       <div style={{ fontWeight: 700 }}>{entry.label}</div>
-                      <div style={{ display: "flex", gap: 6, fontSize: 12, color: "#cbd5e1" }}>
+                      <div style={{ display: "flex", gap: 6, fontSize: 12, color: "#d4d4d8" }}>
                         <span>{entry.items.length} item(s)</span>
                         <span>Status: <span style={{ color: entry.status === "approved" ? "#22c55e" : entry.status === "rejected" ? "#f87171" : "#f59e0b" }}>{entry.status}</span></span>
                         <span>By {entry.requestedBy}</span>
@@ -8719,24 +8719,24 @@ export default function ImageAltMediaSEO() {
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
-                      <button onClick={() => markApproval(entry.id, "approved")} disabled={!roleCanApprove || entry.status === "approved"} style={{ background: "#22c55e", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: (!roleCanApprove || entry.status === "approved") ? "not-allowed" : "pointer" }}>Approve</button>
-                      <button onClick={() => markApproval(entry.id, "rejected")} disabled={!roleCanApprove} style={{ background: "#ef4444", color: "#f8fafc", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: !roleCanApprove ? "not-allowed" : "pointer" }}>Reject</button>
+                      <button onClick={() => markApproval(entry.id, "approved")} disabled={!roleCanApprove || entry.status === "approved"} style={{ background: "#22c55e", color: "#09090b", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: (!roleCanApprove || entry.status === "approved") ? "not-allowed" : "pointer" }}>Approve</button>
+                      <button onClick={() => markApproval(entry.id, "rejected")} disabled={!roleCanApprove} style={{ background: "#ef4444", color: "#fafafa", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: !roleCanApprove ? "not-allowed" : "pointer" }}>Reject</button>
                       <button onClick={() => applyApproval(entry)} disabled={!roleCanApply || entry.status !== "approved" || loading} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: (!roleCanApply || entry.status !== "approved" || loading) ? "not-allowed" : "pointer" }}>Apply approved</button>
-                      <span style={{ fontSize: 12, color: "#cbd5e1" }}>IDs: {entry.items.slice(0, 5).map(i => i.id).join(', ')}{entry.items.length > 5 ? '…' : ''}</span>
+                      <span style={{ fontSize: 12, color: "#d4d4d8" }}>IDs: {entry.items.slice(0, 5).map(i => i.id).join(', ')}{entry.items.length > 5 ? '…' : ''}</span>
                     </div>
                   </li>
                 ))}
-                {approvalQueue.length > 15 ? <li style={{ fontSize: 12, color: "#94a3b8" }}>Showing first 15</li> : null}
+                {approvalQueue.length > 15 ? <li style={{ fontSize: 12, color: "#a1a1aa" }}>Showing first 15</li> : null}
               </ul>
             ) : (
-              <div style={{ fontSize: 13, color: "#cbd5e1" }}>No approvals queued. Reviewers can approve; editors/admins can apply.</div>
+              <div style={{ fontSize: 13, color: "#d4d4d8" }}>No approvals queued. Reviewers can approve; editors/admins can apply.</div>
             )}
             </>) }
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              <span style={{ fontSize: 13, color: "#cbd5e1" }}>Filter</span>
-              <select name="filterMode" value={filterMode} onChange={e => setFilterMode(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#1f2433", color: "#e2e8f0" }}>
+              <span style={{ fontSize: 13, color: "#d4d4d8" }}>Filter</span>
+              <select name="filterMode" value={filterMode} onChange={e => setFilterMode(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#18181b", color: "#e4e4e7" }}>
                 <option value="all">All</option>
                 <option value="missing">Missing</option>
                 <option value="short">Short</option>
@@ -8745,8 +8745,8 @@ export default function ImageAltMediaSEO() {
               </select>
             </div>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              <span style={{ fontSize: 13, color: "#cbd5e1" }}>Sort</span>
-              <select name="sortMode" value={sortMode} onChange={e => setSortMode(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#1f2433", color: "#e2e8f0" }}>
+              <span style={{ fontSize: 13, color: "#d4d4d8" }}>Sort</span>
+              <select name="sortMode" value={sortMode} onChange={e => setSortMode(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#18181b", color: "#e4e4e7" }}>
                 <option value="newest">Newest</option>
                 <option value="oldest">Oldest</option>
                 <option value="score">Score</option>
@@ -8756,46 +8756,46 @@ export default function ImageAltMediaSEO() {
             <button onClick={() => {
               const ids = filteredImages.map(img => img.id).filter(Boolean);
               setSelectedImageIds(ids);
-            }} style={{ background: "#0ea5e9", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+            }} style={{ background: "#0ea5e9", color: "#09090b", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
               Select all filtered ({filteredImages.length})
             </button>
-            <button onClick={clearSelectedImages} style={{ background: "#283044", color: "#e2e8f0", border: "1px solid #4b5780", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
+            <button onClick={clearSelectedImages} style={{ background: "#27272a", color: "#e4e4e7", border: "1px solid #52525b", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
               Clear selection
             </button>
           </div>
-          <div style={{ marginBottom: 12, background: "#1f2433", borderRadius: 10, padding: 12, border: "1px solid #4b5780" }}>
+          <div style={{ marginBottom: 12, background: "#18181b", borderRadius: 10, padding: 12, border: "1px solid #52525b" }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Action log (last 10)</div>
             {actionLog.length ? (
               <ul style={{ margin: 0, paddingLeft: 16 }}>
                 {actionLog.slice(-10).reverse().map((a, idx) => (
-                  <li key={`${a.ts}-${idx}`} style={{ fontSize: 12, color: "#cbd5e1", marginBottom: 4 }}>
+                  <li key={`${a.ts}-${idx}`} style={{ fontSize: 12, color: "#d4d4d8", marginBottom: 4 }}>
                     <span style={{ fontWeight: 700 }}>{a.action}</span> · {a.count || 0} · role {a.role} · {new Date(a.ts).toLocaleTimeString()}
                     {a.label ? <> · {a.label}</> : null}
                   </li>
                 ))}
               </ul>
-            ) : <div style={{ fontSize: 12, color: "#94a3b8" }}>No actions yet.</div>}
+            ) : <div style={{ fontSize: 12, color: "#a1a1aa" }}>No actions yet.</div>}
           </div>
-          <div style={{ marginBottom: 12, background: "#1f2433", borderRadius: 10, padding: 12, border: "1px solid #4b5780" }}>
+          <div style={{ marginBottom: 12, background: "#18181b", borderRadius: 10, padding: 12, border: "1px solid #52525b" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <div style={{ fontWeight: 700 }}>Hooks observability</div>
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <button onClick={handleFetchHookMetrics} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Refresh</button>
-                <button onClick={handleResetHookMetrics} disabled={!roleCanApply} style={{ background: roleCanApply ? "#f59e0b" : "#4b5780", color: roleCanApply ? "#0b0b0b" : "#94a3b8", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: roleCanApply ? "pointer" : "not-allowed" }}>Reset metrics</button>
-                <button onClick={handleReplayHooks} disabled={!roleCanApply || webhookReplayStatus === "running"} style={{ background: roleCanApply ? "#0ea5e9" : "#4b5780", color: roleCanApply ? "#fff" : "#94a3b8", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: (!roleCanApply || webhookReplayStatus === "running") ? "not-allowed" : "pointer" }}>{webhookReplayStatus === "running" ? "Replaying..." : "Replay last push"}</button>
+                <button onClick={handleFetchHookMetrics} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Refresh</button>
+                <button onClick={handleResetHookMetrics} disabled={!roleCanApply} style={{ background: roleCanApply ? "#f59e0b" : "#52525b", color: roleCanApply ? "#09090b" : "#a1a1aa", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: roleCanApply ? "pointer" : "not-allowed" }}>Reset metrics</button>
+                <button onClick={handleReplayHooks} disabled={!roleCanApply || webhookReplayStatus === "running"} style={{ background: roleCanApply ? "#0ea5e9" : "#52525b", color: roleCanApply ? "#fff" : "#a1a1aa", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 12, cursor: (!roleCanApply || webhookReplayStatus === "running") ? "not-allowed" : "pointer" }}>{webhookReplayStatus === "running" ? "Replaying..." : "Replay last push"}</button>
               </div>
             </div>
             {hookMetrics ? (
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", fontSize: 12, color: "#cbd5e1" }}>
-                <span style={{ background: "#1f2433", border: "1px solid #4b5780", borderRadius: 8, padding: "4px 8px" }}>Push ok {hookMetrics.push?.success || 0} / err {hookMetrics.push?.error || 0}</span>
-                <span style={{ background: "#1f2433", border: "1px solid #4b5780", borderRadius: 8, padding: "4px 8px" }}>Pull ok {hookMetrics.pull?.success || 0} / err {hookMetrics.pull?.error || 0}</span>
-                <span style={{ background: "#1f2433", border: "1px solid #4b5780", borderRadius: 8, padding: "4px 8px" }}>AI improve ok {hookMetrics.aiImprove?.success || 0} / err {hookMetrics.aiImprove?.error || 0}</span>
-                {hookMetrics.lastReplayAt ? <span style={{ background: "#1f2433", border: "1px solid #4b5780", borderRadius: 8, padding: "4px 8px" }}>Last replay {new Date(hookMetrics.lastReplayAt).toLocaleTimeString()}</span> : null}
-                {hookMetrics.lastPush ? <span style={{ background: "#1f2433", border: "1px solid #4b5780", borderRadius: 8, padding: "4px 8px" }}>Last push items {hookMetrics.lastPush.length}</span> : null}
-                {hookMetrics.persistedAt ? <span style={{ background: "#1f2433", border: "1px solid #4b5780", borderRadius: 8, padding: "4px 8px" }}>Persisted {new Date(hookMetrics.persistedAt).toLocaleTimeString()}</span> : null}
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", fontSize: 12, color: "#d4d4d8" }}>
+                <span style={{ background: "#18181b", border: "1px solid #52525b", borderRadius: 8, padding: "4px 8px" }}>Push ok {hookMetrics.push?.success || 0} / err {hookMetrics.push?.error || 0}</span>
+                <span style={{ background: "#18181b", border: "1px solid #52525b", borderRadius: 8, padding: "4px 8px" }}>Pull ok {hookMetrics.pull?.success || 0} / err {hookMetrics.pull?.error || 0}</span>
+                <span style={{ background: "#18181b", border: "1px solid #52525b", borderRadius: 8, padding: "4px 8px" }}>AI improve ok {hookMetrics.aiImprove?.success || 0} / err {hookMetrics.aiImprove?.error || 0}</span>
+                {hookMetrics.lastReplayAt ? <span style={{ background: "#18181b", border: "1px solid #52525b", borderRadius: 8, padding: "4px 8px" }}>Last replay {new Date(hookMetrics.lastReplayAt).toLocaleTimeString()}</span> : null}
+                {hookMetrics.lastPush ? <span style={{ background: "#18181b", border: "1px solid #52525b", borderRadius: 8, padding: "4px 8px" }}>Last push items {hookMetrics.lastPush.length}</span> : null}
+                {hookMetrics.persistedAt ? <span style={{ background: "#18181b", border: "1px solid #52525b", borderRadius: 8, padding: "4px 8px" }}>Persisted {new Date(hookMetrics.persistedAt).toLocaleTimeString()}</span> : null}
               </div>
-            ) : <div style={{ fontSize: 12, color: "#94a3b8" }}>Refresh to see hook metrics.</div>}
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 8, fontSize: 12, color: "#cbd5e1" }}>
+            ) : <div style={{ fontSize: 12, color: "#a1a1aa" }}>Refresh to see hook metrics.</div>}
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 8, fontSize: 12, color: "#d4d4d8" }}>
               {hookMetricsAt ? <span>Updated {new Date(hookMetricsAt).toLocaleTimeString()}</span> : <span>Not refreshed yet</span>}
               {hookMetricsError ? <span style={{ color: "#f87171" }}>Error: {hookMetricsError}</span> : null}
               {webhookReplayStatus ? <span>{webhookReplayStatus}</span> : null}
@@ -8814,20 +8814,20 @@ export default function ImageAltMediaSEO() {
               </div>
             </div>
           )}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", color: "#cbd5e1", fontSize: 12, margin: "0 0 8px 0" }} aria-live="polite">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", color: "#d4d4d8", fontSize: 12, margin: "0 0 8px 0" }} aria-live="polite">
             <span>Showing {visibleImages.length} of {filteredImages.length} image(s)</span>
             {filteredImages.length > visibleImages.length ? (
-              <button aria-label="Load 80 more images" onClick={() => setVisibleCount(c =>Math.min(filteredImages.length, c + 80))} style={{ background: "#283044", color: "#e2e8f0", border: "1px solid #4b5780", borderRadius: 8, padding: "4px 8px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>
+              <button aria-label="Load 80 more images" onClick={() => setVisibleCount(c =>Math.min(filteredImages.length, c + 80))} style={{ background: "#27272a", color: "#e4e4e7", border: "1px solid #52525b", borderRadius: 8, padding: "4px 8px", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>
                 Load 80 more
               </button>
             ) : null}
           </div>
           {loading && <SkeletonLoader count={5} height={140} />}
           {!loading && !filteredImages.length ? (
-            <div style={{ textAlign: "center", padding: "80px 20px", background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 20, border: "2px solid #475569" }}>
+            <div style={{ textAlign: "center", padding: "80px 20px", background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, border: "2px solid #52525b" }}>
               <div style={{ fontSize: 64, marginBottom: 16 }}>Image</div>
-              <h3 style={{ fontSize: 24, fontWeight: 800, color: "#f1f5f9", margin: "0 0 12px 0" }}>No images yet</h3>
-              <p style={{ fontSize: 15, color: "#cbd5e1", marginBottom: 24 }}>Import from Shopify or create your first image alt text to get started.</p>
+              <h3 style={{ fontSize: 24, fontWeight: 800, color: "#f4f4f5", margin: "0 0 12px 0" }}>No images yet</h3>
+              <p style={{ fontSize: 15, color: "#d4d4d8", marginBottom: 24 }}>Import from Shopify or create your first image alt text to get started.</p>
               <button onClick={handleImportShopify} style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)" }}>Pull from Shopify</button>
             </div>
           ) : null}
@@ -8845,11 +8845,11 @@ export default function ImageAltMediaSEO() {
                   onMouseLeave={() => setHoveredImageId(null)}
                   style={{ 
                     marginBottom: 16, 
-                    background: selectedImageIds.includes(img.id) ? "linear-gradient(135deg, #283044 0%, #4b5780 100%)" : "rgba(15, 23, 42, 0.5)", 
+                    background: selectedImageIds.includes(img.id) ? "linear-gradient(135deg, #27272a 0%, #52525b 100%)" : "rgba(15, 23, 42, 0.5)", 
                     borderRadius: 16, 
                     padding: 16, 
-                    border: selectedImageIds.includes(img.id) ? `2px solid ${accentColor}` : "1px solid #4b5780", 
-                    color: "#e2e8f0", 
+                    border: selectedImageIds.includes(img.id) ? `2px solid ${accentColor}` : "1px solid #52525b", 
+                    color: "#e4e4e7", 
                     boxShadow: selectedImageIds.includes(img.id) ? `0 4px 16px rgba(139, 92, 246, 0.2)` : hoveredImageId === img.id ? "0 8px 24px rgba(0,0,0,0.3)" : "0 2px 8px rgba(0,0,0,0.1)", 
                     transition: "all 0.2s", 
                     transform: hoveredImageId === img.id ? "translateY(-4px) scale(1.01)" : "translateY(0)",
@@ -8859,7 +8859,7 @@ export default function ImageAltMediaSEO() {
                 >
                   {isPinned && <div style={{ position: "absolute", top: 12, right: 12, fontSize: 14, fontWeight: 700, zIndex: 10, background: "#8b5cf6", color: "#fff", padding: "4px 8px", borderRadius: 6 }}>PINNED</div>}
                   {hoveredImageId === img.id && img.url && (
-                    <div style={{ position: "absolute", top: -160, right: 16, width: 300, height: 150, background: "#1f2433", border: "2px solid #8b5cf6", borderRadius: 12, padding: 8, boxShadow: "0 12px 32px rgba(0,0,0,0.5)", zIndex: 100, animation: "scaleIn 0.2s ease" }}>
+                    <div style={{ position: "absolute", top: -160, right: 16, width: 300, height: 150, background: "#18181b", border: "2px solid #8b5cf6", borderRadius: 12, padding: 8, boxShadow: "0 12px 32px rgba(0,0,0,0.5)", zIndex: 100, animation: "scaleIn 0.2s ease" }}>
                       <img src={img.url} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: 8 }} />
                     </div>
                   )}
@@ -8871,47 +8871,47 @@ export default function ImageAltMediaSEO() {
                           src={img.url}
                           alt={img.altText || "Shopify image"}
                           loading="lazy"
-                          style={{ width: "100%", maxWidth: 150, maxHeight: 150, objectFit: "contain", borderRadius: 8, background: "#0b0b0b" }}
+                          style={{ width: "100%", maxWidth: 150, maxHeight: 150, objectFit: "contain", borderRadius: 8, background: "#09090b" }}
                         />
                       ) : (
-                        <div style={{ width: 140, height: 120, borderRadius: 8, background: "#1f2433", border: "1px dashed #555", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 12 }}>
+                        <div style={{ width: 140, height: 120, borderRadius: 8, background: "#18181b", border: "1px dashed #555", display: "flex", alignItems: "center", justifyContent: "center", color: "#a1a1aa", fontSize: 12 }}>
                           No image
                         </div>
                       )}
-                      <span style={{ position: "absolute", top: 6, left: 6, fontSize: 11, background: "#0ea5e9", color: "#0b0b0b", padding: "2px 6px", borderRadius: 999, fontWeight: 800 }}>{lint.label}</span>
-                      {duplicateAltIds.has(img.id) ? <span style={{ position: "absolute", top: 6, right: 6, fontSize: 11, background: "#e11d48", color: "#f8fafc", padding: "2px 6px", borderRadius: 999, fontWeight: 800 }}>Dup</span> : null}
+                      <span style={{ position: "absolute", top: 6, left: 6, fontSize: 11, background: "#0ea5e9", color: "#09090b", padding: "2px 6px", borderRadius: 999, fontWeight: 800 }}>{lint.label}</span>
+                      {duplicateAltIds.has(img.id) ? <span style={{ position: "absolute", top: 6, right: 6, fontSize: 11, background: "#e11d48", color: "#fafafa", padding: "2px 6px", borderRadius: 999, fontWeight: 800 }}>Dup</span> : null}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                         <div><b>{displayName}</b>{displayName !== img.id ? <> · ID: {img.id}</> : null}</div>
                         {selectedImageIds.includes(img.id) ? <span style={{ fontSize: 11, background: "#0ea5e9", color: "#fff", padding: "2px 6px", borderRadius: 999 }}>Selected</span> : null}
                         {img.url ? <a href={img.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#38bdf8", textDecoration: "underline" }}>Open</a> : null}
-                        <span style={{ fontSize: 11, background: lint.status === "ok" ? "#22c55e" : lint.status === "missing" ? "#ef4444" : lint.status === "short" ? "#f59e0b" : "#0ea5e9", color: "#0b0b0b", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>{lint.label}</span>
-                        {duplicateAltIds.has(img.id) ? <span style={{ fontSize: 11, background: "#e11d48", color: "#f8fafc", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>Duplicate</span> : null}
+                        <span style={{ fontSize: 11, background: lint.status === "ok" ? "#22c55e" : lint.status === "missing" ? "#ef4444" : lint.status === "short" ? "#f59e0b" : "#0ea5e9", color: "#09090b", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>{lint.label}</span>
+                        {duplicateAltIds.has(img.id) ? <span style={{ fontSize: 11, background: "#e11d48", color: "#fafafa", padding: "2px 8px", borderRadius: 999, fontWeight: 800 }}>Duplicate</span> : null}
                       </div>
-                      <div style={{ fontSize: 12, color: "#cbd5e1", wordBreak: "break-all" }}>
+                      <div style={{ fontSize: 12, color: "#d4d4d8", wordBreak: "break-all" }}>
                         <b>URL:</b> {shortenUrl(img.url) || "(none)"}
                         {img.url ? (
-                          <button onClick={() => { navigator.clipboard?.writeText(img.url); showToast("URL copied"); }} style={{ marginLeft: 8, background: "#283044", color: "#e2e8f0", border: "1px solid #4b5780", borderRadius: 6, padding: "2px 8px", fontSize: 11, cursor: "pointer" }}>Copy</button>
+                          <button onClick={() => { navigator.clipboard?.writeText(img.url); showToast("URL copied"); }} style={{ marginLeft: 8, background: "#27272a", color: "#e4e4e7", border: "1px solid #52525b", borderRadius: 6, padding: "2px 8px", fontSize: 11, cursor: "pointer" }}>Copy</button>
                         ) : null}
                       </div>
                       <div style={{ marginTop: 6 }}>
-                        <div style={{ fontWeight: 700, color: "#f6f7fb" }}>Alt</div>
-                        <div style={{ fontSize: 13, color: "#e2e8f0" }} title={resolveAlt(img) || "(none)"}>
+                        <div style={{ fontWeight: 700, color: "#fafafa" }}>Alt</div>
+                        <div style={{ fontSize: 13, color: "#e4e4e7" }} title={resolveAlt(img) || "(none)"}>
                           {truncate(resolveAlt(img), 220) || "(none)"}
                           {resolveAlt(img) ? (
-                            <button onClick={() => { navigator.clipboard?.writeText(resolveAlt(img)); showToast("Alt copied"); }} style={{ marginLeft: 8, background: "#283044", color: "#e2e8f0", border: "1px solid #4b5780", borderRadius: 6, padding: "2px 8px", fontSize: 11, cursor: "pointer" }}>Copy</button>
+                            <button onClick={() => { navigator.clipboard?.writeText(resolveAlt(img)); showToast("Alt copied"); }} style={{ marginLeft: 8, background: "#27272a", color: "#e4e4e7", border: "1px solid #52525b", borderRadius: 6, padding: "2px 8px", fontSize: 11, cursor: "pointer" }}>Copy</button>
                           ) : null}
                         </div>
                       </div>
-                      <div style={{ marginTop: 6, fontSize: 12, color: "#94a3b8", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                      <div style={{ marginTop: 6, fontSize: 12, color: "#a1a1aa", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                         {img.createdAt || img.created_at || img.createdat ? <span>Created: {formatDate(img.createdAt || img.created_at || img.createdat)}</span> : null}
                         {img.score ? <span>Score: {img.score}</span> : null}
                         {(() => {
                           const seoScore = img.seoScore !== null && img.seoScore !== undefined ? img.seoScore : calculateSeoScore(resolveAlt(img));
                           return (
                             <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", borderRadius: 8, background: seoScore >= 80 ? "rgba(34, 197, 94, 0.15)" : seoScore >= 60 ? "rgba(251, 191, 36, 0.15)" : "rgba(239, 68, 68, 0.15)", border: `1px solid ${seoScore >= 80 ? "#22c55e" : seoScore >= 60 ? "#fbbf24" : "#ef4444"}` }}>
-                              <span style={{ fontSize: 10, color: "#94a3b8" }}>SEO:</span>
+                              <span style={{ fontSize: 10, color: "#a1a1aa" }}>SEO:</span>
                               <span style={{ fontSize: 12, fontWeight: 700, color: seoScore >= 80 ? "#22c55e" : seoScore >= 60 ? "#fbbf24" : "#ef4444" }}>{Math.round(seoScore)}/100</span>
                             </div>
                           );
@@ -8922,7 +8922,7 @@ export default function ImageAltMediaSEO() {
                           onClick={() => handleAiRewriteSingle(img)}
                           disabled={rewritingId === img.id || loading}
                           style={{
-                            background: rewritingId === img.id ? "#475569" : "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+                            background: rewritingId === img.id ? "#52525b" : "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
                             color: "#fff",
                             border: "none",
                             borderRadius: 10,
@@ -8948,7 +8948,7 @@ export default function ImageAltMediaSEO() {
                             onClick={() => handlePushToShopify([img.id])}
                             disabled={shopifyPushProgress.show}
                             style={{
-                              background: shopifyPushProgress.show ? "#475569" : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                              background: shopifyPushProgress.show ? "#52525b" : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
                               color: "#fff",
                               border: "none",
                               borderRadius: 10,
@@ -8987,7 +8987,7 @@ export default function ImageAltMediaSEO() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Tone</span>
-          <select name="tone" value={tone} onChange={e => setTone(e.target.value)} aria-label="Tone" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}>
+          <select name="tone" value={tone} onChange={e => setTone(e.target.value)} aria-label="Tone" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}>
             {(meta?.presets?.tone || ["minimalist", "balanced", "expressive"]).map(opt => (
               <option key={opt} value={opt}>{opt}</option>
             ))}
@@ -8995,7 +8995,7 @@ export default function ImageAltMediaSEO() {
         </label>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Verbosity</span>
-          <select name="verbosity" value={verbosity} onChange={e => setVerbosity(e.target.value)} aria-label="Verbosity" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}>
+          <select name="verbosity" value={verbosity} onChange={e => setVerbosity(e.target.value)} aria-label="Verbosity" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}>
             {(meta?.presets?.verbosity || ["terse", "balanced", "detailed"]).map(opt => (
               <option key={opt} value={opt}>{opt}</option>
             ))}
@@ -9005,12 +9005,12 @@ export default function ImageAltMediaSEO() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
           <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontWeight: 600 }}>Variants</span>
-            <input name="variantCount" type="number" min={1} max={5} value={variantCount} onChange={e => setVariantCount(Math.min(5, Math.max(1, Number(e.target.value) || 1)))} aria-label="Variant count" style={{ width: 80, padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }} />
+            <input name="variantCount" type="number" min={1} max={5} value={variantCount} onChange={e => setVariantCount(Math.min(5, Math.max(1, Number(e.target.value) || 1)))} aria-label="Variant count" style={{ width: 80, padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }} />
             <span style={{ fontSize: 12, color: "#a3e635" }}>1-5 suggestions</span>
           </label>
           <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontWeight: 600 }}>Preset bundle</span>
-            <select name="presetBundle" value={selectedBundle} onChange={e => applyBundle(e.target.value)} aria-label="Preset bundle" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}>
+            <select name="presetBundle" value={selectedBundle} onChange={e => applyBundle(e.target.value)} aria-label="Preset bundle" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}>
               <option value="custom">Custom</option>
               {(meta?.presets?.bundles || []).map(b => (
                 <option key={b.key} value={b.key}>{b.key}</option>
@@ -9027,20 +9027,20 @@ export default function ImageAltMediaSEO() {
           onChange={e => setProductTitle(e.target.value)}
           placeholder="Product title"
           aria-label="Product title"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}
         />
         <input name="variant"
           value={variant}
           onChange={e => setVariant(e.target.value)}
           placeholder="Variant (e.g., red / size M)"
           aria-label="Variant"
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}
         />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Shot type</span>
-          <select name="shotType" value={shotType} onChange={e => setShotType(e.target.value)} aria-label="Shot type" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}>
+          <select name="shotType" value={shotType} onChange={e => setShotType(e.target.value)} aria-label="Shot type" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}>
             <option value="front">front</option>
             <option value="back">back</option>
             <option value="side">side</option>
@@ -9051,20 +9051,20 @@ export default function ImageAltMediaSEO() {
         </label>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Focus</span>
-          <select name="focus" value={focus} onChange={e => setFocus(e.target.value)} aria-label="Focus" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}>
+          <select name="focus" value={focus} onChange={e => setFocus(e.target.value)} aria-label="Focus" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}>
             <option value="product">product</option>
             <option value="scene">scene</option>
             <option value="detail">detail</option>
           </select>
         </label>
       </div>
-      <div style={{ marginBottom: 16, background: "#283044", borderRadius: 12, padding: 14, border: "1px solid #555" }}>
+      <div style={{ marginBottom: 16, background: "#27272a", borderRadius: 12, padding: 14, border: "1px solid #555" }}>
         <div style={{ fontWeight: 700, marginBottom: 8 }}>Lint existing alt text</div>
         <textarea name="lintOnlyText"
           value={lintOnlyText}
           onChange={e => setLintOnlyText(e.target.value)}
           rows={3}
-          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 10, background: "#0a0b0f", color: "#a3e635" }}
+          style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 10, background: "#09090b", color: "#a3e635" }}
           placeholder="Paste alt text to lint"
           aria-label="Alt text to lint"
         />
@@ -9074,14 +9074,14 @@ export default function ImageAltMediaSEO() {
             onChange={e => setLintOnlyKeywords(e.target.value)}
             placeholder="Keywords (comma separated)"
             aria-label="Lint keywords"
-            style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}
+            style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}
           />
           <input name="lintOnlyBrandTerms"
             value={lintOnlyBrandTerms}
             onChange={e => setLintOnlyBrandTerms(e.target.value)}
             placeholder={meta?.presets?.brandVocabHint || "Brand vocabulary (comma separated)"}
             aria-label="Lint brand vocabulary"
-            style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}
+            style={{ width: "100%", fontSize: 14, padding: 10, borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}
           />
         </div>
         <button onClick={handleLintOnly} disabled={loading || !lintOnlyText.trim()} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontWeight: 700, cursor: "pointer" }}>Lint Now</button>
@@ -9106,7 +9106,7 @@ export default function ImageAltMediaSEO() {
         value={attributes}
         onChange={e => setAttributes(e.target.value)}
         rows={3}
-        style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#0a0b0f", color: "#a3e635" }}
+        style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#09090b", color: "#a3e635" }}
         placeholder="Attributes (comma or JSON: color, material, style, use-case)"
         aria-label="Attributes"
       />
@@ -9115,12 +9115,12 @@ export default function ImageAltMediaSEO() {
         onChange={e => setScene(e.target.value)}
         placeholder="Scene (e.g., studio on white, outdoor cafe)"
         aria-label="Scene"
-        style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#0a0b0f", color: "#a3e635" }}
+        style={{ width: "100%", fontSize: 15, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#09090b", color: "#a3e635" }}
       />
       <div style={{ display: "flex", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontWeight: 600 }}>Locale</span>
-          <select name="locale" value={locale} onChange={e => setLocale(e.target.value)} aria-label="Locale" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}>
+          <select name="locale" value={locale} onChange={e => setLocale(e.target.value)} aria-label="Locale" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}>
             <option value="en-US">en-US</option>
             <option value="en-GB">en-GB</option>
             <option value="de">de</option>
@@ -9132,10 +9132,10 @@ export default function ImageAltMediaSEO() {
           </select>
         </label>
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }} aria-label="Locale presets">
-          <button onClick={() => applyLocalePreset("en-US")} style={{ background: "#e2e8f0", color: "#1f2433", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: "pointer" }}>US</button>
-          <button onClick={() => applyLocalePreset("en-GB")} style={{ background: "#e2e8f0", color: "#1f2433", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: "pointer" }}>UK</button>
-          <button onClick={() => applyLocalePreset("de")} style={{ background: "#e2e8f0", color: "#1f2433", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: "pointer" }}>DE</button>
-          <button onClick={() => applyLocalePreset("fr")} style={{ background: "#e2e8f0", color: "#1f2433", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: "pointer" }}>FR</button>
+          <button onClick={() => applyLocalePreset("en-US")} style={{ background: "#e4e4e7", color: "#18181b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: "pointer" }}>US</button>
+          <button onClick={() => applyLocalePreset("en-GB")} style={{ background: "#e4e4e7", color: "#18181b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: "pointer" }}>UK</button>
+          <button onClick={() => applyLocalePreset("de")} style={{ background: "#e4e4e7", color: "#18181b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: "pointer" }}>DE</button>
+          <button onClick={() => applyLocalePreset("fr")} style={{ background: "#e4e4e7", color: "#18181b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, cursor: "pointer" }}>FR</button>
         </div>
         <label style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <input name="safeMode" type="checkbox" checked={safeMode} onChange={e => setSafeMode(e.target.checked)} />
@@ -9146,21 +9146,21 @@ export default function ImageAltMediaSEO() {
         value={input}
         onChange={e => setInput(e.target.value)}
         rows={4}
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#0a0b0f", color: "#a3e635" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#09090b", color: "#a3e635" }}
         placeholder="Describe your image or alt text needs here..."
         aria-label="Image alt text input"
       />
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={handleGenerate} disabled={loading || (!input && !imageUrl)} style={{ background: "#a3e635", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Generating..." : "AI Generate"}</button>
-        <button onClick={handleCaption} disabled={loading || (!input && !imageUrl)} style={{ background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>AI Caption</button>
-        <button onClick={handleAddImage} disabled={!result} style={{ background: "#4f46e5", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Save Alt Text</button>
-        <button onClick={handleCopyResult} disabled={!result} style={{ background: "#14b8a6", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "10px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
+        <button onClick={handleGenerate} disabled={loading || (!input && !imageUrl)} style={{ background: "#a3e635", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Generating..." : "AI Generate"}</button>
+        <button onClick={handleCaption} disabled={loading || (!input && !imageUrl)} style={{ background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>AI Caption</button>
+        <button onClick={handleAddImage} disabled={!result} style={{ background: "#4f46e5", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Save Alt Text</button>
+        <button onClick={handleCopyResult} disabled={!result} style={{ background: "#14b8a6", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
         <input name="importFile" ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import images" />
         <button onClick={handleExportJson} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export JSON</button>
         <button onClick={handleExportCsv} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export CSV</button>
         {exported && <a href={exported} download={exportFilename || "export"} style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
-        <button onClick={resetForm} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "10px 16px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Reset form</button>
+        <button onClick={resetForm} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "10px 16px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Reset form</button>
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {importErrorDownloadUrl && (
@@ -9169,7 +9169,7 @@ export default function ImageAltMediaSEO() {
         </div>
       )}
       {result && (
-        <div style={{ background: "#0a0b0f", borderRadius: 10, padding: 16, marginBottom: 12, color: "#a3e635" }} aria-live="polite">
+        <div style={{ background: "#09090b", borderRadius: 10, padding: 16, marginBottom: 12, color: "#a3e635" }} aria-live="polite">
           <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Alt Text:</div>
           <div>{result}</div>
           {lint && (
@@ -9190,7 +9190,7 @@ export default function ImageAltMediaSEO() {
               {sanitized && sanitized !== result && (
                 <div style={{ marginTop: 6 }}>
                   <span style={{ fontWeight: 600 }}>Sanitized:</span> {sanitized}
-                  <button onClick={() => setResult(sanitized)} style={{ marginLeft: 8, background: "#a3e635", color: "#0a0b0f", border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 13 }}>Use sanitized</button>
+                  <button onClick={() => setResult(sanitized)} style={{ marginLeft: 8, background: "#a3e635", color: "#09090b", border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 13 }}>Use sanitized</button>
                 </div>
               )}
             </div>
@@ -9198,7 +9198,7 @@ export default function ImageAltMediaSEO() {
           {grade && (
             <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontWeight: 700 }}>Grade:</span>
-              <span style={{ padding: "4px 10px", borderRadius: 8, background: grade.grade === 'A' ? '#22c55e' : grade.grade === 'B' ? '#84cc16' : grade.grade === 'C' ? '#fbbf24' : '#ef4444', color: '#0b0b0b', fontWeight: 800 }}>{grade.grade} ({grade.score})</span>
+              <span style={{ padding: "4px 10px", borderRadius: 8, background: grade.grade === 'A' ? '#22c55e' : grade.grade === 'B' ? '#84cc16' : grade.grade === 'C' ? '#fbbf24' : '#ef4444', color: '#09090b', fontWeight: 800 }}>{grade.grade} ({grade.score})</span>
             </div>
           )}
           {variants?.length ? (
@@ -9209,16 +9209,16 @@ export default function ImageAltMediaSEO() {
                   const issues = v.lint?.issueCount ?? v.lint?.issues?.length ?? 0;
                   const warnings = v.lint?.warningCount ?? v.lint?.warnings?.length ?? 0;
                   return (
-                    <div key={`${v.label || 'v'}-${idx}`} style={{ border: selectedVariantIdx === idx ? "2px solid #0ea5e9" : "1px solid #555", borderRadius: 10, padding: 10, background: "#283044" }}>
+                    <div key={`${v.label || 'v'}-${idx}`} style={{ border: selectedVariantIdx === idx ? "2px solid #0ea5e9" : "1px solid #555", borderRadius: 10, padding: 10, background: "#27272a" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                         <span style={{ fontWeight: 700 }}>{v.label || `Variant ${idx + 1}`}</span>
-                        {v.grade ? <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 8, background: v.grade.grade === 'A' ? '#22c55e' : v.grade.grade === 'B' ? '#84cc16' : v.grade.grade === 'C' ? '#fbbf24' : '#ef4444', color: '#0b0b0b', fontWeight: 800 }}>{v.grade.grade} ({v.grade.score})</span> : null}
+                        {v.grade ? <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 8, background: v.grade.grade === 'A' ? '#22c55e' : v.grade.grade === 'B' ? '#84cc16' : v.grade.grade === 'C' ? '#fbbf24' : '#ef4444', color: '#09090b', fontWeight: 800 }}>{v.grade.grade} ({v.grade.score})</span> : null}
                       </div>
                       <div style={{ fontSize: 14, marginBottom: 6 }}>{v.altText}</div>
                       <div style={{ fontSize: 12, color: "#a3e635", marginBottom: 8 }}>Issues {issues}; Warnings {warnings}</div>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                         <button onClick={() => applyVariant(idx)} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Use</button>
-                        <button onClick={() => handleCopyText(v.altText, "Variant copied") } style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Copy</button>
+                        <button onClick={() => handleCopyText(v.altText, "Variant copied") } style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "6px 10px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Copy</button>
                       </div>
                     </div>
                   );
@@ -9227,31 +9227,31 @@ export default function ImageAltMediaSEO() {
             </div>
           ) : null}
           <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <button onClick={handleCopyResult} disabled={!result} style={{ background: "#14b8a6", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
-            <button onClick={handleDownloadResult} disabled={!result} style={{ background: "#e0f2fe", color: "#1f2433", border: "1px solid #bae6fd", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Download .txt</button>
+            <button onClick={handleCopyResult} disabled={!result} style={{ background: "#14b8a6", color: "#09090b", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
+            <button onClick={handleDownloadResult} disabled={!result} style={{ background: "#e0f2fe", color: "#18181b", border: "1px solid #bae6fd", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Download .txt</button>
             {resultDownloadUrl && <a href={resultDownloadUrl} download="alt-text.txt" style={{ alignSelf: "center", color: "#0ea5e9", fontWeight: 700 }}>Save file</a>}
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 8 }}>
-              <button onClick={handleSimulateSelected} aria-label="Simulate AI for selected" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#e0e7ff" : "#4b5780", color: roleCanSimulate ? "#283044" : "#94a3b8", border: "1px solid #e9ebf5", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Simulate AI</button>
+              <button onClick={handleSimulateSelected} aria-label="Simulate AI for selected" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#e0e7ff" : "#52525b", color: roleCanSimulate ? "#27272a" : "#a1a1aa", border: "1px solid #e4e4e7", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Simulate AI</button>
               <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
                 Translate to
-                <select name="translateLocale" value={translateLocale} onChange={e => setTranslateLocale(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635" }}>
+                <select name="translateLocale" value={translateLocale} onChange={e => setTranslateLocale(e.target.value)} style={{ padding: "6px 8px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635" }}>
                   {['es','fr','de','en-GB','en-US','ja','ko','zh'].map(code => <option key={code} value={code}>{code}</option>)}
                 </select>
               </label>
               {localeStyleGuides[translateLocale] ? (
-                <span style={{ fontSize: 11, color: "#cbd5e1", background: "#1f2433", border: "1px solid #4b5780", borderRadius: 8, padding: "6px 10px" }}>
+                <span style={{ fontSize: 11, color: "#d4d4d8", background: "#18181b", border: "1px solid #52525b", borderRadius: 8, padding: "6px 10px" }}>
                   Tone {localeStyleGuides[translateLocale].tone}; Formality {localeStyleGuides[translateLocale].formality}; Punct {localeStyleGuides[translateLocale].punctuation}; Numerals {localeStyleGuides[translateLocale].numerals}
                 </span>
               ) : null}
-              <button onClick={() => handleTranslateSelected(false)} aria-label="Translate selected (preview)" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#c084fc" : "#4b5780", color: roleCanSimulate ? "#0b0b0b" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Translate (preview)</button>
-              <button onClick={() => handleTranslateSelected(true)} aria-label="Translate and apply" disabled={!roleCanApply || !selectedImageIds.length || loading} style={{ background: roleCanApply ? "#a855f7" : "#4b5780", color: roleCanApply ? "#fff" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Translate + apply</button>
-              <button onClick={handleVisionCheck} aria-label="Run vision QC for selected" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#38bdf8" : "#4b5780", color: roleCanSimulate ? "#0b0b0b" : "#94a3b8", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Vision QC</button>
+              <button onClick={() => handleTranslateSelected(false)} aria-label="Translate selected (preview)" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#c084fc" : "#52525b", color: roleCanSimulate ? "#09090b" : "#a1a1aa", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Translate (preview)</button>
+              <button onClick={() => handleTranslateSelected(true)} aria-label="Translate and apply" disabled={!roleCanApply || !selectedImageIds.length || loading} style={{ background: roleCanApply ? "#a855f7" : "#52525b", color: roleCanApply ? "#fff" : "#a1a1aa", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanApply || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Translate + apply</button>
+              <button onClick={handleVisionCheck} aria-label="Run vision QC for selected" disabled={!roleCanSimulate || !selectedImageIds.length || loading} style={{ background: roleCanSimulate ? "#38bdf8" : "#52525b", color: roleCanSimulate ? "#09090b" : "#a1a1aa", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: (!roleCanSimulate || !selectedImageIds.length || loading) ? "not-allowed" : "pointer" }}>Vision QC</button>
             </div>
           </div>
         </div>
       )}
         {captionResult && (
-          <div style={{ background: "#283044", borderRadius: 10, padding: 14, marginBottom: 12, color: "#a3e635" }} aria-live="polite">
+          <div style={{ background: "#27272a", borderRadius: 10, padding: 14, marginBottom: 12, color: "#a3e635" }} aria-live="polite">
             <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Caption:</div>
             <div>{captionResult}</div>
             {captionLint && (
@@ -9260,9 +9260,9 @@ export default function ImageAltMediaSEO() {
               </div>
             )}
             <div style={{ marginTop: 8, display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <button onClick={() => handleCopyText(captionResult, "Caption copied")} style={{ background: "#14b8a6", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Copy caption</button>
+              <button onClick={() => handleCopyText(captionResult, "Caption copied")} style={{ background: "#14b8a6", color: "#09090b", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Copy caption</button>
               {captionSanitized && captionSanitized !== captionResult ? (
-                <button onClick={() => setCaptionResult(captionSanitized)} style={{ background: "#e0f2fe", color: "#1f2433", border: "1px solid #bae6fd", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Use sanitized</button>
+                <button onClick={() => setCaptionResult(captionSanitized)} style={{ background: "#e0f2fe", color: "#18181b", border: "1px solid #bae6fd", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Use sanitized</button>
               ) : null}
             </div>
           </div>
@@ -9320,37 +9320,37 @@ export default function ImageAltMediaSEO() {
         <NotificationToast key={notif.id} notification={notif} onDismiss={(id) => setNotifications(prev => prev.filter(n => n.id !== id))} />
       ))}
 
-      <div style={{ marginTop: 24, background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 20, padding: 24, border: "2px solid #475569", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
-        <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 16, color: "#f1f5f9", display: "flex", alignItems: "center", gap: 8 }}>Batch Generate (JSON array)</div>
+      <div style={{ marginTop: 24, background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 20, padding: 24, border: "2px solid #52525b", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}>
+        <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 16, color: "#f4f4f5", display: "flex", alignItems: "center", gap: 8 }}>Batch Generate (JSON array)</div>
         <textarea name="batchInput"
           value={batchInput}
           onChange={e => setBatchInput(e.target.value)}
           rows={6}
-          style={{ width: "100%", fontSize: 14, padding: 16, borderRadius: 12, border: "2px solid #64748b", background: "#1f2433", color: "#e2e8f0", fontFamily: 'Menlo, Consolas, monospace', transition: "all 0.2s", outline: "none" }}
+          style={{ width: "100%", fontSize: 14, padding: 16, borderRadius: 12, border: "2px solid #71717a", background: "#18181b", color: "#e4e4e7", fontFamily: 'Menlo, Consolas, monospace', transition: "all 0.2s", outline: "none" }}
           aria-label="Batch JSON"
           placeholder='[
   { "input": "red leather tote on white", "url": "https://...", "keywords": "leather tote" }
 ]'
         />
         <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
-          <button onClick={handleBatchGenerate} disabled={loading} style={{ background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "10px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>{loading ? "Working..." : "Run Batch"}</button>
-          <button onClick={loadSampleBatch} disabled={loading} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "10px 16px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Load sample batch</button>
+          <button onClick={handleBatchGenerate} disabled={loading} style={{ background: "#10b981", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 18px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>{loading ? "Working..." : "Run Batch"}</button>
+          <button onClick={loadSampleBatch} disabled={loading} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "10px 16px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Load sample batch</button>
           <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#a3e635" }}>
             Chunk size
-            <input name="chunkSize" type="number" min={1} max={100} value={chunkSize} onChange={e => setChunkSize(Number(e.target.value) || 1)} style={{ width: 70, padding: "6px 8px", borderRadius: 6, border: "1px solid #cbd5e1" }} />
+            <input name="chunkSize" type="number" min={1} max={100} value={chunkSize} onChange={e => setChunkSize(Number(e.target.value) || 1)} style={{ width: 70, padding: "6px 8px", borderRadius: 6, border: "1px solid #d4d4d8" }} />
           </label>
           <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#a3e635" }}>
             Variants
-            <input name="batchVariantCount" type="number" min={1} max={5} value={batchVariantCount} onChange={e => setBatchVariantCount(Math.min(5, Math.max(1, Number(e.target.value) || 1)))} style={{ width: 70, padding: "6px 8px", borderRadius: 6, border: "1px solid #cbd5e1" }} />
+            <input name="batchVariantCount" type="number" min={1} max={5} value={batchVariantCount} onChange={e => setBatchVariantCount(Math.min(5, Math.max(1, Number(e.target.value) || 1)))} style={{ width: 70, padding: "6px 8px", borderRadius: 6, border: "1px solid #d4d4d8" }} />
           </label>
           <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#a3e635" }}>
             Pause ms
-            <input name="paceMs" type="number" min={0} max={2000} value={paceMs} onChange={e => setPaceMs(Math.max(0, Number(e.target.value) || 0))} style={{ width: 80, padding: "6px 8px", borderRadius: 6, border: "1px solid #cbd5e1" }} />
+            <input name="paceMs" type="number" min={0} max={2000} value={paceMs} onChange={e => setPaceMs(Math.max(0, Number(e.target.value) || 0))} style={{ width: 80, padding: "6px 8px", borderRadius: 6, border: "1px solid #d4d4d8" }} />
           </label>
           <span style={{ fontSize: 13, color: "#a3e635" }}>Sends to /ai/batch-generate; locale, safe mode, tone, verbosity, keywords, brand vocab, chunking, and pacing are applied.</span>
           {batchDownloadUrl && <a href={batchDownloadUrl} download="batch-results.json" style={{ color: "#a3e635", fontWeight: 600 }}>Download results JSON</a>}
-          {batchResults?.length ? <button onClick={handleCopyBatchResults} disabled={batchCopying} style={{ background: "#c084fc", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>{batchCopying ? "Copying..." : "Copy results"}</button> : null}
-          {batchResults?.length ? <button onClick={resetBatchState} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "8px 12px", fontWeight: 600, cursor: "pointer", fontSize: 13 }}>Clear batch state</button> : null}
+          {batchResults?.length ? <button onClick={handleCopyBatchResults} disabled={batchCopying} style={{ background: "#c084fc", color: "#09090b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>{batchCopying ? "Copying..." : "Copy results"}</button> : null}
+          {batchResults?.length ? <button onClick={resetBatchState} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "8px 12px", fontWeight: 600, cursor: "pointer", fontSize: 13 }}>Clear batch state</button> : null}
         </div>
         {batchProgress > 0 && (
           <div style={{ marginTop: 10 }} aria-label="Batch progress" aria-live="polite">
@@ -9358,13 +9358,13 @@ export default function ImageAltMediaSEO() {
               <span style={{ fontSize: 13, fontWeight: 700, color: "#a3e635" }}>Processing batch...</span>
               <span style={{ fontSize: 13, fontWeight: 700, color: "#a3e635" }}>{Math.min(100, Math.round(batchProgress))}%</span>
             </div>
-            <div style={{ height: 12, background: "#1f2433", borderRadius: 999, overflow: "hidden", border: "1px solid #4b5780" }}>
+            <div style={{ height: 12, background: "#18181b", borderRadius: 999, overflow: "hidden", border: "1px solid #52525b" }}>
               <div style={{ width: `${Math.min(100, Math.round(batchProgress))}%`, height: "100%", background: "linear-gradient(90deg, #10b981 0%, #34d399 100%)", transition: "width 0.3s ease", boxShadow: "0 0 10px rgba(16, 185, 129, 0.5)" }} />
             </div>
           </div>
         )}
         {batchSummary && (
-          <div style={{ marginTop: 12, padding: 12, background: "#1f2433", borderRadius: 10, fontSize: 14 }}>
+          <div style={{ marginTop: 12, padding: 12, background: "#18181b", borderRadius: 10, fontSize: 14 }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Batch summary</div>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
               <span>Total {batchSummary.total}</span>
@@ -9378,7 +9378,7 @@ export default function ImageAltMediaSEO() {
         )}
         {batchResults?.some(r => !r.ok) ? (
           <div style={{ marginTop: 8 }}>
-            <button onClick={retryFailedBatch} style={{ background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>Retry failed items</button>
+            <button onClick={retryFailedBatch} style={{ background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>Retry failed items</button>
           </div>
         ) : null}
         {batchResults?.length ? (
@@ -9401,7 +9401,7 @@ export default function ImageAltMediaSEO() {
                           <div><b>{v.label || `Variant ${vIdx + 1}`}:</b> {v.altText}</div>
                           {v.grade ? <div style={{ fontSize: 12 }}>Grade {v.grade.grade} ({v.grade.score})</div> : null}
                           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
-                            <button onClick={() => handleCopyText(v.altText, "Variant copied")} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 6, padding: "4px 8px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy</button>
+                            <button onClick={() => handleCopyText(v.altText, "Variant copied")} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 6, padding: "4px 8px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy</button>
                             <button onClick={() => handleSaveBatchItem({ ...r, meta: r.meta || {} }, v.altText)} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 6, padding: "4px 8px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Save this</button>
                           </div>
                         </li>
@@ -9415,7 +9415,7 @@ export default function ImageAltMediaSEO() {
                 {r.result && (
                   <div style={{ display: "flex", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
                     <button onClick={() => handleSaveBatchItem(r)} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 6, padding: "6px 12px", cursor: "pointer", fontSize: 13 }}>Save to library</button>
-                    <button onClick={() => handleCopyText(r.result, "Alt copied")} style={{ background: "#cbd5e1", color: "#0b0b0b", border: "none", borderRadius: 6, padding: "6px 12px", cursor: "pointer", fontSize: 13 }}>Copy alt</button>
+                    <button onClick={() => handleCopyText(r.result, "Alt copied")} style={{ background: "#d4d4d8", color: "#09090b", border: "none", borderRadius: 6, padding: "6px 12px", cursor: "pointer", fontSize: 13 }}>Copy alt</button>
                   </div>
                 )}
               </li>
@@ -9425,7 +9425,7 @@ export default function ImageAltMediaSEO() {
       </div>
 
       {runs?.length ? (
-        <div style={{ marginTop: 18, background: "#1f2433", borderRadius: 12, padding: 14 }}>
+        <div style={{ marginTop: 18, background: "#18181b", borderRadius: 12, padding: 14 }}>
           <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Recent Batch Runs</div>
           <div style={{ marginBottom: 8, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             <button onClick={handleDownloadRuns} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "6px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Download runs JSON</button>
@@ -9453,7 +9453,7 @@ export default function ImageAltMediaSEO() {
 
       {activeTab === "analytics" && (
         <div style={{ animation: "fadeIn 0.3s ease-out" }}>
-      <div style={{ marginTop: 24, background: "#4b5780", borderRadius: 12, padding: 18 }}>
+      <div style={{ marginTop: 24, background: "#52525b", borderRadius: 12, padding: 18 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
           <div style={{ fontWeight: 700, fontSize: 18 }}>Analytics</div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -9462,25 +9462,25 @@ export default function ImageAltMediaSEO() {
               onChange={e => setCollectionFilter(e.target.value)}
               placeholder="Filter by collection (substring)"
               aria-label="Collection filter"
-              style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635", minWidth: 180 }}
+              style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635", minWidth: 180 }}
             />
             <input name="vendorFilter"
               value={vendorFilter}
               onChange={e => setVendorFilter(e.target.value)}
               placeholder="Filter by vendor (substring)"
               aria-label="Vendor filter"
-              style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#0a0b0f", color: "#a3e635", minWidth: 180 }}
+              style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #555", background: "#09090b", color: "#a3e635", minWidth: 180 }}
             />
             <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
               <input name="includeHeaders" type="checkbox" checked={includeHeaders} onChange={e => setIncludeHeaders(e.target.checked)} />
               <span>CSV headers</span>
             </label>
             <button onClick={fetchAnalytics} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Refresh</button>
-            <button onClick={fetchMissing} style={{ background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Missing</button>
-            <button onClick={fetchLengthBands} style={{ background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Length bands</button>
+            <button onClick={fetchMissing} style={{ background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Missing</button>
+            <button onClick={fetchLengthBands} style={{ background: "#10b981", color: "#09090b", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Length bands</button>
             <button onClick={fetchDuplicates} style={{ background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Duplicates</button>
             <button onClick={handleExportCsv} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Export CSV</button>
-            <button onClick={async () => { await fetchJson("/api/image-alt-media-seo/analytics/cache/clear", { method: "POST" }); showToast("Analytics cache cleared"); }} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Clear cache</button>
+            <button onClick={async () => { await fetchJson("/api/image-alt-media-seo/analytics/cache/clear", { method: "POST" }); showToast("Analytics cache cleared"); }} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 8, padding: "8px 12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Clear cache</button>
           </div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 24 }}>
@@ -9491,14 +9491,14 @@ export default function ImageAltMediaSEO() {
             { label: "Duplicates", value: analytics.duplicateAlts ?? 0, color: "#f59e0b" },
             { label: "Coverage", value: `${analytics.coveragePct ?? 0}%`, color: "#10b981" }
           ].map(stat => (
-            <div key={stat.label} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 20, border: `2px solid ${stat.color}`, boxShadow: `0 4px 16px ${stat.color}33` }}>
+            <div key={stat.label} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 20, border: `2px solid ${stat.color}`, boxShadow: `0 4px 16px ${stat.color}33` }}>
               <div style={{ fontSize: 28, fontWeight: 800, color: stat.color, marginBottom: 4 }}>{stat.value}</div>
-              <div style={{ fontSize: 13, color: "#cbd5e1", fontWeight: 600 }}>{stat.label}</div>
+              <div style={{ fontSize: 13, color: "#d4d4d8", fontWeight: 600 }}>{stat.label}</div>
             </div>
           ))}
         </div>
         <div style={{ marginBottom: 24 }}>
-          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12, color: "#f1f5f9" }}>Length Distribution Heat Map</div>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12, color: "#f4f4f5" }}>Length Distribution Heat Map</div>
           <HeatMap data={(lengthBands?.bands || []).map(b => b.count || 0)} maxValue={Math.max(...(lengthBands?.bands || []).map(b => b.count || 0))} />
         </div>
         <div style={{ fontSize: 15, color: "#a3e635" }}>
@@ -9516,10 +9516,10 @@ export default function ImageAltMediaSEO() {
           ) : <span>No analytics yet. Generate or import images to see results.</span>}
         </div>
         <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <div style={{ background: "#283044", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
+          <div style={{ background: "#27272a", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <div style={{ fontWeight: 700 }}>Coverage vs goals</div>
-              <button onClick={() => setCollapsedSections(prev => ({ ...prev, coverage: !prev.coverage }))} style={{ background: "transparent", border: "none", color: "#cbd5e1", fontSize: 18, cursor: "pointer" }}>{collapsedSections.coverage ? "" : ""}</button>
+              <button onClick={() => setCollapsedSections(prev => ({ ...prev, coverage: !prev.coverage }))} style={{ background: "transparent", border: "none", color: "#d4d4d8", fontSize: 18, cursor: "pointer" }}>{collapsedSections.coverage ? "" : ""}</button>
             </div>
             {!collapsedSections.coverage && coverageProgress.map(p => {
               const pct = Math.min(100, Math.max(0, p.value));
@@ -9531,29 +9531,29 @@ export default function ImageAltMediaSEO() {
                     <span style={{ fontSize: 13 }}>{p.label}</span>
                     <CircularProgress percent={pct} size={60} strokeWidth={6} color={good ? "#10b981" : "#f59e0b"} />
                   </div>
-                  <div style={{ position: "relative", height: 10, background: "#1f2433", borderRadius: 999 }}>
+                  <div style={{ position: "relative", height: 10, background: "#18181b", borderRadius: 999 }}>
                     <div style={{ position: "absolute", left: `${Math.min(100, Math.max(0, target))}%`, top: 0, bottom: 0, width: 2, background: "#f59e0b", opacity: 0.7 }} />
                     <div style={{ width: `${pct}%`, height: "100%", borderRadius: 999, background: good ? "#22c55e" : "#f97316" }} />
                   </div>
-                  <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>Goal: {target}{p.label.includes('%') ? '%' : ''}</div>
+                  <div style={{ fontSize: 11, color: "#a1a1aa", marginTop: 4 }}>Goal: {target}{p.label.includes('%') ? '%' : ''}</div>
                 </div>
               );
             })}
           </div>
-          <div style={{ background: "#283044", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
+          <div style={{ background: "#27272a", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Needs attention (this view)</div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", fontSize: 13 }}>
-              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#1f2433", border: "1px solid #4b5780" }}>Missing {issueStats.missing} ({issueStats.missingPct}%)</span>
-              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#1f2433", border: "1px solid #4b5780" }}>Short {issueStats.short} ({issueStats.shortPct}%)</span>
-              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#1f2433", border: "1px solid #4b5780" }}>Long {issueStats.long} ({issueStats.longPct}%)</span>
-              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#1f2433", border: "1px solid #4b5780" }}>Duplicate {issueStats.duplicate} ({issueStats.duplicatePct}%)</span>
-              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#1f2433", border: "1px solid #4b5780", color: "#a3e635" }}>OK {issueStats.ok} ({issueStats.okPct}%)</span>
+              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#18181b", border: "1px solid #52525b" }}>Missing {issueStats.missing} ({issueStats.missingPct}%)</span>
+              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#18181b", border: "1px solid #52525b" }}>Short {issueStats.short} ({issueStats.shortPct}%)</span>
+              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#18181b", border: "1px solid #52525b" }}>Long {issueStats.long} ({issueStats.longPct}%)</span>
+              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#18181b", border: "1px solid #52525b" }}>Duplicate {issueStats.duplicate} ({issueStats.duplicatePct}%)</span>
+              <span style={{ padding: "4px 8px", borderRadius: 8, background: "#18181b", border: "1px solid #52525b", color: "#a3e635" }}>OK {issueStats.ok} ({issueStats.okPct}%)</span>
             </div>
-            <div style={{ marginTop: 8, fontSize: 12, color: "#cbd5e1" }}>Counts/percentages respect current filters and sort, so you can zoom into segments.</div>
+            <div style={{ marginTop: 8, fontSize: 12, color: "#d4d4d8" }}>Counts/percentages respect current filters and sort, so you can zoom into segments.</div>
           </div>
         </div>
         <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <div style={{ background: "#283044", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
+          <div style={{ background: "#27272a", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Missing</div>
             {missingReport ? (
               <div style={{ fontSize: 14 }}>
@@ -9561,8 +9561,8 @@ export default function ImageAltMediaSEO() {
                 <div>Missing URL: {missingReport.missingUrl?.length ?? missingReport.counts?.missingUrl ?? 0}</div>
                 <div>Total considered: {missingReport.counts?.total ?? '-'}</div>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 6 }}>
-                  <button onClick={() => handleCopyText((missingReport.missingAlt || []).join(', '), "Alt IDs copied")} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 6, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy alt IDs</button>
-                  <button onClick={() => handleCopyText((missingReport.missingUrl || []).join(', '), "URL IDs copied")} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 6, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy URL IDs</button>
+                  <button onClick={() => handleCopyText((missingReport.missingAlt || []).join(', '), "Alt IDs copied")} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 6, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy alt IDs</button>
+                  <button onClick={() => handleCopyText((missingReport.missingUrl || []).join(', '), "URL IDs copied")} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 6, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy URL IDs</button>
                   {missingDownloadUrl && <a href={missingDownloadUrl} download="missing.json" style={{ color: "#a3e635", fontWeight: 600 }}>Download JSON</a>}
                 </div>
                 {(missingReport.missingAlt?.length || missingReport.missingUrl?.length) ? (
@@ -9575,7 +9575,7 @@ export default function ImageAltMediaSEO() {
               </div>
             ) : <div style={{ fontSize: 14 }}>Load missing report to view.</div>}
           </div>
-          <div style={{ background: "#283044", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
+          <div style={{ background: "#27272a", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Length bands</div>
             {lengthBands ? (
               <div style={{ fontSize: 14 }}>
@@ -9586,14 +9586,14 @@ export default function ImageAltMediaSEO() {
                   ))}
                 </ul>
                 <div style={{ marginTop: 6, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <button onClick={() => handleCopyText(JSON.stringify(lengthBands.bands || []), "Bands copied")} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 6, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy bands</button>
+                  <button onClick={() => handleCopyText(JSON.stringify(lengthBands.bands || []), "Bands copied")} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 6, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy bands</button>
                   {lengthDownloadUrl && <a href={lengthDownloadUrl} download="length-bands.json" style={{ color: "#a3e635", fontWeight: 600 }}>Download JSON</a>}
                 </div>
               </div>
             ) : <div style={{ fontSize: 14 }}>Load length bands to view.</div>}
           </div>
         </div>
-        <div style={{ marginTop: 12, background: "#283044", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
+        <div style={{ marginTop: 12, background: "#27272a", borderRadius: 10, padding: 12, border: "1px solid #555" }}>
           <div style={{ fontWeight: 700, marginBottom: 6 }}>Duplicates</div>
           {duplicates ? (
             <div style={{ fontSize: 14 }}>
@@ -9609,7 +9609,7 @@ export default function ImageAltMediaSEO() {
                 </ul>
               ) : <div>No duplicates found.</div>}
               <div style={{ marginTop: 6, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={() => handleCopyText(JSON.stringify(duplicates.duplicates || []), "Duplicates copied")} style={{ background: "#e2e8f0", color: "#0b0b0b", border: "1px solid #cbd5e1", borderRadius: 6, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy list</button>
+                <button onClick={() => handleCopyText(JSON.stringify(duplicates.duplicates || []), "Duplicates copied")} style={{ background: "#e4e4e7", color: "#09090b", border: "1px solid #d4d4d8", borderRadius: 6, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Copy list</button>
                 {duplicatesDownloadUrl && <a href={duplicatesDownloadUrl} download="duplicates.json" style={{ color: "#a3e635", fontWeight: 600 }}>Download JSON</a>}
               </div>
             </div>
@@ -9626,53 +9626,53 @@ export default function ImageAltMediaSEO() {
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24, background: "linear-gradient(90deg, #8b5cf6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AI & Machine Learning Tools</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
             {/* Feature 1-2: AI Generation */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#8b5cf6" }}>AI Alt Text Generator</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Use GPT-4 Vision to automatically generate alt text for images</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Use GPT-4 Vision to automatically generate alt text for images</p>
               <button onClick={handleBulkAiGenerate} disabled={aiGenerating} style={{ width: "100%", background: "linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 16px rgba(139, 92, 246, 0.4)" }}>{aiGenerating ? "Generating..." : "Generate for Missing Images"}</button>
             </div>
             
             {/* Feature 3: Quality Scoring */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#10b981" }}>Quality Scores</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>ML-based quality assessment (0-100 score)</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>ML-based quality assessment (0-100 score)</p>
               <div style={{ fontSize: 32, fontWeight: 800, color: "#10b981", textAlign: "center", marginBottom: 8 }}>
                 {images.length ? (images.reduce((sum, img) => sum + calculateQualityScore(img), 0) / images.length).toFixed(1) : 0}
               </div>
-              <div style={{ fontSize: 13, color: "#94a3b8", textAlign: "center" }}>Average Quality Score</div>
+              <div style={{ fontSize: 13, color: "#a1a1aa", textAlign: "center" }}>Average Quality Score</div>
             </div>
             
             {/* Feature 4: Auto-Categorization */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#f59e0b" }}>Auto-Categorization</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>AI automatically tags images by content</p>
-              <div style={{ fontSize: 13, color: "#94a3b8" }}>{Object.keys(autoCategories).length} categories detected</div>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>AI automatically tags images by content</p>
+              <div style={{ fontSize: 13, color: "#a1a1aa" }}>{Object.keys(autoCategories).length} categories detected</div>
             </div>
             
             {/* Feature 5: Sentiment Analysis */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#0ea5e9" }}>Sentiment Analysis</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Analyze tone of alt text (positive/neutral/negative)</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Analyze tone of alt text (positive/neutral/negative)</p>
               <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
                 <span style={{ padding: "8px 16px", borderRadius: 999, background: "#22c55e", color: "#fff", fontWeight: 700 }}>Positive: {images.filter(img => analyzeImageSentiment(img.altText || "") === "positive").length}</span>
-                <span style={{ padding: "8px 16px", borderRadius: 999, background: "#94a3b8", color: "#fff", fontWeight: 700 }}>Neutral: {images.filter(img => analyzeImageSentiment(img.altText || "") === "neutral").length}</span>
+                <span style={{ padding: "8px 16px", borderRadius: 999, background: "#a1a1aa", color: "#fff", fontWeight: 700 }}>Neutral: {images.filter(img => analyzeImageSentiment(img.altText || "") === "neutral").length}</span>
                 <span style={{ padding: "8px 16px", borderRadius: 999, background: "#ef4444", color: "#fff", fontWeight: 700 }}>Negative: {images.filter(img => analyzeImageSentiment(img.altText || "") === "negative").length}</span>
               </div>
             </div>
             
             {/* Feature 6: Brand Voice */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#ec4899" }}>Brand Voice Checker</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Ensure consistency with brand guidelines</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Ensure consistency with brand guidelines</p>
               <button onClick={checkBrandVoice} style={{ width: "100%", background: "#ec4899", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Check Brand Voice</button>
               {brandVoiceScore && <div style={{ marginTop: 12, fontSize: 13 }}><div>Avg Length: {brandVoiceScore.avgLength.toFixed(1)}</div><div>Brand Coverage: {brandVoiceScore.brandCoverage}%</div></div>}
             </div>
             
             {/* Feature 7: Multi-Language Translation */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #4f46e5" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #4f46e5" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#4f46e5" }}>Translation (50+ Languages)</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Auto-translate alt text</p>
-              <select name="translateLocaleAnalytics" value={translateLocale} onChange={e => setTranslateLocale(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: 8, background: "#1f2433", color: "#e2e8f0", border: "1px solid #475569", marginBottom: 12 }}>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Auto-translate alt text</p>
+              <select name="translateLocaleAnalytics" value={translateLocale} onChange={e => setTranslateLocale(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: 8, background: "#18181b", color: "#e4e4e7", border: "1px solid #52525b", marginBottom: 12 }}>
                 <option value="es">Spanish</option>
                 <option value="fr">French</option>
                 <option value="de">German</option>
@@ -9684,16 +9684,16 @@ export default function ImageAltMediaSEO() {
             </div>
             
             {/* Feature 8: A/B Testing */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#14b8a6" }}>A/B Test Variants</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Generate 3 alt text variations to test</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Generate 3 alt text variations to test</p>
               <button onClick={() => { if (selectedImageIds[0]) generateAbTestVariants(selectedImageIds[0]); }} style={{ width: "100%", background: "#14b8a6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Generate A/B Variants</button>
             </div>
             
             {/* Feature 11: OCR Integration */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f97316" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f97316" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#f97316" }}>OCR Text Extraction</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Extract text from images</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Extract text from images</p>
               <button onClick={async () => { if (selectedImageIds[0]) { const img = images.find(i => i.id === selectedImageIds[0]); const text = await extractOcrText(img?.url || ""); showToast("OCR: " + text.substring(0, 50)); } }} style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Extract Text (OCR)</button>
             </div>
           </div>
@@ -9705,10 +9705,10 @@ export default function ImageAltMediaSEO() {
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Automation & Scheduling</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
             {/* Feature 102: Scheduled Scans */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Scheduled Scans</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Auto-scan for new images</p>
-              <select name="automationSchedule" onChange={e => scheduleAutomation("scan", e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: 8, background: "#1f2433", color: "#e2e8f0", border: "1px solid #475569" }}>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Auto-scan for new images</p>
+              <select name="automationSchedule" onChange={e => scheduleAutomation("scan", e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: 8, background: "#18181b", color: "#e4e4e7", border: "1px solid #52525b" }}>
                 <option value="">Select schedule...</option>
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
@@ -9718,10 +9718,10 @@ export default function ImageAltMediaSEO() {
             </div>
             
             {/* Feature 103: Auto-Fix */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Auto-Fix</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Automatically fix quality issues</p>
-              <button onClick={enableAutoFix} style={{ width: "100%", background: autoFixEnabled ? "#94a3b8" : "#10b981", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>{autoFixEnabled ? " Enabled" : "Enable Auto-Fix"}</button>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Automatically fix quality issues</p>
+              <button onClick={enableAutoFix} style={{ width: "100%", background: autoFixEnabled ? "#a1a1aa" : "#10b981", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>{autoFixEnabled ? " Enabled" : "Enable Auto-Fix"}</button>
             </div>
           </div>
         </div>
@@ -9732,31 +9732,31 @@ export default function ImageAltMediaSEO() {
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Advanced SEO Tools</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
             {/* Feature 124: Keyword Density */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Keyword Density</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Analyze keyword usage across alt texts</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Analyze keyword usage across alt texts</p>
               <button onClick={() => { const density = analyzeKeywordDensity(images.map(i => i.altText).join(" ")); setKeywordDensity(density); showToast("Analyzed keyword density"); }} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Analyze Keywords</button>
             </div>
             
             {/* Feature 125: Schema Markup */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Schema Markup</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Generate ImageObject schema for images</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Generate ImageObject schema for images</p>
               <button onClick={() => { if (selectedImageIds[0]) { const img = images.find(i => i.id === selectedImageIds[0]); const schema = generateSchemaMarkup(img); alert(JSON.stringify(schema, null, 2)); } }} style={{ width: "100%", background: "#10b981", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Generate Schema</button>
             </div>
             
             {/* Feature 133: Core Web Vitals */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Core Web Vitals</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Track image impact on performance</p>
-              <button onClick={checkCoreWebVitals} style={{ width: "100%", background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Check CWV</button>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Track image impact on performance</p>
+              <button onClick={checkCoreWebVitals} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Check CWV</button>
               {coreWebVitals && <div style={{ marginTop: 12, fontSize: 13 }}><div>LCP: {coreWebVitals.lcp}s</div><div>FID: {coreWebVitals.fid}ms</div><div>CLS: {coreWebVitals.cls}</div></div>}
             </div>
             
             {/* Feature 130-132: Social Media Previews */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Social Media Preview</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Open Graph, Twitter, Pinterest optimization</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Open Graph, Twitter, Pinterest optimization</p>
             <div style={{ fontSize: 13 }}>Preview how images appear on social platforms</div>
             </div>
           </div>
@@ -9768,16 +9768,16 @@ export default function ImageAltMediaSEO() {
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Performance & Technical</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
             {/* Feature 137: Virtual Scrolling */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Virtual Scrolling</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Handle 10,000+ images smoothly</p>
-              <button onClick={enableVirtualScrolling} style={{ width: "100%", background: virtualScrolling ? "#94a3b8" : "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>{virtualScrolling ? " Enabled" : "Enable"}</button>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Handle 10,000+ images smoothly</p>
+              <button onClick={enableVirtualScrolling} style={{ width: "100%", background: virtualScrolling ? "#a1a1aa" : "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>{virtualScrolling ? " Enabled" : "Enable"}</button>
             </div>
             
             {/* Feature 148: Memory Optimization */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Memory Optimization</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Reduce RAM usage</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Reduce RAM usage</p>
               <button onClick={optimizeMemory} style={{ width: "100%", background: "#ec4899", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Optimize Now</button>
             </div>
           </div>
@@ -9789,10 +9789,10 @@ export default function ImageAltMediaSEO() {
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Achievements</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
             {/* Achievements Only */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Your Achievements</h3>
-              {achievements.length === 0 ? <div style={{ fontSize: 13, color: "#94a3b8" }}>Keep optimizing to unlock achievements!</div> : achievements.map((ach, idx) => (
-                <div key={idx} style={{ padding: "12px", background: "#1f2433", borderRadius: 8, marginBottom: 8, border: "1px solid #ec4899" }}>
+              {achievements.length === 0 ? <div style={{ fontSize: 13, color: "#a1a1aa" }}>Keep optimizing to unlock achievements!</div> : achievements.map((ach, idx) => (
+                <div key={idx} style={{ padding: "12px", background: "#18181b", borderRadius: 8, marginBottom: 8, border: "1px solid #ec4899" }}>
                   <div style={{ fontSize: 14, fontWeight: 700 }}>{ach.title}</div>
                 </div>
               ))}
@@ -9806,10 +9806,10 @@ export default function ImageAltMediaSEO() {
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Integrations & Export</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
             {/* Feature 40-41: CSV/Excel */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>CSV Export/Import</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Bulk import/export via spreadsheet</p>
-              <button onClick={exportToCsv} style={{ width: "100%", background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer", marginBottom: 8 }}>Export to CSV</button>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Bulk import/export via spreadsheet</p>
+              <button onClick={exportToCsv} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer", marginBottom: 8 }}>Export to CSV</button>
               <button onClick={exportToExcel} style={{ width: "100%", background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Export to Excel</button>
             </div>
           </div>
@@ -9821,26 +9821,26 @@ export default function ImageAltMediaSEO() {
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Accessibility & Compliance</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
             {/* Feature 54: WCAG Compliance */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>WCAG 2.1/2.2 Compliance</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Validate against accessibility standards</p>
-              <button onClick={calculateAccessibilityScore} style={{ width: "100%", background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer", marginBottom: 12 }}>Check Compliance</button>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Validate against accessibility standards</p>
+              <button onClick={calculateAccessibilityScore} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer", marginBottom: 12 }}>Check Compliance</button>
               <div style={{ textAlign: "center", fontSize: 32, fontWeight: 800, color: "#10b981" }}>{accessibilityScore}%</div>
-              <div style={{ textAlign: "center", fontSize: 13, color: "#94a3b8" }}>Compliance Rate</div>
+              <div style={{ textAlign: "center", fontSize: 13, color: "#a1a1aa" }}>Compliance Rate</div>
             </div>
             
             {/* Feature 56: Screen Reader Simulator */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Screen Reader Preview</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Hear how alt text sounds</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Hear how alt text sounds</p>
               <button onClick={() => { if (selectedImageIds[0]) { const img = images.find(i => i.id === selectedImageIds[0]); previewScreenReader(img?.altText || ""); } }} style={{ width: "100%", background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Play Selected</button>
             </div>
             
             {/* Feature 63: Decorative Images */}
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Decorative Image Detector</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Suggest null alt text where appropriate</p>
-              <button onClick={detectDecorativeImages} style={{ width: "100%", background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Detect Decorative</button>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Suggest null alt text where appropriate</p>
+              <button onClick={detectDecorativeImages} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Detect Decorative</button>
               <div style={{ marginTop: 12, fontSize: 13 }}>{decorativeImages.length} decorative images found</div>
             </div>
           </div>
@@ -9853,77 +9853,77 @@ export default function ImageAltMediaSEO() {
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24, background: "linear-gradient(90deg, #8b5cf6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AI & Machine Learning V2</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
             
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#8b5cf6" }}>GPT-4 Vision Analysis</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Use vision models for ultra-accurate image descriptions</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Use vision models for ultra-accurate image descriptions</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="gpt4VisionEnabled" type="checkbox" checked={gpt4VisionEnabled} onChange={() => setGpt4VisionEnabled(!gpt4VisionEnabled)} />
                 <span style={{ fontSize: 13 }}>Enable GPT-4 Vision</span>
               </label>
-              <button onClick={() => selectedImageIds[0] && handleGPT4Vision(selectedImageIds[0])} disabled={!gpt4VisionEnabled} style={{ width: "100%", background: gpt4VisionEnabled ? "#8b5cf6" : "#4b5780", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: gpt4VisionEnabled ? "pointer" : "not-allowed", marginTop: 12 }}>Analyze Selected Image</button>
+              <button onClick={() => selectedImageIds[0] && handleGPT4Vision(selectedImageIds[0])} disabled={!gpt4VisionEnabled} style={{ width: "100%", background: gpt4VisionEnabled ? "#8b5cf6" : "#52525b", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: gpt4VisionEnabled ? "pointer" : "not-allowed", marginTop: 12 }}>Analyze Selected Image</button>
             </div>
             
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#10b981" }}>Product Attribute Extraction</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Auto-detect colors, materials, sizes</p>
-              <button onClick={() => selectedImageIds[0] && extractProductAttributes(selectedImageIds[0])} style={{ width: "100%", background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Extract Attributes</button>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Auto-detect colors, materials, sizes</p>
+              <button onClick={() => selectedImageIds[0] && extractProductAttributes(selectedImageIds[0])} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Extract Attributes</button>
             </div>
             
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#0ea5e9" }}>Scene Understanding</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Identify settings and contexts in photos</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Identify settings and contexts in photos</p>
               <button onClick={() => selectedImageIds[0] && analyzeScene(selectedImageIds[0])} style={{ width: "100%", background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Analyze Scene</button>
             </div>
             
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#f59e0b" }}>Face Detection & Privacy</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Detect faces for privacy compliance</p>
-              <button onClick={() => selectedImageIds[0] && detectFaces(selectedImageIds[0])} style={{ width: "100%", background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Detect Faces</button>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Detect faces for privacy compliance</p>
+              <button onClick={() => selectedImageIds[0] && detectFaces(selectedImageIds[0])} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Detect Faces</button>
             </div>
             
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#ec4899" }}>Object Counting</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Count items in bundle/set images</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Count items in bundle/set images</p>
               <button onClick={() => selectedImageIds[0] && countObjects(selectedImageIds[0])} style={{ width: "100%", background: "#ec4899", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Count Objects</button>
             </div>
             
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #4f46e5" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #4f46e5" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#4f46e5" }}>Logo Detection</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Identify brand logos in images</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Identify brand logos in images</p>
               <button onClick={() => selectedImageIds[0] && detectLogos(selectedImageIds[0])} style={{ width: "100%", background: "#4f46e5", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Detect Logos</button>
             </div>
             
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#14b8a6" }}>Text-to-Speech Preview</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Hear how alt text sounds when read aloud</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Hear how alt text sounds when read aloud</p>
               <button onClick={() => { const img = images.find(i => i.id === selectedImageIds[0]); if (img) previewTextToSpeech(img.altText); }} style={{ width: "100%", background: "#14b8a6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Play TTS</button>
             </div>
             
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f97316" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f97316" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#f97316" }}>Color Palette Extraction</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Generate dominant color schemes</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Generate dominant color schemes</p>
               <button onClick={() => selectedImageIds[0] && extractColorPalette(selectedImageIds[0])} style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Extract Palette</button>
             </div>
             
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #a855f7" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #a855f7" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#a855f7" }}>Image Similarity Clustering</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Group visually similar images</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Group visually similar images</p>
               <button onClick={clusterSimilarImages} style={{ width: "100%", background: "#a855f7", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Cluster Images</button>
             </div>
             
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #ef4444" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ef4444" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#ef4444" }}>Content Moderation</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Flag inappropriate or off-brand imagery</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Flag inappropriate or off-brand imagery</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="contentModeration" type="checkbox" checked={contentModeration} onChange={() => setContentModeration(!contentModeration)} />
                 <span style={{ fontSize: 13 }}>Enable Auto-Moderation</span>
               </label>
             </div>
             
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#10b981" }}>Custom Model Training</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Train on your catalog for brand-specific descriptions</p>
-              <button onClick={trainCustomModel} disabled={customModelTraining} style={{ width: "100%", background: customModelTraining ? "#4b5780" : "#10b981", color: customModelTraining ? "#94a3b8" : "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: customModelTraining ? "not-allowed" : "pointer" }}>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Train on your catalog for brand-specific descriptions</p>
+              <button onClick={trainCustomModel} disabled={customModelTraining} style={{ width: "100%", background: customModelTraining ? "#52525b" : "#10b981", color: customModelTraining ? "#a1a1aa" : "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: customModelTraining ? "not-allowed" : "pointer" }}>
                 {customModelTraining ? "Training..." : "Train Model"}
               </button>
             </div>
@@ -9936,35 +9936,35 @@ export default function ImageAltMediaSEO() {
         <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px" }}>
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>E-Commerce Enhancements</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Variant Image Sync</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Auto-propagate alt text across product variants</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Auto-propagate alt text across product variants</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="variantImageSync" type="checkbox" checked={variantImageSync} onChange={() => setVariantImageSync(!variantImageSync)} />
                 <span style={{ fontSize: 13 }}>Enable Variant Sync</span>
               </label>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Seasonal Content Rotation</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Schedule alt text changes for seasons/holidays</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Schedule alt text changes for seasons/holidays</p>
               <button onClick={() => scheduleSeasonalContent('winter', 'Winter collection')} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Schedule Seasonal</button>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Sale Discount Mentions</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Auto-add "on sale" during promotions</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Auto-add "on sale" during promotions</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="saleDiscountMentions" type="checkbox" checked={saleDiscountMentions} onChange={() => setSaleDiscountMentions(!saleDiscountMentions)} />
                 <span style={{ fontSize: 13 }}>Enable Sale Mentions</span>
               </label>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Review Star Integration</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Mention "5-star rated" in alt text</p>
-              <button onClick={() => selectedImageIds[0] && integrateReviewStars(selectedImageIds[0], 5)} style={{ width: "100%", background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Add Review Stars</button>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Mention "5-star rated" in alt text</p>
+              <button onClick={() => selectedImageIds[0] && integrateReviewStars(selectedImageIds[0], 5)} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Add Review Stars</button>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>New Arrival Flags</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Auto-tag new products</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Auto-tag new products</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="newArrivalFlags" type="checkbox" checked={newArrivalFlags} onChange={() => setNewArrivalFlags(!newArrivalFlags)} />
                 <span style={{ fontSize: 13 }}>Enable New Arrival Tags</span>
@@ -9979,42 +9979,42 @@ export default function ImageAltMediaSEO() {
         <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px" }}>
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Advanced Image Processing</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Background Removal</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>One-click background replacement</p>
-              <button onClick={() => selectedImageIds[0] && removeBackground(selectedImageIds[0])} style={{ width: "100%", background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Remove Background</button>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>One-click background replacement</p>
+              <button onClick={() => selectedImageIds[0] && removeBackground(selectedImageIds[0])} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Remove Background</button>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>AI Upscaling</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Enhance low-res images</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Enhance low-res images</p>
               <button onClick={() => selectedImageIds[0] && upscaleImage(selectedImageIds[0])} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Upscale 2x</button>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Compression Optimizer</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Reduce file size without quality loss</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Reduce file size without quality loss</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="compressionOptimizer" type="checkbox" checked={compressionOptimizer} onChange={() => setCompressionOptimizer(!compressionOptimizer)} />
                 <span style={{ fontSize: 13 }}>Auto-optimize on upload</span>
               </label>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Format Converter</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Convert to WebP/AVIF</p>
-              <select name="formatConverterTarget" onChange={(e) => setFormatConverter({ targetFormat: e.target.value })} value={formatConverter.targetFormat} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #475569", background: "#1f2433", color: "#fff", marginBottom: 12 }}>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Convert to WebP/AVIF</p>
+              <select name="formatConverterTarget" onChange={(e) => setFormatConverter({ targetFormat: e.target.value })} value={formatConverter.targetFormat} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #52525b", background: "#18181b", color: "#fff", marginBottom: 12 }}>
                 <option value="webp">WebP</option>
                 <option value="avif">AVIF</option>
                 <option value="jpeg">JPEG</option>
               </select>
-              <button onClick={() => selectedImageIds[0] && convertFormat(selectedImageIds[0], formatConverter.targetFormat)} style={{ width: "100%", background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Convert Selected</button>
+              <button onClick={() => selectedImageIds[0] && convertFormat(selectedImageIds[0], formatConverter.targetFormat)} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Convert Selected</button>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Smart Resize</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Content-aware resizing</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Content-aware resizing</p>
               <button onClick={() => selectedImageIds[0] && smartResizeImage(selectedImageIds[0], { width: 1200, height: 1200 })} style={{ width: "100%", background: "#ec4899", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Smart Resize</button>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>360° Product View</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Special handling for 360 views</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Special handling for 360 views</p>
               <button onClick={() => selectedImageIds[0] && enable360View(selectedImageIds[0])} style={{ width: "100%", background: "#14b8a6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Enable 360° View</button>
             </div>
           </div>
@@ -10026,38 +10026,38 @@ export default function ImageAltMediaSEO() {
         <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px" }}>
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>SEO Power Features</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Structured Data Generator</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Create Product schema automatically</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Create Product schema automatically</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="structuredDataGenerator" type="checkbox" checked={structuredDataGenerator} onChange={() => setStructuredDataGenerator(!structuredDataGenerator)} />
                 <span style={{ fontSize: 13 }}>Auto-generate schema</span>
               </label>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Google Lens Optimization</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Optimize for visual search</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Optimize for visual search</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="googleLensOptimization" type="checkbox" checked={googleLensOptimization} onChange={() => setGoogleLensOptimization(!googleLensOptimization)} />
                 <span style={{ fontSize: 13 }}>Enable Lens optimization</span>
               </label>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Alt Text Length Checker</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Ensure optimal 125-character sweet spot</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Ensure optimal 125-character sweet spot</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="altTextLengthChecker" type="checkbox" checked={altTextLengthChecker} onChange={() => setAltTextLengthChecker(!altTextLengthChecker)} />
                 <span style={{ fontSize: 13 }}>Real-time length validation</span>
               </label>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Voice Search Optimization</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Natural language for Alexa/Siri</p>
-              <button onClick={() => selectedImageIds[0] && optimizeVoiceSearch(selectedImageIds[0])} style={{ width: "100%", background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Optimize for Voice</button>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Natural language for Alexa/Siri</p>
+              <button onClick={() => selectedImageIds[0] && optimizeVoiceSearch(selectedImageIds[0])} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Optimize for Voice</button>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Broken Image Checker</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Find and fix 404 images</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Find and fix 404 images</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="brokenImageChecker" type="checkbox" checked={brokenImageChecker} onChange={() => setBrokenImageChecker(!brokenImageChecker)} />
                 <span style={{ fontSize: 13 }}>Auto-check on sync</span>
@@ -10073,32 +10073,32 @@ export default function ImageAltMediaSEO() {
         <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px" }}>
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Security & Privacy</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Two-Factor Authentication</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Enhanced login security</p>
-              <button onClick={enable2FA} disabled={twoFactorAuth} style={{ width: "100%", background: twoFactorAuth ? "#4b5780" : "#10b981", color: twoFactorAuth ? "#94a3b8" : "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: twoFactorAuth ? "not-allowed" : "pointer" }}>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Enhanced login security</p>
+              <button onClick={enable2FA} disabled={twoFactorAuth} style={{ width: "100%", background: twoFactorAuth ? "#52525b" : "#10b981", color: twoFactorAuth ? "#a1a1aa" : "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: twoFactorAuth ? "not-allowed" : "pointer" }}>
                 {twoFactorAuth ? "2FA Enabled" : "Enable 2FA"}
               </button>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>PII Detection</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Flag personal information in alt text</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Flag personal information in alt text</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="piiDetection" type="checkbox" checked={piiDetection} onChange={() => setPiiDetection(!piiDetection)} />
                 <span style={{ fontSize: 13 }}>Auto-detect PII</span>
               </label>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>GDPR Compliance</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Data deletion & export for EU</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Data deletion & export for EU</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="gdprComplianceTools" type="checkbox" checked={gdprComplianceTools} onChange={() => setGdprComplianceTools(!gdprComplianceTools)} />
                 <span style={{ fontSize: 13 }}>GDPR Mode</span>
               </label>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Encrypted Backups</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Secure data backups</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Secure data backups</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="encryptedBackups" type="checkbox" checked={encryptedBackups} onChange={() => setEncryptedBackups(!encryptedBackups)} />
                 <span style={{ fontSize: 13 }}>Enable encrypted backups</span>
@@ -10113,27 +10113,27 @@ export default function ImageAltMediaSEO() {
         <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px" }}>
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Mobile & Responsive</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Touch Gestures</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Swipe to navigate images</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Swipe to navigate images</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="touchGestures" type="checkbox" checked={touchGestures} onChange={() => setTouchGestures(!touchGestures)} />
                 <span style={{ fontSize: 13 }}>Enable swipe gestures</span>
               </label>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Voice Input</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Dictate alt text on mobile</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Dictate alt text on mobile</p>
               <button onClick={enableVoiceInput} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Enable Voice Input</button>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Camera Integration</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Upload from phone camera</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Upload from phone camera</p>
               <button onClick={openCamera} style={{ width: "100%", background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Open Camera</button>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Mobile Shortcuts</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Quick actions from home screen</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Quick actions from home screen</p>
               <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input name="mobileShortcuts" type="checkbox" checked={mobileShortcuts} onChange={() => setMobileShortcuts(!mobileShortcuts)} />
                 <span style={{ fontSize: 13 }}>Enable mobile shortcuts</span>
@@ -10148,19 +10148,19 @@ export default function ImageAltMediaSEO() {
         <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px" }}>
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24 }}>Data & Insights</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Machine Learning Insights</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Pattern recognition in successful alt text</p>
-              <button onClick={generateMLInsights} style={{ width: "100%", background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Generate ML Insights</button>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Pattern recognition in successful alt text</p>
+              <button onClick={generateMLInsights} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Generate ML Insights</button>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Predictive Suggestions</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>AI recommends next image to optimize</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>AI recommends next image to optimize</p>
               <button onClick={getPredictiveSuggestions} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Get Suggestions</button>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
+            <div style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #0ea5e9" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Impact Forecasting</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>Predict traffic increase from optimization</p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>Predict traffic increase from optimization</p>
               <button onClick={() => forecastImpact(10)} style={{ width: "100%", background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Forecast Impact</button>
             </div>
           </div>
@@ -10198,9 +10198,9 @@ export default function ImageAltMediaSEO() {
               { name: "Image Authenticity", fn: () => scoreImageAuthenticity("img1"), desc: "Score original vs stock photo" },
               { name: "Brand Elements", fn: () => detectBrandElements("img1"), desc: "Detect logos and brand colors" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #7c3aed" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #7c3aed" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#7c3aed", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Run Analysis</button>
               </div>
             ))}
@@ -10236,10 +10236,10 @@ export default function ImageAltMediaSEO() {
               { name: "Character Budget", fn: () => optimizeCharacterBudget("twitter"), desc: "Optimize for platform character limits" },
               { name: "Localization Quality", fn: () => scoreLocalizationQuality("Alt text", "es-ES"), desc: "Score translation quality" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
-                <button onClick={feature.fn} style={{ width: "100%", background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Run Tool</button>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
+                <button onClick={feature.fn} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Run Tool</button>
               </div>
             ))}
           </div>
@@ -10270,10 +10270,10 @@ export default function ImageAltMediaSEO() {
               { name: "Form Image Labels", fn: () => checkFormImageLabel("img1"), desc: "Check form image labels" },
               { name: "Image Map Describer", fn: () => describeImageMapArea("img1", []), desc: "Describe image map areas" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
-                <button onClick={feature.fn} style={{ width: "100%", background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Check Compliance</button>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
+                <button onClick={feature.fn} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Check Compliance</button>
               </div>
             ))}
           </div>
@@ -10306,10 +10306,10 @@ export default function ImageAltMediaSEO() {
               { name: "Recipe Images", fn: () => optimizeRecipeImage("img1"), desc: "Optimize recipe image schema" },
               { name: "How-To Sequence", fn: () => optimizeHowToSequence("img1", 1), desc: "Optimize how-to step images" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
-                <button onClick={feature.fn} style={{ width: "100%", background: "#06b6d4", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Optimize SEO</button>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
+                <button onClick={feature.fn} style={{ width: "100%", background: "#06b6d4", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Optimize SEO</button>
               </div>
             ))}
           </div>
@@ -10338,9 +10338,9 @@ export default function ImageAltMediaSEO() {
               { name: "Preload Hints", fn: () => generatePreloadHints(), desc: "Generate preload hints" },
               { name: "CDN Configuration", fn: () => optimizeCDNConfig("img1"), desc: "Optimize CDN configuration" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Optimize Format</button>
               </div>
             ))}
@@ -10369,9 +10369,9 @@ export default function ImageAltMediaSEO() {
               { name: "Color Mode", fn: () => recommendColorMode("img1"), desc: "Recommend color vs B&W" },
               { name: "Color Blocking", fn: () => detectColorBlocking("img1"), desc: "Detect color blocking techniques" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ec4899" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#ec4899", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Analyze Color</button>
               </div>
             ))}
@@ -10403,10 +10403,10 @@ export default function ImageAltMediaSEO() {
               { name: "Group Shot Detection", fn: () => detectGroupShot("img1"), desc: "Detect group vs single product" },
               { name: "Zoom Quality", fn: () => scoreZoomQuality("img1"), desc: "Score image zoom quality" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
-                <button onClick={feature.fn} style={{ width: "100%", background: "#14b8a6", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Analyze Photo</button>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
+                <button onClick={feature.fn} style={{ width: "100%", background: "#14b8a6", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Analyze Photo</button>
               </div>
             ))}
           </div>
@@ -10436,9 +10436,9 @@ export default function ImageAltMediaSEO() {
               { name: "Multiple Faces", fn: () => detectMultipleFaces("img1"), desc: "Detect multiple faces" },
               { name: "User-Generated", fn: () => classifyUserGenerated("img1"), desc: "Classify user-generated content" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f97316" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f97316" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Extract Intelligence</button>
               </div>
             ))}
@@ -10466,10 +10466,10 @@ export default function ImageAltMediaSEO() {
               { name: "Gallery Nav Pattern", fn: () => analyzeGalleryNavPattern("gallery1"), desc: "Analyze gallery navigation pattern" },
               { name: "Image Grouping", fn: () => detectImageGrouping(), desc: "Detect logical image grouping" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
-                <button onClick={feature.fn} style={{ width: "100%", background: "#06b6d4", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Analyze Context</button>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
+                <button onClick={feature.fn} style={{ width: "100%", background: "#06b6d4", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Analyze Context</button>
               </div>
             ))}
           </div>
@@ -10498,10 +10498,10 @@ export default function ImageAltMediaSEO() {
               { name: "Historical Alt Text", fn: () => generateAltHistory("img1"), desc: "Generate alt text history" },
               { name: "Rollback Alt Text", fn: () => rollbackAlt("img1", "v1"), desc: "Rollback to previous version" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
-                <button onClick={feature.fn} style={{ width: "100%", background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Automate</button>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
+                <button onClick={feature.fn} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Automate</button>
               </div>
             ))}
           </div>
@@ -10526,9 +10526,9 @@ export default function ImageAltMediaSEO() {
               { name: "Multivariate Test", fn: () => generateMultivariate("img1"), desc: "Generate multivariate test combinations" },
               { name: "Test Significance", fn: () => scoreTestSignificance("test1"), desc: "Score test statistical significance" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #a855f7" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #a855f7" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#a855f7", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Run Test</button>
               </div>
             ))}
@@ -10557,10 +10557,10 @@ export default function ImageAltMediaSEO() {
               { name: "Top Performers", fn: () => rankTopPerformingImages(), desc: "Rank top performing images" },
               { name: "Bottom Performers", fn: () => scoreBottomPerformers(), desc: "Identify underperforming images" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #eab308" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #eab308" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
-                <button onClick={feature.fn} style={{ width: "100%", background: "#eab308", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Track Performance</button>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
+                <button onClick={feature.fn} style={{ width: "100%", background: "#eab308", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Track Performance</button>
               </div>
             ))}
           </div>
@@ -10585,10 +10585,10 @@ export default function ImageAltMediaSEO() {
               { name: "Demographic Category", fn: () => categorizeByDemographic("img1"), desc: "Categorize by target demographic" },
               { name: "Image Hierarchy", fn: () => buildImageHierarchy(), desc: "Build image hierarchy (primary/secondary/tertiary)" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
-                <button onClick={feature.fn} style={{ width: "100%", background: "#06b6d4", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Categorize</button>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
+                <button onClick={feature.fn} style={{ width: "100%", background: "#06b6d4", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Categorize</button>
               </div>
             ))}
           </div>
@@ -10611,9 +10611,9 @@ export default function ImageAltMediaSEO() {
               { name: "Testimonial Image", fn: () => optimizeTestimonialImage("img1"), desc: "Optimize testimonial images" },
               { name: "Packaging Dimensions", fn: () => describePackagingDimension("img1"), desc: "Describe packaging dimensions" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f97316" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f97316" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Optimize</button>
               </div>
             ))}
@@ -10642,9 +10642,9 @@ export default function ImageAltMediaSEO() {
               { name: "Unauthorized Usage", fn: () => detectUnauthorizedUsage("img1"), desc: "Detect unauthorized usage" },
               { name: "Watermark Removal Detection", fn: () => detectWatermarkRemoval("img1"), desc: "Detect watermark tampering" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Check Rights</button>
               </div>
             ))}
@@ -10676,9 +10676,9 @@ export default function ImageAltMediaSEO() {
               { name: "Professional Quality", fn: () => validateProfessionalQuality("img1"), desc: "Validate professional quality standards" },
               { name: "Print Quality", fn: () => checkPrintQuality("img1"), desc: "Check print readiness" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #ef4444" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ef4444" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#ef4444", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Check Quality</button>
               </div>
             ))}
@@ -10708,9 +10708,9 @@ export default function ImageAltMediaSEO() {
               { name: "Horizontal Crop", fn: () => optimizeHorizontalCrop("img1"), desc: "Optimize for horizontal format" },
               { name: "Multi-Platform Crops", fn: () => generateMultiPlatformCrops("img1"), desc: "Generate crops for multiple platforms" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#14b8a6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Apply Crop</button>
               </div>
             ))}
@@ -10744,9 +10744,9 @@ export default function ImageAltMediaSEO() {
               { name: "TikTok Shop", fn: () => optimizeTikTokShop("img1"), desc: "TikTok Shop optimization" },
               { name: "Snapchat Ads", fn: () => optimizeSnapchatAds("img1"), desc: "Snapchat Ads specs" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #3b82f6" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #3b82f6" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#3b82f6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Optimize Platform</button>
               </div>
             ))}
@@ -10774,9 +10774,9 @@ export default function ImageAltMediaSEO() {
               { name: "Contextual Background", fn: () => scoreContextualBackground("img1"), desc: "Score contextual appropriateness" },
               { name: "Background Replacement", fn: () => suggestBackgroundReplacement("img1"), desc: "Suggest background alternatives" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #a855f7" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #a855f7" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#a855f7", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Analyze Background</button>
               </div>
             ))}
@@ -10802,9 +10802,9 @@ export default function ImageAltMediaSEO() {
               { name: "ICC Profile", fn: () => checkIccProfile("img1"), desc: "Check ICC color profile" },
               { name: "Privacy Scanner", fn: () => scanMetadataPrivacy("img1"), desc: "Scan for privacy issues in metadata" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#06b6d4", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Manage Metadata</button>
               </div>
             ))}
@@ -10833,9 +10833,9 @@ export default function ImageAltMediaSEO() {
               { name: "Regulatory Compliance", fn: () => checkRegulatoryCompliance("img1"), desc: "Check regulatory compliance" },
               { name: "Platform Policy", fn: () => validatePlatformPolicy("img1", "Instagram"), desc: "Validate platform policies" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #dc2626" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #dc2626" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#dc2626", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Check Compliance</button>
               </div>
             ))}
@@ -10861,10 +10861,10 @@ export default function ImageAltMediaSEO() {
               { name: "Market Trends", fn: () => alignMarketTrend("img1"), desc: "Align with market trends" },
               { name: "Geo-Targeted", fn: () => optimizeGeoTargeted("img1"), desc: "Optimize for geo-targeting" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
-                <button onClick={feature.fn} style={{ width: "100%", background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Localize</button>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
+                <button onClick={feature.fn} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Localize</button>
               </div>
             ))}
           </div>
@@ -10891,10 +10891,10 @@ export default function ImageAltMediaSEO() {
               { name: "Brand Consistency", fn: () => validateBrandConsistency(), desc: "Validate brand consistency" },
               { name: "Deduplication", fn: () => deduplicateImages(), desc: "Remove duplicate images" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
-                <button onClick={feature.fn} style={{ width: "100%", background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Compare Images</button>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
+                <button onClick={feature.fn} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Compare Images</button>
               </div>
             ))}
           </div>
@@ -10919,9 +10919,9 @@ export default function ImageAltMediaSEO() {
               { name: "Orphaned Images", fn: () => findOrphanedImages(), desc: "Find orphaned images" },
               { name: "Purge Scheduler", fn: () => scheduleImagePurge(30), desc: "Schedule image purge" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Manage Assets</button>
               </div>
             ))}
@@ -10967,9 +10967,9 @@ export default function ImageAltMediaSEO() {
               { name: "OCR Text Extraction", fn: () => handleOCRExtraction("text-image.jpg"), desc: "Extract text from images via OCR" },
               { name: "Trend Terminology", fn: () => handleApplyTrendTerminology("minimalist dress"), desc: "Apply current trend terminology" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #a855f7" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #a855f7" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#a855f7", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Activate Feature</button>
               </div>
             ))}
@@ -11008,10 +11008,10 @@ export default function ImageAltMediaSEO() {
               { name: "Contrast Levels", fn: () => handleAnalyzeContrast("high-contrast.jpg"), desc: "Analyze image contrast" },
               { name: "Saturation Analysis", fn: () => handleAnalyzeSaturation("saturated.jpg"), desc: "Analyze color saturation" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #06b6d4" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
-                <button onClick={feature.fn} style={{ width: "100%", background: "#06b6d4", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Analyze</button>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
+                <button onClick={feature.fn} style={{ width: "100%", background: "#06b6d4", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Analyze</button>
               </div>
             ))}
           </div>
@@ -11044,10 +11044,10 @@ export default function ImageAltMediaSEO() {
               { name: "Modifier Placement", fn: () => handleOptimizeModifierPlacement("dress beautiful red"), desc: "Optimize adjective placement" },
               { name: "Child Keyword Extraction", fn: () => handleExtractChildKeywords("shoes"), desc: "Extract child/related keywords" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #10b981" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
-                <button onClick={feature.fn} style={{ width: "100%", background: "#10b981", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Optimize SEO</button>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
+                <button onClick={feature.fn} style={{ width: "100%", background: "#10b981", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Optimize SEO</button>
               </div>
             ))}
           </div>
@@ -11080,10 +11080,10 @@ export default function ImageAltMediaSEO() {
               { name: "Sensory Language Balance", fn: () => handleBalanceSensoryLanguage("Bright soft fragrant"), desc: "Balance sensory language types" },
               { name: "Conciseness Scorer", fn: () => handleEnsureConciseness("Very really quite just actually basically"), desc: "Score and ensure conciseness" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
-                <button onClick={feature.fn} style={{ width: "100%", background: "#f59e0b", color: "#0b0b0b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Check Accessibility</button>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
+                <button onClick={feature.fn} style={{ width: "100%", background: "#f59e0b", color: "#09090b", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Check Accessibility</button>
               </div>
             ))}
           </div>
@@ -11121,9 +11121,9 @@ export default function ImageAltMediaSEO() {
               { name: "Comparison Accuracy", fn: () => handleVerifyComparisons("Better than competitors"), desc: "Verify comparison accuracy" },
               { name: "Legal Compliance Checker", fn: () => handleCheckLegalCompliance("Guaranteed to cure"), desc: "Check legal compliance" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #ef4444" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #ef4444" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#ef4444", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Validate Quality</button>
               </div>
             ))}
@@ -11177,9 +11177,9 @@ export default function ImageAltMediaSEO() {
               { name: "Update Frequency Recommender", fn: () => handleRecommendUpdateFrequency("img-1", "fashion"), desc: "Recommend update frequency" },
               { name: "Lifecycle Stage Tracker", fn: () => handleTrackLifecycleStage("img-1", "active"), desc: "Track image lifecycle stage" }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: "2px solid #8b5cf6" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16 }}>{feature.desc}</p>
                 <button onClick={feature.fn} style={{ width: "100%", background: "#8b5cf6", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, cursor: "pointer" }}>Toggle Feature</button>
               </div>
             ))}
@@ -11190,7 +11190,7 @@ export default function ImageAltMediaSEO() {
       {activeTab === "advanced-image-seo" && (
         <div style={{ animation: "fadeIn 0.3s ease-out", padding: "24px" }}>
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 24, color: "#06b6d4" }}>Advanced Image SEO Tools (17 Features)</h2>
-          <p style={{ fontSize: 15, color: "#cbd5e1", marginBottom: 32, lineHeight: 1.7 }}>
+          <p style={{ fontSize: 15, color: "#d4d4d8", marginBottom: 32, lineHeight: 1.7 }}>
             Comprehensive image-specific SEO enhancements including schema markup, social optimization, Core Web Vitals, accessibility audits, and technical performance analysis.
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 20 }}>
@@ -11301,18 +11301,18 @@ export default function ImageAltMediaSEO() {
                 name: "EXIF & Geo-Location", 
                 fn: () => selectedImageIds.forEach(id => handleManageExifData(id, { camera: "Unknown" })), 
                 desc: "Extract/edit EXIF data, GPS coordinates, copyright, strip PII",
-                color: "#9aa3b8"
+                color: "#71717a"
               }
             ].map((feature, idx) => (
-              <div key={idx} style={{ background: "linear-gradient(135deg, #283044 0%, #4b5780 100%)", borderRadius: 16, padding: 24, border: `2px solid ${feature.color}`, position: "relative", overflow: "hidden" }}>
+              <div key={idx} style={{ background: "linear-gradient(135deg, #27272a 0%, #52525b 100%)", borderRadius: 16, padding: 24, border: `2px solid ${feature.color}`, position: "relative", overflow: "hidden" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: feature.color }}>{feature.name}</h3>
-                <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 16, lineHeight: 1.6 }}>{feature.desc}</p>
+                <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 16, lineHeight: 1.6 }}>{feature.desc}</p>
                 <button 
                   onClick={feature.fn} 
                   disabled={!selectedImageIds.length && !feature.name.includes("Sitemap") && !feature.name.includes("Broken") && !feature.name.includes("Duplicate")}
                   style={{ 
                     width: "100%", 
-                    background: selectedImageIds.length || feature.name.includes("Sitemap") || feature.name.includes("Broken") || feature.name.includes("Duplicate") ? `linear-gradient(135deg, ${feature.color} 0%, ${feature.color}dd 100%)` : "#475569", 
+                    background: selectedImageIds.length || feature.name.includes("Sitemap") || feature.name.includes("Broken") || feature.name.includes("Duplicate") ? `linear-gradient(135deg, ${feature.color} 0%, ${feature.color}dd 100%)` : "#52525b", 
                     color: "#fff", 
                     border: "none", 
                     borderRadius: 12, 
@@ -11333,22 +11333,22 @@ export default function ImageAltMediaSEO() {
           
           {/* Results Display Sections */}
           {imageSitemapData && (
-            <div style={{ marginTop: 32, background: "linear-gradient(135deg, #1f2433 0%, #283044 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6" }}>
+            <div style={{ marginTop: 32, background: "linear-gradient(135deg, #18181b 0%, #27272a 100%)", borderRadius: 16, padding: 24, border: "2px solid #14b8a6" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#14b8a6" }}>Image Sitemap Generated</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 12 }}>Total entries: <strong>{imageSitemapData.count}</strong></p>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 12 }}>Total entries: <strong>{imageSitemapData.count}</strong></p>
               <textarea 
                 readOnly 
                 value={`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${imageSitemapData.entries.slice(0, 5).map(e => `  <url>\n    <loc>${e.loc}</loc>\n    <image:image>\n      <image:loc>${e.loc}</image:loc>\n      <image:caption>${e.caption}</image:caption>\n      <image:title>${e.title}</image:title>\n      <image:license>${e.license}</image:license>\n    </image:image>\n  </url>`).join('\n')}\n  <!-- ... ${imageSitemapData.count - 5} more entries -->\n</urlset>`}
-                style={{ width: "100%", height: 200, background: "#0b0b0b", color: "#e2e8f0", border: "1px solid #4b5780", borderRadius: 8, padding: 12, fontFamily: "monospace", fontSize: 12, resize: "vertical" }}
+                style={{ width: "100%", height: 200, background: "#09090b", color: "#e4e4e7", border: "1px solid #52525b", borderRadius: 8, padding: 12, fontFamily: "monospace", fontSize: 12, resize: "vertical" }}
               />
             </div>
           )}
           
           {brokenImagesList.length > 0 && (
-            <div style={{ marginTop: 32, background: "linear-gradient(135deg, #1f2433 0%, #283044 100%)", borderRadius: 16, padding: 24, border: "2px solid #ef4444" }}>
+            <div style={{ marginTop: 32, background: "linear-gradient(135deg, #18181b 0%, #27272a 100%)", borderRadius: 16, padding: 24, border: "2px solid #ef4444" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#ef4444" }}>Broken Images Detected</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 12 }}>Found <strong>{brokenImagesList.length}</strong> broken images:</p>
-              <ul style={{ paddingLeft: 20, color: "#94a3b8", fontSize: 13 }}>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 12 }}>Found <strong>{brokenImagesList.length}</strong> broken images:</p>
+              <ul style={{ paddingLeft: 20, color: "#a1a1aa", fontSize: 13 }}>
                 {brokenImagesList.slice(0, 10).map(img => (
                   <li key={img.id} style={{ marginBottom: 4 }}>ID: {img.id} - {img.url || "(no URL)"}</li>
                 ))}
@@ -11358,15 +11358,15 @@ export default function ImageAltMediaSEO() {
           )}
           
           {duplicateImagesList.length > 0 && (
-            <div style={{ marginTop: 32, background: "linear-gradient(135deg, #1f2433 0%, #283044 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
+            <div style={{ marginTop: 32, background: "linear-gradient(135deg, #18181b 0%, #27272a 100%)", borderRadius: 16, padding: 24, border: "2px solid #f59e0b" }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#f59e0b" }}>Duplicate Images Found</h3>
-              <p style={{ fontSize: 14, color: "#cbd5e1", marginBottom: 12 }}>Found <strong>{duplicateImagesList.length}</strong> duplicate groups:</p>
-              <ul style={{ paddingLeft: 20, color: "#94a3b8", fontSize: 13 }}>
+              <p style={{ fontSize: 14, color: "#d4d4d8", marginBottom: 12 }}>Found <strong>{duplicateImagesList.length}</strong> duplicate groups:</p>
+              <ul style={{ paddingLeft: 20, color: "#a1a1aa", fontSize: 13 }}>
                 {duplicateImagesList.slice(0, 5).map((group, idx) => (
                   <li key={idx} style={{ marginBottom: 8 }}>
                     <strong>{group.length} duplicates:</strong> {group.map(img => `#${img.id}`).join(", ")}
                     <br/>
-                    <span style={{ fontSize: 11, color: "#9aa3b8" }}>{group[0].url}</span>
+                    <span style={{ fontSize: 11, color: "#71717a" }}>{group[0].url}</span>
                   </li>
                 ))}
                 {duplicateImagesList.length > 5 && <li>... and {duplicateImagesList.length - 5} more groups</li>}
@@ -11380,7 +11380,7 @@ export default function ImageAltMediaSEO() {
       
       {/* Templates Management Section */}
       {activeTab === "templates" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Alt Text Templates</h2>
           
           <button
@@ -11406,9 +11406,9 @@ export default function ImageAltMediaSEO() {
           
           <div style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
             {sharedTemplates.map(template => (
-              <div key={template.id} style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 20, border: "1px solid #4b5780" }}>
+              <div key={template.id} style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 20, border: "1px solid #52525b" }}>
                 <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{template.name}</h3>
-                <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 12 }}>{template.pattern}</p>
+                <p style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>{template.pattern}</p>
                 <div style={{ display: "flex", gap: 8 }}>
                   <button style={{ flex: 1, padding: "8px", background: accentColor, color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
                     Use Template
@@ -11425,7 +11425,7 @@ export default function ImageAltMediaSEO() {
 
       {/* Advanced Analytics Dashboard */}
       {activeTab === "advanced-analytics" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Advanced Analytics</h2>
           
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20, marginBottom: 32 }}>
@@ -11499,7 +11499,7 @@ export default function ImageAltMediaSEO() {
           </div>
           
           {qualityCharts && (
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24, marginBottom: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24, marginBottom: 24 }}>
               <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Quality Trends (Last 30 Days)</h3>
               <div style={{ height: 300, display: "flex", alignItems: "flex-end", gap: 8 }}>
                 {qualityCharts.data?.map((point, idx) => (
@@ -11513,18 +11513,18 @@ export default function ImageAltMediaSEO() {
 
       {/* Collaboration & Team Management */}
       {activeTab === "collaboration-advanced" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Collaboration & Teams</h2>
           
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
             {/* Comments Section */}
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
               <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Image Comments</h3>
               {selectedImageIds.length === 1 && (
                 <div>
                   <textarea
                     placeholder="Add a comment..."
-                    style={{ width: "100%", minHeight: 80, padding: 12, background: theme === "dark" ? "#1f2433" : "#fff", color: theme === "dark" ? "#e2e8f0" : "#1f2433", border: "1px solid #4b5780", borderRadius: 8, marginBottom: 12 }}
+                    style={{ width: "100%", minHeight: 80, padding: 12, background: theme === "dark" ? "#18181b" : "#fff", color: theme === "dark" ? "#e4e4e7" : "#18181b", border: "1px solid #52525b", borderRadius: 8, marginBottom: 12 }}
                   />
                   <button
                     onClick={async () => {
@@ -11547,7 +11547,7 @@ export default function ImageAltMediaSEO() {
             </div>
             
             {/* Assignments Section */}
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
               <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Assignments</h3>
               <button
                 onClick={async () => {
@@ -11572,7 +11572,7 @@ export default function ImageAltMediaSEO() {
           </div>
           
           {/* Team Management */}
-          <div style={{ marginTop: 32, background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+          <div style={{ marginTop: 32, background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Team Management</h3>
             <button
               onClick={async () => {
@@ -11593,9 +11593,9 @@ export default function ImageAltMediaSEO() {
           </div>
           
           {/* Workflow Automation */}
-          <div style={{ marginTop: 32, background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+          <div style={{ marginTop: 32, background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Workflow Automation</h3>
-            <p style={{ fontSize: 14, color: "#94a3b8", marginBottom: 16 }}>Create automated workflows triggered by events</p>
+            <p style={{ fontSize: 14, color: "#a1a1aa", marginBottom: 16 }}>Create automated workflows triggered by events</p>
             <button
               onClick={async () => {
                 const res = await fetch("/api/image-alt-media-seo/workflows", {
@@ -11622,7 +11622,7 @@ export default function ImageAltMediaSEO() {
 
       {/* SEO Tools Section */}
       {activeTab === "seo-advanced" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Advanced SEO Tools</h2>
           
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20 }}>
@@ -11694,7 +11694,7 @@ export default function ImageAltMediaSEO() {
 
       {/* Integration Marketplace */}
       {activeTab === "integrations" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Integration Marketplace</h2>
           
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 16 }}>
@@ -11706,10 +11706,10 @@ export default function ImageAltMediaSEO() {
               { id: 'slack', name: 'Slack', icon: '', status: 'available' },
               { id: 'google-analytics', name: 'Google Analytics', icon: '', status: 'available' }
             ].map(integration => (
-              <div key={integration.id} style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 20, border: `2px solid ${integration.status === 'active' ? '#10b981' : '#4b5780'}` }}>
+              <div key={integration.id} style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 20, border: `2px solid ${integration.status === 'active' ? '#10b981' : '#52525b'}` }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>{integration.icon}</div>
                 <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{integration.name}</h3>
-                <div style={{ fontSize: 12, color: integration.status === 'active' ? '#10b981' : '#94a3b8', marginBottom: 12, textTransform: 'uppercase', fontWeight: 600 }}>
+                <div style={{ fontSize: 12, color: integration.status === 'active' ? '#10b981' : '#a1a1aa', marginBottom: 12, textTransform: 'uppercase', fontWeight: 600 }}>
                   {integration.status}
                 </div>
                 <button
@@ -11722,7 +11722,7 @@ export default function ImageAltMediaSEO() {
                     const data = await res.json();
                     if (data.ok) setNotifications([...notifications, { text: `${integration.name} connected`, type: "success" }]);
                   }}
-                  style={{ width: "100%", padding: "10px", background: integration.status === 'active' ? '#9aa3b8' : accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
+                  style={{ width: "100%", padding: "10px", background: integration.status === 'active' ? '#71717a' : accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
                 >
                   {integration.status === 'active' ? 'Connected' : 'Connect'}
                 </button>
@@ -11736,11 +11736,11 @@ export default function ImageAltMediaSEO() {
       
       {/* User Preferences & Saved Searches */}
       {activeTab === "preferences" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>User Preferences & Saved Searches</h2>
           
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
               <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Preferences</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -11767,7 +11767,7 @@ export default function ImageAltMediaSEO() {
               </div>
             </div>
             
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
               <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Saved Searches</h3>
               <button
                 onClick={async () => {
@@ -11791,14 +11791,14 @@ export default function ImageAltMediaSEO() {
 
       {/* Notifications Center */}
       {activeTab === "notifications-center" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Notifications</h2>
           
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {notifications.slice(0, 20).map((notif, idx) => (
-              <div key={idx} style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 16, borderLeft: `4px solid ${notif.type === 'success' ? '#10b981' : notif.type === 'error' ? '#ef4444' : '#3b82f6'}` }}>
+              <div key={idx} style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 16, borderLeft: `4px solid ${notif.type === 'success' ? '#10b981' : notif.type === 'error' ? '#ef4444' : '#3b82f6'}` }}>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>{notif.text}</div>
-                {notif.timestamp && <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>{new Date(notif.timestamp).toLocaleString()}</div>}
+                {notif.timestamp && <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 4 }}>{new Date(notif.timestamp).toLocaleString()}</div>}
               </div>
             ))}
           </div>
@@ -11807,7 +11807,7 @@ export default function ImageAltMediaSEO() {
 
       {/* Custom Fields Management */}
       {activeTab === "custom-fields" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Custom Fields</h2>
           
           <button
@@ -11827,13 +11827,13 @@ export default function ImageAltMediaSEO() {
             + Add Custom Field
           </button>
           
-          <p style={{ fontSize: 14, color: "#94a3b8" }}>Create custom metadata fields for your images (brand, collection, season, etc.)</p>
+          <p style={{ fontSize: 14, color: "#a1a1aa" }}>Create custom metadata fields for your images (brand, collection, season, etc.)</p>
         </div>
       )}
 
       {/* Tags System */}
       {activeTab === "tags-system" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Tags System</h2>
           
           <div style={{ marginBottom: 24 }}>
@@ -11842,7 +11842,7 @@ export default function ImageAltMediaSEO() {
               value={tagInput}
               onChange={e => setTagInput(e.target.value)}
               placeholder="Create new tag..."
-              style={{ padding: 12, background: theme === "dark" ? "#283044" : "#f8fafc", color: theme === "dark" ? "#e2e8f0" : "#1f2433", border: "1px solid #4b5780", borderRadius: 8, marginRight: 12, width: 300 }}
+              style={{ padding: 12, background: theme === "dark" ? "#27272a" : "#fafafa", color: theme === "dark" ? "#e4e4e7" : "#18181b", border: "1px solid #52525b", borderRadius: 8, marginRight: 12, width: 300 }}
             />
             <button
               onClick={async () => {
@@ -11873,10 +11873,10 @@ export default function ImageAltMediaSEO() {
 
       {/* Brand Voice Analyzer */}
       {activeTab === "brand-voice" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Brand Voice Analysis</h2>
           
-          <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24, marginBottom: 24 }}>
+          <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24, marginBottom: 24 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Brand Guidelines</h3>
             <button
               onClick={async () => {
@@ -11896,7 +11896,7 @@ export default function ImageAltMediaSEO() {
             </button>
           </div>
           
-          <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+          <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Analyze Alt Text</h3>
             <button
               onClick={async () => {
@@ -11920,7 +11920,7 @@ export default function ImageAltMediaSEO() {
 
       {/* Competitor Benchmarking */}
       {activeTab === "competitors" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Competitor Benchmarking</h2>
           
           <button
@@ -11955,7 +11955,7 @@ export default function ImageAltMediaSEO() {
 
       {/* Social Media Optimization */}
       {activeTab === "social-media" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Social Media Optimization</h2>
           
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
@@ -11985,7 +11985,7 @@ export default function ImageAltMediaSEO() {
 
       {/* Advanced Export Formats */}
       {activeTab === "exports-advanced" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Advanced Export Formats</h2>
           
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 16 }}>
@@ -12018,26 +12018,26 @@ export default function ImageAltMediaSEO() {
 
       {/* Performance Monitor & Quotas */}
       {activeTab === "performance-monitor" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Performance & Quotas</h2>
           
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }}>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 20 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 20 }}>
               <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>AI Generations</h3>
               <div style={{ fontSize: 32, fontWeight: 700, color: accentColor }}>847 / 1000</div>
-              <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>153 remaining</div>
+              <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 4 }}>153 remaining</div>
             </div>
             
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 20 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 20 }}>
               <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Shopify Pushes</h3>
               <div style={{ fontSize: 32, fontWeight: 700, color: "#14b8a6" }}>342 / 500</div>
-              <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>158 remaining</div>
+              <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 4 }}>158 remaining</div>
             </div>
             
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 20 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 20 }}>
               <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Exports</h3>
               <div style={{ fontSize: 32, fontWeight: 700, color: "#f59e0b" }}>67 / 100</div>
-              <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>33 remaining</div>
+              <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 4 }}>33 remaining</div>
             </div>
           </div>
           
@@ -12056,7 +12056,7 @@ export default function ImageAltMediaSEO() {
 
       {/* API Keys Management */}
       {activeTab === "api-keys" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>API Keys</h2>
           
           <button
@@ -12080,7 +12080,7 @@ export default function ImageAltMediaSEO() {
 
       {/* Backup & Restore */}
       {activeTab === "backup-restore" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Backup & Restore</h2>
           
           <div style={{ display: "flex", gap: 16 }}>
@@ -12117,7 +12117,7 @@ export default function ImageAltMediaSEO() {
       
       {/* A/B Testing Dashboard */}
       {activeTab === "ab-testing" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>A/B Testing Dashboard</h2>
           
           <button
@@ -12143,12 +12143,12 @@ export default function ImageAltMediaSEO() {
           </button>
           
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
               <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Active Tests</h3>
-              <div style={{ fontSize: 14, color: "#94a3b8" }}>3 tests running</div>
+              <div style={{ fontSize: 14, color: "#a1a1aa" }}>3 tests running</div>
             </div>
             
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
               <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Best Performers</h3>
               <div style={{ fontSize: 14, color: "#10b981" }}>+18% avg improvement</div>
             </div>
@@ -12158,7 +12158,7 @@ export default function ImageAltMediaSEO() {
 
       {/* Webhooks Management */}
       {activeTab === "webhooks" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Webhook Management</h2>
           
           <button
@@ -12182,9 +12182,9 @@ export default function ImageAltMediaSEO() {
             + Add Webhook
           </button>
           
-          <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+          <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
             <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Event Types</h3>
-            <ul style={{ fontSize: 14, color: "#94a3b8", paddingLeft: 20 }}>
+            <ul style={{ fontSize: 14, color: "#a1a1aa", paddingLeft: 20 }}>
               <li>image.created</li>
               <li>alt.updated</li>
               <li>quality.low</li>
@@ -12197,7 +12197,7 @@ export default function ImageAltMediaSEO() {
 
       {/* SLA Dashboard */}
       {activeTab === "sla-dashboard" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>SLA Dashboard</h2>
           
           <button
@@ -12212,18 +12212,18 @@ export default function ImageAltMediaSEO() {
           </button>
           
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24, borderLeft: "4px solid #10b981" }}>
-              <div style={{ fontSize: 14, color: "#94a3b8", marginBottom: 8 }}>Compliant</div>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24, borderLeft: "4px solid #10b981" }}>
+              <div style={{ fontSize: 14, color: "#a1a1aa", marginBottom: 8 }}>Compliant</div>
               <div style={{ fontSize: 32, fontWeight: 700, color: "#10b981" }}>87%</div>
             </div>
             
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24, borderLeft: "4px solid #f59e0b" }}>
-              <div style={{ fontSize: 14, color: "#94a3b8", marginBottom: 8 }}>At Risk</div>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24, borderLeft: "4px solid #f59e0b" }}>
+              <div style={{ fontSize: 14, color: "#a1a1aa", marginBottom: 8 }}>At Risk</div>
               <div style={{ fontSize: 32, fontWeight: 700, color: "#f59e0b" }}>8%</div>
             </div>
             
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24, borderLeft: "4px solid #ef4444" }}>
-              <div style={{ fontSize: 14, color: "#94a3b8", marginBottom: 8 }}>Breaching</div>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24, borderLeft: "4px solid #ef4444" }}>
+              <div style={{ fontSize: 14, color: "#a1a1aa", marginBottom: 8 }}>Breaching</div>
               <div style={{ fontSize: 32, fontWeight: 700, color: "#ef4444" }}>5%</div>
             </div>
           </div>
@@ -12232,14 +12232,14 @@ export default function ImageAltMediaSEO() {
 
       {/* Audit Log Viewer */}
       {activeTab === "audit-logs" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Audit Logs</h2>
           
           <div style={{ marginBottom: 24, display: "flex", gap: 12 }}>
             <input
               type="text"
               placeholder="Filter by user..."
-              style={{ flex: 1, padding: 12, background: theme === "dark" ? "#283044" : "#f8fafc", color: theme === "dark" ? "#e2e8f0" : "#1f2433", border: "1px solid #4b5780", borderRadius: 8 }}
+              style={{ flex: 1, padding: 12, background: theme === "dark" ? "#27272a" : "#fafafa", color: theme === "dark" ? "#e4e4e7" : "#18181b", border: "1px solid #52525b", borderRadius: 8 }}
             />
             <button
               onClick={async () => {
@@ -12253,8 +12253,8 @@ export default function ImageAltMediaSEO() {
             </button>
           </div>
           
-          <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
-            <div style={{ fontSize: 13, color: "#94a3b8", fontFamily: "monospace" }}>
+          <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
+            <div style={{ fontSize: 13, color: "#a1a1aa", fontFamily: "monospace" }}>
               [2026-02-10 14:23:15] USER:admin ACTION:bulk-update RESOURCE:images COUNT:45<br/>
               [2026-02-10 14:18:32] USER:editor ACTION:create RESOURCE:template NAME:"Product Alt"<br/>
               [2026-02-10 14:12:08] USER:admin ACTION:push RESOURCE:shopify COUNT:12
@@ -12266,13 +12266,13 @@ export default function ImageAltMediaSEO() {
       {/* Command Palette (Keyboard-driven) */}
       {commandPaletteOpen && (
         <div onClick={() => setCommandPaletteOpen(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.7)", zIndex: 10000, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 120 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 600, background: theme === "dark" ? "#283044" : "#fff", borderRadius: 16, padding: 24, maxHeight: "70vh", overflow: "auto" }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 600, background: theme === "dark" ? "#27272a" : "#fff", borderRadius: 16, padding: 24, maxHeight: "70vh", overflow: "auto" }}>
             <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Command Palette</h3>
             <input
               type="text"
               placeholder="Type a command..."
               autoFocus
-              style={{ width: "100%", padding: 12, background: theme === "dark" ? "#1f2433" : "#f8fafc", color: theme === "dark" ? "#e2e8f0" : "#1f2433", border: "1px solid #4b5780", borderRadius: 8, marginBottom: 16 }}
+              style={{ width: "100%", padding: 12, background: theme === "dark" ? "#18181b" : "#fafafa", color: theme === "dark" ? "#e4e4e7" : "#18181b", border: "1px solid #52525b", borderRadius: 8, marginBottom: 16 }}
             />
             
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -12287,10 +12287,10 @@ export default function ImageAltMediaSEO() {
                 <div
                   key={idx}
                   onClick={() => { cmd.action(); setCommandPaletteOpen(false); }}
-                  style={{ padding: 12, background: theme === "dark" ? "#1f2433" : "#f8fafc", borderRadius: 8, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                  style={{ padding: 12, background: theme === "dark" ? "#18181b" : "#fafafa", borderRadius: 8, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
                   <span style={{ fontSize: 14, fontWeight: 500 }}>{cmd.label}</span>
-                  <span style={{ fontSize: 12, color: "#94a3b8", fontFamily: "monospace" }}>{cmd.shortcut}</span>
+                  <span style={{ fontSize: 12, color: "#a1a1aa", fontFamily: "monospace" }}>{cmd.shortcut}</span>
                 </div>
               ))}
             </div>
@@ -12300,21 +12300,21 @@ export default function ImageAltMediaSEO() {
 
       {/* Image Comparison Tool */}
       {activeTab === "image-comparison" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Image Comparison</h2>
           
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
               <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Before</h3>
               {comparisonBefore && (
                 <div>
                   <img src={comparisonBefore.imageUrl} alt="" style={{ width: "100%", borderRadius: 8, marginBottom: 12 }} />
-                  <div style={{ fontSize: 14, color: "#94a3b8" }}>{comparisonBefore.altText || "(no alt text)"}</div>
+                  <div style={{ fontSize: 14, color: "#a1a1aa" }}>{comparisonBefore.altText || "(no alt text)"}</div>
                 </div>
               )}
             </div>
             
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
               <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>After</h3>
               {comparisonAfter && (
                 <div>
@@ -12341,7 +12341,7 @@ export default function ImageAltMediaSEO() {
 
       {/* Activity Timeline */}
       {activeTab === "activity-timeline" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Activity Timeline</h2>
           
           <button
@@ -12356,14 +12356,14 @@ export default function ImageAltMediaSEO() {
           </button>
           
           <div style={{ position: "relative", paddingLeft: 40 }}>
-            <div style={{ position: "absolute", left: 18, top: 0, bottom: 0, width: 2, background: "#4b5780" }} />
+            <div style={{ position: "absolute", left: 18, top: 0, bottom: 0, width: 2, background: "#52525b" }} />
             
             {actionLog.slice(0, 20).map((log, idx) => (
               <div key={idx} style={{ position: "relative", marginBottom: 24 }}>
-                <div style={{ position: "absolute", left: -30, top: 6, width: 12, height: 12, borderRadius: "50%", background: accentColor, border: "2px solid #1f2433" }} />
-                <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 16 }}>
+                <div style={{ position: "absolute", left: -30, top: 6, width: 12, height: 12, borderRadius: "50%", background: accentColor, border: "2px solid #18181b" }} />
+                <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 16 }}>
                   <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{log.action || "Activity"}</div>
-                  <div style={{ fontSize: 12, color: "#94a3b8" }}>{log.timestamp || "Just now"}</div>
+                  <div style={{ fontSize: 12, color: "#a1a1aa" }}>{log.timestamp || "Just now"}</div>
                 </div>
               </div>
             ))}
@@ -12373,11 +12373,11 @@ export default function ImageAltMediaSEO() {
 
       {/* Advanced Visualizations */}
       {activeTab === "visualizations" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Data Visualizations</h2>
           
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
               <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Quality Distribution</h3>
               <div style={{ height: 200, display: "flex", alignItems: "flex-end", gap: 4 }}>
                 {[65, 78, 82, 91, 88, 95, 87, 92, 84, 79].map((score, idx) => (
@@ -12386,7 +12386,7 @@ export default function ImageAltMediaSEO() {
               </div>
             </div>
             
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 16, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 16, padding: 24 }}>
               <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Coverage Over Time</h3>
               <div style={{ height: 200, position: "relative" }}>
                 <svg width="100%" height="100%" viewBox="0 0 400 200" style={{ overflow: "visible" }}>
@@ -12406,7 +12406,7 @@ export default function ImageAltMediaSEO() {
 
       {/* Multi-Model AI Orchestration */}
       {activeTab === "ai-orchestration" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Multi-Model AI Orchestration</h2>
           
           <div style={{ marginBottom: 32 }}>
@@ -12420,13 +12420,13 @@ export default function ImageAltMediaSEO() {
                 { id: "claude-3-haiku", name: "Claude 3 Haiku", provider: "Anthropic", tier: "Fast", cost: "$0.0025/1K", latency: "380ms", quality: 86 },
                 { id: "gemini-flash", name: "Gemini Flash", provider: "Google", tier: "Fast", cost: "$0.001/1K", latency: "220ms", quality: 84 }
               ].map(model => (
-                <div key={model.id} style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 20, border: "2px solid transparent", cursor: "pointer", transition: "all 0.3s" }}
+                <div key={model.id} style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 20, border: "2px solid transparent", cursor: "pointer", transition: "all 0.3s" }}
                   onMouseEnter={e => e.currentTarget.style.borderColor = accentColor}
                   onMouseLeave={e => e.currentTarget.style.borderColor = "transparent"}
                 >
                   <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{model.name}</div>
-                  <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 12 }}>{model.provider} • {model.tier}</div>
-                  <div style={{ fontSize: 11, color: "#64748b", display: "flex", flexDirection: "column", gap: 4 }}>
+                  <div style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 12 }}>{model.provider} • {model.tier}</div>
+                  <div style={{ fontSize: 11, color: "#71717a", display: "flex", flexDirection: "column", gap: 4 }}>
                     <div>Cost: {model.cost}</div>
                     <div>Latency: {model.latency}</div>
                     <div>Quality: {model.quality}/100</div>
@@ -12445,10 +12445,10 @@ export default function ImageAltMediaSEO() {
                 { id: "cascade", name: "Cascade", desc: "Try fast model first, fallback to premium if needed", icon: "" },
                 { id: "ab-test", name: "A/B Test", desc: "Split traffic across models for comparison", icon: "" }
               ].map(strategy => (
-                <div key={strategy.id} style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 20, cursor: "pointer" }}>
+                <div key={strategy.id} style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 20, cursor: "pointer" }}>
                   <div style={{ fontSize: 32, marginBottom: 8 }}>{strategy.icon}</div>
                   <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{strategy.name}</div>
-                  <div style={{ fontSize: 13, color: "#94a3b8" }}>{strategy.desc}</div>
+                  <div style={{ fontSize: 13, color: "#a1a1aa" }}>{strategy.desc}</div>
                 </div>
               ))}
             </div>
@@ -12458,7 +12458,7 @@ export default function ImageAltMediaSEO() {
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Performance Comparison</h3>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr style={{ background: theme === "dark" ? "#283044" : "#f8fafc" }}>
+                <tr style={{ background: theme === "dark" ? "#27272a" : "#fafafa" }}>
                   <th style={{ padding: 12, textAlign: "left", fontSize: 12, fontWeight: 600 }}>Model</th>
                   <th style={{ padding: 12, textAlign: "left", fontSize: 12, fontWeight: 600 }}>Avg Latency</th>
                   <th style={{ padding: 12, textAlign: "left", fontSize: 12, fontWeight: 600 }}>Quality Score</th>
@@ -12472,11 +12472,11 @@ export default function ImageAltMediaSEO() {
                   { model: "Claude 3.5", latency: "920ms", quality: "96%", cost: "$0.015", uptime: "99.8%" },
                   { model: "Gemini Pro", latency: "780ms", quality: "94%", cost: "$0.0125", uptime: "99.7%" }
                 ].map((row, i) => (
-                  <tr key={i} style={{ borderBottom: "1px solid #4b5780" }}>
+                  <tr key={i} style={{ borderBottom: "1px solid #52525b" }}>
                     <td style={{ padding: 12, fontSize: 13 }}>{row.model}</td>
-                    <td style={{ padding: 12, fontSize: 13, color: "#94a3b8" }}>{row.latency}</td>
+                    <td style={{ padding: 12, fontSize: 13, color: "#a1a1aa" }}>{row.latency}</td>
                     <td style={{ padding: 12, fontSize: 13, color: "#10b981" }}>{row.quality}</td>
-                    <td style={{ padding: 12, fontSize: 13, color: "#94a3b8" }}>{row.cost}</td>
+                    <td style={{ padding: 12, fontSize: 13, color: "#a1a1aa" }}>{row.cost}</td>
                     <td style={{ padding: 12, fontSize: 13, color: "#10b981" }}>{row.uptime}</td>
                   </tr>
                 ))}
@@ -12488,16 +12488,16 @@ export default function ImageAltMediaSEO() {
 
       {/* Real-Time Collaboration */}
       {activeTab === "realtime-collab" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Real-Time Collaboration</h2>
           
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Active Session</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
                 <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#10b981" }}></div>
                 <div style={{ fontSize: 16, fontWeight: 600 }}>3 users online</div>
-                <div style={{ fontSize: 13, color: "#94a3b8", marginLeft: "auto" }}>Session ID: session_12345</div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginLeft: "auto" }}>Session ID: session_12345</div>
               </div>
               
               <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
@@ -12510,14 +12510,14 @@ export default function ImageAltMediaSEO() {
                     <div style={{ width: 36, height: 36, borderRadius: "50%", background: user.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 600 }}>{user.avatar}</div>
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 500 }}>{user.name}</div>
-                      <div style={{ fontSize: 11, color: "#94a3b8" }}>{user.status}</div>
+                      <div style={{ fontSize: 11, color: "#a1a1aa" }}>{user.status}</div>
                     </div>
                   </div>
                 ))}
               </div>
               
-              <div style={{ background: theme === "dark" ? "#1f2433" : "#fff", borderRadius: 8, padding: 16, border: "1px solid #4b5780" }}>
-                <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 12 }}>Live Activity Feed</div>
+              <div style={{ background: theme === "dark" ? "#18181b" : "#fff", borderRadius: 8, padding: 16, border: "1px solid #52525b" }}>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>Live Activity Feed</div>
                 {[
                   { user: "Sarah Chen", action: "updated alt text for Image #124", time: "2s ago", color: "#3b82f6" },
                   { user: "Mike Johnson", action: "is viewing the Analytics tab", time: "5s ago", color: "#10b981" },
@@ -12526,8 +12526,8 @@ export default function ImageAltMediaSEO() {
                   <div key={i} style={{ fontSize: 12, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
                     <div style={{ width: 6, height: 6, borderRadius: "50%", background: activity.color }}></div>
                     <span style={{ fontWeight: 500 }}>{activity.user}</span>
-                    <span style={{ color: "#94a3b8" }}>{activity.action}</span>
-                    <span style={{ color: "#64748b", marginLeft: "auto" }}>{activity.time}</span>
+                    <span style={{ color: "#a1a1aa" }}>{activity.action}</span>
+                    <span style={{ color: "#71717a", marginLeft: "auto" }}>{activity.time}</span>
                   </div>
                 ))}
               </div>
@@ -12536,8 +12536,8 @@ export default function ImageAltMediaSEO() {
 
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Live Cursors & Selections</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24, position: "relative", minHeight: 200 }}>
-              <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 16 }}>See what others are editing in real-time</div>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24, position: "relative", minHeight: 200 }}>
+              <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 16 }}>See what others are editing in real-time</div>
               <div style={{ position: "absolute", top: 80, left: 120, width: 2, height: 20, background: "#3b82f6" }}>
                 <div style={{ position: "absolute", top: -20, left: -40, fontSize: 11, color: "#3b82f6", fontWeight: 500 }}>Sarah Chen</div>
               </div>
@@ -12549,11 +12549,11 @@ export default function ImageAltMediaSEO() {
 
           <div>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Conflict Resolution</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ fontSize: 14, marginBottom: 12 }}>Operational Transformation ensures conflict-free editing</div>
-              <div style={{ fontSize: 13, color: "#94a3b8" }}>Automatic merge of concurrent edits</div>
-              <div style={{ fontSize: 13, color: "#94a3b8" }}>Last-write-wins with version tracking</div>
-              <div style={{ fontSize: 13, color: "#94a3b8" }}>Undo/redo across all participants</div>
+              <div style={{ fontSize: 13, color: "#a1a1aa" }}>Automatic merge of concurrent edits</div>
+              <div style={{ fontSize: 13, color: "#a1a1aa" }}>Last-write-wins with version tracking</div>
+              <div style={{ fontSize: 13, color: "#a1a1aa" }}>Undo/redo across all participants</div>
             </div>
           </div>
         </div>
@@ -12561,7 +12561,7 @@ export default function ImageAltMediaSEO() {
 
       {/* Enterprise Security Dashboard */}
       {activeTab === "security" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Enterprise Security & Compliance</h2>
           
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 32 }}>
@@ -12570,17 +12570,17 @@ export default function ImageAltMediaSEO() {
               { label: "Active SSO Sessions", value: "247", color: "#3b82f6", icon: "" },
               { label: "MFA Enabled Users", value: "94%", color: "#8b5cf6", icon: "" }
             ].map((metric, i) => (
-              <div key={i} style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+              <div key={i} style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>{metric.icon}</div>
                 <div style={{ fontSize: 28, fontWeight: 700, color: metric.color, marginBottom: 8 }}>{metric.value}</div>
-                <div style={{ fontSize: 13, color: "#94a3b8" }}>{metric.label}</div>
+                <div style={{ fontSize: 13, color: "#a1a1aa" }}>{metric.label}</div>
               </div>
             ))}
           </div>
 
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Compliance Certifications</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
                 {[
                   { name: "SOC 2 Type II", status: "Certified", validUntil: "2026-12-31", color: "#10b981" },
@@ -12590,11 +12590,11 @@ export default function ImageAltMediaSEO() {
                   { name: "PCI DSS Level 1", status: "Compliant", validUntil: "2026-08-15", color: "#10b981" },
                   { name: "FedRAMP Moderate", status: "In Progress", expected: "2026-Q3", color: "#f59e0b" }
                 ].map((cert, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, background: theme === "dark" ? "#1f2433" : "#fff", borderRadius: 8 }}>
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, background: theme === "dark" ? "#18181b" : "#fff", borderRadius: 8 }}>
                     <div style={{ width: 12, height: 12, borderRadius: "50%", background: cert.color }}></div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 14, fontWeight: 600 }}>{cert.name}</div>
-                      <div style={{ fontSize: 12, color: "#94a3b8" }}>{cert.status} {cert.validUntil ? `• Valid until ${cert.validUntil}` : cert.expected ? `• Expected ${cert.expected}` : ''}</div>
+                      <div style={{ fontSize: 12, color: "#a1a1aa" }}>{cert.status} {cert.validUntil ? `• Valid until ${cert.validUntil}` : cert.expected ? `• Expected ${cert.expected}` : ''}</div>
                     </div>
                   </div>
                 ))}
@@ -12606,7 +12606,7 @@ export default function ImageAltMediaSEO() {
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Single Sign-On (SSO)</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
               {["Okta", "Auth0", "Azure AD", "Google Workspace"].map(provider => (
-                <div key={provider} style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 20, textAlign: "center", cursor: "pointer" }}>
+                <div key={provider} style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 20, textAlign: "center", cursor: "pointer" }}>
                   <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{provider}</div>
                   <div style={{ fontSize: 12, color: "#10b981" }}>Configured</div>
                 </div>
@@ -12616,19 +12616,19 @@ export default function ImageAltMediaSEO() {
 
           <div>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Encryption</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24 }}>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>At Rest</div>
-                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 6 }}>Algorithm: AES-256-GCM</div>
-                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 6 }}>Key Management: AWS KMS</div>
-                  <div style={{ fontSize: 13, color: "#94a3b8" }}>Rotation: Quarterly</div>
+                  <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 6 }}>Algorithm: AES-256-GCM</div>
+                  <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 6 }}>Key Management: AWS KMS</div>
+                  <div style={{ fontSize: 13, color: "#a1a1aa" }}>Rotation: Quarterly</div>
                 </div>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>In Transit</div>
-                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 6 }}>Protocol: TLS 1.3</div>
-                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 6 }}>Certificate: Wildcard SSL</div>
-                  <div style={{ fontSize: 13, color: "#94a3b8" }}>HSTS: Enabled</div>
+                  <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 6 }}>Protocol: TLS 1.3</div>
+                  <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 6 }}>Certificate: Wildcard SSL</div>
+                  <div style={{ fontSize: 13, color: "#a1a1aa" }}>HSTS: Enabled</div>
                 </div>
               </div>
             </div>
@@ -12638,25 +12638,25 @@ export default function ImageAltMediaSEO() {
 
       {/* Predictive Analytics & BI */}
       {activeTab === "predictive-bi" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Predictive Analytics & Business Intelligence</h2>
           
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Revenue Forecast (Next 12 Months)</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ height: 300, display: "flex", alignItems: "flex-end", gap: 8 }}>
                 {Array.from({ length: 12 }, (_, i) => {
                   const height = 100 + Math.random() * 150;
                   return (
                     <div key={i} style={{ flex: 1, background: `linear-gradient(180deg, ${accentColor}, ${accentColor}80)`, borderRadius: "4px 4px 0 0", height: `${height}px`, position: "relative" }}>
-                      <div style={{ position: "absolute", top: -20, left: 0, right: 0, textAlign: "center", fontSize: 11, color: "#94a3b8" }}>
+                      <div style={{ position: "absolute", top: -20, left: 0, right: 0, textAlign: "center", fontSize: 11, color: "#a1a1aa" }}>
                         ${Math.floor(100 + Math.random() * 50)}K
                       </div>
                     </div>
                   );
                 })}
               </div>
-              <div style={{ marginTop: 24, fontSize: 13, color: "#94a3b8", textAlign: "center" }}>
+              <div style={{ marginTop: 24, fontSize: 13, color: "#a1a1aa", textAlign: "center" }}>
                 Forecast Model: Prophet (94.2% accuracy) • Predicted Growth: +27.8%
               </div>
             </div>
@@ -12664,22 +12664,22 @@ export default function ImageAltMediaSEO() {
 
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Anomaly Detection</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               {[
                 { metric: "API Latency", value: "3,500ms", expected: "450ms", severity: "high", deviation: "6.2σ", causes: ["Database slow query", "High concurrent requests"] },
                 { metric: "Error Rate", value: "8.5%", expected: "0.3%", severity: "critical", deviation: "12.4σ", causes: ["Third-party API outage"] }
               ].map((anomaly, i) => (
-                <div key={i} style={{ padding: 16, background: theme === "dark" ? "#1f2433" : "#fff", borderRadius: 8, marginBottom: 12, borderLeft: `4px solid ${anomaly.severity === 'critical' ? '#ef4444' : '#f59e0b'}` }}>
+                <div key={i} style={{ padding: 16, background: theme === "dark" ? "#18181b" : "#fff", borderRadius: 8, marginBottom: 12, borderLeft: `4px solid ${anomaly.severity === 'critical' ? '#ef4444' : '#f59e0b'}` }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
                     <div style={{ fontSize: 16, fontWeight: 600 }}>{anomaly.metric}</div>
                     <div style={{ padding: "4px 8px", background: anomaly.severity === 'critical' ? '#ef444420' : '#f59e0b20', color: anomaly.severity === 'critical' ? '#ef4444' : '#f59e0b', borderRadius: 4, fontSize: 11, fontWeight: 600 }}>{anomaly.severity.toUpperCase()}</div>
                   </div>
                   <div style={{ fontSize: 13, marginBottom: 8 }}>
                     <span style={{ color: "#ef4444", fontWeight: 600 }}>{anomaly.value}</span>
-                    <span style={{ color: "#94a3b8" }}> (expected: {anomaly.expected})</span>
-                    <span style={{ color: "#64748b", marginLeft: 12 }}>Deviation: {anomaly.deviation}</span>
+                    <span style={{ color: "#a1a1aa" }}> (expected: {anomaly.expected})</span>
+                    <span style={{ color: "#71717a", marginLeft: 12 }}>Deviation: {anomaly.deviation}</span>
                   </div>
-                  <div style={{ fontSize: 12, color: "#94a3b8" }}>
+                  <div style={{ fontSize: 12, color: "#a1a1aa" }}>
                     Potential causes: {anomaly.causes.join(", ")}
                   </div>
                 </div>
@@ -12696,8 +12696,8 @@ export default function ImageAltMediaSEO() {
                 { label: "Retention Rate", value: "94.6%", growth: "+2.1%", color: "#8b5cf6" },
                 { label: "AI Quality Score", value: "92.5", growth: "+4.2%", color: "#f59e0b" }
               ].map((metric, i) => (
-                <div key={i} style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 20 }}>
-                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 8 }}>{metric.label}</div>
+                <div key={i} style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 20 }}>
+                  <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 8 }}>{metric.label}</div>
                   <div style={{ fontSize: 28, fontWeight: 700, marginBottom: 4 }}>{metric.value}</div>
                   <div style={{ fontSize: 13, color: metric.color, fontWeight: 600 }}>{metric.growth}</div>
                 </div>
@@ -12707,14 +12707,14 @@ export default function ImageAltMediaSEO() {
 
           <div>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Churn Prediction</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 14, marginBottom: 12 }}>High-Risk Users (68% churn probability)</div>
-                <div style={{ height: 8, background: theme === "dark" ? "#1f2433" : "#e2e8f0", borderRadius: 4, overflow: "hidden" }}>
+                <div style={{ height: 8, background: theme === "dark" ? "#18181b" : "#e4e4e7", borderRadius: 4, overflow: "hidden" }}>
                   <div style={{ width: "68%", height: "100%", background: "linear-gradient(90deg, #ef4444, #f59e0b)", borderRadius: 4 }}></div>
                 </div>
               </div>
-              <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 16 }}>Top Risk Factors:</div>
+              <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 16 }}>Top Risk Factors:</div>
               {[
                 { factor: "Usage declined 45% in last 14 days", impact: 32 },
                 { factor: "No login in last 7 days", impact: 24 },
@@ -12723,9 +12723,9 @@ export default function ImageAltMediaSEO() {
                 <div key={i} style={{ marginBottom: 12 }}>
                   <div style={{ fontSize: 12, marginBottom: 4, display: "flex", justifyContent: "space-between" }}>
                     <span>{factor.factor}</span>
-                    <span style={{ color: "#94a3b8" }}>{factor.impact}% impact</span>
+                    <span style={{ color: "#a1a1aa" }}>{factor.impact}% impact</span>
                   </div>
-                  <div style={{ height: 4, background: theme === "dark" ? "#1f2433" : "#e2e8f0", borderRadius: 2 }}>
+                  <div style={{ height: 4, background: theme === "dark" ? "#18181b" : "#e4e4e7", borderRadius: 2 }}>
                     <div style={{ width: `${factor.impact}%`, height: "100%", background: "#ef4444", borderRadius: 2 }}></div>
                   </div>
                 </div>
@@ -12737,7 +12737,7 @@ export default function ImageAltMediaSEO() {
 
       {/* Developer Platform */}
       {activeTab === "developer-platform" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Developer Platform</h2>
           
           <div style={{ marginBottom: 32 }}>
@@ -12753,14 +12753,14 @@ export default function ImageAltMediaSEO() {
                 { lang: "C#", color: "#239120", version: "v2.0.0", downloads: "41K" },
                 { lang: "Swift", color: "#fa7343", version: "v1.5.0", downloads: "29K" }
               ].map(sdk => (
-                <div key={sdk.lang} style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 20, cursor: "pointer", border: "2px solid transparent", transition: "all 0.3s" }}
+                <div key={sdk.lang} style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 20, cursor: "pointer", border: "2px solid transparent", transition: "all 0.3s" }}
                   onMouseEnter={e => e.currentTarget.style.borderColor = sdk.color}
                   onMouseLeave={e => e.currentTarget.style.borderColor = "transparent"}
                 >
                   <div style={{ width: 40, height: 40, borderRadius: 8, background: sdk.color, marginBottom: 12 }}></div>
                   <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{sdk.lang}</div>
-                  <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 2 }}>{sdk.version}</div>
-                  <div style={{ fontSize: 11, color: "#64748b" }}>{sdk.downloads} downloads</div>
+                  <div style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 2 }}>{sdk.version}</div>
+                  <div style={{ fontSize: 11, color: "#71717a" }}>{sdk.downloads} downloads</div>
                 </div>
               ))}
             </div>
@@ -12768,28 +12768,28 @@ export default function ImageAltMediaSEO() {
 
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>CLI Tool</h3>
-            <div style={{ background: "#1f2433", borderRadius: 12, padding: 24, fontFamily: "monospace", fontSize: 13 }}>
+            <div style={{ background: "#18181b", borderRadius: 12, padding: 24, fontFamily: "monospace", fontSize: 13 }}>
               <div style={{ color: "#10b981", marginBottom: 8 }}>$ npm install -g aura-cli</div>
-              <div style={{ color: "#64748b", marginBottom: 24 }}>Installed aura-cli v2.1.0</div>
+              <div style={{ color: "#71717a", marginBottom: 24 }}>Installed aura-cli v2.1.0</div>
               
               <div style={{ color: "#3b82f6", marginBottom: 4 }}>$ aura init my-project</div>
-              <div style={{ color: "#64748b", marginBottom: 4 }}>Creating project structure...</div>
+              <div style={{ color: "#71717a", marginBottom: 4 }}>Creating project structure...</div>
               <div style={{ color: "#10b981", marginBottom: 24 }}>Project initialized!</div>
               
               <div style={{ color: "#3b82f6", marginBottom: 4 }}>$ aura generate --count 100</div>
-              <div style={{ color: "#64748b", marginBottom: 4 }}>Generating alt text for 100 images...</div>
+              <div style={{ color: "#71717a", marginBottom: 4 }}>Generating alt text for 100 images...</div>
               <div style={{ color: "#10b981" }}>Generated 100 alt texts in 12.4s</div>
             </div>
           </div>
 
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>GraphQL API</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ marginBottom: 16, fontSize: 14, fontWeight: 600 }}>Introspection Endpoint</div>
-              <div style={{ background: "#1f2433", borderRadius: 8, padding: 16, fontFamily: "monospace", fontSize: 12, color: "#94a3b8", marginBottom: 16 }}>
+              <div style={{ background: "#18181b", borderRadius: 8, padding: 16, fontFamily: "monospace", fontSize: 12, color: "#a1a1aa", marginBottom: 16 }}>
                 https://api.aura.ai/graphql
               </div>
-              <div style={{ fontSize: 13, color: "#94a3b8" }}>
+              <div style={{ fontSize: 13, color: "#a1a1aa" }}>
                  Strongly typed schema<br />
                  Real-time subscriptions<br />
                  Automatic documentation<br />
@@ -12800,7 +12800,7 @@ export default function ImageAltMediaSEO() {
 
           <div>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>OpenAPI Specification</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ fontSize: 14, marginBottom: 16 }}>
                 <span style={{ fontWeight: 600 }}>Version:</span>OpenAPI 3.1.0
               </div>
@@ -12808,7 +12808,7 @@ export default function ImageAltMediaSEO() {
                 <button style={{ padding: "10px 20px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}>
                   Download Spec
                 </button>
-                <button style={{ padding: "10px 20px", background: theme === "dark" ? "#4b5780" : "#e2e8f0", color: theme === "dark" ? "#fff" : "#000", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}>
+                <button style={{ padding: "10px 20px", background: theme === "dark" ? "#52525b" : "#e4e4e7", color: theme === "dark" ? "#fff" : "#000", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}>
                   View Docs
                 </button>
               </div>
@@ -12819,15 +12819,15 @@ export default function ImageAltMediaSEO() {
 
       {/* AI Training & Fine-Tuning */}
       {activeTab === "ai-training" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>AI Training & Fine-Tuning</h2>
           
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Create Fine-Tune Job</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ marginBottom: 16 }}>
                 <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, display: "block" }}>Base Model</label>
-                <select style={{ width: "100%", padding: "10px 12px", background: theme === "dark" ? "#1f2433" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #4b5780", borderRadius: 8 }}>
+                <select style={{ width: "100%", padding: "10px 12px", background: theme === "dark" ? "#18181b" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #52525b", borderRadius: 8 }}>
                   <option>GPT-4o Mini</option>
                   <option>GPT-4o</option>
                   <option>Claude 3.5 Sonnet</option>
@@ -12836,8 +12836,8 @@ export default function ImageAltMediaSEO() {
               
               <div style={{ marginBottom: 16 }}>
                 <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, display: "block" }}>Training Examples</label>
-                <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 8 }}>Upload JSONL file with your training data</div>
-                <button style={{ padding: "10px 16px", background: theme === "dark" ? "#4b5780" : "#e2e8f0", color: theme === "dark" ? "#fff" : "#000", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 8 }}>Upload JSONL file with your training data</div>
+                <button style={{ padding: "10px 16px", background: theme === "dark" ? "#52525b" : "#e4e4e7", color: theme === "dark" ? "#fff" : "#000", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}>
                   Upload Training Data
                 </button>
               </div>
@@ -12846,16 +12846,16 @@ export default function ImageAltMediaSEO() {
                 <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, display: "block" }}>Hyperparameters</label>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
                   <div>
-                    <label style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4, display: "block" }}>Epochs</label>
-                    <input type="number" defaultValue="3" style={{ width: "100%", padding: "8px", background: theme === "dark" ? "#1f2433" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #4b5780", borderRadius: 6 }} />
+                    <label style={{ fontSize: 11, color: "#a1a1aa", marginBottom: 4, display: "block" }}>Epochs</label>
+                    <input type="number" defaultValue="3" style={{ width: "100%", padding: "8px", background: theme === "dark" ? "#18181b" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #52525b", borderRadius: 6 }} />
                   </div>
                   <div>
-                    <label style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4, display: "block" }}>Learning Rate</label>
-                    <input type="text" defaultValue="0.0001" style={{ width: "100%", padding: "8px", background: theme === "dark" ? "#1f2433" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #4b5780", borderRadius: 6 }} />
+                    <label style={{ fontSize: 11, color: "#a1a1aa", marginBottom: 4, display: "block" }}>Learning Rate</label>
+                    <input type="text" defaultValue="0.0001" style={{ width: "100%", padding: "8px", background: theme === "dark" ? "#18181b" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #52525b", borderRadius: 6 }} />
                   </div>
                   <div>
-                    <label style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4, display: "block" }}>Batch Size</label>
-                    <input type="number" defaultValue="32" style={{ width: "100%", padding: "8px", background: theme === "dark" ? "#1f2433" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #4b5780", borderRadius: 6 }} />
+                    <label style={{ fontSize: 11, color: "#a1a1aa", marginBottom: 4, display: "block" }}>Batch Size</label>
+                    <input type="number" defaultValue="32" style={{ width: "100%", padding: "8px", background: theme === "dark" ? "#18181b" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #52525b", borderRadius: 6 }} />
                   </div>
                 </div>
               </div>
@@ -12868,25 +12868,25 @@ export default function ImageAltMediaSEO() {
 
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Active Training Jobs</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               {[
                 { id: "ft_123", model: "GPT-4o Mini", status: "running", progress: 67, epoch: "2/3", eta: "45 min" },
                 { id: "ft_124", model: "Claude 3.5", status: "queued", progress: 0, epoch: "0/3", eta: "2 hours" }
               ].map(job => (
-                <div key={job.id} style={{ marginBottom: 20, padding: 16, background: theme === "dark" ? "#1f2433" : "#fff", borderRadius: 8 }}>
+                <div key={job.id} style={{ marginBottom: 20, padding: 16, background: theme === "dark" ? "#18181b" : "#fff", borderRadius: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                     <div>
                       <div style={{ fontSize: 14, fontWeight: 600 }}>{job.model}</div>
-                      <div style={{ fontSize: 12, color: "#94a3b8" }}>Job ID: {job.id}</div>
+                      <div style={{ fontSize: 12, color: "#a1a1aa" }}>Job ID: {job.id}</div>
                     </div>
-                    <div style={{ padding: "4px 12px", background: job.status === 'running' ? '#10b98120' : '#64748b20', color: job.status === 'running' ? '#10b981' : '#64748b', borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
+                    <div style={{ padding: "4px 12px", background: job.status === 'running' ? '#10b98120' : '#71717a20', color: job.status === 'running' ? '#10b981' : '#71717a', borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
                       {job.status.toUpperCase()}
                     </div>
                   </div>
                   
                   <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 4 }}>Progress: {job.progress}% • Epoch {job.epoch} • ETA: {job.eta}</div>
-                    <div style={{ height: 6, background: theme === "dark" ? "#1f2433" : "#e2e8f0", borderRadius: 3 }}>
+                    <div style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 4 }}>Progress: {job.progress}% • Epoch {job.epoch} • ETA: {job.eta}</div>
+                    <div style={{ height: 6, background: theme === "dark" ? "#18181b" : "#e4e4e7", borderRadius: 3 }}>
                       <div style={{ width: `${job.progress}%`, height: "100%", background: `linear-gradient(90deg, ${accentColor}, ${accentColor}80)`, borderRadius: 3, transition: "width 0.5s" }}></div>
                     </div>
                   </div>
@@ -12897,10 +12897,10 @@ export default function ImageAltMediaSEO() {
 
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>RLHF (Reinforcement Learning from Human Feedback)</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ marginBottom: 16, fontSize: 14 }}>Help improve AI quality by rating generated alt text</div>
-              <div style={{ padding: 16, background: theme === "dark" ? "#1f2433" : "#fff", borderRadius: 8, marginBottom: 12 }}>
-                <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 8 }}>Generated Alt Text:</div>
+              <div style={{ padding: 16, background: theme === "dark" ? "#18181b" : "#fff", borderRadius: 8, marginBottom: 12 }}>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 8 }}>Generated Alt Text:</div>
                 <div style={{ fontSize: 14, marginBottom: 12 }}>"Modern minimalist living room with gray sofa and wooden coffee table"</div>
                 <div style={{ display: "flex", gap: 8 }}>
                   {[1, 2, 3, 4, 5].map(rating => (
@@ -12910,7 +12910,7 @@ export default function ImageAltMediaSEO() {
                   ))}
                 </div>
               </div>
-              <div style={{ fontSize: 12, color: "#94a3b8" }}>
+              <div style={{ fontSize: 12, color: "#a1a1aa" }}>
                 Total feedback collected: 12,450 • Used for training: 8,920
               </div>
             </div>
@@ -12918,18 +12918,18 @@ export default function ImageAltMediaSEO() {
 
           <div>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Active Learning - Uncertain Samples</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
-              <div style={{ marginBottom: 16, fontSize: 13, color: "#94a3b8" }}>47 samples need human review to improve model accuracy</div>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
+              <div style={{ marginBottom: 16, fontSize: 13, color: "#a1a1aa" }}>47 samples need human review to improve model accuracy</div>
               {[
                 { imageId: "img_1234", generated: "Person wearing casual outfit", uncertainty: 42 },
                 { imageId: "img_5678", generated: "Abstract geometric pattern", uncertainty: 38 }
               ].map(sample => (
-                <div key={sample.imageId} style={{ padding: 12, background: theme === "dark" ? "#1f2433" : "#fff", borderRadius: 8, marginBottom: 12 }}>
+                <div key={sample.imageId} style={{ padding: 12, background: theme === "dark" ? "#18181b" : "#fff", borderRadius: 8, marginBottom: 12 }}>
                   <div style={{ fontSize: 13, marginBottom: 8 }}>
                     <span style={{ fontWeight: 600 }}>Image {sample.imageId}</span>
                     <span style={{ color: "#f59e0b", marginLeft: 12 }}>Uncertainty: {sample.uncertainty}%</span>
                   </div>
-                  <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 12 }}>{sample.generated}</div>
+                  <div style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 12 }}>{sample.generated}</div>
                   <button style={{ padding: "6px 12px", background: accentColor, color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
                     Review & Correct
                   </button>
@@ -12942,12 +12942,12 @@ export default function ImageAltMediaSEO() {
 
       {/* White-Label & Multi-Tenancy */}
       {activeTab === "white-label" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>White-Label & Multi-Tenancy</h2>
           
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Tenant Management</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <button style={{ padding: "12px 24px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, marginBottom: 24 }}>
                 + Create New Tenant
               </button>
@@ -12958,21 +12958,21 @@ export default function ImageAltMediaSEO() {
                   { name: "TechStart Inc", domain: "techstart.aura-platform.com", users: 145, max: 200, status: "active" },
                   { name: "Global Retail", domain: "globalretail.aura-platform.com", users: 52, max: 100, status: "trial" }
                 ].map(tenant => (
-                  <div key={tenant.name} style={{ padding: 20, background: theme === "dark" ? "#1f2433" : "#fff", borderRadius: 8, border: "1px solid #4b5780" }}>
+                  <div key={tenant.name} style={{ padding: 20, background: theme === "dark" ? "#18181b" : "#fff", borderRadius: 8, border: "1px solid #52525b" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                       <div>
                         <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{tenant.name}</div>
-                        <div style={{ fontSize: 12, color: "#94a3b8" }}>{tenant.domain}</div>
+                        <div style={{ fontSize: 12, color: "#a1a1aa" }}>{tenant.domain}</div>
                       </div>
                       <div style={{ padding: "4px 12px", background: tenant.status === 'active' ? '#10b98120' : '#f59e0b20', color: tenant.status === 'active' ? '#10b981' : '#f59e0b', borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
                         {tenant.status.toUpperCase()}
                       </div>
                     </div>
                     
-                    <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 8 }}>
+                    <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 8 }}>
                       Users: {tenant.users}/{tenant.max} ({Math.round(tenant.users/tenant.max*100)}%)
                     </div>
-                    <div style={{ height: 4, background: theme === "dark" ? "#1f2433" : "#e2e8f0", borderRadius: 2 }}>
+                    <div style={{ height: 4, background: theme === "dark" ? "#18181b" : "#e4e4e7", borderRadius: 2 }}>
                       <div style={{ width: `${tenant.users/tenant.max*100}%`, height: "100%", background: accentColor, borderRadius: 2 }}></div>
                     </div>
                   </div>
@@ -12983,14 +12983,14 @@ export default function ImageAltMediaSEO() {
 
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Branding Customization</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24 }}>
                 <div>
                   <label style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, display: "block" }}>Logo Upload</label>
-                  <div style={{ width: "100%", height: 120, border: "2px dashed #4b5780", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                  <div style={{ width: "100%", height: 120, border: "2px dashed #52525b", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                     <div style={{ textAlign: "center" }}>
                       
-                      <div style={{ fontSize: 13, color: "#94a3b8" }}>Click to upload</div>
+                      <div style={{ fontSize: 13, color: "#a1a1aa" }}>Click to upload</div>
                     </div>
                   </div>
                 </div>
@@ -13006,9 +13006,9 @@ export default function ImageAltMediaSEO() {
                 <input 
                   type="text" 
                   placeholder="your-brand.com" 
-                  style={{ width: "100%", padding: "12px", background: theme === "dark" ? "#1f2433" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #4b5780", borderRadius: 8 }}
+                  style={{ width: "100%", padding: "12px", background: theme === "dark" ? "#18181b" : "#fff", color: theme === "dark" ? "#fff" : "#000", border: "1px solid #52525b", borderRadius: 8 }}
                 />
-                <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 8 }}>
+                <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 8 }}>
                   Configure DNS: CNAME your-brand.com → aura-platform.com
                 </div>
               </div>
@@ -13017,19 +13017,19 @@ export default function ImageAltMediaSEO() {
 
           <div>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Usage Limits</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
                 {[
                   { label: "Max Users", current: 78, limit: 100, unit: "" },
                   { label: "Max Images", current: 45230, limit: 100000, unit: "" },
                   { label: "AI Generations/Month", current: 38500, limit: 50000, unit: "" }
                 ].map((quota, i) => (
-                  <div key={i} style={{ padding: 16, background: theme === "dark" ? "#1f2433" : "#fff", borderRadius: 8 }}>
-                    <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 8 }}>{quota.label}</div>
+                  <div key={i} style={{ padding: 16, background: theme === "dark" ? "#18181b" : "#fff", borderRadius: 8 }}>
+                    <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 8 }}>{quota.label}</div>
                     <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
                       {quota.current.toLocaleString()} / {quota.limit.toLocaleString()}
                     </div>
-                    <div style={{ height: 4, background: theme === "dark" ? "#1f2433" : "#e2e8f0", borderRadius: 2 }}>
+                    <div style={{ height: 4, background: theme === "dark" ? "#18181b" : "#e4e4e7", borderRadius: 2 }}>
                       <div style={{ width: `${quota.current/quota.limit*100}%`, height: "100%", background: accentColor, borderRadius: 2 }}></div>
                     </div>
                   </div>
@@ -13042,7 +13042,7 @@ export default function ImageAltMediaSEO() {
 
       {/* Advanced Monitoring & APM */}
       {activeTab === "monitoring-apm" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Advanced Monitoring & APM</h2>
           
           <div style={{ marginBottom: 32 }}>
@@ -13053,11 +13053,11 @@ export default function ImageAltMediaSEO() {
                 { label: "Avg Latency", value: 124, color: "#10b981", unit: "ms" },
                 { label: "Error Rate", value: 0.12, color: "#f59e0b", unit: "%" }
               ].map((metric, i) => (
-                <div key={i} style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
-                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 8 }}>{metric.label}</div>
+                <div key={i} style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
+                  <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 8 }}>{metric.label}</div>
                   <div style={{ fontSize: 36, fontWeight: 700, color: metric.color, marginBottom: 4 }}>
                     {metric.value}
-                    <span style={{ fontSize: 16, color: "#94a3b8", marginLeft: 8 }}>{metric.unit}</span>
+                    <span style={{ fontSize: 16, color: "#a1a1aa", marginLeft: 8 }}>{metric.unit}</span>
                   </div>
                   <div style={{ height: 40, display: "flex", alignItems: "flex-end", gap: 1, marginTop: 12 }}>
                     {Array.from({ length: 30 }, () =>Math.random() * 40 + 10).map((h, i) => (
@@ -13071,11 +13071,11 @@ export default function ImageAltMediaSEO() {
 
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Distributed Tracing</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ fontFamily: "monospace", fontSize: 12 }}>
-                <div style={{ marginBottom: 16, padding: 12, background: theme === "dark" ? "#1f2433" : "#fff", borderRadius: 6 }}>
-                  <div style={{ color: "#94a3b8", marginBottom: 8 }}>Trace ID: trace_abc123xyz</div>
-                  <div style={{ fontSize: 11, color: "#64748b" }}>Total Duration: 245ms</div>
+                <div style={{ marginBottom: 16, padding: 12, background: theme === "dark" ? "#18181b" : "#fff", borderRadius: 6 }}>
+                  <div style={{ color: "#a1a1aa", marginBottom: 8 }}>Trace ID: trace_abc123xyz</div>
+                  <div style={{ fontSize: 11, color: "#71717a" }}>Total Duration: 245ms</div>
                 </div>
                 
                 {[
@@ -13099,7 +13099,7 @@ export default function ImageAltMediaSEO() {
 
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Alert Configuration</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <button style={{ padding: "10px 20px", background: accentColor, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, marginBottom: 20 }}>
                 + Create Alert Rule
               </button>
@@ -13109,10 +13109,10 @@ export default function ImageAltMediaSEO() {
                 { metric: "Latency P99 > 1000ms", channels: ["Email", "Slack"], status: "active" },
                 { metric: "CPU Usage > 80%", channels: ["Webhook"], status: "active" }
               ].map((alert, i) => (
-                <div key={i} style={{ padding: 16, background: theme === "dark" ? "#1f2433" : "#fff", borderRadius: 8, marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div key={i} style={{ padding: 16, background: theme === "dark" ? "#18181b" : "#fff", borderRadius: 8, marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{alert.metric}</div>
-                    <div style={{ fontSize: 12, color: "#94a3b8" }}>
+                    <div style={{ fontSize: 12, color: "#a1a1aa" }}>
                       Notify via: {alert.channels.join(", ")}
                     </div>
                   </div>
@@ -13133,13 +13133,13 @@ export default function ImageAltMediaSEO() {
                 { service: "AI Service", uptime: "99.95%", status: "healthy", latency: "450ms" },
                 { service: "Cache Layer", uptime: "100%", status: "healthy", latency: "3ms" }
               ].map(service => (
-                <div key={service.service} style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 20 }}>
+                <div key={service.service} style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 20 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                     <div style={{ fontSize: 16, fontWeight: 600 }}>{service.service}</div>
                     <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#10b981" }}></div>
                   </div>
-                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4 }}>Uptime: {service.uptime}</div>
-                  <div style={{ fontSize: 13, color: "#94a3b8" }}>Latency: {service.latency}</div>
+                  <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 4 }}>Uptime: {service.uptime}</div>
+                  <div style={{ fontSize: 13, color: "#a1a1aa" }}>Latency: {service.latency}</div>
                 </div>
               ))}
             </div>
@@ -13149,15 +13149,15 @@ export default function ImageAltMediaSEO() {
 
       {/* Edge Computing & Scalability */}
       {activeTab === "edge-computing" && (
-        <div style={{ padding: 40, background: theme === "dark" ? "#1f2433" : "#fff" }}>
+        <div style={{ padding: 40, background: theme === "dark" ? "#18181b" : "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24, color: accentColor }}>Edge Computing & Global Scalability</h2>
           
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Global Edge Network</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ fontSize: 14, marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ fontSize: 32, fontWeight: 700, color: accentColor }}>147</div>
-                <div style={{ color: "#94a3b8" }}>Edge nodes deployed globally</div>
+                <div style={{ color: "#a1a1aa" }}>Edge nodes deployed globally</div>
               </div>
               
               <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
@@ -13168,10 +13168,10 @@ export default function ImageAltMediaSEO() {
                   { region: "Asia Pacific", latency: 22, uptime: 99.96, requests: 290000 },
                   { region: "Asia NE", latency: 20, uptime: 99.98, requests: 310000 }
                 ].map(region => (
-                  <div key={region.region} style={{ padding: 16, background: theme === "dark" ? "#1f2433" : "#fff", borderRadius: 8, border: "1px solid #4b5780" }}>
+                  <div key={region.region} style={{ padding: 16, background: theme === "dark" ? "#18181b" : "#fff", borderRadius: 8, border: "1px solid #52525b" }}>
                     <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>{region.region}</div>
-                    <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>Latency: {region.latency}ms</div>
-                    <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>Uptime: {region.uptime}%</div>
+                    <div style={{ fontSize: 11, color: "#a1a1aa", marginBottom: 4 }}>Latency: {region.latency}ms</div>
+                    <div style={{ fontSize: 11, color: "#a1a1aa", marginBottom: 4 }}>Uptime: {region.uptime}%</div>
                     <div style={{ fontSize: 11, color: "#10b981" }}>{(region.requests / 1000).toFixed(0)}K req/day</div>
                   </div>
                 ))}
@@ -13181,7 +13181,7 @@ export default function ImageAltMediaSEO() {
 
           <div style={{ marginBottom: 32 }}>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Multi-Tier Caching</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               {[
                 { tier: "Browser Cache", ttl: "5 min", size: "50 MB", hitRate: 45 },
                 { tier: "CDN Edge", ttl: "1 hour", size: "10 GB", hitRate: 78 },
@@ -13192,11 +13192,11 @@ export default function ImageAltMediaSEO() {
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                     <div>
                       <div style={{ fontSize: 14, fontWeight: 600 }}>{layer.tier}</div>
-                      <div style={{ fontSize: 12, color: "#94a3b8" }}>TTL: {layer.ttl} • Size: {layer.size}</div>
+                      <div style={{ fontSize: 12, color: "#a1a1aa" }}>TTL: {layer.ttl} • Size: {layer.size}</div>
                     </div>
                     <div style={{ fontSize: 16, fontWeight: 700, color: accentColor }}>{layer.hitRate}%</div>
                   </div>
-                  <div style={{ height: 6, background: theme === "dark" ? "#1f2433" : "#e2e8f0", borderRadius: 3 }}>
+                  <div style={{ height: 6, background: theme === "dark" ? "#18181b" : "#e4e4e7", borderRadius: 3 }}>
                     <div style={{ width: `${layer.hitRate}%`, height: "100%", background: `linear-gradient(90deg, ${accentColor}, ${accentColor}80)`, borderRadius: 3 }}></div>
                   </div>
                 </div>
@@ -13209,20 +13209,20 @@ export default function ImageAltMediaSEO() {
 
           <div>
             <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Auto-Scaling Configuration</h3>
-            <div style={{ background: theme === "dark" ? "#283044" : "#f8fafc", borderRadius: 12, padding: 24 }}>
+            <div style={{ background: theme === "dark" ? "#27272a" : "#fafafa", borderRadius: 12, padding: 24 }}>
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 14, marginBottom: 12 }}>Current Load: 67% capacity</div>
-                <div style={{ height: 40, background: theme === "dark" ? "#1f2433" : "#e2e8f0", borderRadius: 8, overflow: "hidden", position: "relative" }}>
+                <div style={{ height: 40, background: theme === "dark" ? "#18181b" : "#e4e4e7", borderRadius: 8, overflow: "hidden", position: "relative" }}>
                   <div style={{ width: "67%", height: "100%", background: `linear-gradient(90deg, ${accentColor}, ${accentColor}80)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 600 }}>
                     67%
                   </div>
-                  <div style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: "#94a3b8" }}>
+                  <div style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: "#a1a1aa" }}>
                     Scale up at 80%
                   </div>
                 </div>
               </div>
               
-              <div style={{ fontSize: 13, color: "#94a3b8" }}>
+              <div style={{ fontSize: 13, color: "#a1a1aa" }}>
                  Auto-scaling enabled<br />
                  Min instances: 5 | Max instances: 50<br />
                  Scale-up threshold: 80% CPU/Memory<br />
@@ -13237,27 +13237,27 @@ export default function ImageAltMediaSEO() {
       {/* Bulk Operation Preview */}
       {showBulkPreview && (
         <div onClick={() => setShowBulkPreview(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.7)", zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 800, maxHeight: "80vh", background: theme === "dark" ? "#283044" : "#fff", borderRadius: 16, padding: 32, overflow: "auto" }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 800, maxHeight: "80vh", background: theme === "dark" ? "#27272a" : "#fff", borderRadius: 16, padding: 32, overflow: "auto" }}>
             <h3 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Bulk Operation Preview</h3>
             
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 14, color: "#94a3b8", marginBottom: 12 }}>
+              <div style={{ fontSize: 14, color: "#a1a1aa", marginBottom: 12 }}>
                 This operation will affect {selectedImageIds.length} images
               </div>
               
-              <div style={{ background: theme === "dark" ? "#1f2433" : "#f8fafc", borderRadius: 12, padding: 16, maxHeight: 300, overflow: "auto" }}>
+              <div style={{ background: theme === "dark" ? "#18181b" : "#fafafa", borderRadius: 12, padding: 16, maxHeight: 300, overflow: "auto" }}>
                 {selectedImageIds.slice(0, 10).map(id => {
                   const img = images.find(i => i.id === id);
                   return (
-                    <div key={id} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid #4b5780" }}>
+                    <div key={id} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid #52525b" }}>
                       <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Image #{id}</div>
-                      <div style={{ fontSize: 12, color: "#94a3b8" }}>Before: {img?.altText || "(empty)"}</div>
+                      <div style={{ fontSize: 12, color: "#a1a1aa" }}>Before: {img?.altText || "(empty)"}</div>
                       <div style={{ fontSize: 12, color: "#10b981" }}>After: [AI Generated Alt Text]</div>
                     </div>
                   );
                 })}
                 {selectedImageIds.length > 10 && (
-                  <div style={{ fontSize: 13, color: "#94a3b8", textAlign: "center", marginTop: 12 }}>
+                  <div style={{ fontSize: 13, color: "#a1a1aa", textAlign: "center", marginTop: 12 }}>
                     ... and {selectedImageIds.length - 10} more
                   </div>
                 )}
@@ -13267,7 +13267,7 @@ export default function ImageAltMediaSEO() {
             <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
               <button
                 onClick={() => setShowBulkPreview(false)}
-                style={{ padding: "10px 20px", background: "#9aa3b8", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
+                style={{ padding: "10px 20px", background: "#71717a", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}
               >
                 Cancel
               </button>
@@ -13285,11 +13285,11 @@ export default function ImageAltMediaSEO() {
         </div>
       )}
 
-      <div style={{ marginTop: 40, padding: "24px 40px", fontSize: 13, color: "#cbd5e1", textAlign: "center", background: "linear-gradient(90deg, #283044 0%, #4b5780 100%)", borderTop: "2px solid #475569" }}>
+      <div style={{ marginTop: 40, padding: "24px 40px", fontSize: 13, color: "#d4d4d8", textAlign: "center", background: "linear-gradient(90deg, #27272a 0%, #52525b 100%)", borderTop: "2px solid #52525b" }}>
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
           <span>Powered by AURA Systems AI</span>
           <a href="mailto:support@aura-core.ai" style={{ color: accentColor, textDecoration: "underline", fontWeight: 600 }}>Contact Support</a>
-          {autoSaveEnabled && <span style={{ fontSize: 11, color: "#94a3b8" }}>Auto-save enabled</span>}
+          {autoSaveEnabled && <span style={{ fontSize: 11, color: "#a1a1aa" }}>Auto-save enabled</span>}
           {achievements.length > 0 && <span style={{ fontSize: 11, color: "#fbbf24" }}>{achievements.length} achievements</span>}
         </div>
       </div>

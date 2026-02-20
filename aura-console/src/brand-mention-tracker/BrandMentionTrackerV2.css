@@ -1,4 +1,4 @@
-﻿/* Brand Mention Tracker V2 - Enterprise Styling */
+/* Brand Mention Tracker V2 - Enterprise Styling */
 
 /* Stats Grid */
 .bmtv2-stats-grid {
@@ -29,7 +29,7 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0.5rem 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -62,25 +62,25 @@
 }
 
 .bmtv2-stat-change.neutral {
-  color: #757575;
+  color: #71717a;
 }
 
 .bmtv2-stat-label {
   font-size: 0.875rem;
-  color: #757575;
+  color: #71717a;
   margin-top: 0.25rem;
 }
 
 /* Mention Cards */
 .bmtv2-mention-card {
-  border-left: 4px solid #e9ebf5;
+  border-left: 4px solid #e4e4e7;
   padding: 1rem;
   margin-bottom: 1rem;
   transition: all 0.3s ease;
 }
 
 .bmtv2-mention-card:hover {
-  border-left-color: #667eea;
+  border-left-color: #818cf8;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -136,7 +136,7 @@
 }
 
 .bmtv2-credibility-badge.high {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   color: white;
 }
 
@@ -146,7 +146,7 @@
 }
 
 .bmtv2-credibility-badge.low {
-  background: #e9ebf5;
+  background: #e4e4e7;
   color: #424242;
 }
 
@@ -163,7 +163,7 @@
 .bmtv2-gauge-value {
   font-size: 4rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 1rem;
@@ -198,7 +198,7 @@
 
 .bmtv2-word-cloud {
   height: 500px;
-  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  background: linear-gradient(135deg, #818cf815 0%, #764ba215 100%);
   border-radius: 8px;
   padding: 2rem;
   display: flex;
@@ -237,7 +237,7 @@
 
 /* Influencer Cards */
 .bmtv2-influencer-card {
-  border: 2px solid #e9ebf5;
+  border: 2px solid #e4e4e7;
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1rem;
@@ -245,7 +245,7 @@
 }
 
 .bmtv2-influencer-card:hover {
-  border-color: #667eea;
+  border-color: #818cf8;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
   transform: translateY(-2px);
 }
@@ -296,7 +296,7 @@
 
 .bmtv2-relationship-status.neutral {
   background: #f5f5f5;
-  color: #757575;
+  color: #71717a;
 }
 
 .bmtv2-relationship-status.critic {
@@ -403,14 +403,14 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #667eea;
+  background: #818cf8;
   border: 2px solid white;
-  box-shadow: 0 0 0 2px #667eea;
+  box-shadow: 0 0 0 2px #818cf8;
 }
 
 /* Alert Styles */
 .bmtv2-alert-rule {
-  border: 1px solid #e9ebf5;
+  border: 1px solid #e4e4e7;
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -485,7 +485,7 @@
 
 /* Response Queue */
 .bmtv2-response-card {
-  border: 1px solid #e9ebf5;
+  border: 1px solid #e4e4e7;
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -505,7 +505,7 @@
 }
 
 .bmtv2-status-badge.pending {
-  background: #e9ebf5;
+  background: #e4e4e7;
   color: #424242;
 }
 
@@ -534,7 +534,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: #757575;
+  color: #71717a;
 }
 
 .bmtv2-response-time.fast {
@@ -566,7 +566,7 @@
 }
 
 .bmtv2-collaboration-mention {
-  color: #667eea;
+  color: #818cf8;
   font-weight: 600;
   cursor: pointer;
 }
@@ -583,7 +583,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #757575;
+  color: #71717a;
   font-style: italic;
 }
 
@@ -593,14 +593,14 @@
   .bmtv2-influencer-card,
   .bmtv2-alert-rule,
   .bmtv2-response-card {
-    background: #283044;
+    background: #27272a;
     border-color: #333;
   }
 
   .bmtv2-chart-placeholder,
   .bmtv2-word-cloud,
   .bmtv2-volume-spike {
-    background: #283044;
+    background: #27272a;
   }
 
   .bmtv2-crisis-card {
@@ -622,7 +622,7 @@
 }
 
 *:focus-visible {
-  outline: 2px solid #667eea;
+  outline: 2px solid #818cf8;
   outline-offset: 2px;
 }
 
@@ -644,7 +644,7 @@
 
 /* Loading States */
 .bmtv2-loading-skeleton {
-  background: linear-gradient(90deg, #f6f7fb 25%, #e9ebf5 50%, #f6f7fb 75%);
+  background: linear-gradient(90deg, #fafafa 25%, #e4e4e7 50%, #fafafa 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: 4px;

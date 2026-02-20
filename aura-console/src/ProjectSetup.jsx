@@ -1,4 +1,4 @@
-﻿﻿// aura-console/src/ProjectSetup.jsx
+﻿// aura-console/src/ProjectSetup.jsx
 // -----------------------------------------
 // "Connect store" onboarding screen
 // Talks directly to Core /projects API
@@ -147,7 +147,7 @@ function ProjectSetup({ coreUrl, onConnected }) {
             style={{
               marginTop: 8,
               fontSize: 11,
-              color: "#b8bed2",
+              color: "#a1a1aa",
               lineHeight: 1.4,
             }}
           >

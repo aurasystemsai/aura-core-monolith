@@ -1,4 +1,4 @@
-﻿﻿
+﻿
 import React, { useState, useRef } from "react";
 import { apiFetch } from "../../api";
 
@@ -105,7 +105,7 @@ export default function BrandIntelligenceLayer() {
   };
 
   const onboardingContent = (
-    <div style={{ padding: 24, background: "#0a0b0f", borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: "#09090b", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Brand Intelligence Layer</h3>
       <ul style={{ margin: "16px 0 0 18px", color: "#a3e635", fontSize: 16 }}>
         <li>Enter a brand question or upload a CSV/Excel file for bulk analysis</li>
@@ -115,7 +115,7 @@ export default function BrandIntelligenceLayer() {
         <li>Integrate with social, Shopify, and analytics APIs</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#0a0b0f", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#09090b", color: "#f4f4f5", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
     </div>
   );
 
@@ -131,13 +131,13 @@ export default function BrandIntelligenceLayer() {
       <div style={{ marginBottom: 10, color: "#a3e635", fontWeight: 600 }}>
         <span role="img" aria-label="brand">️</span>AI-powered brand analytics, bulk upload, insights, and collaboration.
       </div>
-      <button onClick={() => setShowOnboarding(true)} style={{ background: "#4f46e5", color: "#f3f4f6", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
+      <button onClick={() => setShowOnboarding(true)} style={{ background: "#4f46e5", color: "#f4f4f5", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}
       <textarea
         value={input}
         onChange={e => setInput(e.target.value)}
         rows={4}
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#0a0b0f", color: "#a3e635" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: "1px solid #555", marginBottom: 18, background: "#09090b", color: "#a3e635" }}
         placeholder="Type your brand question or data here..."
         aria-label="Brand input"
       />
@@ -148,25 +148,25 @@ export default function BrandIntelligenceLayer() {
         <input type="text" value={collaborators} onChange={e => setCollaborators(e.target.value)} placeholder="Emails, comma separated" style={{ fontSize: 15, padding: 8, borderRadius: 8, border: "1px solid #555" }} />
       </div>
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={handleRun} disabled={loading || (!input && !bulkUpload)} style={{ background: "#4f46e5", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 2px 12px #22d3ee55" }}>{loading ? "Running..." : "Run Tool"}</button>
-        <button onClick={handleExport} disabled={!response} style={{ background: "#e0e7ff", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: response ? "pointer" : "not-allowed" }}>Export</button>
+        <button onClick={handleRun} disabled={loading || (!input && !bulkUpload)} style={{ background: "#4f46e5", color: "#09090b", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 2px 12px #22d3ee55" }}>{loading ? "Running..." : "Run Tool"}</button>
+        <button onClick={handleExport} disabled={!response} style={{ background: "#e0e7ff", color: "#09090b", border: "none", borderRadius: 8, padding: "12px 24px", fontWeight: 600, fontSize: 15, cursor: response ? "pointer" : "not-allowed" }}>Export</button>
       </div>
       {notification && <div style={{ color: "#0af", marginTop: 12, fontWeight: 600 }}>{notification}</div>}
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
       {analytics && (
-        <div style={{ marginTop: 24, background: "#4b5780", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: "#52525b", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Analytics</div>
           <div style={{ fontSize: 16 }}>{JSON.stringify(analytics)}</div>
         </div>
       )}
       {response && (
-        <div style={{ marginTop: 32, background: "#0a0b0f", borderRadius: 12, padding: 24 }}>
+        <div style={{ marginTop: 32, background: "#09090b", borderRadius: 12, padding: 24 }}>
           <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>AI Response:</div>
           <div style={{ fontSize: 16, color: "#a3e635" }}>{response}</div>
         </div>
       )}
       {history.length > 0 && (
-        <div style={{ marginTop: 32, background: "#0a0b0f", borderRadius: 12, padding: 20 }}>
+        <div style={{ marginTop: 32, background: "#09090b", borderRadius: 12, padding: 20 }}>
           <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Insights History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, i) => (
@@ -182,7 +182,7 @@ export default function BrandIntelligenceLayer() {
       )}
       <form
         onSubmit={e => { e.preventDefault(); handleFeedback(); }}
-        style={{ marginTop: 32, background: "#0a0b0f", color: "#f3f4f6", borderRadius: 12, padding: 20 }}
+        style={{ marginTop: 32, background: "#09090b", color: "#f4f4f5", borderRadius: 12, padding: 20 }}
         aria-label="Send feedback"
       >
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
@@ -190,13 +190,13 @@ export default function BrandIntelligenceLayer() {
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#0a0b0f", color: "#a3e635" }}
+          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#09090b", color: "#a3e635" }}
           placeholder="Share your feedback or suggestions..."
           aria-label="Feedback input"
         />
         <button
           type="submit"
-          style={{ background: "#4f46e5", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
+          style={{ background: "#4f46e5", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}
         >
           Send Feedback
         </button>

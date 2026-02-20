@@ -39,8 +39,8 @@ export function UpgradePrompt({ toolId, toolName, requiredPlan = 'professional' 
       <div className="upgrade-prompt-card">
         <div className="upgrade-prompt-icon">
           <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-            <circle cx="32" cy="32" r="32" fill="#5C6AC4" opacity="0.1"/>
-            <path d="M32 16a8 8 0 0 0-8 8v6h-4a4 4 0 0 0-4 4v14a4 4 0 0 0 4 4h24a4 4 0 0 0 4-4V34a4 4 0 0 0-4-4h-4v-6a8 8 0 0 0-8-8zm4 14v-6a4 4 0 0 0-8 0v6h8z" fill="#5C6AC4"/>
+            <circle cx="32" cy="32" r="32" fill="#6366f1" opacity="0.1"/>
+            <path d="M32 16a8 8 0 0 0-8 8v6h-4a4 4 0 0 0-4 4v14a4 4 0 0 0 4 4h24a4 4 0 0 0 4-4V34a4 4 0 0 0-4-4h-4v-6a8 8 0 0 0-8-8zm4 14v-6a4 4 0 0 0-8 0v6h8z" fill="#6366f1"/>
           </svg>
         </div>
         
@@ -194,7 +194,7 @@ export function PlanBadge() {
   
   const planColors = {
     free: '#8A8A8A',
-    professional: '#5C6AC4',
+    professional: '#6366f1',
     enterprise: '#F49342'
   };
   

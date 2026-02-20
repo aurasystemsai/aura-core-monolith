@@ -1,4 +1,4 @@
-﻿﻿
+﻿
 import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import Chart from "chart.js/auto";
@@ -427,7 +427,7 @@ export default function SelfServiceAnalytics() {
               <option key={ds.key} value={ds.key}>{ds.label}</option>
             ))}
           </select>
-          <div style={{ fontSize: 12, color: "#64748b" }}>{freshness[dataset]}</div>
+          <div style={{ fontSize: 12, color: "#71717a" }}>{freshness[dataset]}</div>
         </div>
         <div>
           <label>Metric</label><br />
@@ -487,9 +487,9 @@ export default function SelfServiceAnalytics() {
             {p.label}
           </button>
         ))}
-        <div style={{ fontSize: 12, color: "#64748b" }}>Sources: <input value={sources} onChange={e => setSources(e.target.value)} style={{ width: 160 }} /></div>
-        <div style={{ fontSize: 12, color: "#64748b" }}>Segment: <input value={segment} onChange={e => setSegment(e.target.value)} style={{ width: 140 }} placeholder="e.g. US, Paid" /></div>
-        <div style={{ fontSize: 12, color: "#64748b" }}>
+        <div style={{ fontSize: 12, color: "#71717a" }}>Sources: <input value={sources} onChange={e => setSources(e.target.value)} style={{ width: 160 }} /></div>
+        <div style={{ fontSize: 12, color: "#71717a" }}>Segment: <input value={segment} onChange={e => setSegment(e.target.value)} style={{ width: 140 }} placeholder="e.g. US, Paid" /></div>
+        <div style={{ fontSize: 12, color: "#71717a" }}>
           Alerts: <input type="checkbox" checked={alertEnabled} onChange={e => setAlertEnabled(e.target.checked)} />
           <input
             value={alertThreshold}
@@ -516,9 +516,9 @@ export default function SelfServiceAnalytics() {
             disabled={!alertEnabled || alertChannel === 'inapp'}
           />
         </div>
-        <div style={{ fontSize: 12, color: "#64748b" }}>Channel: <input value={channelFilter} onChange={e => setChannelFilter(e.target.value)} style={{ width: 110 }} placeholder="e.g. Paid" /></div>
-        <div style={{ fontSize: 12, color: "#64748b" }}>Campaign: <input value={campaignFilter} onChange={e => setCampaignFilter(e.target.value)} style={{ width: 130 }} placeholder="e.g. BF2025" /></div>
-        <div style={{ fontSize: 12, color: "#64748b" }}>Top N: <input value={topN} onChange={e => setTopN(e.target.value)} style={{ width: 60 }} placeholder="5" /></div>
+        <div style={{ fontSize: 12, color: "#71717a" }}>Channel: <input value={channelFilter} onChange={e => setChannelFilter(e.target.value)} style={{ width: 110 }} placeholder="e.g. Paid" /></div>
+        <div style={{ fontSize: 12, color: "#71717a" }}>Campaign: <input value={campaignFilter} onChange={e => setCampaignFilter(e.target.value)} style={{ width: 130 }} placeholder="e.g. BF2025" /></div>
+        <div style={{ fontSize: 12, color: "#71717a" }}>Top N: <input value={topN} onChange={e => setTopN(e.target.value)} style={{ width: 60 }} placeholder="5" /></div>
       </div>
 
       {validation && validation.status !== "ok" && (
@@ -565,7 +565,7 @@ export default function SelfServiceAnalytics() {
             <div style={{ background: "#eef2ff", border: "1px solid #e0e7ff", borderRadius: 8, padding: 12, minWidth: 140 }}>
               <div style={{ fontSize: 12, color: "#4f46e5" }}>Δ vs prev</div>
               <div style={{ fontWeight: 800, fontSize: 20 }}>{chartPreview.kpis.delta}%</div>
-              <div style={{ fontSize: 12, color: "#94a3b8" }}>Prev: {chartPreview.kpis.prevTotal ?? "n/a"}</div>
+              <div style={{ fontSize: 12, color: "#a1a1aa" }}>Prev: {chartPreview.kpis.prevTotal ?? "n/a"}</div>
             </div>
           )}
         </div>
@@ -575,20 +575,20 @@ export default function SelfServiceAnalytics() {
       <div style={{ marginBottom: 24 }}>
         <h4 style={{ marginBottom: 4 }}>Preview</h4>
         {chartPreview ? (
-          <div style={{ background: "#f8fafc", borderRadius: 8, padding: 16, maxWidth: 700 }}>
+          <div style={{ background: "#fafafa", borderRadius: 8, padding: 16, maxWidth: 700 }}>
             <Line data={chartPreview.chart} />
             {chartPreview.table && (
               <div style={{ marginTop: 12 }}>
                 <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
                   <thead>
-                    <tr style={{ textAlign: "left", borderBottom: "1px solid #e2e8f0" }}>
+                    <tr style={{ textAlign: "left", borderBottom: "1px solid #e4e4e7" }}>
                       <th>Dimension</th>
                       <th>Value</th>
                     </tr>
                   </thead>
                   <tbody>
                     {chartPreview.table.slice(0, 8).map((row, idx) => (
-                      <tr key={idx} style={{ borderBottom: "1px solid #e2e8f0" }}>
+                      <tr key={idx} style={{ borderBottom: "1px solid #e4e4e7" }}>
                         <td>{row.label}</td>
                         <td>{row.value}</td>
                       </tr>
@@ -599,7 +599,7 @@ export default function SelfServiceAnalytics() {
             )}
           </div>
         ) : (
-          <div style={{ color: "#64748b" }}>No preview yet. Run a query to see results.</div>
+          <div style={{ color: "#71717a" }}>No preview yet. Run a query to see results.</div>
         )}
       </div>
 
@@ -607,15 +607,15 @@ export default function SelfServiceAnalytics() {
       <div style={{ display: "flex", gap: 32, alignItems: "flex-start" }}>
         <div style={{ flex: 1 }}>
           <h4>Recent Results</h4>
-          {charts.length === 0 && <div style={{ color: "#64748b" }}>No results yet.</div>}
+          {charts.length === 0 && <div style={{ color: "#71717a" }}>No results yet.</div>}
           {charts.map(c => (
             <div
               key={c.id}
               className="chart-result"
               style={{
-                background: "#1f2433",
-                border: "1px solid #283044",
-                color: "#f6f7fb",
+                background: "#18181b",
+                border: "1px solid #27272a",
+                color: "#fafafa",
                 borderRadius: 6,
                 padding: 10,
                 marginBottom: 8,
@@ -635,16 +635,16 @@ export default function SelfServiceAnalytics() {
         </div>
         <div style={{ flex: 1 }}>
           <h4>Saved Views</h4>
-          {serverViewsStatus && <div style={{ fontSize: 12, color: "#94a3b8" }}>Views: {serverViewsStatus}</div>}
-          {savedViews.length === 0 && <div style={{ color: "#64748b" }}>No saved views.</div>}
+          {serverViewsStatus && <div style={{ fontSize: 12, color: "#a1a1aa" }}>Views: {serverViewsStatus}</div>}
+          {savedViews.length === 0 && <div style={{ color: "#71717a" }}>No saved views.</div>}
           {savedViews.map(v => (
             <div
               key={v.id}
               className="saved-view"
               style={{
-                background: "#1f2433",
-                border: "1px solid #283044",
-                color: "#f6f7fb",
+                background: "#18181b",
+                border: "1px solid #27272a",
+                color: "#fafafa",
                 borderRadius: 6,
                 padding: 10,
                 marginBottom: 8,
@@ -686,16 +686,16 @@ export default function SelfServiceAnalytics() {
         </div>
         <div style={{ flex: 1 }}>
           <h4>Schedules</h4>
-          {serverSchedStatus && <div style={{ fontSize: 12, color: "#94a3b8" }}>Schedules: {serverSchedStatus}</div>}
-          {serverSchedules.length === 0 && <div style={{ color: "#64748b" }}>No schedules.</div>}
+          {serverSchedStatus && <div style={{ fontSize: 12, color: "#a1a1aa" }}>Schedules: {serverSchedStatus}</div>}
+          {serverSchedules.length === 0 && <div style={{ color: "#71717a" }}>No schedules.</div>}
           {serverSchedules.map(s => (
             <div
               key={s.id}
               className="schedule"
               style={{
-                background: "#1f2433",
-                border: "1px solid #283044",
-                color: "#f6f7fb",
+                background: "#18181b",
+                border: "1px solid #27272a",
+                color: "#fafafa",
                 borderRadius: 6,
                 padding: 10,
                 marginBottom: 8,
@@ -726,15 +726,15 @@ export default function SelfServiceAnalytics() {
         </div>
         <div style={{ flex: 1 }}>
           <h4>History</h4>
-          {history.length === 0 && <div style={{ color: "#64748b" }}>No history yet.</div>}
+          {history.length === 0 && <div style={{ color: "#71717a" }}>No history yet.</div>}
             {history.map((h, i) => (
                 <div
                   key={i}
                   className="history-item"
                   style={{
-                    background: "#1f2433",
-                    border: "1px solid #283044",
-                    color: "#f6f7fb",
+                    background: "#18181b",
+                    border: "1px solid #27272a",
+                    color: "#fafafa",
                     borderRadius: 6,
                     padding: 10,
                     marginBottom: 8,
@@ -742,21 +742,21 @@ export default function SelfServiceAnalytics() {
                   }}
                 >
                   <div style={{ fontWeight: 700 }}>{h.summary}</div>
-              <div style={{ fontSize: 12, color: "#64748b" }}>{new Date(h.at).toLocaleString()} [{h.env}]</div>
-              <div style={{ fontSize: 12, color: "#94a3b8" }}>{h.query}</div>
-              <div style={{ fontSize: 12, color: "#94a3b8" }}>{h.dateRange || ""} {h.comparePrev ? "(compare prev)" : ""}</div>
+              <div style={{ fontSize: 12, color: "#71717a" }}>{new Date(h.at).toLocaleString()} [{h.env}]</div>
+              <div style={{ fontSize: 12, color: "#a1a1aa" }}>{h.query}</div>
+              <div style={{ fontSize: 12, color: "#a1a1aa" }}>{h.dateRange || ""} {h.comparePrev ? "(compare prev)" : ""}</div>
             </div>
           ))}
         </div>
         <div style={{ flex: 1 }}>
           <h4>Alert History</h4>
-          {alertHistory.length === 0 && <div style={{ color: '#64748b' }}>No alerts yet.</div>}
+          {alertHistory.length === 0 && <div style={{ color: '#71717a' }}>No alerts yet.</div>}
           {alertHistory.map((h, i) => (
             <div
               key={i}
               className="alert-item"
               style={{
-                background: "#283044",
+                background: "#27272a",
                 border: "1px solid #eab308",
                 color: "#fef08a",
                 borderRadius: 6,
@@ -800,12 +800,12 @@ export default function SelfServiceAnalytics() {
             disabled={!chartPreview || !chartPreview.labels || !chartPreview.datasets}
           >Export CSV</button>
           <button style={{ marginLeft: 8 }} onClick={startAsyncExport}>Export (async)</button>
-          {exportStatus && <div style={{ marginTop: 6, fontSize: 12, color: '#475569' }}>Export status: {exportStatus}</div>}
+          {exportStatus && <div style={{ marginTop: 6, fontSize: 12, color: '#52525b' }}>Export status: {exportStatus}</div>}
           {exportDownloadUrl && <div style={{ marginTop: 6 }}><a href={exportDownloadUrl}>Download async CSV</a></div>}
         </div>
         <div style={{ flex: 2 }}>
           <h4>How to Use</h4>
-          <ul style={{ color: "#64748b", fontSize: 15 }}>
+          <ul style={{ color: "#71717a", fontSize: 15 }}>
             <li>Choose dataset, metric, and dimension.</li>
             <li>Use templates for quick starts, or edit the query directly.</li>
             <li>Click <b>Run</b> to preview chart, KPIs, and table.</li>
@@ -816,13 +816,13 @@ export default function SelfServiceAnalytics() {
       </div>
 
       {draftSavedAt && (
-        <div className="draft-status" style={{ marginTop: 16, color: "#64748b" }}>Draft auto-saved at {new Date(draftSavedAt).toLocaleTimeString()}</div>
+        <div className="draft-status" style={{ marginTop: 16, color: "#71717a" }}>Draft auto-saved at {new Date(draftSavedAt).toLocaleTimeString()}</div>
       )}
 
       {insights && insights.length > 0 && (
-        <div style={{ marginTop: 16, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: 12 }}>
+        <div style={{ marginTop: 16, background: "#fafafa", border: "1px solid #e4e4e7", borderRadius: 8, padding: 12 }}>
           <div style={{ fontWeight: 700, marginBottom: 6 }}>Insights</div>
-          <ul style={{ margin: 0, paddingLeft: 16, color: "#475569", fontSize: 14 }}>
+          <ul style={{ margin: 0, paddingLeft: 16, color: "#52525b", fontSize: 14 }}>
             {insights.map((ins, idx) => <li key={idx}>{ins}</li>)}
           </ul>
         </div>

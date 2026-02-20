@@ -1,4 +1,4 @@
-﻿﻿/* ============================================================================
+﻿/* ============================================================================
    PERSONALIZATION & RECOMMENDATION ENGINE V2 - ENTERPRISE STYLESHEET
    Responsive design with dark mode support and accessibility features
    ============================================================================ */
@@ -25,7 +25,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   border-radius: 12px;
   color: white;
 }
@@ -40,13 +40,13 @@
 .stat-value {
   font-size: 28px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   margin: 0;
 }
 
 .stat-title {
   font-size: 14px;
-  color: #6d7175;
+  color: #71717a;
   margin: 0;
 }
 
@@ -63,13 +63,13 @@
 }
 
 .Polaris-Tabs {
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e4e4e7;
 }
 
 .Polaris-Tabs__TabContainer {
   overflow-x: auto;
   scrollbar-width: thin;
-  scrollbar-color: #c4cdd5 #f4f6f8;
+  scrollbar-color: #d4d4d8 #f4f4f5;
 }
 
 .Polaris-Tabs__TabContainer::-webkit-scrollbar {
@@ -77,11 +77,11 @@
 }
 
 .Polaris-Tabs__TabContainer::-webkit-scrollbar-track {
-  background: #f4f6f8;
+  background: #f4f4f5;
 }
 
 .Polaris-Tabs__TabContainer::-webkit-scrollbar-thumb {
-  background: #c4cdd5;
+  background: #d4d4d8;
   border-radius: 3px;
 }
 
@@ -92,18 +92,18 @@
 }
 
 .Polaris-Tabs__Tab:hover {
-  background-color: #f6f7fb;
+  background-color: #fafafa;
 }
 
 .Polaris-Tabs__Tab--selected {
-  color: #5c6ac4;
-  border-bottom-color: #5c6ac4;
+  color: #6366f1;
+  border-bottom-color: #6366f1;
 }
 
 /* Data Tables */
 .pers-table-container {
   overflow-x: auto;
-  border: 1px solid #e1e3e5;
+  border: 1px solid #e4e4e7;
   border-radius: 8px;
 }
 
@@ -114,13 +114,13 @@
 
 .Polaris-DataTable__Cell {
   padding: 12px 16px;
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e4e4e7;
 }
 
 .Polaris-DataTable__Cell--header {
-  background-color: #f6f7fb;
+  background-color: #fafafa;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   text-transform: uppercase;
   font-size: 12px;
   letter-spacing: 0.5px;
@@ -135,12 +135,12 @@
 }
 
 .Polaris-DataTable tbody tr:hover {
-  background-color: #f6f7fb;
+  background-color: #fafafa;
 }
 
 /* Recommendation Cards */
 .pers-rec-card {
-  border: 1px solid #e1e3e5;
+  border: 1px solid #e4e4e7;
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 12px;
@@ -150,7 +150,7 @@
 }
 
 .pers-rec-card:hover {
-  border-color: #5c6ac4;
+  border-color: #6366f1;
   box-shadow: 0 2px 8px rgba(92, 106, 196, 0.1);
   transform: translateY(-1px);
 }
@@ -160,7 +160,7 @@
   height: 80px;
   border-radius: 6px;
   object-fit: cover;
-  background: #f4f6f8;
+  background: #f4f4f5;
 }
 
 .pers-rec-content {
@@ -173,13 +173,13 @@
 .pers-rec-title {
   font-size: 16px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   margin: 0;
 }
 
 .pers-rec-meta {
   font-size: 14px;
-  color: #6d7175;
+  color: #71717a;
   display: flex;
   gap: 12px;
 }
@@ -205,7 +205,7 @@
 }
 
 .pers-profile-card {
-  border: 1px solid #e1e3e5;
+  border: 1px solid #e4e4e7;
   border-radius: 8px;
   padding: 20px;
   background: #fff;
@@ -227,7 +227,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -243,13 +243,13 @@
 .pers-profile-name {
   font-size: 16px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   margin: 0 0 4px 0;
 }
 
 .pers-profile-email {
   font-size: 14px;
-  color: #6d7175;
+  color: #71717a;
   margin: 0;
 }
 
@@ -259,7 +259,7 @@
   gap: 12px;
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid #e1e3e5;
+  border-top: 1px solid #e4e4e7;
 }
 
 .pers-profile-stat {
@@ -269,13 +269,13 @@
 .pers-profile-stat-value {
   font-size: 20px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   margin: 0 0 4px 0;
 }
 
 .pers-profile-stat-label {
   font-size: 12px;
-  color: #6d7175;
+  color: #71717a;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0;
@@ -283,7 +283,7 @@
 
 /* Campaign Cards */
 .pers-campaign-card {
-  border-left: 4px solid #5c6ac4;
+  border-left: 4px solid #6366f1;
   background: #fff;
   border-radius: 8px;
   padding: 20px;
@@ -301,7 +301,7 @@
 .pers-campaign-title {
   font-size: 18px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   margin: 0 0 6px 0;
 }
 
@@ -309,7 +309,7 @@
   display: inline-block;
   padding: 4px 10px;
   background: #b4e1fa;
-  color: #283044;
+  color: #27272a;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
@@ -326,26 +326,26 @@
 .pers-campaign-metric {
   text-align: center;
   padding: 12px;
-  background: #f6f7fb;
+  background: #fafafa;
   border-radius: 6px;
 }
 
 .pers-campaign-metric-value {
   font-size: 22px;
   font-weight: 600;
-  color: #5c6ac4;
+  color: #6366f1;
   margin: 0 0 4px 0;
 }
 
 .pers-campaign-metric-label {
   font-size: 12px;
-  color: #6d7175;
+  color: #71717a;
   margin: 0;
 }
 
 /* Forms & Inputs */
 .pers-form-section {
-  background: #f6f7fb;
+  background: #fafafa;
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 16px;
@@ -360,21 +360,21 @@
 
 .Polaris-TextField__Input {
   border-radius: 4px;
-  border: 1px solid #c4cdd5;
+  border: 1px solid #d4d4d8;
   padding: 10px 12px;
   font-size: 14px;
   transition: border-color 0.2s ease;
 }
 
 .Polaris-TextField__Input:focus {
-  border-color: #5c6ac4;
-  box-shadow: 0 0 0 1px #5c6ac4;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px #6366f1;
   outline: none;
 }
 
 .Polaris-Select__Input {
   border-radius: 4px;
-  border: 1px solid #c4cdd5;
+  border: 1px solid #d4d4d8;
   padding: 10px 36px 10px 12px;
   font-size: 14px;
 }
@@ -388,16 +388,16 @@
 }
 
 .Polaris-Button--primary {
-  background-color: #5c6ac4;
+  background-color: #6366f1;
   color: #fff;
 }
 
 .Polaris-Button--primary:hover {
-  background-color: #4959bd;
+  background-color: #6366f1;
 }
 
 .Polaris-Button--primary:active {
-  background-color: #4b5780;
+  background-color: #52525b;
 }
 
 .Polaris-Button--destructive {
@@ -428,7 +428,7 @@
 
 .Polaris-Badge--info {
   background-color: #b4e1fa;
-  color: #283044;
+  color: #27272a;
 }
 
 .Polaris-Badge--warning {
@@ -451,26 +451,26 @@
   justify-content: space-between;
   margin-bottom: 8px;
   font-size: 14px;
-  color: #283044;
+  color: #27272a;
 }
 
 .Polaris-ProgressBar {
   height: 8px;
   border-radius: 4px;
-  background-color: #e1e3e5;
+  background-color: #e4e4e7;
   overflow: hidden;
 }
 
 .Polaris-ProgressBar__Indicator {
   height: 100%;
-  background: linear-gradient(90deg, #5c6ac4 0%, #667eea 100%);
+  background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
   transition: width 0.3s ease;
 }
 
 /* Charts & Visualizations */
 .pers-chart-container {
   background: #fff;
-  border: 1px solid #e1e3e5;
+  border: 1px solid #e4e4e7;
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
@@ -479,7 +479,7 @@
 .pers-chart-title {
   font-size: 16px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   margin: 0 0 16px 0;
 }
 
@@ -490,7 +490,7 @@
 }
 
 .pers-metric-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   color: white;
   padding: 24px;
   border-radius: 8px;
@@ -522,7 +522,7 @@
 
 /* Loading States */
 .pers-skeleton {
-  background: linear-gradient(90deg, #f4f6f8 25%, #e1e3e5 50%, #f4f6f8 75%);
+  background: linear-gradient(90deg, #f4f4f5 25%, #e4e4e7 50%, #f4f4f5 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: 4px;
@@ -556,13 +556,13 @@
 .pers-empty-title {
   font-size: 20px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   margin: 0 0 8px 0;
 }
 
 .pers-empty-description {
   font-size: 14px;
-  color: #6d7175;
+  color: #71717a;
   margin: 0 0 24px 0;
 }
 
@@ -576,13 +576,13 @@
 
 .Polaris-Modal-Header {
   padding: 20px;
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e4e4e7;
 }
 
 .Polaris-Modal-Header__Title {
   font-size: 20px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
 }
 
 .Polaris-Modal-Section {
@@ -591,7 +591,7 @@
 
 .Polaris-Modal-Footer {
   padding: 16px 20px;
-  border-top: 1px solid #e1e3e5;
+  border-top: 1px solid #e4e4e7;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -610,8 +610,8 @@
 }
 
 .Polaris-Banner--info {
-  background-color: #f4f6f8;
-  border-left-color: #5c6ac4;
+  background-color: #f4f4f5;
+  border-left-color: #6366f1;
 }
 
 .Polaris-Banner--warning {
@@ -667,8 +667,8 @@
   .pers-profile-card,
   .pers-campaign-card,
   .pers-chart-container {
-    background: #283044;
-    border-color: #3a4560;
+    background: #27272a;
+    border-color: #3f3f46;
   }
   
   .stat-value,
@@ -676,7 +676,7 @@
   .pers-profile-name,
   .pers-campaign-title,
   .pers-chart-title {
-    color: #e1e3e5;
+    color: #e4e4e7;
   }
   
   .stat-title,
@@ -687,14 +687,14 @@
   }
   
   .Polaris-DataTable__Cell--header {
-    background-color: #283044;
+    background-color: #27272a;
   }
   
   .Polaris-TextField__Input,
   .Polaris-Select__Input {
-    background-color: #283044;
-    border-color: #3a4560;
-    color: #e1e3e5;
+    background-color: #27272a;
+    border-color: #3f3f46;
+    color: #e4e4e7;
   }
 }
 
@@ -712,7 +712,7 @@
 }
 
 *:focus {
-  outline: 2px solid #5c6ac4;
+  outline: 2px solid #6366f1;
   outline-offset: 2px;
 }
 
@@ -732,7 +732,7 @@
   .pers-campaign-card,
   .pers-chart-container {
     box-shadow: none;
-    border: 1px solid #e1e3e5;
+    border: 1px solid #e4e4e7;
     page-break-inside: avoid;
   }
 }

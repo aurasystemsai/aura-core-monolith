@@ -1,4 +1,4 @@
-﻿﻿/* ================================================================
+﻿/* ================================================================
    KLAVIYO FLOW AUTOMATION - COMPREHENSIVE STYLES
    ================================================================ */
 
@@ -15,7 +15,7 @@
 
 .klaviyo-sidebar {
   width: 280px;
-  background: #1f2433;
+  background: #18181b;
   color: #fff;
   overflow-y: auto;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
@@ -26,7 +26,7 @@
   margin: 0;
   font-size: 20px;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -57,7 +57,7 @@
 
 .category.active .category-header {
   background: rgba(102, 126, 234, 0.15);
-  color: #667eea;
+  color: #818cf8;
 }
 
 .category-header .icon {
@@ -93,7 +93,7 @@
 
 .tab.active {
   background: rgba(102, 126, 234, 0.15);
-  color: #667eea;
+  color: #818cf8;
   font-weight: 600;
 }
 
@@ -104,7 +104,7 @@
   top: 0;
   bottom: 0;
   width: 3px;
-  background: #667eea;
+  background: #818cf8;
 }
 
 /* ================================================================
@@ -162,7 +162,7 @@ button,
 }
 
 .klaviyo-btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   color: #fff;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
@@ -174,12 +174,12 @@ button,
 
 .klaviyo-btn-secondary {
   background: #f1f3f5;
-  color: #495057;
-  border: 1px solid #dee2e6;
+  color: #52525b;
+  border: 1px solid #d4d4d8;
 }
 
 .klaviyo-btn-secondary:hover {
-  background: #e9ecef;
+  background: #e4e4e7;
 }
 
 button:disabled {
@@ -203,7 +203,7 @@ button:disabled {
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.3s;
-  border: 1px solid #e9ecef;
+  border: 1px solid #e4e4e7;
 }
 
 .klaviyo-card:hover {
@@ -231,15 +231,15 @@ button:disabled {
 
 .klaviyo-card .subject {
   font-size: 13px;
-  color: #495057;
+  color: #52525b;
   font-style: italic;
 }
 
 .klaviyo-card .message {
   font-size: 13px;
-  color: #495057;
+  color: #52525b;
   padding: 12px;
-  background: #f8f9fa;
+  background: #fafafa;
   border-radius: 6px;
   margin: 12px 0;
 }
@@ -249,7 +249,7 @@ button:disabled {
   gap: 16px;
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid #e4e4e7;
 }
 
 .klaviyo-card .stats span {
@@ -268,14 +268,14 @@ button:disabled {
   padding: 8px 16px;
   font-size: 13px;
   background: #f1f3f5;
-  color: #495057;
-  border: 1px solid #dee2e6;
+  color: #52525b;
+  border: 1px solid #d4d4d8;
 }
 
 .klaviyo-card .actions button:hover {
-  background: #667eea;
+  background: #818cf8;
   color: #fff;
-  border-color: #667eea;
+  border-color: #818cf8;
 }
 
 /* ================================================================
@@ -295,7 +295,7 @@ button:disabled {
 }
 
 .klaviyo-table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   color: #fff;
 }
 
@@ -311,12 +311,12 @@ button:disabled {
 .klaviyo-table td {
   padding: 16px 20px;
   font-size: 14px;
-  color: #495057;
-  border-bottom: 1px solid #e9ecef;
+  color: #52525b;
+  border-bottom: 1px solid #e4e4e7;
 }
 
 .klaviyo-table tbody tr:hover {
-  background: #f8f9fa;
+  background: #fafafa;
 }
 
 .klaviyo-table tbody tr:last-child td {
@@ -336,14 +336,14 @@ button:disabled {
   font-size: 12px;
   margin-right: 6px;
   background: #f1f3f5;
-  color: #495057;
-  border: 1px solid #dee2e6;
+  color: #52525b;
+  border: 1px solid #d4d4d8;
 }
 
 .klaviyo-table td button:hover {
-  background: #667eea;
+  background: #818cf8;
   color: #fff;
-  border-color: #667eea;
+  border-color: #818cf8;
 }
 
 /* ================================================================
@@ -361,13 +361,13 @@ button:disabled {
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e9ecef;
+  border: 1px solid #e4e4e7;
   transition: all 0.2s;
 }
 
 .klaviyo-list-item:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  border-color: #667eea;
+  border-color: #818cf8;
 }
 
 .klaviyo-list-item .item-header {
@@ -413,14 +413,14 @@ button:disabled {
   padding: 8px 16px;
   font-size: 13px;
   background: #f1f3f5;
-  color: #495057;
-  border: 1px solid #dee2e6;
+  color: #52525b;
+  border: 1px solid #d4d4d8;
 }
 
 .klaviyo-list-item .actions button:hover {
-  background: #667eea;
+  background: #818cf8;
   color: #fff;
-  border-color: #667eea;
+  border-color: #818cf8;
 }
 
 /* Impact-based colors for insights */
@@ -485,7 +485,7 @@ button:disabled {
 }
 
 .badge.disabled {
-  background: #e9ecef;
+  background: #e4e4e7;
   color: #868e96;
 }
 
@@ -535,7 +535,7 @@ button:disabled {
 
 .search-input {
   padding: 10px 16px;
-  border: 1px solid #dee2e6;
+  border: 1px solid #d4d4d8;
   border-radius: 6px;
   font-size: 14px;
   width: 300px;
@@ -544,7 +544,7 @@ button:disabled {
 }
 
 .search-input:focus {
-  border-color: #667eea;
+  border-color: #818cf8;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -571,7 +571,7 @@ button:disabled {
   margin-bottom: 8px;
   font-size: 14px;
   font-weight: 600;
-  color: #495057;
+  color: #52525b;
 }
 
 .setting-item input,
@@ -579,7 +579,7 @@ button:disabled {
 .setting-item textarea {
   width: 100%;
   padding: 10px 16px;
-  border: 1px solid #dee2e6;
+  border: 1px solid #d4d4d8;
   border-radius: 6px;
   font-size: 14px;
   outline: none;
@@ -589,7 +589,7 @@ button:disabled {
 .setting-item input:focus,
 .setting-item select:focus,
 .setting-item textarea:focus {
-  border-color: #667eea;
+  border-color: #818cf8;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -603,7 +603,7 @@ button:disabled {
   align-items: center;
   height: 400px;
   font-size: 18px;
-  color: #667eea;
+  color: #818cf8;
   font-weight: 600;
 }
 
@@ -612,8 +612,8 @@ button:disabled {
   width: 40px;
   height: 40px;
   margin-left: 16px;
-  border: 4px solid #e9ecef;
-  border-top-color: #667eea;
+  border: 4px solid #e4e4e7;
+  border-top-color: #818cf8;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -702,7 +702,7 @@ button:disabled {
 }
 
 pre {
-  background: #f8f9fa;
+  background: #fafafa;
   padding: 16px;
   border-radius: 8px;
   overflow-x: auto;
@@ -776,11 +776,11 @@ code {
 }
 
 .klaviyo-sidebar::-webkit-scrollbar-track {
-  background: #3a4560;
+  background: #3f3f46;
 }
 
 .klaviyo-sidebar::-webkit-scrollbar-thumb {
-  background: #667eea;
+  background: #818cf8;
   border-radius: 4px;
 }
 
@@ -789,7 +789,7 @@ code {
 }
 
 .klaviyo-main::-webkit-scrollbar-thumb {
-  background: #dee2e6;
+  background: #d4d4d8;
   border-radius: 4px;
 }
 
@@ -842,7 +842,7 @@ button,
   .klaviyo-card,
   .klaviyo-table {
     box-shadow: none;
-    border: 1px solid #dee2e6;
+    border: 1px solid #d4d4d8;
   }
 
   button {

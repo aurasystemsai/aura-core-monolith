@@ -1,4 +1,4 @@
-﻿﻿import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../api";
 import Toast from "../Toast";
 import usePlan, { canUseTool, requiredPlanFor, PLAN_LABEL, PLAN_PRICE, PLAN_COLOUR } from "../../hooks/usePlan";
@@ -81,20 +81,20 @@ export default function MainSuite({ setActiveSection }) {
 
   const palette = darkMode
     ? {
-        bg: "#1f2433",
-        card: "#1f2433",
-        border: "#1f2433",
-        text: "#f6f7fb",
-        muted: "#b8bed2",
+        bg: "#18181b",
+        card: "#18181b",
+        border: "#18181b",
+        text: "#fafafa",
+        muted: "#a1a1aa",
         accent: "#4f46e5",
         primary: "#3b82f6",
       }
     : {
-        bg: "#f8fafc",
+        bg: "#fafafa",
         card: "#ffffff",
         border: "#dbeafe",
-        text: "#1f2433",
-        muted: "#475569",
+        text: "#18181b",
+        muted: "#52525b",
         accent: "#0ea5e9",
         primary: "#2563eb",
       };
@@ -181,7 +181,7 @@ export default function MainSuite({ setActiveSection }) {
             padding: "10px 12px",
             borderRadius: 10,
             border: `1px solid ${palette.border}`,
-            background: darkMode ? "#1f2433" : "#fff",
+            background: darkMode ? "#18181b" : "#fff",
             color: palette.text,
           }}
         />
@@ -318,7 +318,7 @@ export default function MainSuite({ setActiveSection }) {
                 key={m.id}
                 style={{
                   background: palette.card,
-                  border: `1px solid ${locked ? "#4b5780" : palette.border}`,
+                  border: `1px solid ${locked ? "#52525b" : palette.border}`,
                   borderRadius: 12,
                   padding: 12,
                   display: "flex",
@@ -346,7 +346,7 @@ export default function MainSuite({ setActiveSection }) {
                   <div style={{ position: "absolute", inset: 0, borderRadius: 12, background: "rgba(10,16,28,0.85)", backdropFilter: "blur(2px)", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, padding: 10, textAlign: "center" }}>
                     <span style={{ fontSize: 24 }}></span>
                     <span style={{ fontSize: 12, fontWeight: 800, color: PLAN_COLOUR[reqPlan] }}>{PLAN_LABEL[reqPlan]} Plan required</span>
-                    <span style={{ fontSize: 11, color: "#64748b" }}>from {PLAN_PRICE[reqPlan]}</span>
+                    <span style={{ fontSize: 11, color: "#71717a" }}>from {PLAN_PRICE[reqPlan]}</span>
                     <span style={{ fontSize: 11, color: "#4f46e5", fontWeight: 700 }}>Upgrade Plan →</span>
                   </div>
                 )}
@@ -366,7 +366,7 @@ export default function MainSuite({ setActiveSection }) {
                   )}
                 </div>
                 {preflightStatuses[m.id] && (
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: 999, border: `1px solid ${palette.border}`, background: preflightStatuses[m.id].ok ? (darkMode ? "#1f2433" : "#e0f2fe") : "#332b17", color: preflightStatuses[m.id].ok ? "#22c55e" : preflightStatuses[m.id].issues ? "#f59e0b" : "#ef4444", fontWeight: 800, fontSize: 11 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: 999, border: `1px solid ${palette.border}`, background: preflightStatuses[m.id].ok ? (darkMode ? "#18181b" : "#e0f2fe") : "#332b17", color: preflightStatuses[m.id].ok ? "#22c55e" : preflightStatuses[m.id].issues ? "#f59e0b" : "#ef4444", fontWeight: 800, fontSize: 11 }}>
                     <span style={{ width: 8, height: 8, borderRadius: "50%", background: preflightStatuses[m.id].ok ? "#22c55e" : preflightStatuses[m.id].issues ? "#f59e0b" : "#ef4444" }} />
                     <span>{preflightStatuses[m.id].ok ? "Pass" : `${preflightStatuses[m.id].issues} issue${preflightStatuses[m.id].issues === 1 ? "" : "s"}`}</span>
                     {preflightStatuses[m.id].ts ? <span style={{ color: palette.muted, fontWeight: 600 }}>· {new Date(preflightStatuses[m.id].ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span> : null}

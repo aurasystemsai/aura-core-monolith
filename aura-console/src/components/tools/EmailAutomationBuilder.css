@@ -1,10 +1,10 @@
-﻿﻿/* ========================================
+﻿/* ========================================
    EMAIL AUTOMATION BUILDER - ENTERPRISE CSS
    ======================================== */
 
 .email-automation-builder {
   --primary-color: #4f46e5;
-  --primary-dark: #9aa3b8;
+  --primary-dark: #71717a;
   --primary-light: #4f46e5;
   --success-color: #059669;
   --warning-color: #d97706;
@@ -12,16 +12,16 @@
   --info-color: #2563eb;
   
   --bg-primary: #ffffff;
-  --bg-secondary: #f6f7fb;
-  --bg-tertiary: #f3f4f6;
-  --bg-dark: #283044;
+  --bg-secondary: #fafafa;
+  --bg-tertiary: #f4f4f5;
+  --bg-dark: #27272a;
   
-  --text-primary: #283044;
-  --text-secondary: #9aa3b8;
-  --text-tertiary: #b8bed2;
+  --text-primary: #27272a;
+  --text-secondary: #71717a;
+  --text-tertiary: #a1a1aa;
   
-  --border-color: #f6f7fb;
-  --border-dark: #e9ebf5;
+  --border-color: #fafafa;
+  --border-dark: #e4e4e7;
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);

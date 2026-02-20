@@ -1,4 +1,4 @@
-﻿﻿import React, { useState, useEffect, Suspense, lazy } from "react";
+﻿import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch } from "./api";
 import "./App.css";
 import usePlan, { canUseTool, PLAN_LABEL, PLAN_COLOUR } from "./hooks/usePlan";
@@ -189,7 +189,7 @@ class ErrorBoundary extends React.Component {
       return (
         <div style={{
           color: '#ff4d4f',
-          background: '#0a0b0f',
+          background: '#09090b',
           padding: 48,
           borderRadius: 18,
           margin: '64px auto',
@@ -201,7 +201,7 @@ class ErrorBoundary extends React.Component {
         }}>
           <div>Something went wrong.</div>
           <div style={{ fontSize: 15, marginTop: 18, color: '#fff8' }}>{this.state.error?.toString()}</div>
-          <pre style={{ color: '#fff', fontSize: 13, marginTop: 18, textAlign: 'left', background: '#283044', padding: 16, borderRadius: 8, overflowX: 'auto' }}>
+          <pre style={{ color: '#fff', fontSize: 13, marginTop: 18, textAlign: 'left', background: '#27272a', padding: 16, borderRadius: 8, overflowX: 'auto' }}>
             {this.state.error?.stack || ''}
           </pre>
         </div>
@@ -441,7 +441,7 @@ function App() {
           </div>
           <div className="nav-actions">
             {plan && plan !== 'free' && (
-              <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 6, background: '#283044', color: '#b8bed2', border: '1px solid #283044', marginRight: 8, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 6, background: '#27272a', color: '#a1a1aa', border: '1px solid #27272a', marginRight: 8, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                 {PLAN_LABEL[plan]}
               </span>
             )}
@@ -611,9 +611,9 @@ function App() {
                 <button
                   onClick={() => setShowChatbot(false)}
                   style={{
-                    background: "#283044",
-                    color: "#b8bed2",
-                    border: "1px solid #283044",
+                    background: "#27272a",
+                    color: "#a1a1aa",
+                    border: "1px solid #27272a",
                     borderRadius: 8,
                     padding: "5px 14px",
                     fontWeight: 600,

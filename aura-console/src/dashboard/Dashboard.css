@@ -1,4 +1,4 @@
-﻿/* Aura Console Dashboard UI Styles */
+/* Aura Console Dashboard UI Styles */
 .aura-dashboard-shell {
   max-width: 820px;
   margin: 64px auto;
@@ -78,7 +78,7 @@
   justify-content: center;
     padding: 16px 38px;
     border-radius: 12px;
-    background: linear-gradient(90deg, #4f46e5 0%, #5c6ac4 100%);
+    background: linear-gradient(90deg, #4f46e5 0%, #6366f1 100%);
     color: var(--text-primary);
     font-weight: 900;
     font-size: 1.13rem;
@@ -89,7 +89,7 @@
     letter-spacing: 0.01em;
   }
   .aura-dashboard-btn:hover:not(:disabled) {
-    background: linear-gradient(90deg, #5c6ac4 0%, #4f46e5 100%);
+    background: linear-gradient(90deg, #6366f1 0%, #4f46e5 100%);
     color: var(--text-primary);
     box-shadow: 0 4px 24px #4f46e555;
   border: none;

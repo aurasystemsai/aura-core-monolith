@@ -1,5 +1,5 @@
-﻿﻿.shop-info-panel {
-  background: linear-gradient(120deg, #0a0b0f 60%, #1f2433 100%);
+﻿.shop-info-panel {
+  background: linear-gradient(120deg, #09090b 60%, #18181b 100%);
   border-radius: 18px;
   box-shadow: 0 4px 18px #0004, 0 1.5px 0 #4f46e522;
   padding: 28px 32px 22px 32px;
@@ -24,7 +24,7 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: #1f2433;
+  background: #18181b;
   margin-right: 18px;
   box-shadow: 0 2px 8px #0003;
 }
@@ -46,8 +46,8 @@
   font-weight: 700;
   padding: 7px 18px;
   border-radius: 10px;
-  background: linear-gradient(90deg, #1f2433 60%, #4f46e5 100%);
-  color: #0a0b0f;
+  background: linear-gradient(90deg, #18181b 60%, #4f46e5 100%);
+  color: #09090b;
   margin-left: 18px;
   box-shadow: 0 2px 12px #4f46e522;
   animation: shopStatusPulse 1.2s cubic-bezier(.23,1.01,.32,1) both;
@@ -55,11 +55,11 @@
   border: none;
 }
 .shop-info-status-paused {
-  background: linear-gradient(90deg, #ff4d4f 60%, #1f2433 100%);
+  background: linear-gradient(90deg, #ff4d4f 60%, #18181b 100%);
   color: #fff;
 }
 .shop-info-status-active {
-  background: linear-gradient(90deg, #4caf50 60%, #1f2433 100%);
+  background: linear-gradient(90deg, #4caf50 60%, #18181b 100%);
   color: #fff;
 }
 @keyframes shopStatusPulse {
@@ -83,7 +83,7 @@
 }
 .shop-info-plan {
   font-size: 0.98rem;
-  color: #0a0b0f;
+  color: #09090b;
   font-weight: 800;
   background: linear-gradient(90deg, #4f46e5 0%, #22d3ee 100%);
   border-radius: 8px;
@@ -94,16 +94,16 @@
 .shop-info-integration {
   font-size: 0.98rem;
   color: #fff;
-  background: linear-gradient(90deg, #5c6ac4 0%, #1f2433 100%);
+  background: linear-gradient(90deg, #6366f1 0%, #18181b 100%);
   border-radius: 8px;
   padding: 5px 14px;
   font-weight: 700;
-  box-shadow: 0 2px 8px #5c6ac455;
+  box-shadow: 0 2px 8px #6366f155;
   letter-spacing: 0.01em;
   transition: background 0.18s, color 0.18s;
 }
 .shop-info-integration:hover {
   background: linear-gradient(90deg, #22d3ee 0%, #4f46e5 100%);
-  color: #0a0b0f;
+  color: #09090b;
 }
 

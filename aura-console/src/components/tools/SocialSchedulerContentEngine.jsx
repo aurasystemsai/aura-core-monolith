@@ -1,4 +1,4 @@
-﻿﻿import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import { apiFetch } from "../../api";
 import BackButton from "./BackButton";
 
@@ -110,7 +110,7 @@ export default function SocialSchedulerContentEngine() {
   }, []);
 
   return (
-    <div style={{ background: "#0a0b0f", color: "#f3f4f6", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ background: "#09090b", color: "#f4f4f5", borderRadius: 18, boxShadow: "0 2px 24px #0002", padding: 36, fontFamily: 'Inter, sans-serif' }}>
       <BackButton />
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 8 }}>Social Scheduler Content Engine</h2>
       <div style={{ marginBottom: 10, color: "#0ea5e9", fontWeight: 600 }}>
@@ -125,21 +125,21 @@ export default function SocialSchedulerContentEngine() {
         aria-label="Social content input"
       />
       <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-        <button onClick={handleRun} disabled={loading || !input} style={{ background: "#4f46e5", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Scheduling..." : "AI Schedule"}</button>
-        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
+        <button onClick={handleRun} disabled={loading || !input} style={{ background: "#4f46e5", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{loading ? "Scheduling..." : "AI Schedule"}</button>
+        <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} aria-label="Import history" />
         <button onClick={handleExport} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>Export</button>
         {exported && <a href={exported} download="social-scheduler-history.json" style={{ marginLeft: 8, color: "#0ea5e9", fontWeight: 600 }}>Download</a>}
       </div>
       {imported && <div style={{ color: "#22c55e", marginBottom: 8 }}>Imported: {imported}</div>}
       {response && (
-        <div style={{ background: "#3a4560", borderRadius: 10, padding: 16, marginBottom: 12, color: "#f6f7fb" }}>
+        <div style={{ background: "#3f3f46", borderRadius: 10, padding: 16, marginBottom: 12, color: "#fafafa" }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>AI Scheduled Content:</div>
           <div>{response}</div>
         </div>
       )}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      <div style={{ marginTop: 24, background: "#f3f4f6", borderRadius: 12, padding: 18 }}>
+      <div style={{ marginTop: 24, background: "#f4f4f5", borderRadius: 12, padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>History</div>
         <ul style={{ paddingLeft: 18 }}>
           {history.map(h => (
@@ -151,9 +151,9 @@ export default function SocialSchedulerContentEngine() {
           ))}
         </ul>
       </div>
-      <div style={{ marginTop: 24, background: "#f3f4f6", borderRadius: 12, padding: 18 }}>
+      <div style={{ marginTop: 24, background: "#f4f4f5", borderRadius: 12, padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
-        <div style={{ fontSize: 15, color: "#0a0b0f" }}>
+        <div style={{ fontSize: 15, color: "#09090b" }}>
           {analytics.length ? (
             <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "none", padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
           ) : (
@@ -161,17 +161,17 @@ export default function SocialSchedulerContentEngine() {
           )}
         </div>
       </div>
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#3a4560", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: "#3f3f46", borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           rows={2}
-          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#0a0b0f", color: "#f3f4f6" }}
+          style={{ width: "100%", fontSize: 15, padding: 10, borderRadius: 8, border: "1px solid #555", marginBottom: 12, background: "#09090b", color: "#f4f4f5" }}
           placeholder="Share your feedback or suggestions..."
           aria-label="Feedback input"
         />
-        <button type="submit" style={{ background: "#4f46e5", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send Feedback</button>
+        <button type="submit" style={{ background: "#4f46e5", color: "#09090b", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Send Feedback</button>
       </form>
     </div>
   );

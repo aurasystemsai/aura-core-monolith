@@ -1,5 +1,5 @@
-﻿﻿.blogseo-shell {
-  background: linear-gradient(135deg, #1f2433 0%, #1f2433 45%, #0d2d3d 100%);
+﻿.blogseo-shell {
+  background: linear-gradient(135deg, #18181b 0%, #18181b 45%, #0d2d3d 100%);
   color: #e9f1f7;
   border-radius: 18px;
   padding: 28px;
@@ -47,7 +47,7 @@
 
 .blogseo-btn.primary {
   background: linear-gradient(120deg, #22d3ee, #f59e0b);
-  color: #1f2433;
+  color: #18181b;
   border: none;
 }
 

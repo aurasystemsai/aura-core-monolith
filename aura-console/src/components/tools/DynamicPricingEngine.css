@@ -1,4 +1,4 @@
-﻿﻿/* ================================================================
+﻿/* ================================================================
    DYNAMIC PRICING ENGINE - ENTERPRISE CSS STYLING
    ================================================================ */
 
@@ -18,7 +18,7 @@
   text-align: center;
   margin-bottom: 30px;
   padding: 30px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
   color: white;
@@ -87,7 +87,7 @@
   border: none;
   border-radius: 8px;
   background: white;
-  color: #4b5780;
+  color: #52525b;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -101,7 +101,7 @@
 }
 
 .dpe-category-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   color: white;
   box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
 }
@@ -122,8 +122,8 @@
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
-  background: #f3f4f6;
-  color: #9aa3b8;
+  background: #f4f4f5;
+  color: #71717a;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -131,12 +131,12 @@
 }
 
 .dpe-tab-btn:hover {
-  background: #f6f7fb;
-  color: #4b5780;
+  background: #fafafa;
+  color: #52525b;
 }
 
 .dpe-tab-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   color: white;
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
@@ -168,23 +168,23 @@
 
 .dpe-tab-content h2 {
   margin: 0 0 24px 0;
-  color: #283044;
+  color: #27272a;
   font-size: 1.8rem;
   font-weight: 700;
-  border-bottom: 3px solid #667eea;
+  border-bottom: 3px solid #818cf8;
   padding-bottom: 12px;
 }
 
 .dpe-tab-content h3 {
   margin: 24px 0 16px 0;
-  color: #4b5780;
+  color: #52525b;
   font-size: 1.3rem;
   font-weight: 600;
 }
 
 .dpe-tab-content h4 {
   margin: 0 0 8px 0;
-  color: #9aa3b8;
+  color: #71717a;
   font-size: 0.9rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -200,12 +200,12 @@
 }
 
 .dpe-metric-card {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: linear-gradient(135deg, #fafafa 0%, #e4e4e7 100%);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #818cf8;
 }
 
 .dpe-metric-card:hover {
@@ -216,17 +216,17 @@
 .dpe-metric-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #667eea;
+  color: #818cf8;
   margin-top: 8px;
 }
 
 /* Form Sections */
 .dpe-form-section {
-  background: #f6f7fb;
+  background: #fafafa;
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
-  border: 2px solid #f6f7fb;
+  border: 2px solid #fafafa;
 }
 
 .dpe-form-grid {
@@ -241,7 +241,7 @@
 .dpe-form-section textarea {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid #f6f7fb;
+  border: 2px solid #fafafa;
   border-radius: 8px;
   font-size: 0.95rem;
   transition: all 0.2s ease;
@@ -252,7 +252,7 @@
 .dpe-form-section select:focus,
 .dpe-form-section textarea:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #818cf8;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -274,15 +274,15 @@
 }
 
 .dpe-list-item {
-  background: #f6f7fb;
+  background: #fafafa;
   border-radius: 8px;
   padding: 16px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #818cf8;
   transition: all 0.2s ease;
 }
 
 .dpe-list-item:hover {
-  background: #f3f4f6;
+  background: #f4f4f5;
   transform: translateX(4px);
 }
 
@@ -294,19 +294,19 @@
 }
 
 .dpe-list-item-header strong {
-  color: #283044;
+  color: #27272a;
   font-size: 1.05rem;
 }
 
 .dpe-list-item-meta {
-  color: #9aa3b8;
+  color: #71717a;
   font-size: 0.9rem;
   margin-top: 4px;
 }
 
 .dpe-list-item-content {
   margin-top: 12px;
-  color: #4b5780;
+  color: #52525b;
   font-size: 0.95rem;
 }
 
@@ -350,7 +350,7 @@
 }
 
 .dpe-table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   color: white;
 }
 
@@ -364,21 +364,21 @@
 }
 
 .dpe-table tbody tr {
-  border-bottom: 1px solid #f6f7fb;
+  border-bottom: 1px solid #fafafa;
   transition: background 0.2s ease;
 }
 
 .dpe-table tbody tr:hover {
-  background: #f6f7fb;
+  background: #fafafa;
 }
 
 .dpe-table td {
   padding: 14px 16px;
-  color: #4b5780;
+  color: #52525b;
 }
 
 .dpe-table td strong {
-  color: #283044;
+  color: #27272a;
 }
 
 /* Status Badges */
@@ -403,7 +403,7 @@
 
 .dpe-status-running {
   background: #dbeafe;
-  color: #4b5780;
+  color: #52525b;
 }
 
 .dpe-status-completed {
@@ -417,8 +417,8 @@
 }
 
 .dpe-status-disabled {
-  background: #f3f4f6;
-  color: #9aa3b8;
+  background: #f4f4f5;
+  color: #71717a;
 }
 
 /* Severity Badges */
@@ -448,7 +448,7 @@
 
 .dpe-severity-low {
   background: #dbeafe;
-  color: #4b5780;
+  color: #52525b;
 }
 
 /* Buttons */
@@ -465,7 +465,7 @@
 }
 
 .dpe-btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   color: white;
 }
 
@@ -476,12 +476,12 @@
 
 .dpe-btn {
   background: white;
-  color: #667eea;
-  border: 2px solid #667eea;
+  color: #818cf8;
+  border: 2px solid #818cf8;
 }
 
 .dpe-btn:hover {
-  background: #667eea;
+  background: #818cf8;
   color: white;
   transform: translateY(-2px);
 }
@@ -494,7 +494,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: #667eea;
+  background: #818cf8;
   color: white;
   margin: 0 4px;
 }
@@ -511,7 +511,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 1.2rem;
-  color: #667eea;
+  color: #818cf8;
   font-weight: 600;
   animation: pulse 1.5s ease-in-out infinite;
 }
@@ -540,7 +540,7 @@
   justify-content: center;
   align-items: center;
   gap: 16px;
-  color: #9aa3b8;
+  color: #71717a;
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -639,54 +639,54 @@
 /* Dark Mode Support (Optional) */
 @media (prefers-color-scheme: dark) {
   .dpe-container {
-    background: linear-gradient(135deg, #283044 0%, #1f2433 100%);
+    background: linear-gradient(135deg, #27272a 0%, #18181b 100%);
   }
 
   .dpe-content {
-    background: #283044;
-    color: #f6f7fb;
+    background: #27272a;
+    color: #fafafa;
   }
 
   .dpe-tab-content h2,
   .dpe-tab-content h3 {
-    color: #f3f4f6;
+    color: #f4f4f5;
   }
 
   .dpe-form-section {
-    background: #4b5780;
-    border-color: #4b5780;
+    background: #52525b;
+    border-color: #52525b;
   }
 
   .dpe-form-section input,
   .dpe-form-section select,
   .dpe-form-section textarea {
-    background: #283044;
-    border-color: #4b5780;
-    color: #f6f7fb;
+    background: #27272a;
+    border-color: #52525b;
+    color: #fafafa;
   }
 
   .dpe-list-item {
-    background: #4b5780;
+    background: #52525b;
   }
 
   .dpe-list-item:hover {
-    background: #4b5780;
+    background: #52525b;
   }
 
   .dpe-table tbody tr {
-    border-bottom-color: #4b5780;
+    border-bottom-color: #52525b;
   }
 
   .dpe-table tbody tr:hover {
-    background: #4b5780;
+    background: #52525b;
   }
 
   .dpe-table td {
-    color: #e9ebf5;
+    color: #e4e4e7;
   }
 
   .dpe-footer {
-    background: #283044;
+    background: #27272a;
   }
 }
 
@@ -694,7 +694,7 @@
 .dpe-btn:focus,
 .dpe-category-btn:focus,
 .dpe-tab-btn:focus {
-  outline: 2px solid #667eea;
+  outline: 2px solid #818cf8;
   outline-offset: 2px;
 }
 

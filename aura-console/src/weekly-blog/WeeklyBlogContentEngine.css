@@ -1,7 +1,7 @@
-﻿﻿.wbe-shell {
+﻿.wbe-shell {
   background: radial-gradient(circle at 20% 20%, rgba(64, 224, 208, 0.12), transparent 35%),
     radial-gradient(circle at 80% 0%, rgba(59, 130, 246, 0.14), transparent 36%),
-    linear-gradient(135deg, #0a0b0f 0%, #1f2433 45%, #1f2433 100%);
+    linear-gradient(135deg, #09090b 0%, #18181b 45%, #18181b 100%);
   color: #e8f1f7;
   border-radius: 20px;
   padding: 26px;
@@ -51,7 +51,7 @@
 
 .wbe-btn.primary {
   background: linear-gradient(120deg, #22d3ee, #f59e0b);
-  color: #0a0b0f;
+  color: #09090b;
   border: none;
 }
 

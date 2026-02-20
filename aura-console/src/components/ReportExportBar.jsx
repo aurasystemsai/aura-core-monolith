@@ -1,4 +1,4 @@
-﻿﻿import React from "react";
+﻿import React from "react";
 
 export default function ReportExportBar({ onExportCSV, onExportPDF, onScheduleEmail }) {
   return (
@@ -18,9 +18,9 @@ export default function ReportExportBar({ onExportCSV, onExportPDF, onScheduleEm
 }
 
 const btnStyle = {
-  background: '#1f2433',
-  color: '#f3f4f6',
-  border: '1.5px solid #4b5780',
+  background: '#18181b',
+  color: '#f4f4f5',
+  border: '1.5px solid #52525b',
   borderRadius: 10,
   padding: '10px 22px',
   fontWeight: 700,

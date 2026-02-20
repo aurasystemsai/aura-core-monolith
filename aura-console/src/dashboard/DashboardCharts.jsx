@@ -1,4 +1,4 @@
-﻿﻿import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 
@@ -8,17 +8,17 @@ const options = {
     legend: {
       display: true,
       position: 'top',
-      labels: { color: '#f6f7fb' },
+      labels: { color: '#fafafa' },
     },
   },
   scales: {
     x: { 
-      ticks: { color: '#94a3b8' },
-      grid: { color: '#283044' },
+      ticks: { color: '#a1a1aa' },
+      grid: { color: '#27272a' },
     },
     y: { 
-      ticks: { color: '#94a3b8' },
-      grid: { color: '#283044' },
+      ticks: { color: '#a1a1aa' },
+      grid: { color: '#27272a' },
     },
   },
 };
@@ -109,7 +109,7 @@ export default function DashboardCharts() {
       ) : (
         <div style={{ 
           textAlign: 'center', 
-          color: '#94a3b8', 
+          color: '#a1a1aa', 
           padding: '60px 0',
           fontSize: 14,
         }}>

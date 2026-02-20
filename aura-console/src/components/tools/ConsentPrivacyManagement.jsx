@@ -1,4 +1,4 @@
-﻿﻿import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import BackButton from "./BackButton";
 import { apiFetch } from "../../api";
 
@@ -15,14 +15,14 @@ export default function ConsentPrivacyManagement() {
   const fileInputRef = useRef();
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#3a4560', borderRadius: 12, marginBottom: 18, color: '#f6f7fb' }}>
+    <div style={{ padding: 24, background: '#3f3f46', borderRadius: 12, marginBottom: 18, color: '#fafafa' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Consent & Privacy Management</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#4b5780', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#52525b', fontSize: 16 }}>
         <li>Manage user consents, privacy requests, and compliance reports</li>
         <li>Import/export data, analyze compliance</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#0a0b0f', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#09090b', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
@@ -100,7 +100,7 @@ export default function ConsentPrivacyManagement() {
   }, []);
 
   return (
-    <div style={{ background: '#1f2433', borderRadius: 18, boxShadow: '0 2px 24px #0008', padding: 36, fontFamily: 'Inter, sans-serif', color: '#f6f7fb' }}>
+    <div style={{ background: '#18181b', borderRadius: 18, boxShadow: '0 2px 24px #0008', padding: 36, fontFamily: 'Inter, sans-serif', color: '#fafafa' }}>
       <BackButton />
       <h2 style={{ fontWeight: 800, fontSize: 32, marginBottom: 18 }}>Consent & Privacy Management</h2>
       <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#4f46e5', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
@@ -108,27 +108,27 @@ export default function ConsentPrivacyManagement() {
       {/* Consents */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: '#4f46e5' }}>Consents <span style={{ background: '#1e3a2f', color: '#4f46e5', borderRadius: 12, padding: '2px 10px', fontSize: 12, marginLeft: 6 }}>{consents.length}</span></div>
-        {consents.length === 0 ? <div style={{ color: '#4b5780', fontSize: 14 }}>No consents recorded yet.</div> : (
+        {consents.length === 0 ? <div style={{ color: '#52525b', fontSize: 14 }}>No consents recorded yet.</div> : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {consents.map((c, i) => <div key={i} style={{ background: '#0a0b0f', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#e2e8f0', border: '1px solid #283044' }}>{typeof c === 'string' ? c : (c.type || c.user || JSON.stringify(c).slice(0, 120))}</div>)}
+            {consents.map((c, i) => <div key={i} style={{ background: '#09090b', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#e4e4e7', border: '1px solid #27272a' }}>{typeof c === 'string' ? c : (c.type || c.user || JSON.stringify(c).slice(0, 120))}</div>)}
           </div>
         )}
       </div>
       {/* Privacy Requests */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: '#4f46e5' }}>Privacy Requests <span style={{ background: '#1e3a2f', color: '#4f46e5', borderRadius: 12, padding: '2px 10px', fontSize: 12, marginLeft: 6 }}>{privacyRequests.length}</span></div>
-        {privacyRequests.length === 0 ? <div style={{ color: '#4b5780', fontSize: 14 }}>No privacy requests yet.</div> : (
+        {privacyRequests.length === 0 ? <div style={{ color: '#52525b', fontSize: 14 }}>No privacy requests yet.</div> : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {privacyRequests.map((r, i) => <div key={i} style={{ background: '#0a0b0f', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#e2e8f0', border: '1px solid #283044' }}>{r.type || r.user || JSON.stringify(r).slice(0, 120)}</div>)}
+            {privacyRequests.map((r, i) => <div key={i} style={{ background: '#09090b', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#e4e4e7', border: '1px solid #27272a' }}>{r.type || r.user || JSON.stringify(r).slice(0, 120)}</div>)}
           </div>
         )}
       </div>
       {/* Compliance Reports */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: '#4f46e5' }}>Compliance Reports <span style={{ background: '#1e3a2f', color: '#4f46e5', borderRadius: 12, padding: '2px 10px', fontSize: 12, marginLeft: 6 }}>{complianceReports.length}</span></div>
-        {complianceReports.length === 0 ? <div style={{ color: '#4b5780', fontSize: 14 }}>No compliance reports yet.</div> : (
+        {complianceReports.length === 0 ? <div style={{ color: '#52525b', fontSize: 14 }}>No compliance reports yet.</div> : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {complianceReports.map((r, i) => <div key={i} style={{ background: '#0a0b0f', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#e2e8f0', border: '1px solid #283044' }}>{r.title || r.type || JSON.stringify(r).slice(0, 120)}</div>)}
+            {complianceReports.map((r, i) => <div key={i} style={{ background: '#09090b', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#e4e4e7', border: '1px solid #27272a' }}>{r.title || r.type || JSON.stringify(r).slice(0, 120)}</div>)}
           </div>
         )}
       </div>

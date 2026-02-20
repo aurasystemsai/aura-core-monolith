@@ -1,4 +1,4 @@
-﻿﻿/* Aura Console Orchestration UI Styles */
+﻿/* Aura Console Orchestration UI Styles */
 .aura-orchestration-shell {
   max-width: 520px;
   margin: 64px auto;
@@ -13,7 +13,7 @@
 .aura-orchestration-title {
   font-size: 1.3rem;
   font-weight: 800;
-  color: #f3f4f6 !important;
+  color: #f4f4f5 !important;
   margin-bottom: 24px;
   text-align: center;
 }
@@ -44,16 +44,16 @@
   font-size: 1.05rem;
 }
 .aura-status-active {
-  color: #f3f4f6;
+  color: #f4f4f5;
 }
 .aura-status-paused {
-  color: #f3f4f6;
+  color: #f4f4f5;
 }
 .aura-orchestration-btn {
   padding: 8px 18px;
   border-radius: var(--radius-md);
-  background: #4b5780;
-  color: #f3f4f6;
+  background: #52525b;
+  color: #f4f4f5;
   font-weight: 600;
   font-size: 1rem;
   border: none;

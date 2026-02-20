@@ -1,4 +1,4 @@
-﻿﻿import React, { useState, useEffect, Suspense, lazy } from "react";
+﻿import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch } from "../api";
 import { sendCopilotMessage } from "../core/advancedAiClient";
 import IntegrationHealthPanel from "../components/IntegrationHealthPanel";
@@ -11,7 +11,7 @@ function Spinner() {
         width: 38,
         height: 38,
         border: '4px solid #4f46e5',
-        borderTop: '4px solid #0a0b0f',
+        borderTop: '4px solid #09090b',
         borderRadius: '50%',
         animation: 'spin 1s linear infinite',
       }} />
@@ -118,7 +118,7 @@ const Dashboard = ({ setActiveSection }) => {
         padding: '40px 32px',
         marginBottom: 32,
         boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-        background: 'linear-gradient(120deg, #1f2433 70%, #1f2433 100%)',
+        background: 'linear-gradient(120deg, #18181b 70%, #18181b 100%)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
           <img src="/logo-aura.png" alt="AURA Logo" style={{ height: 56, width: 56, objectFit: 'contain', borderRadius: 12 }} />
@@ -129,25 +129,25 @@ const Dashboard = ({ setActiveSection }) => {
         </div>
 
         <div style={{
-          background: '#283044',
+          background: '#27272a',
           borderRadius: 16,
           boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
           padding: '24px',
-          border: '1px solid #283044',
+          border: '1px solid #27272a',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div>
-              <div style={{ color: '#9ca3c7', fontSize: 13, marginBottom: 4 }}>Store</div>
+              <div style={{ color: '#71717a', fontSize: 13, marginBottom: 4 }}>Store</div>
               <div style={{ color: '#e8f2ff', fontWeight: 700, fontSize: 18 }}>{shop.domain || '—'}</div>
             </div>
             <span style={{ background: '#22d37f', color: '#fff', fontWeight: 700, fontSize: 13, borderRadius: 8, padding: '4px 12px' }}>Active</span>
           </div>
 
           <div style={{
-            background: '#1f2433',
+            background: '#18181b',
             borderRadius: 12,
             padding: '16px',
-            border: '1px solid #283044',
+            border: '1px solid #27272a',
           }}>
             <div style={{ fontWeight: 700, color: '#4f46e5', marginBottom: 12, fontSize: 15 }}>Ask AI Copilot</div>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -160,8 +160,8 @@ const Dashboard = ({ setActiveSection }) => {
                   flex: 1,
                   borderRadius: 10,
                   padding: '10px 12px',
-                  border: '1px solid #283044',
-                  background: '#1f2433',
+                  border: '1px solid #27272a',
+                  background: '#18181b',
                   color: '#e8f2ff',
                   fontSize: 14,
                 }}
@@ -170,8 +170,8 @@ const Dashboard = ({ setActiveSection }) => {
                 onClick={handleCopilotAsk}
                 disabled={copilotLoading}
                 style={{
-                  background: copilotLoading ? '#3a4560' : '#4f46e5',
-                  color: '#1f2433',
+                  background: copilotLoading ? '#3f3f46' : '#4f46e5',
+                  color: '#18181b',
                   border: 'none',
                   borderRadius: 10,
                   fontWeight: 800,
@@ -196,7 +196,7 @@ const Dashboard = ({ setActiveSection }) => {
               style={{
                 flex: 1,
                 background: '#4f46e5',
-                color: '#1f2433',
+                color: '#18181b',
                 border: 'none',
                 borderRadius: 8,
                 fontWeight: 700,
@@ -211,9 +211,9 @@ const Dashboard = ({ setActiveSection }) => {
               onClick={() => setActiveSection && setActiveSection('tools')} 
               style={{
                 flex: 1,
-                background: '#283044',
+                background: '#27272a',
                 color: '#e8f2ff',
-                border: '1px solid #3a4560',
+                border: '1px solid #3f3f46',
                 borderRadius: 8,
                 fontWeight: 700,
                 padding: '10px 16px',
@@ -246,7 +246,7 @@ const Dashboard = ({ setActiveSection }) => {
             key={stat.label}
             className="aura-dashboard-stat"
             style={{
-              background: '#1f2433',
+              background: '#18181b',
               borderRadius: '16px',
               boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
               padding: '24px',
@@ -255,7 +255,7 @@ const Dashboard = ({ setActiveSection }) => {
               gap: 8,
             }}
           >
-            <span style={{fontSize: '14px', color: '#9ca3c7', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{stat.label}</span>
+            <span style={{fontSize: '14px', color: '#71717a', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{stat.label}</span>
             <b style={{fontSize: '32px', fontWeight: 900, color: '#e8f2ff'}}>{stat.value}</b>
           </div>
         ))}

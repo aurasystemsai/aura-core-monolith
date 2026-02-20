@@ -1,4 +1,4 @@
-﻿﻿import React from "react";
+﻿import React from "react";
 
 export default function AutomationTemplates() {
   // Flagship UI state
@@ -14,14 +14,14 @@ export default function AutomationTemplates() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#3a4560', borderRadius: 12, marginBottom: 18, color: '#f6f7fb' }}>
+    <div style={{ padding: 24, background: '#3f3f46', borderRadius: 12, marginBottom: 18, color: '#fafafa' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Automation Templates</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#4b5780', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#52525b', fontSize: 16 }}>
         <li>Browse, import, and install workflow templates</li>
         <li>Customize, analyze, and export automations</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#0a0b0f', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#09090b', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
@@ -72,7 +72,7 @@ export default function AutomationTemplates() {
           {templates.length ? templates.map((tpl, i) => (
             <div key={i} style={{ border: '1px solid #ccc', borderRadius: 8, padding: 18, minWidth: 220, background: selected === i ? '#e0e7ff' : '#fff', cursor: 'pointer' }} onClick={() => setSelected(i)} aria-label={`Template ${tpl.name}`}>
               <div style={{ fontWeight: 700, fontSize: 16 }}>{tpl.name}</div>
-              <div style={{ fontSize: 14, color: '#64748b', marginBottom: 8 }}>{tpl.description}</div>
+              <div style={{ fontSize: 14, color: '#71717a', marginBottom: 8 }}>{tpl.description}</div>
               <button style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '5px 12px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Install</button>
             </div>
           )) : <span>No templates yet. Import or create new ones.</span>}
@@ -88,13 +88,13 @@ export default function AutomationTemplates() {
       </div>
       {/* Analytics Dashboard */}
       <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-        <div style={{ background: "#283044", borderRadius: 10, padding: "12px 20px", border: "1px solid #283044" }}>
-          <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Templates Used</div>
+        <div style={{ background: "#27272a", borderRadius: 10, padding: "12px 20px", border: "1px solid #27272a" }}>
+          <div style={{ fontSize: 11, color: "#71717a", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Templates Used</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#4f46e5", marginTop: 2 }}>{analytics.length}</div>
         </div>
       </div>
       {/* Accessibility & Compliance */}
-      <div style={{ marginTop: 32, fontSize: 13, color: '#64748b', textAlign: 'center' }}>
+      <div style={{ marginTop: 32, fontSize: 13, color: '#71717a', textAlign: 'center' }}>
         <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
       </div>
     </div>

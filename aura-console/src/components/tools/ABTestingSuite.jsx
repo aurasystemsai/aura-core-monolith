@@ -1,4 +1,4 @@
-﻿﻿import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import { apiFetch } from "../../api";
 import OnboardingChecklist from "../../onboarding/OnboardingChecklist";
 import BackButton from "./BackButton";
@@ -123,7 +123,7 @@ export default function ABTestingSuite() {
             {aiLoading ? 'Getting Suggestions…' : 'AI: Suggest Variants & Optimize'}
           </button>
           {aiSuggestions && (
-            <div style={{ background: '#283044', color: '#38bdf8', borderRadius: 8, padding: 14, marginTop: 10, whiteSpace: 'pre-line', fontSize: 15 }}>
+            <div style={{ background: '#27272a', color: '#38bdf8', borderRadius: 8, padding: 14, marginTop: 10, whiteSpace: 'pre-line', fontSize: 15 }}>
               <strong>AI Suggestions:</strong>
               <div>{aiSuggestions}</div>
             </div>
@@ -131,7 +131,7 @@ export default function ABTestingSuite() {
           {error && <div style={{ color: '#ef4444', marginTop: 8 }}>{error}</div>}
         </div>
         {/* Visual Editor with live preview and drag-and-drop shell */}
-        <div style={{ flex: 2, background: '#1f2433', borderRadius: 16, padding: 28, minHeight: 420 }}>
+        <div style={{ flex: 2, background: '#18181b', borderRadius: 16, padding: 28, minHeight: 420 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 18 }}>Visual Test Builder</h3>
           <div style={{ display: 'flex', gap: 18 }}>
             {/* Variant List */}
@@ -142,27 +142,27 @@ export default function ABTestingSuite() {
               </div>
               {variants.map((v, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                  <input value={v.name} onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, name: e.target.value } : vv))} placeholder={`Variant ${String.fromCharCode(65 + i)}`} style={{ fontSize: 15, padding: 8, borderRadius: 8, border: '1px solid #4b5780', width: 90 }} aria-label={`Variant ${String.fromCharCode(65 + i)}`} />
+                  <input value={v.name} onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, name: e.target.value } : vv))} placeholder={`Variant ${String.fromCharCode(65 + i)}`} style={{ fontSize: 15, padding: 8, borderRadius: 8, border: '1px solid #52525b', width: 90 }} aria-label={`Variant ${String.fromCharCode(65 + i)}`} />
                   <button onClick={() => setVariants(variants.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', color: '#ef4444', fontWeight: 700, fontSize: 18, cursor: 'pointer' }} title="Remove">×</button>
                 </div>
               ))}
               <button onClick={() => setVariants([...variants, { name: `Variant ${String.fromCharCode(65 + variants.length)}`, content: "" }])} className="btn btn-tertiary" style={{ marginTop: 6, width: '100%' }}>Add Variant</button>
             </div>
             {/* Drag-and-drop/Preview Area */}
-            <div style={{ flex: 2, minHeight: 220, border: '2px dashed #4b5780', borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#283044' }}>
+            <div style={{ flex: 2, minHeight: 220, border: '2px dashed #52525b', borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#27272a' }}>
               <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>
                 Live Preview
                 <span title="See how each variant will look and behave. Edit content live." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}></span>
               </div>
               <div style={{ display: 'flex', gap: 12, width: '100%' }}>
                 {variants.map((v, i) => (
-                  <div key={i} style={{ flex: 1, background: '#283044', borderRadius: 8, padding: 16, minHeight: 120, marginBottom: 8, boxShadow: '0 2px 8px #0002' }}>
+                  <div key={i} style={{ flex: 1, background: '#27272a', borderRadius: 8, padding: 16, minHeight: 120, marginBottom: 8, boxShadow: '0 2px 8px #0002' }}>
                     <div style={{ fontWeight: 700, marginBottom: 6 }}>{v.name}</div>
                     <textarea
                       value={v.content}
                       onChange={e => setVariants(variants.map((vv, idx) => idx === i ? { ...vv, content: e.target.value } : vv))}
                       placeholder="Variant content (HTML, text, etc.)"
-                      style={{ width: '100%', minHeight: 60, borderRadius: 6, border: '1px solid #4b5780', padding: 8, fontSize: 15, background: '#1f2433', color: '#e0e6ed' }}
+                      style={{ width: '100%', minHeight: 60, borderRadius: 6, border: '1px solid #52525b', padding: 8, fontSize: 15, background: '#18181b', color: '#e4e4e7' }}
                     />
                   </div>
                 ))}
@@ -171,24 +171,24 @@ export default function ABTestingSuite() {
           </div>
         </div>
         {/* Test Details, Targeting, Scheduling, Feature Flags */}
-        <div style={{ flex: 1, background: '#283044', borderRadius: 16, padding: 28 }}>
+        <div style={{ flex: 1, background: '#27272a', borderRadius: 16, padding: 28 }}>
           <h4 style={{ fontWeight: 700, fontSize: 18, marginBottom: 12 }}>
             Test Details
             <span title="Name your test for easy tracking and reporting." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}></span>
           </h4>
-          <input value={testName} onChange={e => setTestName(e.target.value)} placeholder="Test name" style={{ fontSize: 16, padding: 10, borderRadius: 8, border: '1px solid #4b5780', width: '100%', marginBottom: 16 }} aria-label="Test name" />
+          <input value={testName} onChange={e => setTestName(e.target.value)} placeholder="Test name" style={{ fontSize: 16, padding: 10, borderRadius: 8, border: '1px solid #52525b', width: '100%', marginBottom: 16 }} aria-label="Test name" />
           {/* Advanced targeting & segmentation */}
           <div style={{ marginBottom: 18 }}>
             <h4 style={{ fontWeight: 600, fontSize: 16 }}>
               Targeting & Segmentation
               <span title="Choose who will see this test. Combine audience, device, geo, and behavioral rules for precision." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}></span>
             </h4>
-            <div style={{ color: '#64748b', fontSize: 15, marginBottom: 8 }}>Define who will see this test. Combine multiple rules for precise targeting.</div>
+            <div style={{ color: '#71717a', fontSize: 15, marginBottom: 8 }}>Define who will see this test. Combine multiple rules for precise targeting.</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {/* Audience Targeting */}
               <div>
                 <label style={{ fontWeight: 500 }}>Audience:</label>
-                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #4b5780' }}>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #52525b' }}>
                   <option>All Visitors</option>
                   <option>Returning Customers</option>
                   <option>First-time Visitors</option>
@@ -199,7 +199,7 @@ export default function ABTestingSuite() {
               {/* Device Targeting */}
               <div>
                 <label style={{ fontWeight: 500 }}>Device:</label>
-                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #4b5780' }}>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #52525b' }}>
                   <option>All Devices</option>
                   <option>Desktop</option>
                   <option>Mobile</option>
@@ -209,7 +209,7 @@ export default function ABTestingSuite() {
               {/* Geo Targeting */}
               <div>
                 <label style={{ fontWeight: 500 }}>Location:</label>
-                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #4b5780' }}>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #52525b' }}>
                   <option>All Countries</option>
                   <option>United States</option>
                   <option>Canada</option>
@@ -221,7 +221,7 @@ export default function ABTestingSuite() {
               {/* Behavioral Targeting */}
               <div>
                 <label style={{ fontWeight: 500 }}>Behavior:</label>
-                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #4b5780' }}>
+                <select style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #52525b' }}>
                   <option>All Users</option>
                   <option>Cart Abandoners</option>
                   <option>High Spenders</option>
@@ -237,7 +237,7 @@ export default function ABTestingSuite() {
               Scheduling & Automation
               <span title="Set start/end dates and automate experiment workflows." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}></span>
             </h4>
-            <div style={{ color: '#64748b', fontSize: 15 }}>Set start/end dates, automate experiment workflows (coming soon).</div>
+            <div style={{ color: '#71717a', fontSize: 15 }}>Set start/end dates, automate experiment workflows (coming soon).</div>
           </div>
           {/* Feature flag management & rollouts */}
           <div style={{ marginBottom: 18 }}>
@@ -245,21 +245,21 @@ export default function ABTestingSuite() {
               Feature Flags & Rollouts
               <span title="Manage progressive rollouts and feature toggles for safe deployments." style={{ marginLeft: 6, color: '#38bdf8', fontSize: 15, cursor: 'help' }}></span>
             </h4>
-            <div style={{ color: '#64748b', fontSize: 15 }}>Progressive rollouts, feature toggles, and flag controls (coming soon).</div>
+            <div style={{ color: '#71717a', fontSize: 15 }}>Progressive rollouts, feature toggles, and flag controls (coming soon).</div>
           </div>
         </div>
       </section>
 
       {/* --- Analytics & Insights --- */}
-      <section className="abtest-analytics" style={{ background: '#1f2433', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+      <section className="abtest-analytics" style={{ background: '#18181b', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         {liveUpdate && (
-          <div style={{ background: '#38bdf8', color: '#1f2433', borderRadius: 8, padding: 12, marginBottom: 18, fontWeight: 600 }}>
+          <div style={{ background: '#38bdf8', color: '#18181b', borderRadius: 8, padding: 12, marginBottom: 18, fontWeight: 600 }}>
             <span role="img" aria-label="Live"></span>Live Update: {typeof liveUpdate === 'string' ? liveUpdate : JSON.stringify(liveUpdate)}
           </div>
         )}
         <div style={{ marginBottom: 18 }}>
           <strong>Variant Performance (Live):</strong>
-          <table style={{ width: '100%', marginTop: 8, background: '#283044', borderRadius: 8, color: '#e0e6ed', fontSize: 15 }}>
+          <table style={{ width: '100%', marginTop: 8, background: '#27272a', borderRadius: 8, color: '#e4e4e7', fontSize: 15 }}>
             <thead>
               <tr style={{ color: '#38bdf8' }}>
                 <th style={{ padding: 6 }}>Variant</th>
@@ -283,21 +283,21 @@ export default function ABTestingSuite() {
           {/* Conversion Rate Chart */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Conversion Rate</div>
-            <div style={{ background: '#283044', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
+            <div style={{ background: '#27272a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e4e4e7' }}>
               {/* Live chart integration required. No placeholder. */}
             </div>
           </div>
           {/* Engagement Chart */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Engagement</div>
-            <div style={{ background: '#283044', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
+            <div style={{ background: '#27272a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e4e4e7' }}>
               {/* Live chart integration required. No placeholder. */}
             </div>
           </div>
           {/* AI Insights */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>AI Insights</div>
-            <div style={{ background: '#283044', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
+            <div style={{ background: '#27272a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e4e4e7', fontSize: 15 }}>
               {/* Live AI insights only. No static winner or recommendation. */}
             </div>
           </div>
@@ -305,17 +305,17 @@ export default function ABTestingSuite() {
       </section>
 
       {/* --- Collaboration, Comments, Versioning --- */}
-      <section className="abtest-collab" style={{ background: '#283044', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+      <section className="abtest-collab" style={{ background: '#27272a', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 14 }}>Collaboration & Version History</h3>
         <div style={{ display: 'flex', gap: 32 }}>
           {/* Comments & Approvals */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Comments & Approvals</div>
-            <div style={{ background: '#283044', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed' }}>
+            <div style={{ background: '#27272a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e4e4e7' }}>
               <div style={{ marginBottom: 8 }}><strong>Jane:</strong> "Ready for launch?" <span style={{ color: '#38bdf8', fontSize: 13 }}>2m ago</span></div>
               <div style={{ marginBottom: 8 }}><strong>Alex:</strong> "Approved. Roll out to 50%." <span style={{ color: '#0ea5e9', fontSize: 13 }}>1m ago</span></div>
               <form style={{ marginTop: 12 }}>
-                <input type="text" placeholder="Add a comment..." style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #4b5780', fontSize: 15 }} />
+                <input type="text" placeholder="Add a comment..." style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #52525b', fontSize: 15 }} />
                 <button type="submit" className="btn btn-secondary" style={{ marginTop: 6, width: '100%' }}>Comment</button>
               </form>
             </div>
@@ -323,7 +323,7 @@ export default function ABTestingSuite() {
           {/* Activity Log */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Activity Log</div>
-            <div style={{ background: '#283044', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
+            <div style={{ background: '#27272a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e4e4e7', fontSize: 15 }}>
               <div>️ Test created by Jane <span style={{ color: '#38bdf8', fontSize: 13 }}>5m ago</span></div>
               <div>️ Variant B edited by Alex <span style={{ color: '#38bdf8', fontSize: 13 }}>3m ago</span></div>
               <div>️ Approved by Alex <span style={{ color: '#0ea5e9', fontSize: 13 }}>1m ago</span></div>
@@ -332,7 +332,7 @@ export default function ABTestingSuite() {
           {/* Rollback & Versioning */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Rollback & Versioning</div>
-            <div style={{ background: '#283044', borderRadius: 8, padding: 16, minHeight: 120, color: '#e0e6ed', fontSize: 15 }}>
+            <div style={{ background: '#27272a', borderRadius: 8, padding: 16, minHeight: 120, color: '#e4e4e7', fontSize: 15 }}>
               <div><strong>Current Version:</strong> v1.2</div>
               <div style={{ marginTop: 8 }}>Previous: <button className="btn btn-tertiary" style={{ fontSize: 14, marginRight: 8 }}>v1.1</button> <button className="btn btn-tertiary" style={{ fontSize: 14 }}>v1.0</button></div>
               <div style={{ marginTop: 10, color: '#38bdf8' }}>Restore a previous version instantly.</div>
@@ -342,13 +342,13 @@ export default function ABTestingSuite() {
       </section>
 
       {/* --- Integrations & API --- */}
-      <section className="abtest-integrations" style={{ background: '#1f2433', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+      <section className="abtest-integrations" style={{ background: '#18181b', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 14 }}>Integrations & API</h3>
         <div style={{ display: 'flex', gap: 32 }}>
           {/* Shopify Integration */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Shopify</div>
-            <div style={{ background: '#283044', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
+            <div style={{ background: '#27272a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e4e4e7' }}>
               <div>Connected store: <strong>{window?.AURA_SHOP_DOMAIN || ''}</strong></div>
               <button className="btn btn-secondary" style={{ marginTop: 10 }}>Manage Connection</button>
             </div>
@@ -356,7 +356,7 @@ export default function ABTestingSuite() {
           {/* Analytics & CDP Integration */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Analytics & CDP</div>
-            <div style={{ background: '#283044', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
+            <div style={{ background: '#27272a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e4e4e7' }}>
               <div>Google Analytics, Segment, Amplitude</div>
               <button className="btn btn-secondary" style={{ marginTop: 10 }}>Configure Integrations</button>
             </div>
@@ -364,7 +364,7 @@ export default function ABTestingSuite() {
           {/* Webhooks & API Access */}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Webhooks & API</div>
-            <div style={{ background: '#283044', borderRadius: 8, padding: 16, minHeight: 80, color: '#e0e6ed' }}>
+            <div style={{ background: '#27272a', borderRadius: 8, padding: 16, minHeight: 80, color: '#e4e4e7' }}>
               <div>Push results to external systems</div>
               <button className="btn btn-secondary" style={{ marginTop: 10 }}>Manage Webhooks</button>
             </div>
@@ -373,22 +373,22 @@ export default function ABTestingSuite() {
       </section>
 
       {/* --- Security, Compliance, Accessibility --- */}
-      <section className="abtest-security" style={{ background: '#283044', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+      <section className="abtest-security" style={{ background: '#27272a', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 14 }}>Security, Compliance & Accessibility</h3>
-        <div style={{ color: '#64748b', fontSize: 16, minHeight: 60 }}>
+        <div style={{ color: '#71717a', fontSize: 16, minHeight: 60 }}>
           <span>SSO, RBAC, audit logs, GDPR/CCPA/HIPAA, and accessibility dashboards coming soon.</span>
         </div>
       </section>
 
       {/* --- Feedback & Support --- */}
-      <section className="abtest-feedback" style={{ background: '#1f2433', borderRadius: 16, padding: 32, marginBottom: 24 }}>
+      <section className="abtest-feedback" style={{ background: '#18181b', borderRadius: 16, padding: 32, marginBottom: 24 }}>
         <h4 style={{ fontWeight: 700, fontSize: 17, marginBottom: 10 }}>Feedback</h4>
         <form onSubmit={e => { e.preventDefault(); /* TODO: handleFeedback */ }}>
           <textarea
             value={feedback}
             onChange={e => setFeedback(e.target.value)}
             rows={3}
-            style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid #4b5780', marginBottom: 12 }}
+            style={{ width: '100%', fontSize: 16, padding: 12, borderRadius: 8, border: '1px solid #52525b', marginBottom: 12 }}
             placeholder="Share your feedback or suggestions..."
             aria-label="Feedback"
           />
@@ -398,7 +398,7 @@ export default function ABTestingSuite() {
       </section>
 
       {/* --- Accessibility & Compliance --- */}
-      <div style={{ marginTop: 16, fontSize: 13, color: '#64748b', textAlign: 'center' }}>
+      <div style={{ marginTop: 16, fontSize: 13, color: '#71717a', textAlign: 'center' }}>
         <span>Enterprise SaaS standards. Accessibility: WCAG 2.1, keyboard navigation, color contrast. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
       </div>
     </div>

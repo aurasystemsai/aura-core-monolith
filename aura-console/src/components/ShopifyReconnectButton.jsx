@@ -67,7 +67,7 @@ export default function ShopifyReconnectButton({ shopDomain }) {
     <div style={{ position: "fixed", left: 18, bottom: 70, zIndex: 9000, display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
       <span style={{
         background: badge.color,
-        color: "#0b0b0b",
+        color: "#09090b",
         padding: "4px 10px",
         borderRadius: 12,
         fontWeight: 800,
@@ -81,7 +81,7 @@ export default function ShopifyReconnectButton({ shopDomain }) {
         onClick={handleReconnect}
         style={{
           background: "#0ea5e9",
-          color: "#0b0b0b",
+          color: "#09090b",
           border: "none",
           borderRadius: 14,
           padding: "10px 14px",

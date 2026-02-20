@@ -1,4 +1,4 @@
-﻿﻿// Billing & Subscription Management UI
+﻿// Billing & Subscription Management UI
 // Shopify App Billing integration for plan management
 
 import React, { useState, useEffect } from 'react';
@@ -370,7 +370,7 @@ const Billing = () => {
           padding: 32px;
           max-width: 1200px;
           margin: 0 auto;
-          background: #1f2433;
+          background: #18181b;
           min-height: 100vh;
         }
 
@@ -382,19 +382,19 @@ const Billing = () => {
           font-size: 32px;
           font-weight: 700;
           margin: 0 0 8px 0;
-          color: #f6f7fb;
+          color: #fafafa;
         }
 
         .billing-header p {
-          color: #94a3b8;
+          color: #a1a1aa;
           margin: 0;
         }
 
         .current-plan-card,
         .usage-card,
         .invoices-card {
-          background: #1f2433;
-          border: 1px solid #283044;
+          background: #18181b;
+          border: 1px solid #27272a;
           padding: 24px;
           border-radius: 12px;
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
@@ -403,12 +403,12 @@ const Billing = () => {
 
         .usage-card h3,
         .invoices-card h3 {
-          color: #f6f7fb;
+          color: #fafafa;
           margin-top: 0;
         }
 
         .no-invoices {
-          color: #94a3b8;
+          color: #a1a1aa;
           text-align: center;
           padding: 32px;
         }
@@ -418,12 +418,12 @@ const Billing = () => {
           justify-content: space-between;
           align-items: center;
           padding-bottom: 16px;
-          border-bottom: 1px solid #283044;
+          border-bottom: 1px solid #27272a;
         }
 
         .plan-header h2 {
           margin: 0 0 8px 0;
-          color: #f6f7fb;
+          color: #fafafa;
         }
 
         .status-badge {
@@ -462,7 +462,7 @@ const Billing = () => {
         }
 
         .plan-price .period {
-          color: #94a3b8;
+          color: #a1a1aa;
           font-size: 16px;
         }
 
@@ -474,8 +474,8 @@ const Billing = () => {
           display: flex;
           justify-content: space-between;
           padding: 12px 0;
-          border-bottom: 1px solid #283044;
-          color: #cbd5e1;
+          border-bottom: 1px solid #27272a;
+          color: #d4d4d8;
         }
 
         .plan-actions {
@@ -486,7 +486,7 @@ const Billing = () => {
 
         .btn-primary {
           background: #4f46e5;
-          color: #0a0b0f;
+          color: #09090b;
           padding: 12px 32px;
           border: none;
           border-radius: 8px;
@@ -526,26 +526,26 @@ const Billing = () => {
 
         .usage-stat {
           padding: 16px;
-          background: #1f2433;
-          border: 1px solid #283044;
+          background: #18181b;
+          border: 1px solid #27272a;
           border-radius: 8px;
         }
 
         .stat-label {
           font-size: 14px;
-          color: #94a3b8;
+          color: #a1a1aa;
           margin-bottom: 8px;
         }
 
         .stat-value {
           font-size: 24px;
           font-weight: 700;
-          color: #f6f7fb;
+          color: #fafafa;
         }
 
         .progress-bar {
           height: 8px;
-          background: #283044;
+          background: #27272a;
           border-radius: 4px;
           margin-top: 8px;
           overflow: hidden;
@@ -558,8 +558,8 @@ const Billing = () => {
         }
 
         .btn-secondary {
-          background: #283044;
-          color: #f6f7fb;
+          background: #27272a;
+          color: #fafafa;
           padding: 12px 24px;
           border: none;
           border-radius: 8px;
@@ -569,7 +569,7 @@ const Billing = () => {
         }
 
         .btn-secondary:hover {
-          background: #3a4560;
+          background: #3f3f46;
         }
 
         .invoices-table {
@@ -585,15 +585,15 @@ const Billing = () => {
         .invoices-table th {
           text-align: left;
           padding: 12px;
-          background: #1f2433;
+          background: #18181b;
           font-weight: 600;
-          color: #94a3b8;
+          color: #a1a1aa;
         }
 
         .invoices-table td {
           padding: 12px;
-          border-bottom: 1px solid #283044;
-          color: #cbd5e1;
+          border-bottom: 1px solid #27272a;
+          color: #d4d4d8;
         }
 
         .btn-icon {
@@ -607,7 +607,7 @@ const Billing = () => {
         }
 
         .btn-icon:hover {
-          background: #283044;
+          background: #27272a;
         }
 
         .modal-overlay {
@@ -624,8 +624,8 @@ const Billing = () => {
         }
 
         .modal-content {
-          background: #1f2433;
-          border: 1px solid #283044;
+          background: #18181b;
+          border: 1px solid #27272a;
           padding: 32px;
           border-radius: 16px;
           max-width: 1000px;
@@ -642,7 +642,7 @@ const Billing = () => {
         }
 
         .modal-header h2 {
-          color: #f6f7fb;
+          color: #fafafa;
         }
 
         .close-btn {
@@ -650,14 +650,14 @@ const Billing = () => {
           border: none;
           font-size: 32px;
           cursor: pointer;
-          color: #94a3b8;
+          color: #a1a1aa;
           padding: 0;
           width: 40px;
           height: 40px;
         }
 
         .close-btn:hover {
-          color: #f6f7fb;
+          color: #fafafa;
         }
 
         .plans-grid {
@@ -667,15 +667,15 @@ const Billing = () => {
         }
 
         .plan-card {
-          background: #1f2433;
-          border: 2px solid #283044;
+          background: #18181b;
+          border: 2px solid #27272a;
           border-radius: 12px;
           padding: 24px;
           position: relative;
         }
 
         .plan-card h3 {
-          color: #f6f7fb;
+          color: #fafafa;
         }
 
         .plan-card.popular {
@@ -688,7 +688,7 @@ const Billing = () => {
           top: -12px;
           right: 24px;
           background: #4f46e5;
-          color: #0a0b0f;
+          color: #09090b;
           padding: 4px 12px;
           border-radius: 12px;
           font-size: 12px;
@@ -728,7 +728,7 @@ const Billing = () => {
           align-items: center;
           gap: 8px;
           padding: 8px 0;
-          color: #cbd5e1;
+          color: #d4d4d8;
         }
 
         .check-icon {
@@ -748,8 +748,8 @@ const Billing = () => {
         }
 
         .btn-current {
-          background: #283044;
-          color: #64748b;
+          background: #27272a;
+          color: #71717a;
           cursor: not-allowed;
         }
 

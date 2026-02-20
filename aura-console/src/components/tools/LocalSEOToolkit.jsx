@@ -1,4 +1,4 @@
-﻿﻿import React from "react";
+﻿import React from "react";
 
 export default function LocalSEOToolkit() {
   // Flagship UI state
@@ -17,14 +17,14 @@ export default function LocalSEOToolkit() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#3a4560', borderRadius: 12, marginBottom: 18, color: '#f6f7fb' }}>
+    <div style={{ padding: 24, background: '#3f3f46', borderRadius: 12, marginBottom: 18, color: '#fafafa' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Local SEO Toolkit</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#4b5780', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#52525b', fontSize: 16 }}>
         <li>Sync GMB, track citations, monitor reviews, and local rankings</li>
         <li>Import/export data, analyze trends, and optimize for local search</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#0a0b0f', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#09090b', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
@@ -98,7 +98,7 @@ export default function LocalSEOToolkit() {
       {/* GMB Data */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>GMB Data</div>
-        <div style={{ fontSize: 15, color: '#0a0b0f' }}>
+        <div style={{ fontSize: 15, color: '#09090b' }}>
           {gmb.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(gmb, null, 2)}</pre>
           ) : (
@@ -109,7 +109,7 @@ export default function LocalSEOToolkit() {
       {/* Citations */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Citations</div>
-        <div style={{ fontSize: 15, color: '#0a0b0f' }}>
+        <div style={{ fontSize: 15, color: '#09090b' }}>
           {citations.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(citations, null, 2)}</pre>
           ) : (
@@ -120,7 +120,7 @@ export default function LocalSEOToolkit() {
       {/* Reviews */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Reviews</div>
-        <div style={{ fontSize: 15, color: '#0a0b0f' }}>
+        <div style={{ fontSize: 15, color: '#09090b' }}>
           {reviews.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(reviews, null, 2)}</pre>
           ) : (
@@ -131,7 +131,7 @@ export default function LocalSEOToolkit() {
       {/* Local Rankings */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Local Rankings</div>
-        <div style={{ fontSize: 15, color: '#0a0b0f' }}>
+        <div style={{ fontSize: 15, color: '#09090b' }}>
           {rankings.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(rankings, null, 2)}</pre>
           ) : (
@@ -150,7 +150,7 @@ export default function LocalSEOToolkit() {
       {/* Analytics Dashboard */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Analytics</div>
-        <div style={{ fontSize: 15, color: '#0a0b0f' }}>
+        <div style={{ fontSize: 15, color: '#09090b' }}>
           {analytics.length ? (
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: 'none', padding: 0, margin: 0 }}>{JSON.stringify(analytics, null, 2)}</pre>
           ) : (
@@ -159,7 +159,7 @@ export default function LocalSEOToolkit() {
         </div>
       </div>
       {/* Feedback */}
-      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#3a4560', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
+      <form onSubmit={e => { e.preventDefault(); handleFeedback(); }} style={{ marginTop: 32, background: '#3f3f46', borderRadius: 12, padding: 20 }} aria-label="Send feedback">
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Feedback</div>
         <textarea
           value={feedback}
@@ -173,7 +173,7 @@ export default function LocalSEOToolkit() {
         {error && <div style={{ color: '#ef4444', marginTop: 8 }}>{error}</div>}
       </form>
       {/* Accessibility & Compliance */}
-      <div style={{ marginTop: 32, fontSize: 13, color: '#64748b', textAlign: 'center' }}>
+      <div style={{ marginTop: 32, fontSize: 13, color: '#71717a', textAlign: 'center' }}>
         <span>Best-in-class SaaS features. Accessibility: WCAG 2.1, keyboard navigation, color contrast. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
       </div>
     </div>

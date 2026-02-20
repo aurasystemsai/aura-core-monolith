@@ -1,4 +1,4 @@
-﻿﻿/**
+﻿/**
  * Loyalty & Referral Program V2 - Enterprise Styling
  * Comprehensive CSS with gradient cards, tier badges, gamification, and responsive design
  */
@@ -16,7 +16,7 @@
 
 .stat-card {
   padding: 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   color: white;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
@@ -129,7 +129,7 @@
 .tier-progress-bar {
   position: relative;
   height: 12px;
-  background: #e9ebf5;
+  background: #e4e4e7;
   border-radius: 10px;
   overflow: hidden;
   margin: 1rem 0;
@@ -171,7 +171,7 @@
    ============================================================================ */
 
 .reward-card {
-  border: 1px solid #e9ebf5;
+  border: 1px solid #e4e4e7;
   border-radius: 12px;
   padding: 1.5rem;
   transition: all 0.3s ease;
@@ -182,7 +182,7 @@
 .reward-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-  border-color: #667eea;
+  border-color: #818cf8;
 }
 
 .reward-header {
@@ -239,7 +239,7 @@
   align-items: center;
   padding: 1rem;
   border-radius: 8px;
-  background: #f6f7fb;
+  background: #fafafa;
   margin-bottom: 0.75rem;
 }
 
@@ -270,7 +270,7 @@
   background: white;
   padding: 0.5rem 1rem;
   border-radius: 6px;
-  border: 1px dashed #e9ebf5;
+  border: 1px dashed #e4e4e7;
   font-weight: 600;
   letter-spacing: 2px;
 }
@@ -282,7 +282,7 @@
 .referral-code-display {
   text-align: center;
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   color: white;
   border-radius: 16px;
   margin-bottom: 2rem;
@@ -339,11 +339,11 @@
 .referral-tracking-table td {
   padding: 0.75rem;
   text-align: left;
-  border-bottom: 1px solid #f6f7fb;
+  border-bottom: 1px solid #fafafa;
 }
 
 .referral-tracking-table th {
-  background: #f6f7fb;
+  background: #fafafa;
   font-weight: 600;
 }
 
@@ -367,7 +367,7 @@
   top: 50%;
   transform: translateY(-50%);
   font-size: 2rem;
-  color: #e9ebf5;
+  color: #e4e4e7;
 }
 
 .funnel-stage:last-child::after {
@@ -377,12 +377,12 @@
 .funnel-count {
   font-size: 2rem;
   font-weight: 700;
-  color: #667eea;
+  color: #818cf8;
 }
 
 .funnel-label {
   font-size: 0.9rem;
-  color: #9aa3b8;
+  color: #71717a;
   margin-top: 0.5rem;
 }
 
@@ -402,7 +402,7 @@
   padding: 1.5rem;
   background: white;
   border-radius: 12px;
-  border: 2px solid #f6f7fb;
+  border: 2px solid #fafafa;
   transition: all 0.3s ease;
 }
 
@@ -428,7 +428,7 @@
 
 .badge-description {
   font-size: 0.85rem;
-  color: #9aa3b8;
+  color: #71717a;
 }
 
 .badge-unlock-animation {
@@ -449,7 +449,7 @@
   padding: 1.5rem;
   background: white;
   border-radius: 12px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #818cf8;
   margin-bottom: 1rem;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
@@ -486,13 +486,13 @@
 
 .challenge-progress-bg {
   fill: none;
-  stroke: #f6f7fb;
+  stroke: #fafafa;
   stroke-width: 8;
 }
 
 .challenge-progress-bar {
   fill: none;
-  stroke: #667eea;
+  stroke: #818cf8;
   stroke-width: 8;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.5s ease;
@@ -505,7 +505,7 @@
   transform: translate(-50%, -50%);
   font-size: 1.5rem;
   font-weight: 700;
-  color: #667eea;
+  color: #818cf8;
 }
 
 /* ============================================================================
@@ -553,7 +553,7 @@
 }
 
 .leaderboard-row:hover {
-  background: #f6f7fb;
+  background: #fafafa;
 }
 
 .leaderboard-rank {
@@ -585,7 +585,7 @@
 
 .leaderboard-score {
   font-weight: 700;
-  color: #667eea;
+  color: #818cf8;
 }
 
 /* ============================================================================
@@ -609,7 +609,7 @@
 
 .campaign-status-badge.active { background: #d1fae5; color: #065f46; }
 .campaign-status-badge.paused { background: #fef3c7; color: #92400e; }
-.campaign-status-badge.ended { background: #f6f7fb; color: #4b5780; }
+.campaign-status-badge.ended { background: #fafafa; color: #52525b; }
 
 .campaign-flow-diagram {
   display: flex;
@@ -617,7 +617,7 @@
   gap: 1rem;
   margin: 1.5rem 0;
   padding: 1rem;
-  background: #f6f7fb;
+  background: #fafafa;
   border-radius: 8px;
 }
 
@@ -627,12 +627,12 @@
   padding: 1rem;
   background: white;
   border-radius: 8px;
-  border: 2px solid #f6f7fb;
+  border: 2px solid #fafafa;
 }
 
 .flow-arrow {
   font-size: 1.5rem;
-  color: #b8bed2;
+  color: #a1a1aa;
 }
 
 /* ============================================================================
@@ -662,7 +662,7 @@
 
 .metric-box {
   padding: 1.5rem;
-  background: #f6f7fb;
+  background: #fafafa;
   border-radius: 8px;
   text-align: center;
 }
@@ -670,13 +670,13 @@
 .metric-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #667eea;
+  color: #818cf8;
   margin: 0.5rem 0;
 }
 
 .metric-label {
   font-size: 0.9rem;
-  color: #9aa3b8;
+  color: #71717a;
 }
 
 .metric-change {
@@ -703,13 +703,13 @@
   padding: 1.5rem;
   background: white;
   border-radius: 12px;
-  border: 2px solid #f6f7fb;
+  border: 2px solid #fafafa;
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .integration-platform-card:hover {
-  border-color: #667eea;
+  border-color: #818cf8;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
 }
 
@@ -798,18 +798,18 @@
   .campaign-card,
   .analytics-chart-container,
   .tier-progress-container {
-    background: #283044;
-    border-color: #4b5780;
-    color: #f6f7fb;
+    background: #27272a;
+    border-color: #52525b;
+    color: #fafafa;
   }
   
   .metric-box {
-    background: #4b5780;
-    color: #f6f7fb;
+    background: #52525b;
+    color: #fafafa;
   }
   
   .leaderboard-row:hover {
-    background: #4b5780;
+    background: #52525b;
   }
 }
 
@@ -830,7 +830,7 @@
 }
 
 *:focus-visible {
-  outline: 2px solid #667eea;
+  outline: 2px solid #818cf8;
   outline-offset: 2px;
 }
 

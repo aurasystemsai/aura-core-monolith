@@ -1,4 +1,4 @@
-﻿﻿/* ===================================================================
+﻿/* ===================================================================
    UPSELL & CROSS-SELL ENGINE - ENTERPRISE STYLING
    Comprehensive styles for 42-tab interface
    =================================================================== */
@@ -9,7 +9,7 @@
 
 .upsell-cross-sell-engine {
   min-height: 100vh;
-  background: #f6f6f7;
+  background: #f4f4f5;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
@@ -29,7 +29,7 @@
 }
 
 .metric-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   color: white;
   padding: 1.5rem;
   border-radius: 12px;
@@ -59,7 +59,7 @@
 
 /* Color variations for different metrics */
 .metric-card:nth-child(1) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
 }
 
 .metric-card:nth-child(2) {
@@ -91,12 +91,12 @@
 }
 
 .Polaris-Tabs__Tab:hover {
-  background: #f6f6f7;
+  background: #f4f4f5;
 }
 
 .Polaris-Tabs__Tab--selected {
-  color: #5c6ac4;
-  border-bottom-color: #5c6ac4;
+  color: #6366f1;
+  border-bottom-color: #6366f1;
 }
 
 /* ===================================================================
@@ -116,7 +116,7 @@
 
 .Polaris-Card__Header {
   padding: 1.5rem 1.5rem 1rem;
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e4e4e7;
 }
 
 .Polaris-Card__Section {
@@ -124,7 +124,7 @@
 }
 
 .Polaris-Card__Section + .Polaris-Card__Section {
-  border-top: 1px solid #e1e3e5;
+  border-top: 1px solid #e4e4e7;
 }
 
 /* ===================================================================
@@ -142,19 +142,19 @@
 }
 
 .Polaris-DataTable__Cell--header {
-  background: #f6f7fb;
+  background: #fafafa;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;
   letter-spacing: 0.5px;
-  color: #637381;
+  color: #71717a;
   padding: 1rem;
-  border-bottom: 2px solid #e1e3e5;
+  border-bottom: 2px solid #e4e4e7;
 }
 
 .Polaris-DataTable__Cell {
   padding: 1rem;
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e4e4e7;
   vertical-align: middle;
 }
 
@@ -167,7 +167,7 @@
 }
 
 .Polaris-DataTable tr:hover {
-  background: #f6f7fb;
+  background: #fafafa;
   transition: background 0.15s ease;
 }
 
@@ -182,13 +182,13 @@
 }
 
 .Polaris-Button--primary {
-  background: linear-gradient(to bottom, #5c6ac4, #4959bd);
-  border-color: #4959bd;
+  background: linear-gradient(to bottom, #6366f1, #6366f1);
+  border-color: #6366f1;
   box-shadow: 0 2px 4px rgba(92, 106, 196, 0.2);
 }
 
 .Polaris-Button--primary:hover {
-  background: linear-gradient(to bottom, #4959bd, #4b5780);
+  background: linear-gradient(to bottom, #6366f1, #52525b);
   box-shadow: 0 4px 8px rgba(92, 106, 196, 0.3);
   transform: translateY(-1px);
 }
@@ -246,19 +246,19 @@
 .Polaris-TextField__Input,
 .Polaris-Select__Input {
   border-radius: 6px;
-  border: 1px solid #c4cdd5;
+  border: 1px solid #d4d4d8;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .Polaris-TextField__Input:focus,
 .Polaris-Select__Input:focus {
-  border-color: #5c6ac4;
-  box-shadow: 0 0 0 1px #5c6ac4;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px #6366f1;
 }
 
 .Polaris-Label {
   font-weight: 500;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 0.375rem;
 }
 
@@ -277,19 +277,19 @@
 
 .Polaris-ChoiceList__Choice {
   padding: 0.75rem;
-  border: 1px solid #c4cdd5;
+  border: 1px solid #d4d4d8;
   border-radius: 6px;
   transition: all 0.2s ease;
 }
 
 .Polaris-ChoiceList__Choice:hover {
-  border-color: #5c6ac4;
-  background: #f6f6f7;
+  border-color: #6366f1;
+  background: #f4f4f5;
 }
 
 .Polaris-Checkbox__Input:checked + .Polaris-Checkbox__Backdrop {
-  background: #5c6ac4;
-  border-color: #5c6ac4;
+  background: #6366f1;
+  border-color: #6366f1;
 }
 
 /* ===================================================================
@@ -297,7 +297,7 @@
    =================================================================== */
 
 .Polaris-RangeSlider__Input {
-  background: linear-gradient(to right, #5c6ac4 0%, #5c6ac4 50%, #dfe3e8 50%, #dfe3e8 100%);
+  background: linear-gradient(to right, #6366f1 0%, #6366f1 50%, #d4d4d8 50%, #d4d4d8 100%);
   height: 6px;
   border-radius: 3px;
 }
@@ -305,7 +305,7 @@
 .Polaris-RangeSlider__Input::-webkit-slider-thumb {
   width: 18px;
   height: 18px;
-  background: #5c6ac4;
+  background: #6366f1;
   border: 2px solid white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
@@ -314,7 +314,7 @@
 .Polaris-RangeSlider__Input::-moz-range-thumb {
   width: 18px;
   height: 18px;
-  background: #5c6ac4;
+  background: #6366f1;
   border: 2px solid white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
@@ -322,7 +322,7 @@
 
 .Polaris-RangeSlider__Output {
   font-weight: 600;
-  color: #5c6ac4;
+  color: #6366f1;
 }
 
 /* ===================================================================
@@ -372,7 +372,7 @@
 
 .Polaris-Modal-Header {
   padding: 1.5rem 1.5rem 1rem;
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e4e4e7;
 }
 
 .Polaris-Modal-Section {
@@ -381,8 +381,8 @@
 
 .Polaris-Modal-Footer {
   padding: 1rem 1.5rem;
-  border-top: 1px solid #e1e3e5;
-  background: #f6f7fb;
+  border-top: 1px solid #e4e4e7;
+  background: #fafafa;
 }
 
 /* ===================================================================
@@ -391,13 +391,13 @@
 
 .Polaris-ProgressBar {
   height: 4px;
-  background: #e1e3e5;
+  background: #e4e4e7;
   border-radius: 2px;
   overflow: hidden;
 }
 
 .Polaris-ProgressBar__Indicator {
-  background: linear-gradient(to right, #5c6ac4, #7e8bd9);
+  background: linear-gradient(to right, #6366f1, #7e8bd9);
   height: 100%;
   transition: width 0.3s ease;
 }
@@ -433,7 +433,7 @@
 
 .recovery-step {
   padding: 1rem;
-  background: #f6f7fb;
+  background: #fafafa;
   border-radius: 8px;
   margin-bottom: 1rem;
   display: flex;
@@ -446,7 +446,7 @@
 }
 
 .recovery-step strong {
-  color: #283044;
+  color: #27272a;
   font-weight: 600;
 }
 
@@ -563,22 +563,22 @@
 
 @media (prefers-color-scheme: dark) {
   .upsell-cross-sell-engine {
-    background: #283044;
-    color: #e1e3e5;
+    background: #27272a;
+    color: #e4e4e7;
   }
   
   .Polaris-Card {
-    background: #283044;
+    background: #27272a;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   }
   
   .Polaris-DataTable__Cell--header {
     background: #333;
-    color: #c4cdd5;
+    color: #d4d4d8;
   }
   
   .Polaris-DataTable__Cell {
-    border-bottom-color: #3a4560;
+    border-bottom-color: #3f3f46;
   }
   
   .Polaris-DataTable tr:hover {
@@ -588,12 +588,12 @@
   .Polaris-TextField__Input,
   .Polaris-Select__Input {
     background: #333;
-    border-color: #4b5780;
-    color: #e1e3e5;
+    border-color: #52525b;
+    color: #e4e4e7;
   }
   
   .Polaris-Label {
-    color: #e1e3e5;
+    color: #e4e4e7;
   }
 }
 
@@ -604,7 +604,7 @@
 .Polaris-Button:focus-visible,
 .Polaris-TextField__Input:focus-visible,
 .Polaris-Select__Input:focus-visible {
-  outline: 2px solid #5c6ac4;
+  outline: 2px solid #6366f1;
   outline-offset: 2px;
 }
 
@@ -632,7 +632,7 @@
   
   .Polaris-Card {
     box-shadow: none;
-    border: 1px solid #c4cdd5;
+    border: 1px solid #d4d4d8;
     page-break-inside: avoid;
   }
   

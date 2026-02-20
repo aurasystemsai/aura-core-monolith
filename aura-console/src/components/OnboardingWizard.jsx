@@ -1,4 +1,4 @@
-﻿// Onboarding Wizard - 3-Step Setup Flow
+// Onboarding Wizard - 3-Step Setup Flow
 // Guides new users through connecting Shopify and choosing a plan
 
 import React, { useState } from 'react';
@@ -346,7 +346,7 @@ const OnboardingWizard = ({ onComplete }) => {
           width: 48px;
           height: 48px;
           border-radius: 50%;
-          background: #f6f7fb;
+          background: #fafafa;
           color: #999;
           display: flex;
           align-items: center;
@@ -358,7 +358,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .step-circle.active {
           background: #4f46e5;
-          color: #0a0b0f;
+          color: #09090b;
         }
 
         .step-circle.completed {
@@ -369,7 +369,7 @@ const OnboardingWizard = ({ onComplete }) => {
         .step-line {
           width: 80px;
           height: 3px;
-          background: #e9ebf5;
+          background: #e4e4e7;
           transition: all 0.3s;
         }
 
@@ -395,7 +395,7 @@ const OnboardingWizard = ({ onComplete }) => {
           font-size: 42px;
           font-weight: 700;
           margin: 0 0 8px 0;
-          color: #0a0b0f;
+          color: #09090b;
         }
 
         .subtitle {
@@ -413,7 +413,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .feature-card {
           padding: 24px;
-          border: 2px solid #f6f7fb;
+          border: 2px solid #fafafa;
           border-radius: 12px;
           text-align: center;
         }
@@ -483,7 +483,7 @@ const OnboardingWizard = ({ onComplete }) => {
         .shop-input {
           width: 100%;
           padding: 16px;
-          border: 2px solid #e9ebf5;
+          border: 2px solid #e4e4e7;
           border-radius: 8px;
           font-size: 16px;
           transition: border-color 0.2s;
@@ -562,7 +562,7 @@ const OnboardingWizard = ({ onComplete }) => {
         }
 
         .plan-card {
-          border: 3px solid #e9ebf5;
+          border: 3px solid #e4e4e7;
           border-radius: 16px;
           padding: 24px;
           cursor: pointer;
@@ -590,7 +590,7 @@ const OnboardingWizard = ({ onComplete }) => {
           top: -12px;
           right: 24px;
           background: #4f46e5;
-          color: #0a0b0f;
+          color: #09090b;
           padding: 6px 12px;
           border-radius: 12px;
           font-size: 12px;
@@ -639,7 +639,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .select-indicator {
           padding: 12px;
-          background: #f6f7fb;
+          background: #fafafa;
           border-radius: 8px;
           font-weight: 600;
           text-align: center;
@@ -647,7 +647,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .plan-card.selected .select-indicator {
           background: #4f46e5;
-          color: #0a0b0f;
+          color: #09090b;
         }
 
         .wizard-footer {
@@ -655,7 +655,7 @@ const OnboardingWizard = ({ onComplete }) => {
           justify-content: space-between;
           align-items: center;
           padding: 24px 48px;
-          border-top: 1px solid #e9ebf5;
+          border-top: 1px solid #e4e4e7;
         }
 
         .btn-text {
@@ -674,7 +674,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .btn-primary {
           background: #4f46e5;
-          color: #0a0b0f;
+          color: #09090b;
           padding: 14px 32px;
           border: none;
           border-radius: 8px;
@@ -689,7 +689,7 @@ const OnboardingWizard = ({ onComplete }) => {
         }
 
         .btn-secondary {
-          background: #f6f7fb;
+          background: #fafafa;
           padding: 14px 32px;
           border: none;
           border-radius: 8px;
@@ -700,7 +700,7 @@ const OnboardingWizard = ({ onComplete }) => {
         }
 
         .btn-secondary:hover {
-          background: #e9ebf5;
+          background: #e4e4e7;
         }
       `}</style>
     </div>

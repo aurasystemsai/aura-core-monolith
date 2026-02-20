@@ -1,4 +1,4 @@
-﻿﻿import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef } from "react";
 
 export default function AISupportAssistant() {
   const [input, setInput] = useState("");
@@ -75,20 +75,20 @@ export default function AISupportAssistant() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#3a4560', borderRadius: 12, marginBottom: 18, color: '#f6f7fb' }}>
+    <div style={{ padding: 24, background: '#3f3f46', borderRadius: 12, marginBottom: 18, color: '#fafafa' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to AI Support Assistant</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#4b5780', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#52525b', fontSize: 16 }}>
         <li>Enter a support question or task to get AI-powered solutions</li>
         <li>Review analytics, export results, and view history</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#0a0b0f', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#09090b', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
   // Main UI
   return (
-    <div style={{ background: "#1f2433", borderRadius: 16, boxShadow: "0 2px 16px #0008", padding: 32, color: '#f6f7fb' }}>
+    <div style={{ background: "#18181b", borderRadius: 16, boxShadow: "0 2px 16px #0008", padding: 32, color: '#fafafa' }}>
       <h2 style={{ fontWeight: 700, fontSize: 28, marginBottom: 12 }}>AI Support Assistant</h2>
       <button onClick={() => setShowOnboarding(v => !v)} style={{ background: '#4f46e5', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 18px', fontWeight: 600, fontSize: 15, cursor: 'pointer', marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}
@@ -106,15 +106,15 @@ export default function AISupportAssistant() {
       <button
         onClick={handleRun}
         disabled={loading || !input}
-        style={{ background: "#4f46e5", color: "#0a0b0f", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: "pointer", boxShadow: "0 2px 12px #22d3ee55" }}
+        style={{ background: "#4f46e5", color: "#09090b", border: "none", borderRadius: 8, padding: "12px 32px", fontWeight: 700, fontSize: 17, cursor: "pointer", boxShadow: "0 2px 12px #22d3ee55" }}
       >
         {loading ? "Running..." : "Run Tool"}
       </button>
       {error && <div style={{ color: "#c00", marginTop: 18 }}>{error}</div>}
       {response && (
-        <div style={{ marginTop: 32, background: "#3a4560", borderRadius: 12, padding: 24, color: '#f6f7fb' }}>
+        <div style={{ marginTop: 32, background: "#3f3f46", borderRadius: 12, padding: 24, color: '#fafafa' }}>
           <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>AI Response:</div>
-          <div style={{ fontSize: 16, color: "#0a0b0f" }}>{response}</div>
+          <div style={{ fontSize: 16, color: "#09090b" }}>{response}</div>
         </div>
       )}
 
@@ -129,7 +129,7 @@ export default function AISupportAssistant() {
 
       {/* History */}
       {history.length > 0 && (
-        <div style={{ marginTop: 24, background: "#f3f4f6", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: "#f4f4f5", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Insights History</div>
           <ul style={{ paddingLeft: 18 }}>
             {history.map((h, i) => (
@@ -143,7 +143,7 @@ export default function AISupportAssistant() {
       )}
 
       {/* Accessibility & Compliance */}
-      <div style={{ marginTop: 32, fontSize: 13, color: '#64748b', textAlign: 'center' }}>
+      <div style={{ marginTop: 32, fontSize: 13, color: '#71717a', textAlign: 'center' }}>
         <span>Best-in-class SaaS features. Feedback? <a href="mailto:support@aura-core.ai" style={{ color: '#0ea5e9', textDecoration: 'underline' }}>Contact Support</a></span>
       </div>
     </div>

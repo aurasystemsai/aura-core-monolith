@@ -1,4 +1,4 @@
-﻿﻿/**
+﻿/**
  * CUSTOMER DATA PLATFORM V2 - CSS STYLING
  * Enterprise-grade responsive design with Shopify Polaris theming
  */
@@ -37,7 +37,7 @@
 
 .stat-card .Polaris-Icon {
   margin-right: 16px;
-  color: #5c6ac4;
+  color: #6366f1;
 }
 
 .stat-content {
@@ -48,13 +48,13 @@
 .stat-content .Polaris-DisplayText {
   font-size: 28px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   line-height: 1.2;
 }
 
 .stat-content .Polaris-TextStyle--variationSubdued {
   font-size: 14px;
-  color: #6d7175;
+  color: #71717a;
   margin-top: 4px;
 }
 
@@ -69,14 +69,14 @@
 }
 
 .Polaris-Tabs {
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e4e4e7;
 }
 
 .Polaris-Tabs__TabContainer {
   max-width: 100%;
   overflow-x: auto;
   scrollbar-width: thin;
-  scrollbar-color: #c4cdd5 #f4f6f8;
+  scrollbar-color: #d4d4d8 #f4f4f5;
 }
 
 .Polaris-Tabs__TabContainer::-webkit-scrollbar {
@@ -84,11 +84,11 @@
 }
 
 .Polaris-Tabs__TabContainer::-webkit-scrollbar-track {
-  background: #f4f6f8;
+  background: #f4f4f5;
 }
 
 .Polaris-Tabs__TabContainer::-webkit-scrollbar-thumb {
-  background: #c4cdd5;
+  background: #d4d4d8;
   border-radius: 3px;
 }
 
@@ -100,8 +100,8 @@
 }
 
 .Polaris-Tabs__Tab--selected {
-  color: #5c6ac4;
-  border-bottom-color: #5c6ac4;
+  color: #6366f1;
+  border-bottom-color: #6366f1;
 }
 
 /* ============================================================
@@ -111,7 +111,7 @@
 .cdp-table-container {
   overflow-x: auto;
   border-radius: 8px;
-  border: 1px solid #e1e3e5;
+  border: 1px solid #e4e4e7;
 }
 
 .Polaris-DataTable {
@@ -121,9 +121,9 @@
 
 .Polaris-DataTable__Cell {
   padding: 12px 16px;
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e4e4e7;
   font-size: 14px;
-  color: #283044;
+  color: #27272a;
 }
 
 .Polaris-DataTable__Cell--firstColumn {
@@ -131,22 +131,22 @@
 }
 
 .Polaris-DataTable__Cell--header {
-  background: #f6f7fb;
+  background: #fafafa;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   text-align: left;
   padding: 14px 16px;
-  border-bottom: 2px solid #e1e3e5;
+  border-bottom: 2px solid #e4e4e7;
 }
 
 .Polaris-DataTable__Cell:hover {
-  background: #f6f7fb;
+  background: #fafafa;
 }
 
 .cdp-table-empty {
   padding: 60px 20px;
   text-align: center;
-  color: #6d7175;
+  color: #71717a;
   font-size: 14px;
 }
 
@@ -156,7 +156,7 @@
 
 .cdp-form-section {
   padding: 20px;
-  background: #f6f7fb;
+  background: #fafafa;
   border-radius: 8px;
   margin-bottom: 20px;
 }
@@ -174,15 +174,15 @@
 
 .Polaris-TextField__Input {
   border-radius: 4px;
-  border: 1px solid #c4cdd5;
+  border: 1px solid #d4d4d8;
   font-size: 14px;
   padding: 10px 12px;
   transition: border-color 0.2s ease;
 }
 
 .Polaris-TextField__Input:focus {
-  border-color: #5c6ac4;
-  box-shadow: 0 0 0 1px #5c6ac4;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px #6366f1;
   outline: none;
 }
 
@@ -192,7 +192,7 @@
 
 .Polaris-Select__Input {
   border-radius: 4px;
-  border: 1px solid #c4cdd5;
+  border: 1px solid #d4d4d8;
   padding: 10px 32px 10px 12px;
   font-size: 14px;
   background: #ffffff;
@@ -203,7 +203,7 @@
   gap: 12px;
   justify-content: flex-end;
   padding-top: 16px;
-  border-top: 1px solid #e1e3e5;
+  border-top: 1px solid #e4e4e7;
 }
 
 /* ============================================================
@@ -219,19 +219,19 @@
 }
 
 .Polaris-Button--primary {
-  background: #5c6ac4;
+  background: #6366f1;
   color: #ffffff;
-  border: 1px solid #5c6ac4;
+  border: 1px solid #6366f1;
 }
 
 .Polaris-Button--primary:hover {
-  background: #4959bd;
-  border-color: #4959bd;
+  background: #6366f1;
+  border-color: #6366f1;
 }
 
 .Polaris-Button--primary:active {
-  background: #4b5780;
-  border-color: #4b5780;
+  background: #52525b;
+  border-color: #52525b;
 }
 
 .Polaris-Button--destructive {
@@ -276,7 +276,7 @@
 
 .Polaris-Badge--statusInfo {
   background: #b4e1fa;
-  color: #283044;
+  color: #27272a;
 }
 
 .Polaris-Badge--statusWarning {
@@ -307,7 +307,7 @@
 }
 
 .cdp-status-dot--inactive {
-  background: #6d7175;
+  background: #71717a;
 }
 
 .cdp-status-dot--error {
@@ -332,7 +332,7 @@
 
 .Polaris-Card__Section {
   padding: 20px;
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e4e4e7;
 }
 
 .Polaris-Card__Section:last-child {
@@ -352,19 +352,19 @@
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 2px solid #f4f6f8;
+  border-bottom: 2px solid #f4f4f5;
 }
 
 .cdp-panel-title {
   font-size: 18px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
 }
 
 .cdp-panel-content {
   font-size: 14px;
   line-height: 1.6;
-  color: #283044;
+  color: #27272a;
 }
 
 /* ============================================================
@@ -380,13 +380,13 @@
 
 .Polaris-Modal-Header {
   padding: 20px;
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e4e4e7;
 }
 
 .Polaris-Modal-Header__Title {
   font-size: 20px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
 }
 
 .Polaris-Modal-Section {
@@ -395,7 +395,7 @@
 
 .Polaris-Modal-Footer {
   padding: 16px 20px;
-  border-top: 1px solid #e1e3e5;
+  border-top: 1px solid #e4e4e7;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -418,8 +418,8 @@
 }
 
 .Polaris-Banner--statusInfo {
-  background: #f4f6f8;
-  border-left-color: #5c6ac4;
+  background: #f4f4f5;
+  border-left-color: #6366f1;
 }
 
 .Polaris-Banner--statusWarning {
@@ -469,14 +469,14 @@
 .Polaris-ProgressBar {
   height: 6px;
   border-radius: 3px;
-  background: #e1e3e5;
+  background: #e4e4e7;
   overflow: hidden;
   margin: 12px 0;
 }
 
 .Polaris-ProgressBar__Indicator {
   height: 100%;
-  background: #5c6ac4;
+  background: #6366f1;
   transition: width 0.3s ease;
 }
 
@@ -501,7 +501,7 @@
 }
 
 .cdp-skeleton {
-  background: linear-gradient(90deg, #f4f6f8 25%, #e1e3e5 50%, #f4f6f8 75%);
+  background: linear-gradient(90deg, #f4f4f5 25%, #e4e4e7 50%, #f4f4f5 75%);
   background-size: 200% 100%;
   animation: loading 1.5s ease-in-out infinite;
   border-radius: 4px;
@@ -544,11 +544,11 @@
 .cdp-chart-title {
   font-size: 18px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
 }
 
 .cdp-metric-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #818cf8 0%, #764ba2 100%);
   color: #ffffff;
   padding: 24px;
   border-radius: 8px;
@@ -584,17 +584,17 @@
 .Polaris-ResourceList {
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #e1e3e5;
+  border: 1px solid #e4e4e7;
 }
 
 .Polaris-ResourceItem {
   padding: 16px;
-  border-bottom: 1px solid #e1e3e5;
+  border-bottom: 1px solid #e4e4e7;
   transition: background 0.2s ease;
 }
 
 .Polaris-ResourceItem:hover {
-  background: #f6f7fb;
+  background: #fafafa;
 }
 
 .Polaris-ResourceItem:last-child {
@@ -606,7 +606,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #f4f6f8;
+  border-bottom: 1px solid #f4f4f5;
 }
 
 .cdp-list-item:last-child {
@@ -620,13 +620,13 @@
 .cdp-list-item-title {
   font-size: 14px;
   font-weight: 500;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 4px;
 }
 
 .cdp-list-item-meta {
   font-size: 12px;
-  color: #6d7175;
+  color: #71717a;
 }
 
 .cdp-list-item-actions {
@@ -649,7 +649,7 @@
   bottom: 125%;
   left: 50%;
   transform: translateX(-50%);
-  background: #283044;
+  background: #27272a;
   color: #ffffff;
   padding: 8px 12px;
   border-radius: 4px;
@@ -672,7 +672,7 @@
   left: 50%;
   transform: translateX(-50%);
   border: 4px solid transparent;
-  border-top-color: #283044;
+  border-top-color: #27272a;
 }
 
 /* ============================================================
@@ -697,13 +697,13 @@
 .Polaris-EmptyState__Heading {
   font-size: 20px;
   font-weight: 600;
-  color: #283044;
+  color: #27272a;
   margin-bottom: 12px;
 }
 
 .Polaris-EmptyState__Details {
   font-size: 14px;
-  color: #6d7175;
+  color: #71717a;
   line-height: 1.6;
   margin-bottom: 24px;
 }
@@ -786,7 +786,7 @@
 
   .Polaris-Card {
     box-shadow: none;
-    border: 1px solid #e1e3e5;
+    border: 1px solid #e4e4e7;
   }
 
   .cdp-chart-container {
@@ -813,7 +813,7 @@
 .Polaris-Button:focus,
 .Polaris-TextField__Input:focus,
 .Polaris-Select__Input:focus {
-  outline: 2px solid #5c6ac4;
+  outline: 2px solid #6366f1;
   outline-offset: 2px;
 }
 
@@ -823,23 +823,23 @@
 
 @media (prefers-color-scheme: dark) {
   .cdp-container {
-    background: #283044;
-    color: #e1e3e5;
+    background: #27272a;
+    color: #e4e4e7;
   }
 
   .Polaris-Card {
-    background: #283044;
+    background: #27272a;
   }
 
   .Polaris-TextField__Input,
   .Polaris-Select__Input {
-    background: #283044;
-    border-color: #3a4560;
-    color: #e1e3e5;
+    background: #27272a;
+    border-color: #3f3f46;
+    color: #e4e4e7;
   }
 
   .Polaris-DataTable__Cell--header {
-    background: #3a4560;
+    background: #3f3f46;
   }
 }
 
