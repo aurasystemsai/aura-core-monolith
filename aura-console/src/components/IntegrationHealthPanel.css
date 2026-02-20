@@ -1,4 +1,4 @@
-.integration-health-card {
+﻿.integration-health-card {
   background: #0a0a0a;
   border-radius: 16px;
   box-shadow: 0 2px 12px #0003;
@@ -14,7 +14,7 @@
 .integration-health-chip {
   display: flex;
   align-items: center;
-  background: #232b3b;
+  background: #111111;
   border-radius: 24px;
   padding: 8px 18px 8px 12px;
   font-weight: 600;
@@ -33,7 +33,7 @@
   color: #ff4d4f;
 }
 .integration-health-chip--loading {
-  background: #232b3b;
+  background: #111111;
   color: #ffe066;
 }
 .integration-health-dot {
@@ -56,3 +56,4 @@
 .integration-health-text {
   font-size: 15px;
 }
+

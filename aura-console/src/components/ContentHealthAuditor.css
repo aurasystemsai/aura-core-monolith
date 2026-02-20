@@ -10,9 +10,9 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  background: #232b3b;
+  background: #111111;
   border-radius: 16px;
-  box-shadow: 0 2px 16px 0 #181f2a;
+  box-shadow: 0 2px 16px 0 #111111;
   padding: 20px 32px;
   margin-bottom: 32px;
 }
@@ -66,7 +66,7 @@
 
 .cha-summary-item {
   border: 1px solid #333333;
-  background: #181f2a;
+  background: #111111;
   border-radius: 14px;
   padding: 10px 12px;
   min-width: 140px;
@@ -95,7 +95,7 @@
 
 .cha-error {
   border: 1px solid #ef4444;
-  background: #181f2a;
+  background: #111111;
   border-radius: 14px;
   padding: 12px;
 }
@@ -115,7 +115,7 @@
   border: 1px solid #333333;
   border-radius: 16px;
   overflow: hidden;
-  background: #232b3b;
+  background: #111111;
 }
 
 .cha-table {
@@ -130,12 +130,12 @@
   border-bottom: 1px solid #333333;
   opacity: 0.8;
   font-weight: 650;
-  background: #232b3b;
+  background: #111111;
 }
 
 .cha-table tbody td {
   padding: 10px 12px;
-  border-bottom: 1px solid #232b3b;
+  border-bottom: 1px solid #111111;
   vertical-align: top;
 }
 
@@ -177,7 +177,7 @@
   padding: 4px 8px;
   border-radius: 999px;
   border: 1px solid #333333;
-  background: #232b3b;
+  background: #111111;
   opacity: 0.95;
 }
 
@@ -198,22 +198,22 @@
   font-weight: 700;
   font-size: 12px;
   border: 1px solid #333333;
-  background: #181f2a;
+  background: #111111;
 }
 
 .score-badge--bad {
   border-color: #ef4444;
-  background: #232b3b;
+  background: #111111;
 }
 
 .score-badge--warn {
   border-color: #f59e42;
-  background: #232b3b;
+  background: #111111;
 }
 
 .score-badge--good {
   border-color: #22c55e;
-  background: #232b3b;
+  background: #111111;
 }
 
 .cha-footer {
@@ -230,4 +230,5 @@
     "Courier New", monospace;
   opacity: 0.9;
 }
+
 

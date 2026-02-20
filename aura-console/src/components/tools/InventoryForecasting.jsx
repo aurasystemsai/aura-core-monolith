@@ -136,7 +136,7 @@ export default function InventoryForecasting() {
       </div>
       {/* History */}
       {history.length > 0 && (
-        <div style={{ marginTop: 24, background: "#181f2a", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: "#111111", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: "#e2e8f0" }}>Forecast History</div>
           {history.map((h, i) => (
             <div key={i} style={{ background: "#0a0a0a", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2f3a50" }}>
@@ -153,4 +153,5 @@ export default function InventoryForecasting() {
     </div>
   );
 }
+
 

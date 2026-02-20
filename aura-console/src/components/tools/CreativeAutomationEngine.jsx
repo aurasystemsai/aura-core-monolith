@@ -184,7 +184,7 @@ export default function CreativeAutomationEngine() {
         </div>
       )}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      <div style={{ marginTop: 24, background: darkMode ? "#181f2a" : "#fff", borderRadius: 12, padding: 18, border: "1px solid #2f3a50" }}>
+      <div style={{ marginTop: 24, background: darkMode ? "#111111" : "#fff", borderRadius: 12, padding: 18, border: "1px solid #2f3a50" }}>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: darkMode ? "#e2e8f0" : "#0a0a0a" }}>Creatives</div>
         {creatives.map(c => (
           <div key={c.id} style={{ background: darkMode ? "#0a0a0a" : "#f8fafc", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2f3a50" }}>
@@ -208,4 +208,5 @@ export default function CreativeAutomationEngine() {
     </div>
   );
 }
+
 

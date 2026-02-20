@@ -1,4 +1,4 @@
-.notifications-panel-card {
+﻿.notifications-panel-card {
   background: #0a0a0a;
   border-radius: 16px;
   box-shadow: 0 2px 12px #0003;
@@ -10,7 +10,7 @@
 }
 .notification-item {
   padding: 10px 0;
-  border-bottom: 1px solid #232b3b;
+  border-bottom: 1px solid #111111;
   color: #f3f4f6;
   font-size: 15px;
   display: flex;
@@ -39,3 +39,4 @@
 .notification-message {
   flex: 1;
 }
+

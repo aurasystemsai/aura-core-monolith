@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useRef } from "react";
 
 // Unique flagship UI for Churn Prediction Playbooks
@@ -15,7 +15,7 @@ export default function ChurnPredictionPlaybooks() {
             <b>Key Features:</b> Customer segmentation, churn risk scoring, retention playbook builder, cohort analysis, workflow triggers, real-time alerts, CRM/marketing integrations
           </div>
         </div>
-        <div className="churn-score-card" style={{ background: "#181f2a", borderRadius: 18, padding: "18px 32px", boxShadow: "0 2px 16px #0003", textAlign: "center", minWidth: 220 }}>
+        <div className="churn-score-card" style={{ background: "#111111", borderRadius: 18, padding: "18px 32px", boxShadow: "0 2px 16px #0003", textAlign: "center", minWidth: 220 }}>
           <div style={{ fontWeight: 800, fontSize: 22, color: "#7fffd4" }}>Customer Health Score</div>
           <div style={{ fontWeight: 900, fontSize: 48, color: "#22c55e" }}>92</div>
           <div style={{ fontSize: 15, color: "#b6eaff" }}>Excellent</div>
@@ -116,4 +116,5 @@ export default function ChurnPredictionPlaybooks() {
     </div>
   );
 }
+
 

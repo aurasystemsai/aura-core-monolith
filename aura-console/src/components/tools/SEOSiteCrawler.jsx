@@ -314,7 +314,7 @@ export default function SEOSiteCrawler() {
 
       {/* History */}
       {history.length > 0 && (
-        <div style={{ background: "#181f2a", borderRadius: 12, padding: 18 }}>
+        <div style={{ background: "#111111", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: "#7fffd4" }}>Crawl History</div>
           {history.map(h => {
             const r = h.result || {};
@@ -340,4 +340,5 @@ export default function SEOSiteCrawler() {
     </div>
   );
 }
+
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import "./IntegrationHealthPanel.css";
 import { apiFetch } from "../api";
 
@@ -37,7 +37,7 @@ function IntegrationHealthPanel() {
   }, []);
 
   return (
-    <section className="integration-health-card" style={{ marginTop: 18, background: '#20263a', borderRadius: 18, boxShadow: '0 4px 24px #0004', padding: '32px 36px', maxWidth: 540, marginLeft: 'auto', marginRight: 'auto' }}>
+    <section className="integration-health-card" style={{ marginTop: 18, background: '#111111', borderRadius: 18, boxShadow: '0 4px 24px #0004', padding: '32px 36px', maxWidth: 540, marginLeft: 'auto', marginRight: 'auto' }}>
       <div className="card-header" style={{ marginBottom: 18 }}>
         <h2 className="card-title" style={{ fontSize: 22, fontWeight: 900, color: '#7fffd4', display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 26, verticalAlign: 'middle' }}>🔌</span> Integration Health
@@ -63,7 +63,7 @@ function IntegrationHealthPanel() {
             icon = <span style={{ color: '#ff4d4f', fontSize: 28, marginRight: 12 }}>❌</span>;
           }
           return (
-            <div key={integration.id} className={statusClass} title={integration.name} style={{ minWidth: 260, display: 'flex', alignItems: 'center', background: '#232b3b', borderRadius: 16, padding: '18px 28px', fontWeight: 700, fontSize: 18, color: status === 'ok' ? '#7fffd4' : status === 'checking' ? '#ffe066' : '#ff4d4f', boxShadow: '0 2px 12px #0002', margin: 0 }}>
+            <div key={integration.id} className={statusClass} title={integration.name} style={{ minWidth: 260, display: 'flex', alignItems: 'center', background: '#111111', borderRadius: 16, padding: '18px 28px', fontWeight: 700, fontSize: 18, color: status === 'ok' ? '#7fffd4' : status === 'checking' ? '#ffe066' : '#ff4d4f', boxShadow: '0 2px 12px #0002', margin: 0 }}>
               {icon}
               <span className="integration-health-text" style={{ fontSize: 18, fontWeight: 800, letterSpacing: '0.01em' }}>{integration.name}</span>
               <span style={{ marginLeft: 18, fontWeight: 700, fontSize: 16, color: status === 'ok' ? '#7fffd4' : status === 'checking' ? '#ffe066' : '#ff4d4f' }}>
@@ -78,3 +78,4 @@ function IntegrationHealthPanel() {
 }
 
 export default IntegrationHealthPanel;
+

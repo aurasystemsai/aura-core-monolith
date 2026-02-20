@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from "react";
+﻿import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch } from "../api";
 import { sendCopilotMessage } from "../core/advancedAiClient";
 import IntegrationHealthPanel from "../components/IntegrationHealthPanel";
@@ -118,7 +118,7 @@ const Dashboard = ({ setActiveSection }) => {
         padding: '40px 32px',
         marginBottom: 32,
         boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-        background: 'linear-gradient(120deg, #232b3b 70%, #111111 100%)',
+        background: 'linear-gradient(120deg, #111111 70%, #111111 100%)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
           <img src="/logo-aura.png" alt="AURA Logo" style={{ height: 56, width: 56, objectFit: 'contain', borderRadius: 12 }} />
@@ -246,7 +246,7 @@ const Dashboard = ({ setActiveSection }) => {
             key={stat.label}
             className="aura-dashboard-stat"
             style={{
-              background: '#232b3b',
+              background: '#111111',
               borderRadius: '16px',
               boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
               padding: '24px',
@@ -270,3 +270,4 @@ const Dashboard = ({ setActiveSection }) => {
 };
 
 export default Dashboard;
+

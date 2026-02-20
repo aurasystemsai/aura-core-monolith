@@ -131,7 +131,7 @@ export default function ABTestingSuite() {
           {error && <div style={{ color: '#ef4444', marginTop: 8 }}>{error}</div>}
         </div>
         {/* Visual Editor with live preview and drag-and-drop shell */}
-        <div style={{ flex: 2, background: '#181f2a', borderRadius: 16, padding: 28, minHeight: 420 }}>
+        <div style={{ flex: 2, background: '#111111', borderRadius: 16, padding: 28, minHeight: 420 }}>
           <h3 style={{ fontWeight: 700, fontSize: 22, marginBottom: 18 }}>Visual Test Builder</h3>
           <div style={{ display: 'flex', gap: 18 }}>
             {/* Variant List */}
@@ -251,9 +251,9 @@ export default function ABTestingSuite() {
       </section>
 
       {/* --- Analytics & Insights --- */}
-      <section className="abtest-analytics" style={{ background: '#181f2a', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+      <section className="abtest-analytics" style={{ background: '#111111', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         {liveUpdate && (
-          <div style={{ background: '#38bdf8', color: '#181f2a', borderRadius: 8, padding: 12, marginBottom: 18, fontWeight: 600 }}>
+          <div style={{ background: '#38bdf8', color: '#111111', borderRadius: 8, padding: 12, marginBottom: 18, fontWeight: 600 }}>
             <span role="img" aria-label="Live">🔴</span> Live Update: {typeof liveUpdate === 'string' ? liveUpdate : JSON.stringify(liveUpdate)}
           </div>
         )}
@@ -342,7 +342,7 @@ export default function ABTestingSuite() {
       </section>
 
       {/* --- Integrations & API --- */}
-      <section className="abtest-integrations" style={{ background: '#181f2a', borderRadius: 16, padding: 32, marginBottom: 40 }}>
+      <section className="abtest-integrations" style={{ background: '#111111', borderRadius: 16, padding: 32, marginBottom: 40 }}>
         <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 14 }}>Integrations & API</h3>
         <div style={{ display: 'flex', gap: 32 }}>
           {/* Shopify Integration */}
@@ -381,7 +381,7 @@ export default function ABTestingSuite() {
       </section>
 
       {/* --- Feedback & Support --- */}
-      <section className="abtest-feedback" style={{ background: '#181f2a', borderRadius: 16, padding: 32, marginBottom: 24 }}>
+      <section className="abtest-feedback" style={{ background: '#111111', borderRadius: 16, padding: 32, marginBottom: 24 }}>
         <h4 style={{ fontWeight: 700, fontSize: 17, marginBottom: 10 }}>Feedback</h4>
         <form onSubmit={e => { e.preventDefault(); /* TODO: handleFeedback */ }}>
           <textarea
@@ -404,5 +404,6 @@ export default function ABTestingSuite() {
     </div>
   );
 }
+
 
 

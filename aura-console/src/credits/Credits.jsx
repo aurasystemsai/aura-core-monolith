@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import './Credits.css';
 
 const Credits = () => {
@@ -40,7 +40,7 @@ const Credits = () => {
       </button>
       {error && <div className="aura-credits-error">{error}</div>}
 
-      <div className="aura-credits-pricing" style={{margin:'28px 0 12px',padding:'18px 18px 12px',background:'#232b3b',borderRadius:14}}>
+      <div className="aura-credits-pricing" style={{margin:'28px 0 12px',padding:'18px 18px 12px',background:'#111111',borderRadius:14}}>
         <div style={{fontWeight:700,fontSize:17,marginBottom:8,display:'flex',alignItems:'center',gap:8}}>
           Credit Pricing & Usage
           <span className="credits-guide" title="How much credits cost and what you can do with them">🛈</span>
@@ -110,7 +110,7 @@ const Credits = () => {
           </table>
           <div style={{fontSize:13,opacity:0.8,margin:'-10px 0 10px 0'}}>* All paid plans include access to the AURA systems library, shared docs, async onboarding, secure API connections, and no per-seat fees. Free plan is for onboarding only.</div>
           <div style={{fontSize:13,opacity:0.8,margin:'0 0 10px 0'}}>Want to try everything? <b>New users get a free 3-day Pro trial</b>—no credit card required. After the trial, you’ll continue on the Basic (Free) plan unless you upgrade.</div>
-          <div style={{fontSize:15,margin:'18px 0 10px',background:'#232b3b',borderRadius:10,padding:'14px 16px',color:'#fff',boxShadow:'0 2px 12px #22d3ee33'}}>
+          <div style={{fontSize:15,margin:'18px 0 10px',background:'#111111',borderRadius:10,padding:'14px 16px',color:'#fff',boxShadow:'0 2px 12px #22d3ee33'}}>
             <b style={{color:'#7fffd4'}}>What our customers say:</b><br/>
             <span style={{fontStyle:'italic',color:'#fff'}}>“We replaced three tools and boosted efficiency immediately. It felt like hiring an ops team overnight.”</span><br/>
             <span style={{fontSize:13,opacity:0.85}}>— Elena Rodriguez, Product Manager</span>
@@ -161,3 +161,4 @@ const Credits = () => {
 };
 
 export default Credits;
+

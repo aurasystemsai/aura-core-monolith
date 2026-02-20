@@ -1,4 +1,4 @@
-
+﻿
 
 import React from "react";
 
@@ -14,7 +14,7 @@ export default function CompetitiveAnalysis() {
           <h1 style={{ fontWeight: 900, fontSize: 38, color: "var(--text-primary)", marginBottom: 8 }}>Competitive Analysis & Benchmarking</h1>
           <div style={{ fontSize: 20, color: "var(--text-accent)", fontWeight: 700 }}>AI-powered competitor insights, feature gap analysis, and benchmarking</div>
         </div>
-        <div className="benchmark-score-card" style={{ background: "#181f2a", borderRadius: 18, padding: "18px 32px", boxShadow: "0 2px 16px #0003", textAlign: "center" }}>
+        <div className="benchmark-score-card" style={{ background: "#111111", borderRadius: 18, padding: "18px 32px", boxShadow: "0 2px 16px #0003", textAlign: "center" }}>
           <div style={{ fontWeight: 800, fontSize: 22, color: "#7fffd4" }}>Benchmark Score</div>
           <div style={{ fontWeight: 900, fontSize: 48, color: "#22c55e" }}>87</div>
           <div style={{ fontSize: 15, color: "#b6eaff" }}>Market Leader</div>
@@ -129,3 +129,4 @@ export default function CompetitiveAnalysis() {
     </div>
   );
 }
+

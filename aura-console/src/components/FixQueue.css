@@ -11,9 +11,9 @@
   align-items: flex-end;
   margin-bottom: 24px;
   flex-wrap: wrap;
-  background: #232b3b;
+  background: #111111;
   border-radius: 16px;
-  box-shadow: 0 2px 16px 0 #181f2a;
+  box-shadow: 0 2px 16px 0 #111111;
   padding: 20px 32px;
 }
 
@@ -57,7 +57,7 @@
   overflow: auto;
   border-radius: 16px;
   border: 1px solid #333333;
-  background: #232b3b;
+  background: #111111;
 }
 
 .fq-table {
@@ -70,7 +70,7 @@
 .fq-table td {
   text-align: left;
   padding: 12px 12px;
-  border-bottom: 1px solid #232b3b;
+  border-bottom: 1px solid #111111;
   vertical-align: top;
   font-size: 12px;
 }
@@ -78,7 +78,7 @@
 .fq-table th {
   position: sticky;
   top: 0;
-  background: #232b3b;
+  background: #111111;
   backdrop-filter: blur(10px);
 }
 
@@ -89,7 +89,7 @@
 
 .fq-error {
   border: 1px solid #ef4444;
-  background: #181f2a;
+  background: #111111;
   border-radius: 14px;
   padding: 12px 14px;
   margin-bottom: 12px;
@@ -135,7 +135,7 @@
 
 .fq-issue-pill {
   border: 1px solid #333333;
-  background: #232b3b;
+  background: #111111;
   padding: 4px 8px;
   border-radius: 999px;
   font-size: 11px;
@@ -177,7 +177,7 @@
   bottom: 18px;
   right: 18px;
   z-index: 9999;
-  background: #232b3b;
+  background: #111111;
   border: 1px solid #333333;
   color: #f3f4f6;
   padding: 10px 12px;
@@ -209,4 +209,5 @@
 .fq-row-busy input[type="checkbox"] {
   opacity: 0.85;
 }
+
 

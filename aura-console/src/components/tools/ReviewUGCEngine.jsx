@@ -140,7 +140,7 @@ export default function ReviewUGCEngine() {
         </div>
       )}
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
-      <div style={{ marginTop: 24, background: "#181f2a", borderRadius: 12, padding: 18 }}>
+      <div style={{ marginTop: 24, background: "#111111", borderRadius: 12, padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: "#e2e8f0" }}>Review History</div>
         {reviews.map(r => (
           <div key={r.id} style={{ background: "#0a0a0a", borderRadius: 8, padding: "12px 16px", border: "1px solid #2f3a50", marginBottom: 8 }}>
@@ -165,4 +165,5 @@ export default function ReviewUGCEngine() {
     </div>
   );
 }
+
 

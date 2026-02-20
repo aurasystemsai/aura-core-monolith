@@ -219,17 +219,17 @@ export default function AutoInsights() {
             <option value="demo-shop.myshopify.com">demo-shop.myshopify.com</option>
             <option value="staging-shop.myshopify.com">staging-shop.myshopify.com</option>
           </select>
-          <div className="insight-score-card" style={{ background: "#181f2a", borderRadius: 18, padding: "18px 32px", boxShadow: "0 2px 16px #0003", textAlign: "center" }}>
+          <div className="insight-score-card" style={{ background: "#111111", borderRadius: 18, padding: "18px 32px", boxShadow: "0 2px 16px #0003", textAlign: "center" }}>
             <div style={{ fontWeight: 800, fontSize: 22, color: "#7fffd4" }}>Insight Score</div>
             <div style={{ fontWeight: 900, fontSize: 48, color: "#22c55e" }}>92</div>
             <div style={{ fontSize: 15, color: "#b6eaff" }}>Best Practice</div>
           </div>
-          <div style={{ background: '#181f2a', borderRadius: 12, padding: '10px 14px', minWidth: 180 }}>
+          <div style={{ background: '#111111', borderRadius: 12, padding: '10px 14px', minWidth: 180 }}>
             <div style={{ color: '#888888', fontSize: 12 }}>Sync health</div>
             <div style={{ fontWeight: 800, color: syncHealth.status === 'healthy' ? '#22c55e' : '#f87171' }}>{syncHealth.status}</div>
             <div style={{ color: '#888888', fontSize: 12 }}>Last sync {syncHealth.lastSuccess ? new Date(syncHealth.lastSuccess).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
           </div>
-          <div style={{ background: '#181f2a', borderRadius: 12, padding: '10px 14px', minWidth: 200 }}>
+          <div style={{ background: '#111111', borderRadius: 12, padding: '10px 14px', minWidth: 200 }}>
             <div style={{ color: '#888888', fontSize: 12 }}>Freshness SLA: {freshness.sla}m</div>
             <div style={{ fontWeight: 800, color: freshness.status === 'healthy' ? '#22c55e' : '#fbbf24' }}>Age: {freshness.minutes}m</div>
             <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
@@ -237,7 +237,7 @@ export default function AutoInsights() {
               <button className="aura-btn" style={{ background: '#0ea5e9', color: '#fff' }} onClick={() => setFreshness(f => ({ ...f, sla: Math.max(5, f.sla - 2) }))}>Tighten SLA</button>
             </div>
           </div>
-          <div style={{ background: '#181f2a', borderRadius: 12, padding: '10px 14px', minWidth: 220 }}>
+          <div style={{ background: '#111111', borderRadius: 12, padding: '10px 14px', minWidth: 220 }}>
             <div style={{ color: '#888888', fontSize: 12 }}>Source freshness map</div>
             <div style={{ color: '#f0f0f0', fontWeight: 700 }}>Orders {Math.round((Date.now() - sourceFreshness.orders) / 60000)}m · Events {Math.round((Date.now() - sourceFreshness.events) / 60000)}m</div>
             <div style={{ color: '#888888', fontSize: 12 }}>Attribution {(Math.round((Date.now() - sourceFreshness.attribution) / 60000))}m</div>
@@ -562,4 +562,5 @@ export default function AutoInsights() {
     </div>
   );
 }
+
 

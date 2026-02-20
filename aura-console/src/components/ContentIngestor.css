@@ -1,6 +1,6 @@
 ﻿/* ContentIngestor.css - unified dark theme for Content Ingestor panel */
 .content-ingest-card {
-  background: #232b3b;
+  background: #111111;
   color: #f3f4f6;
   border-radius: 24px;
   box-shadow: 0 4px 32px rgba(0,0,0,0.13);
@@ -32,7 +32,7 @@
   margin-top: 4px;
 }
 .content-ingest-card .inspector-input, .content-ingest-card .inspector-textarea {
-  background: #181f2a;
+  background: #111111;
   color: #f3f4f6;
   border: 1.5px solid #333333;
   border-radius: 10px;
@@ -63,12 +63,12 @@
   cursor: not-allowed;
 }
 .content-ingest-card .button--primary:hover, .content-ingest-card .button--primary:focus {
-  background: #232b3b;
-  box-shadow: 0 4px 18px #181f2a;
+  background: #111111;
+  box-shadow: 0 4px 18px #111111;
   transform: translateY(-2px) scale(1.03);
 }
 .content-ingest-card code {
-  background: #181f2a;
+  background: #111111;
   color: #f3f4f6;
   border-radius: 6px;
   padding: 2px 6px;
@@ -77,4 +77,5 @@
 .content-ingest-card strong {
   color: #f3f4f6;
 }
+
 
