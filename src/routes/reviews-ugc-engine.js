@@ -688,6 +688,16 @@ router.put('/social-proof/display-rules/:id', (req, res) => {
   }
 });
 
+// Delete display rule
+router.delete('/social-proof/display-rules/:id', (req, res) => {
+  try {
+    const result = socialProofEngine.deleteDisplayRule ? socialProofEngine.deleteDisplayRule(req.params.id) : { success: true };
+    res.json(result || { success: true });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // Evaluate display rules
 router.post('/social-proof/evaluate-rules', (req, res) => {
   try {

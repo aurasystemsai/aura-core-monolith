@@ -72,7 +72,7 @@ function StarRating({ value = 0, onChange }) {
 function StatCard({ label, value, color = '#4f46e5' }) {
   return (
     <div style={S.stat}>
-      <div style={{ ...S.statNum, color }}>{value ?? '�'}</div>
+      <div style={{ ...S.statNum, color }}>{value ?? --}</div>
       <div style={S.statLabel}>{label}</div>
     </div>
   );
@@ -81,7 +81,7 @@ function StatCard({ label, value, color = '#4f46e5' }) {
 function Placeholder({ name }) {
   return (
     <div style={{ ...S.card, textAlign: 'center', padding: '48px' }}>
-      <div style={{ fontSize: '16px', color: '#71717a' }}>{name} � coming shortly...</div>
+      <div style={{ fontSize: '16px', color: '#71717a' }}>{name} -- coming shortly...</div>
     </div>
   );
 }
@@ -160,10 +160,10 @@ function ReviewManagement({ tab }) {
             {reviews.length === 0 && <tr><td style={S.td} colSpan={6}><span style={S.muted}>No reviews found.</span></td></tr>}
             {reviews.map(r => (
               <tr key={r.id || r._id}>
-                <td style={S.td}>{r.authorName || '�'}</td>
-                <td style={S.td}>{r.productName || r.productId || '�'}</td>
+                <td style={S.td}>{r.authorName || --}</td>
+                <td style={S.td}>{r.productName || r.productId || --}</td>
                 <td style={S.td}><StarRating value={r.rating} /></td>
-                <td style={S.td}>{r.title || '�'}</td>
+                <td style={S.td}>{r.title || --}</td>
                 <td style={S.td}>{statusBadge(r.status)}</td>
                 <td style={S.td}><div style={S.row}>
                   <button style={S.btnGhost} onClick={() => setSelectedId(r.id || r._id)}>Reply</button>
@@ -204,9 +204,9 @@ function ReviewManagement({ tab }) {
           <thead><tr><th style={S.th}>Author</th><th style={S.th}>Rating</th><th style={S.th}>Title</th><th style={S.th}>Actions</th></tr></thead>
           <tbody>{queue.map(r => (
             <tr key={r.id || r._id}>
-              <td style={S.td}>{r.authorName || '�'}</td>
+              <td style={S.td}>{r.authorName || --}</td>
               <td style={S.td}><StarRating value={r.rating} /></td>
-              <td style={S.td}>{r.title || '�'}</td>
+              <td style={S.td}>{r.title || --}</td>
               <td style={S.td}><div style={S.row}>
                 <button style={S.btnSuccess} onClick={() => handleApprove(r.id || r._id)}>Approve</button>
                 <button style={S.btnDanger} onClick={() => handleReject(r.id || r._id)}>Reject</button>
@@ -281,7 +281,7 @@ function ReviewManagement({ tab }) {
 }
 
 // ----------------------------------------------------------
-// PLACEHOLDERS � replaced in phases
+// PLACEHOLDERS -- replaced in phases
 // ----------------------------------------------------------
 // ----------------------------------------------------------
 // UGC COLLECTION
@@ -363,7 +363,7 @@ function UGCCollection({ tab }) {
           {campaigns.map(c => (
             <tr key={c.id||c._id}>
               <td style={S.td}>{c.name}</td><td style={S.td}>{c.type}</td>
-              <td style={S.td}>{c.startDate || '�'}</td><td style={S.td}>{c.endDate || '�'}</td>
+              <td style={S.td}>{c.startDate || --}</td><td style={S.td}>{c.endDate || --}</td>
               <td style={S.td}><button style={S.btnDanger} onClick={() => deleteCampaign(c.id||c._id)}>Delete</button></td>
             </tr>
           ))}
@@ -513,6 +513,7 @@ function ModerationCenter({ tab }) {
   const addWord = async () => { if (!newWord.trim()) return; await apiFetch(`${BASE}/moderation/blocked-words`, { method: 'POST', body: JSON.stringify({ word: newWord }) }); setNewWord(''); loadBlockedWords(); };
   const removeWord = async (word) => { await apiFetch(`${BASE}/moderation/blocked-words/${encodeURIComponent(word)}`, { method: 'DELETE' }); loadBlockedWords(); };
   const addEmail = async () => { if (!newEmail.trim()) return; await apiFetch(`${BASE}/moderation/blocked-emails`, { method: 'POST', body: JSON.stringify({ email: newEmail }) }); setNewEmail(''); loadBlockedEmails(); };
+  const removeEmail = async (email) => { await apiFetch(`${BASE}/moderation/blocked-emails/${encodeURIComponent(email)}`, { method: 'DELETE' }); loadBlockedEmails(); };
 
   if (tab === 0) return (
     <div>
@@ -578,8 +579,8 @@ function ModerationCenter({ tab }) {
           <thead><tr><th style={S.th}>Author</th><th style={S.th}>Content</th><th style={S.th}>Reason</th><th style={S.th}>Actions</th></tr></thead>
           <tbody>{queue.map(r => (
             <tr key={r.id||r._id}>
-              <td style={S.td}>{r.authorName||'�'}</td>
-              <td style={{ ...S.td, maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.body||r.content||'�'}</td>
+              <td style={S.td}>{r.authorName||--}</td>
+              <td style={{ ...S.td, maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.body||r.content||--}</td>
               <td style={S.td}><span style={S.badge('#f97316')}>{r.reason||'flagged'}</span></td>
               <td style={S.td}><div style={S.row}>
                 <button style={S.btnSuccess} onClick={()=>approveItem(r.id||r._id)}>Approve</button>
@@ -604,7 +605,7 @@ function ModerationCenter({ tab }) {
         {blockedWords.map((w, i) => (
           <span key={i} style={{ background: '#27272a', border: '1px solid #3f3f46', borderRadius: '20px', padding: '4px 12px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             {typeof w === 'string' ? w : w.word}
-            <button style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px', lineHeight: 1 }} onClick={()=>removeWord(typeof w === 'string' ? w : w.word)}>�</button>
+            <button style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px', lineHeight: 1 }} onClick={()=>removeWord(typeof w === 'string' ? w : w.word)}>x</button>
           </span>
         ))}
       </div>
@@ -619,10 +620,10 @@ function ModerationCenter({ tab }) {
         <button style={S.btn} onClick={addEmail}>Add</button>
       </div>
       <table style={S.table}>
-        <thead><tr><th style={S.th}>Email</th></tr></thead>
+        <thead><tr><th style={S.th}>Email</th><th style={S.th}>Actions</th></tr></thead>
         <tbody>
-          {blockedEmails.length === 0 && <tr><td style={S.td}><span style={S.muted}>No blocked emails.</span></td></tr>}
-          {blockedEmails.map((e, i) => <tr key={i}><td style={S.td}>{typeof e === 'string' ? e : e.email}</td></tr>)}
+          {blockedEmails.length === 0 && <tr><td style={S.td} colSpan={2}><span style={S.muted}>No blocked emails.</span></td></tr>}
+          {blockedEmails.map((e, i) => <tr key={i}><td style={S.td}>{typeof e === 'string' ? e : e.email}</td><td style={S.td}><button style={S.btnDanger} onClick={()=>removeEmail(typeof e === 'string' ? e : e.email)}>Remove</button></td></tr>)}
         </tbody>
       </table>
     </div>
@@ -739,9 +740,9 @@ function SentimentAI({ tab }) {
             <tbody>{batchResults.map((r, i) => (
               <tr key={i}>
                 <td style={S.td}>{i + 1}</td>
-                <td style={{ ...S.td, maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.text || r.content || '�'}</td>
+                <td style={{ ...S.td, maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.text || r.content || --}</td>
                 <td style={S.td}><span style={S.badge(sentimentColor(r.sentiment))}>{r.sentiment || 'N/A'}</span></td>
-                <td style={S.td}>{r.score?.toFixed?.(2) ?? '�'}</td>
+                <td style={S.td}>{r.score?.toFixed?.(2) ?? --}</td>
               </tr>
             ))}</tbody>
           </table>
@@ -790,9 +791,9 @@ function SentimentAI({ tab }) {
               <tbody>{(trends.data || trends).map((row, i) => (
                 <tr key={i}>
                   <td style={S.td}>{row.period || row.date || row.label}</td>
-                  <td style={S.td}><span style={{ color: '#22c55e' }}>{row.positive ?? '�'}</span></td>
-                  <td style={S.td}><span style={{ color: '#eab308' }}>{row.neutral ?? '�'}</span></td>
-                  <td style={S.td}><span style={{ color: '#ef4444' }}>{row.negative ?? '�'}</span></td>
+                  <td style={S.td}><span style={{ color: '#22c55e' }}>{row.positive ?? --}</span></td>
+                  <td style={S.td}><span style={{ color: '#eab308' }}>{row.neutral ?? --}</span></td>
+                  <td style={S.td}><span style={{ color: '#ef4444' }}>{row.negative ?? --}</span></td>
                 </tr>
               ))}
               </tbody>
@@ -1013,7 +1014,7 @@ function SocialProof({ tab }) {
         <thead><tr><th style={S.th}>Name</th><th style={S.th}>Status</th><th style={S.th}>Conversion A</th><th style={S.th}>Conversion B</th></tr></thead>
         <tbody>
           {abTests.length === 0 && <tr><td style={S.td} colSpan={4}><span style={S.muted}>No A/B tests yet.</span></td></tr>}
-          {abTests.map(t => <tr key={t.id||t._id}><td style={S.td}>{t.name}</td><td style={S.td}><span style={S.badge(t.status==='running'?'#22c55e':'#71717a')}>{t.status||'draft'}</span></td><td style={S.td}>{t.conversionA ?? '�'}</td><td style={S.td}>{t.conversionB ?? '�'}</td></tr>)}
+          {abTests.map(t => <tr key={t.id||t._id}><td style={S.td}>{t.name}</td><td style={S.td}><span style={S.badge(t.status==='running'?'#22c55e':'#71717a')}>{t.status||'draft'}</span></td><td style={S.td}>{t.conversionA ?? --}</td><td style={S.td}>{t.conversionB ?? --}</td></tr>)}
         </tbody>
       </table>
     </div>
@@ -1175,7 +1176,7 @@ function DisplayWidgets({ tab }) {
         <thead><tr><th style={S.th}>Name</th><th style={S.th}>Product ID</th><th style={S.th}>Count</th><th style={S.th}>Embed Code</th></tr></thead>
         <tbody>
           {embeds.length === 0 && <tr><td style={S.td} colSpan={4}><span style={S.muted}>No embeds yet.</span></td></tr>}
-          {embeds.map(em => <tr key={em.id||em._id}><td style={S.td}>{em.name}</td><td style={S.td}>{em.productId || '�'}</td><td style={S.td}>{em.showCount}</td><td style={S.td}><code style={{ color: '#a78bfa', fontSize: '12px' }}>{`<div data-aura-reviews="${em.id||em._id}"></div>`}</code></td></tr>)}
+          {embeds.map(em => <tr key={em.id||em._id}><td style={S.td}>{em.name}</td><td style={S.td}>{em.productId || --}</td><td style={S.td}>{em.showCount}</td><td style={S.td}><code style={{ color: '#a78bfa', fontSize: '12px' }}>{`<div data-aura-reviews="${em.id||em._id}"></div>`}</code></td></tr>)}
         </tbody>
       </table>
     </div>
@@ -1720,11 +1721,11 @@ function IntegrationsHub({ tab }) {
           {syncLogs.length === 0 && <tr><td style={S.td} colSpan={5}><span style={S.muted}>No sync logs.</span></td></tr>}
           {syncLogs.map((log, i) => (
             <tr key={log.id||i}>
-              <td style={S.td}>{log.createdAt ? new Date(log.createdAt).toLocaleString() : '�'}</td>
-              <td style={S.td}>{log.source || '�'}</td>
-              <td style={S.td}>{log.records ?? '�'}</td>
+              <td style={S.td}>{log.createdAt ? new Date(log.createdAt).toLocaleString() : --}</td>
+              <td style={S.td}>{log.source || --}</td>
+              <td style={S.td}>{log.records ?? --}</td>
               <td style={S.td}><span style={S.badge(log.status === 'success' ? '#22c55e' : '#ef4444')}>{log.status}</span></td>
-              <td style={{ ...S.td, color: '#a1a1aa', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{log.message || '�'}</td>
+              <td style={{ ...S.td, color: '#a1a1aa', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{log.message || --}</td>
             </tr>
           ))}
         </tbody>
