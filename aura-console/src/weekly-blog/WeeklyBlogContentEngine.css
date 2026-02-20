@@ -1,12 +1,12 @@
 ﻿﻿.wbe-shell {
   background: radial-gradient(circle at 20% 20%, rgba(64, 224, 208, 0.12), transparent 35%),
     radial-gradient(circle at 80% 0%, rgba(59, 130, 246, 0.14), transparent 36%),
-    linear-gradient(135deg, #181818 0%, #282828 45%, #282828 100%);
+    linear-gradient(135deg, #09090b 0%, #18181b 45%, #18181b 100%);
   color: #e8f1f7;
   border-radius: 20px;
   padding: 26px;
   box-shadow: 0 26px 70px rgba(0, 0, 0, 0.38);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.10);
   font-family: "Space Grotesk", "IBM Plex Sans", system-ui, -apple-system, sans-serif;
 }
 
@@ -39,7 +39,7 @@
 
 .wbe-btn {
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(99, 102, 241, 0.08);
   color: #e8f1f7;
   padding: 9px 16px;
   border-radius: 11px;
@@ -51,7 +51,7 @@
 
 .wbe-btn.primary {
   background: linear-gradient(120deg, #22d3ee, #f59e0b);
-  color: #181818;
+  color: #09090b;
   border: none;
 }
 
@@ -76,8 +76,8 @@
 .wbe-pill {
   padding: 8px 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.12);
   font-weight: 700;
   color: #dce7ef;
 }
@@ -96,7 +96,7 @@
 
 .wbe-tab-group {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.10);
   border-radius: 12px;
   padding: 12px;
 }
@@ -115,8 +115,8 @@
 }
 
 .wbe-tab-chip {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.12);
   border-radius: 11px;
   padding: 8px 10px;
   display: flex;
@@ -138,7 +138,7 @@
 
 .wbe-card {
   background: rgba(6, 12, 20, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.10);
   border-radius: 14px;
   padding: 16px;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
@@ -185,7 +185,7 @@
   justify-content: space-between;
   align-items: center;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.12);
   padding: 10px 12px;
   border-radius: 10px;
   color: #dce7ef;
@@ -206,7 +206,7 @@
 .wbe-tag {
   padding: 6px 10px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(99, 102, 241, 0.12);
   font-weight: 700;
   color: #dce7ef;
 }
@@ -219,8 +219,8 @@
 }
 
 .metric-pill {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.12);
   border-radius: 12px;
   padding: 10px 12px;
   display: flex;
@@ -238,7 +238,7 @@
 
 .wbe-status-card {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.12);
   border-radius: 12px;
   padding: 12px;
 }
@@ -250,8 +250,8 @@
 }
 
 .wbe-chip {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.12);
   border-radius: 10px;
   padding: 7px 10px;
   font-weight: 700;
@@ -268,8 +268,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.12);
   padding: 10px 12px;
   border-radius: 10px;
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { apiFetch } from "../api";
 
 // Maps tool route IDs → minimum plan required
@@ -66,7 +66,7 @@ export const TOOL_PLAN = {
 const PLAN_RANK = { free: 0, professional: 1, enterprise: 2 };
 export const PLAN_LABEL = { free: "Free", professional: "Professional", enterprise: "Enterprise" };
 export const PLAN_PRICE = { free: "$0", professional: "$99/mo", enterprise: "$299/mo" };
-export const PLAN_COLOUR = { free: "#4ade80", professional: "#7fffd4", enterprise: "#a78bfa" };
+export const PLAN_COLOUR = { free: "#4ade80", professional: "#818cf8", enterprise: "#a78bfa" };
 
 export function canUseTool(userPlan, toolId) {
   const required = TOOL_PLAN[toolId];

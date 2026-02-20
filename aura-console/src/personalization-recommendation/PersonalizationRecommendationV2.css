@@ -40,7 +40,7 @@
 .stat-value {
   font-size: 28px;
   font-weight: 600;
-  color: #2a2a2a;
+  color: #27272a;
   margin: 0;
 }
 
@@ -120,7 +120,7 @@
 .Polaris-DataTable__Cell--header {
   background-color: #f9fafb;
   font-weight: 600;
-  color: #2a2a2a;
+  color: #27272a;
   text-transform: uppercase;
   font-size: 12px;
   letter-spacing: 0.5px;
@@ -173,7 +173,7 @@
 .pers-rec-title {
   font-size: 16px;
   font-weight: 600;
-  color: #2a2a2a;
+  color: #27272a;
   margin: 0;
 }
 
@@ -243,7 +243,7 @@
 .pers-profile-name {
   font-size: 16px;
   font-weight: 600;
-  color: #2a2a2a;
+  color: #27272a;
   margin: 0 0 4px 0;
 }
 
@@ -269,7 +269,7 @@
 .pers-profile-stat-value {
   font-size: 20px;
   font-weight: 600;
-  color: #2a2a2a;
+  color: #27272a;
   margin: 0 0 4px 0;
 }
 
@@ -301,7 +301,7 @@
 .pers-campaign-title {
   font-size: 18px;
   font-weight: 600;
-  color: #2a2a2a;
+  color: #27272a;
   margin: 0 0 6px 0;
 }
 
@@ -309,7 +309,7 @@
   display: inline-block;
   padding: 4px 10px;
   background: #b4e1fa;
-  color: #2e2e2e;
+  color: #27272a;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
@@ -397,7 +397,7 @@
 }
 
 .Polaris-Button--primary:active {
-  background-color: #4a4a4a;
+  background-color: #52525b;
 }
 
 .Polaris-Button--destructive {
@@ -428,7 +428,7 @@
 
 .Polaris-Badge--info {
   background-color: #b4e1fa;
-  color: #2e2e2e;
+  color: #27272a;
 }
 
 .Polaris-Badge--warning {
@@ -451,7 +451,7 @@
   justify-content: space-between;
   margin-bottom: 8px;
   font-size: 14px;
-  color: #2a2a2a;
+  color: #27272a;
 }
 
 .Polaris-ProgressBar {
@@ -479,7 +479,7 @@
 .pers-chart-title {
   font-size: 16px;
   font-weight: 600;
-  color: #2a2a2a;
+  color: #27272a;
   margin: 0 0 16px 0;
 }
 
@@ -556,7 +556,7 @@
 .pers-empty-title {
   font-size: 20px;
   font-weight: 600;
-  color: #2a2a2a;
+  color: #27272a;
   margin: 0 0 8px 0;
 }
 
@@ -582,7 +582,7 @@
 .Polaris-Modal-Header__Title {
   font-size: 20px;
   font-weight: 600;
-  color: #2a2a2a;
+  color: #27272a;
 }
 
 .Polaris-Modal-Section {
@@ -667,8 +667,8 @@
   .pers-profile-card,
   .pers-campaign-card,
   .pers-chart-container {
-    background: #343434;
-    border-color: #464646;
+    background: #27272a;
+    border-color: #3f3f46;
   }
   
   .stat-value,
@@ -687,13 +687,13 @@
   }
   
   .Polaris-DataTable__Cell--header {
-    background-color: #383838;
+    background-color: #27272a;
   }
   
   .Polaris-TextField__Input,
   .Polaris-Select__Input {
-    background-color: #343434;
-    border-color: #464646;
+    background-color: #27272a;
+    border-color: #3f3f46;
     color: #e1e3e5;
   }
 }

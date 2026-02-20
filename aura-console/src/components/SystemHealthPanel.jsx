@@ -30,7 +30,7 @@ function SystemHealthPanel({ coreStatus, coreStatusLabel, lastRunAt }) {
             display: 'inline-block',
             marginLeft: 8,
             fontSize: 18,
-            color: '#7fffd4',
+            color: '#818cf8',
             cursor: 'help',
           }}
           title="This panel shows if your backend (AURA Core API) is working. If it's green, all features should work. If not, check your server or API key.">
@@ -39,7 +39,7 @@ function SystemHealthPanel({ coreStatus, coreStatusLabel, lastRunAt }) {
         </h2>
         <p className="card-subtitle">
           Status of your AURA Core API. If this is green, everything is running smoothly.
-          <span style={{color:'#7fffd4',marginLeft:8,cursor:'help'}} title="If this is not green, your app may not work. Check your server or API key.">?</span>
+          <span style={{color:'#818cf8',marginLeft:8,cursor:'help'}} title="If this is not green, your app may not work. Check your server or API key.">?</span>
         </p>
       </div>
       <div className="system-health-grid">

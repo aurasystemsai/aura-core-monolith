@@ -346,7 +346,7 @@ const OnboardingWizard = ({ onComplete }) => {
           width: 48px;
           height: 48px;
           border-radius: 50%;
-          background: #f0f0f0;
+          background: #fafafa;
           color: #999;
           display: flex;
           align-items: center;
@@ -357,8 +357,8 @@ const OnboardingWizard = ({ onComplete }) => {
         }
 
         .step-circle.active {
-          background: #7fffd4;
-          color: #141414;
+          background: #818cf8;
+          color: #09090b;
         }
 
         .step-circle.completed {
@@ -369,7 +369,7 @@ const OnboardingWizard = ({ onComplete }) => {
         .step-line {
           width: 80px;
           height: 3px;
-          background: #e0e0e0;
+          background: #e4e4e7;
           transition: all 0.3s;
         }
 
@@ -395,7 +395,7 @@ const OnboardingWizard = ({ onComplete }) => {
           font-size: 42px;
           font-weight: 700;
           margin: 0 0 8px 0;
-          color: #141414;
+          color: #09090b;
         }
 
         .subtitle {
@@ -413,7 +413,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .feature-card {
           padding: 24px;
-          border: 2px solid #f0f0f0;
+          border: 2px solid #fafafa;
           border-radius: 12px;
           text-align: center;
         }
@@ -437,7 +437,7 @@ const OnboardingWizard = ({ onComplete }) => {
         .setup-message {
           font-size: 18px;
           font-weight: 600;
-          color: #7fffd4;
+          color: #818cf8;
           margin-top: 32px;
         }
 
@@ -448,7 +448,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .step-icon {
           font-size: 64px;
-          color: #7fffd4;
+          color: #818cf8;
           margin-bottom: 24px;
         }
 
@@ -483,7 +483,7 @@ const OnboardingWizard = ({ onComplete }) => {
         .shop-input {
           width: 100%;
           padding: 16px;
-          border: 2px solid #e0e0e0;
+          border: 2px solid #e4e4e7;
           border-radius: 8px;
           font-size: 16px;
           transition: border-color 0.2s;
@@ -491,7 +491,7 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .shop-input:focus {
           outline: none;
-          border-color: #7fffd4;
+          border-color: #818cf8;
         }
 
         .btn-shopify {
@@ -531,7 +531,7 @@ const OnboardingWizard = ({ onComplete }) => {
         .link-btn {
           background: none;
           border: none;
-          color: #7fffd4;
+          color: #818cf8;
           font-size: 14px;
           cursor: pointer;
           text-decoration: underline;
@@ -562,7 +562,7 @@ const OnboardingWizard = ({ onComplete }) => {
         }
 
         .plan-card {
-          border: 3px solid #e0e0e0;
+          border: 3px solid #e4e4e7;
           border-radius: 16px;
           padding: 24px;
           cursor: pointer;
@@ -571,26 +571,26 @@ const OnboardingWizard = ({ onComplete }) => {
         }
 
         .plan-card:hover {
-          border-color: #7fffd4;
+          border-color: #818cf8;
           transform: translateY(-4px);
           box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         }
 
         .plan-card.selected {
-          border-color: #7fffd4;
+          border-color: #818cf8;
           background: #f0fffa;
         }
 
         .plan-card.popular {
-          border-color: #7fffd4;
+          border-color: #818cf8;
         }
 
         .popular-badge {
           position: absolute;
           top: -12px;
           right: 24px;
-          background: #7fffd4;
-          color: #141414;
+          background: #818cf8;
+          color: #09090b;
           padding: 6px 12px;
           border-radius: 12px;
           font-size: 12px;
@@ -609,7 +609,7 @@ const OnboardingWizard = ({ onComplete }) => {
         .plan-price .price {
           font-size: 42px;
           font-weight: 700;
-          color: #7fffd4;
+          color: #818cf8;
         }
 
         .plan-price .period {
@@ -639,15 +639,15 @@ const OnboardingWizard = ({ onComplete }) => {
 
         .select-indicator {
           padding: 12px;
-          background: #f0f0f0;
+          background: #fafafa;
           border-radius: 8px;
           font-weight: 600;
           text-align: center;
         }
 
         .plan-card.selected .select-indicator {
-          background: #7fffd4;
-          color: #141414;
+          background: #818cf8;
+          color: #09090b;
         }
 
         .wizard-footer {
@@ -655,7 +655,7 @@ const OnboardingWizard = ({ onComplete }) => {
           justify-content: space-between;
           align-items: center;
           padding: 24px 48px;
-          border-top: 1px solid #e0e0e0;
+          border-top: 1px solid #e4e4e7;
         }
 
         .btn-text {
@@ -673,8 +673,8 @@ const OnboardingWizard = ({ onComplete }) => {
         }
 
         .btn-primary {
-          background: #7fffd4;
-          color: #141414;
+          background: #818cf8;
+          color: #09090b;
           padding: 14px 32px;
           border: none;
           border-radius: 8px;
@@ -689,7 +689,7 @@ const OnboardingWizard = ({ onComplete }) => {
         }
 
         .btn-secondary {
-          background: #f0f0f0;
+          background: #fafafa;
           padding: 14px 32px;
           border: none;
           border-radius: 8px;
@@ -700,7 +700,7 @@ const OnboardingWizard = ({ onComplete }) => {
         }
 
         .btn-secondary:hover {
-          background: #e0e0e0;
+          background: #e4e4e7;
         }
       `}</style>
     </div>

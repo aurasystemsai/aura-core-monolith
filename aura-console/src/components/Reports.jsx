@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import ReportExportBar from "./ReportExportBar";
 const DashboardCharts = lazy(() => import('../dashboard/DashboardCharts'));
@@ -223,7 +223,7 @@ function Reports() {
         ) : 'No data.'}
       </div>
 
-      <Suspense fallback={<div style={{color:'#7fffd4'}}>Loading charts…</div>}>
+      <Suspense fallback={<div style={{color:'#818cf8'}}>Loading charts…</div>}>
         <DashboardCharts />
       </Suspense>
       <div style={{

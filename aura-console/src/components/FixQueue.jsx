@@ -542,7 +542,7 @@ export default function FixQueue({ coreUrl, projectId }) {
         <div className="fq-left">
           <div className="fq-filter">
             <div className="fq-label" title="Show only open, done, or all items in your Fix Queue">Status
-              <span style={{color:'#7fffd4',marginLeft:4,cursor:'help'}} title="Filter your Fix Queue by status. 'Open' means not fixed yet; 'Done' means already fixed.">?</span>
+              <span style={{color:'#818cf8',marginLeft:4,cursor:'help'}} title="Filter your Fix Queue by status. 'Open' means not fixed yet; 'Done' means already fixed.">?</span>
             </div>
             <select
               className="fq-select"
@@ -558,7 +558,7 @@ export default function FixQueue({ coreUrl, projectId }) {
 
           <div className="fq-filter">
             <div className="fq-label" title="How many items to show at once">Limit
-              <span style={{color:'#7fffd4',marginLeft:4,cursor:'help'}} title="Set the maximum number of Fix Queue items to display.">?</span>
+              <span style={{color:'#818cf8',marginLeft:4,cursor:'help'}} title="Set the maximum number of Fix Queue items to display.">?</span>
             </div>
             <input
               className="fq-input"

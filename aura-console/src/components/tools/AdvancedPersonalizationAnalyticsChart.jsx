@@ -33,7 +33,7 @@ export default function AdvancedPersonalizationAnalyticsChart({ data }) {
     ],
   };
   return (
-    <div style={{ background: '#18181b', borderRadius: 12, padding: 18, marginBottom: 24, color: '#f0f0f0' }}>
+    <div style={{ background: '#18181b', borderRadius: 12, padding: 18, marginBottom: 24, color: '#fafafa' }}>
       <BackButton />
       <Line data={chartData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
     </div>

@@ -11,9 +11,9 @@
   align-items: flex-end;
   margin-bottom: 24px;
   flex-wrap: wrap;
-  background: #282828;
+  background: #18181b;
   border-radius: 16px;
-  box-shadow: 0 2px 16px 0 #282828;
+  box-shadow: 0 2px 16px 0 #18181b;
   padding: 20px 32px;
 }
 
@@ -56,8 +56,8 @@
   width: 100%;
   overflow: auto;
   border-radius: 16px;
-  border: 1px solid #4a4a4a;
-  background: #282828;
+  border: 1px solid #52525b;
+  background: #18181b;
 }
 
 .fq-table {
@@ -70,7 +70,7 @@
 .fq-table td {
   text-align: left;
   padding: 12px 12px;
-  border-bottom: 1px solid #282828;
+  border-bottom: 1px solid #18181b;
   vertical-align: top;
   font-size: 12px;
 }
@@ -78,7 +78,7 @@
 .fq-table th {
   position: sticky;
   top: 0;
-  background: #282828;
+  background: #18181b;
   backdrop-filter: blur(10px);
 }
 
@@ -89,7 +89,7 @@
 
 .fq-error {
   border: 1px solid #ef4444;
-  background: #282828;
+  background: #18181b;
   border-radius: 14px;
   padding: 12px 14px;
   margin-bottom: 12px;
@@ -134,8 +134,8 @@
 }
 
 .fq-issue-pill {
-  border: 1px solid #4a4a4a;
-  background: #282828;
+  border: 1px solid #52525b;
+  background: #18181b;
   padding: 4px 8px;
   border-radius: 999px;
   font-size: 11px;
@@ -177,8 +177,8 @@
   bottom: 18px;
   right: 18px;
   z-index: 9999;
-  background: #282828;
-  border: 1px solid #4a4a4a;
+  background: #18181b;
+  border: 1px solid #52525b;
   color: #f3f4f6;
   padding: 10px 12px;
   border-radius: 12px;

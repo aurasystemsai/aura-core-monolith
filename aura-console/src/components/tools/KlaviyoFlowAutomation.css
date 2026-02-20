@@ -15,7 +15,7 @@
 
 .klaviyo-sidebar {
   width: 280px;
-  background: #282828;
+  background: #18181b;
   color: #fff;
   overflow-y: auto;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
@@ -776,7 +776,7 @@ code {
 }
 
 .klaviyo-sidebar::-webkit-scrollbar-track {
-  background: #3c3c3c;
+  background: #3f3f46;
 }
 
 .klaviyo-sidebar::-webkit-scrollbar-thumb {

@@ -87,7 +87,7 @@
   border: none;
   border-radius: 8px;
   background: white;
-  color: #555555;
+  color: #52525b;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -123,7 +123,7 @@
   border: none;
   border-radius: 6px;
   background: #f3f4f6;
-  color: #777777;
+  color: #71717a;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -131,8 +131,8 @@
 }
 
 .dpe-tab-btn:hover {
-  background: #f0f0f0;
-  color: #4a4a4a;
+  background: #fafafa;
+  color: #52525b;
 }
 
 .dpe-tab-btn.active {
@@ -168,7 +168,7 @@
 
 .dpe-tab-content h2 {
   margin: 0 0 24px 0;
-  color: #343434;
+  color: #27272a;
   font-size: 1.8rem;
   font-weight: 700;
   border-bottom: 3px solid #667eea;
@@ -177,14 +177,14 @@
 
 .dpe-tab-content h3 {
   margin: 24px 0 16px 0;
-  color: #4a4a4a;
+  color: #52525b;
   font-size: 1.3rem;
   font-weight: 600;
 }
 
 .dpe-tab-content h4 {
   margin: 0 0 8px 0;
-  color: #777777;
+  color: #71717a;
   font-size: 0.9rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -226,7 +226,7 @@
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
-  border: 2px solid #f0f0f0;
+  border: 2px solid #fafafa;
 }
 
 .dpe-form-grid {
@@ -241,7 +241,7 @@
 .dpe-form-section textarea {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid #f0f0f0;
+  border: 2px solid #fafafa;
   border-radius: 8px;
   font-size: 0.95rem;
   transition: all 0.2s ease;
@@ -294,19 +294,19 @@
 }
 
 .dpe-list-item-header strong {
-  color: #343434;
+  color: #27272a;
   font-size: 1.05rem;
 }
 
 .dpe-list-item-meta {
-  color: #777777;
+  color: #71717a;
   font-size: 0.9rem;
   margin-top: 4px;
 }
 
 .dpe-list-item-content {
   margin-top: 12px;
-  color: #555555;
+  color: #52525b;
   font-size: 0.95rem;
 }
 
@@ -364,7 +364,7 @@
 }
 
 .dpe-table tbody tr {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #fafafa;
   transition: background 0.2s ease;
 }
 
@@ -374,11 +374,11 @@
 
 .dpe-table td {
   padding: 14px 16px;
-  color: #555555;
+  color: #52525b;
 }
 
 .dpe-table td strong {
-  color: #343434;
+  color: #27272a;
 }
 
 /* Status Badges */
@@ -403,7 +403,7 @@
 
 .dpe-status-running {
   background: #dbeafe;
-  color: #4a4a4a;
+  color: #52525b;
 }
 
 .dpe-status-completed {
@@ -418,7 +418,7 @@
 
 .dpe-status-disabled {
   background: #f3f4f6;
-  color: #777777;
+  color: #71717a;
 }
 
 /* Severity Badges */
@@ -448,7 +448,7 @@
 
 .dpe-severity-low {
   background: #dbeafe;
-  color: #4a4a4a;
+  color: #52525b;
 }
 
 /* Buttons */
@@ -540,7 +540,7 @@
   justify-content: center;
   align-items: center;
   gap: 16px;
-  color: #777777;
+  color: #71717a;
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -639,12 +639,12 @@
 /* Dark Mode Support (Optional) */
 @media (prefers-color-scheme: dark) {
   .dpe-container {
-    background: linear-gradient(135deg, #343434 0%, #282828 100%);
+    background: linear-gradient(135deg, #27272a 0%, #18181b 100%);
   }
 
   .dpe-content {
-    background: #343434;
-    color: #f0f0f0;
+    background: #27272a;
+    color: #fafafa;
   }
 
   .dpe-tab-content h2,
@@ -653,40 +653,40 @@
   }
 
   .dpe-form-section {
-    background: #4a4a4a;
-    border-color: #555555;
+    background: #52525b;
+    border-color: #52525b;
   }
 
   .dpe-form-section input,
   .dpe-form-section select,
   .dpe-form-section textarea {
-    background: #343434;
-    border-color: #555555;
-    color: #f0f0f0;
+    background: #27272a;
+    border-color: #52525b;
+    color: #fafafa;
   }
 
   .dpe-list-item {
-    background: #4a4a4a;
+    background: #52525b;
   }
 
   .dpe-list-item:hover {
-    background: #555555;
+    background: #52525b;
   }
 
   .dpe-table tbody tr {
-    border-bottom-color: #555555;
+    border-bottom-color: #52525b;
   }
 
   .dpe-table tbody tr:hover {
-    background: #4a4a4a;
+    background: #52525b;
   }
 
   .dpe-table td {
-    color: #dddddd;
+    color: #e4e4e7;
   }
 
   .dpe-footer {
-    background: #343434;
+    background: #27272a;
   }
 }
 

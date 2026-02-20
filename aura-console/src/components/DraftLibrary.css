@@ -7,7 +7,7 @@
   margin: 32px auto 0 auto;
 }
 .draft-library-list, .draft-library-detail {
-  background: #282828;
+  background: #18181b;
   color: #f3f4f6;
   border-radius: 24px;
   box-shadow: 0 4px 32px rgba(0,0,0,0.13);
@@ -23,7 +23,7 @@
 .draft-library-list button.button--ghost {
   background: transparent;
   color: #f3f4f6;
-  border: 1.5px solid #4a4a4a;
+  border: 1.5px solid #52525b;
   border-radius: 12px;
   padding: 12px 10px;
   font-size: 1.08em;
@@ -31,15 +31,15 @@
   transition: background 0.18s, border 0.18s;
 }
 .draft-library-list button.button--ghost[style*="background: rgba(255,255,255,0.06)"] {
-  background: #282828 !important;
+  background: #18181b !important;
   border: 1.5px solid #38bdf8 !important;
 }
 .draft-library-list button.button--ghost:hover {
-  background: #282828;
+  background: #18181b;
   border: 1.5px solid #38bdf8;
 }
 .draft-library-detail .pill {
-  background: #4a4a4a;
+  background: #52525b;
   color: #f3f4f6;
   border: none;
   border-radius: 8px;
@@ -51,13 +51,13 @@
   transition: background 0.18s;
 }
 .draft-library-detail .pill--active {
-  background: #282828;
+  background: #18181b;
   color: #38bdf8;
 }
 .draft-library-detail .button--ghost.button--tiny {
-  background: #282828;
+  background: #18181b;
   color: #f3f4f6;
-  border: 1.5px solid #4a4a4a;
+  border: 1.5px solid #52525b;
   border-radius: 8px;
   padding: 6px 14px;
   font-size: 0.98em;
@@ -66,11 +66,11 @@
   transition: background 0.18s, border 0.18s;
 }
 .draft-library-detail .button--ghost.button--tiny:hover {
-  background: #282828;
+  background: #18181b;
   border: 1.5px solid #38bdf8;
 }
 .draft-library-detail pre.raw-json-pre {
-  background: #282828;
+  background: #18181b;
   color: #f3f4f6;
   border-radius: 10px;
   padding: 18px;

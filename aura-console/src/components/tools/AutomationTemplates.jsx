@@ -14,14 +14,14 @@ export default function AutomationTemplates() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: '#3c3c3c', borderRadius: 12, marginBottom: 18, color: '#f0f0f0' }}>
+    <div style={{ padding: 24, background: '#3f3f46', borderRadius: 12, marginBottom: 18, color: '#fafafa' }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Automation Templates</h3>
-      <ul style={{ margin: '16px 0 0 18px', color: '#4a4a4a', fontSize: 16 }}>
+      <ul style={{ margin: '16px 0 0 18px', color: '#52525b', fontSize: 16 }}>
         <li>Browse, import, and install workflow templates</li>
         <li>Customize, analyze, and export automations</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#141414', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: '#09090b', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 28px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Get Started</button>
     </div>
   );
 
@@ -88,9 +88,9 @@ export default function AutomationTemplates() {
       </div>
       {/* Analytics Dashboard */}
       <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-        <div style={{ background: "#2e2e2e", borderRadius: 10, padding: "12px 20px", border: "1px solid #2e2e2e" }}>
+        <div style={{ background: "#27272a", borderRadius: 10, padding: "12px 20px", border: "1px solid #27272a" }}>
           <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Templates Used</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#7fffd4", marginTop: 2 }}>{analytics.length}</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#818cf8", marginTop: 2 }}>{analytics.length}</div>
         </div>
       </div>
       {/* Accessibility & Compliance */}

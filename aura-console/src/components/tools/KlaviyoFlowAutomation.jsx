@@ -293,7 +293,7 @@ export default function KlaviyoFlowAutomation() {
       )}
 
       {flows.length > 0 && (
-        <div style={{ background: '#343434', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ background: '#27272a', borderRadius: 12, overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#222', borderBottom: '1px solid #333' }}>
@@ -349,7 +349,7 @@ export default function KlaviyoFlowAutomation() {
     <div style={{ padding: 24 }}>
       <h2 style={{ color: accentColor }}>Flows Editor</h2>
       <p style={{ color: '#888', marginBottom: 24 }}>Visual flow builder with drag-and-drop nodes</p>
-      <div style={{ background: '#343434', borderRadius: 12, padding: 48, textAlign: 'center', minHeight: 400 }}>
+      <div style={{ background: '#27272a', borderRadius: 12, padding: 48, textAlign: 'center', minHeight: 400 }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>️</div>
         <p style={{ color: '#888' }}>Flow canvas coming soon</p>
       </div>
@@ -406,7 +406,7 @@ export default function KlaviyoFlowAutomation() {
     <div style={{ padding: 24 }}>
       <h2 style={{ color: accentColor }}>Flow Optimizer</h2>
       <p style={{ color: '#888', marginBottom: 24 }}>AI-powered flow optimization recommendations</p>
-      <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+      <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
         <h3 style={{ marginBottom: 16 }}>Optimization Suggestions</h3>
         <div style={{ color: '#888' }}>
           <p>• Reduce wait times by 24 hours in welcome flow</p>
@@ -468,7 +468,7 @@ export default function KlaviyoFlowAutomation() {
           style={{
             width: '100%',
             minHeight: 120,
-            background: '#343434',
+            background: '#27272a',
             border: '1px solid #333',
             borderRadius: 8,
             padding: 16,
@@ -581,19 +581,19 @@ export default function KlaviyoFlowAutomation() {
       
       {analytics && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-          <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+          <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
             <h3 style={{ fontSize: 14, color: '#888', marginBottom: 8 }}>Total Flows</h3>
             <div style={{ fontSize: 32, fontWeight: 700, color: accentColor }}>
               {flows.length}
             </div>
           </div>
-          <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+          <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
             <h3 style={{ fontSize: 14, color: '#888', marginBottom: 8 }}>Active</h3>
             <div style={{ fontSize: 32, fontWeight: 700, color: '#10b981' }}>
               {flows.filter(f => f.status === 'active').length}
             </div>
           </div>
-          <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+          <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
             <h3 style={{ fontSize: 14, color: '#888', marginBottom: 8 }}>Draft</h3>
             <div style={{ fontSize: 32, fontWeight: 700, color: '#f59e0b' }}>
               {flows.filter(f => f.status !== 'active').length}
@@ -616,7 +616,7 @@ export default function KlaviyoFlowAutomation() {
       <h2 style={{ color: accentColor }}>Audit Logs</h2>
       <p style={{ color: '#888', marginBottom: 24 }}>Complete audit trail of all actions</p>
       
-      <div style={{ background: '#343434', borderRadius: 12, padding: 16 }}>
+      <div style={{ background: '#27272a', borderRadius: 12, padding: 16 }}>
         {auditLogs.length === 0 && (
           <p style={{ color: '#666', textAlign: 'center', padding: 24 }}>No audit logs available</p>
         )}
@@ -648,15 +648,15 @@ export default function KlaviyoFlowAutomation() {
       <p style={{ color: '#888', marginBottom: 24 }}>System health and service status</p>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 16 }}>
-        <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
           <h3 style={{ marginBottom: 8 }}>API</h3>
           <div style={{ color: '#10b981', fontWeight: 600 }}>Healthy</div>
         </div>
-        <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
           <h3 style={{ marginBottom: 8 }}>Database</h3>
           <div style={{ color: '#10b981', fontWeight: 600 }}>Healthy</div>
         </div>
-        <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
           <h3 style={{ marginBottom: 8 }}>AI</h3>
           <div style={{ color: '#10b981', fontWeight: 600 }}>Healthy</div>
         </div>
@@ -714,7 +714,7 @@ export default function KlaviyoFlowAutomation() {
         Multi-model AI with intelligent routing, ensemble, and fallback strategies
       </p>
       
-      <div style={{ background: '#343434', borderRadius: 12, padding: 24, marginBottom: 24 }}>
+      <div style={{ background: '#27272a', borderRadius: 12, padding: 24, marginBottom: 24 }}>
         <h3 style={{ marginBottom: 16 }}>AI Agents</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
           {aiModels.map(model => (
@@ -736,7 +736,7 @@ export default function KlaviyoFlowAutomation() {
         </div>
       </div>
 
-      <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+      <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
         <h3 style={{ marginBottom: 16 }}>Model Routing</h3>
         <p style={{ color: '#888' }}>Route tasks to the most cost-effective model</p>
         <div style={{ marginTop: 16 }}>
@@ -761,7 +761,7 @@ export default function KlaviyoFlowAutomation() {
         Live editing, comments, presence, and team workflows
       </p>
       
-      <div style={{ background: '#343434', borderRadius: 12, padding: 24, marginBottom: 24 }}>
+      <div style={{ background: '#27272a', borderRadius: 12, padding: 24, marginBottom: 24 }}>
         <h3 style={{ marginBottom: 16 }}>Teams</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 12 }}>
           {teams.length === 0 && <p style={{ color: '#666' }}>No teams configured</p>}
@@ -774,7 +774,7 @@ export default function KlaviyoFlowAutomation() {
         </div>
       </div>
 
-      <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+      <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
         <h3 style={{ marginBottom: 16 }}>Activity Feed</h3>
         {activityFeed.length === 0 && <p style={{ color: '#666' }}>No recent activity</p>}
         {activityFeed.slice(0, 5).map((activity, idx) => (
@@ -794,21 +794,21 @@ export default function KlaviyoFlowAutomation() {
       </p>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16, marginBottom: 24 }}>
-        <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
           <h3 style={{ marginBottom: 8 }}>SSO Status</h3>
           <div style={{ color: '#10b981', fontWeight: 600 }}>Configured</div>
         </div>
-        <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
           <h3 style={{ marginBottom: 8 }}>MFA</h3>
           <div style={{ color: '#10b981', fontWeight: 600 }}>Enabled</div>
         </div>
-        <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
           <h3 style={{ marginBottom: 8 }}>Compliance</h3>
           <div style={{ color: '#10b981', fontWeight: 600 }}>GDPR, CCPA, SOC 2</div>
         </div>
       </div>
 
-      <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+      <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
         <h3 style={{ marginBottom: 16 }}>Threat Detection</h3>
         {threats.length === 0 && <p style={{ color: '#10b981' }}>No active threats detected</p>}
       </div>
@@ -823,24 +823,24 @@ export default function KlaviyoFlowAutomation() {
       </p>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 16, marginBottom: 24 }}>
-        <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
           <h3 style={{ fontSize: 14, color: '#888', marginBottom: 8 }}>Revenue Forecast (Next Month)</h3>
           <div style={{ fontSize: 32, fontWeight: 700, color: accentColor }}>$158,000</div>
           <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>88% confidence</div>
         </div>
-        <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
           <h3 style={{ fontSize: 14, color: '#888', marginBottom: 8 }}>Churn Rate</h3>
           <div style={{ fontSize: 32, fontWeight: 700, color: '#10b981' }}>4.2%</div>
           <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>156 at-risk users</div>
         </div>
-        <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+        <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
           <h3 style={{ fontSize: 14, color: '#888', marginBottom: 8 }}>Avg LTV</h3>
           <div style={{ fontSize: 32, fontWeight: 700, color: accentColor }}>$487.50</div>
           <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>Across all segments</div>
         </div>
       </div>
 
-      <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+      <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
         <h3 style={{ marginBottom: 16 }}>Anomaly Detection</h3>
         <p style={{ color: '#888' }}>Real-time monitoring of metric deviations</p>
       </div>
@@ -854,7 +854,7 @@ export default function KlaviyoFlowAutomation() {
         REST API, webhooks, SDKs, and sandbox testing
       </p>
       
-      <div style={{ background: '#343434', borderRadius: 12, padding: 24, marginBottom: 24 }}>
+      <div style={{ background: '#27272a', borderRadius: 12, padding: 24, marginBottom: 24 }}>
         <h3 style={{ marginBottom: 16 }}>API Documentation</h3>
         <div style={{ color: '#888' }}>
           <p><strong>Base URL:</strong> https://api.aura.ai/klaviyo</p>
@@ -864,7 +864,7 @@ export default function KlaviyoFlowAutomation() {
         </div>
       </div>
 
-      <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+      <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
         <h3 style={{ marginBottom: 16 }}>SDK Downloads</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
           <div style={{ background: '#222', padding: 16, borderRadius: 8 }}>
@@ -898,7 +898,7 @@ export default function KlaviyoFlowAutomation() {
         Custom branding, themes, and domain configuration
       </p>
       
-      <div style={{ background: '#343434', borderRadius: 12, padding: 24, marginBottom: 24 }}>
+      <div style={{ background: '#27272a', borderRadius: 12, padding: 24, marginBottom: 24 }}>
         <h3 style={{ marginBottom: 16 }}>Themes</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
           <div style={{ background: '#222', padding: 16, borderRadius: 8 }}>
@@ -912,7 +912,7 @@ export default function KlaviyoFlowAutomation() {
         </div>
       </div>
 
-      <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+      <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
         <h3 style={{ marginBottom: 16 }}>Custom Domains</h3>
         <p style={{ color: '#888' }}>klaviyo.yourbrand.com</p>
       </div>
@@ -926,7 +926,7 @@ export default function KlaviyoFlowAutomation() {
         Application performance, traces, and real-time metrics
       </p>
       
-      <div style={{ background: '#343434', borderRadius: 12, padding: 24 }}>
+      <div style={{ background: '#27272a', borderRadius: 12, padding: 24 }}>
         <h3 style={{ marginBottom: 16 }}>Performance Metrics</h3>
         <div style={{ color: '#888' }}>
           <p><strong>Avg Response Time:</strong> 142ms</p>
@@ -969,7 +969,7 @@ export default function KlaviyoFlowAutomation() {
     <div style={containerStyle}>
       {/* Header */}
       <div style={{
-        background: theme === 'dark' ? '#343434' : '#f5f5f5',
+        background: theme === 'dark' ? '#27272a' : '#f5f5f5',
         borderBottom: `1px solid ${theme === 'dark' ? '#333' : '#ddd'}`,
         padding: '16px 24px'
       }}>
@@ -983,7 +983,7 @@ export default function KlaviyoFlowAutomation() {
 
       {/* Category Navigation */}
       <div style={{
-        background: theme === 'dark' ? '#141414' : '#fafafa',
+        background: theme === 'dark' ? '#09090b' : '#fafafa',
         borderBottom: `1px solid ${theme === 'dark' ? '#333' : '#ddd'}`,
         padding: '0 24px',
         display: 'flex',
@@ -1017,7 +1017,7 @@ export default function KlaviyoFlowAutomation() {
 
       {/* Tab Navigation */}
       <div style={{
-        background: theme === 'dark' ? '#141414' : '#fafafa',
+        background: theme === 'dark' ? '#09090b' : '#fafafa',
         borderBottom: `1px solid ${theme === 'dark' ? '#333' : '#ddd'}`,
         padding: '0 24px',
         display: 'flex',
@@ -1029,7 +1029,7 @@ export default function KlaviyoFlowAutomation() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
-              background: activeTab === tab.id ? theme === 'dark' ? '#343434' : '#fff' : 'transparent',
+              background: activeTab === tab.id ? theme === 'dark' ? '#27272a' : '#fff' : 'transparent',
               color: activeTab === tab.id ? accentColor : '#888',
               border: 'none',
               borderBottom: activeTab === tab.id ? `2px solid ${accentColor}` : '2px solid transparent',

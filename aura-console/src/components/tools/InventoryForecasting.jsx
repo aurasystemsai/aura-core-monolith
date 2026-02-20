@@ -77,14 +77,14 @@ export default function InventoryForecasting() {
 
   // Onboarding content
   const onboardingContent = (
-    <div style={{ padding: 24, background: darkMode ? "#141414" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
+    <div style={{ padding: 24, background: darkMode ? "#09090b" : "#f1f5f9", borderRadius: 12, marginBottom: 18 }}>
       <h3 style={{ fontWeight: 700, fontSize: 22 }}>Welcome to Inventory Forecasting</h3>
-      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#4a4a4a", fontSize: 16 }}>
+      <ul style={{ margin: "16px 0 0 18px", color: darkMode ? "#a3e635" : "#52525b", fontSize: 16 }}>
         <li>Demand forecasting, reorder automation, and supply chain analytics</li>
         <li>Export, share, and review forecast history</li>
         <li>Accessible, secure, and fully compliant</li>
       </ul>
-      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#141414", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
+      <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
     </div>
   );
 
@@ -97,13 +97,13 @@ export default function InventoryForecasting() {
       borderRadius: 18,
       boxShadow: "0 2px 24px #0002",
       padding: 36,
-      color: darkMode ? "#a3e635" : "#141414",
+      color: darkMode ? "#a3e635" : "#09090b",
       fontFamily: 'Inter, sans-serif',
       transition: "background 0.3s, color 0.3s"
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Inventory Forecasting</h2>
-        <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#141414", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
+        <button onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode" style={{ background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{darkMode ? "Light" : "Dark"} Mode</button>
       </div>
       <div style={{ marginBottom: 10, color: darkMode ? "#a3e635" : "#0ea5e9", fontWeight: 600 }}>
         <span role="img" aria-label="inventory"></span>Predict inventory needs and optimize stock levels.
@@ -114,14 +114,14 @@ export default function InventoryForecasting() {
         value={input}
         onChange={e => setInput(e.target.value)}
         type="text"
-        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#141414" : "#fff", color: darkMode ? "#a3e635" : "#141414" }}
+        style={{ width: "100%", fontSize: 16, padding: 12, borderRadius: 8, border: darkMode ? "1px solid #555" : "1px solid #ccc", marginBottom: 18, background: darkMode ? "#09090b" : "#fff", color: darkMode ? "#a3e635" : "#09090b" }}
         placeholder="Describe your inventory forecasting question..."
         aria-label="Inventory forecasting input"
       />
       <button onClick={handleAnalyze} disabled={loading || !input} style={{ background: "#0ea5e9", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 16, cursor: "pointer", marginBottom: 18 }}>{loading ? "Analyzing..." : "Analyze"}</button>
       {error && <div style={{ color: "#ef4444", marginBottom: 10 }}>{error}</div>}
       {result && (
-        <div style={{ background: darkMode ? "#141414" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635" : "#141414" }}>
+        <div style={{ background: darkMode ? "#09090b" : "#f1f5f9", borderRadius: 10, padding: 16, marginBottom: 12, color: darkMode ? "#a3e635" : "#09090b" }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>Forecast Result:</div>
           <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{JSON.stringify(result, null, 2)}</pre>
         </div>
@@ -136,10 +136,10 @@ export default function InventoryForecasting() {
       </div>
       {/* History */}
       {history.length > 0 && (
-        <div style={{ marginTop: 24, background: "#282828", borderRadius: 12, padding: 18 }}>
+        <div style={{ marginTop: 24, background: "#18181b", borderRadius: 12, padding: 18 }}>
           <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: "#e2e8f0" }}>Forecast History</div>
           {history.map((h, i) => (
-            <div key={i} style={{ background: "#141414", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #2e2e2e" }}>
+            <div key={i} style={{ background: "#09090b", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #27272a" }}>
               <div style={{ fontWeight: 600, color: "#e2e8f0", fontSize: 13 }}>{h.input ? h.input.slice(0, 60) + (h.input.length > 60 ? "…" : "") : `Run #${i+1}`}</div>
               {h.result && <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>{JSON.stringify(h.result).slice(0, 150)}{JSON.stringify(h.result).length > 150 ? "…" : ""}</div>}
             </div>

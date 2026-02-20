@@ -1,5 +1,5 @@
 ﻿﻿.notifications-panel-card {
-  background: #141414;
+  background: #09090b;
   border-radius: 16px;
   box-shadow: 0 2px 12px #0003;
   padding: 24px 32px 18px 32px;
@@ -10,7 +10,7 @@
 }
 .notification-item {
   padding: 10px 0;
-  border-bottom: 1px solid #282828;
+  border-bottom: 1px solid #18181b;
   color: #f3f4f6;
   font-size: 15px;
   display: flex;
@@ -21,7 +21,7 @@
   border-bottom: none;
 }
 .notification-info {
-  color: #7fffd4;
+  color: #818cf8;
 }
 .notification-warning {
   color: #ffe066;

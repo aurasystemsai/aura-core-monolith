@@ -14,7 +14,7 @@
   font-size: 32px;
   font-weight: 700;
   margin-bottom: 8px;
-  color: #343434;
+  color: #27272a;
 }
 
 .tool-header p {
@@ -65,7 +65,7 @@
 }
 
 .tabs button:hover {
-  color: #343434;
+  color: #27272a;
   background: #f1f5f9;
   border-radius: 8px 8px 0 0;
 }
@@ -137,7 +137,7 @@
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: #4a4a4a;
+  color: #52525b;
   margin-bottom: 8px;
 }
 
@@ -187,7 +187,7 @@
 }
 
 .btn-primary:hover {
-  background: #777777;
+  background: #71717a;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
 }
@@ -200,7 +200,7 @@
 
 .btn-secondary {
   background: #e2e8f0;
-  color: #4a4a4a;
+  color: #52525b;
 }
 
 .btn-secondary:hover {
@@ -215,7 +215,7 @@
 }
 
 .btn-small:hover {
-  background: #777777;
+  background: #71717a;
 }
 
 /* Data Tables */
@@ -245,7 +245,7 @@
 .data-table td {
   padding: 12px 16px;
   font-size: 14px;
-  color: #4a4a4a;
+  color: #52525b;
   border-top: 1px solid #e2e8f0;
 }
 
@@ -292,7 +292,7 @@
 .recommendation-card h4 {
   font-size: 16px;
   font-weight: 700;
-  color: #343434;
+  color: #27272a;
   margin-bottom: 12px;
 }
 
@@ -334,7 +334,7 @@
   padding: 4px 8px;
   border-radius: 4px;
   background: #e0e7ff;
-  color: #4a4a4a;
+  color: #52525b;
   text-transform: uppercase;
 }
 
@@ -349,7 +349,7 @@
 .affinity-info h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #343434;
+  color: #27272a;
   margin-bottom: 12px;
 }
 
@@ -371,7 +371,7 @@
 }
 
 .affinity-info strong {
-  color: #343434;
+  color: #27272a;
   font-weight: 600;
 }
 
@@ -387,7 +387,7 @@
 .optimization-card h3 {
   font-size: 20px;
   font-weight: 700;
-  color: #343434;
+  color: #27272a;
   margin-bottom: 16px;
 }
 
@@ -420,7 +420,7 @@
 .value-metrics .value {
   font-size: 24px;
   font-weight: 700;
-  color: #343434;
+  color: #27272a;
 }
 
 .value-metrics .success .value {
@@ -434,7 +434,7 @@
 .suggestions-section h4 {
   font-size: 16px;
   font-weight: 700;
-  color: #4a4a4a;
+  color: #52525b;
   margin-bottom: 12px;
 }
 
@@ -472,7 +472,7 @@
 
 .type-badge.cross-sell {
   background: #e0e7ff;
-  color: #4a4a4a;
+  color: #52525b;
 }
 
 .suggestion-item .increase,
@@ -517,7 +517,7 @@
 .abandoned-carts-section h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #343434;
+  color: #27272a;
   margin-bottom: 16px;
 }
 
@@ -545,7 +545,7 @@
 .model-card h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #343434;
+  color: #27272a;
   margin-bottom: 12px;
 }
 
@@ -576,7 +576,7 @@
 .training-section h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #343434;
+  color: #27272a;
   margin-bottom: 8px;
 }
 
@@ -596,7 +596,7 @@
 .model-performance h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #343434;
+  color: #27272a;
   margin-bottom: 20px;
 }
 
@@ -623,7 +623,7 @@
   display: block;
   font-size: 15px;
   font-weight: 600;
-  color: #343434;
+  color: #27272a;
   margin-bottom: 8px;
 }
 

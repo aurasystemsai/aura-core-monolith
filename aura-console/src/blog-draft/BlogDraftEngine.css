@@ -1,7 +1,7 @@
 ﻿﻿:root {
-  --bde-bg: linear-gradient(135deg, #282828 0%, #181818 40%, #282828 100%);
-  --bde-card: #282828;
-  --bde-border: rgba(255, 255, 255, 0.06);
+  --bde-bg: linear-gradient(135deg, #18181b 0%, #09090b 40%, #18181b 100%);
+  --bde-card: #18181b;
+  --bde-border: rgba(99, 102, 241, 0.10);
   --bde-text: #e2e8f0;
   --bde-muted: #94a3b8;
   --bde-accent: #7c3aed;
@@ -75,12 +75,12 @@
 
 .bde-btn.primary {
   background: linear-gradient(120deg, var(--bde-accent) 0%, var(--bde-accent-2) 100%);
-  color: #181818;
+  color: #09090b;
   border: none;
 }
 
 .bde-btn.secondary {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(99, 102, 241, 0.12);
 }
 
 .bde-badges {
@@ -96,7 +96,7 @@
   gap: 8px;
   padding: 8px 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(99, 102, 241, 0.10);
   color: var(--bde-text);
   font-size: 13px;
   border: 1px solid var(--bde-border);
@@ -213,7 +213,7 @@
 }
 
 .bde-tag {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(99, 102, 241, 0.10);
   border: 1px solid var(--bde-border);
   padding: 4px 8px;
   border-radius: 999px;
@@ -329,7 +329,7 @@
 }
 
 .bde-tab-chip:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(99, 102, 241, 0.12);
   border-color: rgba(255, 255, 255, 0.12);
   transform: translateY(-1px);
 }
@@ -424,7 +424,7 @@
 }
 
 .bde-data-table thead {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(99, 102, 241, 0.10);
   border-bottom: 2px solid var(--bde-border);
 }
 
@@ -469,7 +469,7 @@
 }
 
 .bde-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(99, 102, 241, 0.12);
   transform: scale(1.05);
 }
 
@@ -499,7 +499,7 @@
 }
 
 .bde-modal {
-  background: linear-gradient(135deg, #282828 0%, #282828 100%);
+  background: linear-gradient(135deg, #18181b 0%, #18181b 100%);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
@@ -536,7 +536,7 @@
 }
 
 .bde-modal-close {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(99, 102, 241, 0.10);
   border: 1px solid var(--bde-border);
   border-radius: 8px;
   color: var(--bde-text);
@@ -578,7 +578,7 @@
 .bde-modal-body input,
 .bde-modal-body select,
 .bde-modal-body textarea {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(99, 102, 241, 0.10);
   border: 1px solid var(--bde-border);
   border-radius: 10px;
   padding: 12px 14px;
@@ -616,7 +616,7 @@
 }
 
 .bde-task-card:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(99, 102, 241, 0.10);
   border-color: rgba(255, 255, 255, 0.12);
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
@@ -813,7 +813,7 @@
 }
 
 .bde-health-card:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(99, 102, 241, 0.10);
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }

@@ -613,9 +613,9 @@ export default function SelfServiceAnalytics() {
               key={c.id}
               className="chart-result"
               style={{
-                background: "#282828",
-                border: "1px solid #343434",
-                color: "#f0f0f0",
+                background: "#18181b",
+                border: "1px solid #27272a",
+                color: "#fafafa",
                 borderRadius: 6,
                 padding: 10,
                 marginBottom: 8,
@@ -642,9 +642,9 @@ export default function SelfServiceAnalytics() {
               key={v.id}
               className="saved-view"
               style={{
-                background: "#282828",
-                border: "1px solid #343434",
-                color: "#f0f0f0",
+                background: "#18181b",
+                border: "1px solid #27272a",
+                color: "#fafafa",
                 borderRadius: 6,
                 padding: 10,
                 marginBottom: 8,
@@ -693,9 +693,9 @@ export default function SelfServiceAnalytics() {
               key={s.id}
               className="schedule"
               style={{
-                background: "#282828",
-                border: "1px solid #343434",
-                color: "#f0f0f0",
+                background: "#18181b",
+                border: "1px solid #27272a",
+                color: "#fafafa",
                 borderRadius: 6,
                 padding: 10,
                 marginBottom: 8,
@@ -732,9 +732,9 @@ export default function SelfServiceAnalytics() {
                   key={i}
                   className="history-item"
                   style={{
-                    background: "#282828",
-                    border: "1px solid #343434",
-                    color: "#f0f0f0",
+                    background: "#18181b",
+                    border: "1px solid #27272a",
+                    color: "#fafafa",
                     borderRadius: 6,
                     padding: 10,
                     marginBottom: 8,
@@ -756,7 +756,7 @@ export default function SelfServiceAnalytics() {
               key={i}
               className="alert-item"
               style={{
-                background: "#343434",
+                background: "#27272a",
                 border: "1px solid #eab308",
                 color: "#fef08a",
                 borderRadius: 6,
