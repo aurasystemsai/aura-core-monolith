@@ -55,6 +55,49 @@ const CATS = [
   { id: 'advanced',    label: 'Advanced',               tabs: ['api','custom-fields','automation-rules'] },
 ];
 
+/* Sub-groups within each category for organized navigation */
+const TAB_GROUPS = {
+  campaigns: [
+    { label: 'Core', tabs: ['overview','create','templates','sequences','campaign-calendar'] },
+    { label: 'Audience', tabs: ['segments','personalization','profiles','lifecycle','dynamic-content'] },
+    { label: 'Acquisition', tabs: ['forms','landing-pages','referral-program','surveys'] },
+    { label: 'Commerce', tabs: ['transactional','stock-alerts','coupon-engine','countdown-timers'] },
+    { label: 'Content', tabs: ['amp-emails','rss-to-email','smart-translations','timeline'] },
+  ],
+  ai: [
+    { label: 'Optimization', tabs: ['smart-send','send-time','auto-optimize','predictive'] },
+    { label: 'Generation', tabs: ['content-gen','subject-opt','ai-images','ai-campaign'] },
+    { label: 'Intelligence', tabs: ['recommendations','product-recs','ai-segments','flow-gen'] },
+  ],
+  workflows: [
+    { label: 'Build', tabs: ['builder','visual-builder','flow-templates','splits'] },
+    { label: 'Configure', tabs: ['triggers','conditions','actions','content-approvals'] },
+    { label: 'Monitor', tabs: ['monitoring','history','flow-metrics','reviews','cart-recovery'] },
+  ],
+  multichannel: [
+    { label: 'Channels', tabs: ['sms','push','whatsapp','webhooks'] },
+    { label: 'Strategy', tabs: ['orchestration','preferences','retargeting'] },
+  ],
+  analytics: [
+    { label: 'Overview', tabs: ['dashboard','reports','export'] },
+    { label: 'Performance', tabs: ['revenue','engagement','deliverability','benchmarks'] },
+    { label: 'Deep Dive', tabs: ['funnel-analysis','cohort-analysis','rfm-analysis','email-heatmaps'] },
+    { label: 'Tools', tabs: ['smart-alerts','lead-scoring','product-catalog','conversion-goals'] },
+  ],
+  testing: [
+    { label: 'Experiments', tabs: ['abtests','multivariate','experiments','content-testing'] },
+    { label: 'Quality', tabs: ['inbox-preview','spam-testing','accessibility'] },
+    { label: 'Results', tabs: ['results','frequency'] },
+  ],
+  settings: [
+    { label: 'Account', tabs: ['general','team','compliance'] },
+    { label: 'Tools', tabs: ['integrations','list-hygiene','frequency-capping','design-system'] },
+  ],
+  advanced: [
+    { label: 'Developer', tabs: ['api','custom-fields','automation-rules'] },
+  ],
+};
+
 const TAB_LABELS = {
   overview:'Campaign Overview', create:'Create Campaign', templates:'Email Templates',
   sequences:'Email Sequences', segments:'Audience Segments', personalization:'Personalization',
@@ -4706,27 +4749,84 @@ function AdvancedMgmt({ tab }) {
 export default function EmailAutomationBuilder() {
   const [activeCat, setActiveCat] = useState('campaigns');
   const [activeTab, setActiveTab] = useState('overview');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [expandedCats, setExpandedCats] = useState({ campaigns: true });
 
   const catMeta = {
-    campaigns:    { icon: '📧', color: '#8b5cf6' },
-    ai:           { icon: '🤖', color: '#06b6d4' },
-    workflows:    { icon: '⚡', color: '#f59e0b' },
-    multichannel: { icon: '📱', color: '#ec4899' },
-    analytics:    { icon: '📊', color: '#22c55e' },
-    testing:      { icon: '🧪', color: '#3b82f6' },
-    settings:     { icon: '⚙️', color: '#a1a1aa' },
-    advanced:     { icon: '🔧', color: '#ef4444' },
+    campaigns:    { icon: '\u{1F4E7}', color: '#8b5cf6' },
+    ai:           { icon: '\u{1F916}', color: '#06b6d4' },
+    workflows:    { icon: '\u26A1',    color: '#f59e0b' },
+    multichannel: { icon: '\u{1F4F1}', color: '#ec4899' },
+    analytics:    { icon: '\u{1F4CA}', color: '#22c55e' },
+    testing:      { icon: '\u{1F9EA}', color: '#3b82f6' },
+    settings:     { icon: '\u2699\uFE0F', color: '#a1a1aa' },
+    advanced:     { icon: '\u{1F527}', color: '#ef4444' },
+  };
+
+  /* Per-tab icons for richer sidebar (Klaviyo / Omnisend style) */
+  const tabIcons = {
+    overview:'\u{1F4CB}', create:'\u270F\uFE0F', templates:'\u{1F4C4}', sequences:'\u{1F501}',
+    'campaign-calendar':'\u{1F4C5}', segments:'\u{1F465}', personalization:'\u{1F3AF}',
+    profiles:'\u{1F464}', lifecycle:'\u{1F504}', 'dynamic-content':'\u{1F9E9}',
+    forms:'\u{1F4DD}', 'landing-pages':'\u{1F310}', 'referral-program':'\u{1F91D}', surveys:'\u{1F4CA}',
+    transactional:'\u{1F4E8}', 'stock-alerts':'\u{1F514}', 'coupon-engine':'\u{1F3AB}', 'countdown-timers':'\u23F3',
+    'amp-emails':'\u26A1', 'rss-to-email':'\u{1F4E1}', 'smart-translations':'\u{1F30D}', timeline:'\u{1F552}',
+    'smart-send':'\u{1F680}', 'send-time':'\u23F0', 'auto-optimize':'\u2728', predictive:'\u{1F52E}',
+    'content-gen':'\u{1F4AC}', 'subject-opt':'\u{1F4A1}', 'ai-images':'\u{1F5BC}\uFE0F', 'ai-campaign':'\u{1F916}',
+    recommendations:'\u{1F4A1}', 'product-recs':'\u{1F6CD}\uFE0F', 'ai-segments':'\u{1F9E0}', 'flow-gen':'\u{1F9F1}',
+    builder:'\u{1F3D7}\uFE0F', 'visual-builder':'\u{1F58C}\uFE0F', 'flow-templates':'\u{1F4CB}', splits:'\u{1F500}',
+    triggers:'\u{1F3AF}', conditions:'\u{1F6A6}', actions:'\u{1F3AC}', 'content-approvals':'\u2705',
+    monitoring:'\u{1F4DF}', history:'\u{1F4DC}', 'flow-metrics':'\u{1F4CF}', reviews:'\u2B50', 'cart-recovery':'\u{1F6D2}',
+    sms:'\u{1F4F1}', push:'\u{1F514}', whatsapp:'\u{1F4AC}', webhooks:'\u{1F517}',
+    orchestration:'\u{1F3BC}', preferences:'\u2699\uFE0F', retargeting:'\u{1F3AF}',
+    dashboard:'\u{1F4CA}', reports:'\u{1F4C8}', export:'\u{1F4E5}',
+    revenue:'\u{1F4B0}', engagement:'\u{1F4AC}', deliverability:'\u{1F4EC}', benchmarks:'\u{1F3C6}',
+    'funnel-analysis':'\u{1F4C9}', 'cohort-analysis':'\u{1F465}', 'rfm-analysis':'\u{1F4CA}', 'email-heatmaps':'\u{1F525}',
+    'smart-alerts':'\u{1F6A8}', 'lead-scoring':'\u{1F3AF}', 'product-catalog':'\u{1F4E6}', 'conversion-goals':'\u{1F3C1}',
+    abtests:'\u{1F500}', multivariate:'\u{1F9EA}', experiments:'\u{1F52C}', 'content-testing':'\u{1F4DD}',
+    'inbox-preview':'\u{1F4E9}', 'spam-testing':'\u{1F6E1}\uFE0F', accessibility:'\u267F',
+    results:'\u{1F4CA}', frequency:'\u{1F4C6}',
+    general:'\u2699\uFE0F', team:'\u{1F465}', compliance:'\u{1F6E1}\uFE0F',
+    integrations:'\u{1F50C}', 'list-hygiene':'\u{1F9F9}', 'frequency-capping':'\u23F1\uFE0F', 'design-system':'\u{1F3A8}',
+    api:'\u{1F4BB}', 'custom-fields':'\u{1F4CB}', 'automation-rules':'\u{1F4DC}',
   };
 
   const currentCat = CATS.find(c => c.id === activeCat) || CATS[0];
+
+  function toggleCatExpand(id) {
+    setExpandedCats(prev => ({ ...prev, [id]: !prev[id] }));
+  }
 
   function switchCat(id) {
     setActiveCat(id);
     const cat = CATS.find(c => c.id === id);
     setActiveTab(cat ? cat.tabs[0] : 'overview');
+    setSearchQuery('');
+    /* auto-expand target, collapse others (Klaviyo-style) */
+    setExpandedCats({ [id]: true });
   }
 
-  // Map category to its management component
+  function navigateToTab(catId, tabId) {
+    setActiveCat(catId);
+    setActiveTab(tabId);
+    setSearchQuery('');
+    setExpandedCats(prev => ({ ...prev, [catId]: true }));
+  }
+
+  /* Compute search results across all categories */
+  const searchResults = searchQuery.trim().length > 0
+    ? CATS.flatMap(cat =>
+        cat.tabs
+          .filter(t => (TAB_LABELS[t] || t).toLowerCase().includes(searchQuery.toLowerCase()))
+          .map(t => ({ catId: cat.id, catLabel: cat.label, tabId: t, label: TAB_LABELS[t] || t }))
+      )
+    : [];
+
+  /* Find which sub-group the active tab belongs to */
+  const groups = TAB_GROUPS[activeCat] || [];
+  const activeGroup = groups.find(g => g.tabs.includes(activeTab));
+
   function renderContent() {
     switch (activeCat) {
       case 'campaigns':    return <CampaignsMgmt tab={activeTab} />;
@@ -4741,94 +4841,242 @@ export default function EmailAutomationBuilder() {
     }
   }
 
+  const catColor = catMeta[activeCat]?.color || '#22c55e';
+
   return (
-    <div style={S.page}>
-      {/* ── Header ── */}
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#fafafa', margin: 0 }}>
-          Email Automation Builder
-        </h1>
-        <p style={{ fontSize: '14px', color: '#71717a', margin: '6px 0 0' }}>
-          Enterprise email marketing automation with AI orchestration, workflows, and multi-channel delivery
-        </p>
-      </div>
+    <div style={{ ...S.page, padding: '0', display: 'flex', minHeight: '100vh' }}>
 
-      {/* ── Category Pills ── */}
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
-        {CATS.map(cat => {
-          const meta = catMeta[cat.id] || {};
-          const active = activeCat === cat.id;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => switchCat(cat.id)}
-              style={{
-                background: active ? (meta.color || '#3f3f46') : '#18181b',
-                color: active ? '#09090b' : '#a1a1aa',
-                border: active ? 'none' : '1px solid #3f3f46',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                cursor: 'pointer',
-                fontSize: '13px',
-                fontWeight: active ? 700 : 500,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.15s',
-              }}
-            >
-              <span>{meta.icon}</span>
-              <span>{cat.label}</span>
-              <span style={{
-                background: active ? 'rgba(0,0,0,0.2)' : '#27272a',
-                borderRadius: '10px',
-                padding: '1px 7px',
-                fontSize: '11px',
-                fontWeight: 600,
-              }}>{cat.tabs.length}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ── Sub-tab Bar ── */}
-      <div style={{
+      {/* ══════════ Unified Sidebar (Klaviyo-style) ══════════ */}
+      <aside style={{
+        width: sidebarCollapsed ? '56px' : '260px',
+        flexShrink: 0,
+        background: '#111113',
+        borderRight: '1px solid #27272a',
         display: 'flex',
-        gap: '4px',
-        marginBottom: '20px',
-        overflowX: 'auto',
-        borderBottom: '1px solid #27272a',
-        paddingBottom: '0',
+        flexDirection: 'column',
+        transition: 'width 0.2s ease',
+        height: '100vh',
+        position: 'sticky',
+        top: 0,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        zIndex: 40,
       }}>
-        {currentCat.tabs.map(tabId => {
-          const active = activeTab === tabId;
-          return (
-            <button
-              key={tabId}
-              onClick={() => setActiveTab(tabId)}
-              style={{
-                background: 'transparent',
-                color: active ? '#fafafa' : '#71717a',
-                border: 'none',
-                borderBottom: active ? `2px solid ${catMeta[activeCat]?.color || '#22c55e'}` : '2px solid transparent',
-                padding: '10px 14px',
-                cursor: 'pointer',
-                fontSize: '13px',
-                fontWeight: active ? 600 : 400,
-                whiteSpace: 'nowrap',
-                transition: 'all 0.15s',
-              }}
-            >
-              {TAB_LABELS[tabId] || tabId}
-            </button>
-          );
-        })}
-      </div>
 
-      {/* ── Content ── */}
-      <div style={S.card}>
+        {/* ── Brand / Title ── */}
+        <div style={{
+          padding: sidebarCollapsed ? '16px 8px' : '20px 18px 12px',
+          borderBottom: '1px solid #27272a',
+          textAlign: sidebarCollapsed ? 'center' : 'left',
+        }}>
+          {sidebarCollapsed
+            ? <span style={{ fontSize: '20px' }}>{'\u{1F4E7}'}</span>
+            : <>
+                <div style={{ fontSize: '15px', fontWeight: 800, color: '#fafafa', letterSpacing: '-0.01em' }}>
+                  Email Automation
+                </div>
+                <div style={{ fontSize: '11px', color: '#52525b', marginTop: '2px' }}>
+                  88 tools \u00B7 8 categories
+                </div>
+              </>
+          }
+        </div>
+
+        {/* ── Search ── */}
+        {!sidebarCollapsed && (
+          <div style={{ padding: '12px 14px 8px', position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="\u{1F50D} Search tools\u2026"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{
+                ...S.input,
+                background: '#1a1a1e',
+                border: '1px solid #27272a',
+                fontSize: '12px',
+                padding: '7px 10px',
+                borderRadius: '8px',
+              }}
+            />
+            {searchResults.length > 0 && (
+              <div style={{
+                position: 'absolute', top: '100%', left: 14, right: 14, zIndex: 60,
+                background: '#18181b', border: '1px solid #3f3f46', borderRadius: '8px',
+                maxHeight: '320px', overflowY: 'auto', marginTop: '2px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+              }}>
+                {searchResults.map(r => (
+                  <button
+                    key={r.catId + r.tabId}
+                    onClick={() => navigateToTab(r.catId, r.tabId)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      width: '100%', padding: '8px 12px', border: 'none',
+                      background: 'transparent', color: '#fafafa', cursor: 'pointer',
+                      fontSize: '12px', textAlign: 'left',
+                      borderBottom: '1px solid #27272a',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#27272a'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <span style={{ fontSize: '13px' }}>{tabIcons[r.tabId] || catMeta[r.catId]?.icon}</span>
+                    <span style={{ flex: 1 }}>{r.label}</span>
+                    <span style={{ color: '#52525b', fontSize: '10px' }}>{r.catLabel}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Navigation Categories (accordion) ── */}
+        <nav style={{ flex: 1, padding: '4px 0', overflowY: 'auto' }}>
+          {CATS.map(cat => {
+            const meta = catMeta[cat.id] || {};
+            const isActive = activeCat === cat.id;
+            const isExpanded = !!expandedCats[cat.id];
+            const catGroups = TAB_GROUPS[cat.id] || [];
+
+            return (
+              <div key={cat.id}>
+                {/* Category header (accordion toggle) */}
+                <button
+                  onClick={() => {
+                    if (sidebarCollapsed) { switchCat(cat.id); setSidebarCollapsed(false); }
+                    else if (!isActive) switchCat(cat.id);
+                    else toggleCatExpand(cat.id);
+                  }}
+                  title={sidebarCollapsed ? cat.label : undefined}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    width: '100%', padding: sidebarCollapsed ? '10px 0' : '9px 14px',
+                    border: 'none', cursor: 'pointer', textAlign: 'left',
+                    background: isActive ? (meta.color || '#3f3f46') + '14' : 'transparent',
+                    borderLeft: isActive ? `3px solid ${meta.color || '#3f3f46'}` : '3px solid transparent',
+                    transition: 'all 0.12s',
+                    justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
+                  }}
+                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#1a1a1e'; }}
+                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = isActive ? (meta.color || '#3f3f46') + '14' : 'transparent'; }}
+                >
+                  <span style={{ fontSize: sidebarCollapsed ? '18px' : '15px', lineHeight: 1 }}>{meta.icon}</span>
+                  {!sidebarCollapsed && <>
+                    <span style={{
+                      flex: 1, fontSize: '13px',
+                      fontWeight: isActive ? 700 : 500,
+                      color: isActive ? '#fafafa' : '#a1a1aa',
+                    }}>
+                      {cat.label}
+                    </span>
+                    <span style={{
+                      fontSize: '10px', fontWeight: 600, color: '#52525b',
+                      background: '#27272a', borderRadius: '8px', padding: '1px 6px',
+                      minWidth: '20px', textAlign: 'center',
+                    }}>
+                      {cat.tabs.length}
+                    </span>
+                    <span style={{
+                      fontSize: '10px', color: '#52525b',
+                      transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.15s',
+                    }}>
+                      {'\u25B6'}
+                    </span>
+                  </>}
+                </button>
+
+                {/* Expanded sub-groups + tabs */}
+                {!sidebarCollapsed && isExpanded && catGroups.map(group => (
+                  <div key={group.label}>
+                    <div style={{
+                      padding: '6px 14px 3px 28px',
+                      fontSize: '9px', fontWeight: 700, color: '#52525b',
+                      textTransform: 'uppercase', letterSpacing: '0.08em',
+                    }}>
+                      {group.label}
+                    </div>
+                    {group.tabs.map(tabId => {
+                      const tabActive = activeCat === cat.id && activeTab === tabId;
+                      return (
+                        <button
+                          key={tabId}
+                          onClick={() => navigateToTab(cat.id, tabId)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            width: '100%', padding: '5px 14px 5px 32px',
+                            border: 'none', cursor: 'pointer', textAlign: 'left',
+                            background: tabActive ? (meta.color || '#3f3f46') + '22' : 'transparent',
+                            borderLeft: tabActive ? `3px solid ${meta.color}` : '3px solid transparent',
+                            transition: 'all 0.1s',
+                          }}
+                          onMouseEnter={e => { if (!tabActive) e.currentTarget.style.background = '#1a1a1e'; }}
+                          onMouseLeave={e => { if (!tabActive) e.currentTarget.style.background = 'transparent'; }}
+                        >
+                          <span style={{ fontSize: '12px', opacity: 0.7, width: '16px', textAlign: 'center' }}>
+                            {tabIcons[tabId] || '\u2022'}
+                          </span>
+                          <span style={{
+                            fontSize: '12px',
+                            fontWeight: tabActive ? 600 : 400,
+                            color: tabActive ? '#fafafa' : '#a1a1aa',
+                          }}>
+                            {TAB_LABELS[tabId] || tabId}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </nav>
+
+        {/* ── Collapse toggle (bottom) ── */}
+        <button
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          style={{
+            width: '100%', padding: '10px', border: 'none',
+            borderTop: '1px solid #27272a', background: 'transparent',
+            color: '#52525b', cursor: 'pointer', fontSize: '11px',
+            textAlign: 'center', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', gap: '6px',
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = '#a1a1aa'}
+          onMouseLeave={e => e.currentTarget.style.color = '#52525b'}
+        >
+          {sidebarCollapsed ? '\u{25B6}' : <><span>{'\u{25C0}'}</span><span>Collapse</span></>}
+        </button>
+      </aside>
+
+      {/* ══════════ Main Content Area ══════════ */}
+      <main style={{ flex: 1, minWidth: 0, padding: '24px 28px', overflowY: 'auto' }}>
+
+        {/* ── Breadcrumb ── */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '6px',
+          marginBottom: '20px', fontSize: '13px',
+        }}>
+          <span
+            style={{ color: catColor, fontWeight: 600, cursor: 'pointer' }}
+            onClick={() => switchCat(activeCat)}
+          >
+            {catMeta[activeCat]?.icon} {currentCat.label}
+          </span>
+          {activeGroup && (
+            <>
+              <span style={{ color: '#3f3f46' }}>/</span>
+              <span style={{ color: '#71717a' }}>{activeGroup.label}</span>
+            </>
+          )}
+          <span style={{ color: '#3f3f46' }}>/</span>
+          <span style={{ color: '#fafafa', fontWeight: 600 }}>{TAB_LABELS[activeTab] || activeTab}</span>
+        </div>
+
+        {/* ── Content ── */}
         {renderContent()}
-      </div>
+      </main>
     </div>
   );
 }
