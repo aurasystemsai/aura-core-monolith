@@ -21,7 +21,6 @@ const ContentHealthAuditor = lazy(() => import("./components/ContentHealthAudito
 const UserManagement = lazy(() => import("./components/UserManagement.jsx"));
 const AutomationScheduler = lazy(() => import("./components/AutomationScheduler.jsx"));
 const Reports = lazy(() => import("./components/Reports.jsx"));
-const WorkflowOrchestrator = lazy(() => import("./components/tools/WorkflowOrchestrator.jsx"));
 const ProductSeoEngine = lazy(() => import("./components/ProductSeoEngine"));
 const InternalLinkOptimizer = lazy(() => import("./components/InternalLinkOptimizer"));
 const Dashboard = lazy(() => import("./dashboard/Dashboard.jsx"));
@@ -35,10 +34,8 @@ const Credits = lazy(() => import("./credits/Credits.jsx"));
 const Settings = lazy(() => import("./components/Settings.jsx"));
 const AbandonedCheckoutWinback = lazy(() => import("./components/tools/AbandonedCheckoutWinback.jsx"));
 const CustomerDataPlatform = lazy(() => import("./components/tools/CustomerDataPlatform.jsx"));
-const VisualWorkflowBuilder = lazy(() => import("./components/tools/VisualWorkflowBuilder.jsx"));
 const SelfServicePortal = lazy(() => import("./components/tools/SelfServicePortal.jsx"));
 const AdvancedPersonalizationEngine = lazy(() => import("./components/tools/AdvancedPersonalizationEngine.jsx"));
-const ABTestingSuite = lazy(() => import("./components/tools/ABTestingSuite.jsx"));
 const DataWarehouseConnector = lazy(() => import("./components/tools/DataWarehouseConnector.jsx"));
 const ConsentPrivacyManagement = lazy(() => import("./components/tools/ConsentPrivacyManagement.jsx"));
 const EntityTopicExplorer = lazy(() => import("./components/tools/EntityTopicExplorer.jsx"));
@@ -47,11 +44,9 @@ const AIContentBriefGenerator = lazy(() => import("./components/tools/AIContentB
 const BrandMentionTracker = lazy(() => import("./components/tools/BrandMentionTracker.jsx"));
 const LocalSEOToolkit = lazy(() => import("./components/tools/LocalSEOToolkit.jsx"));
 const AutomationTemplates = lazy(() => import("./components/tools/AutomationTemplates.jsx"));
-const ConditionalLogicAutomation = lazy(() => import("./components/tools/ConditionalLogicAutomation.jsx"));
 const WebhookApiTriggers = lazy(() => import("./components/tools/WebhookApiTriggers.jsx"));
 const ReportingIntegrations = lazy(() => import("./components/tools/ReportingIntegrations.jsx"));
 const CustomDashboardBuilder = lazy(() => import("./components/tools/CustomDashboardBuilder.jsx"));
-const WorkflowAutomationBuilder = lazy(() => import("./components/tools/WorkflowAutomationBuilder.jsx"));
 const ScheduledExport = lazy(() => import("./components/tools/ScheduledExport.jsx"));
 const SelfServiceAnalytics = lazy(() => import("./components/tools/SelfServiceAnalytics.jsx"));
 const ChurnPredictionPlaybooks = lazy(() => import("./components/tools/ChurnPredictionPlaybooks.jsx"));
@@ -71,9 +66,7 @@ const SchemaRichResultsEngine = lazy(() => import("./components/tools/SchemaRich
 const ReviewUGCEngine = lazy(() => import("./components/tools/ReviewUGCEngine.jsx"));
 const ReturnsRMAAutomation = lazy(() => import("./components/tools/ReturnsRMAAutomation.jsx"));
 const RankVisibilityTracker = lazy(() => import("./components/tools/RankVisibilityTracker.jsx"));
-const MultiChannelOptimizer = lazy(() => import("./components/tools/MultiChannelOptimizer.jsx"));
 const LTVChurnPredictor = lazy(() => import("./components/tools/LTVChurnPredictor.jsx"));
-const KlaviyoFlowAutomation = lazy(() => import("./components/tools/KlaviyoFlowAutomation.jsx"));
 const InventorySupplierSync = lazy(() => import("./components/tools/InventorySupplierSync.jsx"));
 const InboxReplyAssistant = lazy(() => import("./components/tools/InboxReplyAssistant.jsx"));
 const InboxAssistant = lazy(() => import("./components/tools/InboxAssistant.jsx"));
@@ -101,12 +94,12 @@ const MAIN_SUITE_PREF_KEY = "main-suite-prefs";
 // Map tool ids to Main Suite group ids so the mega menu can deep-link into the suite.
 // Groups come from src/tools/main-suite/modules.js
 const toolToMainSuiteGroup = {
-  // Workflows & Automation
-  "workflow-orchestrator": "workflows",
-  "workflow-automation-builder": "workflows",
-  "visual-workflow-builder": "workflows",
+  // Workflows & Automation (deprecated → consolidated into Email Automation Builder)
+  "workflow-orchestrator": "lifecycle",
+  "workflow-automation-builder": "lifecycle",
+  "visual-workflow-builder": "lifecycle",
   "webhook-api-triggers": "workflows",
-  "conditional-logic-automation": "workflows",
+  "conditional-logic-automation": "lifecycle",
   "omnichannel-campaign-builder": "lifecycle",
   // Analytics & Reporting
   "advanced-analytics-attribution": "analytics",
@@ -115,7 +108,7 @@ const toolToMainSuiteGroup = {
   "auto-insights": "analytics",
   "predictive-analytics-widgets": "analytics",
   "self-service-analytics": "analytics",
-  "ab-testing-suite": "analytics",
+  "ab-testing-suite": "lifecycle",  // deprecated → Email Automation Builder
   // SEO Core
   "seo-site-crawler": "seo",
   "site-audit-health": "seo",
@@ -142,10 +135,10 @@ const toolToMainSuiteGroup = {
   // Lifecycle Automation
   "email-automation-builder": "lifecycle",
   "abandoned-checkout-winback": "lifecycle",
-  "multi-channel-optimizer": "lifecycle",
+  "multi-channel-optimizer": "lifecycle",  // deprecated → Email Automation Builder
   "returns-rma-automation": "lifecycle",
   "churn-prediction-playbooks": "lifecycle",
-  "klaviyo-flow-automation": "lifecycle",
+  "klaviyo-flow-automation": "lifecycle",  // deprecated → Email Automation Builder
   "ai-content-image-gen": "lifecycle",
   // Ads & Acquisition
   "google-ads-integration": "ads",
@@ -475,7 +468,7 @@ function App() {
                 {activeSection === "ai-chatbot" && <AiChatbot coreUrl={coreUrl} />}
 
                 {/* Utility sections */}
-                {(activeSection === "workflow-orchestrator" || activeSection === "orchestration") && <WorkflowOrchestrator />}
+                {(activeSection === "workflow-orchestrator" || activeSection === "orchestration") && <EmailAutomationBuilder />}
                 {activeSection === "products" && (
                   <ProductsList 
                     shopDomain={project && project.domain ? String(project.domain).replace(/^https?:\/\//, "").replace(/\/$/, "") : undefined}
@@ -506,11 +499,11 @@ function App() {
                 
                 {/* Enterprise tools with dedicated UIs */}
                 {activeSection === "product-seo" && <ProductSeoEngine />}
-                {activeSection === "klaviyo-flow-automation" && <KlaviyoFlowAutomation />}
+                {activeSection === "klaviyo-flow-automation" && <EmailAutomationBuilder />}
                 {activeSection === "email-automation-builder" && <EmailAutomationBuilder />}
                 {activeSection === "dynamic-pricing-engine" && <DynamicPricingEngine />}
                 {activeSection === "upsell-cross-sell-engine" && <UpsellCrossSellEngine />}
-                {activeSection === "ab-testing-suite" && <ABTestingSuite />}
+                {activeSection === "ab-testing-suite" && <EmailAutomationBuilder />}
                 {activeSection === "customer-data-platform" && <CustomerDataPlatform />}
                 {activeSection === "personalization-recommendation-engine" && <PersonalizationRecommendationEngine />}
                 {activeSection === "customer-support-ai" && <CustomerSupportAI />}
@@ -530,11 +523,11 @@ function App() {
                 
                 {/* Additional tools */}
                 {activeSection === "abandoned-checkout-winback" && <AbandonedCheckoutWinback />}
-                {activeSection === "visual-workflow-builder" && <VisualWorkflowBuilder />}
-                {activeSection === "workflow-automation-builder" && <WorkflowAutomationBuilder />}
+                {activeSection === "visual-workflow-builder" && <EmailAutomationBuilder />}
+                {activeSection === "workflow-automation-builder" && <EmailAutomationBuilder />}
                 {(activeSection === "image-alt-media-seo" || activeSection === "ai-alt-text-engine") && <ImageAltMediaSEO />}
                 {activeSection === "ltv-churn-predictor" && <LTVChurnPredictor />}
-                {activeSection === "multi-channel-optimizer" && <MultiChannelOptimizer />}
+                {activeSection === "multi-channel-optimizer" && <EmailAutomationBuilder />}
                 {activeSection === "churn-prediction-playbooks" && <ChurnPredictionPlaybooks />}
                 {activeSection === "inventory-forecasting" && <InventoryForecasting />}
                 {activeSection === "inventory-supplier-sync" && <InventorySupplierSync />}
@@ -562,7 +555,7 @@ function App() {
                 
                 {/* Workflow & Automation */}
                 {activeSection === "automation-templates" && <AutomationTemplates />}
-                {activeSection === "conditional-logic-automation" && <ConditionalLogicAutomation />}
+                {activeSection === "conditional-logic-automation" && <EmailAutomationBuilder />}
                 {activeSection === "webhook-api-triggers" && <WebhookApiTriggers />}
                 
                 {/* Analytics & Reporting */}

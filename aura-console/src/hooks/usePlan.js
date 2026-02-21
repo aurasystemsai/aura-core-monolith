@@ -17,7 +17,6 @@ export const TOOL_PLAN = {
   "abandoned-checkout-winback":           "professional",
   "review-ugc-engine":                    "professional",
   "email-automation-builder":             "professional",
-  "klaviyo-flow-automation":              "professional",
   "internal-link-optimizer":              "professional",
   "technical-seo-auditor":               "professional",
   "schema-rich-results-engine":          "professional",
@@ -37,7 +36,7 @@ export const TOOL_PLAN = {
   "social-media-analytics-listening":    "professional",
   "content-scoring-optimization":        "professional",
   "ltv-churn-predictor":                 "professional",
-  "multi-channel-optimizer":             "professional",
+
   "churn-prediction-playbooks":          "professional",
   "inventory-forecasting":               "professional",
   "inventory-supplier-sync":             "professional",
@@ -46,7 +45,6 @@ export const TOOL_PLAN = {
   "inbox-reply-assistant":               "professional",
 
   // Enterprise ($299/mo)
-  "ab-testing-suite":                     "enterprise",
   "advanced-analytics-attribution":      "enterprise",
   "customer-support-ai":                 "enterprise",
   "ai-support-assistant":                "enterprise",
@@ -58,9 +56,7 @@ export const TOOL_PLAN = {
   "aura-operations-ai":                  "enterprise",
   "aura-api-sdk":                         "enterprise",
   "ai-launch-planner":                    "enterprise",
-  "workflow-orchestrator":               "enterprise",
-  "visual-workflow-builder":             "enterprise",
-  "workflow-automation-builder":         "enterprise",
+
 };
 
 const PLAN_RANK = { free: 0, professional: 1, enterprise: 2 };

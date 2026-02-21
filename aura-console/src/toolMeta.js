@@ -4,7 +4,6 @@
 
 const toolsMeta = [
   // Email & Lifecycle Marketing
-  { id: "klaviyo-flow-automation", name: "Klaviyo Flow Automation", description: "Automate your Klaviyo email flows with AI-powered segmentation and personalization.", category: "Email" },
   { id: "email-automation-builder", name: "Email Automation Builder", description: "Build sophisticated multi-channel email campaigns with drag-and-drop automation.", category: "Email" },
   { id: "loyalty-referral-programs", name: "Loyalty & Referral Programs", description: "Create rewards programs that drive repeat purchases and customer advocacy.", category: "Marketing" },
   
@@ -21,9 +20,6 @@ const toolsMeta = [
   { id: "upsell-cross-sell-engine", name: "Upsell & Cross-Sell Engine", description: "Increase average order value with AI-powered product recommendations and bundles.", category: "Personalization" },
   { id: "customer-data-platform", name: "Customer Data Platform", description: "Unify customer data across channels with RFM analysis and behavioral segmentation.", category: "Data" },
   { id: "personalization-recommendation-engine", name: "Personalization & Recommendations", description: "Deliver personalized experiences with collaborative and content-based filtering.", category: "Personalization" },
-  
-  // Testing & Optimization
-  { id: "ab-testing-suite", name: "A/B Testing Suite", description: "Run sophisticated experiments with statistical rigor and AI-powered optimization.", category: "Optimization" },
   
   // Customer Support
   { id: "ai-support-assistant", name: "AI Support Assistant", description: "Provide instant answers with AI-powered responses trained on your knowledge base.", category: "Support" },
