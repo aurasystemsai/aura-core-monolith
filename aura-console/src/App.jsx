@@ -9,6 +9,7 @@ import ChangelogModal from "./components/ChangelogModal.jsx";
 import Toast from "./components/Toast.jsx";
 import OnboardingModal from "./components/OnboardingModal.jsx";
 import ShopifyReconnectButton from "./components/ShopifyReconnectButton.jsx";
+import AppSidebar from "./components/AppSidebar.jsx";
 
 const PricingPage = lazy(() => import("./components/PricingPage"));
 const ProjectSwitcher = lazy(() => import("./ProjectSwitcher"));
@@ -405,46 +406,31 @@ function App() {
       <OnboardingModal open={showOnboarding} onClose={handleCloseOnboarding} />
       <ChangelogModal open={showChangelog} onClose={() => setShowChangelog(false)} />
       <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
-      <div className="app-shell">
-        {/* Simplified top navigation */}
-        <nav className="top-nav-clean">
-          <div className="nav-brand">
-            <img src="/logo-aura.png" alt="AURA" className="nav-logo" />
-            <span className="nav-brand-text">AURA</span>
-          </div>
-          <div className="nav-links">
-            <button
-              className={activeSection === 'dashboard' ? 'nav-link-active' : 'nav-link'}
-              onClick={() => setActiveSection('dashboard')}
-            >
-              Dashboard
-            </button>
-            <button
-              className={activeSection === 'all-tools' || activeSection === 'main-suite' || activeSection.includes('suite') ? 'nav-link-active' : 'nav-link'}
-              onClick={() => setActiveSection('all-tools')}
-            >
-              Tools
-            </button>
-            <button
-              className={activeSection === 'settings' ? 'nav-link-active' : 'nav-link'}
-              onClick={() => setActiveSection('settings')}
-            >
-              Settings
-            </button>
-          </div>
-          <div className="nav-actions">
-            {plan && plan !== 'free' && (
-              <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 6, background: '#27272a', color: '#a1a1aa', border: '1px solid #27272a', marginRight: 8, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                {PLAN_LABEL[plan]}
-              </span>
-            )}
-            {project?.name && (
-              <div className="nav-shop-info">
-                <span className="shop-name">{String(project.name).replace(/\.myshopify\.com$/i, '')}</span>
-              </div>
-            )}
-          </div>
-        </nav>
+      <div className="app-shell" style={{ flexDirection: 'row' }}>
+        {/* Persistent left sidebar — HubSpot/Semrush/Klaviyo pattern */}
+        <AppSidebar
+          activeSection={activeSection}
+          setActiveSection={(section, url) => { if (url) setToolInitUrl(url); setActiveSection(section); }}
+          plan={plan}
+        />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          {/* Slim top bar — brand actions only */}
+          <header className="top-bar-slim">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {plan && plan !== 'free' && (
+                <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 6, background: '#27272a', color: '#a1a1aa', border: '1px solid #27272a', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  {PLAN_LABEL[plan]}
+                </span>
+              )}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {project?.name && (
+                <div className="nav-shop-info">
+                  <span className="shop-name">{String(project.name).replace(/\.myshopify\.com$/i, '')}</span>
+                </div>
+              )}
+            </div>
+          </header>
         <main className="app-main">
           <div className="page-frame fade-in">
             <section className="tool-section">
@@ -576,6 +562,7 @@ function App() {
             </section>
           </div>
         </main>
+        </div>{/* end content column */}
         {/* Floating AI Chatbot widget - always visible at root */}
         <div style={{ position: "fixed", bottom: 28, right: 28, zIndex: 9999 }}>
           {!showChatbot && (

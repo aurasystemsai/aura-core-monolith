@@ -1,15 +1,21 @@
-/* Modern Clean Navigation */
+/* Modern Clean Navigation — replaced by sidebar; top bar is now slim */
 .top-nav-clean {
+  display: none; /* deprecated: replaced by AppSidebar + top-bar-slim */
+}
+
+/* Slim top bar — sits above the content area, companion to sidebar */
+.top-bar-slim {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: #09090b;
-  border-bottom: 1px solid #27272a;
-  padding: 0 32px;
-  height: 60px;
+  border-bottom: 1px solid #1e1e22;
+  padding: 0 24px;
+  height: 44px;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 40;
+  flex-shrink: 0;
 }
 
 .nav-brand {
