@@ -152,6 +152,117 @@ export default function BlogSEO() {
   const [intLinksLoading, setIntLinksLoading] = useState(false);
   const [intLinksErr, setIntLinksErr] = useState("");
 
+  /* ── NEW FEATURE STATES ─────────────────────────────────────────────── */
+  const [cwvResult, setCwvResult] = useState(null);
+  const [cwvLoading, setCwvLoading] = useState(false);
+  const [cwvErr, setCwvErr] = useState("");
+
+  const [crawlerResult, setCrawlerResult] = useState(null);
+  const [crawlerLoading, setCrawlerLoading] = useState(false);
+  const [crawlerErr, setCrawlerErr] = useState("");
+
+  const [titleH1Result, setTitleH1Result] = useState(null);
+  const [titleH1Loading, setTitleH1Loading] = useState(false);
+
+  const [headingHierResult, setHeadingHierResult] = useState(null);
+  const [headingHierLoading, setHeadingHierLoading] = useState(false);
+
+  const [imageSeoResult, setImageSeoResult] = useState(null);
+  const [imageSeoLoading, setImageSeoLoading] = useState(false);
+
+  const [semanticHtmlResult, setSemanticHtmlResult] = useState(null);
+  const [semanticHtmlLoading, setSemanticHtmlLoading] = useState(false);
+
+  const [metaDescAuditResult, setMetaDescAuditResult] = useState(null);
+  const [metaDescAuditLoading, setMetaDescAuditLoading] = useState(false);
+
+  const [kwDensityResult, setKwDensityResult] = useState(null);
+  const [kwDensityLoading, setKwDensityLoading] = useState(false);
+
+  const [indexDirectivesResult, setIndexDirectivesResult] = useState(null);
+  const [indexDirectivesLoading, setIndexDirectivesLoading] = useState(false);
+
+  const [contentStructResult, setContentStructResult] = useState(null);
+  const [contentStructLoading, setContentStructLoading] = useState(false);
+
+  const [authorAuthResult, setAuthorAuthResult] = useState(null);
+  const [authorAuthLoading, setAuthorAuthLoading] = useState(false);
+
+  const [sitemapResult, setSitemapResult] = useState(null);
+  const [sitemapLoading, setSitemapLoading] = useState(false);
+
+  const [ogValidResult, setOgValidResult] = useState(null);
+  const [ogValidLoading, setOgValidLoading] = useState(false);
+
+  const [breadcrumbResult, setBreadcrumbResult] = useState(null);
+  const [breadcrumbLoading, setBreadcrumbLoading] = useState(false);
+
+  const [howtoTitle, setHowtoTitle] = useState("");
+  const [howtoResult, setHowtoResult] = useState(null);
+  const [howtoLoading, setHowtoLoading] = useState(false);
+
+  const [videoSchemaResult, setVideoSchemaResult] = useState(null);
+  const [videoSchemaLoading, setVideoSchemaLoading] = useState(false);
+
+  const [reviewName, setReviewName] = useState("");
+  const [reviewRating, setReviewRating] = useState("4.8");
+  const [reviewCount, setReviewCount] = useState("47");
+  const [reviewResult, setReviewResult] = useState(null);
+  const [reviewLoading, setReviewLoading] = useState(false);
+
+  const [orgName, setOrgName] = useState("");
+  const [orgUrl, setOrgUrl] = useState("");
+  const [orgResult, setOrgResult] = useState(null);
+  const [orgLoading, setOrgLoading] = useState(false);
+
+  const [speakableResult, setSpeakableResult] = useState(null);
+  const [speakableLoading, setSpeakableLoading] = useState(false);
+
+  const [intentResult, setIntentResult] = useState(null);
+  const [intentLoading, setIntentLoading] = useState(false);
+  const [intentKeyword, setIntentKeyword] = useState("");
+
+  const [aiOverviewResult, setAiOverviewResult] = useState(null);
+  const [aiOverviewLoading, setAiOverviewLoading] = useState(false);
+
+  const [topicalResult, setTopicalResult] = useState(null);
+  const [topicalLoading, setTopicalLoading] = useState(false);
+  const [topicalKw, setTopicalKw] = useState("");
+
+  const [metaOptResult, setMetaOptResult] = useState(null);
+  const [metaOptLoading, setMetaOptLoading] = useState(false);
+
+  const [decayResult, setDecayResult] = useState(null);
+  const [decayLoading, setDecayLoading] = useState(false);
+
+  const [compUrls, setCompUrls] = useState("");
+  const [compResult, setCompResult] = useState(null);
+  const [compLoading, setCompLoading] = useState(false);
+  const [compErr, setCompErr] = useState("");
+
+  const [cannibUrls, setCannibUrls] = useState("");
+  const [cannibResult, setCannibResult] = useState(null);
+  const [cannibLoading, setCannibLoading] = useState(false);
+
+  const [anchorResult, setAnchorResult] = useState(null);
+  const [anchorLoading, setAnchorLoading] = useState(false);
+
+  const [tocResult, setTocResult] = useState(null);
+  const [tocLoading, setTocLoading] = useState(false);
+
+  const [sectionWcResult, setSectionWcResult] = useState(null);
+  const [sectionWcLoading, setSectionWcLoading] = useState(false);
+
+  const [paaKw, setPaaKw] = useState("");
+  const [paaResult, setPaaResult] = useState(null);
+  const [paaLoading, setPaaLoading] = useState(false);
+
+  const [entityResult, setEntityResult] = useState(null);
+  const [entityLoading, setEntityLoading] = useState(false);
+
+  const [serpFeatResult, setSerpFeatResult] = useState(null);
+  const [serpFeatLoading, setSerpFeatLoading] = useState(false);
+
   /* ── ANALYZER ─────────────────────────────────────────────────────────── */
   const runScan = useCallback(async () => {
     if (!url.trim()) return;
@@ -299,6 +410,332 @@ export default function BlogSEO() {
     } catch (e) { setIntLinksErr(e.message); }
     setIntLinksLoading(false);
   }, [scanResult, kwNiche]);
+
+  /* ── NEW FEATURE CALLBACKS ──────────────────────────────────────────── */
+  const runCoreWebVitals = useCallback(async () => {
+    if (!url.trim()) return;
+    setCwvLoading(true); setCwvErr(""); setCwvResult(null);
+    try {
+      const r = await apiFetch(`${API}/core-web-vitals`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), strategy: "mobile" }) });
+      if (!r.ok) throw new Error(r.error || "CWV check failed");
+      setCwvResult(r);
+    } catch (e) { setCwvErr(e.message); }
+    setCwvLoading(false);
+  }, [url]);
+
+  const runCrawlerAccess = useCallback(async () => {
+    if (!url.trim()) return;
+    setCrawlerLoading(true); setCrawlerErr(""); setCrawlerResult(null);
+    try {
+      const r = await apiFetch(`${API}/crawler-access`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) });
+      if (!r.ok) throw new Error(r.error || "Crawler check failed");
+      setCrawlerResult(r);
+    } catch (e) { setCrawlerErr(e.message); }
+    setCrawlerLoading(false);
+  }, [url]);
+
+  const runTitleH1 = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setTitleH1Loading(true); setTitleH1Result(null);
+    try {
+      const r = await apiFetch(`${API}/title-h1-alignment`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setTitleH1Result(r);
+    } catch {}
+    setTitleH1Loading(false);
+  }, [scanResult]);
+
+  const runHeadingHier = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setHeadingHierLoading(true); setHeadingHierResult(null);
+    try {
+      const r = await apiFetch(`${API}/heading-hierarchy`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setHeadingHierResult(r);
+    } catch {}
+    setHeadingHierLoading(false);
+  }, [scanResult]);
+
+  const runImageSeo = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setImageSeoLoading(true); setImageSeoResult(null);
+    try {
+      const r = await apiFetch(`${API}/image-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setImageSeoResult(r);
+    } catch {}
+    setImageSeoLoading(false);
+  }, [scanResult]);
+
+  const runSemanticHtml = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setSemanticHtmlLoading(true); setSemanticHtmlResult(null);
+    try {
+      const r = await apiFetch(`${API}/semantic-html`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setSemanticHtmlResult(r);
+    } catch {}
+    setSemanticHtmlLoading(false);
+  }, [scanResult]);
+
+  const runMetaDescAudit = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setMetaDescAuditLoading(true); setMetaDescAuditResult(null);
+    try {
+      const r = await apiFetch(`${API}/meta-description-audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) });
+      if (r.ok) setMetaDescAuditResult(r);
+    } catch {}
+    setMetaDescAuditLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runKwDensity = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setKwDensityLoading(true); setKwDensityResult(null);
+    try {
+      const r = await apiFetch(`${API}/keyword-density`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) });
+      if (r.ok) setKwDensityResult(r);
+    } catch {}
+    setKwDensityLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runIndexDirectives = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setIndexDirectivesLoading(true); setIndexDirectivesResult(null);
+    try {
+      const r = await apiFetch(`${API}/index-directives`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setIndexDirectivesResult(r);
+    } catch {}
+    setIndexDirectivesLoading(false);
+  }, [scanResult]);
+
+  const runContentStruct = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setContentStructLoading(true); setContentStructResult(null);
+    try {
+      const r = await apiFetch(`${API}/content-structure`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setContentStructResult(r);
+    } catch {}
+    setContentStructLoading(false);
+  }, [scanResult]);
+
+  const runAuthorAuth = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setAuthorAuthLoading(true); setAuthorAuthResult(null);
+    try {
+      const r = await apiFetch(`${API}/author-authority`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setAuthorAuthResult(r);
+    } catch {}
+    setAuthorAuthLoading(false);
+  }, [scanResult]);
+
+  const runSitemap = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setSitemapLoading(true); setSitemapResult(null);
+    try {
+      const r = await apiFetch(`${API}/sitemap-check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setSitemapResult(r);
+    } catch {}
+    setSitemapLoading(false);
+  }, [scanResult]);
+
+  const runOgValid = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setOgValidLoading(true); setOgValidResult(null);
+    try {
+      const r = await apiFetch(`${API}/og-validator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setOgValidResult(r);
+    } catch {}
+    setOgValidLoading(false);
+  }, [scanResult]);
+
+  const runBreadcrumb = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setBreadcrumbLoading(true); setBreadcrumbResult(null);
+    try {
+      const r = await apiFetch(`${API}/schema/breadcrumb`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setBreadcrumbResult(r);
+    } catch {}
+    setBreadcrumbLoading(false);
+  }, [scanResult]);
+
+  const runHowto = useCallback(async () => {
+    if (!howtoTitle.trim()) return;
+    setHowtoLoading(true); setHowtoResult(null);
+    try {
+      const r = await apiFetch(`${API}/schema/howto`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: howtoTitle.trim() }) });
+      if (r.ok) setHowtoResult(r);
+    } catch {}
+    setHowtoLoading(false);
+  }, [howtoTitle]);
+
+  const runVideoSchema = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setVideoSchemaLoading(true); setVideoSchemaResult(null);
+    try {
+      const r = await apiFetch(`${API}/schema/video`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setVideoSchemaResult(r);
+    } catch {}
+    setVideoSchemaLoading(false);
+  }, [scanResult]);
+
+  const runReviewSchema = useCallback(async () => {
+    if (!reviewName.trim()) return;
+    setReviewLoading(true); setReviewResult(null);
+    try {
+      const r = await apiFetch(`${API}/schema/review`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: reviewName.trim(), ratingValue: parseFloat(reviewRating), reviewCount: parseInt(reviewCount), url: scanResult?.url }) });
+      if (r.ok) setReviewResult(r);
+    } catch {}
+    setReviewLoading(false);
+  }, [reviewName, reviewRating, reviewCount, scanResult]);
+
+  const runOrgSchema = useCallback(async () => {
+    if (!orgName.trim()) return;
+    setOrgLoading(true); setOrgResult(null);
+    try {
+      const r = await apiFetch(`${API}/schema/organization`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: orgName.trim(), url: orgUrl.trim() || undefined }) });
+      if (r.ok) setOrgResult(r);
+    } catch {}
+    setOrgLoading(false);
+  }, [orgName, orgUrl]);
+
+  const runSpeakable = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setSpeakableLoading(true); setSpeakableResult(null);
+    try {
+      const r = await apiFetch(`${API}/schema/speakable`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setSpeakableResult(r);
+    } catch {}
+    setSpeakableLoading(false);
+  }, [scanResult]);
+
+  const runIntent = useCallback(async () => {
+    if (!intentKeyword.trim()) return;
+    setIntentLoading(true); setIntentResult(null);
+    try {
+      const r = await apiFetch(`${API}/intent-classifier`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: intentKeyword.trim(), url: scanResult?.url }) });
+      if (r.ok) setIntentResult(r);
+    } catch {}
+    setIntentLoading(false);
+  }, [intentKeyword, scanResult]);
+
+  const runAiOverview = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setAiOverviewLoading(true); setAiOverviewResult(null);
+    try {
+      const r = await apiFetch(`${API}/ai-overview-eligibility`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) });
+      if (r.ok) setAiOverviewResult(r);
+    } catch {}
+    setAiOverviewLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runTopical = useCallback(async () => {
+    if (!topicalKw.trim()) return;
+    setTopicalLoading(true); setTopicalResult(null);
+    try {
+      const r = await apiFetch(`${API}/topical-authority`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: topicalKw.trim(), url: scanResult?.url }) });
+      if (r.ok) setTopicalResult(r);
+    } catch {}
+    setTopicalLoading(false);
+  }, [topicalKw, scanResult]);
+
+  const runMetaOpt = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setMetaOptLoading(true); setMetaOptResult(null);
+    try {
+      const r = await apiFetch(`${API}/meta-description-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) });
+      if (r.ok) setMetaOptResult(r);
+    } catch {}
+    setMetaOptLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runDecay = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setDecayLoading(true); setDecayResult(null);
+    try {
+      const r = await apiFetch(`${API}/content-decay`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) });
+      if (r.ok) setDecayResult(r);
+    } catch {}
+    setDecayLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runCompGap = useCallback(async () => {
+    const urls = compUrls.split("\n").map(u => u.trim()).filter(Boolean);
+    if (!urls.length || !scanResult?.url) return;
+    setCompLoading(true); setCompErr(""); setCompResult(null);
+    try {
+      const r = await apiFetch(`${API}/competitor-gap`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, competitorUrls: urls }) });
+      if (!r.ok) throw new Error(r.error || "Failed");
+      setCompResult(r);
+    } catch (e) { setCompErr(e.message); }
+    setCompLoading(false);
+  }, [compUrls, scanResult]);
+
+  const runCannib = useCallback(async () => {
+    const urls = cannibUrls.split("\n").map(u => u.trim()).filter(Boolean);
+    if (!urls.length) return;
+    setCannibLoading(true); setCannibResult(null);
+    try {
+      const r = await apiFetch(`${API}/cannibalization`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ urls, keyword: kwInput.trim() }) });
+      if (r.ok) setCannibResult(r);
+    } catch {}
+    setCannibLoading(false);
+  }, [cannibUrls, kwInput]);
+
+  const runAnchor = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setAnchorLoading(true); setAnchorResult(null);
+    try {
+      const r = await apiFetch(`${API}/anchor-text-audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setAnchorResult(r);
+    } catch {}
+    setAnchorLoading(false);
+  }, [scanResult]);
+
+  const runToc = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setTocLoading(true); setTocResult(null);
+    try {
+      const r = await apiFetch(`${API}/toc-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setTocResult(r);
+    } catch {}
+    setTocLoading(false);
+  }, [scanResult]);
+
+  const runSectionWc = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setSectionWcLoading(true); setSectionWcResult(null);
+    try {
+      const r = await apiFetch(`${API}/section-word-count`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setSectionWcResult(r);
+    } catch {}
+    setSectionWcLoading(false);
+  }, [scanResult]);
+
+  const runPaa = useCallback(async () => {
+    if (!paaKw.trim()) return;
+    setPaaLoading(true); setPaaResult(null);
+    try {
+      const r = await apiFetch(`${API}/people-also-ask`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: paaKw.trim(), url: scanResult?.url }) });
+      if (r.ok) setPaaResult(r);
+    } catch {}
+    setPaaLoading(false);
+  }, [paaKw, scanResult]);
+
+  const runEntity = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setEntityLoading(true); setEntityResult(null);
+    try {
+      const r = await apiFetch(`${API}/entity-detection`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setEntityResult(r);
+    } catch {}
+    setEntityLoading(false);
+  }, [scanResult]);
+
+  const runSerpFeatures = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setSerpFeatLoading(true); setSerpFeatResult(null);
+    try {
+      const r = await apiFetch(`${API}/serp-features`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, keyword: kwInput.trim() }) });
+      if (r.ok) setSerpFeatResult(r);
+    } catch {}
+    setSerpFeatLoading(false);
+  }, [scanResult, kwInput]);
 
   const runRewrite = useCallback(async (field) => {
     if (!scanResult) return;
@@ -1141,6 +1578,823 @@ export default function BlogSEO() {
                           <div style={{ fontSize: 12, color: "#71717a" }}>Target: <span style={{ color: "#a1a1aa" }}>{s.targetTopic}</span> · {s.rationale}</div>
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Core Web Vitals ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: cwvResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>⚡ Core Web Vitals (PageSpeed)</div>
+                    <button style={S.btn(cwvResult ? undefined : "primary")} onClick={runCoreWebVitals} disabled={cwvLoading || !url.trim()}>
+                      {cwvLoading ? <><span style={S.spinner} /> Checking…</> : cwvResult ? "🔄 Re-check" : "Check CWV"}
+                    </button>
+                  </div>
+                  {!cwvResult && !cwvLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Fetch LCP, CLS, FID, INP, FCP scores from Google PageSpeed Insights API for mobile.</div>}
+                  {cwvErr && <div style={S.err}>{cwvErr}</div>}
+                  {cwvResult && (
+                    <div>
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+                        {(cwvResult.metrics || []).map((m, i) => {
+                          const color = m.rating === "good" ? "#22c55e" : m.rating === "needs-improvement" ? "#eab308" : "#ef4444";
+                          return (
+                            <div key={i} style={{ background: "#09090b", border: `1px solid ${color}33`, borderRadius: 10, padding: "12px 16px", minWidth: 110, textAlign: "center" }}>
+                              <div style={{ fontSize: 20, fontWeight: 800, color }}>{m.displayValue}</div>
+                              <div style={{ fontSize: 11, color: "#71717a", marginTop: 4 }}>{m.name}</div>
+                              <div style={{ fontSize: 10, color, marginTop: 2, fontWeight: 700, textTransform: "uppercase" }}>{m.rating}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {cwvResult.performanceScore !== undefined && (
+                        <div style={{ fontSize: 13, color: "#a1a1aa" }}>Overall Performance Score: <strong style={{ color: cwvResult.performanceScore >= 90 ? "#22c55e" : cwvResult.performanceScore >= 50 ? "#eab308" : "#ef4444" }}>{cwvResult.performanceScore}</strong></div>
+                      )}
+                      {cwvResult.note && <div style={{ fontSize: 12, color: "#71717a", marginTop: 6 }}>{cwvResult.note}</div>}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── AI Crawler Access Audit ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: crawlerResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🤖 AI Crawler Access Audit</div>
+                    <button style={S.btn(crawlerResult ? undefined : "primary")} onClick={runCrawlerAccess} disabled={crawlerLoading || !url.trim()}>
+                      {crawlerLoading ? <><span style={S.spinner} /> Checking…</> : crawlerResult ? "🔄 Re-check" : "Audit Crawlers"}
+                    </button>
+                  </div>
+                  {!crawlerResult && !crawlerLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Check if GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and 6 other crawlers can access your content.</div>}
+                  {crawlerErr && <div style={S.err}>{crawlerErr}</div>}
+                  {crawlerResult && (
+                    <div>
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+                        <span style={{ fontSize: 13, color: "#22c55e", fontWeight: 700 }}>✅ Allowed: {crawlerResult.summary?.allowed ?? 0}</span>
+                        <span style={{ fontSize: 13, color: "#ef4444", fontWeight: 700 }}>🚫 Blocked: {crawlerResult.summary?.blocked ?? 0}</span>
+                      </div>
+                      <table style={S.table}>
+                        <thead><tr><th style={S.th}>Crawler</th><th style={S.th}>Type</th><th style={S.th}>Status</th></tr></thead>
+                        <tbody>
+                          {(crawlerResult.crawlers || []).map((c, i) => (
+                            <tr key={i}>
+                              <td style={S.td}>{c.agent}</td>
+                              <td style={S.td}><span style={S.pill("low")}>{c.type}</span></td>
+                              <td style={S.td}><span style={{ color: c.allowed ? "#22c55e" : "#ef4444", fontWeight: 700 }}>{c.allowed ? "✅ Allowed" : "🚫 Blocked"}</span></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {crawlerResult.recommendation && <div style={{ marginTop: 10, fontSize: 13, color: "#fbbf24" }}>💡 {crawlerResult.recommendation}</div>}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Title ↔ H1 Alignment ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: titleH1Result ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🔀 Title ↔ H1 Alignment</div>
+                    <button style={S.btn(titleH1Result ? undefined : "primary")} onClick={runTitleH1} disabled={titleH1Loading || !scanResult}>
+                      {titleH1Loading ? <><span style={S.spinner} /> Checking…</> : titleH1Result ? "🔄 Re-check" : "Check Alignment"}
+                    </button>
+                  </div>
+                  {!titleH1Result && !titleH1Loading && <div style={{ fontSize: 13, color: "#52525b" }}>Compare your title tag vs H1 — significant divergence increases Google rewrite risk.</div>}
+                  {titleH1Result && (
+                    <div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+                        <div style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 12 }}>
+                          <div style={S.metaLabel}>Title Tag</div>
+                          <div style={{ fontSize: 13, color: "#fafafa", marginTop: 4 }}>{titleH1Result.title || "—"}</div>
+                        </div>
+                        <div style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 12 }}>
+                          <div style={S.metaLabel}>H1 Tag</div>
+                          <div style={{ fontSize: 13, color: "#fafafa", marginTop: 4 }}>{titleH1Result.h1 || "—"}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 10 }}>
+                        <span style={{ fontSize: 13 }}>Similarity: <strong style={{ color: titleH1Result.similarity >= 70 ? "#22c55e" : titleH1Result.similarity >= 40 ? "#eab308" : "#ef4444" }}>{titleH1Result.similarity}%</strong></span>
+                        <span style={{ fontSize: 13 }}>Google Rewrite Risk: <strong style={{ color: titleH1Result.rewriteRisk === "Low" ? "#22c55e" : titleH1Result.rewriteRisk === "Medium" ? "#eab308" : "#ef4444" }}>{titleH1Result.rewriteRisk}</strong></span>
+                      </div>
+                      {titleH1Result.tip && <div style={{ fontSize: 13, color: "#fbbf24" }}>💡 {titleH1Result.tip}</div>}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Heading Hierarchy ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: headingHierResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🏗️ Heading Hierarchy Validator</div>
+                    <button style={S.btn(headingHierResult ? undefined : "primary")} onClick={runHeadingHier} disabled={headingHierLoading || !scanResult}>
+                      {headingHierLoading ? <><span style={S.spinner} /> Checking…</> : headingHierResult ? "🔄 Re-check" : "Validate"}
+                    </button>
+                  </div>
+                  {!headingHierResult && !headingHierLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Detect skipped heading levels (e.g. H2→H4), multiple H1s, and empty headings.</div>}
+                  {headingHierResult && (
+                    <div>
+                      <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 10 }}>
+                        <span style={{ fontSize: 13 }}>H1 count: <strong style={{ color: headingHierResult.h1Count === 1 ? "#22c55e" : "#ef4444" }}>{headingHierResult.h1Count}</strong></span>
+                        <span style={{ fontSize: 13 }}>Skipped levels: <strong style={{ color: headingHierResult.skippedLevels?.length ? "#ef4444" : "#22c55e" }}>{headingHierResult.skippedLevels?.length ?? 0}</strong></span>
+                        <span style={{ fontSize: 13 }}>Empty headings: <strong style={{ color: headingHierResult.emptyHeadings?.length ? "#ef4444" : "#22c55e" }}>{headingHierResult.emptyHeadings?.length ?? 0}</strong></span>
+                      </div>
+                      {headingHierResult.issues?.length > 0 && headingHierResult.issues.map((iss, i) => (
+                        <div key={i} style={{ fontSize: 13, color: "#fbbf24", marginBottom: 4 }}>⚠️ {iss}</div>
+                      ))}
+                      {!headingHierResult.issues?.length && <div style={{ fontSize: 13, color: "#22c55e" }}>✅ Heading structure looks good!</div>}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Image SEO Audit ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: imageSeoResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🖼️ Image SEO Audit</div>
+                    <button style={S.btn(imageSeoResult ? undefined : "primary")} onClick={runImageSeo} disabled={imageSeoLoading || !scanResult}>
+                      {imageSeoLoading ? <><span style={S.spinner} /> Auditing…</> : imageSeoResult ? "🔄 Re-audit" : "Audit Images"}
+                    </button>
+                  </div>
+                  {!imageSeoResult && !imageSeoLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Check alt text, lazy loading, generic filenames, and CLS prevention (width/height).</div>}
+                  {imageSeoResult && (
+                    <div>
+                      <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 12 }}>
+                        <span style={{ fontSize: 13 }}>Total: <strong>{imageSeoResult.total}</strong></span>
+                        <span style={{ fontSize: 13 }}>Missing Alt: <strong style={{ color: imageSeoResult.missingAlt > 0 ? "#ef4444" : "#22c55e" }}>{imageSeoResult.missingAlt}</strong></span>
+                        <span style={{ fontSize: 13 }}>No Lazy Load: <strong style={{ color: imageSeoResult.missingLazy > 0 ? "#eab308" : "#22c55e" }}>{imageSeoResult.missingLazy}</strong></span>
+                        <span style={{ fontSize: 13 }}>Generic Names: <strong style={{ color: imageSeoResult.genericNames > 0 ? "#eab308" : "#22c55e" }}>{imageSeoResult.genericNames}</strong></span>
+                      </div>
+                      <div style={{ maxHeight: 260, overflowY: "auto" }}>
+                        {(imageSeoResult.images || []).map((img, i) => (
+                          <div key={i} style={{ fontSize: 12, padding: "5px 0", borderBottom: "1px solid #1e1e22", color: "#d4d4d8" }}>
+                            <span style={S.pill(img.hasAlt ? "low" : "high")}>{img.hasAlt ? "ALT ✅" : "ALT ❌"}</span>
+                            <span style={S.pill(img.hasLazy ? "low" : "medium")}>{img.hasLazy ? "LAZY ✅" : "LAZY ❌"}</span>
+                            <span style={{ color: "#71717a", wordBreak: "break-all" }}>{img.src}</span>
+                            {img.alt && <span style={{ color: "#a1a1aa" }}> — "{img.alt}"</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Semantic HTML Checker ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: semanticHtmlResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🧱 Semantic HTML Checker</div>
+                    <button style={S.btn(semanticHtmlResult ? undefined : "primary")} onClick={runSemanticHtml} disabled={semanticHtmlLoading || !scanResult}>
+                      {semanticHtmlLoading ? <><span style={S.spinner} /> Checking…</> : semanticHtmlResult ? "🔄 Re-check" : "Check HTML"}
+                    </button>
+                  </div>
+                  {!semanticHtmlResult && !semanticHtmlLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Detect semantic HTML5 tags: article, main, header, nav, footer, figure, time, address.</div>}
+                  {semanticHtmlResult && (
+                    <div>
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        {(semanticHtmlResult.tags || []).map((tag, i) => (
+                          <div key={i} style={{ background: tag.found ? "#14532d22" : "#450a0a22", border: `1px solid ${tag.found ? "#14532d" : "#7f1d1d"}`, borderRadius: 8, padding: "8px 14px", fontSize: 13, color: tag.found ? "#86efac" : "#fca5a5" }}>
+                            {tag.found ? "✅" : "❌"} &lt;{tag.name}&gt;
+                          </div>
+                        ))}
+                      </div>
+                      {semanticHtmlResult.score !== undefined && <div style={{ marginTop: 10, fontSize: 13, color: "#a1a1aa" }}>Semantic score: <strong style={{ color: semanticHtmlResult.score >= 6 ? "#22c55e" : semanticHtmlResult.score >= 4 ? "#eab308" : "#ef4444" }}>{semanticHtmlResult.score}/{semanticHtmlResult.total}</strong></div>}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Meta Description Audit ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: metaDescAuditResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>📝 Meta Description Audit</div>
+                    <button style={S.btn(metaDescAuditResult ? undefined : "primary")} onClick={runMetaDescAudit} disabled={metaDescAuditLoading || !scanResult}>
+                      {metaDescAuditLoading ? <><span style={S.spinner} /> Auditing…</> : metaDescAuditResult ? "🔄 Re-audit" : "Audit Meta Desc"}
+                    </button>
+                  </div>
+                  {!metaDescAuditResult && !metaDescAuditLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Length, keyword presence, CTA detection, and og:description consistency check.</div>}
+                  {metaDescAuditResult && (
+                    <div>
+                      <div style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: "#fafafa" }}>{metaDescAuditResult.metaDescription || "(no meta description)"}</div>
+                      <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 10 }}>
+                        <span style={{ fontSize: 13 }}>Length: <strong style={{ color: metaDescAuditResult.lengthOk ? "#22c55e" : "#ef4444" }}>{metaDescAuditResult.length} chars</strong></span>
+                        <span style={{ fontSize: 13 }}>Keyword: <strong style={{ color: metaDescAuditResult.hasKeyword ? "#22c55e" : "#eab308" }}>{metaDescAuditResult.hasKeyword ? "✅ Found" : "❌ Missing"}</strong></span>
+                        <span style={{ fontSize: 13 }}>CTA: <strong style={{ color: metaDescAuditResult.hasCta ? "#22c55e" : "#71717a" }}>{metaDescAuditResult.hasCta ? "✅ Found" : "—"}</strong></span>
+                        <span style={{ fontSize: 13 }}>OG Match: <strong style={{ color: metaDescAuditResult.ogMatch ? "#22c55e" : "#eab308" }}>{metaDescAuditResult.ogMatch ? "✅" : "⚠️ Mismatch"}</strong></span>
+                      </div>
+                      {metaDescAuditResult.tips?.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#fbbf24", marginBottom: 4 }}>💡 {t}</div>)}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Keyword Density Heatmap ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: kwDensityResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🔑 Keyword Density Heatmap</div>
+                    <button style={S.btn(kwDensityResult ? undefined : "primary")} onClick={runKwDensity} disabled={kwDensityLoading || !scanResult || !kwInput.trim()}>
+                      {kwDensityLoading ? <><span style={S.spinner} /> Analyzing…</> : kwDensityResult ? "🔄 Re-analyze" : "Analyze Density"}
+                    </button>
+                  </div>
+                  {!kwInput.trim() && <div style={{ fontSize: 12, color: "#eab308" }}>⚠️ Enter a target keyword above first.</div>}
+                  {!kwDensityResult && !kwDensityLoading && kwInput.trim() && <div style={{ fontSize: 13, color: "#52525b" }}>Per-section keyword density with stuffing/underuse detection.</div>}
+                  {kwDensityResult && (
+                    <div>
+                      <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 10 }}>Overall density: <strong style={{ color: kwDensityResult.overallDensity >= 0.5 && kwDensityResult.overallDensity <= 3 ? "#22c55e" : "#ef4444" }}>{kwDensityResult.overallDensity}%</strong> · {kwDensityResult.overallCount} occurrences in {kwDensityResult.totalWords} words</div>
+                      <table style={S.table}>
+                        <thead><tr><th style={S.th}>Section</th><th style={S.th}>Words</th><th style={S.th}>Density</th><th style={S.th}>Status</th></tr></thead>
+                        <tbody>
+                          {(kwDensityResult.sections || []).map((sec, i) => (
+                            <tr key={i}>
+                              <td style={S.td}>{sec.heading || "(intro)"}</td>
+                              <td style={S.td}>{sec.wordCount}</td>
+                              <td style={{ ...S.td, color: sec.density >= 0.5 && sec.density <= 3 ? "#22c55e" : sec.density > 3 ? "#ef4444" : "#eab308" }}>{sec.density}%</td>
+                              <td style={S.td}><span style={S.pill(sec.status === "stuffed" ? "high" : sec.status === "low" ? "medium" : "low")}>{sec.status}</span></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Index Directives ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: indexDirectivesResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🚫 Index Directives Audit</div>
+                    <button style={S.btn(indexDirectivesResult ? undefined : "primary")} onClick={runIndexDirectives} disabled={indexDirectivesLoading || !scanResult}>
+                      {indexDirectivesLoading ? <><span style={S.spinner} /> Checking…</> : indexDirectivesResult ? "🔄 Re-check" : "Audit Directives"}
+                    </button>
+                  </div>
+                  {!indexDirectivesResult && !indexDirectivesLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Check noindex/nofollow meta, canonical, x-robots-tag header directives.</div>}
+                  {indexDirectivesResult && (
+                    <div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px,1fr))", gap: 10 }}>
+                        {(indexDirectivesResult.directives || []).map((d, i) => (
+                          <div key={i} style={{ background: d.isBlocking ? "#450a0a22" : "#09090b", border: `1px solid ${d.isBlocking ? "#7f1d1d" : "#27272a"}`, borderRadius: 8, padding: "10px 14px" }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: d.isBlocking ? "#fca5a5" : "#a1a1aa" }}>{d.name}</div>
+                            <div style={{ fontSize: 12, color: "#71717a", marginTop: 4 }}>{d.value || "Not set"}</div>
+                            {d.isBlocking && <div style={{ fontSize: 11, color: "#ef4444", marginTop: 4 }}>⚠️ This may block indexing</div>}
+                          </div>
+                        ))}
+                      </div>
+                      {indexDirectivesResult.recommendation && <div style={{ marginTop: 10, fontSize: 13, color: "#fbbf24" }}>💡 {indexDirectivesResult.recommendation}</div>}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Content Structure Score ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: contentStructResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>📐 Content Structure Score</div>
+                    <button style={S.btn(contentStructResult ? undefined : "primary")} onClick={runContentStruct} disabled={contentStructLoading || !scanResult}>
+                      {contentStructLoading ? <><span style={S.spinner} /> Analyzing…</> : contentStructResult ? "🔄 Re-analyze" : "Analyze Structure"}
+                    </button>
+                  </div>
+                  {!contentStructResult && !contentStructLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Score lists, tables, images, bullets, and ToC — structured content ranks better.</div>}
+                  {contentStructResult && (
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 14 }}>
+                        <div style={S.scoreRing(contentStructResult.score)}>{contentStructResult.score}</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                          {(contentStructResult.elements || []).map((el, i) => (
+                            <span key={i} style={{ fontSize: 12, color: "#d4d4d8" }}>{el.name}: <strong style={{ color: el.count > 0 ? "#22c55e" : "#71717a" }}>{el.count}</strong></span>
+                          ))}
+                        </div>
+                      </div>
+                      {contentStructResult.tips?.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#fbbf24", marginBottom: 4 }}>💡 {t}</div>)}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Author Authority (E-E-A-T) ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: authorAuthResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>✍️ Author Authority Check (E-E-A-T)</div>
+                    <button style={S.btn(authorAuthResult ? undefined : "primary")} onClick={runAuthorAuth} disabled={authorAuthLoading || !scanResult}>
+                      {authorAuthLoading ? <><span style={S.spinner} /> Checking…</> : authorAuthResult ? "🔄 Re-check" : "Check Authority"}
+                    </button>
+                  </div>
+                  {!authorAuthResult && !authorAuthLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Detect author bio, bylines, author page links, datePublished, and author schema.</div>}
+                  {authorAuthResult && (
+                    <div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px,1fr))", gap: 10, marginBottom: 12 }}>
+                        {(authorAuthResult.signals || []).map((sig, i) => (
+                          <div key={i} style={{ background: sig.found ? "#14532d22" : "#450a0a22", border: `1px solid ${sig.found ? "#14532d" : "#7f1d1d"}`, borderRadius: 8, padding: "10px 12px" }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: sig.found ? "#86efac" : "#fca5a5" }}>{sig.found ? "✅" : "❌"} {sig.name}</div>
+                            {sig.value && <div style={{ fontSize: 11, color: "#71717a", marginTop: 2 }}>{sig.value}</div>}
+                          </div>
+                        ))}
+                      </div>
+                      {authorAuthResult.score !== undefined && <div style={{ fontSize: 13, color: "#a1a1aa" }}>E-E-A-T Score: <strong style={{ color: authorAuthResult.score >= 4 ? "#22c55e" : authorAuthResult.score >= 2 ? "#eab308" : "#ef4444" }}>{authorAuthResult.score}/{authorAuthResult.total}</strong></div>}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── XML Sitemap Check ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: sitemapResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🗺️ XML Sitemap Check</div>
+                    <button style={S.btn(sitemapResult ? undefined : "primary")} onClick={runSitemap} disabled={sitemapLoading || !scanResult}>
+                      {sitemapLoading ? <><span style={S.spinner} /> Checking…</> : sitemapResult ? "🔄 Re-check" : "Check Sitemap"}
+                    </button>
+                  </div>
+                  {!sitemapResult && !sitemapLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Detect sitemap.xml and verify this URL is included for Google indexing.</div>}
+                  {sitemapResult && (
+                    <div>
+                      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 10 }}>
+                        <span style={{ fontSize: 13 }}>Sitemap found: <strong style={{ color: sitemapResult.sitemapFound ? "#22c55e" : "#ef4444" }}>{sitemapResult.sitemapFound ? "✅ Yes" : "❌ No"}</strong></span>
+                        {sitemapResult.sitemapFound && <span style={{ fontSize: 13 }}>URL included: <strong style={{ color: sitemapResult.urlIncluded ? "#22c55e" : "#ef4444" }}>{sitemapResult.urlIncluded ? "✅ Yes" : "❌ No"}</strong></span>}
+                        {sitemapResult.urlCount && <span style={{ fontSize: 13, color: "#71717a" }}>{sitemapResult.urlCount} URLs in sitemap</span>}
+                      </div>
+                      {sitemapResult.sitemapUrl && <div style={{ fontSize: 12, color: "#71717a" }}>Sitemap: {sitemapResult.sitemapUrl}</div>}
+                      {sitemapResult.tip && <div style={{ fontSize: 13, color: "#fbbf24", marginTop: 8 }}>💡 {sitemapResult.tip}</div>}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── OG Tag Validator ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: ogValidResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>📤 OG & Social Card Validator</div>
+                    <button style={S.btn(ogValidResult ? undefined : "primary")} onClick={runOgValid} disabled={ogValidLoading || !scanResult}>
+                      {ogValidLoading ? <><span style={S.spinner} /> Validating…</> : ogValidResult ? "🔄 Re-validate" : "Validate OG Tags"}
+                    </button>
+                  </div>
+                  {!ogValidResult && !ogValidLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Full OG + Twitter Card audit. Validates og:image is accessible.</div>}
+                  {ogValidResult && (
+                    <div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px,1fr))", gap: 8, marginBottom: 12 }}>
+                        {(ogValidResult.tags || []).map((tag, i) => (
+                          <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "8px 12px" }}>
+                            <div style={{ fontSize: 11, color: "#71717a", fontWeight: 600, textTransform: "uppercase" }}>{tag.name}</div>
+                            <div style={{ fontSize: 12, color: tag.present ? "#fafafa" : "#ef4444", marginTop: 2 }}>{tag.present ? (tag.value || "Set ✅").slice(0, 80) : "❌ Missing"}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ display: "flex", gap: 10 }}>
+                        <span style={{ fontSize: 13 }}>OG Score: <strong style={{ color: ogValidResult.score >= 80 ? "#22c55e" : ogValidResult.score >= 50 ? "#eab308" : "#ef4444" }}>{ogValidResult.score}/100</strong></span>
+                        {ogValidResult.imageOk !== undefined && <span style={{ fontSize: 13 }}>Image reachable: <strong style={{ color: ogValidResult.imageOk ? "#22c55e" : "#ef4444" }}>{ogValidResult.imageOk ? "✅" : "❌"}</strong></span>}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Schema Generators ── */}
+                <div style={S.card}>
+                  <div style={S.cardTitle}>🔧 Additional Schema Generators</div>
+
+                  {/* Breadcrumb */}
+                  <div style={{ borderBottom: "1px solid #27272a", paddingBottom: 14, marginBottom: 14 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8, color: "#e4e4e7" }}>🍞 BreadcrumbList Schema</div>
+                    <button style={S.btn(breadcrumbResult ? undefined : "primary")} onClick={runBreadcrumb} disabled={breadcrumbLoading || !scanResult}>
+                      {breadcrumbLoading ? <><span style={S.spinner} /> Generating…</> : breadcrumbResult ? "🔄 Regenerate" : "Generate Breadcrumb JSON-LD"}
+                    </button>
+                    {breadcrumbResult && (
+                      <div style={{ marginTop: 10 }}>
+                        <div style={{ ...S.row, gap: 8, marginBottom: 6 }}>
+                          <span style={{ fontSize: 12, color: "#86efac" }}>✅ {breadcrumbResult.breadcrumbs?.length} breadcrumb items generated</span>
+                          <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(breadcrumbResult.scriptTag || "")}>📋 Copy</button>
+                        </div>
+                        <pre style={{ ...S.fixCode, maxHeight: 180 }}>{breadcrumbResult.scriptTag}</pre>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* HowTo */}
+                  <div style={{ borderBottom: "1px solid #27272a", paddingBottom: 14, marginBottom: 14 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8, color: "#e4e4e7" }}>📋 HowTo Schema (AI) <span style={{ fontSize: 11, color: "#71717a", fontWeight: 400 }}>2 credits</span></div>
+                    <div style={{ ...S.row, gap: 8, marginBottom: 8 }}>
+                      <input style={S.input} placeholder="HowTo title (e.g. How to set up Shopify email automation)" value={howtoTitle} onChange={e => setHowtoTitle(e.target.value)} />
+                      <button style={S.btn("primary")} onClick={runHowto} disabled={howtoLoading || !howtoTitle.trim()}>
+                        {howtoLoading ? <><span style={S.spinner} /> Generating…</> : "Generate"}
+                      </button>
+                    </div>
+                    {howtoResult && (
+                      <div>
+                        <div style={{ ...S.row, gap: 8, marginBottom: 6 }}>
+                          <span style={{ fontSize: 12, color: "#86efac" }}>✅ {howtoResult.stepCount} steps generated</span>
+                          <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(howtoResult.scriptTag || "")}>📋 Copy</button>
+                        </div>
+                        <pre style={{ ...S.fixCode, maxHeight: 180 }}>{howtoResult.scriptTag}</pre>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Video Schema */}
+                  <div style={{ borderBottom: "1px solid #27272a", paddingBottom: 14, marginBottom: 14 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8, color: "#e4e4e7" }}>🎥 VideoObject Schema</div>
+                    <button style={S.btn(videoSchemaResult ? undefined : "primary")} onClick={runVideoSchema} disabled={videoSchemaLoading || !scanResult}>
+                      {videoSchemaLoading ? <><span style={S.spinner} /> Detecting…</> : videoSchemaResult ? "🔄 Regenerate" : "Detect Videos + Generate Schema"}
+                    </button>
+                    {videoSchemaResult && !videoSchemaResult.embeds?.length && <div style={{ fontSize: 13, color: "#71717a", marginTop: 8 }}>No YouTube/Vimeo embeds found on this page.</div>}
+                    {videoSchemaResult?.embeds?.length > 0 && (
+                      <div style={{ marginTop: 10 }}>
+                        <div style={{ fontSize: 12, color: "#86efac", marginBottom: 6 }}>✅ {videoSchemaResult.embeds.length} video embed(s) found</div>
+                        <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(videoSchemaResult.scriptTag || "")}>📋 Copy JSON-LD</button>
+                        <pre style={{ ...S.fixCode, maxHeight: 180, marginTop: 8 }}>{videoSchemaResult.scriptTag}</pre>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Review Schema */}
+                  <div style={{ borderBottom: "1px solid #27272a", paddingBottom: 14, marginBottom: 14 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8, color: "#e4e4e7" }}>⭐ Review / AggregateRating Schema</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, marginBottom: 8 }}>
+                      <input style={S.input} placeholder="Item name (e.g. Shopify Dropshipping Course)" value={reviewName} onChange={e => setReviewName(e.target.value)} />
+                      <input style={{ ...S.input, maxWidth: 90 }} placeholder="Rating" value={reviewRating} onChange={e => setReviewRating(e.target.value)} />
+                      <input style={{ ...S.input, maxWidth: 90 }} placeholder="Reviews" value={reviewCount} onChange={e => setReviewCount(e.target.value)} />
+                    </div>
+                    <button style={S.btn("primary")} onClick={runReviewSchema} disabled={reviewLoading || !reviewName.trim()}>
+                      {reviewLoading ? <><span style={S.spinner} /> Generating…</> : "Generate Review Schema"}
+                    </button>
+                    {reviewResult && (
+                      <div style={{ marginTop: 10 }}>
+                        <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(reviewResult.scriptTag || "")}>📋 Copy JSON-LD</button>
+                        <pre style={{ ...S.fixCode, maxHeight: 180, marginTop: 8 }}>{reviewResult.scriptTag}</pre>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Organization Schema */}
+                  <div style={{ borderBottom: "1px solid #27272a", paddingBottom: 14, marginBottom: 14 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8, color: "#e4e4e7" }}>🏢 Organization Schema</div>
+                    <div style={{ ...S.row, gap: 8, marginBottom: 8 }}>
+                      <input style={S.input} placeholder="Organization / brand name" value={orgName} onChange={e => setOrgName(e.target.value)} />
+                      <input style={S.input} placeholder="Website URL" value={orgUrl} onChange={e => setOrgUrl(e.target.value)} />
+                      <button style={S.btn("primary")} onClick={runOrgSchema} disabled={orgLoading || !orgName.trim()}>
+                        {orgLoading ? <><span style={S.spinner} /> Generating…</> : "Generate"}
+                      </button>
+                    </div>
+                    {orgResult && (
+                      <div>
+                        <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(orgResult.scriptTag || "")}>📋 Copy JSON-LD</button>
+                        <pre style={{ ...S.fixCode, maxHeight: 150, marginTop: 8 }}>{orgResult.scriptTag}</pre>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Speakable Schema */}
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8, color: "#e4e4e7" }}>🔊 Speakable Schema (Voice Search)</div>
+                    <button style={S.btn(speakableResult ? undefined : "primary")} onClick={runSpeakable} disabled={speakableLoading || !scanResult}>
+                      {speakableLoading ? <><span style={S.spinner} /> Generating…</> : speakableResult ? "🔄 Regenerate" : "Generate Speakable Schema"}
+                    </button>
+                    {speakableResult && (
+                      <div style={{ marginTop: 10 }}>
+                        <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(speakableResult.scriptTag || "")}>📋 Copy JSON-LD</button>
+                        <pre style={{ ...S.fixCode, maxHeight: 150, marginTop: 8 }}>{speakableResult.scriptTag}</pre>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* ── Search Intent Classifier ── */}
+                <div style={S.card}>
+                  <div style={S.cardTitle}>🎯 Search Intent Classifier <span style={{ fontSize: 11, color: "#71717a", fontWeight: 400 }}>2 credits</span></div>
+                  <div style={{ ...S.row, gap: 8, marginBottom: 8 }}>
+                    <input style={S.input} placeholder="Keyword to classify (e.g. best email marketing apps)" value={intentKeyword} onChange={e => setIntentKeyword(e.target.value)} onKeyDown={e => e.key === "Enter" && !intentLoading && runIntent()} />
+                    <button style={S.btn("primary")} onClick={runIntent} disabled={intentLoading || !intentKeyword.trim()}>
+                      {intentLoading ? <><span style={S.spinner} /> Classifying…</> : "Classify Intent"}
+                    </button>
+                  </div>
+                  {intentResult && (
+                    <div>
+                      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+                        <span style={{ fontSize: 14, fontWeight: 700 }}>Intent: <span style={{ color: "#818cf8" }}>{intentResult.intent}</span></span>
+                        <span style={{ fontSize: 13 }}>Confidence: <strong style={{ color: "#22c55e" }}>{intentResult.confidence}%</strong></span>
+                        {intentResult.pageMatchScore !== undefined && <span style={{ fontSize: 13 }}>Page match: <strong style={{ color: intentResult.pageMatchScore >= 70 ? "#22c55e" : "#eab308" }}>{intentResult.pageMatchScore}%</strong></span>}
+                      </div>
+                      {intentResult.reasoning && <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 8 }}>{intentResult.reasoning}</div>}
+                      {intentResult.contentRecommendation && <div style={{ fontSize: 13, color: "#fbbf24" }}>💡 {intentResult.contentRecommendation}</div>}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── AI Overview Eligibility ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: aiOverviewResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🤖 Google AI Overview Eligibility <span style={{ fontSize: 11, color: "#71717a", fontWeight: 400 }}>2 credits</span></div>
+                    <button style={S.btn(aiOverviewResult ? undefined : "primary")} onClick={runAiOverview} disabled={aiOverviewLoading || !scanResult}>
+                      {aiOverviewLoading ? <><span style={S.spinner} /> Scoring…</> : aiOverviewResult ? "🔄 Re-score" : "Check Eligibility"}
+                    </button>
+                  </div>
+                  {!aiOverviewResult && !aiOverviewLoading && <div style={{ fontSize: 13, color: "#52525b" }}>AI scores your page 0–100 for candidacy in Google's AI Overview/SGE answers.</div>}
+                  {aiOverviewResult && (
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 14 }}>
+                        <div style={S.scoreRing(aiOverviewResult.score)}>{aiOverviewResult.score}</div>
+                        <div>
+                          <div style={{ fontSize: 15, fontWeight: 700, color: aiOverviewResult.score >= 70 ? "#22c55e" : aiOverviewResult.score >= 50 ? "#eab308" : "#ef4444" }}>{aiOverviewResult.verdict}</div>
+                          <div style={{ fontSize: 12, color: "#71717a" }}>AI Overview Eligibility Score</div>
+                        </div>
+                      </div>
+                      {aiOverviewResult.strengths?.map((s, i) => <div key={i} style={{ fontSize: 13, color: "#86efac", marginBottom: 3 }}>✅ {s}</div>)}
+                      {aiOverviewResult.improvements?.map((s, i) => <div key={i} style={{ fontSize: 13, color: "#fbbf24", marginBottom: 3 }}>💡 {s}</div>)}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Topical Authority Mapper ── */}
+                <div style={S.card}>
+                  <div style={S.cardTitle}>🗺️ Topical Authority Mapper <span style={{ fontSize: 11, color: "#71717a", fontWeight: 400 }}>2 credits</span></div>
+                  <div style={{ ...S.row, gap: 8, marginBottom: 8 }}>
+                    <input style={S.input} placeholder="Main topic (e.g. email marketing for Shopify)" value={topicalKw} onChange={e => setTopicalKw(e.target.value)} />
+                    <button style={S.btn("primary")} onClick={runTopical} disabled={topicalLoading || !topicalKw.trim()}>
+                      {topicalLoading ? <><span style={S.spinner} /> Mapping…</> : "Map Topical Authority"}
+                    </button>
+                  </div>
+                  {topicalResult && (
+                    <div>
+                      {topicalResult.overallCoverage !== undefined && <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 10 }}>Overall topical coverage: <strong style={{ color: topicalResult.overallCoverage >= 70 ? "#22c55e" : "#eab308" }}>{topicalResult.overallCoverage}%</strong></div>}
+                      <table style={S.table}>
+                        <thead><tr><th style={S.th}>Subtopic</th><th style={S.th}>Coverage</th><th style={S.th}>Status</th></tr></thead>
+                        <tbody>
+                          {(topicalResult.subtopics || []).map((sub, i) => (
+                            <tr key={i}>
+                              <td style={S.td}>{sub.name}</td>
+                              <td style={{ ...S.td, color: sub.coverage >= 70 ? "#22c55e" : sub.coverage >= 40 ? "#eab308" : "#ef4444" }}>{sub.coverage}%</td>
+                              <td style={S.td}><span style={S.pill(sub.coverage >= 70 ? "low" : sub.coverage >= 40 ? "medium" : "high")}>{sub.status}</span></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {topicalResult.missingSubtopics?.length > 0 && (
+                        <div style={{ marginTop: 10 }}>
+                          <div style={S.heading}>Missing Sub-topics</div>
+                          {topicalResult.missingSubtopics.map((m, i) => <div key={i} style={{ fontSize: 13, color: "#fbbf24", marginBottom: 3 }}>• {m}</div>)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Meta Description Optimizer ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: metaOptResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>✏️ AI Meta Description Optimizer <span style={{ fontSize: 11, color: "#71717a", fontWeight: 400 }}>2 credits</span></div>
+                    <button style={S.btn(metaOptResult ? undefined : "primary")} onClick={runMetaOpt} disabled={metaOptLoading || !scanResult}>
+                      {metaOptLoading ? <><span style={S.spinner} /> Optimizing…</> : metaOptResult ? "🔄 Regenerate" : "Generate 3 Variants"}
+                    </button>
+                  </div>
+                  {!metaOptResult && !metaOptLoading && <div style={{ fontSize: 13, color: "#52525b" }}>AI writes 3 CTR-optimized meta description variants with keyword, CTA, and emotion signals.</div>}
+                  {metaOptResult && (
+                    <div>
+                      {(metaOptResult.variants || []).map((v, i) => (
+                        <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "12px 14px", marginBottom: 8 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                            <span style={{ ...S.pill("low"), background: "#1e3a5f" }}>Variant {i + 1}</span>
+                            <span style={{ fontSize: 11, color: "#71717a" }}>{v.text?.length} chars</span>
+                            <button style={{ ...S.btn(), fontSize: 11, padding: "2px 8px", marginLeft: "auto" }} onClick={() => navigator.clipboard.writeText(v.text)}>Copy</button>
+                          </div>
+                          <div style={{ fontSize: 13, color: "#fafafa", lineHeight: 1.5 }}>{v.text}</div>
+                          {v.focus && <div style={{ fontSize: 11, color: "#71717a", marginTop: 4 }}>Focus: {v.focus}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Content Decay Predictor ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: decayResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>📉 Content Decay Predictor <span style={{ fontSize: 11, color: "#71717a", fontWeight: 400 }}>2 credits</span></div>
+                    <button style={S.btn(decayResult ? undefined : "primary")} onClick={runDecay} disabled={decayLoading || !scanResult}>
+                      {decayLoading ? <><span style={S.spinner} /> Predicting…</> : decayResult ? "🔄 Re-predict" : "Predict Decay"}
+                    </button>
+                  </div>
+                  {!decayResult && !decayLoading && <div style={{ fontSize: 13, color: "#52525b" }}>AI predicts content freshness urgency: Immediate / Soon / Eventually / Evergreen.</div>}
+                  {decayResult && (
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
+                        <span style={{ fontSize: 20, fontWeight: 800, color: decayResult.urgency === "Immediate" ? "#ef4444" : decayResult.urgency === "Soon" ? "#eab308" : decayResult.urgency === "Eventually" ? "#22c55e" : "#818cf8" }}>
+                          {decayResult.urgency === "Immediate" ? "🔴" : decayResult.urgency === "Soon" ? "🟡" : decayResult.urgency === "Eventually" ? "🟢" : "💙"} {decayResult.urgency}
+                        </span>
+                        {decayResult.decayScore !== undefined && <span style={{ fontSize: 13, color: "#a1a1aa" }}>Decay score: {decayResult.decayScore}/100</span>}
+                      </div>
+                      {decayResult.staleElements?.length > 0 && (
+                        <div style={{ marginBottom: 10 }}>
+                          <div style={S.heading}>Stale Elements to Update</div>
+                          {decayResult.staleElements.map((el, i) => <div key={i} style={{ fontSize: 13, color: "#fbbf24", marginBottom: 3 }}>• {el}</div>)}
+                        </div>
+                      )}
+                      {decayResult.recommendation && <div style={{ fontSize: 13, color: "#a1a1aa" }}>{decayResult.recommendation}</div>}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Competitor Gap Analysis ── */}
+                <div style={S.card}>
+                  <div style={S.cardTitle}>🆚 Competitor Content Gap Analysis <span style={{ fontSize: 11, color: "#71717a", fontWeight: 400 }}>2 credits</span></div>
+                  <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 8 }}>Enter up to 3 competitor URLs (one per line) to compare against your page.</div>
+                  <textarea style={{ ...S.textarea, minHeight: 70 }} placeholder={"https://competitor1.com/blog/post\nhttps://competitor2.com/blog/post"} value={compUrls} onChange={e => setCompUrls(e.target.value)} />
+                  <button style={{ ...S.btn("primary"), marginTop: 8 }} onClick={runCompGap} disabled={compLoading || !scanResult || !compUrls.trim()}>
+                    {compLoading ? <><span style={S.spinner} /> Analyzing…</> : "Analyze Gaps"}
+                  </button>
+                  {compErr && <div style={{ ...S.err, marginTop: 8 }}>{compErr}</div>}
+                  {compResult && (
+                    <div style={{ marginTop: 14 }}>
+                      {compResult.gaps?.map((gap, i) => (
+                        <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", marginBottom: 8 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                            <span style={S.pill(gap.priority === "high" ? "high" : gap.priority === "medium" ? "medium" : "low")}>{gap.priority}</span>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: "#fafafa" }}>{gap.topic}</span>
+                          </div>
+                          <div style={{ fontSize: 12, color: "#71717a" }}>{gap.reason}</div>
+                        </div>
+                      ))}
+                      {compResult.quickWins?.length > 0 && (
+                        <div style={{ marginTop: 10 }}>
+                          <div style={S.heading}>⚡ Quick Wins</div>
+                          {compResult.quickWins.map((w, i) => <div key={i} style={{ fontSize: 13, color: "#86efac", marginBottom: 3 }}>• {w}</div>)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Keyword Cannibalization ── */}
+                <div style={S.card}>
+                  <div style={S.cardTitle}>⚠️ Keyword Cannibalization Checker</div>
+                  <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 8 }}>Paste multiple URLs targeting the same keyword (one per line). Requires target keyword above.</div>
+                  <textarea style={{ ...S.textarea, minHeight: 80 }} placeholder={"https://yourstore.com/blog/post-1\nhttps://yourstore.com/blog/post-2"} value={cannibUrls} onChange={e => setCannibUrls(e.target.value)} />
+                  <button style={{ ...S.btn("primary"), marginTop: 8 }} onClick={runCannib} disabled={cannibLoading || !cannibUrls.trim()}>
+                    {cannibLoading ? <><span style={S.spinner} /> Checking…</> : "Check Cannibalization"}
+                  </button>
+                  {cannibResult && (
+                    <div style={{ marginTop: 14 }}>
+                      <div style={{ fontSize: 13, color: cannibResult.cannibalizing ? "#ef4444" : "#22c55e", marginBottom: 10, fontWeight: 700 }}>
+                        {cannibResult.cannibalizing ? "⚠️ Keyword cannibalization detected" : "✅ No cannibalization detected"}
+                      </div>
+                      <table style={S.table}>
+                        <thead><tr><th style={S.th}>URL</th><th style={S.th}>Score</th><th style={S.th}>Risk</th></tr></thead>
+                        <tbody>
+                          {(cannibResult.urls || []).map((u, i) => (
+                            <tr key={i}>
+                              <td style={{ ...S.td, wordBreak: "break-all", maxWidth: 300 }}>{u.url}</td>
+                              <td style={S.td}>{u.score}</td>
+                              <td style={S.td}><span style={S.pill(u.risk === "high" ? "high" : u.risk === "medium" ? "medium" : "low")}>{u.risk}</span></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {cannibResult.recommendation && <div style={{ fontSize: 13, color: "#fbbf24", marginTop: 8 }}>💡 {cannibResult.recommendation}</div>}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Anchor Text Audit ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: anchorResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🔗 Anchor Text Audit</div>
+                    <button style={S.btn(anchorResult ? undefined : "primary")} onClick={runAnchor} disabled={anchorLoading || !scanResult}>
+                      {anchorLoading ? <><span style={S.spinner} /> Auditing…</> : anchorResult ? "🔄 Re-audit" : "Audit Anchors"}
+                    </button>
+                  </div>
+                  {!anchorResult && !anchorLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Internal/external anchor text diversity — detect generic anchors (click here, read more).</div>}
+                  {anchorResult && (
+                    <div>
+                      <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 12 }}>
+                        <span style={{ fontSize: 13 }}>Internal: <strong>{anchorResult.internalCount}</strong></span>
+                        <span style={{ fontSize: 13 }}>External: <strong>{anchorResult.externalCount}</strong></span>
+                        <span style={{ fontSize: 13 }}>Generic anchors: <strong style={{ color: anchorResult.genericCount > 0 ? "#ef4444" : "#22c55e" }}>{anchorResult.genericCount}</strong></span>
+                      </div>
+                      {anchorResult.topAnchors?.length > 0 && (
+                        <div>
+                          <div style={S.heading}>Top Anchor Texts</div>
+                          {anchorResult.topAnchors.map((a, i) => (
+                            <div key={i} style={{ fontSize: 12, color: "#d4d4d8", marginBottom: 3 }}>
+                              <span style={{ ...S.pill(a.isGeneric ? "high" : "low") }}>{a.isGeneric ? "GENERIC" : "OK"}</span>
+                              "{a.text}" — {a.count}×
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {anchorResult.tips?.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#fbbf24", marginTop: 6 }}>💡 {t}</div>)}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Table of Contents Generator ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: tocResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>📑 Table of Contents Generator</div>
+                    <button style={S.btn(tocResult ? undefined : "primary")} onClick={runToc} disabled={tocLoading || !scanResult}>
+                      {tocLoading ? <><span style={S.spinner} /> Generating…</> : tocResult ? "🔄 Regenerate" : "Generate ToC"}
+                    </button>
+                  </div>
+                  {!tocResult && !tocLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Auto-generate a linked Table of Contents HTML snippet from your page headings.</div>}
+                  {tocResult && (
+                    <div>
+                      <div style={{ ...S.row, gap: 8, marginBottom: 10 }}>
+                        <span style={{ fontSize: 12, color: "#86efac" }}>✅ {tocResult.itemCount} headings extracted</span>
+                        <button style={{ ...S.btn(), fontSize: 11, padding: "3px 10px" }} onClick={() => navigator.clipboard.writeText(tocResult.html || "")}>📋 Copy HTML</button>
+                      </div>
+                      <pre style={{ ...S.fixCode, maxHeight: 200 }}>{tocResult.html}</pre>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Section Word Count ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: sectionWcResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>📏 Section Word Count Depth</div>
+                    <button style={S.btn(sectionWcResult ? undefined : "primary")} onClick={runSectionWc} disabled={sectionWcLoading || !scanResult}>
+                      {sectionWcLoading ? <><span style={S.spinner} /> Analyzing…</> : sectionWcResult ? "🔄 Re-analyze" : "Analyze Sections"}
+                    </button>
+                  </div>
+                  {!sectionWcResult && !sectionWcLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Per-section word depth analysis — identify thin sections that need expansion.</div>}
+                  {sectionWcResult && (
+                    <div>
+                      <table style={S.table}>
+                        <thead><tr><th style={S.th}>Section Heading</th><th style={S.th}>Words</th><th style={S.th}>Depth</th></tr></thead>
+                        <tbody>
+                          {(sectionWcResult.sections || []).map((sec, i) => (
+                            <tr key={i}>
+                              <td style={S.td}>{sec.heading}</td>
+                              <td style={S.td}>{sec.wordCount}</td>
+                              <td style={S.td}><span style={S.pill(sec.depth === "Thin" ? "high" : sec.depth === "Shallow" ? "medium" : "low")}>{sec.depth}</span></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {sectionWcResult.thinSections > 0 && <div style={{ fontSize: 13, color: "#fbbf24", marginTop: 8 }}>💡 {sectionWcResult.thinSections} thin section(s) detected. Expand each to at least 200 words for better topical depth.</div>}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── People Also Ask ── */}
+                <div style={S.card}>
+                  <div style={S.cardTitle}>❓ People Also Ask Generator <span style={{ fontSize: 11, color: "#71717a", fontWeight: 400 }}>2 credits</span></div>
+                  <div style={{ ...S.row, gap: 8, marginBottom: 8 }}>
+                    <input style={S.input} placeholder="Keyword (e.g. shopify abandoned cart)" value={paaKw} onChange={e => setPaaKw(e.target.value)} onKeyDown={e => e.key === "Enter" && !paaLoading && runPaa()} />
+                    <button style={S.btn("primary")} onClick={runPaa} disabled={paaLoading || !paaKw.trim()}>
+                      {paaLoading ? <><span style={S.spinner} /> Generating…</> : "Generate PAA Questions"}
+                    </button>
+                  </div>
+                  {paaResult && (
+                    <div>
+                      {(paaResult.questions || []).map((q, i) => (
+                        <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", marginBottom: 8 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#fafafa", marginBottom: 4 }}>Q: {q.question}</div>
+                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                            <span style={{ ...S.pill("low"), background: "#1e3a5f" }}>{q.answerFormat}</span>
+                            {q.intent && <span style={{ ...S.pill("low") }}>{q.intent}</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Entity Detection ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: entityResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🧠 NLP Entity Detection <span style={{ fontSize: 11, color: "#71717a", fontWeight: 400 }}>2 credits</span></div>
+                    <button style={S.btn(entityResult ? undefined : "primary")} onClick={runEntity} disabled={entityLoading || !scanResult}>
+                      {entityLoading ? <><span style={S.spinner} /> Extracting…</> : entityResult ? "🔄 Re-extract" : "Extract Entities"}
+                    </button>
+                  </div>
+                  {!entityResult && !entityLoading && <div style={{ fontSize: 13, color: "#52525b" }}>AI extracts named entities (people, orgs, concepts, locations, stats) + semantic richness score.</div>}
+                  {entityResult && (
+                    <div>
+                      {entityResult.semanticScore !== undefined && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                          <div style={S.scoreRing(entityResult.semanticScore)}>{entityResult.semanticScore}</div>
+                          <div style={{ fontSize: 13, color: "#a1a1aa" }}>Semantic Richness Score</div>
+                        </div>
+                      )}
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px,1fr))", gap: 10 }}>
+                        {Object.entries(entityResult.entities || {}).map(([category, items]) => (
+                          items?.length > 0 && (
+                            <div key={category} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px" }}>
+                              <div style={{ fontSize: 11, color: "#71717a", fontWeight: 700, textTransform: "uppercase", marginBottom: 6 }}>{category} ({items.length})</div>
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                                {items.slice(0, 8).map((item, i) => (
+                                  <span key={i} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: "2px 8px", fontSize: 11, color: "#d4d4d8" }}>{item}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── SERP Feature Eligibility ── */}
+                <div style={S.card}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: serpFeatResult ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🏆 SERP Feature Eligibility</div>
+                    <button style={S.btn(serpFeatResult ? undefined : "primary")} onClick={runSerpFeatures} disabled={serpFeatLoading || !scanResult}>
+                      {serpFeatLoading ? <><span style={S.spinner} /> Checking…</> : serpFeatResult ? "🔄 Re-check" : "Check SERP Features"}
+                    </button>
+                  </div>
+                  {!serpFeatResult && !serpFeatLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Check eligibility for Featured Snippet, PAA, Image Pack, Video Carousel, HowTo, FAQ, Review Stars, Breadcrumbs, Sitelinks.</div>}
+                  {serpFeatResult && (
+                    <div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px,1fr))", gap: 10 }}>
+                        {(serpFeatResult.features || []).map((feat, i) => (
+                          <div key={i} style={{ background: feat.eligible ? "#14532d22" : "#09090b", border: `1px solid ${feat.eligible ? "#14532d" : "#27272a"}`, borderRadius: 8, padding: "10px 14px" }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: feat.eligible ? "#86efac" : "#a1a1aa", marginBottom: 4 }}>{feat.eligible ? "✅" : "❌"} {feat.name}</div>
+                            <div style={{ fontSize: 11, color: "#71717a" }}>{feat.reason}</div>
+                            {!feat.eligible && feat.tip && <div style={{ fontSize: 11, color: "#fbbf24", marginTop: 4 }}>💡 {feat.tip}</div>}
+                          </div>
+                        ))}
+                      </div>
+                      {serpFeatResult.eligibleCount !== undefined && (
+                        <div style={{ marginTop: 12, fontSize: 13, color: "#a1a1aa" }}>Eligible for <strong style={{ color: "#22c55e" }}>{serpFeatResult.eligibleCount}</strong> of {serpFeatResult.totalCount} SERP features</div>
+                      )}
                     </div>
                   )}
                 </div>

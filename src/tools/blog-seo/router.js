@@ -1374,4 +1374,1553 @@ Respond ONLY as JSON:
   }
 });
 
+/* =========================================================================
+   CORE WEB VITALS — PageSpeed Insights API (LCP / CLS / FID / INP / FCP)
+   ========================================================================= */
+router.post('/core-web-vitals', async (req, res) => {
+  try {
+    const { url, strategy = 'mobile' } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const apiKey = process.env.PAGESPEED_API_KEY || '';
+    const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=${strategy}${apiKey ? `&key=${apiKey}` : ''}`;
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(apiUrl, { timeout: 30000 });
+    if (!r.ok) return res.status(502).json({ ok: false, error: `PageSpeed API error ${r.status}` });
+
+    const data = await r.json();
+    const cats = data.lighthouseResult?.categories || {};
+    const audits = data.lighthouseResult?.audits || {};
+    const metrics = data.loadingExperience?.metrics || {};
+
+    function cwvRating(metric) {
+      if (!metric) return { value: null, rating: 'unknown' };
+      return { value: metric.percentile, rating: metric.category?.toLowerCase().replace('_', ' ') || 'unknown', histogram: metric.distributions };
+    }
+
+    const lcp = cwvRating(metrics.LARGEST_CONTENTFUL_PAINT_MS);
+    const cls = cwvRating(metrics.CUMULATIVE_LAYOUT_SHIFT_SCORE);
+    const fid = cwvRating(metrics.FIRST_INPUT_DELAY_MS);
+    const inp = cwvRating(metrics.INTERACTION_TO_NEXT_PAINT);
+    const fcp = cwvRating(metrics.FIRST_CONTENTFUL_PAINT_MS);
+
+    const perfScore = Math.round((cats.performance?.score || 0) * 100);
+    const accessScore = Math.round((cats.accessibility?.score || 0) * 100);
+    const bestPracticesScore = Math.round((cats['best-practices']?.score || 0) * 100);
+    const seoScore = Math.round((cats.seo?.score || 0) * 100);
+
+    // Key opportunities
+    const opps = [];
+    const oppAudits = ['render-blocking-resources', 'unused-css-rules', 'unused-javascript', 'uses-optimized-images', 'uses-webp-images', 'uses-text-compression', 'server-response-time'];
+    for (const id of oppAudits) {
+      const a = audits[id];
+      if (a && a.score !== null && a.score < 0.9) {
+        opps.push({ id, title: a.title, description: a.description, score: Math.round((a.score || 0) * 100), displayValue: a.displayValue || '' });
+      }
+    }
+
+    const overallGood = [lcp, cls, fid, inp, fcp].filter(m => m.rating === 'good').length;
+    const overallRating = overallGood >= 4 ? 'Good' : overallGood >= 2 ? 'Needs Improvement' : 'Poor';
+
+    res.json({ ok: true, url, strategy, perfScore, accessScore, bestPracticesScore, seoScore, lcp, cls, fid, inp, fcp, overallRating, opportunities: opps });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   AI CRAWLER ACCESS AUDIT — parse robots.txt for AI bots & all crawlers
+   ========================================================================= */
+router.post('/crawler-access', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const origin = new URL(url).origin;
+    const robotsUrl = `${origin}/robots.txt`;
+    const fetchMod = (await import('node-fetch')).default;
+
+    let robotsTxt = '';
+    try {
+      const r = await fetchMod(robotsUrl, { timeout: 10000 });
+      if (r.ok) robotsTxt = await r.text();
+    } catch {}
+
+    const aiCrawlers = [
+      { name: 'GPTBot (ChatGPT)', agent: 'GPTBot', owner: 'OpenAI' },
+      { name: 'OAI-SearchBot', agent: 'OAI-SearchBot', owner: 'OpenAI' },
+      { name: 'ClaudeBot', agent: 'ClaudeBot', owner: 'Anthropic' },
+      { name: 'anthropic-ai', agent: 'anthropic-ai', owner: 'Anthropic' },
+      { name: 'PerplexityBot', agent: 'PerplexityBot', owner: 'Perplexity' },
+      { name: 'GoogleExtended', agent: 'Google-Extended', owner: 'Google (Gemini/Bard)' },
+      { name: 'Googlebot', agent: 'Googlebot', owner: 'Google Search' },
+      { name: 'Bingbot', agent: 'Bingbot', owner: 'Microsoft Bing' },
+      { name: 'DuckDuckBot', agent: 'DuckDuckBot', owner: 'DuckDuckGo' },
+      { name: 'Amazonbot', agent: 'Amazonbot', owner: 'Amazon Alexa' },
+    ];
+
+    // Simple robots.txt parser
+    function isCrawlerBlocked(txt, agentName) {
+      if (!txt) return 'unknown';
+      const lines = txt.split('\n').map(l => l.trim());
+      let inBlock = false;
+      let blocked = false;
+      let allowed = false;
+      for (const line of lines) {
+        if (/^user-agent:/i.test(line)) {
+          const agent = line.replace(/^user-agent:\s*/i, '').trim();
+          inBlock = agent === '*' || agent.toLowerCase() === agentName.toLowerCase();
+        }
+        if (inBlock && /^disallow:\s*\//i.test(line)) {
+          const path = line.replace(/^disallow:\s*/i, '').trim();
+          if (path === '/' || path === '') blocked = true;
+        }
+        if (inBlock && /^allow:\s*\//i.test(line)) {
+          allowed = true;
+        }
+      }
+      if (blocked && !allowed) return 'blocked';
+      return 'allowed';
+    }
+
+    const results = aiCrawlers.map(c => ({
+      ...c,
+      status: isCrawlerBlocked(robotsTxt, c.agent),
+    }));
+
+    const aiResults = results.filter(c => ['GPTBot', 'OAI-SearchBot', 'ClaudeBot', 'anthropic-ai', 'PerplexityBot', 'Google-Extended'].includes(c.agent));
+    const blockedAI = aiResults.filter(c => c.status === 'blocked');
+    const aiAccessScore = Math.round(((aiResults.length - blockedAI.length) / aiResults.length) * 100);
+
+    const issues = [];
+    if (!robotsTxt) issues.push({ sev: 'medium', msg: 'Could not fetch robots.txt — ensure it exists at /robots.txt' });
+    blockedAI.forEach(c => issues.push({ sev: 'high', msg: `${c.name} is blocked — this stops ${c.owner} from indexing your content for AI search` }));
+
+    res.json({ ok: true, robotsUrl, robotsTxtFound: !!robotsTxt, results, aiAccessScore, blockedAI: blockedAI.length, issues });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   TITLE / H1 ALIGNMENT — compare <title> vs <h1>, detect mismatch + rewrite risk
+   ========================================================================= */
+router.post('/title-h1-alignment', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    const title = $('title').first().text().trim();
+    const h1 = $('h1').first().text().trim();
+    const metaDesc = $('meta[name="description"]').attr('content') || '';
+
+    // Similarity (word overlap)
+    const titleWords = new Set(title.toLowerCase().split(/\s+/).filter(w => w.length > 3));
+    const h1Words = new Set(h1.toLowerCase().split(/\s+/).filter(w => w.length > 3));
+    const common = [...titleWords].filter(w => h1Words.has(w));
+    const similarity = titleWords.size > 0 ? Math.round((common.length / Math.max(titleWords.size, h1Words.size)) * 100) : 0;
+    const aligned = similarity >= 50;
+
+    // Google title rewrite risk (based on Zyppy 61.6% rewrite study)
+    const titleLen = title.length;
+    const rewriteRisks = [];
+    if (titleLen > 60) rewriteRisks.push(`Title is ${titleLen} chars — Google truncates at ~60 chars`);
+    if (titleLen < 30) rewriteRisks.push(`Title is very short (${titleLen} chars) — Google may expand it`);
+    if (!aligned) rewriteRisks.push('Title and H1 differ significantly — Google may prefer H1 text as title');
+    if (/[|]{2,}/.test(title) || (title.match(/[\|—\-]/g) || []).length > 2) rewriteRisks.push('Title contains excessive delimiters (|, —) which triggers rewrites');
+    const brandInTitle = /[\|—\-]\s*\w+$/.test(title);
+    const rewriteRisk = rewriteRisks.length >= 2 ? 'High' : rewriteRisks.length === 1 ? 'Medium' : 'Low';
+
+    // H1 audit
+    const h1Count = $('h1').length;
+    const h1Issues = [];
+    if (h1Count === 0) h1Issues.push({ sev: 'high', msg: 'No H1 tag found — every page needs exactly one H1' });
+    if (h1Count > 1) h1Issues.push({ sev: 'medium', msg: `${h1Count} H1 tags found — use only one H1 per page` });
+    if (h1.length > 70) h1Issues.push({ sev: 'low', msg: `H1 is ${h1.length} chars — keep under 70 chars for clean display` });
+    if (!aligned && h1 && title) h1Issues.push({ sev: 'medium', msg: 'Title and H1 don\'t share enough keywords — align them to prevent Google rewrites' });
+
+    res.json({ ok: true, title, h1, metaDesc: metaDesc.slice(0, 200), titleLen, h1Length: h1.length, h1Count, similarity, aligned, rewriteRisk, rewriteRisks, brandInTitle, h1Issues });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   HEADING HIERARCHY VALIDATOR — detect H1 count, skipped levels, structure issues
+   ========================================================================= */
+router.post('/heading-hierarchy', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    const headings = [];
+    $('h1,h2,h3,h4,h5,h6').each((_, el) => {
+      headings.push({ level: parseInt(el.tagName[1]), text: $(el).text().trim().slice(0, 120) });
+    });
+
+    const issues = [];
+    const counts = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 };
+    headings.forEach(h => counts[`h${h.level}`]++);
+
+    if (counts.h1 === 0) issues.push({ sev: 'high', msg: 'Missing H1 tag — every page must have exactly one H1' });
+    if (counts.h1 > 1) issues.push({ sev: 'high', msg: `${counts.h1} H1 tags found — use only one H1 (the page title)` });
+
+    // Detect skipped levels
+    let prevLevel = 1;
+    for (const h of headings) {
+      if (h.level > prevLevel + 1) {
+        issues.push({ sev: 'medium', msg: `Heading jump: H${prevLevel} → H${h.level} detected at "${h.text.slice(0, 40)}" — don't skip heading levels` });
+      }
+      prevLevel = h.level;
+    }
+
+    if (counts.h2 === 0 && headings.length > 1) issues.push({ sev: 'medium', msg: 'No H2 tags found — use H2s as main section headers to structure long content' });
+
+    // Empty headings
+    const emptyHeadings = headings.filter(h => !h.text.trim());
+    if (emptyHeadings.length > 0) issues.push({ sev: 'high', msg: `${emptyHeadings.length} empty heading tag(s) found — remove or fill them` });
+
+    const score = Math.max(0, 100 - issues.filter(i => i.sev === 'high').length * 30 - issues.filter(i => i.sev === 'medium').length * 15);
+    res.json({ ok: true, headings, counts, issues, score, totalHeadings: headings.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   IMAGE SEO AUDIT — alt text, file names, lazy loading, count
+   ========================================================================= */
+router.post('/image-seo', async (req, res) => {
+  try {
+    const { url, keyword = '' } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    const images = [];
+    $('img').each((_, el) => {
+      const src = $(el).attr('src') || '';
+      const alt = $(el).attr('alt');
+      const loading = $(el).attr('loading');
+      const width = $(el).attr('width');
+      const height = $(el).attr('height');
+      const filename = src.split('/').pop().split('?')[0];
+      const hasAlt = alt !== undefined;
+      const altEmpty = hasAlt && alt.trim() === '';
+      const genericFilename = /^(image|img|photo|pic|dsc|screenshot|untitled|download)[\d_-]*/i.test(filename);
+      const hasKeyword = keyword && (alt || '').toLowerCase().includes(keyword.toLowerCase());
+      images.push({ src: src.slice(0, 120), alt: alt || null, hasAlt, altEmpty, loading: loading || 'eager', width, height, filename, genericFilename, hasKeyword });
+    });
+
+    const missing = images.filter(i => !i.hasAlt);
+    const empty = images.filter(i => i.altEmpty);
+    const noLazy = images.filter(i => i.loading !== 'lazy');
+    const generic = images.filter(i => i.genericFilename);
+    const noSize = images.filter(i => !i.width || !i.height);
+
+    const issues = [];
+    if (missing.length > 0) issues.push({ sev: 'high', msg: `${missing.length} image(s) missing alt attribute — required for accessibility and image SEO` });
+    if (empty.length > 0) issues.push({ sev: 'high', msg: `${empty.length} image(s) have empty alt text — add descriptive alt text (unless purely decorative)` });
+    if (generic.length > 0) issues.push({ sev: 'medium', msg: `${generic.length} image(s) have generic filenames (img123.jpg) — use descriptive names like "keyword-related-topic.jpg"` });
+    if (noLazy.length > 3) issues.push({ sev: 'medium', msg: `${noLazy.length} images don't have loading="lazy" — add lazy loading to improve page speed` });
+    if (noSize.length > 0) issues.push({ sev: 'low', msg: `${noSize.length} image(s) missing width/height attributes — specify dimensions to prevent layout shifts (CLS)` });
+
+    const altScore = images.length > 0 ? Math.round(((images.length - missing.length - empty.length) / images.length) * 100) : 100;
+    const grade = altScore >= 90 ? 'Excellent' : altScore >= 70 ? 'Good' : altScore >= 50 ? 'Fair' : 'Poor';
+
+    res.json({ ok: true, totalImages: images.length, missing: missing.length, emptyAlt: empty.length, noLazy: noLazy.length, genericFilenames: generic.length, noSize: noSize.length, altScore, grade, issues, images: images.slice(0, 30) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   SEMANTIC HTML CHECKER — detect proper usage of semantic elements
+   ========================================================================= */
+router.post('/semantic-html', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    const checks = [
+      { tag: 'article', label: 'Article element', importance: 'high', desc: 'Wraps the main blog post content — helps crawlers identify primary content' },
+      { tag: 'main', label: 'Main element', importance: 'high', desc: 'Identifies the main content area — improves crawler understanding' },
+      { tag: 'header', label: 'Header element', importance: 'medium', desc: 'Site/page header landmark' },
+      { tag: 'nav', label: 'Nav element', importance: 'medium', desc: 'Navigation links for internal link discovery' },
+      { tag: 'footer', label: 'Footer element', importance: 'low', desc: 'Page footer with supplementary content' },
+      { tag: 'aside', label: 'Aside element', importance: 'low', desc: 'Sidebar or callout content' },
+      { tag: 'figure', label: 'Figure/figcaption', importance: 'low', desc: 'Semantic image with caption — helps image SEO' },
+      { tag: 'time', label: 'Time element', importance: 'medium', desc: 'Machine-readable publish date — important for freshness signals' },
+      { tag: 'address', label: 'Address/author', importance: 'low', desc: 'Author contact info — E-E-A-T signal' },
+    ];
+
+    const results = checks.map(c => ({
+      ...c,
+      found: $(c.tag).length > 0,
+      count: $(c.tag).length,
+    }));
+
+    const passed = results.filter(r => r.found);
+    const failed = results.filter(r => !r.found && r.importance !== 'low');
+    const score = Math.round((passed.length / results.length) * 100);
+
+    const issues = failed.map(f => ({ sev: f.importance === 'high' ? 'high' : 'medium', msg: `Missing <${f.tag}> element — ${f.desc}` }));
+
+    res.json({ ok: true, results, passed: passed.length, total: results.length, score, issues });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   META DESCRIPTION AUDIT — length, keyword, CTA, uniqueness signals
+   ========================================================================= */
+router.post('/meta-description-audit', async (req, res) => {
+  try {
+    const { url, keyword = '' } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    const metaDesc = $('meta[name="description"]').attr('content') || '';
+    const ogDesc = $('meta[property="og:description"]').attr('content') || '';
+    const title = $('title').first().text().trim();
+
+    const len = metaDesc.length;
+    const hasKeyword = keyword ? metaDesc.toLowerCase().includes(keyword.toLowerCase()) : null;
+    const ctaWords = ['learn', 'discover', 'find out', 'get', 'read', 'see', 'explore', 'try', 'start'];
+    const hasCTA = ctaWords.some(w => metaDesc.toLowerCase().includes(w));
+
+    const issues = [];
+    if (!metaDesc) issues.push({ sev: 'high', msg: 'No meta description found — write a compelling 140-160 char description to improve CTR' });
+    else if (len < 70) issues.push({ sev: 'high', msg: `Meta description is very short (${len} chars) — aim for 140-160 chars` });
+    else if (len > 160) issues.push({ sev: 'medium', msg: `Meta description is ${len} chars — Google truncates at ~160 chars` });
+    if (metaDesc && !hasKeyword && keyword) issues.push({ sev: 'medium', msg: `Target keyword "${keyword}" not in meta description — include it as Google bolds keywords in snippets` });
+    if (metaDesc && !hasCTA) issues.push({ sev: 'low', msg: 'No action word detected in meta description — add a CTA like "Learn", "Discover", or "Find out"' });
+    if (!ogDesc) issues.push({ sev: 'low', msg: 'No og:description tag — add one for better social media sharing appearance' });
+
+    const score = Math.max(0, 100 - issues.filter(i => i.sev === 'high').length * 35 - issues.filter(i => i.sev === 'medium').length * 15 - issues.filter(i => i.sev === 'low').length * 5);
+    res.json({ ok: true, metaDesc, ogDesc, title, len, hasKeyword, hasCTA, issues, score });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   KEYWORD DENSITY MAP — distribution of keyword across page sections
+   ========================================================================= */
+router.post('/keyword-density', async (req, res) => {
+  try {
+    const { url, keyword } = req.body || {};
+    if (!url || !keyword) return res.status(400).json({ ok: false, error: 'url and keyword required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    $('script,style,nav,footer,header').remove();
+    const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
+    const words = bodyText.split(/\s+/);
+    const kLower = keyword.toLowerCase();
+    const re = new RegExp(`\\b${kLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+
+    const allMatches = bodyText.match(re) || [];
+    const density = words.length > 0 ? ((allMatches.length / words.length) * 100).toFixed(2) : '0.00';
+
+    // Section-level analysis
+    const sections = [];
+    $('h1,h2,h3,h4').each((_, el) => {
+      const headText = $(el).text().trim();
+      const nextSibs = [];
+      let sib = $(el).next()[0];
+      while (sib && !/^h[1-4]$/i.test(sib.tagName)) {
+        nextSibs.push($(sib).text());
+        sib = $(sib).next()[0];
+      }
+      const sectionText = nextSibs.join(' ');
+      const sectionWords = sectionText.split(/\s+/).filter(Boolean);
+      const sectionMatches = (sectionText.match(re) || []).length;
+      const sectionDensity = sectionWords.length > 0 ? ((sectionMatches / sectionWords.length) * 100).toFixed(2) : '0.00';
+      sections.push({ heading: headText.slice(0, 80), wordCount: sectionWords.length, keyword: sectionMatches, density: parseFloat(sectionDensity), inHeading: headText.toLowerCase().includes(kLower) });
+    });
+
+    const issues = [];
+    const d = parseFloat(density);
+    if (d > 4) issues.push({ sev: 'high', msg: `Keyword density is ${density}% — over 4% looks like keyword stuffing to Google` });
+    if (d < 0.5 && allMatches.length > 0) issues.push({ sev: 'medium', msg: `Keyword density is only ${density}% — try to include it more naturally throughout the content` });
+    if (allMatches.length === 0) issues.push({ sev: 'high', msg: `Keyword "${keyword}" not found on the page at all` });
+
+    res.json({ ok: true, keyword, totalWords: words.length, totalMatches: allMatches.length, density: parseFloat(density), sections, issues });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   NOINDEX / NOFOLLOW AUDITOR — detect crawl/index directives
+   ========================================================================= */
+router.post('/index-directives', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const headers = Object.fromEntries(r.headers.entries());
+    const $ = cheerio.load(html);
+
+    // Meta robots tags
+    const metaRobots = $('meta[name="robots"]').attr('content') || '';
+    const metaGooglebot = $('meta[name="googlebot"]').attr('content') || '';
+    const xRobotsHeader = headers['x-robots-tag'] || '';
+    const canonicalTag = $('link[rel="canonical"]').attr('href') || '';
+
+    const allDirectives = [metaRobots, metaGooglebot, xRobotsHeader].join(',').toLowerCase();
+    const hasNoindex = allDirectives.includes('noindex');
+    const hasNofollow = allDirectives.includes('nofollow');
+    const hasNocache = allDirectives.includes('noarchive') || allDirectives.includes('nocache');
+    const hasNosnippet = allDirectives.includes('nosnippet');
+
+    const issues = [];
+    if (hasNoindex) issues.push({ sev: 'high', msg: 'Page has noindex directive — Google will NOT index this page. Remove if this is a live blog post' });
+    if (hasNofollow) issues.push({ sev: 'medium', msg: 'Page has nofollow directive — links on this page will not pass PageRank' });
+    if (hasNosnippet) issues.push({ sev: 'medium', msg: 'Page has nosnippet — Google cannot show a text snippet, reducing CTR' });
+    if (!canonicalTag) issues.push({ sev: 'low', msg: 'No canonical tag found — add a self-referential canonical to prevent duplicate content issues' });
+    if (canonicalTag && canonicalTag !== url && !url.endsWith('/') && canonicalTag !== url + '/') {
+      issues.push({ sev: 'medium', msg: `Canonical points to different URL: ${canonicalTag} — verify this is intentional` });
+    }
+
+    res.json({ ok: true, metaRobots, metaGooglebot, xRobotsHeader, canonicalTag, hasNoindex, hasNofollow, hasNocache, hasNosnippet, issues });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   CONTENT STRUCTURE SCORE — lists, tables, bullets, images vs prose ratio
+   ========================================================================= */
+router.post('/content-structure', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    $('script,style,nav,footer,header').remove();
+
+    const ulCount = $('ul').length;
+    const olCount = $('ol').length;
+    const liCount = $('li').length;
+    const tableCount = $('table').length;
+    const imgCount = $('img').length;
+    const h2Count = $('h2').length;
+    const h3Count = $('h3').length;
+    const blockquoteCount = $('blockquote').length;
+    const codeCount = $('pre,code').length;
+    const boldCount = $('strong,b').length;
+    const tocPresent = !!($('*').filter((_, el) => /table.of.contents|toc|jump.to/i.test($(el).text())).length > 0 && $('ul a[href^="#"]').length > 2);
+
+    const allText = $('body').text().replace(/\s+/g, ' ');
+    const wordCount = allText.split(/\s+/).filter(Boolean).length;
+
+    const structuredElements = ulCount + olCount + tableCount;
+    const structureRatio = wordCount > 0 ? ((structuredElements / (wordCount / 100)) * 10).toFixed(1) : '0';
+    const score = Math.min(100,
+      (ulCount > 0 ? 15 : 0) +
+      (olCount > 0 ? 15 : 0) +
+      (tableCount > 0 ? 10 : 0) +
+      (imgCount >= 2 ? 10 : imgCount === 1 ? 5 : 0) +
+      (h2Count >= 3 ? 15 : h2Count >= 1 ? 8 : 0) +
+      (h3Count >= 2 ? 10 : 0) +
+      (boldCount >= 3 ? 10 : 0) +
+      (blockquoteCount > 0 ? 5 : 0) +
+      (codeCount > 0 ? 5 : 0) +
+      (tocPresent ? 5 : 0)
+    );
+
+    const issues = [];
+    if (ulCount + olCount === 0) issues.push({ sev: 'medium', msg: 'No lists found — use bullet/numbered lists to break up content and improve readability' });
+    if (h2Count < 2) issues.push({ sev: 'medium', msg: `Only ${h2Count} H2 tag(s) — add more section headers (H2s) for long-form content` });
+    if (imgCount === 0) issues.push({ sev: 'medium', msg: 'No images found — add relevant images to improve engagement and image search visibility' });
+    if (!tocPresent && wordCount > 1500) issues.push({ sev: 'low', msg: 'No table of contents detected for long article — add a ToC to improve navigation and sitelinks' });
+
+    const grade = score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : score >= 40 ? 'Fair' : 'Needs Work';
+    res.json({ ok: true, score, grade, wordCount, ulCount, olCount, liCount, tableCount, imgCount, h2Count, h3Count, blockquoteCount, codeCount, boldCount, tocPresent, structureRatio: parseFloat(structureRatio), issues });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   AUTHOR AUTHORITY CHECKER — detect author signals for E-E-A-T
+   ========================================================================= */
+router.post('/author-authority', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    // Find author signals
+    const authorMeta = $('meta[name="author"]').attr('content') || '';
+    const authorSchemaEl = $('script[type="application/ld+json"]').map((_, el) => {
+      try { return JSON.parse($(el).html()); } catch { return null; }
+    }).get().find(s => s && (s['@type'] === 'Person' || s?.author));
+
+    const authorFromSchema = authorSchemaEl?.author?.name || authorSchemaEl?.name || '';
+    const authorByline = (() => {
+      const sel = $('[class*="author"],[rel="author"],[itemprop="author"],#author,.byline');
+      return sel.first().text().trim().slice(0, 100);
+    })();
+
+    const authorName = authorMeta || authorFromSchema || authorByline;
+    const hasAuthorBio = $('[class*="author-bio"],[class*="author_bio"],[class*="author-description"]').length > 0;
+    const hasAuthorLink = $('a[rel="author"],a[href*="/author/"]').length > 0;
+    const hasDatePublished = !!($('time[datetime]').length > 0 || $('meta[property="article:published_time"]').attr('content'));
+    const hasDateModified = !!$('meta[property="article:modified_time"]').attr('content');
+    const publishedDate = $('meta[property="article:published_time"]').attr('content') || $('time[datetime]').first().attr('datetime') || '';
+
+    const issues = [];
+    if (!authorName) issues.push({ sev: 'high', msg: 'No author name detected — add author attribution for E-E-A-T signals (YMYL content especially)' });
+    if (!hasAuthorBio) issues.push({ sev: 'medium', msg: 'No author bio section detected — add a bio with credentials to improve E-E-A-T' });
+    if (!hasAuthorLink) issues.push({ sev: 'low', msg: 'No author profile link found — link to author page with more posts and credentials' });
+    if (!hasDatePublished) issues.push({ sev: 'medium', msg: 'No publish date detected — add article:published_time meta tag for freshness signals' });
+    if (!hasDateModified) issues.push({ sev: 'low', msg: 'No modified date found — add article:modified_time when you update posts' });
+
+    const score = Math.max(0, 100 - issues.filter(i => i.sev === 'high').length * 35 - issues.filter(i => i.sev === 'medium').length * 15 - issues.filter(i => i.sev === 'low').length * 5);
+    res.json({ ok: true, authorName, authorMeta, authorFromSchema, authorByline, hasAuthorBio, hasAuthorLink, hasDatePublished, hasDateModified, publishedDate, issues, score });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   XML SITEMAP DETECTOR — find & validate sitemap, check if URL is included
+   ========================================================================= */
+router.post('/sitemap-check', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const origin = new URL(url).origin;
+    const fetchMod = (await import('node-fetch')).default;
+    const sitemapUrls = [`${origin}/sitemap.xml`, `${origin}/sitemap_index.xml`, `${origin}/blog-sitemap.xml`];
+
+    let sitemapFound = null;
+    let sitemapContent = '';
+    for (const su of sitemapUrls) {
+      try {
+        const sr = await fetchMod(su, { timeout: 8000 });
+        if (sr.ok && sr.headers.get('content-type')?.includes('xml') || sr.ok) {
+          const text = await sr.text();
+          if (text.includes('<?xml') || text.includes('<urlset') || text.includes('<sitemapindex')) {
+            sitemapFound = su;
+            sitemapContent = text;
+            break;
+          }
+        }
+      } catch {}
+    }
+
+    // Check robots.txt for Sitemap: directive
+    let sitemapFromRobots = '';
+    try {
+      const rr = await fetchMod(`${origin}/robots.txt`, { timeout: 8000 });
+      if (rr.ok) {
+        const rtxt = await rr.text();
+        const match = rtxt.match(/^sitemap:\s*(.+)$/im);
+        if (match) sitemapFromRobots = match[1].trim();
+      }
+    } catch {}
+
+    const urlInSitemap = sitemapContent ? sitemapContent.includes(url) || sitemapContent.includes(url.replace(/\/$/, '')) : null;
+    const urlCount = sitemapContent ? (sitemapContent.match(/<url>/g) || []).length : 0;
+
+    const issues = [];
+    if (!sitemapFound && !sitemapFromRobots) issues.push({ sev: 'high', msg: 'No XML sitemap found at /sitemap.xml — create and submit a sitemap to Google Search Console' });
+    if (sitemapFound && urlInSitemap === false) issues.push({ sev: 'high', msg: 'This URL is NOT included in the sitemap — add it so Google can discover and index it' });
+    if (!sitemapFromRobots) issues.push({ sev: 'low', msg: 'Sitemap URL not declared in robots.txt — add "Sitemap: <url>" to robots.txt' });
+
+    res.json({ ok: true, sitemapFound: sitemapFound || sitemapFromRobots, sitemapFromRobots, urlInSitemap, urlCount, issues });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   OPEN GRAPH VALIDATOR — check OG tags completeness & image validity
+   ========================================================================= */
+router.post('/og-validator', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    const og = {
+      title: $('meta[property="og:title"]').attr('content') || '',
+      description: $('meta[property="og:description"]').attr('content') || '',
+      image: $('meta[property="og:image"]').attr('content') || '',
+      imageWidth: $('meta[property="og:image:width"]').attr('content') || '',
+      imageHeight: $('meta[property="og:image:height"]').attr('content') || '',
+      type: $('meta[property="og:type"]').attr('content') || '',
+      url: $('meta[property="og:url"]').attr('content') || '',
+      siteName: $('meta[property="og:site_name"]').attr('content') || '',
+    };
+    const twitter = {
+      card: $('meta[name="twitter:card"]').attr('content') || '',
+      title: $('meta[name="twitter:title"]').attr('content') || '',
+      description: $('meta[name="twitter:description"]').attr('content') || '',
+      image: $('meta[name="twitter:image"]').attr('content') || '',
+    };
+
+    // Validate OG image
+    let ogImageValid = null;
+    if (og.image) {
+      try {
+        const imgR = await fetchMod(og.image, { method: 'HEAD', timeout: 8000 });
+        ogImageValid = imgR.ok;
+      } catch { ogImageValid = false; }
+    }
+
+    const issues = [];
+    if (!og.title) issues.push({ sev: 'high', msg: 'Missing og:title — required for proper social sharing previews' });
+    if (!og.description) issues.push({ sev: 'high', msg: 'Missing og:description — required for rich social previews' });
+    if (!og.image) issues.push({ sev: 'high', msg: 'Missing og:image — pages without OG images get minimal social engagement' });
+    if (og.image && ogImageValid === false) issues.push({ sev: 'high', msg: 'og:image URL returned an error — fix the image URL' });
+    if (og.image && (!og.imageWidth || !og.imageHeight)) issues.push({ sev: 'medium', msg: 'Missing og:image:width/height — recommended 1200×630px for best display' });
+    if (!og.type) issues.push({ sev: 'low', msg: 'Missing og:type — set to "article" for blog posts' });
+    if (!twitter.card) issues.push({ sev: 'medium', msg: 'Missing twitter:card tag — set to "summary_large_image" for full-width previews' });
+
+    const score = Math.max(0, 100 - issues.filter(i => i.sev === 'high').length * 25 - issues.filter(i => i.sev === 'medium').length * 10 - issues.filter(i => i.sev === 'low').length * 5);
+    res.json({ ok: true, og, twitter, ogImageValid, issues, score });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   BREADCRUMB SCHEMA GENERATOR — generate BreadcrumbList JSON-LD from URL path
+   ========================================================================= */
+router.post('/schema/breadcrumb', async (req, res) => {
+  try {
+    const { url, siteUrl, labels } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const parsed = new URL(url);
+    const origin = siteUrl || parsed.origin;
+    const segments = parsed.pathname.split('/').filter(Boolean);
+
+    // Build breadcrumb items
+    const labelsArr = labels && Array.isArray(labels) ? labels : [];
+    const items = [{ '@type': 'ListItem', position: 1, name: 'Home', item: origin }];
+    let pathAccum = origin;
+    segments.forEach((seg, i) => {
+      pathAccum += '/' + seg;
+      const name = labelsArr[i] || seg.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      items.push({ '@type': 'ListItem', position: i + 2, name, item: pathAccum });
+    });
+
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      'itemListElement': items,
+    };
+
+    res.json({ ok: true, schema, items, jsonLd: JSON.stringify(schema, null, 2) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   HOWTO SCHEMA GENERATOR — AI-powered HowTo JSON-LD
+   ========================================================================= */
+router.post('/schema/howto', async (req, res) => {
+  try {
+    const { title, description, steps, totalTime, model = 'gpt-4o-mini' } = req.body || {};
+    if (!title) return res.status(400).json({ ok: false, error: 'title required' });
+
+    const openai = getOpenAI();
+    const prompt = `Generate a HowTo schema.org JSON-LD for a blog post.
+
+Title: "${title}"
+${description ? `Description: "${description}"` : ''}
+${steps ? `Steps provided: ${JSON.stringify(steps)}` : 'Generate 4-6 logical steps based on the title.'}
+${totalTime ? `Total time: ${totalTime}` : ''}
+
+Return ONLY valid JSON-LD (no markdown), using schema.org HowTo. Include:
+- @context, @type: "HowTo"
+- name, description
+- totalTime in ISO 8601 duration format (e.g. PT30M)
+- step array with @type: HowToStep, name, text for each step
+- estimatedCost if applicable`;
+
+    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }] });
+    let raw = resp.choices[0].message.content.trim().replace(/^```json\s*/i, '').replace(/```$/, '');
+    const parsed = JSON.parse(raw);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, schema: parsed, jsonLd: JSON.stringify(parsed, null, 2) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   VIDEO SCHEMA GENERATOR — detect video embeds and auto-generate VideoObject
+   ========================================================================= */
+router.post('/schema/video', async (req, res) => {
+  try {
+    const { url, name, description, uploadDate, thumbnailUrl, duration } = req.body || {};
+    if (!url && !name) return res.status(400).json({ ok: false, error: 'url or name required' });
+
+    let detectedVideos = [];
+    if (url) {
+      const fetchMod = (await import('node-fetch')).default;
+      const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+      const html = await r.text();
+      const $ = cheerio.load(html);
+
+      $('iframe[src*="youtube"],iframe[src*="vimeo"],video').each((_, el) => {
+        const src = $(el).attr('src') || $(el).attr('data-src') || '';
+        const ytMatch = src.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]+)/);
+        const vimeoMatch = src.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+        if (ytMatch) detectedVideos.push({ platform: 'YouTube', id: ytMatch[1], embedUrl: src, contentUrl: `https://www.youtube.com/watch?v=${ytMatch[1]}`, thumbnailUrl: `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg` });
+        if (vimeoMatch) detectedVideos.push({ platform: 'Vimeo', id: vimeoMatch[1], embedUrl: src, contentUrl: `https://vimeo.com/${vimeoMatch[1]}` });
+      });
+    }
+
+    const v = detectedVideos[0] || {};
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'VideoObject',
+      'name': name || 'Video',
+      'description': description || 'Video description',
+      'uploadDate': uploadDate || new Date().toISOString().split('T')[0],
+      'thumbnailUrl': thumbnailUrl || v.thumbnailUrl || '',
+      ...(duration && { 'duration': duration }),
+      ...(v.embedUrl && { 'embedUrl': v.embedUrl }),
+      ...(v.contentUrl && { 'contentUrl': v.contentUrl }),
+    };
+
+    res.json({ ok: true, schema, jsonLd: JSON.stringify(schema, null, 2), detectedVideos });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   REVIEW SCHEMA GENERATOR — generate Review / AggregateRating JSON-LD
+   ========================================================================= */
+router.post('/schema/review', async (req, res) => {
+  try {
+    const { itemName, itemType = 'Product', reviewBody, ratingValue, bestRating = 5, worstRating = 1, authorName, reviewCount } = req.body || {};
+    if (!itemName) return res.status(400).json({ ok: false, error: 'itemName required' });
+
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': reviewCount ? 'AggregateRating' : 'Review',
+      'itemReviewed': { '@type': itemType, 'name': itemName },
+      ...(reviewCount ? {
+        'ratingValue': ratingValue || 4.5,
+        'bestRating': bestRating,
+        'worstRating': worstRating,
+        'reviewCount': reviewCount,
+      } : {
+        'reviewBody': reviewBody || '',
+        'reviewRating': { '@type': 'Rating', 'ratingValue': ratingValue || 5, 'bestRating': bestRating, 'worstRating': worstRating },
+        'author': { '@type': 'Person', 'name': authorName || 'Author' },
+        'datePublished': new Date().toISOString().split('T')[0],
+      }),
+    };
+
+    res.json({ ok: true, schema, jsonLd: JSON.stringify(schema, null, 2) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   ORGANIZATION SCHEMA GENERATOR — Publisher / Organization JSON-LD
+   ========================================================================= */
+router.post('/schema/organization', async (req, res) => {
+  try {
+    const { name, url, logo, description, email, phone, sameAs } = req.body || {};
+    if (!name) return res.status(400).json({ ok: false, error: 'name required' });
+
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      'name': name,
+      ...(url && { 'url': url }),
+      ...(logo && { 'logo': { '@type': 'ImageObject', 'url': logo } }),
+      ...(description && { 'description': description }),
+      ...(email && { 'email': email }),
+      ...(phone && { 'telephone': phone }),
+      ...(sameAs && Array.isArray(sameAs) && { 'sameAs': sameAs }),
+    };
+
+    res.json({ ok: true, schema, jsonLd: JSON.stringify(schema, null, 2) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   SPEAKABLE SCHEMA GENERATOR — mark speakable content for voice search
+   ========================================================================= */
+router.post('/schema/speakable', async (req, res) => {
+  try {
+    const { url, cssSelectors } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    // Auto-detect speakable sections: first H1 + first H2 summary paragraphs
+    const pageTitle = $('title').first().text().trim();
+    const h1 = $('h1').first().text().trim();
+    const firstPara = $('article p, .post-content p, main p').first().text().trim().slice(0, 300);
+
+    const selectors = cssSelectors || ['h1', 'h2:first-of-type', 'article p:first-of-type'];
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      'name': pageTitle || h1,
+      'speakable': { '@type': 'SpeakableSpecification', 'cssSelector': selectors },
+      'url': url,
+    };
+
+    res.json({ ok: true, schema, jsonLd: JSON.stringify(schema, null, 2), detectedTitle: h1, firstParagraph: firstPara, cssSelectors: selectors });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   SEARCH INTENT CLASSIFIER — AI determines intent type & content match
+   ========================================================================= */
+router.post('/intent-classifier', async (req, res) => {
+  try {
+    const { url, keyword, title, excerpt, model = 'gpt-4o-mini' } = req.body || {};
+    if (!keyword && !url) return res.status(400).json({ ok: false, error: 'keyword or url required' });
+
+    let pageTitle = title || '';
+    let pageExcerpt = excerpt || '';
+    if (url && !title) {
+      try {
+        const fetchMod = (await import('node-fetch')).default;
+        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 10000 });
+        const html = await r.text();
+        const $ = cheerio.load(html);
+        pageTitle = $('title').first().text().trim().slice(0, 120);
+        pageExcerpt = $('meta[name="description"]').attr('content') || $('article p').first().text().trim().slice(0, 300);
+      } catch {}
+    }
+
+    const openai = getOpenAI();
+    const prompt = `Analyze the search intent for:
+Keyword: "${keyword || ''}"
+Page Title: "${pageTitle}"
+Content excerpt: "${pageExcerpt.slice(0, 400)}"
+
+Classify the intent as one or more of:
+- Informational (user wants to learn)
+- Navigational (user wants a specific site)
+- Commercial (user is researching before buying)
+- Transactional (user wants to buy/act now)
+
+Also determine if the page MATCHES the likely intent for this keyword.
+
+Respond as JSON ONLY:
+{
+  "primaryIntent": "informational|navigational|commercial|transactional",
+  "intentBreakdown": { "informational": 0-100, "navigational": 0-100, "commercial": 0-100, "transactional": 0-100 },
+  "pageMatchesIntent": true|false,
+  "matchScore": 0-100,
+  "explanation": "brief explanation",
+  "recommendation": "what to change if mismatch, else what's working"
+}`;
+
+    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, keyword, pageTitle, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   AI OVERVIEW ELIGIBILITY — assess if content qualifies for AIO
+   ========================================================================= */
+router.post('/ai-overview-eligibility', async (req, res) => {
+  try {
+    const { url, model = 'gpt-4o-mini' } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    $('script,style,nav,footer').remove();
+    const title = $('title').first().text().trim();
+    const h1 = $('h1').first().text().trim();
+    const metaDesc = $('meta[name="description"]').attr('content') || '';
+    const firstPara = $('article p, main p, .content p').first().text().trim();
+    const allText = $('body').text().replace(/\s+/g, ' ').trim();
+    const wordCount = allText.split(/\s+/).length;
+    const hasList = $('ul,ol').length > 0;
+    const hasTable = $('table').length > 0;
+    const hasDefinition = /is a |is an |defined as |refers to |means that /i.test(firstPara);
+    const hasSteps = $('ol').length > 0 || /step \d|^\d+\./im.test(allText.slice(0, 2000));
+
+    const openai = getOpenAI();
+    const prompt = `Assess whether this blog post is likely to appear in Google's AI Overviews (AIO) / AI search results.
+
+Title: "${title}"
+H1: "${h1}"
+Meta description: "${metaDesc}"
+First paragraph: "${firstPara.slice(0, 400)}"
+Word count: ${wordCount}
+Has lists: ${hasList}, Has tables: ${hasTable}, Has definition: ${hasDefinition}, Has steps: ${hasSteps}
+
+AI Overviews favor:
+- Content with clear, direct answers in first 100 words
+- Declarative sentences like "X is Y because Z"
+- Numbered steps for how-to queries
+- Tables for comparisons
+- Covering the exact match query comprehensively
+- Authoritative factual content without fluff
+
+Score the eligibility 0-100 and provide specific improvements.
+
+Return JSON ONLY:
+{
+  "aioScore": 0-100,
+  "eligibilityLevel": "High|Medium|Low",
+  "strengths": ["..."],
+  "improvements": ["specific sentence to add or change"],
+  "optimalFormat": "what format type would maximize AIO chances",
+  "directAnswerPresent": true|false
+}`;
+
+    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, title, wordCount, hasList, hasTable, hasDefinition, hasSteps, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   TOPICAL AUTHORITY MAPPER — AI scores how deeply article covers subtopics
+   ========================================================================= */
+router.post('/topical-authority', async (req, res) => {
+  try {
+    const { url, keyword, model = 'gpt-4o-mini' } = req.body || {};
+    if (!url || !keyword) return res.status(400).json({ ok: false, error: 'url and keyword required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    $('script,style,nav,footer').remove();
+    const title = $('title').first().text().trim();
+    const headings = [];
+    $('h1,h2,h3').each((_, el) => headings.push(`${el.tagName.toUpperCase()}: ${$(el).text().trim()}`));
+    const allText = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 3000);
+
+    const openai = getOpenAI();
+    const prompt = `Analyze topical authority for a blog post targeting keyword: "${keyword}"
+
+Page title: "${title}"
+Headings structure:
+${headings.slice(0, 20).join('\n')}
+
+Content excerpt: ${allText.slice(0, 2000)}
+
+Identify:
+1. The 8-10 most important subtopics/aspects that an authoritative article on "${keyword}" should cover
+2. Which of those the article covers (fully, partially, or misses)
+3. An overall topical authority score 0-100
+4. The top 3 content gaps to fill
+
+Respond as JSON ONLY:
+{
+  "topicalScore": 0-100,
+  "grade": "A|B|C|D|F",
+  "subtopics": [{ "topic": "string", "coverage": "full|partial|missing", "notes": "string" }],
+  "gaps": ["specific subtopic to add"],
+  "topicalDepth": "Comprehensive|Adequate|Shallow|Thin",
+  "recommendation": "overall recommendation"
+}`;
+
+    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, keyword, title, headingCount: headings.length, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   META DESCRIPTION AI OPTIMIZER — AI rewrites meta description for CTR
+   ========================================================================= */
+router.post('/meta-description-optimizer', async (req, res) => {
+  try {
+    const { url, keyword, currentMeta, model = 'gpt-4o-mini' } = req.body || {};
+    if (!url && !currentMeta) return res.status(400).json({ ok: false, error: 'url or currentMeta required' });
+
+    let metaDesc = currentMeta || '';
+    let pageTitle = '';
+    if (url && !currentMeta) {
+      const fetchMod = (await import('node-fetch')).default;
+      const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 10000 });
+      const html = await r.text();
+      const $ = cheerio.load(html);
+      metaDesc = $('meta[name="description"]').attr('content') || '';
+      pageTitle = $('title').first().text().trim();
+    }
+
+    const openai = getOpenAI();
+    const prompt = `You are a CTR optimization expert. Improve or write a meta description for a blog post.
+
+Page title: "${pageTitle || 'Blog post'}"
+Current meta description: "${metaDesc || 'None'}"
+Target keyword: "${keyword || 'general'}"
+
+Write 3 alternative meta descriptions that:
+- Are 140-155 characters each (count carefully)
+- Include the keyword naturally
+- Have an active voice CTA (Learn, Discover, Find out, Get, See)
+- Create curiosity or highlight unique value
+- Match the searcher's intent
+- Avoid clickbait
+
+Return JSON ONLY:
+{
+  "original": "${metaDesc}",
+  "variants": [
+    { "text": "string", "length": number, "ctrFactors": ["keyword present", "has CTA", ...] }
+  ],
+  "bestVariant": 0,
+  "tips": ["specific tip about what made these better"]
+}`;
+
+    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, keyword, pageTitle, currentMeta: metaDesc, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   CONTENT DECAY PREDICTOR — AI estimates content freshness & update urgency
+   ========================================================================= */
+router.post('/content-decay', async (req, res) => {
+  try {
+    const { url, keyword, model = 'gpt-4o-mini' } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    const title = $('title').first().text().trim();
+    const publishedDate = $('meta[property="article:published_time"]').attr('content') || $('time[datetime]').first().attr('datetime') || '';
+    const modifiedDate = $('meta[property="article:modified_time"]').attr('content') || '';
+    const yearMentions = [];
+    const bodyText = $('body').text();
+    const yearRe = /\b(20[1-4]\d)\b/g;
+    let m;
+    while ((m = yearRe.exec(bodyText)) !== null) yearMentions.push(parseInt(m[1]));
+    const oldestYear = yearMentions.length ? Math.min(...yearMentions) : null;
+    const newestYear = yearMentions.length ? Math.max(...yearMentions) : null;
+
+    const daysSincePublish = publishedDate ? Math.floor((Date.now() - new Date(publishedDate).getTime()) / 86400000) : null;
+    const daysSinceUpdate = modifiedDate ? Math.floor((Date.now() - new Date(modifiedDate).getTime()) / 86400000) : null;
+
+    const openai = getOpenAI();
+    const prompt = `Analyze content decay for this blog post and estimate how urgently it needs updating.
+
+Title: "${title}"
+Target keyword: "${keyword || 'not specified'}"
+Published: ${publishedDate || 'unknown'}
+Last modified: ${modifiedDate || 'unknown'}
+Days since publish: ${daysSincePublish || 'unknown'}
+Oldest year mentioned in content: ${oldestYear || 'none'}
+Newest year mentioned: ${newestYear || 'none'}
+
+Consider:
+- Is this topic time-sensitive or evergreen?
+- How quickly does info in this niche become outdated?
+- Year references that may now be stale
+- Whether "2024/2025" style content needs annual refresh
+
+Return JSON ONLY:
+{
+  "decayScore": 0-100,
+  "urgency": "Immediate|Soon|Eventually|Evergreen",
+  "contentType": "time-sensitive|news|evergreen|annual",
+  "estimatedHalfLife": "string (e.g. '6 months', '3 years')",
+  "staleElements": ["list of content likely to be outdated"],
+  "updatePriority": "High|Medium|Low",
+  "recommendation": "specific update recommendation"
+}`;
+
+    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, title, publishedDate, modifiedDate, daysSincePublish, daysSinceUpdate, oldestYear, newestYear, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   COMPETITOR GAP ANALYSIS — AI identifies topics competitors cover that you missed
+   ========================================================================= */
+router.post('/competitor-gap', async (req, res) => {
+  try {
+    const { url, keyword, competitorUrls, model = 'gpt-4o-mini' } = req.body || {};
+    if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+
+    async function fetchHeadings(pageUrl) {
+      try {
+        const r = await fetchMod(pageUrl, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 10000 });
+        const html = await r.text();
+        const $ = cheerio.load(html);
+        $('script,style,nav,footer').remove();
+        const title = $('title').first().text().trim();
+        const headings = [];
+        $('h1,h2,h3').each((_, el) => headings.push($(el).text().trim()));
+        return { url: pageUrl, title, headings: headings.slice(0, 15) };
+      } catch { return { url: pageUrl, error: 'failed' }; }
+    }
+
+    const [myPage, ...competitorPages] = await Promise.all([
+      url ? fetchHeadings(url) : Promise.resolve({ url, headings: [] }),
+      ...(competitorUrls || []).slice(0, 3).map(u => fetchHeadings(u)),
+    ]);
+
+    const openai = getOpenAI();
+    const prompt = `Perform a content gap analysis for the keyword: "${keyword}"
+
+MY ARTICLE:
+${myPage?.title || url}
+Headings: ${(myPage?.headings || []).join(' | ')}
+
+COMPETITORS:
+${competitorPages.map((c, i) => `Competitor ${i + 1}: ${c.title || c.url}\nHeadings: ${(c.headings || []).join(' | ')}`).join('\n\n')}
+
+Identify:
+1. Topics that 2+ competitors cover but my article misses
+2. Unique angles my article has that competitors lack
+3. Quick wins (easy sections to add)
+
+Return JSON ONLY:
+{
+  "gaps": [{ "topic": "string", "howManyCompetitorsCover": number, "addPriority": "High|Medium|Low", "suggestedHeading": "string" }],
+  "myUniqueAngles": ["string"],
+  "quickWins": ["specific H2/H3 to add"],
+  "overallGapScore": 0-100,
+  "summary": "1-2 sentence summary"
+}`;
+
+    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, keyword, myPage, competitorPages, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   KEYWORD CANNIBALIZATION DETECTOR — check if multiple URLs target same keyword
+   ========================================================================= */
+router.post('/cannibalization', async (req, res) => {
+  try {
+    const { keyword, urls } = req.body || {};
+    if (!keyword || !urls || !Array.isArray(urls)) return res.status(400).json({ ok: false, error: 'keyword and urls array required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const kLower = keyword.toLowerCase();
+
+    const results = await Promise.all(urls.slice(0, 10).map(async (url) => {
+      try {
+        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 10000 });
+        const html = await r.text();
+        const $ = cheerio.load(html);
+        const title = $('title').first().text().trim();
+        const h1 = $('h1').first().text().trim();
+        const metaDesc = $('meta[name="description"]').attr('content') || '';
+        const allText = $('body').text().toLowerCase();
+        const wordCount = allText.split(/\s+/).length;
+        const keywordCount = (allText.match(new RegExp(`\\b${kLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g')) || []).length;
+        const density = wordCount > 0 ? ((keywordCount / wordCount) * 100).toFixed(2) : '0';
+        const inTitle = title.toLowerCase().includes(kLower);
+        const inH1 = h1.toLowerCase().includes(kLower);
+        const inMeta = metaDesc.toLowerCase().includes(kLower);
+        const optimizationScore = (inTitle ? 40 : 0) + (inH1 ? 30 : 0) + (inMeta ? 15 : 0) + Math.min(15, keywordCount);
+        return { url, title, h1, wordCount, keywordCount, density: parseFloat(density), inTitle, inH1, inMeta, optimizationScore, status: 'ok' };
+      } catch { return { url, status: 'error' }; }
+    }));
+
+    const competing = results.filter(r => r.status === 'ok' && r.optimizationScore > 30);
+    const hasCannibalization = competing.length > 1;
+    const topCandidate = competing.sort((a, b) => b.optimizationScore - a.optimizationScore)[0];
+
+    const issues = [];
+    if (hasCannibalization) {
+      issues.push({ sev: 'high', msg: `${competing.length} pages are competing for "${keyword}" — consolidate or differentiate them` });
+      if (competing.length > 2) issues.push({ sev: 'high', msg: 'Severe cannibalization detected — consider merging weaker pages or adding canonical tags' });
+    }
+
+    res.json({ ok: true, keyword, hasCannibalization, competingPages: competing.length, topCandidate: topCandidate?.url, results, issues });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   ANCHOR TEXT DIVERSITY CHECKER — analyze internal/external link anchor text
+   ========================================================================= */
+router.post('/anchor-text-audit', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    const origin = new URL(url).origin;
+    const internalLinks = [];
+    const externalLinks = [];
+
+    $('a[href]').each((_, el) => {
+      const href = $(el).attr('href') || '';
+      const text = $(el).text().trim().slice(0, 100);
+      const rel = $(el).attr('rel') || '';
+      const isExternal = href.startsWith('http') && !href.startsWith(origin);
+      const isInternal = href.startsWith('/') || href.startsWith(origin);
+      if (isExternal) externalLinks.push({ href: href.slice(0, 120), text, rel, isNofollow: rel.includes('nofollow'), isSponsored: rel.includes('sponsored') });
+      else if (isInternal && href !== '#') internalLinks.push({ href: href.slice(0, 120), text });
+    });
+
+    // Anchor text distribution
+    const anchorMap = {};
+    [...internalLinks, ...externalLinks].forEach(l => {
+      const t = l.text.toLowerCase().trim() || '[image/empty]';
+      anchorMap[t] = (anchorMap[t] || 0) + 1;
+    });
+    const genericAnchors = Object.entries(anchorMap).filter(([t]) => /^(click here|here|read more|learn more|this|link|more|see|view)$/i.test(t));
+    const topAnchors = Object.entries(anchorMap).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([text, count]) => ({ text, count }));
+
+    const issues = [];
+    if (genericAnchors.length > 3) issues.push({ sev: 'medium', msg: `${genericAnchors.map(([t]) => t).join(', ')} used ${genericAnchors.reduce((s, [, c]) => s + c, 0)} times as anchor text — use descriptive, keyword-rich anchors instead` });
+    if (internalLinks.length === 0) issues.push({ sev: 'medium', msg: 'No internal links found on this page — add internal links to improve navigation and PageRank distribution' });
+    if (externalLinks.filter(l => !l.isNofollow && !l.isSponsored).length > 15) issues.push({ sev: 'low', msg: 'High number of followed external links — consider if all are necessary to avoid leaking PageRank' });
+
+    res.json({ ok: true, internalLinks: internalLinks.length, externalLinks: externalLinks.length, genericAnchorCount: genericAnchors.reduce((s, [, c]) => s + c, 0), topAnchors, issues, internalSample: internalLinks.slice(0, 10), externalSample: externalLinks.slice(0, 10) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   TABLE OF CONTENTS GENERATOR — auto-generate ToC from page headings
+   ========================================================================= */
+router.post('/toc-generator', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    const headings = [];
+    $('h2,h3,h4').each((_, el) => {
+      const text = $(el).text().trim();
+      const id = $(el).attr('id') || text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').slice(0, 60);
+      const level = parseInt(el.tagName[1]);
+      headings.push({ level, text, id });
+    });
+
+    // Generate HTML ToC
+    let tocHtml = '<nav class="table-of-contents">\n<ol>\n';
+    let currentLevel = 2;
+    for (const h of headings) {
+      if (h.level > currentLevel) {
+        tocHtml += '<ol>\n';
+        currentLevel = h.level;
+      } else if (h.level < currentLevel) {
+        tocHtml += '</ol>\n';
+        currentLevel = h.level;
+      }
+      tocHtml += `  <li><a href="#${h.id}">${h.text}</a></li>\n`;
+    }
+    tocHtml += '</ol>\n</nav>';
+
+    // Generate schema.org breadcrumb markup for ToC
+    const hasAnchors = headings.some(h => $(`#${h.id}`).length > 0 || $(`[id="${h.id}"]`).length > 0);
+
+    res.json({ ok: true, headings, hasAnchors, tocHtml, headingCount: headings.length, missingIds: headings.filter(h => !$(`#${h.id}`).length).map(h => h.text) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   WORD COUNT BY SECTION — break down content depth per section
+   ========================================================================= */
+router.post('/section-word-count', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+    $('script,style,nav,footer').remove();
+
+    const sections = [];
+    let introText = '';
+
+    // Collect intro (before first H2)
+    const firstH2 = $('h2').first();
+    if (firstH2.length) {
+      const beforeH2 = [];
+      firstH2.prevAll('p,ul,ol,blockquote').each((_, el) => beforeH2.push($(el).text()));
+      introText = beforeH2.reverse().join(' ');
+    }
+
+    $('h2').each((_, el) => {
+      const headText = $(el).text().trim();
+      const words = [];
+      let sib = $(el).next()[0];
+      while (sib && sib.tagName !== 'h2') {
+        words.push($(sib).text());
+        sib = $(sib).next()[0];
+      }
+      const sectionText = words.join(' ');
+      const wordCount = sectionText.split(/\s+/).filter(Boolean).length;
+      const depth = wordCount >= 300 ? 'Deep' : wordCount >= 150 ? 'Adequate' : wordCount >= 50 ? 'Shallow' : 'Thin';
+      sections.push({ heading: headText.slice(0, 80), wordCount, depth });
+    });
+
+    const total = sections.reduce((s, sec) => s + sec.wordCount, 0) + (introText.split(/\s+/).filter(Boolean).length);
+    const avgPerSection = sections.length > 0 ? Math.round(total / sections.length) : 0;
+    const thinSections = sections.filter(s => s.wordCount < 50 && s.depth === 'Thin');
+
+    const issues = [];
+    if (thinSections.length > 0) issues.push({ sev: 'medium', msg: `${thinSections.length} section(s) have very few words — expand thin sections for better topical depth` });
+    if (avgPerSection < 100 && sections.length > 0) issues.push({ sev: 'medium', msg: `Average section depth is only ${avgPerSection} words — aim for 150-300 words per section` });
+
+    res.json({ ok: true, sections, totalWords: total, avgPerSection, thinSections: thinSections.length, intro: { wordCount: introText.split(/\s+/).filter(Boolean).length }, issues });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   PEOPLE ALSO ASK HARVESTER — extract PAA questions from Google SERP
+   ========================================================================= */
+router.post('/people-also-ask', async (req, res) => {
+  try {
+    const { keyword, url, model = 'gpt-4o-mini' } = req.body || {};
+    if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
+
+    // AI-powered PAA generation (since we can't reliably scrape Google)
+    const openai = getOpenAI();
+    const prompt = `Generate "People Also Ask" (PAA) questions that Google currently shows for the keyword: "${keyword}"
+
+These should be the actual types of questions users ask related to this topic.
+Also provide for each: the ideal answer format (list, paragraph, table, step-by-step) for a Featured Snippet.
+
+Return JSON ONLY:
+{
+  "keyword": "${keyword}",
+  "paaQuestions": [
+    {
+      "question": "exact question Google would show",
+      "answerFormat": "paragraph|list|table|steps",
+      "snippetTip": "how to format your answer to win this PAA",
+      "difficulty": "easy|medium|hard"
+    }
+  ],
+  "faqSchemaRecommended": true|false,
+  "serp_features": ["featured snippet", "image pack", "video carousel", "knowledge panel"]
+}`;
+
+    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   NLP ENTITY DETECTOR — extract named entities & semantic richness from content
+   ========================================================================= */
+router.post('/entity-detection', async (req, res) => {
+  try {
+    const { url, text, model = 'gpt-4o-mini' } = req.body || {};
+    if (!url && !text) return res.status(400).json({ ok: false, error: 'url or text required' });
+
+    let content = text || '';
+    if (url && !text) {
+      const fetchMod = (await import('node-fetch')).default;
+      const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+      const html = await r.text();
+      const $ = cheerio.load(html);
+      $('script,style,nav,footer').remove();
+      content = $('article, main, .post-content, body').text().replace(/\s+/g, ' ').trim().slice(0, 3000);
+    }
+
+    const openai = getOpenAI();
+    const prompt = `Analyze this content for NLP entities and semantic richness. This helps with Google's Knowledge Graph understanding.
+
+Content: "${content.slice(0, 2500)}"
+
+Extract:
+- People (experts, authors, celebrities mentioned)
+- Organizations (companies, institutions)
+- Locations (places, regions)
+- Concepts (key topics, ideas)
+- Products/Tools mentioned
+- Statistics and data points cited
+
+Also rate semantic richness: does the content use varied vocabulary and related concepts, or is it repetitive?
+
+Return JSON ONLY:
+{
+  "entities": {
+    "people": [{"name": "string", "context": "briefly how they're mentioned"}],
+    "organizations": [{"name": "string", "type": "company|institution|brand"}],
+    "locations": ["string"],
+    "concepts": ["string"],
+    "products": ["string"],
+    "statistics": ["quoted stat"]
+  },
+  "semanticRichness": 0-100,
+  "vocabularyDiversity": "Rich|Adequate|Repetitive",
+  "entityCount": number,
+  "recommendation": "how to improve entity coverage"
+}`;
+
+    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, contentLength: content.length, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   SERP FEATURE ELIGIBILITY — assess candidacy for rich SERP features
+   ========================================================================= */
+router.post('/serp-features', async (req, res) => {
+  try {
+    const { url, keyword } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    $('script,style').remove();
+    const allText = $('body').text().replace(/\s+/g, ' ');
+
+    const schemas = [];
+    $('script[type="application/ld+json"]').each((_, el) => {
+      try { schemas.push(JSON.parse($(el).html())); } catch {}
+    });
+
+    const schemaTypes = schemas.map(s => s['@type']).filter(Boolean);
+    const hasFAQSchema = schemaTypes.includes('FAQPage');
+    const hasHowToSchema = schemaTypes.includes('HowTo');
+    const hasArticleSchema = schemaTypes.some(t => ['Article', 'BlogPosting', 'NewsArticle'].includes(t));
+    const hasReviewSchema = schemaTypes.some(t => ['Review', 'AggregateRating'].includes(t));
+    const hasBreadcrumb = schemaTypes.includes('BreadcrumbList');
+    const hasVideo = $('iframe[src*="youtube"],iframe[src*="vimeo"],video').length > 0 || schemaTypes.includes('VideoObject');
+    const hasImages = $('img').length > 0;
+    const hasTable = $('table').length > 0;
+    const hasOL = $('ol').length > 0;
+    const wordCount = allText.split(/\s+/).length;
+    const hasDirectAnswer = /^[A-Z].*is (a |an |the )?[A-Za-z].*\./m.test(allText.slice(0, 500));
+
+    const features = [
+      { feature: 'Featured Snippet', eligible: hasFAQSchema || hasHowToSchema || hasOL || hasDirectAnswer, score: (hasFAQSchema ? 30 : 0) + (hasHowToSchema ? 25 : 0) + (hasOL ? 20 : 0) + (hasDirectAnswer ? 25 : 0), tip: 'Add a direct definition in first 100 words, use numbered lists for steps' },
+      { feature: 'People Also Ask', eligible: hasFAQSchema, score: hasFAQSchema ? 90 : 20, tip: 'Add FAQPage schema with Q&A pairs matching common search questions' },
+      { feature: 'Image Pack', eligible: hasImages, score: hasImages ? 60 : 0, tip: 'Use descriptive file names and keyword-rich alt text on images' },
+      { feature: 'Video Carousel', eligible: hasVideo, score: hasVideo ? 80 : 0, tip: 'Embed a relevant YouTube/Vimeo video and add VideoObject schema' },
+      { feature: 'HowTo Rich Result', eligible: hasHowToSchema, score: hasHowToSchema ? 95 : (hasOL ? 30 : 0), tip: 'Add HowTo schema markup for step-by-step content' },
+      { feature: 'FAQ Rich Result', eligible: hasFAQSchema, score: hasFAQSchema ? 95 : 0, tip: 'Add FAQPage schema — each FAQ needs a question and acceptedAnswer' },
+      { feature: 'Review Stars', eligible: hasReviewSchema, score: hasReviewSchema ? 90 : 0, tip: 'Add Review or AggregateRating schema for review content' },
+      { feature: 'Breadcrumbs', eligible: hasBreadcrumb, score: hasBreadcrumb ? 90 : 10, tip: 'Add BreadcrumbList schema to show navigation path in SERPs' },
+      { feature: 'Sitelinks', eligible: wordCount > 1000 && hasArticleSchema, score: (wordCount > 1000 ? 40 : 0) + (hasArticleSchema ? 30 : 0), tip: 'Add table of contents with anchor links to qualify for sitelinks' },
+    ];
+
+    const eligible = features.filter(f => f.eligible);
+    res.json({ ok: true, keyword, totalFeatures: features.length, eligibleCount: eligible.length, features, schemaTypes, hasVideo, hasImages, wordCount });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
