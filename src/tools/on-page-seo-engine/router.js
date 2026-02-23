@@ -742,6 +742,62 @@ function computeWeightedScore(data) {
   if (data.resourceHintsSummary?.total === 0) { addIssue('technical', 'low', 'No resource hints (preconnect, preload, prefetch, dns-prefetch) — add hints for critical third-party origins to speed up loading (web.dev)', 2); }
   if (data.resourceHintsSummary?.preconnect > 6) { addIssue('technical', 'low', `${data.resourceHintsSummary.preconnect} preconnect hints — too many (>6) can be counterproductive, prioritize critical origins only (web.dev)`, 2); }
 
+  // ── ROUND 16: ULTRA AUDIT — 50 new scoring penalties (WCAG 2.2, axe-core 4.10, Lighthouse, Google Search Central, Semrush, Ahrefs, web.dev) ──
+
+  // --- Social Meta Enhanced (Open Graph best practices, Twitter Cards) ---
+  if (data.ogImageDimensionsMissing) { addIssue('metaTags', 'low', 'og:image missing width/height dimensions — social platforms may crop or display incorrectly (Facebook Sharing Best Practices)', 4); }
+  if (data.twitterImageMissing) { addIssue('metaTags', 'low', 'Twitter card declared but twitter:image is missing — tweets will show a plain text card (Twitter Developer Docs)', 3); }
+  if (data.ogLocaleMissing) { addIssue('metaTags', 'low', 'Missing og:locale meta tag — social platforms cannot determine content language (Open Graph Protocol)', 2); }
+  if (data.articlePublishedTimeMissing) { addIssue('metaTags', 'medium', 'Article schema present but article:published_time meta tag missing — affects Google News eligibility and freshness signals (Google Search Central)', 6); }
+  if (data.articleAuthorMissing) { addIssue('metaTags', 'medium', 'Article schema present but article:author meta tag missing — affects E-E-A-T and Google News (Google Search Central)', 5); }
+  if (data.metaRefreshIsRedirect) { addIssue('technical', 'high', 'Meta refresh tag used as redirect (has url= parameter) — use 301/302 server-side redirects instead (Google, W3C)', 15); }
+
+  // --- Content Readability & Quality (Semrush Readability, Yoast, Hemingway Editor) ---
+  if (data.passiveVoicePercentage > 30) { addIssue('content', 'medium', `${data.passiveVoicePercentage}% of sentences use passive voice — aim for under 20% for engaging writing (Yoast, Hemingway)`, 8); }
+  if (data.passiveVoicePercentage > 20 && data.passiveVoicePercentage <= 30) { addIssue('content', 'low', `${data.passiveVoicePercentage}% passive voice — consider reducing for more direct, engaging content (Yoast)`, 4); }
+  if (data.transitionWordPercentage < 15 && data.wordCount > 300) { addIssue('content', 'medium', `Only ${data.transitionWordPercentage}% of sentences use transition words — aim for 30%+ for better flow and readability (Yoast SEO)`, 6); }
+  if (data.transitionWordPercentage >= 15 && data.transitionWordPercentage < 25 && data.wordCount > 300) { addIssue('content', 'low', `${data.transitionWordPercentage}% of sentences use transition words — aim for 30%+ (Yoast)`, 3); }
+  if (data.weakAdverbCount > 15) { addIssue('content', 'low', `${data.weakAdverbCount} weak adverbs (very, really, quite, etc.) — use stronger, more specific language (Hemingway)`, Math.min(Math.floor(data.weakAdverbCount / 5), 5)); }
+  if (data.nearDuplicateParagraphs > 0) { addIssue('content', 'medium', `${data.nearDuplicateParagraphs} near-duplicate paragraph(s) detected — remove repeated content blocks (Semrush Site Audit)`, Math.min(data.nearDuplicateParagraphs * 4, 12)); }
+  if (data.thinHeadingSections > 3) { addIssue('content', 'low', `${data.thinHeadingSections} heading section(s) with fewer than 30 words — expand thin sections or consolidate headings (Semrush Content)`, Math.min(data.thinHeadingSections, 6)); }
+  if (data.missingConclusionHeading) { addIssue('content', 'low', 'Long article (2000+ words) without a conclusion/summary heading — add a wrap-up section for better user experience (Ahrefs, Backlinko)', 3); }
+  if (data.excessiveCapsText > 10) { addIssue('content', 'low', `${data.excessiveCapsText}% of content words in ALL CAPS — excessive caps text is perceived as shouting and hurts readability (W3C WCAG 1.4.12)`, Math.min(Math.floor(data.excessiveCapsText / 5), 5)); }
+  if (data.placeholderTextFound) { addIssue('content', 'high', 'Placeholder text found ([...], TBD, TODO, FIXME, or Lorem Ipsum) — replace with real content before publishing (Semrush)', 15); }
+  if (data.highOneWordSentences > 20) { addIssue('content', 'low', `${data.highOneWordSentences}% one-word sentences — excessive fragmented writing impacts readability (Content Quality)`, Math.min(Math.floor(data.highOneWordSentences / 10), 4)); }
+  if (data.contentSentimentIssues > 5) { addIssue('content', 'low', `${data.contentSentimentIssues} strongly negative words detected — review tone for professional content standards`, Math.min(data.contentSentimentIssues - 5, 4)); }
+
+  // --- Technical SEO Advanced (Lighthouse, web.dev, Chrome DevTools, OWASP) ---
+  if (data.cacheControlMaxAge >= 0 && data.cacheControlMaxAge < 3600) { addIssue('technical', 'low', `Cache-Control max-age is ${data.cacheControlMaxAge}s (under 1 hour) — consider longer caching for better performance (Lighthouse, web.dev)`, 3); }
+  if (data.corsWildcard) { addIssue('technical', 'medium', 'Access-Control-Allow-Origin: * — overly permissive CORS allows any domain to make requests (OWASP Security Headers)', 5); }
+  if (data.hasExpectCT) { addIssue('technical', 'low', 'Expect-CT header present — deprecated by Chrome since June 2021, can be safely removed (Chrome Status)', 1); }
+  if (data.hasFeaturePolicy) { addIssue('technical', 'low', 'Feature-Policy header present — renamed to Permissions-Policy, update to the new header name (W3C)', 2); }
+  if (data.noLanguageAtAll) { addIssue('technical', 'medium', 'Neither HTML lang attribute nor Content-Language header present — search engines cannot determine page language (WCAG 3.1.1, Google)', 8); }
+  if (data.excessiveInlineStyles > 20) { addIssue('technical', 'low', `${data.excessiveInlineStyles} element(s) with inline style attributes — externalize to CSS for maintainability and caching (web.dev)`, Math.min(Math.floor(data.excessiveInlineStyles / 10), 5)); }
+  if (data.cssImportantCount > 10) { addIssue('technical', 'low', `${data.cssImportantCount} CSS !important declarations — excessive use indicates specificity issues, refactor CSS (web.dev, MDN)`, Math.min(Math.floor(data.cssImportantCount / 5), 4)); }
+  if (data.hasServiceWorker) { addIssue('technical', 'info', 'Service Worker registration detected — enables offline support, push notifications, and PWA features (web.dev)', -1); }
+  if (data.multipleCharsets) { addIssue('technical', 'medium', 'Multiple charset declarations found — only one charset should be declared per document (W3C HTML Spec)', 6); }
+  if (data.duplicatePreconnects > 0) { addIssue('technical', 'low', `${data.duplicatePreconnects} duplicate preconnect hint(s) to the same origin — wastes browser connection resources (Lighthouse)`, Math.min(data.duplicatePreconnects * 2, 4)); }
+  if (data.bodyScriptsWithoutAsyncDefer > 5) { addIssue('technical', 'medium', `${data.bodyScriptsWithoutAsyncDefer} <script> tag(s) in <body> without async/defer — blocks page rendering (Lighthouse, web.dev)`, Math.min(Math.floor(data.bodyScriptsWithoutAsyncDefer / 2), 8)); }
+  if (data.externalFontsCount > 3) { addIssue('technical', 'low', `${data.externalFontsCount} external font(s) loaded — excessive web fonts slow page load, limit to 2-3 families (web.dev Font Best Practices)`, Math.min(data.externalFontsCount - 3, 4)); }
+  if (data.contentTypeValid === false) { addIssue('technical', 'high', 'Content-Type header is not text/html — page may not be treated as HTML by browsers and search engines (W3C)', 12); }
+  if (data.metaRefreshLargeDelay) { addIssue('technical', 'medium', 'Meta refresh with delay >5 seconds — users may not wait; use server-side redirects for instant navigation (WCAG 2.2.1, Lighthouse)', 6); }
+  if (data.stylesheetInBody > 0) { addIssue('technical', 'medium', `${data.stylesheetInBody} <link rel="stylesheet"> tag(s) in <body> — move to <head> to avoid flash of unstyled content (FOUC) (Lighthouse)`, Math.min(data.stylesheetInBody * 3, 8)); }
+  if (data.imgDecodingAttr > 0) { addIssue('technical', 'info', `${data.imgDecodingAttr} image(s) use decoding attribute — good practice for non-blocking image decode (web.dev)`, -1); }
+  if (data.contentWithoutMatchingSchema) { addIssue('technical', 'medium', 'Page content appears to be article/product/recipe but has no matching structured data — add schema markup for rich results eligibility (Google Search Central)', 8); }
+
+  // --- Links & Images Enhanced (axe-core 4.10, WCAG 1.1.1, Lighthouse, Sitebulb) ---
+  if (data.imagesWithEmptySrc > 0) { addIssue('linksImages', 'high', `${data.imagesWithEmptySrc} image(s) with empty src attribute — causes additional server request and can break page (Lighthouse)`, Math.min(data.imagesWithEmptySrc * 5, 15)); }
+  if (data.uninformativeAltText > 0) { addIssue('linksImages', 'medium', `${data.uninformativeAltText} image(s) with uninformative alt text ("image", "photo", "logo", etc.) — write descriptive alt text (WCAG 1.1.1, axe-core)`, Math.min(data.uninformativeAltText * 3, 10)); }
+  if (data.imagesWithOneDimension > 0) { addIssue('linksImages', 'low', `${data.imagesWithOneDimension} image(s) specify only width or height (not both) — specify both to prevent layout shift (CLS) (Lighthouse)`, Math.min(data.imagesWithOneDimension * 2, 6)); }
+  if (data.brokenImageSrc > 0) { addIssue('linksImages', 'high', `${data.brokenImageSrc} image(s) with broken src (about:blank, javascript:, #) — replace with valid image URLs (Lighthouse)`, Math.min(data.brokenImageSrc * 5, 15)); }
+  if (data.zeroDimensionImages > 0) { addIssue('linksImages', 'medium', `${data.zeroDimensionImages} image(s) with zero dimensions (width="0" or height="0") — likely tracking pixels; use CSS display:none instead (Sitebulb)`, Math.min(data.zeroDimensionImages * 3, 8)); }
+  if (data.redundantAltPhrases > 0) { addIssue('linksImages', 'low', `${data.redundantAltPhrases} image alt text(s) start with redundant phrase ("image of", "picture of") — screen readers already announce "image" (WCAG 1.1.1, Deque)`, Math.min(data.redundantAltPhrases * 2, 6)); }
+  if (data.duplicateImageSrc > 3) { addIssue('linksImages', 'low', `${data.duplicateImageSrc} image src(s) used multiple times — indicates duplicated content or missed lazy-loading opportunity (Sitebulb)`, Math.min(data.duplicateImageSrc, 4)); }
+
+  // --- Keywords Enhanced (Ahrefs, Semrush, Google NLP) ---
+  if (data.keywordStuffedHeadings > 50) { addIssue('keywords', 'medium', `Target keyword appears in ${data.keywordStuffedHeadings}% of headings — keyword stuffing in headings hurts SEO (Google Search Essentials, Semrush)`, 8); }
+  if (data.keywordOveruseInAlt > 3) { addIssue('keywords', 'medium', `Target keyword found in ${data.keywordOveruseInAlt} image alt text(s) — over-optimizing alt text is a spam signal (Google Search Central)`, Math.min((data.keywordOveruseInAlt - 3) * 3, 10)); }
+
   // Clamp category scores
   Object.values(categories).forEach(c => { c.score = Math.max(0, Math.min(100, Math.round(c.score))); });
 
@@ -2674,6 +2730,197 @@ router.post('/fetch-page', async (req, res) => {
       total: preconnectCount + dnsPrefetchCount + preloadCount + prefetchHints + prerenderHints,
     };
 
+    // ── ROUND 16: ULTRA AUDIT — 50 new extraction checks (WCAG 2.2, axe-core 4.10, Lighthouse, Google Search Central, Semrush, Ahrefs, web.dev) ──
+
+    // --- Social Meta Enhanced (Open Graph, Twitter Cards) ---
+    const ogImageWidth = (/<meta[^>]+property=["']og:image:width["'][^>]+content=["']([^"']*)["']/i.exec(html) || [])[1] || '';
+    const ogImageHeight = (/<meta[^>]+property=["']og:image:height["'][^>]+content=["']([^"']*)["']/i.exec(html) || [])[1] || '';
+    const ogImageDimensionsMissing = !!(ogImage && (!ogImageWidth || !ogImageHeight));
+    const twitterImageMissing = !!(twitterCard && !twitterImage);
+    const ogLocale = (/<meta[^>]+property=["']og:locale["'][^>]+content=["']([^"']*)["']/i.exec(html) || [])[1] || '';
+    const ogLocaleMissing = !ogLocale && !!(ogTitle || ogDescription || ogImage);
+    const articlePublishedTimeMissing = !!(schemaTypes.includes('Article') || schemaTypes.includes('NewsArticle') || schemaTypes.includes('BlogPosting')) &&
+      !/<meta[^>]+property=["']article:published_time["']/i.test(html) && !datePublished;
+    const articleAuthorMissing = !!(schemaTypes.includes('Article') || schemaTypes.includes('NewsArticle') || schemaTypes.includes('BlogPosting')) &&
+      !/<meta[^>]+property=["']article:author["']/i.test(html) && !authorMeta;
+    const metaRefreshIsRedirect = !!(hasMetaRefresh && /<meta[^>]+http-equiv=["']refresh["'][^>]+content=["'][^"']*url=/i.test(html));
+
+    // --- Content Readability & Quality (Semrush, Yoast, Hemingway) ---
+    const passiveVoicePercentage = (() => {
+      const sentences = visibleText.split(/[.!?]+/).filter(s => s.trim().length > 5);
+      if (sentences.length < 3) return 0;
+      const passivePattern = /\b(is|are|was|were|be|been|being)\s+(being\s+)?(\w+ed|(\w+en))\b/gi;
+      const passiveCount = sentences.filter(s => passivePattern.test(s)).length;
+      passivePattern.lastIndex = 0;
+      return Math.round((passiveCount / sentences.length) * 100);
+    })();
+    const transitionWordPercentage = (() => {
+      const sentences = visibleText.split(/[.!?]+/).filter(s => s.trim().length > 5);
+      if (sentences.length < 3) return 100;
+      const transitions = /\b(however|therefore|moreover|furthermore|consequently|nevertheless|additionally|meanwhile|likewise|similarly|in addition|as a result|on the other hand|for example|for instance|in conclusion|in contrast|in fact|of course|at the same time|first|second|third|finally|also|then|next|besides|hence|thus|accordingly|indeed|instead|otherwise|still|yet|although|because|since|while|whereas|unless|so that|in order to)\b/gi;
+      const withTransitions = sentences.filter(s => transitions.test(s)).length;
+      transitions.lastIndex = 0;
+      return Math.round((withTransitions / sentences.length) * 100);
+    })();
+    const weakAdverbCount = (() => {
+      const weak = /\b(very|really|quite|rather|somewhat|fairly|extremely|incredibly|absolutely|totally|completely|basically|essentially|literally|actually|definitely|certainly|simply|just|obviously|clearly)\b/gi;
+      return (visibleText.match(weak) || []).length;
+    })();
+    const nearDuplicateParagraphs = (() => {
+      const ps = [...html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)].map(m => m[1].replace(/<[^>]+>/g, '').trim().toLowerCase()).filter(p => p.length > 50);
+      let dupes = 0;
+      for (let i = 0; i < ps.length; i++) {
+        for (let j = i + 1; j < ps.length; j++) {
+          if (ps[i] === ps[j]) { dupes++; break; }
+        }
+      }
+      return dupes;
+    })();
+    const thinHeadingSections = (() => {
+      const headingPositions = [...html.matchAll(/<h[1-6][^>]*>/gi)].map(m => m.index);
+      if (headingPositions.length < 2) return 0;
+      let thin = 0;
+      for (let i = 0; i < headingPositions.length - 1; i++) {
+        const section = html.substring(headingPositions[i], headingPositions[i + 1]);
+        const sectionText = section.replace(/<[^>]+>/g, ' ').trim();
+        const sectionWords = sectionText.split(/\s+/).filter(w => w.length > 0).length;
+        if (sectionWords < 30 && sectionWords > 0) thin++;
+      }
+      return thin;
+    })();
+    const missingConclusionHeading = wordCount > 2000 && !/<h[1-6][^>]*>[^<]*(conclusion|summary|final thoughts|wrap up|takeaway|key points|in closing)/i.test(html);
+    const excessiveCapsText = (() => {
+      const words = visibleText.split(/\s+/).filter(w => w.length > 3);
+      if (words.length < 20) return 0;
+      const capsWords = words.filter(w => /^[A-Z]{4,}$/.test(w));
+      return Math.round((capsWords.length / words.length) * 100);
+    })();
+    const placeholderTextFound = /\[(\.\.\.|\?\?\?|TBD|TODO|PLACEHOLDER|INSERT|FIXME)\]/i.test(visibleText) || /\b(lorem ipsum|dolor sit amet)\b/i.test(visibleText);
+    const highOneWordSentences = (() => {
+      const sentences = visibleText.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 0);
+      if (sentences.length < 5) return 0;
+      const oneWord = sentences.filter(s => s.split(/\s+/).length === 1);
+      return Math.round((oneWord.length / sentences.length) * 100);
+    })();
+    const contentSentimentIssues = (() => {
+      const negativeWords = /\b(worst|terrible|horrible|awful|disgusting|hate|pathetic|useless|garbage|trash|stupid|dumb|ugly|broken)\b/gi;
+      return (visibleText.match(negativeWords) || []).length;
+    })();
+
+    // --- Technical SEO Advanced (Lighthouse, web.dev, Chrome DevTools) ---
+    const cacheControlMaxAge = (() => {
+      if (!cacheControl) return -1;
+      const match = /max-age=(\d+)/i.exec(cacheControl);
+      return match ? parseInt(match[1], 10) : -1;
+    })();
+    const corsWildcard = response.headers.get('access-control-allow-origin') === '*';
+    const hasExpectCT = !!response.headers.get('expect-ct');
+    const hasFeaturePolicy = !!response.headers.get('feature-policy');
+    const noLanguageAtAll = !langTag && !contentLanguageHeader;
+    const excessiveInlineStyles = (() => {
+      return (html.match(/\sstyle\s*=\s*["'][^"']{10,}["']/gi) || []).length;
+    })();
+    const cssImportantCount = (() => {
+      const styleBlocks = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map(m => m[1]);
+      const inlineStyles = [...html.matchAll(/\sstyle\s*=\s*["']([^"']+)["']/gi)].map(m => m[1]);
+      const all = [...styleBlocks, ...inlineStyles].join(' ');
+      return (all.match(/!important/gi) || []).length;
+    })();
+    const hasServiceWorker = /navigator\.serviceWorker\.register/i.test(html) || /<link[^>]+rel=["']serviceworker["']/i.test(html);
+    const multipleCharsets = (() => {
+      const charsetMetas = (html.match(/<meta[^>]+charset[^>]*>/gi) || []).length;
+      const httpEquivCharset = (html.match(/<meta[^>]+http-equiv=["']Content-Type["'][^>]+charset/gi) || []).length;
+      return (charsetMetas + httpEquivCharset) > 1;
+    })();
+    const duplicatePreconnects = (() => {
+      const pcs = [...html.matchAll(/<link[^>]+rel=["']preconnect["'][^>]+href=["']([^"']+)["']/gi)].map(m => m[1].toLowerCase());
+      return pcs.length - new Set(pcs).size;
+    })();
+    const bodyScriptsWithoutAsyncDefer = (() => {
+      const bodyMatch = html.match(/<body[\s\S]*$/i);
+      if (!bodyMatch) return 0;
+      const bodyHtml = bodyMatch[0];
+      const scripts = [...bodyHtml.matchAll(/<script[^>]*src=["'][^"']+["'][^>]*>/gi)];
+      return scripts.filter(s => !/(async|defer)/i.test(s[0])).length;
+    })();
+    const externalFontsCount = (() => {
+      const googleFonts = (html.match(/fonts\.googleapis\.com/gi) || []).length;
+      const fontLinks = [...html.matchAll(/<link[^>]+href=["'][^"']+\.(woff2?|ttf|otf|eot)["']/gi)].length;
+      return googleFonts + fontLinks;
+    })();
+    const contentTypeValid = (() => {
+      const ct = response.headers.get('content-type') || '';
+      return /text\/html/i.test(ct);
+    })();
+    const metaRefreshLargeDelay = (() => {
+      if (!hasMetaRefresh) return false;
+      const match = /<meta[^>]+http-equiv=["']refresh["'][^>]+content=["'](\d+)/i.exec(html);
+      return !!(match && parseInt(match[1], 10) > 5);
+    })();
+    const stylesheetInBody = (() => {
+      const bodyMatch = html.match(/<body[\s\S]*$/i);
+      if (!bodyMatch) return 0;
+      return (bodyMatch[0].match(/<link[^>]+rel=["']stylesheet["']/gi) || []).length;
+    })();
+    const imgDecodingAttr = (html.match(/<img[^>]+decoding\s*=/gi) || []).length;
+    const contentWithoutMatchingSchema = (() => {
+      if (schemaTypes.length > 0) return false;
+      const hasProductContent = /<[^>]*(price|add-to-cart|product-title|product-description)/i.test(html) || /\$\d+\.\d{2}/.test(visibleText);
+      const hasArticleContent = wordCount > 500 && (/<article/i.test(html) || datePublished);
+      const hasRecipeContent = /(ingredients|instructions|prep time|cook time|servings)/i.test(visibleText);
+      return !!(hasProductContent || hasArticleContent || hasRecipeContent);
+    })();
+
+    // --- Links & Images Enhanced (axe-core, Lighthouse, Sitebulb) ---
+    const imagesWithEmptySrc = (() => {
+      return (html.match(/<img[^>]+src\s*=\s*["']\s*["']/gi) || []).length;
+    })();
+    const uninformativeAltText = (() => {
+      const alts = [...html.matchAll(/<img[^>]+alt=["']([^"']+)["']/gi)].map(m => m[1].trim().toLowerCase());
+      return alts.filter(a => /^(image|photo|picture|banner|icon|logo|img|pic|graphic|thumbnail|spacer|pixel|untitled)$/i.test(a)).length;
+    })();
+    const imagesWithOneDimension = (() => {
+      const imgs = [...html.matchAll(/<img[^>]*>/gi)];
+      return imgs.filter(m => {
+        const hasW = /\bwidth\s*=/i.test(m[0]);
+        const hasH = /\bheight\s*=/i.test(m[0]);
+        return (hasW && !hasH) || (!hasW && hasH);
+      }).length;
+    })();
+    const brokenImageSrc = (() => {
+      const srcs = [...html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)].map(m => m[1]);
+      return srcs.filter(s => /^(about:blank|javascript:|data:text\/html|#)$/i.test(s.trim())).length;
+    })();
+    const zeroDimensionImages = (() => {
+      return (html.match(/<img[^>]+(width|height)\s*=\s*["']0["'][^>]*>/gi) || []).length;
+    })();
+    const redundantAltPhrases = (() => {
+      const alts = [...html.matchAll(/<img[^>]+alt=["']([^"']+)["']/gi)].map(m => m[1].trim().toLowerCase());
+      return alts.filter(a => /^(image of|picture of|photo of|graphic of|icon of|screenshot of|illustration of)\s/i.test(a)).length;
+    })();
+    const duplicateImageSrc = (() => {
+      const srcs = [...html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)].map(m => m[1]);
+      const counts = {};
+      srcs.forEach(s => { counts[s] = (counts[s] || 0) + 1; });
+      return Object.values(counts).filter(c => c > 1).length;
+    })();
+    const keywordStuffedHeadings = (() => {
+      if (!reqKeywords || reqKeywords.length === 0) return 0;
+      const kw = reqKeywords[0]?.toLowerCase();
+      if (!kw) return 0;
+      const headings = [...html.matchAll(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/gi)].map(m => m[1].replace(/<[^>]+>/g, '').trim().toLowerCase());
+      if (headings.length < 3) return 0;
+      const stuffed = headings.filter(h => h.includes(kw)).length;
+      return Math.round((stuffed / headings.length) * 100);
+    })();
+    const keywordOveruseInAlt = (() => {
+      if (!reqKeywords || reqKeywords.length === 0) return 0;
+      const kw = reqKeywords[0]?.toLowerCase();
+      if (!kw) return 0;
+      const alts = [...html.matchAll(/<img[^>]+alt=["']([^"']+)["']/gi)].map(m => m[1].toLowerCase());
+      return alts.filter(a => a.includes(kw)).length;
+    })();
+
     const pageData = {
       url: finalUrl, title, metaDescription, h1,
       h1Count, h2Count, h3Count, wordCount, canonicalUrl,
@@ -2816,6 +3063,23 @@ router.post('/fetch-page', async (req, res) => {
       hasCreativeWorkSchema, hasWebPageSchema,
       // Round 15 — Resource Hints summary
       resourceHintsSummary,
+      // Round 16 — Social Meta Enhanced
+      ogImageDimensionsMissing, twitterImageMissing, ogLocaleMissing,
+      articlePublishedTimeMissing, articleAuthorMissing, metaRefreshIsRedirect,
+      // Round 16 — Content Readability & Quality
+      passiveVoicePercentage, transitionWordPercentage, weakAdverbCount,
+      nearDuplicateParagraphs, thinHeadingSections, missingConclusionHeading,
+      excessiveCapsText, placeholderTextFound, highOneWordSentences, contentSentimentIssues,
+      // Round 16 — Technical SEO Advanced
+      cacheControlMaxAge, corsWildcard, hasExpectCT, hasFeaturePolicy,
+      noLanguageAtAll, excessiveInlineStyles, cssImportantCount,
+      hasServiceWorker, multipleCharsets, duplicatePreconnects,
+      bodyScriptsWithoutAsyncDefer, externalFontsCount, contentTypeValid,
+      metaRefreshLargeDelay, stylesheetInBody, imgDecodingAttr, contentWithoutMatchingSchema,
+      // Round 16 — Links & Images Enhanced
+      imagesWithEmptySrc, uninformativeAltText, imagesWithOneDimension,
+      brokenImageSrc, zeroDimensionImages, redundantAltPhrases,
+      duplicateImageSrc, keywordStuffedHeadings, keywordOveruseInAlt,
       fullUrl: finalUrl,
     };
     const scored = computeWeightedScore(pageData);
@@ -3107,6 +3371,24 @@ router.post('/fetch-page', async (req, res) => {
       hasCreativeWorkSchema, hasWebPageSchema,
       // Round 15 — Resource Hints summary
       resourceHintsSummary,
+      // Round 16 — Social Meta Enhanced
+      ogImageDimensionsMissing, twitterImageMissing, ogLocaleMissing,
+      articlePublishedTimeMissing, articleAuthorMissing, metaRefreshIsRedirect,
+      ogImageWidth, ogImageHeight, ogLocale,
+      // Round 16 — Content Readability & Quality
+      passiveVoicePercentage, transitionWordPercentage, weakAdverbCount,
+      nearDuplicateParagraphs, thinHeadingSections, missingConclusionHeading,
+      excessiveCapsText, placeholderTextFound, highOneWordSentences, contentSentimentIssues,
+      // Round 16 — Technical SEO Advanced
+      cacheControlMaxAge, corsWildcard, hasExpectCT, hasFeaturePolicy,
+      noLanguageAtAll, excessiveInlineStyles, cssImportantCount,
+      hasServiceWorker, multipleCharsets, duplicatePreconnects,
+      bodyScriptsWithoutAsyncDefer, externalFontsCount, contentTypeValid,
+      metaRefreshLargeDelay, stylesheetInBody, imgDecodingAttr, contentWithoutMatchingSchema,
+      // Round 16 — Links & Images Enhanced
+      imagesWithEmptySrc, uninformativeAltText, imagesWithOneDimension,
+      brokenImageSrc, zeroDimensionImages, redundantAltPhrases,
+      duplicateImageSrc, keywordStuffedHeadings, keywordOveruseInAlt,
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
