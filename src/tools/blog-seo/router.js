@@ -1,4 +1,6 @@
 const express = require('express');
+const OpenAI = require('openai');
+const cheerio = require('cheerio');
 const researchEngine = require('./research-intent-engine');
 const keywordEngine = require('./keyword-cluster-engine');
 const briefEngine = require('./content-brief-engine');
@@ -6,386 +8,587 @@ const outlineEngine = require('./outline-optimization-engine');
 const onpageEngine = require('./onpage-technical-engine');
 const linkingEngine = require('./internal-linking-engine');
 const performanceEngine = require('./performance-analytics-engine');
-const aiEngine = require('./ai-orchestration-engine');
 
 const router = express.Router();
 
-// ============================================================================
-// SYSTEM & META
-// ============================================================================
-router.get('/health', (req, res) => {
-  res.json({ ok: true, status: 'Blog SEO Engine online', version: 'enterprise-v1' });
-});
-
-router.get('/stats', (req, res) => {
-  res.json({
-    ok: true,
-    stats: {
-      research: researchEngine.getStats(),
-      keywords: keywordEngine.getStats(),
-      briefs: briefEngine.getStats(),
-      outlines: outlineEngine.getStats(),
-      onpage: onpageEngine.getStats(),
-      linking: linkingEngine.getStats(),
-      performance: performanceEngine.getStats(),
-      ai: aiEngine.getStats(),
-    },
-  });
-});
-
-// ============================================================================
-// RESEARCH & INTENT (30+ endpoints)
-// ============================================================================
-router.post('/research/create', (req, res) => {
-  const record = researchEngine.createResearch(req.body || {});
-  res.status(201).json({ success: true, data: record });
-});
-
-router.get('/research/:id', (req, res) => {
-  try {
-    res.json({ success: true, data: researchEngine.getResearch(req.params.id) });
-  } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
-  }
-});
-
-router.get('/research', (_req, res) => {
-  res.json({ success: true, data: researchEngine.listResearch() });
-});
-
-router.post('/research/score', (req, res) => {
-  res.json({ success: true, data: researchEngine.scoreIntent(req.body || {}) });
-});
-
-router.post('/research/questions', (req, res) => {
-  res.json({ success: true, data: researchEngine.generateQuestions(req.body?.topic) });
-});
-
-router.get('/research/serp', (req, res) => {
-  res.json({ success: true, data: researchEngine.serpOverview(req.query.keyword) });
-});
-
-router.post('/research/notes', (req, res) => {
-  const entry = researchEngine.addNote(req.body?.researchId || 'research-temp', req.body?.note);
-  res.status(201).json({ success: true, data: entry });
-});
-
-router.get('/research/:id/notes', (req, res) => {
-  res.json({ success: true, data: researchEngine.listNotes(req.params.id) });
-});
-
-router.get('/research/stats', (_req, res) => {
-  res.json({ success: true, data: researchEngine.getStats() });
-});
-
-for (let i = 1; i <= 24; i++) {
-  router.get(`/research/features/${i}`, (_req, res) => {
-    res.json({ success: true, message: `Research feature ${i}`, data: {} });
-  });
+let _openai;
+function getOpenAI() {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  return _openai;
 }
 
-// ============================================================================
-// KEYWORD CLUSTERS (30+ endpoints)
-// ============================================================================
-router.post('/keywords/cluster', (req, res) => {
-  const cluster = keywordEngine.createCluster(req.body || {});
-  res.status(201).json({ success: true, data: cluster });
+/* ── In-memory history store ─────────────────────────────────────────────── */
+const historyStore = new Map();
+let historySeq = 0;
+
+/* =========================================================================
+   HEALTH
+   ========================================================================= */
+router.get('/health', (_req, res) => {
+  res.json({ ok: true, status: 'Blog SEO Engine online', version: '2.0.0' });
 });
 
-router.get('/keywords/cluster/:id', (req, res) => {
+/* =========================================================================
+   ANALYZE — crawl a blog URL and score blog-specific SEO signals
+   ========================================================================= */
+router.post('/analyze', async (req, res) => {
   try {
-    res.json({ success: true, data: keywordEngine.getCluster(req.params.id) });
+    const { url, keywords } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url is required' });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    let response;
+    try {
+      response = await fetch(url, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'AuraBlogSEOBot/2.0 (+https://aurasystems.ai)', Accept: 'text/html' },
+        redirect: 'follow',
+      });
+    } catch (fetchErr) {
+      clearTimeout(timeout);
+      return res.status(502).json({ ok: false, error: `Failed to fetch: ${fetchErr.message}` });
+    }
+    clearTimeout(timeout);
+
+    const html = await response.text();
+    const $ = cheerio.load(html);
+    $('script, style, noscript, svg, iframe').remove();
+
+    /* ── META ── */
+    const title = $('title').first().text().trim();
+    const metaDescription = $('meta[name="description"]').attr('content')?.trim() || '';
+    const canonicalUrl = $('link[rel="canonical"]').attr('href') || '';
+    const h1 = $('h1').first().text().trim();
+    const h1Count = $('h1').length;
+    const robotsMeta = $('meta[name="robots"]').attr('content') || '';
+    const langTag = $('html').attr('lang') || '';
+    const viewportMeta = $('meta[name="viewport"]').attr('content') || '';
+    const authorMeta = $('meta[name="author"]').attr('content') || '';
+    const datePublished = $('meta[property="article:published_time"]').attr('content')
+      || $('time[datetime]').first().attr('datetime') || '';
+    const dateModified = $('meta[property="article:modified_time"]').attr('content') || '';
+
+    /* ── OG ── */
+    const ogTitle = $('meta[property="og:title"]').attr('content') || '';
+    const ogDescription = $('meta[property="og:description"]').attr('content') || '';
+    const ogImage = $('meta[property="og:image"]').attr('content') || '';
+    const ogType = $('meta[property="og:type"]').attr('content') || '';
+
+    /* ── CONTENT ── */
+    const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
+    const wordCount = bodyText.split(/\s+/).filter(Boolean).length;
+    const paragraphs = $('p').map((_, el) => $(el).text().trim()).get().filter(t => t.length > 10);
+    const avgParagraphLength = paragraphs.length
+      ? Math.round(paragraphs.reduce((s, p) => s + p.split(/\s+/).length, 0) / paragraphs.length)
+      : 0;
+    const longParagraphs = paragraphs.filter(p => p.split(/\s+/).length > 120).length;
+    const readingTimeMinutes = Math.ceil(wordCount / 238);
+
+    /* ── HEADINGS ── */
+    const headings = [];
+    $('h1, h2, h3, h4, h5, h6').each((_, el) => {
+      headings.push({ tag: el.tagName.toLowerCase(), text: $(el).text().trim().slice(0, 120) });
+    });
+    const h2Count = headings.filter(h => h.tag === 'h2').length;
+    const h3Count = headings.filter(h => h.tag === 'h3').length;
+    const subheadingDistribution = {
+      h2: h2Count, h3: h3Count, h4: headings.filter(h => h.tag === 'h4').length,
+    };
+
+    /* ── LINKS ── */
+    const allLinks = [];
+    $('a[href]').each((_, el) => {
+      const href = $(el).attr('href') || '';
+      const text = $(el).text().trim().slice(0, 80);
+      const rel = $(el).attr('rel') || '';
+      try {
+        const parsed = new URL(href, url);
+        const baseHost = new URL(url).hostname;
+        const isInternal = parsed.hostname === baseHost;
+        allLinks.push({ href: parsed.href, text, rel, isInternal });
+      } catch { /* ignore bad URLs */ }
+    });
+    const internalLinks = allLinks.filter(l => l.isInternal).length;
+    const externalLinks = allLinks.filter(l => !l.isInternal).length;
+    const internalLinkDetails = allLinks.filter(l => l.isInternal).slice(0, 50);
+    const externalLinkDetails = allLinks.filter(l => !l.isInternal).slice(0, 50);
+
+    /* ── IMAGES ── */
+    const images = [];
+    $('img').each((_, el) => {
+      const src = $(el).attr('src') || '';
+      const alt = $(el).attr('alt');
+      const hasWidth = !!$(el).attr('width');
+      const hasHeight = !!$(el).attr('height');
+      images.push({ src: src.slice(0, 200), alt: alt ?? null, hasAlt: alt != null && alt.length > 0, hasWidth, hasHeight });
+    });
+    const imageCount = images.length;
+    const imagesWithAlt = images.filter(i => i.hasAlt).length;
+    const imagesMissingDimensions = images.filter(i => !i.hasWidth || !i.hasHeight).length;
+
+    /* ── SCHEMA ── */
+    const schemaTypes = [];
+    const schemaRawData = [];
+    $('script[type="application/ld+json"]').each((_, el) => {
+      try {
+        const data = JSON.parse($(el).html());
+        const items = Array.isArray(data) ? data : [data];
+        items.forEach(item => {
+          if (item['@type']) { schemaTypes.push(item['@type']); schemaRawData.push(item); }
+          if (item['@graph']) item['@graph'].forEach(g => {
+            if (g['@type']) { schemaTypes.push(g['@type']); schemaRawData.push(g); }
+          });
+        });
+      } catch { /* ignore invalid JSON-LD */ }
+    });
+    const schemaMarkup = schemaTypes.length > 0;
+
+    /* ── KEYWORD ANALYSIS ── */
+    const kwList = (keywords || '').split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+    const kwDensity = {};
+    const lowerBody = bodyText.toLowerCase();
+    kwList.forEach(kw => {
+      const regex = new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+      const matches = lowerBody.match(regex);
+      kwDensity[kw] = {
+        count: matches ? matches.length : 0,
+        density: matches ? Math.round(matches.length / wordCount * 10000) / 100 : 0,
+      };
+    });
+    const keywordInTitle = kwList.some(kw => title.toLowerCase().includes(kw));
+    const keywordInH1 = kwList.some(kw => h1.toLowerCase().includes(kw));
+    const keywordInMeta = kwList.some(kw => metaDescription.toLowerCase().includes(kw));
+    const keywordInUrl = kwList.some(kw => url.toLowerCase().includes(kw));
+    const keywordInFirstParagraph = kwList.some(kw => (paragraphs[0] || '').toLowerCase().includes(kw));
+
+    /* ── READABILITY ── */
+    const sentences = bodyText.split(/[.!?]+/).filter(s => s.trim().length > 5);
+    const avgSentenceLength = sentences.length
+      ? Math.round(sentences.reduce((s, sent) => s + sent.trim().split(/\s+/).length, 0) / sentences.length)
+      : 0;
+    const longSentences = sentences.filter(s => s.trim().split(/\s+/).length > 25).length;
+    const readabilityScore = Math.max(0, Math.min(100,
+      100 - longSentences * 3 - Math.max(0, avgSentenceLength - 15) * 2 - Math.max(0, avgParagraphLength - 80)));
+
+    /* ── TECHNICAL ── */
+    const pageSizeKB = Math.round(Buffer.byteLength(html, 'utf8') / 1024);
+    const isHttps = url.startsWith('https');
+    const hasFavicon = $('link[rel="icon"], link[rel="shortcut icon"]').length > 0;
+    const hasCharset = $('meta[charset]').length > 0 || html.toLowerCase().includes('charset=');
+
+    /* ── URL ANALYSIS ── */
+    let urlAnalysis = {};
+    try {
+      const parsed = new URL(url);
+      urlAnalysis = {
+        isHttps: parsed.protocol === 'https:',
+        pathLength: parsed.pathname.length,
+        hasTrailingSlash: parsed.pathname.endsWith('/') && parsed.pathname !== '/',
+        depth: parsed.pathname.split('/').filter(Boolean).length,
+        hasNumbers: /\d/.test(parsed.pathname),
+        hasUnderscores: parsed.pathname.includes('_'),
+        isClean: !parsed.search && !parsed.pathname.includes('_') && parsed.pathname.length < 80,
+      };
+    } catch { /* ignore */ }
+
+    /* ── SCORING ── */
+    const scored = computeBlogScore({
+      title, metaDescription, h1, h1Count, wordCount, headings, h2Count, h3Count,
+      internalLinks, externalLinks, imageCount, imagesWithAlt, imagesMissingDimensions,
+      schemaMarkup, canonicalUrl, robotsMeta, langTag, viewportMeta, pageSizeKB,
+      isHttps, authorMeta, datePublished, dateModified, readabilityScore,
+      longParagraphs, avgSentenceLength, avgParagraphLength,
+      keywordInTitle, keywordInH1, keywordInMeta, keywordInUrl, keywordInFirstParagraph,
+      kwDensity, kwList, ogTitle, ogDescription, ogImage, urlAnalysis, hasFavicon, hasCharset,
+    });
+
+    res.json({
+      ok: true, url, title, metaDescription, canonicalUrl, h1, h1Count, robotsMeta, langTag,
+      viewportMeta, authorMeta, datePublished, dateModified,
+      ogTitle, ogDescription, ogImage, ogType,
+      wordCount, readingTimeMinutes, paragraphCount: paragraphs.length, avgParagraphLength, longParagraphs,
+      headings, h2Count, h3Count, subheadingDistribution,
+      internalLinks, externalLinks, internalLinkDetails, externalLinkDetails,
+      imageCount, imagesWithAlt, imagesMissingDimensions, images: images.slice(0, 30),
+      schemaMarkup, schemaTypes, schemaRawData,
+      keywordDensity: kwDensity, keywordInTitle, keywordInH1, keywordInMeta, keywordInUrl, keywordInFirstParagraph,
+      readabilityScore, avgSentenceLength, longSentences,
+      pageSizeKB, isHttps, hasFavicon, hasCharset, urlAnalysis,
+      scored,
+    });
   } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
-router.get('/keywords/clusters', (_req, res) => {
-  res.json({ success: true, data: keywordEngine.listClusters() });
-});
+/* =========================================================================
+   BLOG SCORING — blog-specific weighted scoring system
+   ========================================================================= */
+function computeBlogScore(d) {
+  const issues = [];
+  function addIssue(cat, sev, impact, msg) { issues.push({ cat, sev, impact, msg }); }
 
-router.post('/keywords/refresh', (req, res) => {
+  let content = 100, meta = 100, technical = 100, keywords = 100, structure = 100;
+
+  /* ── CONTENT ── */
+  if (d.wordCount < 300)       { content -= 25; addIssue('content', 'high', 25, `Only ${d.wordCount} words — blog posts should be 300+ words minimum`); }
+  else if (d.wordCount < 800)  { content -= 15; addIssue('content', 'medium', 15, `${d.wordCount} words is thin — aim for 800+ for competitive blog content`); }
+  else if (d.wordCount < 1500) { content -= 5;  addIssue('content', 'low', 5, `${d.wordCount} words — consider expanding to 1500+ for comprehensive coverage`); }
+  if (d.wordCount > 5000)      { content -= 5;  addIssue('content', 'low', 5, 'Very long post (5000+ words) — consider splitting into a series'); }
+
+  if (d.readabilityScore < 40) { content -= 20; addIssue('content', 'high', 20, `Readability score ${d.readabilityScore}/100 is poor — simplify sentences and paragraphs`); }
+  else if (d.readabilityScore < 60) { content -= 10; addIssue('content', 'medium', 10, `Readability ${d.readabilityScore}/100 — could be more accessible`); }
+
+  if (d.longParagraphs > 0) { content -= Math.min(15, d.longParagraphs * 5); addIssue('content', 'medium', Math.min(15, d.longParagraphs * 5), `${d.longParagraphs} paragraph(s) exceed 120 words — break them up`); }
+  if (d.avgSentenceLength > 25) { content -= 10; addIssue('content', 'medium', 10, `Average sentence length ${d.avgSentenceLength} words — aim under 20`); }
+  if (!d.authorMeta) { content -= 8; addIssue('content', 'medium', 8, 'No author meta tag — important for E-E-A-T signals'); }
+  if (!d.datePublished && !d.dateModified) { content -= 8; addIssue('content', 'medium', 8, 'No published/modified date — freshness is a blog ranking factor'); }
+
+  /* ── META TAGS ── */
+  if (!d.title) { meta -= 30; addIssue('meta', 'high', 30, 'Missing title tag'); }
+  else {
+    const tLen = d.title.length;
+    if (tLen < 30)      { meta -= 15; addIssue('meta', 'high', 15, `Title too short (${tLen} chars) — aim for 50-60`); }
+    else if (tLen > 60) { meta -= 10; addIssue('meta', 'medium', 10, `Title too long (${tLen} chars) — may be truncated in SERP`); }
+  }
+
+  if (!d.metaDescription) { meta -= 25; addIssue('meta', 'high', 25, 'Missing meta description'); }
+  else {
+    const dLen = d.metaDescription.length;
+    if (dLen < 120)      { meta -= 12; addIssue('meta', 'medium', 12, `Meta description short (${dLen} chars) — aim for 150-160`); }
+    else if (dLen > 165) { meta -= 8;  addIssue('meta', 'medium', 8, `Meta description long (${dLen} chars) — may be truncated`); }
+  }
+
+  if (!d.h1) { meta -= 20; addIssue('meta', 'high', 20, 'Missing H1 heading'); }
+  if (d.h1Count > 1) { meta -= 10; addIssue('meta', 'medium', 10, `${d.h1Count} H1 tags found — use exactly one`); }
+  if (!d.ogTitle || !d.ogDescription || !d.ogImage) { meta -= 8; addIssue('meta', 'medium', 8, 'Incomplete Open Graph tags — important for social sharing of blog content'); }
+  if (!d.canonicalUrl) { meta -= 5; addIssue('meta', 'low', 5, 'No canonical URL set'); }
+
+  /* ── TECHNICAL ── */
+  if (!d.isHttps)      { technical -= 20; addIssue('technical', 'high', 20, 'Not served over HTTPS'); }
+  if (!d.langTag)      { technical -= 8;  addIssue('technical', 'medium', 8, 'Missing lang attribute on <html>'); }
+  if (!d.viewportMeta) { technical -= 12; addIssue('technical', 'medium', 12, 'Missing viewport meta — not mobile-friendly'); }
+  if (!d.schemaMarkup) { technical -= 10; addIssue('technical', 'medium', 10, 'No structured data — add Article/BlogPosting schema for rich results'); }
+  else {
+    const hasArticle = (d.schemaTypes || []).some(t => /Article|BlogPosting/i.test(t));
+    if (!hasArticle) { technical -= 5; addIssue('technical', 'low', 5, 'Schema found but no Article/BlogPosting type — add blog-specific schema'); }
+  }
+  if (d.pageSizeKB > 200) { technical -= 8; addIssue('technical', 'medium', 8, `Page size ${d.pageSizeKB}KB — consider optimizing`); }
+  if (!d.hasFavicon) { technical -= 3; addIssue('technical', 'low', 3, 'No favicon detected'); }
+  if (!d.hasCharset)  { technical -= 3; addIssue('technical', 'low', 3, 'No charset declaration'); }
+  if (d.urlAnalysis?.hasUnderscores) { technical -= 5; addIssue('technical', 'low', 5, 'URL contains underscores — use hyphens instead'); }
+  if (d.urlAnalysis?.pathLength > 80) { technical -= 5; addIssue('technical', 'low', 5, 'URL path is too long'); }
+
+  /* ── KEYWORDS ── */
+  if (d.kwList.length > 0) {
+    if (!d.keywordInTitle) { keywords -= 20; addIssue('keywords', 'high', 20, 'Primary keyword not in title tag'); }
+    if (!d.keywordInH1)    { keywords -= 15; addIssue('keywords', 'high', 15, 'Primary keyword not in H1'); }
+    if (!d.keywordInMeta)  { keywords -= 12; addIssue('keywords', 'medium', 12, 'Primary keyword not in meta description'); }
+    if (!d.keywordInUrl)   { keywords -= 8;  addIssue('keywords', 'medium', 8, 'Primary keyword not in URL'); }
+    if (!d.keywordInFirstParagraph) { keywords -= 10; addIssue('keywords', 'medium', 10, 'Primary keyword not in first paragraph'); }
+    const primaryKw = d.kwList[0];
+    const primaryDensity = d.kwDensity[primaryKw]?.density || 0;
+    if (primaryDensity === 0)     { keywords -= 15; addIssue('keywords', 'high', 15, `"${primaryKw}" not found in content at all`); }
+    else if (primaryDensity < 0.5) { keywords -= 8;  addIssue('keywords', 'medium', 8, `"${primaryKw}" density ${primaryDensity}% — aim for 0.5-2.5%`); }
+    else if (primaryDensity > 3)   { keywords -= 10; addIssue('keywords', 'medium', 10, `"${primaryKw}" density ${primaryDensity}% — keyword stuffing risk`); }
+  } else {
+    keywords -= 5; addIssue('keywords', 'low', 5, 'No target keywords specified — keyword optimization cannot be evaluated');
+  }
+
+  /* ── STRUCTURE ── */
+  if (d.h2Count === 0)                   { structure -= 20; addIssue('structure', 'high', 20, 'No H2 subheadings — blog content needs clear structure'); }
+  else if (d.h2Count < 3 && d.wordCount > 800) { structure -= 10; addIssue('structure', 'medium', 10, `Only ${d.h2Count} H2s for ${d.wordCount} words — add more subheadings`); }
+  if (d.h3Count === 0 && d.wordCount > 1000) { structure -= 5; addIssue('structure', 'low', 5, 'No H3 subheadings — consider adding for longer content'); }
+  if (d.internalLinks === 0)         { structure -= 15; addIssue('structure', 'high', 15, 'No internal links — critical for blog SEO'); }
+  else if (d.internalLinks < 3)      { structure -= 8;  addIssue('structure', 'medium', 8, `Only ${d.internalLinks} internal link(s) — aim for 3-10`); }
+  if (d.externalLinks === 0)         { structure -= 8;  addIssue('structure', 'medium', 8, 'No external links — citing authoritative sources helps credibility'); }
+  if (d.imageCount === 0)            { structure -= 10; addIssue('structure', 'medium', 10, 'No images — blog posts benefit from visual content'); }
+  else if (d.imagesWithAlt < d.imageCount) { structure -= Math.min(10, (d.imageCount - d.imagesWithAlt) * 3); addIssue('structure', 'medium', Math.min(10, (d.imageCount - d.imagesWithAlt) * 3), `${d.imageCount - d.imagesWithAlt} image(s) missing alt text`); }
+  if (d.imagesMissingDimensions > 0) { structure -= Math.min(8, d.imagesMissingDimensions * 2); addIssue('structure', 'low', Math.min(8, d.imagesMissingDimensions * 2), `${d.imagesMissingDimensions} image(s) missing width/height dimensions`); }
+
+  content   = Math.max(0, Math.min(100, content));
+  meta      = Math.max(0, Math.min(100, meta));
+  technical = Math.max(0, Math.min(100, technical));
+  keywords  = Math.max(0, Math.min(100, keywords));
+  structure = Math.max(0, Math.min(100, structure));
+
+  const overall = Math.round(content * 0.25 + meta * 0.25 + technical * 0.15 + keywords * 0.20 + structure * 0.15);
+
+  return {
+    overall,
+    categories: {
+      content: { score: content, weight: 25 },
+      meta: { score: meta, weight: 25 },
+      technical: { score: technical, weight: 15 },
+      keywords: { score: keywords, weight: 20 },
+      structure: { score: structure, weight: 15 },
+    },
+    issues,
+    issueCount: issues.length,
+    highIssues: issues.filter(i => i.sev === 'high').length,
+    mediumIssues: issues.filter(i => i.sev === 'medium').length,
+    lowIssues: issues.filter(i => i.sev === 'low').length,
+    grade: overall >= 90 ? 'A' : overall >= 75 ? 'B' : overall >= 60 ? 'C' : overall >= 40 ? 'D' : 'F',
+  };
+}
+
+/* =========================================================================
+   AI: DEEP BLOG ANALYSIS — GPT-powered content analysis
+   ========================================================================= */
+router.post('/ai/analyze', async (req, res) => {
   try {
-    res.json({ success: true, data: keywordEngine.refreshCluster(req.body?.clusterId) });
+    const { url, title, metaDescription, h1, wordCount, headings, keywords, scored } = req.body || {};
+    const systemPrompt = `You are an expert blog SEO consultant for Shopify e-commerce stores. Analyze the blog post data and return actionable recommendations. Return JSON with: { assessment: string, strengths: string[], weaknesses: string[], contentGaps: string[], recommendations: [{ priority: "critical"|"recommended"|"optional", title: string, description: string }], topicSuggestions: string[], estimatedTrafficPotential: string }`;
+    const userPrompt = `Analyze this blog post:\nURL: ${url}\nTitle: ${title}\nH1: ${h1}\nMeta Description: ${metaDescription}\nWord Count: ${wordCount}\nHeadings: ${JSON.stringify((headings || []).slice(0, 20))}\nKeywords: ${keywords || 'none specified'}\nSEO Score: ${scored?.overall || 'N/A'}/100\nIssues: ${scored?.issueCount || 0} (${scored?.highIssues || 0} high)\n\nProvide a thorough blog SEO analysis with actionable recommendations.`;
+
+    const completion = await getOpenAI().chat.completions.create({
+      model: req.body.model || 'gpt-4o-mini',
+      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+      temperature: 0.4,
+      response_format: { type: 'json_object' },
+    });
+    const raw = completion.choices[0]?.message?.content || '{}';
+    let structured; try { structured = JSON.parse(raw); } catch { structured = null; }
+    res.json({ ok: true, analysis: raw, structured });
   } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
-router.post('/keywords/import', (req, res) => {
-  res.json({ success: true, data: keywordEngine.importKeywords(req.body?.keywords || []) });
+/* =========================================================================
+   AI: CONTENT BRIEF — AI-powered brief generation
+   ========================================================================= */
+router.post('/ai/content-brief', async (req, res) => {
+  try {
+    const { topic, primaryKeyword, secondaryKeywords, audience, tone } = req.body || {};
+    if (!topic && !primaryKeyword) return res.status(400).json({ ok: false, error: 'topic or primaryKeyword required' });
+
+    const systemPrompt = `You are an expert content strategist for e-commerce blogs. Generate a comprehensive content brief. Return JSON with: { title: string, metaTitle: string, metaDescription: string, h1: string, targetWordCount: number, outline: [{ heading: string, subheadings: string[], wordCount: number, notes: string }], keywordStrategy: { primary: string, secondary: string[], lsi: string[] }, searchIntent: string, competitorGaps: string[], uniqueAngles: string[], cta: string, estimatedRank: string }`;
+    const userPrompt = `Create a content brief for:\nTopic: ${topic || primaryKeyword}\nPrimary Keyword: ${primaryKeyword || topic}\nSecondary Keywords: ${(secondaryKeywords || []).join(', ') || 'none'}\nAudience: ${audience || 'Shopify merchants'}\nTone: ${tone || 'Professional and actionable'}`;
+
+    const completion = await getOpenAI().chat.completions.create({
+      model: req.body.model || 'gpt-4o-mini',
+      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+      temperature: 0.5,
+      response_format: { type: 'json_object' },
+    });
+    const raw = completion.choices[0]?.message?.content || '{}';
+    let structured; try { structured = JSON.parse(raw); } catch { structured = null; }
+    res.json({ ok: true, brief: raw, structured });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   AI: KEYWORD RESEARCH — discover keywords from a seed
+   ========================================================================= */
+router.post('/ai/keyword-research', async (req, res) => {
+  try {
+    const { seedKeyword, niche, audience } = req.body || {};
+    if (!seedKeyword) return res.status(400).json({ ok: false, error: 'seedKeyword required' });
+
+    const systemPrompt = `You are an expert SEO keyword researcher for Shopify e-commerce blogs. Generate keyword research data. Return JSON with: { seedKeyword: string, clusters: [{ name: string, intent: "informational"|"commercial"|"navigational"|"transactional", keywords: [{ keyword: string, estimatedVolume: string, difficulty: string, priority: "high"|"medium"|"low" }] }], longTailKeywords: string[], questionsToAnswer: string[], contentIdeas: [{ title: string, type: "guide"|"listicle"|"how-to"|"comparison"|"case-study", targetKeyword: string }] }`;
+    const userPrompt = `Research keywords for:\nSeed Keyword: ${seedKeyword}\nNiche: ${niche || 'Shopify e-commerce'}\nAudience: ${audience || 'Online store owners'}`;
+
+    const completion = await getOpenAI().chat.completions.create({
+      model: req.body.model || 'gpt-4o-mini',
+      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+      temperature: 0.5,
+      response_format: { type: 'json_object' },
+    });
+    const raw = completion.choices[0]?.message?.content || '{}';
+    let structured; try { structured = JSON.parse(raw); } catch { structured = null; }
+    res.json({ ok: true, research: raw, structured });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   AI: REWRITE META — generate title / description / H1 variants
+   ========================================================================= */
+router.post('/ai/rewrite', async (req, res) => {
+  try {
+    const { field, currentValue, keywords, url } = req.body || {};
+    if (!field || !currentValue) return res.status(400).json({ ok: false, error: 'field and currentValue required' });
+
+    const limits = { title: '50-60 characters', metaDescription: '150-160 characters', h1: '20-70 characters' };
+    const systemPrompt = `You are an SEO copywriter for e-commerce blogs. Generate 5 optimized variants for the blog post's ${field}. Each variant should be ${limits[field] || 'concise'}, include the target keyword naturally, and be compelling for CTR. Return JSON with: { field: string, variants: [{ text: string, charCount: number, keywordPresent: boolean, ctaStrength: string }] }`;
+    const userPrompt = `Current ${field}: "${currentValue}"\nKeywords: ${keywords || 'none'}\nURL: ${url || 'N/A'}\n\nGenerate 5 SEO-optimized variants.`;
+
+    const completion = await getOpenAI().chat.completions.create({
+      model: req.body.model || 'gpt-4o-mini',
+      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+      temperature: 0.7,
+      response_format: { type: 'json_object' },
+    });
+    const raw = completion.choices[0]?.message?.content || '{}';
+    let structured; try { structured = JSON.parse(raw); } catch { structured = null; }
+    res.json({ ok: true, field, suggestions: raw, structured });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   AI: FIX CODE — generate a fix for a specific SEO issue
+   ========================================================================= */
+router.post('/ai/fix-code', async (req, res) => {
+  try {
+    const { issue, url, pageContext } = req.body || {};
+    if (!issue) return res.status(400).json({ ok: false, error: 'issue is required' });
+
+    const systemPrompt = `You are an expert web developer specializing in Shopify blog SEO. Given an SEO issue, provide the exact code fix. Return JSON with: { priority: "critical"|"recommended"|"optional", fixType: "html"|"liquid"|"schema"|"meta"|"css", location: string, explanation: string, code: string }`;
+    const userPrompt = `Fix this blog SEO issue:\nIssue: ${issue}\nURL: ${url || 'N/A'}\nPage: ${pageContext ? JSON.stringify(pageContext) : 'N/A'}`;
+
+    const completion = await getOpenAI().chat.completions.create({
+      model: req.body.model || 'gpt-4o-mini',
+      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+      temperature: 0.3,
+      response_format: { type: 'json_object' },
+    });
+    const raw = completion.choices[0]?.message?.content || '{}';
+    let fix; try { fix = JSON.parse(raw); } catch { fix = { explanation: raw, code: '', fixType: 'html', priority: 'recommended', location: 'unknown' }; }
+    res.json({ ok: true, fix });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   AI: INTERNAL LINK SUGGESTIONS
+   ========================================================================= */
+router.post('/ai/internal-links', async (req, res) => {
+  try {
+    const { url, title, headings, internalLinkDetails, keywords } = req.body || {};
+    const systemPrompt = `You are an internal linking strategist for Shopify blogs. Analyze the blog post and suggest internal linking improvements. Return JSON with: { currentLinkCount: number, idealLinkCount: number, suggestions: [{ anchorText: string, targetPage: string, section: string, reason: string, priority: "high"|"medium"|"low" }], orphanedRisk: boolean, siloPlan: string, hubPageSuggestion: string }`;
+    const userPrompt = `Analyze internal links for:\nURL: ${url}\nTitle: ${title}\nHeadings: ${JSON.stringify((headings || []).slice(0, 15))}\nCurrent Internal Links: ${JSON.stringify((internalLinkDetails || []).slice(0, 20))}\nKeywords: ${keywords || 'none'}`;
+
+    const completion = await getOpenAI().chat.completions.create({
+      model: req.body.model || 'gpt-4o-mini',
+      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+      temperature: 0.4,
+      response_format: { type: 'json_object' },
+    });
+    const raw = completion.choices[0]?.message?.content || '{}';
+    let structured; try { structured = JSON.parse(raw); } catch { structured = null; }
+    res.json({ ok: true, links: raw, structured });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   AI: CHAT — blog SEO assistant
+   ========================================================================= */
+router.post('/ai/generate', async (req, res) => {
+  try {
+    const { messages } = req.body || {};
+    if (!messages || !messages.length) return res.status(400).json({ ok: false, error: 'messages required' });
+
+    const completion = await getOpenAI().chat.completions.create({
+      model: req.body.model || 'gpt-4o-mini',
+      messages: [{ role: 'system', content: 'You are an expert blog SEO assistant for Shopify e-commerce stores. Give specific, actionable advice about blog SEO strategy, content optimization, keyword targeting, and technical SEO. Be concise but thorough.' }, ...messages.slice(-20)],
+      temperature: 0.6,
+    });
+    const reply = completion.choices[0]?.message?.content || '';
+    res.json({ ok: true, reply });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   BULK ANALYZE — scan up to 10 blog URLs
+   ========================================================================= */
+router.post('/bulk-analyze', async (req, res) => {
+  try {
+    const { urls, keywords } = req.body || {};
+    if (!urls || !Array.isArray(urls) || !urls.length) return res.status(400).json({ ok: false, error: 'urls array required' });
+    const toScan = urls.filter(u => u && typeof u === 'string').slice(0, 10);
+    const results = [];
+    for (const blogUrl of toScan) {
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 10000);
+        const resp = await fetch(blogUrl, { signal: ctrl.signal, headers: { 'User-Agent': 'AuraBlogSEOBot/2.0' }, redirect: 'follow' });
+        clearTimeout(t);
+        const html = await resp.text();
+        const $ = cheerio.load(html);
+        $('script, style, noscript, svg, iframe').remove();
+        const title = $('title').first().text().trim();
+        const metaDesc = $('meta[name="description"]').attr('content')?.trim() || '';
+        const h1 = $('h1').first().text().trim();
+        const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
+        const wordCount = bodyText.split(/\s+/).filter(Boolean).length;
+        const headings = []; $('h1, h2, h3').each((_, el) => headings.push({ tag: el.tagName.toLowerCase(), text: $(el).text().trim().slice(0, 80) }));
+        const h2Count = headings.filter(h => h.tag === 'h2').length;
+        const intLinks = $('a[href]').filter((_, el) => { try { return new URL($(el).attr('href'), blogUrl).hostname === new URL(blogUrl).hostname; } catch { return false; } }).length;
+        const imgCount = $('img').length;
+        const imgAlt = $('img[alt]').filter((_, el) => ($(el).attr('alt') || '').length > 0).length;
+        const schema = $('script[type="application/ld+json"]').length > 0;
+        const size = Math.round(Buffer.byteLength(html, 'utf8') / 1024);
+        const scored = computeBlogScore({
+          title, metaDescription: metaDesc, h1, h1Count: $('h1').length, wordCount, headings, h2Count,
+          h3Count: headings.filter(h => h.tag === 'h3').length,
+          internalLinks: intLinks, externalLinks: $('a[href]').length - intLinks, imageCount: imgCount, imagesWithAlt: imgAlt,
+          imagesMissingDimensions: 0, schemaMarkup: schema, canonicalUrl: $('link[rel="canonical"]').attr('href') || '',
+          robotsMeta: '', langTag: $('html').attr('lang') || '', viewportMeta: $('meta[name="viewport"]').attr('content') || '',
+          pageSizeKB: size, isHttps: blogUrl.startsWith('https'), authorMeta: $('meta[name="author"]').attr('content') || '',
+          datePublished: '', dateModified: '', readabilityScore: 70, longParagraphs: 0, avgSentenceLength: 18, avgParagraphLength: 50,
+          keywordInTitle: false, keywordInH1: false, keywordInMeta: false, keywordInUrl: false, keywordInFirstParagraph: false,
+          kwDensity: {}, kwList: (keywords || '').split(',').map(k => k.trim()).filter(Boolean),
+          ogTitle: '', ogDescription: '', ogImage: '', urlAnalysis: {}, hasFavicon: $('link[rel="icon"]').length > 0, hasCharset: true,
+        });
+        results.push({ status: 'ok', url: blogUrl, title, wordCount, score: scored.overall, grade: scored.grade, issueCount: scored.issueCount, highIssues: scored.highIssues, h2Count, internalLinks: intLinks, imageCount: imgCount, pageSizeKB: size });
+      } catch (e) {
+        results.push({ status: 'error', url: blogUrl, error: e.message });
+      }
+    }
+    const ok = results.filter(r => r.status === 'ok');
+    res.json({ ok: true, results, summary: { scanned: ok.length, failed: results.length - ok.length, avgScore: ok.length ? Math.round(ok.reduce((s, r) => s + r.score, 0) / ok.length) : 0, totalIssues: ok.reduce((s, r) => s + (r.issueCount || 0), 0) } });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   HISTORY CRUD
+   ========================================================================= */
+router.post('/items', (req, res) => {
+  const id = ++historySeq;
+  const item = { id, ...req.body, ts: req.body.ts || new Date().toISOString() };
+  historyStore.set(id, item);
+  res.json({ ok: true, item });
+});
+
+router.get('/items', (_req, res) => {
+  res.json({ ok: true, items: Array.from(historyStore.values()) });
+});
+
+router.delete('/items/:id', (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  historyStore.delete(id);
+  res.json({ ok: true });
+});
+
+/* =========================================================================
+   DETERMINISTIC HELPERS (from engine modules)
+   ========================================================================= */
+router.post('/metadata/analyze', (req, res) => {
+  const { title, description, keywords } = req.body || {};
+  res.json({ ok: true, ...onpageEngine.analyzeMetadata(title || '', description || '', keywords || []) });
 });
 
 router.post('/keywords/evaluate', (req, res) => {
-  res.json({ success: true, data: keywordEngine.evaluateKeyword(req.body?.keyword) });
+  const { keyword } = req.body || {};
+  res.json({ ok: true, ...keywordEngine.evaluateKeyword(keyword) });
 });
 
-router.get('/keywords/stats', (_req, res) => {
-  res.json({ success: true, data: keywordEngine.getStats() });
+router.post('/research/score', (req, res) => {
+  res.json({ ok: true, ...researchEngine.scoreIntent(req.body || {}) });
 });
-
-for (let i = 1; i <= 24; i++) {
-  router.get(`/keywords/features/${i}`, (_req, res) => {
-    res.json({ success: true, message: `Keyword feature ${i}`, data: {} });
-  });
-}
-
-// ============================================================================
-// CONTENT BRIEF (30+ endpoints)
-// ============================================================================
-router.post('/briefs', (req, res) => {
-  const brief = briefEngine.createBrief(req.body || {});
-  res.status(201).json({ success: true, data: brief });
-});
-
-router.get('/briefs/:id', (req, res) => {
-  try {
-    res.json({ success: true, data: briefEngine.getBrief(req.params.id) });
-  } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
-  }
-});
-
-router.get('/briefs', (_req, res) => {
-  res.json({ success: true, data: briefEngine.listBriefs() });
-});
-
-router.post('/briefs/:id/score', (req, res) => {
-  try {
-    res.json({ success: true, data: briefEngine.scoreBrief(req.params.id, req.body || {}) });
-  } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
-  }
-});
-
-router.post('/briefs/:id/version', (req, res) => {
-  try {
-    const version = briefEngine.versionBrief(req.params.id, req.body?.name || 'v2');
-    res.status(201).json({ success: true, data: version });
-  } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
-  }
-});
-
-router.get('/briefs/:id/versions', (req, res) => {
-  res.json({ success: true, data: briefEngine.listVersions(req.params.id) });
-});
-
-router.get('/briefs/:id/compliance', (req, res) => {
-  try {
-    res.json({ success: true, data: briefEngine.getCompliance(req.params.id) });
-  } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
-  }
-});
-
-for (let i = 1; i <= 24; i++) {
-  router.get(`/briefs/features/${i}`, (_req, res) => {
-    res.json({ success: true, message: `Brief feature ${i}`, data: {} });
-  });
-}
-
-// ============================================================================
-// OUTLINE OPTIMIZATION (30+ endpoints)
-// ============================================================================
-router.post('/outline/generate', (req, res) => {
-  const outline = outlineEngine.generateOutline(req.body || {});
-  res.status(201).json({ success: true, data: outline });
-});
-
-router.get('/outline/:id', (req, res) => {
-  try {
-    res.json({ success: true, data: outlineEngine.getOutline(req.params.id) });
-  } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
-  }
-});
-
-router.put('/outline/:id', (req, res) => {
-  try {
-    res.json({ success: true, data: outlineEngine.updateOutline(req.params.id, req.body || {}) });
-  } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
-  }
-});
-
-router.get('/outline/:id/grade', (req, res) => {
-  try {
-    const outline = outlineEngine.getOutline(req.params.id);
-    res.json({ success: true, data: outlineEngine.gradeOutline(outline) });
-  } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
-  }
-});
-
-router.post('/outline/:id/version', (req, res) => {
-  try {
-    const version = outlineEngine.versionOutline(req.params.id, req.body?.label || 'v2');
-    res.status(201).json({ success: true, data: version });
-  } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
-  }
-});
-
-router.get('/outline', (_req, res) => {
-  res.json({ success: true, data: outlineEngine.listOutlines() });
-});
-
-router.get('/outline/:id/versions', (req, res) => {
-  res.json({ success: true, data: outlineEngine.listVersions(req.params.id) });
-});
-
-router.get('/outline/stats', (_req, res) => {
-  res.json({ success: true, data: outlineEngine.getStats() });
-});
-
-for (let i = 1; i <= 24; i++) {
-  router.get(`/outline/features/${i}`, (_req, res) => {
-    res.json({ success: true, message: `Outline feature ${i}`, data: {} });
-  });
-}
-
-// ============================================================================
-// ON-PAGE TECHNICAL (30+ endpoints)
-// ============================================================================
-router.post('/onpage/metadata', (req, res) => {
-  const { title, description, keywords } = req.body || {};
-  res.json({ success: true, data: onpageEngine.analyzeMetadata(title, description, keywords) });
-});
-
-router.post('/onpage/schema', (req, res) => {
-  res.json({ success: true, data: onpageEngine.suggestSchema(req.body || {}) });
-});
-
-router.post('/onpage/audit', (req, res) => {
-  res.json({ success: true, data: onpageEngine.auditPageSpeed(req.body || {}) });
-});
-
-router.post('/onpage/links', (req, res) => {
-  res.json({ success: true, data: onpageEngine.validateLinks(req.body || {}) });
-});
-
-router.get('/onpage/stats', (_req, res) => {
-  res.json({ success: true, data: onpageEngine.getStats() });
-});
-
-for (let i = 1; i <= 24; i++) {
-  router.get(`/onpage/features/${i}`, (_req, res) => {
-    res.json({ success: true, message: `On-page feature ${i}`, data: {} });
-  });
-}
-
-// ============================================================================
-// INTERNAL LINKING (30+ endpoints)
-// ============================================================================
-router.post('/links/suggest', (req, res) => {
-  const record = linkingEngine.suggestLinks(req.body || {});
-  res.status(201).json({ success: true, data: record });
-});
-
-router.post('/links/approve', (req, res) => {
-  try {
-    res.json({ success: true, data: linkingEngine.approveLinks(req.body?.suggestionId) });
-  } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
-  }
-});
-
-router.post('/links/sprint', (req, res) => {
-  const sprint = linkingEngine.createSprint(req.body || {});
-  res.status(201).json({ success: true, data: sprint });
-});
-
-router.get('/links/map/:id', (req, res) => {
-  try {
-    res.json({ success: true, data: linkingEngine.getSprintMap(req.params.id) });
-  } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
-  }
-});
-
-router.get('/links/stats', (_req, res) => {
-  res.json({ success: true, data: linkingEngine.getStats() });
-});
-
-for (let i = 1; i <= 24; i++) {
-  router.get(`/links/features/${i}`, (_req, res) => {
-    res.json({ success: true, message: `Linking feature ${i}`, data: {} });
-  });
-}
-
-// ============================================================================
-// PERFORMANCE & ANALYTICS (30+ endpoints)
-// ============================================================================
-router.post('/performance/record', (req, res) => {
-  const perf = performanceEngine.recordPerformance(req.body || {});
-  res.status(201).json({ success: true, data: perf });
-});
-
-router.get('/performance/:id', (req, res) => {
-  try {
-    res.json({ success: true, data: performanceEngine.getPerformance(req.params.id) });
-  } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
-  }
-});
-
-router.post('/performance/forecast', (req, res) => {
-  res.json({ success: true, data: performanceEngine.forecastPerformance(req.body || {}) });
-});
-
-router.post('/performance/compare', (req, res) => {
-  res.json({ success: true, data: performanceEngine.comparePeriods(req.body || {}) });
-});
-
-router.get('/performance/stats', (_req, res) => {
-  res.json({ success: true, data: performanceEngine.getStats() });
-});
-
-for (let i = 1; i <= 24; i++) {
-  router.get(`/performance/features/${i}`, (_req, res) => {
-    res.json({ success: true, message: `Performance feature ${i}`, data: {} });
-  });
-}
-
-// ============================================================================
-// AI ORCHESTRATION (30+ endpoints)
-// ============================================================================
-router.post('/ai/orchestrate', (req, res) => {
-  const run = aiEngine.orchestrateRun(req.body || {});
-  res.status(201).json({ success: true, data: run });
-});
-
-router.post('/ai/ensemble', (req, res) => {
-  const run = aiEngine.runEnsemble(req.body || {});
-  res.status(201).json({ success: true, data: run });
-});
-
-router.get('/ai/providers', (_req, res) => {
-  res.json({ success: true, data: aiEngine.listProviders() });
-});
-
-router.post('/ai/feedback', (req, res) => {
-  const updated = aiEngine.captureFeedback(req.body?.runId || 'unknown', req.body?.feedback);
-  res.json({ success: true, data: updated });
-});
-
-router.get('/ai/run/:id', (req, res) => {
-  try {
-    res.json({ success: true, data: aiEngine.getRun(req.params.id) });
-  } catch (err) {
-    res.status(404).json({ success: false, error: err.message });
-  }
-});
-
-router.get('/ai/stats', (_req, res) => {
-  res.json({ success: true, data: aiEngine.getStats() });
-});
-
-for (let i = 1; i <= 24; i++) {
-  router.get(`/ai/features/${i}`, (_req, res) => {
-    res.json({ success: true, message: `AI orchestration feature ${i}`, data: {} });
-  });
-}
 
 module.exports = router;
