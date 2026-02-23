@@ -124,6 +124,34 @@ export default function BlogSEO() {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
+  /* ── LLM Score state ── */
+  const [llmScore, setLlmScore] = useState(null);
+  const [llmLoading, setLlmLoading] = useState(false);
+  const [llmErr, setLlmErr] = useState("");
+
+  /* ── Technical Audit state ── */
+  const [techAudit, setTechAudit] = useState(null);
+  const [techAuditLoading, setTechAuditLoading] = useState(false);
+  const [techAuditErr, setTechAuditErr] = useState("");
+
+  /* ── Title CTR Signals state ── */
+  const [ctrSignals, setCtrSignals] = useState(null);
+  const [ctrLoading, setCtrLoading] = useState(false);
+
+  /* ── Article Schema Validator state ── */
+  const [schemaValid, setSchemaValid] = useState(null);
+  const [schemaValidLoading, setSchemaValidLoading] = useState(false);
+  const [schemaValidErr, setSchemaValidErr] = useState("");
+
+  /* ── Advanced Readability state ── */
+  const [advReadability, setAdvReadability] = useState(null);
+  const [advReadLoading, setAdvReadLoading] = useState(false);
+
+  /* ── Internal Link Suggestions state ── */
+  const [intLinks, setIntLinks] = useState(null);
+  const [intLinksLoading, setIntLinksLoading] = useState(false);
+  const [intLinksErr, setIntLinksErr] = useState("");
+
   /* ── ANALYZER ─────────────────────────────────────────────────────────── */
   const runScan = useCallback(async () => {
     if (!url.trim()) return;
@@ -207,6 +235,70 @@ export default function BlogSEO() {
     } catch (e) { setLsiErr(e.message); }
     setLsiLoading(false);
   }, [seedKw, kwNiche]);
+
+  const runLlmScore = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setLlmLoading(true); setLlmErr(""); setLlmScore(null);
+    try {
+      const r = await apiFetch(`${API}/llm/score`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (!r.ok) throw new Error(r.error || "LLM score failed");
+      setLlmScore(r);
+    } catch (e) { setLlmErr(e.message); }
+    setLlmLoading(false);
+  }, [scanResult]);
+
+  const runTechAudit = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setTechAuditLoading(true); setTechAuditErr(""); setTechAudit(null);
+    try {
+      const r = await apiFetch(`${API}/technical/audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (!r.ok) throw new Error(r.error || "Audit failed");
+      setTechAudit(r);
+    } catch (e) { setTechAuditErr(e.message); }
+    setTechAuditLoading(false);
+  }, [scanResult]);
+
+  const runCtrSignals = useCallback(async () => {
+    if (!scanResult?.title) return;
+    setCtrLoading(true); setCtrSignals(null);
+    try {
+      const r = await apiFetch(`${API}/title/ctr-signals`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: scanResult.title, keyword: kwInput.trim() }) });
+      if (r.ok) setCtrSignals(r);
+    } catch {}
+    setCtrLoading(false);
+  }, [scanResult, kwInput]);
+
+  const runSchemaValidate = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setSchemaValidLoading(true); setSchemaValidErr(""); setSchemaValid(null);
+    try {
+      const r = await apiFetch(`${API}/article-schema/validate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (!r.ok) throw new Error(r.error || "Validation failed");
+      setSchemaValid(r);
+    } catch (e) { setSchemaValidErr(e.message); }
+    setSchemaValidLoading(false);
+  }, [scanResult]);
+
+  const runAdvReadability = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setAdvReadLoading(true); setAdvReadability(null);
+    try {
+      const r = await apiFetch(`${API}/content/advanced-readability`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (r.ok) setAdvReadability(r);
+    } catch {}
+    setAdvReadLoading(false);
+  }, [scanResult]);
+
+  const runIntLinks = useCallback(async () => {
+    if (!scanResult?.url) return;
+    setIntLinksLoading(true); setIntLinksErr(""); setIntLinks(null);
+    try {
+      const r = await apiFetch(`${API}/links/internal-suggestions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url, title: scanResult.title, niche: kwNiche.trim() || undefined }) });
+      if (!r.ok) throw new Error(r.error || "Failed");
+      setIntLinks(r);
+    } catch (e) { setIntLinksErr(e.message); }
+    setIntLinksLoading(false);
+  }, [scanResult, kwNiche]);
 
   const runRewrite = useCallback(async (field) => {
     if (!scanResult) return;
@@ -817,6 +909,238 @@ export default function BlogSEO() {
                           </div>
                         )}
                       </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* LLM / AI Optimization Score */}
+                <div style={{ ...S.card, borderLeft: llmScore ? `3px solid ${llmScore.score >= 80 ? "#22c55e" : llmScore.score >= 55 ? "#eab308" : "#ef4444"}` : undefined }}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: llmScore ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🤖 LLM / AI Optimization Score <span style={{ fontSize: 11, fontWeight: 400, color: "#71717a", marginLeft: 6 }}>2026</span></div>
+                    <button style={S.btn(llmScore ? undefined : "primary")} onClick={runLlmScore} disabled={llmLoading}>
+                      {llmLoading ? <><span style={S.spinner} /> Scoring…</> : llmScore ? "🔄 Re-score" : "Score AI Readability"}
+                    </button>
+                  </div>
+                  {llmErr && <div style={S.err}>{llmErr}</div>}
+                  {!llmScore && !llmLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Check how well your content is structured for LLM extraction — the #1 new 2026 signal (Backlinko, Semrush).</div>}
+                  {llmScore && (
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+                        <div style={S.scoreRing(llmScore.score)}>{llmScore.score}</div>
+                        <div>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: llmScore.score >= 80 ? "#22c55e" : llmScore.score >= 55 ? "#eab308" : "#ef4444" }}>{llmScore.grade}</div>
+                          <div style={{ fontSize: 12, color: "#71717a" }}>{llmScore.passed}/{llmScore.total} signals passed</div>
+                        </div>
+                      </div>
+                      <div>
+                        {llmScore.signals.map((s, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: "1px solid #1e1e22" }}>
+                            <span style={{ fontSize: 16, flexShrink: 0 }}>{s.pass ? "✅" : "❌"}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: "#fafafa" }}>{s.name}</div>
+                              <div style={{ fontSize: 12, color: "#71717a" }}>{s.value}</div>
+                              {!s.pass && <div style={{ fontSize: 12, color: "#fbbf24", marginTop: 3 }}>💡 {s.tip}</div>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Title CTR Signals */}
+                <div style={{ ...S.card, borderLeft: ctrSignals ? `3px solid ${ctrSignals.ctrScore >= 70 ? "#22c55e" : ctrSignals.ctrScore >= 45 ? "#eab308" : "#ef4444"}` : undefined }}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: ctrSignals ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>📈 Title CTR Signals</div>
+                    <button style={S.btn(ctrSignals ? undefined : "primary")} onClick={runCtrSignals} disabled={ctrLoading}>
+                      {ctrLoading ? <><span style={S.spinner} /> Analyzing…</> : ctrSignals ? "🔄 Re-analyze" : "Analyze CTR"}
+                    </button>
+                  </div>
+                  {!ctrSignals && !ctrLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Analyze your title's click-through rate signals — keyword position, emotion, power modifiers, year.</div>}
+                  {ctrSignals && (
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 14 }}>
+                        <div style={S.scoreRing(ctrSignals.ctrScore)}>{ctrSignals.ctrScore}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#fafafa", marginBottom: 8 }}>{ctrSignals.title}</div>
+                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                            <span style={{ ...S.pill(ctrSignals.keywordPosition === "start" ? "low" : ctrSignals.keywordPosition === "not-found" ? "high" : "medium") }}>
+                              🔑 Keyword: {ctrSignals.keywordPosition}
+                            </span>
+                            <span style={{ ...S.pill(ctrSignals.hasYear ? "low" : "medium") }}>
+                              📅 Year: {ctrSignals.hasYear ? ctrSignals.yearMatch : "missing"}
+                            </span>
+                            <span style={{ ...S.pill(ctrSignals.emotionType === "positive" ? "low" : ctrSignals.emotionType === "negative" ? "medium" : "high") }}>
+                              {ctrSignals.emotionType === "positive" ? "😊" : ctrSignals.emotionType === "negative" ? "😤" : "😐"} {ctrSignals.emotionType}
+                            </span>
+                            <span style={{ ...S.pill(ctrSignals.titleLengthOk ? "low" : "high") }}>
+                              📏 {ctrSignals.titleLength} chars
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      {ctrSignals.powerModifiers.length > 0 && (
+                        <div style={{ marginBottom: 10 }}>
+                          <div style={S.heading}>Power Modifiers Found</div>
+                          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                            {ctrSignals.powerModifiers.map((m, i) => <span key={i} style={{ ...S.pill("low"), fontSize: 12, padding: "3px 10px" }}>{m}</span>)}
+                          </div>
+                        </div>
+                      )}
+                      {ctrSignals.tips.length > 0 && (
+                        <div>
+                          <div style={S.heading}>💡 CTR Tips</div>
+                          {ctrSignals.tips.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#fbbf24", marginBottom: 5 }}>• {t}</div>)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Technical Audit */}
+                <div style={{ ...S.card, borderLeft: techAudit ? `3px solid ${techAudit.score >= 80 ? "#22c55e" : techAudit.score >= 55 ? "#eab308" : "#ef4444"}` : undefined }}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: techAudit || techAuditErr ? 12 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🔧 Technical SEO Audit {techAudit && <span style={{ fontSize: 12, fontWeight: 700, color: techAudit.score >= 80 ? "#22c55e" : techAudit.score >= 55 ? "#eab308" : "#ef4444" }}>{techAudit.score}/100</span>}</div>
+                    <button style={S.btn(techAudit ? undefined : "primary")} onClick={runTechAudit} disabled={techAuditLoading}>
+                      {techAuditLoading ? <><span style={S.spinner} /> Auditing…</> : techAudit ? "🔄 Re-audit" : "🔧 Run Audit"}
+                    </button>
+                  </div>
+                  {techAuditErr && <div style={S.err}>{techAuditErr}</div>}
+                  {!techAudit && !techAuditLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Canonical tag, HTTPS, URL slug quality, above-the-fold content, image formats + lazy loading, mobile meta description length.</div>}
+                  {techAudit && (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10 }}>
+                      {[
+                        { label: "HTTPS", pass: techAudit.https.pass, detail: techAudit.https.tip },
+                        { label: "Canonical", pass: techAudit.canonical.pass, detail: techAudit.canonical.tip + (techAudit.canonical.href ? ` (${techAudit.canonical.status})` : "") },
+                        { label: "URL Slug", pass: techAudit.urlSlug.pass, detail: `"${techAudit.urlSlug.slug}" — ${techAudit.urlSlug.quality}${techAudit.urlSlug.issues.length ? " · " + techAudit.urlSlug.issues[0] : ""}` },
+                        { label: "Above the Fold", pass: techAudit.aboveFold.pass, detail: techAudit.aboveFold.tip },
+                        { label: "Images: WebP", pass: techAudit.imageFormats.webpPass, detail: `${techAudit.imageFormats.webp} WebP, ${techAudit.imageFormats.jpg} JPG, ${techAudit.imageFormats.png} PNG of ${techAudit.imageFormats.total} total` },
+                        { label: "Images: Lazy Load", pass: techAudit.imageFormats.lazyPass, detail: techAudit.imageFormats.missingLazy > 0 ? `${techAudit.imageFormats.missingLazy} image(s) missing loading="lazy"` : "All images have lazy loading" },
+                        { label: "Images: Dimensions", pass: techAudit.imageFormats.dimsPass, detail: techAudit.imageFormats.missingDimensions > 0 ? `${techAudit.imageFormats.missingDimensions} image(s) missing width/height (causes CLS)` : "All images have dimensions set" },
+                        { label: "Meta Mobile (≤105 chars)", pass: techAudit.metaMobile.pass, detail: techAudit.metaMobile.tip },
+                      ].map((row, i) => (
+                        <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                            <span style={{ fontSize: 14 }}>{row.pass ? "✅" : "❌"}</span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: row.pass ? "#a1a1aa" : "#fafafa" }}>{row.label}</span>
+                          </div>
+                          <div style={{ fontSize: 12, color: row.pass ? "#52525b" : "#fbbf24" }}>{row.detail}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Article Schema Validator */}
+                <div style={{ ...S.card, borderLeft: schemaValid ? `3px solid ${schemaValid.score >= 80 ? "#22c55e" : schemaValid.score >= 55 ? "#eab308" : "#ef4444"}` : undefined }}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: schemaValid || schemaValidErr ? 12 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🏷️ Article Schema Validator {schemaValid && <span style={{ fontSize: 12, fontWeight: 700, color: schemaValid.score >= 80 ? "#22c55e" : "#eab308" }}>{schemaValid.score}/100</span>}</div>
+                    <button style={S.btn(schemaValid ? undefined : "primary")} onClick={runSchemaValidate} disabled={schemaValidLoading}>
+                      {schemaValidLoading ? <><span style={S.spinner} /> Validating…</> : schemaValid ? "🔄 Re-validate" : "✅ Validate Schema"}
+                    </button>
+                  </div>
+                  {schemaValidErr && <div style={S.err}>{schemaValidErr}</div>}
+                  {!schemaValid && !schemaValidLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Validate existing Article/BlogPosting JSON-LD against Google's required fields (headline, image, author.@type, datePublished, publisher…).</div>}
+                  {schemaValid && !schemaValid.found && (
+                    <div>
+                      <div style={{ fontSize: 14, color: "#ef4444", marginBottom: 8 }}>❌ No Article/BlogPosting schema found on this page.</div>
+                      <div style={{ fontSize: 13, color: "#71717a" }}>{schemaValid.tip}</div>
+                      <div style={{ marginTop: 10 }}>
+                        <span style={{ fontSize: 12, color: "#818cf8", cursor: "pointer" }} onClick={() => setShowSchema(true)}>→ Use the Schema Generator above to create one</span>
+                      </div>
+                    </div>
+                  )}
+                  {schemaValid?.found && (
+                    <div>
+                      <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 14 }}>
+                        <MetaChip label="Type" value={schemaValid.type} />
+                        <MetaChip label="Required" value={`${schemaValid.requiredPassed}/${schemaValid.totalRequired}`} color={schemaValid.requiredPassed === schemaValid.totalRequired ? "#22c55e" : "#ef4444"} />
+                        <MetaChip label="Score" value={schemaValid.score} color={schemaValid.score >= 80 ? "#22c55e" : schemaValid.score >= 55 ? "#eab308" : "#ef4444"} />
+                        {schemaValid.missingRequired.length > 0 && <MetaChip label="Missing Required" value={schemaValid.missingRequired.length} color="#ef4444" />}
+                      </div>
+                      <div>
+                        {schemaValid.fields.map((f, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "6px 0", borderBottom: "1px solid #1e1e22", fontSize: 12 }}>
+                            <span>{f.present ? "✅" : f.required ? "❌" : "⚠️"}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: 600, color: f.present ? "#a1a1aa" : f.required ? "#ef4444" : "#eab308" }}>
+                                {f.name} {f.required ? <span style={{ color: "#71717a", fontWeight: 400 }}>(required)</span> : <span style={{ color: "#3f3f46", fontWeight: 400 }}>(recommended)</span>}
+                              </div>
+                              {f.value && <div style={{ color: "#71717a", marginTop: 2, wordBreak: "break-all" }}>{f.value}</div>}
+                              {!f.present && <div style={{ color: "#fbbf24", marginTop: 2 }}>💡 {f.tip}</div>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Advanced Readability */}
+                <div style={{ ...S.card, borderLeft: advReadability ? `3px solid ${advReadability.score >= 80 ? "#22c55e" : advReadability.score >= 55 ? "#eab308" : "#ef4444"}` : undefined }}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: advReadability ? 14 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>✍️ Advanced Readability {advReadability && <span style={{ fontSize: 12, fontWeight: 700, color: advReadability.score >= 80 ? "#22c55e" : advReadability.score >= 55 ? "#eab308" : "#ef4444" }}>{advReadability.grade}</span>}</div>
+                    <button style={S.btn(advReadability ? undefined : "primary")} onClick={runAdvReadability} disabled={advReadLoading}>
+                      {advReadLoading ? <><span style={S.spinner} /> Analyzing…</> : advReadability ? "🔄 Re-analyze" : "📖 Analyze"}
+                    </button>
+                  </div>
+                  {!advReadability && !advReadLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Sentence length, paragraph length, transition words, passive voice — beyond Flesch-Kincaid.</div>}
+                  {advReadability && (
+                    <div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10, marginBottom: 14 }}>
+                        {[
+                          { label: "Avg Sentence", value: `${advReadability.avgSentenceLen} words`, pass: advReadability.avgSentenceLen <= 20 },
+                          { label: "Long Sentences", value: `${advReadability.longSentencePct}%`, pass: advReadability.longSentencePct <= 20 },
+                          { label: "Avg Paragraph", value: `${advReadability.avgParaLen} words`, pass: advReadability.avgParaLen <= 100 },
+                          { label: "Long Paragraphs", value: advReadability.longParaCount, pass: advReadability.longParaCount <= 2 },
+                          { label: "Transition Words", value: `${advReadability.transitionWordPct}%`, pass: advReadability.transitionWordPct >= 30 },
+                          { label: "Passive Voice", value: `${advReadability.passiveVoicePct}%`, pass: advReadability.passiveVoicePct <= 10 },
+                        ].map((m, i) => (
+                          <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", textAlign: "center" }}>
+                            <div style={{ fontSize: 16, fontWeight: 800, color: m.pass ? "#22c55e" : "#ef4444" }}>{m.value}</div>
+                            <div style={{ fontSize: 11, color: "#71717a", marginTop: 2 }}>{m.label}</div>
+                            <div style={{ fontSize: 10, marginTop: 4 }}>{m.pass ? "✅ Good" : "⚠️ Review"}</div>
+                          </div>
+                        ))}
+                      </div>
+                      {advReadability.issues.length > 0 && (
+                        <div>
+                          {advReadability.issues.map((issue, i) => (
+                            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "6px 0", borderBottom: "1px solid #1e1e22" }}>
+                              <span style={S.pill(issue.sev)}>{issue.sev}</span>
+                              <span style={{ fontSize: 13, color: "#d4d4d8" }}>{issue.msg}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Internal Link Suggestions */}
+                <div style={{ ...S.card, borderLeft: intLinks ? "3px solid #818cf8" : undefined }}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: intLinks || intLinksErr ? 12 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🔗 AI Internal Link Suggestions <span style={{ fontSize: 11, fontWeight: 400, color: "#71717a", marginLeft: 4 }}>2 credits</span></div>
+                    <button style={S.btn(intLinks ? undefined : "primary")} onClick={runIntLinks} disabled={intLinksLoading}>
+                      {intLinksLoading ? <><span style={S.spinner} /> Generating…</> : intLinks ? "🔄 Regenerate" : "💡 Get Suggestions"}
+                    </button>
+                  </div>
+                  {intLinksErr && <div style={S.err}>{intLinksErr}</div>}
+                  {!intLinks && !intLinksLoading && <div style={{ fontSize: 13, color: "#52525b" }}>AI suggests contextual internal link opportunities — anchor text, context sentences, and target topics.</div>}
+                  {intLinks && (
+                    <div>
+                      {intLinks.tip && <div style={{ fontSize: 13, color: "#93c5fd", marginBottom: 12, padding: "8px 12px", background: "#0c1a2e", borderRadius: 8 }}>💡 {intLinks.tip}</div>}
+                      {(intLinks.suggestions || []).map((s, i) => (
+                        <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "12px 14px", marginBottom: 8 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                            <span style={{ ...S.pill("low"), fontSize: 11 }}>{s.placement}</span>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: "#818cf8" }}>{s.anchorText}</span>
+                            <button style={{ ...S.btn(), fontSize: 11, padding: "2px 8px", marginLeft: "auto" }} onClick={() => navigator.clipboard.writeText(s.anchorText)}>Copy</button>
+                          </div>
+                          <div style={{ fontSize: 12, color: "#d4d4d8", fontStyle: "italic", marginBottom: 4 }}>"{s.contextSentence}"</div>
+                          <div style={{ fontSize: 12, color: "#71717a" }}>Target: <span style={{ color: "#a1a1aa" }}>{s.targetTopic}</span> · {s.rationale}</div>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

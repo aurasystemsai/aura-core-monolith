@@ -940,4 +940,438 @@ Respond ONLY as JSON:
   }
 });
 
+/* =========================================================================
+   LLM / AI OPTIMIZATION SCORE — 2026 readability for LLMs (Backlinko/Semrush)
+   ========================================================================= */
+router.post('/llm/score', async (req, res) => {
+  try {
+    const { url, content } = req.body || {};
+    let html = content || '';
+
+    if (!html && url) {
+      const fetchMod = (await import('node-fetch')).default;
+      const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEO/1.0)' }, timeout: 12000 });
+      html = await r.text();
+    }
+    if (!html) return res.status(400).json({ ok: false, error: 'url or content required' });
+
+    const $ = cheerio.load(html);
+    const bodyText = $('body').text();
+    const words = bodyText.split(/\s+/).filter(Boolean);
+    const wordCount = words.length;
+
+    // 1. Semantic chunking — H2s present
+    const h2Count = $('h2').length;
+    const hasSemanticChunking = h2Count >= 3;
+
+    // 2. Lead-with-answer — first paragraph after first H1/H2 is short (<= 60 words)
+    let firstParaWords = 0;
+    const firstH = $('h1, h2').first();
+    if (firstH.length) {
+      const nextP = firstH.nextAll('p').first();
+      firstParaWords = nextP.text().trim().split(/\s+/).filter(Boolean).length;
+    } else {
+      firstParaWords = $('p').first().text().trim().split(/\s+/).filter(Boolean).length;
+    }
+    const hasLeadAnswer = firstParaWords > 0 && firstParaWords <= 60;
+
+    // 3. FAQ section present
+    const hasFaq = /\bfaq\b|frequently asked|common question/i.test(bodyText) || $('h2, h3').toArray().some(el => /\bfaq\b|frequently asked/i.test($(el).text()));
+
+    // 4. Statistics / data citations (numbers in text)
+    const statsMatches = bodyText.match(/\b\d+(\.\d+)?%|\b\d{4}\b|\b\d+ (studies|research|survey|report)/gi) || [];
+    const hasStatistics = statsMatches.length >= 3;
+
+    // 5. Quotable standalone sentences (short sentence < 20 words ending with period, surrounded by longer text)
+    const sentences = bodyText.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 10);
+    const shortSentences = sentences.filter(s => s.split(/\s+/).length <= 20 && s.split(/\s+/).length >= 5);
+    const hasQuotable = shortSentences.length >= 5;
+
+    // 6. Self-contained paragraphs — avg paragraph word count reasonable (30-120 words)
+    const paras = $('p').toArray().map(el => $(el).text().trim()).filter(t => t.length > 20);
+    const avgParaLen = paras.length ? Math.round(paras.reduce((s, p) => s + p.split(/\s+/).length, 0) / paras.length) : 0;
+    const hasSelfContained = avgParaLen >= 25 && avgParaLen <= 130;
+
+    // 7. Table of contents present
+    const hasToc = $('nav').length > 0 || /table of contents|jump to/i.test(bodyText) || $('a[href^="#"]').length >= 4;
+
+    // 8. Subheadings describe content (at least 3 H2s with 3+ words each)
+    const descriptiveH2s = $('h2').toArray().filter(el => $(el).text().trim().split(/\s+/).length >= 3).length;
+    const hasDescriptiveHeadings = descriptiveH2s >= 3;
+
+    const signals = [
+      { name: 'Semantic H2 chunking (≥3 H2 sections)', pass: hasSemanticChunking, value: `${h2Count} H2s found`, tip: 'Break content into clear H2 sections — LLMs extract and summarize section by section.' },
+      { name: 'Lead-with-answer pattern (≤60 words)', pass: hasLeadAnswer, value: `First para: ${firstParaWords} words`, tip: 'Open each section with a direct answer sentence before elaborating.' },
+      { name: 'FAQ section present', pass: hasFaq, value: hasFaq ? 'Detected' : 'Not found', tip: 'Add an FAQ section — LLMs heavily weight Q&A structured content for featured answers.' },
+      { name: 'Statistics & data citations (≥3)', pass: hasStatistics, value: `${statsMatches.length} data points found`, tip: 'Include specific numbers, percentages, and study references to signal authority.' },
+      { name: 'Quotable sentences (≥5 short sentences)', pass: hasQuotable, value: `${shortSentences.length} found`, tip: 'Write punchy declarative sentences (5-20 words) that can be extracted as standalone answers.' },
+      { name: 'Self-contained paragraphs (25-130 words avg)', pass: hasSelfContained, value: `Avg ${avgParaLen} words/para`, tip: 'Each paragraph should make sense on its own — LLMs may pull only one paragraph.' },
+      { name: 'Table of contents', pass: hasToc, value: hasToc ? 'Detected' : 'Not found', tip: 'Add a TOC with anchor links — helps LLMs understand document structure.' },
+      { name: 'Descriptive H2 headings (≥3 words each)', pass: hasDescriptiveHeadings, value: `${descriptiveH2s} descriptive H2s`, tip: 'H2 text should fully describe the section — avoid single-word headings.' },
+    ];
+
+    const passed = signals.filter(s => s.pass).length;
+    const score = Math.round((passed / signals.length) * 100);
+    const grade = score >= 80 ? 'AI-Ready' : score >= 55 ? 'Needs Work' : 'Not Optimized';
+
+    res.json({ ok: true, score, grade, passed, total: signals.length, signals, wordCount });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   TECHNICAL AUDIT — canonical, HTTPS, URL slug, above-fold, image formats, mobile meta
+   ========================================================================= */
+router.post('/technical/audit', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEO/1.0)' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    // HTTPS check
+    const isHttps = url.startsWith('https://');
+
+    // Canonical check
+    const canonicalEl = $('link[rel="canonical"]');
+    const canonicalHref = canonicalEl.attr('href') || null;
+    let canonicalStatus = 'missing';
+    if (canonicalHref) {
+      try {
+        const canon = new URL(canonicalHref, url).href;
+        const pageCleaned = url.split('#')[0].split('?')[0];
+        canonicalStatus = canon.startsWith(pageCleaned) ? 'self' : 'points-elsewhere';
+      } catch { canonicalStatus = 'invalid'; }
+    }
+
+    // URL slug quality
+    let slug = '/';
+    try { slug = new URL(url).pathname; } catch {}
+    const slugParts = slug.replace(/^\/|\/$/g, '').split('/').pop() || slug;
+    const slugWords = slugParts.split(/[-_]/).filter(w => w && !/^\d{4,}$/.test(w) && !/^[a-f0-9]{8,}$/i.test(w));
+    const slugHasDate = /\d{4}[-/]\d{2}[-/]\d{2}|\d{8}/.test(slug);
+    const slugHasId = /[?&]id=|\d{6,}/.test(url);
+    const slugWordCount = slugWords.length;
+    const slugQuality = !slugHasDate && !slugHasId && slugWordCount >= 2 && slugWordCount <= 7 ? 'good' : 'needs-improvement';
+    const slugIssues = [];
+    if (slugHasDate) slugIssues.push('Contains date — dates cause freshness confusion and increase slug length');
+    if (slugHasId) slugIssues.push('Contains numeric ID — use descriptive words instead');
+    if (slugWordCount < 2) slugIssues.push('Slug too short — aim for 2-5 descriptive words');
+    if (slugWordCount > 7) slugIssues.push('Slug too long — trim to 3-6 words max');
+    if (slugParts.includes('_')) slugIssues.push('Uses underscores — use hyphens instead');
+
+    // Above-the-fold check — large images before first substantial paragraph
+    let aboveFold = 'good';
+    const firstParaPos = $('p').index($('p').filter((_, el) => $(el).text().trim().split(/\s+/).length > 20).first());
+    const bigImgsBeforePara = $('img').filter((_, el) => {
+      const w = parseInt($(el).attr('width') || '0');
+      const h = parseInt($(el).attr('height') || '0');
+      return (w > 600 || h > 400) && $('img').index($(el)) < firstParaPos;
+    }).length;
+    if (bigImgsBeforePara > 0) aboveFold = 'large-image-before-content';
+
+    // Image format audit
+    const imgs = $('img').toArray();
+    const imageAudit = {
+      total: imgs.length,
+      webp: 0, jpg: 0, png: 0, other: 0,
+      missingLazy: 0, missingDimensions: 0, missingAlt: 0,
+    };
+    imgs.forEach(el => {
+      const src = ($(el).attr('src') || '').toLowerCase();
+      if (src.includes('.webp')) imageAudit.webp++;
+      else if (src.match(/\.(jpg|jpeg)/)) imageAudit.jpg++;
+      else if (src.includes('.png')) imageAudit.png++;
+      else imageAudit.other++;
+      if (!$(el).attr('loading')) imageAudit.missingLazy++;
+      if (!$(el).attr('width') || !$(el).attr('height')) imageAudit.missingDimensions++;
+      if (!$(el).attr('alt')) imageAudit.missingAlt++;
+    });
+    const hasWebP = imageAudit.webp > 0 || imgs.length === 0;
+    const lazyOk = imageAudit.missingLazy === 0 || imgs.length === 0;
+    const dimsOk = imageAudit.missingDimensions === 0 || imgs.length === 0;
+
+    // Meta description mobile length
+    const metaDesc = $('meta[name="description"]').attr('content') || '';
+    const metaDescLen = metaDesc.length;
+    const metaMobileOk = metaDescLen <= 105;
+    const metaMobileTip = metaDescLen > 105 ? `${metaDescLen} chars — aim for ≤105 for mobile (currently truncated on mobile SERPs)` : metaDescLen === 0 ? 'No meta description found' : `${metaDescLen} chars — good for mobile`;
+
+    // Score
+    const checks = [isHttps, canonicalStatus === 'self', slugQuality === 'good', aboveFold === 'good', hasWebP, lazyOk, dimsOk, metaMobileOk];
+    const score = Math.round((checks.filter(Boolean).length / checks.length) * 100);
+
+    res.json({
+      ok: true, score,
+      https: { pass: isHttps, tip: isHttps ? 'Page is served over HTTPS' : 'Switch to HTTPS — it is a confirmed Google ranking signal' },
+      canonical: { status: canonicalStatus, href: canonicalHref, pass: canonicalStatus === 'self', tip: canonicalStatus === 'missing' ? 'Add <link rel="canonical"> to prevent duplicate content issues' : canonicalStatus === 'points-elsewhere' ? `Canonical points to ${canonicalHref} — should self-reference this page` : 'Canonical correctly self-references this page' },
+      urlSlug: { slug: slugParts, wordCount: slugWordCount, quality: slugQuality, issues: slugIssues, pass: slugQuality === 'good' },
+      aboveFold: { status: aboveFold, pass: aboveFold === 'good', tip: aboveFold === 'good' ? 'Content appears early — good above-the-fold experience' : 'Large image detected before first paragraph — consider moving it below or reducing size' },
+      imageFormats: { ...imageAudit, webpPass: hasWebP, lazyPass: lazyOk, dimsPass: dimsOk },
+      metaMobile: { length: metaDescLen, pass: metaMobileOk, tip: metaMobileTip },
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   TITLE CTR SIGNALS — keyword position, emotion, power modifiers, year
+   ========================================================================= */
+router.post('/title/ctr-signals', (req, res) => {
+  try {
+    const { title = '', keyword = '' } = req.body || {};
+    if (!title) return res.status(400).json({ ok: false, error: 'title required' });
+
+    const tLower = title.toLowerCase();
+    const kLower = keyword.toLowerCase().trim();
+
+    // Keyword position
+    let keywordPosition = 'not-found';
+    let kwPosScore = 0;
+    if (kLower && tLower.includes(kLower)) {
+      const pos = tLower.indexOf(kLower);
+      const thirds = Math.floor(title.length / 3);
+      if (pos <= thirds) { keywordPosition = 'start'; kwPosScore = 30; }
+      else if (pos <= thirds * 2) { keywordPosition = 'middle'; kwPosScore = 20; }
+      else { keywordPosition = 'end'; kwPosScore = 10; }
+    } else if (kLower) {
+      keywordPosition = 'not-found';
+      kwPosScore = 0;
+    } else {
+      keywordPosition = 'no-keyword';
+      kwPosScore = 15;
+    }
+
+    // Year in title
+    const yearMatch = title.match(/\b(202[3-9]|203\d)\b/);
+    const hasYear = !!yearMatch;
+
+    // Emotional words
+    const positiveWords = ['best', 'amazing', 'ultimate', 'proven', 'powerful', 'easy', 'simple', 'effective', 'essential', 'top', 'expert', 'free', 'new', 'fast', 'quick', 'boost', 'grow', 'success', 'boost', 'winning', 'perfect'];
+    const negativeWords = ['avoid', 'never', 'worst', 'stop', 'mistake', 'wrong', 'fail', 'danger', 'warning', 'bad', 'terrible'];
+    const positiveFound = positiveWords.filter(w => new RegExp(`\\b${w}\\b`, 'i').test(title));
+    const negativeFound = negativeWords.filter(w => new RegExp(`\\b${w}\\b`, 'i').test(title));
+    const emotionType = positiveFound.length > negativeFound.length ? 'positive' : negativeFound.length > 0 ? 'negative' : 'neutral';
+    const emotionScore = positiveFound.length >= 2 ? 20 : positiveFound.length === 1 || negativeFound.length > 0 ? 10 : 0;
+
+    // Power modifiers
+    const powerMods = ['best', 'guide', 'checklist', 'review', 'fast', 'complete', 'ultimate', 'free', 'how to', 'how-to', 'tips', 'strategies', 'ideas', 'examples', 'tutorial', 'step by step', 'beginners', 'advanced', 'experts'];
+    const foundMods = powerMods.filter(m => tLower.includes(m));
+
+    // Title length
+    const titleLen = title.length;
+    const titleLengthOk = titleLen >= 40 && titleLen <= 60;
+
+    // Score
+    const yearScore = hasYear ? 10 : 0;
+    const modsScore = Math.min(20, foundMods.length * 7);
+    const lenScore = titleLengthOk ? 20 : titleLen >= 30 && titleLen < 40 ? 10 : titleLen > 60 && titleLen <= 70 ? 10 : 0;
+    const ctrScore = Math.min(100, kwPosScore + emotionScore + yearScore + modsScore + lenScore);
+
+    const tips = [];
+    if (keywordPosition === 'not-found' && kLower) tips.push(`Include "${keyword}" in your title for keyword relevance`);
+    if (keywordPosition === 'end' || keywordPosition === 'middle') tips.push('Move keyword closer to the start of the title for better CTR');
+    if (!hasYear) tips.push('Consider adding the current year for time-sensitive topics (e.g., "2025 Guide")');
+    if (emotionType === 'neutral') tips.push('Add an emotional trigger word (best, ultimate, proven, avoid) to increase click appeal');
+    if (foundMods.length === 0) tips.push('Add a power modifier like "guide", "checklist", "tips", or "how to"');
+    if (!titleLengthOk) tips.push(titleLen < 40 ? 'Title is too short — aim for 50-60 characters' : 'Title exceeds 60 chars — may be truncated in SERPs');
+
+    res.json({
+      ok: true, title, keyword, ctrScore,
+      keywordPosition, hasYear, yearMatch: yearMatch ? yearMatch[0] : null,
+      emotionType, emotionScore, positiveWords: positiveFound, negativeWords: negativeFound,
+      powerModifiers: foundMods, titleLength: titleLen, titleLengthOk,
+      tips,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   ARTICLE SCHEMA VALIDATOR — check existing JSON-LD on a page
+   ========================================================================= */
+router.post('/article-schema/validate', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEO/1.0)' }, timeout: 12000 });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    // Extract all JSON-LD blocks
+    const schemas = [];
+    $('script[type="application/ld+json"]').each((_, el) => {
+      try { schemas.push(JSON.parse($(el).html())); } catch {}
+    });
+
+    // Find Article/BlogPosting
+    const articleTypes = ['Article', 'BlogPosting', 'NewsArticle', 'TechArticle'];
+    let found = null;
+    for (const s of schemas) {
+      const arr = Array.isArray(s['@graph']) ? s['@graph'] : [s];
+      found = arr.find(n => articleTypes.includes(n['@type']));
+      if (found) break;
+    }
+
+    if (!found) {
+      return res.json({ ok: true, found: false, type: null, fields: [], missingRequired: ['@type Article/BlogPosting', 'headline', 'image', 'datePublished', 'author', 'publisher'], missingRecommended: ['dateModified', 'description', 'author.url', 'wordCount'], score: 0, tip: 'No Article or BlogPosting JSON-LD schema found — add structured data to unlock rich results in Google.' });
+    }
+
+    const requiredFields = [
+      { name: '@context', get: (s) => s['@context'], required: true, tip: 'Must be "https://schema.org"' },
+      { name: '@type Article/BlogPosting', get: (s) => articleTypes.includes(s['@type']) ? s['@type'] : null, required: true, tip: 'Set @type to "BlogPosting" or "Article"' },
+      { name: 'headline', get: (s) => s.headline, required: true, tip: 'headline must match or be close to the page title (max 110 chars)' },
+      { name: 'image', get: (s) => s.image, required: true, tip: 'Provide image at 16:9, 4:3 and 1:1 ratios for full rich-result eligibility' },
+      { name: 'datePublished', get: (s) => s.datePublished, required: true, tip: 'ISO 8601 format, e.g. 2025-01-15T09:00:00Z' },
+      { name: 'dateModified', get: (s) => s.dateModified, required: false, tip: 'Update whenever content changes significantly' },
+      { name: 'author', get: (s) => s.author, required: true, tip: 'author must be present' },
+      { name: 'author.@type (Person/Organization)', get: (s) => s.author?.['@type'] || (Array.isArray(s.author) && s.author[0]?.['@type']), required: true, tip: 'Set author @type to "Person" or "Organization"' },
+      { name: 'author.url', get: (s) => s.author?.url || (Array.isArray(s.author) && s.author[0]?.url), required: false, tip: 'Link to an author profile page to strengthen E-E-A-T signals' },
+      { name: 'publisher', get: (s) => s.publisher, required: true, tip: 'publisher must include name and optionally logo' },
+      { name: 'publisher.@type', get: (s) => s.publisher?.['@type'], required: false, tip: 'Set to "Organization"' },
+      { name: 'description', get: (s) => s.description, required: false, tip: 'Add a summary description of the article' },
+    ];
+
+    const fieldResults = requiredFields.map(f => {
+      const value = f.get(found);
+      return { name: f.name, present: !!value, value: value ? (typeof value === 'object' ? JSON.stringify(value).slice(0, 80) : String(value).slice(0, 80)) : null, required: f.required, tip: f.tip };
+    });
+
+    const missingRequired = fieldResults.filter(f => f.required && !f.present).map(f => f.name);
+    const missingRecommended = fieldResults.filter(f => !f.required && !f.present).map(f => f.name);
+    const requiredPassed = fieldResults.filter(f => f.required && f.present).length;
+    const totalRequired = fieldResults.filter(f => f.required).length;
+    const score = Math.round((fieldResults.filter(f => f.present).length / fieldResults.length) * 100);
+
+    res.json({ ok: true, found: true, type: found['@type'], fields: fieldResults, missingRequired, missingRecommended, score, requiredPassed, totalRequired });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   ADVANCED READABILITY — sentence/paragraph/transition analysis
+   ========================================================================= */
+router.post('/content/advanced-readability', async (req, res) => {
+  try {
+    const { url, content } = req.body || {};
+    let html = content || '';
+
+    if (!html && url) {
+      const fetchMod = (await import('node-fetch')).default;
+      const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEO/1.0)' }, timeout: 12000 });
+      html = await r.text();
+    }
+    if (!html) return res.status(400).json({ ok: false, error: 'url or content required' });
+
+    const $ = cheerio.load(html);
+    const paras = $('p').toArray().map(el => $(el).text().trim()).filter(t => t.split(/\s+/).length > 5);
+    const allText = paras.join(' ');
+    const sentences = allText.split(/[.!?]+/).map(s => s.trim()).filter(s => s.split(/\s+/).length >= 4);
+
+    // Avg sentence length
+    const sentenceLengths = sentences.map(s => s.split(/\s+/).length);
+    const avgSentenceLen = sentenceLengths.length ? Math.round(sentenceLengths.reduce((a, b) => a + b, 0) / sentenceLengths.length) : 0;
+    const longSentences = sentenceLengths.filter(l => l > 25).length;
+    const longSentencePct = sentenceLengths.length ? Math.round((longSentences / sentenceLengths.length) * 100) : 0;
+
+    // Avg paragraph length
+    const paraLengths = paras.map(p => p.split(/\s+/).length);
+    const avgParaLen = paraLengths.length ? Math.round(paraLengths.reduce((a, b) => a + b, 0) / paraLengths.length) : 0;
+    const longParaCount = paraLengths.filter(l => l > 150).length;
+
+    // Transition words
+    const transitionWords = ['however', 'therefore', 'furthermore', 'moreover', 'additionally', 'in addition', 'consequently', 'as a result', 'for example', 'for instance', 'in other words', 'in conclusion', 'first', 'second', 'third', 'finally', 'meanwhile', 'although', 'because', 'since', 'thus', 'hence', 'yet', 'but', 'also', 'next', 'then', 'lastly'];
+    const lowerText = allText.toLowerCase();
+    const transitionCount = transitionWords.reduce((count, tw) => {
+      const re = new RegExp(`\\b${tw}\\b`, 'gi');
+      return count + (lowerText.match(re) || []).length;
+    }, 0);
+    const transitionWordPct = sentences.length ? Math.round((transitionCount / sentences.length) * 100) : 0;
+
+    // Passive voice estimate (rough: "was/were/been + past participle")
+    const passiveMatches = allText.match(/\b(was|were|been|is|are|be)\s+\w+ed\b/gi) || [];
+    const passiveVoicePct = sentences.length ? Math.round((passiveMatches.length / sentences.length) * 100) : 0;
+
+    // Grade
+    const issues = [];
+    if (avgSentenceLen > 25) issues.push({ sev: 'high', msg: `Average sentence length is ${avgSentenceLen} words — aim for ≤20 words for easy reading` });
+    if (longSentencePct > 25) issues.push({ sev: 'medium', msg: `${longSentencePct}% of sentences exceed 25 words — break up long sentences` });
+    if (avgParaLen > 150) issues.push({ sev: 'high', msg: `Average paragraph has ${avgParaLen} words — aim for ≤100 words per paragraph` });
+    if (longParaCount > 2) issues.push({ sev: 'medium', msg: `${longParaCount} paragraphs exceed 150 words — these may lose reader attention` });
+    if (transitionWordPct < 20) issues.push({ sev: 'medium', msg: `Only ${transitionWordPct}% transition word ratio — Yoast recommends ≥30% for readability` });
+    if (passiveVoicePct > 20) issues.push({ sev: 'low', msg: `${passiveVoicePct}% passive voice — aim for ≤10% for clearer, more engaging writing` });
+
+    const score = Math.max(0, 100 - issues.filter(i => i.sev === 'high').length * 25 - issues.filter(i => i.sev === 'medium').length * 10 - issues.filter(i => i.sev === 'low').length * 5);
+    const grade = score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : score >= 40 ? 'Fair' : 'Needs Work';
+
+    res.json({
+      ok: true, score, grade,
+      avgSentenceLen, longSentences, longSentencePct,
+      avgParaLen, longParaCount, paraCount: paras.length, sentenceCount: sentences.length,
+      transitionWordPct, transitionCount,
+      passiveVoicePct,
+      issues,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   INTERNAL LINK SUGGESTIONS — AI suggests contextual internal links (2 credits)
+   ========================================================================= */
+router.post('/links/internal-suggestions', async (req, res) => {
+  try {
+    const { url, title, content, niche, model = 'gpt-4o-mini' } = req.body || {};
+    if (!url && !title && !content) return res.status(400).json({ ok: false, error: 'url, title or content required' });
+
+    const openai = getOpenAI();
+    const contextInfo = [url && `URL: ${url}`, title && `Title: "${title}"`, niche && `Niche: ${niche}`].filter(Boolean).join('\n');
+
+    const prompt = `You are an expert SEO content strategist specializing in internal linking strategy. 
+
+For the blog post:
+${contextInfo}
+${content ? `\nContent excerpt:\n${content.slice(0, 1200)}` : ''}
+
+Generate 6 specific internal link suggestions for this page. For each suggestion, provide:
+1. Ideal anchor text (3-6 words, keyword-rich, describes the linked page's topic)
+2. The context sentence where this link would fit naturally in the content (quote or write a sentence the blogger could insert)
+3. Topic of the target page this should link to
+4. Brief rationale for why this link strengthens topical authority
+
+The suggestions should cover different subtopics to maximize topical coverage and PageRank distribution.
+
+Respond ONLY as JSON:
+{
+  "suggestions": [
+    {
+      "anchorText": "string",
+      "contextSentence": "string",
+      "targetTopic": "string",
+      "rationale": "string",
+      "placement": "introduction|body|conclusion"
+    }
+  ],
+  "tip": "One overall internal linking tip for this page"
+}`;
+
+    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
