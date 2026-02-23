@@ -72,6 +72,14 @@ export default function BlogSEO() {
   const [showLinks, setShowLinks] = useState(false);
   const [showImages, setShowImages] = useState(false);
   const [showSchema, setShowSchema] = useState(false);
+  const [showReadability, setShowReadability] = useState(false);
+  const [showFreshness, setShowFreshness] = useState(false);
+  const [showEeat, setShowEeat] = useState(false);
+  const [showSnippets, setShowSnippets] = useState(false);
+  const [schemaGenLoading, setSchemaGenLoading] = useState(false);
+  const [generatedSchema, setGeneratedSchema] = useState(null);
+  const [schemaAuthorName, setSchemaAuthorName] = useState("");
+  const [schemaPublisherName, setSchemaPublisherName] = useState("");
 
   /* ── Keywords state ── */
   const [seedKw, setSeedKw] = useState("");
@@ -139,6 +147,23 @@ export default function BlogSEO() {
     } catch {}
     setAiAnalyzing(false);
   }, [scanResult, kwInput]);
+
+  const generateSchema = useCallback(async () => {
+    if (!scanResult) return;
+    setSchemaGenLoading(true); setGeneratedSchema(null);
+    try {
+      const r = await apiFetch(`${API}/schema/generate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+        url: scanResult.url, title: scanResult.title, metaDescription: scanResult.metaDescription,
+        h1: scanResult.h1, datePublished: scanResult.datePublished, dateModified: scanResult.dateModified,
+        authorName: schemaAuthorName || scanResult.authorMeta || undefined,
+        publisherName: schemaPublisherName || undefined,
+        imageUrl: scanResult.ogImage || undefined,
+        keywords: kwInput ? kwInput.split(",").map(s => s.trim()) : undefined,
+      }) });
+      if (r.ok) setGeneratedSchema(r);
+    } catch {}
+    setSchemaGenLoading(false);
+  }, [scanResult, schemaAuthorName, schemaPublisherName, kwInput]);
 
   const runRewrite = useCallback(async (field) => {
     if (!scanResult) return;
@@ -379,14 +404,153 @@ export default function BlogSEO() {
                     <MetaBlock label="OG Description" value={scanResult.ogDescription || "—"} />
                     <MetaBlock label="OG Image" value={scanResult.ogImage ? "Set ✅" : "Missing ❌"} />
                   </div>
+                  <div style={S.metaRow}>
+                    <MetaBlock label="Twitter Card" value={scanResult.hasTwitterCard ? `${scanResult.twitterCard} ✅` : "Missing ❌"} />
+                    <MetaBlock label="Twitter Title" value={scanResult.twitterTitle || "—"} />
+                    <MetaBlock label="Twitter Desc" value={scanResult.twitterDescription ? "Set ✅" : "—"} />
+                  </div>
                 </div>
+
+                {/* Readability panel */}
+                {scanResult.flesch && (
+                  <div style={S.card}>
+                    <ToggleSection title="📖 Readability Analysis (Flesch-Kincaid)" open={showReadability} toggle={() => setShowReadability(p => !p)} />
+                    {showReadability && (
+                      <div style={{ marginTop: 14 }}>
+                        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 14 }}>
+                          <div style={{ ...S.catCard(scanResult.flesch.ease), minWidth: 120 }}>
+                            <div style={S.catScore(scanResult.flesch.ease)}>{scanResult.flesch.ease}</div>
+                            <div style={S.catLabel}>Reading Ease</div>
+                            <div style={{ fontSize: 11, color: "#a1a1aa", marginTop: 4 }}>{scanResult.flesch.easeLabel}</div>
+                          </div>
+                          <div style={{ ...S.catCard(scanResult.flesch.grade <= 9 ? 80 : scanResult.flesch.grade <= 12 ? 60 : 30), minWidth: 120 }}>
+                            <div style={{ fontSize: 22, fontWeight: 800, color: scanResult.flesch.grade <= 9 ? "#22c55e" : scanResult.flesch.grade <= 12 ? "#eab308" : "#ef4444" }}>
+                              Grade {scanResult.flesch.grade}
+                            </div>
+                            <div style={S.catLabel}>FK Grade Level</div>
+                            <div style={{ fontSize: 11, color: "#a1a1aa", marginTop: 4 }}>{scanResult.flesch.gradeLabel}</div>
+                          </div>
+                          <div style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 16px", flex: "1 1 200px" }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                              <div><div style={S.metaLabel}>Reading Time</div><div style={S.metaVal}>{scanResult.readingTimeMinutes} min</div></div>
+                              <div><div style={S.metaLabel}>Avg Sentence</div><div style={S.metaVal}>{scanResult.avgSentenceLength} words</div></div>
+                              <div><div style={S.metaLabel}>Total Sentences</div><div style={S.metaVal}>{scanResult.flesch.totalSentences ?? "—"}</div></div>
+                              <div><div style={S.metaLabel}>Avg Para Length</div><div style={S.metaVal}>{scanResult.avgParagraphLength} words</div></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>
+                          <strong style={{ color: "#a1a1aa" }}>Flesch Reading Ease:</strong> Score 0–30 = Very Difficult · 30–50 = Difficult · 50–60 = Fairly Difficult · 60–70 = Standard · 70–80 = Fairly Easy · 80–90 = Easy · 90–100 = Very Easy. Target 60+ for blog content.
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Content freshness panel */}
+                {(scanResult.contentAgeDays !== null && scanResult.contentAgeDays !== undefined) && (
+                  <div style={{ ...S.card, borderLeft: scanResult.isContentStale ? "3px solid #ef4444" : "3px solid #22c55e" }}>
+                    <ToggleSection title={`🕐 Content Freshness${scanResult.isContentStale ? " ⚠️ Stale" : " ✅"}`} open={showFreshness} toggle={() => setShowFreshness(p => !p)} />
+                    {showFreshness && (
+                      <div style={{ marginTop: 14 }}>
+                        <div style={{ ...S.row, gap: 24, marginBottom: 12 }}>
+                          <div>
+                            <div style={S.metaLabel}>Published</div>
+                            <div style={S.metaVal}>{scanResult.datePublished ? `${scanResult.datePublished.slice(0, 10)} (${scanResult.contentAgeDays} days ago)` : "—"}</div>
+                          </div>
+                          <div>
+                            <div style={S.metaLabel}>Modified</div>
+                            <div style={S.metaVal}>{scanResult.dateModified ? `${scanResult.dateModified.slice(0, 10)} (${scanResult.daysSinceModified} days ago)` : "Not set"}</div>
+                          </div>
+                          <div>
+                            <div style={S.metaLabel}>Status</div>
+                            <div style={{ ...S.metaVal, color: scanResult.isContentStale ? "#ef4444" : "#22c55e", fontWeight: 700 }}>
+                              {scanResult.isContentStale ? "⚠️ Stale (1+ year)" : "✅ Fresh"}
+                            </div>
+                          </div>
+                        </div>
+                        {scanResult.isContentStale && (
+                          <div style={{ background: "#450a0a", border: "1px solid #7f1d1d", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#fca5a5" }}>
+                            This post hasn't been updated in over a year. Refreshing content signals freshness to Google and can recover declining rankings. Consider updating key facts, dates, stats, and internal links.
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* E-E-A-T signals panel */}
+                {scanResult.eeatSignals && (
+                  <div style={S.card}>
+                    <ToggleSection title={`🏆 E-E-A-T Signals (${scanResult.eeatSignals.score}/4)`} open={showEeat} toggle={() => setShowEeat(p => !p)} />
+                    {showEeat && (
+                      <div style={{ marginTop: 14 }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10, marginBottom: 12 }}>
+                          {[
+                            { label: "Author Meta Tag", ok: scanResult.eeatSignals.hasAuthorMeta, tip: "Add <meta name=\"author\" content=\"Name\">" },
+                            { label: "Author in Body (Byline)", ok: scanResult.eeatSignals.hasAuthorInBody, tip: "Add a visible byline with class=\"author\" or rel=\"author\"" },
+                            { label: "Author Page Link", ok: scanResult.eeatSignals.hasAuthorPageLink, tip: "Link byline to /about/, /author/, or /team/ page" },
+                            { label: "Published Date Present", ok: scanResult.eeatSignals.hasDatePublished, tip: "Add article:published_time meta or <time datetime> element" },
+                            { label: "Modified Date Present", ok: scanResult.eeatSignals.hasDateModified, tip: "Add article:modified_time meta to signal freshness" },
+                          ].map((sig, i) => (
+                            <div key={i} style={{ background: sig.ok ? "#14532d22" : "#450a0a22", border: `1px solid ${sig.ok ? "#14532d" : "#7f1d1d"}`, borderRadius: 8, padding: "10px 12px" }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: sig.ok ? "#86efac" : "#fca5a5", marginBottom: 4 }}>
+                                {sig.ok ? "✅" : "❌"} {sig.label}
+                              </div>
+                              {!sig.ok && <div style={{ fontSize: 11, color: "#a1a1aa" }}>{sig.tip}</div>}
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>
+                          E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness) is how Google evaluates content credibility. Strong author signals directly impact ranking for YMYL (Your Money or Your Life) topics.
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Featured snippet readiness panel */}
+                {scanResult.questionHeadingCount !== undefined && (
+                  <div style={S.card}>
+                    <ToggleSection title={`🎯 Featured Snippet Readiness${scanResult.questionHeadingCount > 0 ? " ✅" : ""}`} open={showSnippets} toggle={() => setShowSnippets(p => !p)} />
+                    {showSnippets && (
+                      <div style={{ marginTop: 14 }}>
+                        <div style={{ ...S.row, gap: 24, marginBottom: 12 }}>
+                          <MetaChip label="Question Headings" value={scanResult.questionHeadingCount} color={scanResult.questionHeadingCount > 0 ? "#22c55e" : "#ef4444"} />
+                          <MetaChip label="FAQ Section" value={scanResult.hasFaqSection ? "Yes ✅" : "No"} color={scanResult.hasFaqSection ? "#22c55e" : "#71717a"} />
+                          <MetaChip label="Table of Contents" value={scanResult.hasTableOfContents ? "Yes ✅" : "No"} color={scanResult.hasTableOfContents ? "#22c55e" : "#71717a"} />
+                        </div>
+                        {scanResult.questionHeadings?.length > 0 && (
+                          <div style={{ marginBottom: 10 }}>
+                            <div style={S.heading}>Question-form headings detected</div>
+                            {scanResult.questionHeadings.map((h, i) => (
+                              <div key={i} style={{ fontSize: 13, color: "#93c5fd", marginBottom: 3 }}>
+                                <span style={{ ...S.pill("low"), background: "#1e3a5f" }}>{h.tag.toUpperCase()}</span> {h.text}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {scanResult.questionHeadingCount === 0 && (
+                          <div style={{ fontSize: 13, color: "#fbbf24" }}>
+                            💡 Add H2/H3 headings starting with How, What, Why, or When to increase chances of winning featured snippets and AI-generated answer boxes.
+                          </div>
+                        )}
+                        {!scanResult.hasTableOfContents && scanResult.wordCount > 1200 && (
+                          <div style={{ fontSize: 13, color: "#fbbf24", marginTop: 8 }}>
+                            💡 Add a Table of Contents for this {scanResult.wordCount}-word post — it helps readers navigate and can win sitelinks in Google results.
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Keyword density */}
                 {scanResult.keywordDensity && Object.keys(scanResult.keywordDensity).length > 0 && (
                   <div style={S.card}>
                     <div style={S.cardTitle}>🎯 Keyword Density</div>
                     <table style={S.table}>
-                      <thead><tr><th style={S.th}>Keyword</th><th style={S.th}>Count</th><th style={S.th}>Density</th><th style={S.th}>In Title</th><th style={S.th}>In H1</th><th style={S.th}>In Meta</th><th style={S.th}>In URL</th></tr></thead>
+                      <thead><tr><th style={S.th}>Keyword</th><th style={S.th}>Count</th><th style={S.th}>Density</th><th style={S.th}>In Title</th><th style={S.th}>In H1</th><th style={S.th}>In Meta</th><th style={S.th}>In URL</th><th style={S.th}>First 100W</th></tr></thead>
                       <tbody>
                         {Object.entries(scanResult.keywordDensity).map(([kw, v]) => (
                           <tr key={kw}>
@@ -397,6 +561,7 @@ export default function BlogSEO() {
                             <td style={S.td}>{scanResult.keywordInH1 ? "✅" : "❌"}</td>
                             <td style={S.td}>{scanResult.keywordInMeta ? "✅" : "❌"}</td>
                             <td style={S.td}>{scanResult.keywordInUrl ? "✅" : "❌"}</td>
+                            <td style={S.td}>{scanResult.keywordInFirst100Words ? "✅" : "❌"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -452,6 +617,38 @@ export default function BlogSEO() {
                       {scanResult.schemaTypes.length > 0
                         ? scanResult.schemaTypes.map((t, i) => <div key={i} style={{ fontSize: 13, color: "#86efac", marginBottom: 3 }}>• {t}</div>)
                         : <div style={{ fontSize: 13, color: "#ef4444" }}>No structured data found. Add Article or BlogPosting schema.</div>}
+
+                      {/* Schema Generator */}
+                      <div style={{ marginTop: 18, borderTop: "1px solid #27272a", paddingTop: 16 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#e4e4e7", marginBottom: 12 }}>🔧 Generate BlogPosting Schema</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+                          <div>
+                            <div style={S.metaLabel}>Author Name</div>
+                            <input style={S.input} value={schemaAuthorName} onChange={e => setSchemaAuthorName(e.target.value)}
+                              placeholder={scanResult.authorMeta || "e.g. Jane Smith"} />
+                          </div>
+                          <div>
+                            <div style={S.metaLabel}>Publisher / Brand Name</div>
+                            <input style={S.input} value={schemaPublisherName} onChange={e => setSchemaPublisherName(e.target.value)}
+                              placeholder="e.g. My Store Blog" />
+                          </div>
+                        </div>
+                        <button style={S.btn("primary")} onClick={generateSchema} disabled={schemaGenLoading}>
+                          {schemaGenLoading ? <><span style={S.spinner} /> Generating…</> : "⚡ Generate BlogPosting JSON-LD (1 credit)"}
+                        </button>
+                        {generatedSchema && (
+                          <div style={{ marginTop: 14 }}>
+                            <div style={{ ...S.row, marginBottom: 8, gap: 8 }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: "#86efac" }}>✅ Schema generated — copy and paste into your blog post &lt;head&gt;</div>
+                              <button style={S.btn("ghost")} onClick={() => navigator.clipboard.writeText(generatedSchema.scriptTag)}>📋 Copy</button>
+                            </div>
+                            <pre style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 14,
+                              fontSize: 11, color: "#d4d4d8", overflowX: "auto", whiteSpace: "pre-wrap", maxHeight: 320, overflowY: "auto" }}>
+                              {generatedSchema.scriptTag}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

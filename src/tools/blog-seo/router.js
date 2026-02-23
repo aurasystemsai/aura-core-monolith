@@ -11,6 +11,33 @@ const performanceEngine = require('./performance-analytics-engine');
 
 const router = express.Router();
 
+/* ── Flesch-Kincaid readability helpers ──────────────────────────────────── */
+function countSyllables(word) {
+  word = word.toLowerCase().replace(/[^a-z]/g, '');
+  if (!word.length) return 0;
+  if (word.length <= 3) return 1;
+  word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+  word = word.replace(/^y/, '');
+  const matches = word.match(/[aeiouy]{1,2}/g);
+  return matches ? Math.max(1, matches.length) : 1;
+}
+
+function computeFlesch(text) {
+  const words = text.split(/\s+/).filter(Boolean);
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 5);
+  if (!words.length || !sentences.length) return { ease: 50, grade: 9, easeLabel: 'Standard', gradeLabel: 'High School', syllables: 0 };
+  const totalSyllables = words.reduce((sum, w) => sum + countSyllables(w), 0);
+  const awps = words.length / sentences.length;   // avg words per sentence
+  const aspw = totalSyllables / words.length;     // avg syllables per word
+  const ease = Math.max(0, Math.min(100, Math.round(206.835 - 1.015 * awps - 84.6 * aspw)));
+  const grade = Math.max(1, Math.min(22, Math.round((0.39 * awps + 11.8 * aspw - 15.59) * 10) / 10));
+  const easeLabel = ease >= 90 ? 'Very Easy' : ease >= 80 ? 'Easy' : ease >= 70 ? 'Fairly Easy'
+    : ease >= 60 ? 'Standard' : ease >= 50 ? 'Fairly Difficult' : ease >= 30 ? 'Difficult' : 'Very Difficult';
+  const gradeLabel = grade <= 6 ? 'Elementary' : grade <= 9 ? 'Middle School'
+    : grade <= 12 ? 'High School' : grade <= 16 ? 'College' : 'Post-Graduate';
+  return { ease, grade, easeLabel, gradeLabel, syllables: totalSyllables, totalWords: words.length, totalSentences: sentences.length };
+}
+
 let _openai;
 function getOpenAI() {
   if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -192,29 +219,106 @@ router.post('/analyze', async (req, res) => {
       };
     } catch { /* ignore */ }
 
+    /* ── FLESCH-KINCAID ── */
+    const flesch = computeFlesch(bodyText.slice(0, 80000));
+
+    /* ── CONTENT FRESHNESS ── */
+    let contentAgeDays = null;
+    let daysSinceModified = null;
+    let isContentStale = false;
+    if (datePublished) {
+      try {
+        const pubDate = new Date(datePublished);
+        if (!isNaN(pubDate)) {
+          contentAgeDays = Math.floor((Date.now() - pubDate.getTime()) / 86400000);
+          if (dateModified) {
+            const modDate = new Date(dateModified);
+            if (!isNaN(modDate)) daysSinceModified = Math.floor((Date.now() - modDate.getTime()) / 86400000);
+          }
+          isContentStale = (daysSinceModified ?? contentAgeDays) > 365;
+        }
+      } catch { /* ignore */ }
+    }
+
+    /* ── TABLE OF CONTENTS ── */
+    let hasTableOfContents = false;
+    const tocCandidates = ['nav', '.toc', '#toc', '[class*="table-of-contents"]', '[id*="table-of-contents"]', '[class*="toc-"]', '[class*="-toc"]', 'details[class*="toc"]'];
+    for (const sel of tocCandidates) {
+      try { if ($(sel).find('a[href^="#"]').length >= 3) { hasTableOfContents = true; break; } } catch {}
+    }
+    if (!hasTableOfContents) {
+      $('ul, ol').each((_, list) => {
+        if ($(list).find('a[href^="#"]').length >= 3) { hasTableOfContents = true; return false; }
+      });
+    }
+
+    /* ── FEATURED SNIPPET SIGNALS ── */
+    const qRegex = /^(how|what|why|when|where|who|which|is|are|can|do|does|did|will|should|would)\b/i;
+    const questionHeadings = headings.filter(h => qRegex.test(h.text.trim()));
+    const questionHeadingCount = questionHeadings.length;
+    const hasFaqSection = !!$('[itemtype*="FAQPage"]').length
+      || !!$('[class*="faq"],[id*="faq"]').length
+      || !!$('h2, h3').filter((_, el) => /faq|frequently asked/i.test($(el).text())).length;
+
+    /* ── TWITTER CARD ── */
+    const twitterCard = $('meta[name="twitter:card"]').attr('content') || '';
+    const twitterTitle = $('meta[name="twitter:title"]').attr('content') || '';
+    const twitterDescription = $('meta[name="twitter:description"]').attr('content') || '';
+    const twitterImage = $('meta[name="twitter:image"]').attr('content') || '';
+    const hasTwitterCard = !!twitterCard;
+
+    /* ── KEYWORD IN FIRST 100 WORDS ── */
+    const first100WordsText = bodyText.split(/\s+/).slice(0, 100).join(' ').toLowerCase();
+    const keywordInFirst100Words = kwList.some(kw => first100WordsText.includes(kw.toLowerCase()));
+
+    /* ── LINK ANCHOR QUALITY ── */
+    const genericAnchorRx = /^(click here|here|read more|learn more|this|this post|more info|link|this link|read this|find out|visit|check out|see more|more details|see also|more|continue reading)$/i;
+    const genericAnchorCount = allLinks.filter(l => genericAnchorRx.test((l.text || '').trim())).length;
+
+    /* ── E-E-A-T SIGNALS ── */
+    const hasAuthorInBody = !!$('[class*="author"],[rel~="author"],[itemprop="author"],[class*="byline"],[class*="post-author"]').length;
+    const hasAuthorPageLink = allLinks.some(l => /\/author\/|\/about\/|\/team\/|\/staff\/|\/profile\//i.test(l.href || ''));
+    const eeatSignals = {
+      hasAuthorMeta: !!authorMeta,
+      hasAuthorInBody,
+      hasAuthorPageLink,
+      hasDatePublished: !!datePublished,
+      hasDateModified: !!dateModified,
+      score: [!!authorMeta, hasAuthorInBody, hasAuthorPageLink, !!datePublished].filter(Boolean).length,
+    };
+
     /* ── SCORING ── */
     const scored = computeBlogScore({
       title, metaDescription, h1, h1Count, wordCount, headings, h2Count, h3Count,
       internalLinks, externalLinks, imageCount, imagesWithAlt, imagesMissingDimensions,
-      schemaMarkup, canonicalUrl, robotsMeta, langTag, viewportMeta, pageSizeKB,
+      schemaMarkup, schemaTypes, canonicalUrl, robotsMeta, langTag, viewportMeta, pageSizeKB,
       isHttps, authorMeta, datePublished, dateModified, readabilityScore,
       longParagraphs, avgSentenceLength, avgParagraphLength,
       keywordInTitle, keywordInH1, keywordInMeta, keywordInUrl, keywordInFirstParagraph,
+      keywordInFirst100Words,
       kwDensity, kwList, ogTitle, ogDescription, ogImage, urlAnalysis, hasFavicon, hasCharset,
+      hasTwitterCard, flesch, isContentStale, contentAgeDays, hasTableOfContents,
+      questionHeadingCount, hasFaqSection, genericAnchorCount, eeatSignals,
     });
 
     res.json({
       ok: true, url, title, metaDescription, canonicalUrl, h1, h1Count, robotsMeta, langTag,
       viewportMeta, authorMeta, datePublished, dateModified,
       ogTitle, ogDescription, ogImage, ogType,
+      twitterCard, twitterTitle, twitterDescription, twitterImage, hasTwitterCard,
       wordCount, readingTimeMinutes, paragraphCount: paragraphs.length, avgParagraphLength, longParagraphs,
       headings, h2Count, h3Count, subheadingDistribution,
       internalLinks, externalLinks, internalLinkDetails, externalLinkDetails,
       imageCount, imagesWithAlt, imagesMissingDimensions, images: images.slice(0, 30),
       schemaMarkup, schemaTypes, schemaRawData,
-      keywordDensity: kwDensity, keywordInTitle, keywordInH1, keywordInMeta, keywordInUrl, keywordInFirstParagraph,
-      readabilityScore, avgSentenceLength, longSentences,
+      keywordDensity: kwDensity, keywordInTitle, keywordInH1, keywordInMeta, keywordInUrl,
+      keywordInFirstParagraph, keywordInFirst100Words,
+      readabilityScore, avgSentenceLength, longSentences, flesch,
       pageSizeKB, isHttps, hasFavicon, hasCharset, urlAnalysis,
+      contentAgeDays, daysSinceModified, isContentStale,
+      hasTableOfContents,
+      questionHeadingCount, questionHeadings, hasFaqSection,
+      genericAnchorCount, eeatSignals,
       scored,
     });
   } catch (err) {
@@ -240,10 +344,17 @@ function computeBlogScore(d) {
   if (d.readabilityScore < 40) { content -= 20; addIssue('content', 'high', 20, `Readability score ${d.readabilityScore}/100 is poor — simplify sentences and paragraphs`); }
   else if (d.readabilityScore < 60) { content -= 10; addIssue('content', 'medium', 10, `Readability ${d.readabilityScore}/100 — could be more accessible`); }
 
+  if (d.flesch && d.flesch.grade > 14) { content -= 8; addIssue('content', 'medium', 8, `Flesch-Kincaid grade ${d.flesch.grade} — writing is college-level+, consider simplifying for broader audience`); }
+
   if (d.longParagraphs > 0) { content -= Math.min(15, d.longParagraphs * 5); addIssue('content', 'medium', Math.min(15, d.longParagraphs * 5), `${d.longParagraphs} paragraph(s) exceed 120 words — break them up`); }
   if (d.avgSentenceLength > 25) { content -= 10; addIssue('content', 'medium', 10, `Average sentence length ${d.avgSentenceLength} words — aim under 20`); }
-  if (!d.authorMeta) { content -= 8; addIssue('content', 'medium', 8, 'No author meta tag — important for E-E-A-T signals'); }
-  if (!d.datePublished && !d.dateModified) { content -= 8; addIssue('content', 'medium', 8, 'No published/modified date — freshness is a blog ranking factor'); }
+
+  if (!d.authorMeta && !(d.eeatSignals?.hasAuthorInBody)) { content -= 10; addIssue('content', 'medium', 10, 'No author signal found — add author meta tag and visible byline (important for E-E-A-T)'); }
+  else if (!d.authorMeta) { content -= 4; addIssue('content', 'low', 4, 'No author meta tag — add <meta name="author"> for E-E-A-T'); }
+  if (!d.eeatSignals?.hasAuthorPageLink) { content -= 4; addIssue('content', 'low', 4, 'No link to author page — add a byline linking to author profile (/about, /author/name)'); }
+
+  if (!d.datePublished && !d.dateModified) { content -= 8; addIssue('content', 'medium', 8, 'No published/modified date — freshness signals are a blog ranking factor'); }
+  if (d.isContentStale) { content -= 12; addIssue('content', 'high', 12, `Content published ${d.contentAgeDays} days ago with no recent modification — consider refreshing this post`); }
 
   /* ── META TAGS ── */
   if (!d.title) { meta -= 30; addIssue('meta', 'high', 30, 'Missing title tag'); }
@@ -262,7 +373,8 @@ function computeBlogScore(d) {
 
   if (!d.h1) { meta -= 20; addIssue('meta', 'high', 20, 'Missing H1 heading'); }
   if (d.h1Count > 1) { meta -= 10; addIssue('meta', 'medium', 10, `${d.h1Count} H1 tags found — use exactly one`); }
-  if (!d.ogTitle || !d.ogDescription || !d.ogImage) { meta -= 8; addIssue('meta', 'medium', 8, 'Incomplete Open Graph tags — important for social sharing of blog content'); }
+  if (!d.ogTitle || !d.ogDescription || !d.ogImage) { meta -= 8; addIssue('meta', 'medium', 8, 'Incomplete Open Graph tags — important for social sharing'); }
+  if (!d.hasTwitterCard) { meta -= 5; addIssue('meta', 'low', 5, 'Missing Twitter Card meta tags (twitter:card, twitter:title) — needed for rich Twitter previews'); }
   if (!d.canonicalUrl) { meta -= 5; addIssue('meta', 'low', 5, 'No canonical URL set'); }
 
   /* ── TECHNICAL ── */
@@ -274,6 +386,8 @@ function computeBlogScore(d) {
     const hasArticle = (d.schemaTypes || []).some(t => /Article|BlogPosting/i.test(t));
     if (!hasArticle) { technical -= 5; addIssue('technical', 'low', 5, 'Schema found but no Article/BlogPosting type — add blog-specific schema'); }
   }
+  if (d.wordCount > 1200 && !d.hasTableOfContents) { technical -= 6; addIssue('technical', 'low', 6, 'Long post with no table of contents — add a ToC for better UX and potential sitelinks'); }
+  if (d.questionHeadingCount === 0 && d.wordCount > 800) { technical -= 4; addIssue('technical', 'low', 4, 'No question-form headings — add How/What/Why H2s to win featured snippets'); }
   if (d.pageSizeKB > 200) { technical -= 8; addIssue('technical', 'medium', 8, `Page size ${d.pageSizeKB}KB — consider optimizing`); }
   if (!d.hasFavicon) { technical -= 3; addIssue('technical', 'low', 3, 'No favicon detected'); }
   if (!d.hasCharset)  { technical -= 3; addIssue('technical', 'low', 3, 'No charset declaration'); }
@@ -286,7 +400,8 @@ function computeBlogScore(d) {
     if (!d.keywordInH1)    { keywords -= 15; addIssue('keywords', 'high', 15, 'Primary keyword not in H1'); }
     if (!d.keywordInMeta)  { keywords -= 12; addIssue('keywords', 'medium', 12, 'Primary keyword not in meta description'); }
     if (!d.keywordInUrl)   { keywords -= 8;  addIssue('keywords', 'medium', 8, 'Primary keyword not in URL'); }
-    if (!d.keywordInFirstParagraph) { keywords -= 10; addIssue('keywords', 'medium', 10, 'Primary keyword not in first paragraph'); }
+    if (!d.keywordInFirst100Words) { keywords -= 12; addIssue('keywords', 'medium', 12, 'Primary keyword not in first 100 words — Google weights early keyword placement heavily'); }
+    else if (!d.keywordInFirstParagraph) { keywords -= 4; addIssue('keywords', 'low', 4, 'Keyword appears in first 100 words but not the opening paragraph — move it earlier'); }
     const primaryKw = d.kwList[0];
     const primaryDensity = d.kwDensity[primaryKw]?.density || 0;
     if (primaryDensity === 0)     { keywords -= 15; addIssue('keywords', 'high', 15, `"${primaryKw}" not found in content at all`); }
@@ -300,9 +415,10 @@ function computeBlogScore(d) {
   if (d.h2Count === 0)                   { structure -= 20; addIssue('structure', 'high', 20, 'No H2 subheadings — blog content needs clear structure'); }
   else if (d.h2Count < 3 && d.wordCount > 800) { structure -= 10; addIssue('structure', 'medium', 10, `Only ${d.h2Count} H2s for ${d.wordCount} words — add more subheadings`); }
   if (d.h3Count === 0 && d.wordCount > 1000) { structure -= 5; addIssue('structure', 'low', 5, 'No H3 subheadings — consider adding for longer content'); }
-  if (d.internalLinks === 0)         { structure -= 15; addIssue('structure', 'high', 15, 'No internal links — critical for blog SEO'); }
+  if (d.internalLinks === 0)         { structure -= 15; addIssue('structure', 'high', 15, 'No internal links — critical for blog SEO and site structure'); }
   else if (d.internalLinks < 3)      { structure -= 8;  addIssue('structure', 'medium', 8, `Only ${d.internalLinks} internal link(s) — aim for 3-10`); }
-  if (d.externalLinks === 0)         { structure -= 8;  addIssue('structure', 'medium', 8, 'No external links — citing authoritative sources helps credibility'); }
+  if (d.externalLinks === 0)         { structure -= 8;  addIssue('structure', 'medium', 8, 'No external links — citing authoritative sources improves credibility'); }
+  if (d.genericAnchorCount > 0)      { structure -= Math.min(8, d.genericAnchorCount * 3); addIssue('structure', 'low', Math.min(8, d.genericAnchorCount * 3), `${d.genericAnchorCount} link(s) with generic anchor text ("click here", "read more") — use descriptive anchors`); }
   if (d.imageCount === 0)            { structure -= 10; addIssue('structure', 'medium', 10, 'No images — blog posts benefit from visual content'); }
   else if (d.imagesWithAlt < d.imageCount) { structure -= Math.min(10, (d.imageCount - d.imagesWithAlt) * 3); addIssue('structure', 'medium', Math.min(10, (d.imageCount - d.imagesWithAlt) * 3), `${d.imageCount - d.imagesWithAlt} image(s) missing alt text`); }
   if (d.imagesMissingDimensions > 0) { structure -= Math.min(8, d.imagesMissingDimensions * 2); addIssue('structure', 'low', Math.min(8, d.imagesMissingDimensions * 2), `${d.imagesMissingDimensions} image(s) missing width/height dimensions`); }
@@ -549,6 +665,58 @@ router.post('/bulk-analyze', async (req, res) => {
     }
     const ok = results.filter(r => r.status === 'ok');
     res.json({ ok: true, results, summary: { scanned: ok.length, failed: results.length - ok.length, avgScore: ok.length ? Math.round(ok.reduce((s, r) => s + r.score, 0) / ok.length) : 0, totalIssues: ok.reduce((s, r) => s + (r.issueCount || 0), 0) } });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   SCHEMA GENERATOR — generate BlogPosting JSON-LD from scan data
+   ========================================================================= */
+router.post('/schema/generate', (req, res) => {
+  try {
+    const {
+      url, title, metaDescription, h1, datePublished, dateModified,
+      authorName, authorUrl, publisherName, publisherUrl, publisherLogo,
+      imageUrl, articleBody, keywords,
+    } = req.body || {};
+
+    if (!url) return res.status(400).json({ ok: false, error: 'url is required' });
+
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      ...(h1 || title ? { headline: (h1 || title).slice(0, 110) } : {}),
+      ...(metaDescription ? { description: metaDescription } : {}),
+      ...(url ? { url, mainEntityOfPage: { '@type': 'WebPage', '@id': url } } : {}),
+      ...(imageUrl ? { image: [imageUrl] } : {}),
+      ...(datePublished ? { datePublished } : {}),
+      ...(dateModified ? { dateModified } : {}),
+      ...(articleBody ? { articleBody: articleBody.slice(0, 500) } : {}),
+      ...(keywords ? { keywords: Array.isArray(keywords) ? keywords.join(', ') : keywords } : {}),
+    };
+
+    if (authorName) {
+      schema.author = {
+        '@type': 'Person',
+        name: authorName,
+        ...(authorUrl ? { url: authorUrl } : {}),
+      };
+    }
+
+    if (publisherName) {
+      schema.publisher = {
+        '@type': 'Organization',
+        name: publisherName,
+        ...(publisherUrl ? { url: publisherUrl } : {}),
+        ...(publisherLogo ? { logo: { '@type': 'ImageObject', url: publisherLogo } } : {}),
+      };
+    }
+
+    const jsonLd = JSON.stringify(schema, null, 2);
+    const scriptTag = `<script type="application/ld+json">\n${jsonLd}\n</script>`;
+
+    res.json({ ok: true, schema, jsonLd, scriptTag });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
