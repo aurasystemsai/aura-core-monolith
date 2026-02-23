@@ -1,97 +1,40 @@
-﻿import React, { useState } from "react";
-import { Card, Button, Table, Input, Tabs, Progress, notification } from "antd";
-import { BarChartOutlined, InfoCircleOutlined, ShareAltOutlined, QuestionCircleOutlined, DownloadOutlined } from "@ant-design/icons";
+﻿import React from "react";
+
+const S = {
+  page: { padding: 24, minHeight: "100vh", background: "#09090b", color: "#fafafa" },
+  card: { background: "#18181b", border: "1px solid #3f3f46", borderRadius: 12, padding: 32, maxWidth: 600, margin: "0 auto" },
+  title: { fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 8 },
+  desc: { color: "#a1a1aa", fontSize: 14, marginBottom: 20 },
+  badge: { display: "inline-block", background: "#3f3f46", color: "#fafafa", fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 9999, marginBottom: 24 },
+  list: { listStyle: "none", padding: 0, margin: 0 },
+  item: { padding: "8px 0", borderBottom: "1px solid #3f3f46", color: "#a1a1aa", fontSize: 14 },
+};
+
+const FEATURES = [
+  "AI-powered customer grouping",
+  "RFM and behavioral segmentation",
+  "Real-time segment sync with Shopify",
+  "Export segments for targeted campaigns",
+];
 
 export default function CustomerSegmentationEngine() {
-  const [input, setInput] = useState("");
-  const [segments, setSegments] = useState([]);
-  const [analytics, setAnalytics] = useState({ segments: 0, avgValue: 0 });
-  const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState("segment");
-  const [feedback, setFeedback] = useState("");
-  const [exporting, setExporting] = useState(false);
-
-  const handleSegment = () => {
-    setLoading(true);
-    setTimeout(() => {
-      const fakeSegments = [
-        { name: "VIP Customers", value: 12000 },
-        { name: "New Customers", value: 3400 },
-        { name: "Churn Risk", value: 800 }
-      ];
-      setSegments(fakeSegments);
-      setAnalytics({ segments: 3, avgValue: 5466 });
-      setLoading(false);
-    }, 900);
-  };
-
-  const handleExport = () => {
-    setExporting(true);
-    setTimeout(() => {
-      notification.success({ message: "Segments exported as CSV" });
-      setExporting(false);
-    }, 800);
-  };
-
-  const columns = [
-    { title: "Segment", dataIndex: "name", key: "name" },
-    { title: "Value", dataIndex: "value", key: "value" },
-  ];
-
   return (
-    <div style={{ padding: 24 }}>
-      <Card
-        title={<span><BarChartOutlined />Customer Segmentation Engine</span>}
-        extra={<Button icon={<DownloadOutlined />} loading={exporting} onClick={handleExport} />}>
-        <Tabs activeKey={tab} onChange={setTab}>
-          <Tabs.TabPane tab={<span><BarChartOutlined />Segment</span>} key="segment">
-            <Input.TextArea
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              rows={3}
-              style={{ marginBottom: 12 }}
-              placeholder="Describe or paste customer data..."
-            />
-            <Button type="primary" onClick={handleSegment} loading={loading} disabled={!input} style={{ marginBottom: 18 }}>Segment</Button>
-            {segments.length > 0 && (
-              <Table
-                columns={columns}
-                dataSource={segments}
-                rowKey={(r, i) => i}
-                pagination={false}
-                style={{ marginBottom: 16 }}
-              />
-            )}
-            <div style={{ marginTop: 16, display: "flex", gap: 24 }}>
-              <div>
-                <b>Segments:</b> <span>{analytics.segments}</span>
-                <Progress percent={Math.round((analytics.segments / 10) * 100)} size="small" status="active" />
-              </div>
-              <div>
-                <b>Avg Value ($):</b> <span>{analytics.avgValue}</span>
-              </div>
-            </div>
-          </Tabs.TabPane>
-          <Tabs.TabPane tab={<span><InfoCircleOutlined />Onboarding</span>} key="onboarding">
-            <div style={{ padding: 24 }}>
-              <h3>How to Use Customer Segmentation Engine</h3>
-              <ol>
-                <li>Describe or paste customer data.</li>
-                <li>Segment customers to identify key groups.</li>
-                <li>Review analytics and export results for reporting.</li>
-              </ol>
-              <Button icon={<QuestionCircleOutlined />} style={{ marginTop: 16 }}>View Documentation</Button>
-            </div>
-          </Tabs.TabPane>
-          <Tabs.TabPane tab={<span><ShareAltOutlined />Feedback</span>} key="feedback">
-            <div style={{ padding: 24 }}>
-              <h3>Feedback & Suggestions</h3>
-              <Input.TextArea rows={4} value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Share your feedback or feature requests..." style={{ marginBottom: 12 }} />
-              <Button type="primary">Submit Feedback</Button>
-            </div>
-          </Tabs.TabPane>
-        </Tabs>
-      </Card>
+    <div style={S.page}>
+      <div style={S.card}>
+        <h2 style={S.title}>Customer Segmentation Engine</h2>
+        <p style={S.desc}>
+          Automatically group your customers into actionable segments based on
+          behavior, value, and engagement patterns.
+        </p>
+        <span style={S.badge}>Coming Soon</span>
+        <ul style={S.list}>
+          {FEATURES.map((f) => (
+            <li key={f} style={S.item}>
+              {f}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

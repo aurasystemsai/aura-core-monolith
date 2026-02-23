@@ -1,11 +1,60 @@
-// Simple in-memory DB for Technical SEO Auditor (replace with real DB in production)
-let items = [];
-let idCounter = 1;
+// Persistent file-based storage for technical-seo-auditor
+const storage = require('../../core/storageJson');
+const KEY = 'technical-seo-auditor';
+
+function getData() {
+  return storage.get(KEY, { history: [], analytics: [], feedback: [] });
+}
+function save(d) { storage.set(KEY, d); }
+
 module.exports = {
-  list: () => items,
-  get: id => items.find(i => i.id == id),
-  create: data => { const item = { ...data, id: idCounter++ }; items.push(item); return item; },
-  update: (id, data) => { const idx = items.findIndex(i => i.id == id); if (idx === -1) return null; items[idx] = { ...items[idx], ...data }; return items[idx]; },
-  delete: id => { const idx = items.findIndex(i => i.id == id); if (idx === -1) return false; items.splice(idx, 1); return true; },
-  import: arr => { items = arr.map((i, idx) => ({ ...i, id: idCounter++ })); },
+  // ── History (audit reports) ──────────────────────────────────
+  async listHistory() {
+    return getData().history;
+  },
+  async addHistory(entry) {
+    const d = getData();
+    entry.id = entry.id || `audit-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    entry.createdAt = new Date().toISOString();
+    d.history.unshift(entry);
+    if (d.history.length > 200) d.history = d.history.slice(0, 200);
+    save(d);
+    return entry;
+  },
+
+  // ── Analytics ─────────────────────────────────────────────────
+  async listAnalytics() {
+    return getData().analytics;
+  },
+  async recordEvent(event) {
+    const d = getData();
+    const ev = { ...event, id: `ev-${Date.now()}`, ts: new Date().toISOString() };
+    d.analytics.push(ev);
+    if (d.analytics.length > 500) d.analytics = d.analytics.slice(-500);
+    save(d);
+    return ev;
+  },
+
+  // ── Feedback ──────────────────────────────────────────────────
+  async saveFeedback(fb) {
+    const d = getData();
+    const entry = { ...fb, id: `fb-${Date.now()}`, ts: new Date().toISOString() };
+    d.feedback.push(entry);
+    if (d.feedback.length > 100) d.feedback = d.feedback.slice(-100);
+    save(d);
+    return entry;
+  },
+
+  // ── Import ────────────────────────────────────────────────────
+  async importData(items) {
+    const d = getData();
+    for (const item of items) {
+      item.id = item.id || `audit-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+      item.importedAt = new Date().toISOString();
+      d.history.push(item);
+    }
+    if (d.history.length > 500) d.history = d.history.slice(0, 500);
+    save(d);
+    return d.history.length;
+  },
 };

@@ -8,23 +8,41 @@ class ShopifyBillingService {
     this.plans = {
       free: {
         id: 'free',
-        name: 'Free',
+        name: 'Starter',
         price: 0,
-        features: ['100 AI runs/month', '50 products', '1 team member', 'Basic support']
+        credits: 10,
+        features: ['Dashboard only', '10 lifetime AI credits', '1 team member', 'Community support']
       },
-      professional: {
-        id: 'professional',
-        name: 'Professional',
-        price: 99,
-        features: ['Unlimited AI runs', 'Unlimited products', '5 team members', 'Priority support', 'Advanced analytics']
+      growth: {
+        id: 'growth',
+        name: 'Growth',
+        price: 49,
+        credits: 5000,
+        features: ['5,000 AI credits/month', 'All core SEO tools', 'Email & social tools', 'Unlimited products', 'Priority email support']
+      },
+      pro: {
+        id: 'pro',
+        name: 'Pro',
+        price: 149,
+        credits: 25000,
+        features: ['25,000 AI credits/month', 'All Growth tools', 'Ads & analytics suite', 'Personalization engine', 'Priority support']
       },
       enterprise: {
         id: 'enterprise',
         name: 'Enterprise',
-        price: 299,
-        features: ['Unlimited everything', 'Unlimited team members', '24/7 dedicated support', 'Custom integrations', 'White-label options']
+        price: 349,
+        credits: -1,
+        features: ['Unlimited AI credits', 'All Pro tools', 'Custom dashboards & exports', 'API & SDK access', 'Dedicated account manager', '24/7 SLA']
       }
     };
+
+    // Credit top-up packs — one-time purchases
+    this.creditPacks = [
+      { id: 'credits-500',   credits: 500,   price: 9,   label: '500 credits' },
+      { id: 'credits-2000',  credits: 2000,  price: 29,  label: '2,000 credits', save: '28%' },
+      { id: 'credits-5000',  credits: 5000,  price: 59,  label: '5,000 credits', save: '34%' },
+      { id: 'credits-15000', credits: 15000, price: 149, label: '15,000 credits', save: '45%' },
+    ];
   }
 
   /**
@@ -180,8 +198,9 @@ class ShopifyBillingService {
 
       // Map price to plan ID
       let planId = 'free';
-      if (amount === 99) planId = 'professional';
-      if (amount === 299) planId = 'enterprise';
+      if (amount >= 349) planId = 'enterprise';
+      else if (amount >= 149) planId = 'pro';
+      else if (amount >= 49) planId = 'growth';
 
       return {
         plan_id: planId,
@@ -273,6 +292,87 @@ class ShopifyBillingService {
    */
   listPlans() {
     return Object.values(this.plans);
+  }
+
+  /**
+   * List credit top-up packs
+   */
+  listCreditPacks() {
+    return this.creditPacks;
+  }
+
+  /**
+   * Purchase a credit pack (one-time app charge via Shopify)
+   */
+  async purchaseCreditPack(shop, packId) {
+    const pack = this.creditPacks.find(p => p.id === packId);
+    if (!pack) throw new Error('Invalid credit pack ID');
+
+    const token = shopTokens.getToken(shop);
+    if (!token) throw new Error('Shop not connected. Please reconnect your Shopify store.');
+
+    const mutation = `
+      mutation CreateOneTimeCharge($name: String!, $price: MoneyInput!, $returnUrl: URL!) {
+        appPurchaseOneTimeCreate(
+          name: $name
+          price: $price
+          returnUrl: $returnUrl
+          test: true
+        ) {
+          appPurchaseOneTime {
+            id
+            status
+          }
+          confirmationUrl
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    const backendBase = process.env.APP_URL || process.env.HOST_URL || 'https://aura-core-monolith.onrender.com';
+    const returnUrl = `${backendBase}/api/billing/confirm?shop=${encodeURIComponent(shop)}&credits=${pack.credits}`;
+
+    const variables = {
+      name: `AURA Credit Top-Up: ${pack.label}`,
+      returnUrl,
+      price: { amount: pack.price, currencyCode: 'USD' }
+    };
+
+    try {
+      const response = await fetch(`https://${shop}/admin/api/2024-01/graphql.json`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Access-Token': token
+        },
+        body: JSON.stringify({ query: mutation, variables })
+      });
+
+      const result = await response.json();
+
+      if (result.errors && result.errors.length > 0) {
+        throw new Error(result.errors.map(e => e.message).join('; '));
+      }
+
+      const data = result.data?.appPurchaseOneTimeCreate;
+      if (data?.userErrors?.length > 0) {
+        throw new Error(data.userErrors[0].message);
+      }
+
+      return {
+        success: true,
+        confirmationUrl: data.confirmationUrl,
+        chargeId: data.appPurchaseOneTime?.id,
+        credits: pack.credits,
+        message: 'Approve the charge in Shopify to receive your credits'
+      };
+    } catch (error) {
+      console.error('Credit pack purchase error:', error);
+      throw error;
+    }
   }
 }
 

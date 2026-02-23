@@ -8,8 +8,6 @@ import ToolScaffold from "./tools/ToolScaffold";
 import MainSuite from "./tools/MainSuite";
 import AbandonedCheckoutWinback from "./tools/AbandonedCheckoutWinback";
 import ProductSeoEngine from "./ProductSeoEngine";
-import AiAltTextEngine from "./AiAltTextEngine";
-import ContentHealthAuditor from "./tools/ContentHealthAuditor.jsx";
 import InternalLinkOptimizer from "./InternalLinkOptimizer";
 import AdvancedAnalyticsAttribution from "./tools/AdvancedAnalyticsAttribution.jsx";
 import Toast from "./Toast";
@@ -20,8 +18,6 @@ const toolComponents = {
   "abandoned-checkout-winback": AbandonedCheckoutWinback,
   "main-suite": MainSuite,
   "product-seo": ProductSeoEngine,
-  "ai-alt-text-engine": AiAltTextEngine,
-  "content-health-auditor": ContentHealthAuditor,
   "internal-link-optimizer": InternalLinkOptimizer,
   "advanced-analytics-attribution": AdvancedAnalyticsAttribution,
   // Add more mappings as you build more UIs

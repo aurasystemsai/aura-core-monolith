@@ -8,59 +8,77 @@ import { FaCheck, FaDownload, FaSpinner } from 'react-icons/fa';
 const PLANS = [
   {
     id: 'free',
-    name: 'Free',
+    name: 'Starter',
     price: 0,
-    period: 'forever',
+    period: 'no card needed',
     features: [
-      '5 AI tool runs per month',
-      'Basic analytics',
-      '100 products',
-      'Email support',
-      '24-hour data refresh'
+      'Dashboard only',
+      '10 lifetime AI credits',
+      '1 team member',
+      'Community support'
     ],
     limits: {
-      aiRuns: 5,
-      products: 100,
+      credits: 10,
+      products: 50,
       users: 1
     }
   },
   {
+    id: 'growth',
+    name: 'Growth',
+    price: 49,
+    period: 'month',
+    features: [
+      '5,000 AI credits / month',
+      'All core SEO tools',
+      'Email & social tools',
+      'Unlimited products',
+      '3 team members',
+      'Priority email support'
+    ],
+    limits: {
+      credits: 5000,
+      products: -1,
+      users: 3
+    }
+  },
+  {
     id: 'pro',
-    name: 'Professional',
-    price: 99,
+    name: 'Pro',
+    price: 149,
     period: 'month',
     popular: true,
     features: [
-      'Unlimited AI tool runs',
-      'Advanced analytics',
-      'Unlimited products',
-      'Priority support',
-      'Real-time data sync',
-      'API access',
-      'Custom automations'
+      '25,000 AI credits / month',
+      'All Growth tools',
+      'Ads & analytics suite',
+      'Personalization engine',
+      'Advanced automations',
+      '10 team members',
+      'Priority support'
     ],
     limits: {
-      aiRuns: -1,
+      credits: 25000,
       products: -1,
-      users: 5
+      users: 10
     }
   },
   {
     id: 'enterprise',
     name: 'Enterprise',
-    price: 299,
+    price: 349,
     period: 'month',
     features: [
-      'Everything in Pro',
+      'Unlimited AI credits',
+      'All Pro tools',
+      'Custom dashboards & exports',
+      'API & SDK access',
+      'Unlimited team members',
       'Dedicated account manager',
-      'Custom integrations',
-      'White-label options',
-      'SLA guarantee',
-      'Advanced security',
-      'Unlimited team members'
+      '24/7 SLA'
     ],
     limits: {
-      aiRuns: -1,
+      credits: -1,
       products: -1,
       users: -1
     }
@@ -181,7 +199,7 @@ const Billing = () => {
       <div className="current-plan-card">
         <div className="plan-header">
           <div>
-            <h2>Current Plan: {currentPlan?.name || 'Free'}</h2>
+            <h2>Current Plan: {currentPlan?.name || 'Starter'}</h2>
             {subscription?.status === 'active' && (
               <span className="status-badge active">Active</span>
             )}

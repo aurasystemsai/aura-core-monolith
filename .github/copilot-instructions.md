@@ -65,6 +65,45 @@ npm run test:tools     # node src/test-all-tools.js
 
 **Node version:** 22.x required (22.22.0 in CI). Node 24 causes Jest resolver issues — use `npm run test:node22` variants.
 
+## Product Vision: AI-First, Manual-Optional
+
+**Every action in every tool must have an AI-powered option.** Users can always do things manually if they prefer, but the default experience is AI-assisted. This is the core product vision for AURA.
+
+- Every tool should expose "AI Generate", "AI Suggest", or "AI Optimise" actions for its key workflows.
+- Manual input fields are always available alongside AI actions — never force AI-only.
+- All AI actions consume credits (see Credit System below). Show the credit cost before the user confirms.
+- The AI model used may vary by tool complexity — lightweight tasks use cheap models (gpt-4o-mini), complex tasks use premium models (gpt-4, gpt-5.2). Credit cost adjusts via model multipliers.
+
+## Credit System & Model-Aware Pricing
+
+All AI features run on OpenAI. Every AI action costs credits, tracked by `src/core/creditLedger.js`.
+
+**Base costs** (per action type, assuming cheapest model gpt-4o-mini):
+| Action | Base Credits |
+|--------|-------------|
+| SEO scan, alt-text, rank check | 1 |
+| Email gen, content brief, keyword research | 2 |
+| Blog draft, campaign gen | 3 |
+| Competitive analysis | 5 |
+
+**Model multipliers** — different OpenAI models cost different amounts:
+| Model Tier | Models | Multiplier |
+|-----------|--------|------------|
+| Budget | gpt-4o-mini, gpt-4.1-mini, gpt-5-mini | 1× |
+| Standard | gpt-4o, gpt-4.1, gpt-4-turbo | 2× |
+| Premium | gpt-4, gpt-5 | 3× |
+| Frontier | gpt-5.2, o1, o3 | 5× |
+
+**Example:** Blog draft (3 base) × gpt-4 (3×) = 9 credits.
+
+**Key files:**
+- `src/core/creditLedger.js` — ACTION_COSTS, MODEL_MULTIPLIERS, getEffectiveCost(), deductCredits()
+- `src/core/creditMiddleware.js` — requireCredits(), requireCreditsOnMutation(), reads `req.body.model` for dynamic pricing
+- `src/routes/billing.js` — /credits, /credit-costs?model=gpt-4, /credit-history
+- `aura-console/src/credits/Credits.jsx` — Credits & Usage dashboard
+
+**Wiring pattern:** In `server.js`, each tool route has a `creditAction` that maps to an ACTION_COSTS key. The `requireCreditsOnMutation()` middleware auto-charges POST/PUT/PATCH requests. Use `req.deductCredits({ model })` after successful AI call to charge the right amount.
+
 ## Key Conventions
 
 - **Dark theme everywhere.** Use the inline style objects pattern (`const S = { ... }`) already in tool components. Never use light backgrounds (`#fff`, `#fafafa` as page bg) in tool UIs.

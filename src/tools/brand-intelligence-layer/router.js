@@ -1,140 +1,69 @@
 const express = require('express');
 const OpenAI = require('openai');
 const db = require('./db');
-const analyticsModel = require('./analyticsModel');
-const notificationModel = require('./notificationModel');
-const rbac = require('./rbac');
-const i18n = require('./i18n');
-const webhookModel = require('./webhookModel');
-const complianceModel = require('./complianceModel');
-const pluginSystem = require('./pluginSystem');
 const router = express.Router();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// CRUD endpoints
-router.get('/brands', (req, res) => {
-  res.json({ ok: true, brands: db.list() });
-});
-router.get('/brands/:id', (req, res) => {
-  const brand = db.get(req.params.id);
-  if (!brand) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, brand });
-});
-router.post('/brands', (req, res) => {
-  const brand = db.create(req.body || {});
-  res.json({ ok: true, brand });
-});
-router.put('/brands/:id', (req, res) => {
-  const brand = db.update(req.params.id, req.body || {});
-  if (!brand) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true, brand });
-});
-router.delete('/brands/:id', (req, res) => {
-  const ok = db.delete(req.params.id);
-  if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
-  res.json({ ok: true });
-});
+let _openai;
+function getOpenAI() {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  return _openai;
+}
 
-// AI (OpenAI-powered brand intelligence)
-router.post('/ai/analyze', async (req, res) => {
+// POST /dashboard — AI-powered brand dashboard analysis
+router.post('/dashboard', async (req, res) => {
   try {
-module.exports = router;
-    const { messages, prompt, context } = req.body || {};
-    if (!messages && !prompt) {
-      return res.status(400).json({ ok: false, error: 'Missing messages or prompt' });
-    }
-    const chatMessages = messages || [
-      { role: 'system', content: 'You are an expert AI for brand intelligence and market analysis.' },
-      { role: 'user', content: prompt }
-    ];
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: chatMessages,
-      max_tokens: 512,
+    const { input } = req.body || {};
+    const model = 'gpt-4o-mini';
+    const completion = await getOpenAI().chat.completions.create({
+      model,
+      messages: [
+        { role: 'system', content: 'You are a brand intelligence expert. Analyze the brand data and return a JSON array of dashboard items. Each item: {"metric":"...","value":"...","trend":"up|down|stable","insight":"..."}. Return 5-8 items.' },
+        { role: 'user', content: `Analyze this brand: ${typeof input === 'string' ? input : JSON.stringify(input || 'Generic e-commerce brand')}` }
+      ],
+      max_tokens: 600,
+      temperature: 0.6
+    });
+    let dashboard;
+    try { dashboard = JSON.parse(completion.choices[0]?.message?.content?.trim() || '[]'); }
+    catch { dashboard = [{ metric: 'Brand Health', value: 'Analyzed', insight: completion.choices[0]?.message?.content?.trim() }]; }
+    if (req.deductCredits) req.deductCredits({ model });
+    await db.recordEvent({ type: 'dashboard', input });
+    res.json({ ok: true, dashboard });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
+// POST /insights — AI-powered brand insights
+router.post('/insights', async (req, res) => {
+  try {
+    const { input } = req.body || {};
+    const model = 'gpt-4o-mini';
+    const completion = await getOpenAI().chat.completions.create({
+      model,
+      messages: [
+        { role: 'system', content: 'You are a brand strategist. Generate actionable brand insights. Return a JSON array: [{"title":"...","description":"...","priority":"high|medium|low","category":"positioning|messaging|audience|competitor"}]. Return 4-6 insights.' },
+        { role: 'user', content: `Generate insights for: ${typeof input === 'string' ? input : JSON.stringify(input || 'E-commerce brand')}` }
+      ],
+      max_tokens: 600,
       temperature: 0.7
     });
-    const reply = completion.choices[0]?.message?.content?.trim() || '';
-    res.json({ ok: true, reply });
-  } catch (err) {
-    console.error('[Brand Intelligence Layer] Error:', err);
-    res.status(500).json({ ok: false, error: err.message || 'AI error' });
-  }
+    let insights;
+    try { insights = JSON.parse(completion.choices[0]?.message?.content?.trim() || '[]'); }
+    catch { insights = [{ title: 'Brand Insight', description: completion.choices[0]?.message?.content?.trim() }]; }
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, insights });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-// Analytics endpoints
-router.post('/analytics', (req, res) => {
-  const event = analyticsModel.recordEvent(req.body || {});
-  res.json({ ok: true, event });
-});
-router.get('/analytics', (req, res) => {
-  res.json({ ok: true, events: analyticsModel.listEvents(req.query || {}) });
-});
-
-// Import/export endpoints
-router.post('/import', (req, res) => {
-  const { items } = req.body || {};
-  if (!Array.isArray(items)) return res.status(400).json({ ok: false, error: 'items[] required' });
-  db.import(items);
-  res.json({ ok: true, count: db.list().length });
-});
-router.get('/export', (req, res) => {
-  res.json({ ok: true, items: db.list() });
+// POST /feedback
+router.post('/feedback', async (req, res) => {
+  try {
+    await db.saveFeedback(req.body || {});
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-// Shopify sync endpoints
-router.post('/shopify/import', (req, res) => {
-  // Integrate with Shopify API in production
-  res.json({ ok: true, message: 'Shopify import not implemented in demo.' });
-});
-router.get('/shopify/export', (req, res) => {
-  res.json({ ok: true, message: 'Shopify export not implemented in demo.' });
-});
-
-// Notifications endpoints
-router.post('/notify', (req, res) => {
-  const { to, message } = req.body || {};
-  if (!to || !message) return res.status(400).json({ ok: false, error: 'to and message required' });
-  notificationModel.send(to, message);
-  res.json({ ok: true });
-});
-
-// RBAC endpoint
-router.post('/rbac/check', (req, res) => {
-  const { user, action } = req.body || {};
-  const allowed = rbac.check(user, action);
-  res.json({ ok: true, allowed });
-});
-
-// i18n endpoint
-router.get('/i18n', (req, res) => {
-  res.json({ ok: true, i18n });
-});
-
-// Docs endpoint
-router.get('/docs', (req, res) => {
-  res.json({ ok: true, docs: 'Brand Intelligence Layer API: CRUD, AI, analytics, import/export, Shopify sync, notifications, RBAC, i18n.' });
-});
-
-// Webhook endpoint
-router.post('/webhook', (req, res) => {
-  webhookModel.handle(req.body || {});
-  res.json({ ok: true });
-});
-
-// Compliance endpoint
-router.get('/compliance', (req, res) => {
-  res.json({ ok: true, compliance: complianceModel.get() });
-});
-
-// Plugin system endpoint
-router.post('/plugin', (req, res) => {
-  pluginSystem.run(req.body || {});
-  res.json({ ok: true });
-});
-
-// Health check endpoint
 router.get('/health', (req, res) => {
-  res.json({ ok: true, status: 'healthy', timestamp: Date.now() });
+  res.json({ ok: true, tool: 'brand-intelligence-layer', ts: new Date().toISOString() });
 });
 
 module.exports = router;

@@ -7,25 +7,32 @@ import { apiFetch } from '../api';
 const PLANS = [
   {
     id: 'free',
-    name: 'Free',
+    name: 'Starter',
     price: 0,
-    colour: '#4ade80',
-    features: ['100 AI runs / month', '50 products', '1 team member', 'Blog SEO + Product SEO', 'Basic support'],
+    colour: '#71717a',
+    features: ['Dashboard only', '10 lifetime AI credits', '1 team member', 'Community support'],
   },
   {
-    id: 'professional',
-    name: 'Professional',
-    price: 99,
+    id: 'growth',
+    name: 'Growth',
+    price: 49,
+    colour: '#38bdf8',
+    features: ['5,000 AI credits / month', 'All core SEO tools', 'Email & social tools', 'Unlimited products', '3 team members', 'Priority email support'],
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    price: 149,
     colour: '#4f46e5',
     badge: 'Most Popular',
-    features: ['10,000 AI runs / month', 'Unlimited products', '5 team members', 'All core SEO tools', 'On-Page SEO Engine', 'Content brief generator', 'Advanced analytics', 'Priority support'],
+    features: ['25,000 AI credits / month', 'All Growth tools', 'Ads & analytics suite', 'Personalization engine', 'Advanced automations', '10 team members', 'Priority support'],
   },
   {
     id: 'enterprise',
     name: 'Enterprise',
-    price: 299,
+    price: 349,
     colour: '#a78bfa',
-    features: ['Unlimited AI runs', 'Unlimited products', 'Unlimited team members', 'All tools unlocked', 'Custom integrations', 'Dedicated support', '24/7 uptime SLA', 'White-label options'],
+    features: ['Unlimited AI credits', 'All Pro tools', 'Custom dashboards & exports', 'API & SDK access', 'Unlimited team members', 'Dedicated account manager', '24/7 SLA'],
   },
 ];
 
@@ -392,7 +399,7 @@ const Settings = ({ setActiveSection }) => {
           {billingLoading ? (
             <div style={{ color: '#71717a', textAlign: 'center', padding: '32px 0' }}>Loading plan info…</div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
               {(() => {
                 const currentPlanIndex = PLANS.findIndex(p => p.id === (subscription?.plan_id || 'free'));
                 return PLANS.map((plan, planIndex) => {
@@ -408,7 +415,7 @@ const Settings = ({ setActiveSection }) => {
                     <div style={{ marginBottom: 16 }}>
                       <span style={{ fontSize: 32, fontWeight: 900, color: '#fafafa' }}>${plan.price}</span>
                       {plan.price > 0 && <span style={{ fontSize: 14, color: '#71717a' }}> / month</span>}
-                      {plan.price === 0 && <span style={{ fontSize: 14, color: '#71717a' }}> forever</span>}
+                      {plan.price === 0 && <span style={{ fontSize: 14, color: '#71717a' }}> no card needed</span>}
                     </div>
                     <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', flex: 1 }}>
                       {plan.features.map((f, i) => (

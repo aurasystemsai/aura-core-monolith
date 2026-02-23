@@ -1,131 +1,160 @@
 const express = require('express');
 const OpenAI = require('openai');
 const db = require('./db');
-const analyticsModel = require('./analyticsModel');
-const notificationModel = require('./notificationModel');
-const rbac = require('./rbac');
-const i18n = require('./i18n');
-const webhookModel = require('./webhookModel');
-const complianceModel = require('./complianceModel');
-const pluginSystem = require('./pluginSystem');
 const router = express.Router();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// CRUD endpoints
-router.get('/audits', (req, res) => {
-	res.json({ ok: true, audits: db.list() });
-});
-router.get('/audits/:id', (req, res) => {
-	const audit = db.get(req.params.id);
-	if (!audit) return res.status(404).json({ ok: false, error: 'Not found' });
-	res.json({ ok: true, audit });
-});
-router.post('/audits', (req, res) => {
-	const audit = db.create(req.body || {});
-	res.json({ ok: true, audit });
-});
-router.put('/audits/:id', (req, res) => {
-	const audit = db.update(req.params.id, req.body || {});
-	if (!audit) return res.status(404).json({ ok: false, error: 'Not found' });
-	res.json({ ok: true, audit });
-});
-router.delete('/audits/:id', (req, res) => {
-	const ok = db.delete(req.params.id);
-	if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
-	res.json({ ok: true });
-});
+let _openai;
+function getOpenAI() {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  return _openai;
+}
 
-// AI endpoint: audit
+// ── AI Audit — main endpoint ─────────────────────────────────────────────────
+// POST /api/technical-seo-auditor/ai/audit
+// Frontend sends { site }, expects { ok, auditReport }
 router.post('/ai/audit', async (req, res) => {
-	try {
-		const { url } = req.body;
-		if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
-		const completion = await openai.chat.completions.create({
-			model: 'gpt-4',
-			messages: [
-				{ role: 'system', content: 'You are a technical SEO auditor.' },
-				{ role: 'user', content: `Audit this URL: ${url}` }
-			],
-			max_tokens: 512
-		});
-		const report = completion.choices[0]?.message?.content?.trim() || '';
-		res.json({ ok: true, report });
-	} catch (err) {
-		res.status(500).json({ ok: false, error: err.message });
-	}
+  try {
+    const { site, url } = req.body || {};
+    const target = site || url;
+    if (!target) return res.status(400).json({ ok: false, error: 'site or url is required' });
+
+    const model = 'gpt-4o-mini';
+
+    // First, try to crawl the page for real data
+    let pageData = null;
+    try {
+      const fetch = (...args) => import('node-fetch').then(m => m.default(...args));
+      const response = await fetch(target.startsWith('http') ? target : `https://${target}`, {
+        method: 'GET',
+        redirect: 'follow',
+        headers: {
+          'User-Agent': 'AURA Technical SEO Auditor (+https://aurasystemsai.com)',
+          'Accept': 'text/html,application/xhtml+xml',
+        },
+        signal: AbortSignal.timeout ? AbortSignal.timeout(12000) : undefined,
+      });
+      if (response.ok) {
+        const html = await response.text();
+        const matchOne = (re) => { const m = re.exec(html); return m && m[1] ? m[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : null; };
+
+        pageData = {
+          url: response.url || target,
+          statusCode: response.status,
+          https: (response.url || target).startsWith('https'),
+          title: matchOne(/<title[^>]*>([\s\S]*?)<\/title>/i),
+          metaDescription: matchOne(/<meta[^>]+name=["']description["'][^>]+content=["']([\s\S]*?)["']/i),
+          h1: matchOne(/<h1[^>]*>([\s\S]*?)<\/h1>/i),
+          hasCanonical: /<link[^>]+rel=["']canonical["']/i.test(html),
+          hasSchema: /<script[^>]+type=["']application\/ld\+json["']/i.test(html),
+          hasRobotsMeta: /<meta[^>]+name=["']robots["']/i.test(html),
+          hasSitemap: html.includes('sitemap') || html.includes('Sitemap'),
+          hasViewport: /<meta[^>]+name=["']viewport["']/i.test(html),
+          pageSizeKB: Math.round(Buffer.byteLength(html, 'utf8') / 1024),
+          imageCount: (html.match(/<img[\s>]/gi) || []).length,
+          imagesWithAlt: (html.match(/<img[^>]+alt=["'][^"']+["']/gi) || []).length,
+          inlineStyles: (html.match(/style=["']/gi) || []).length,
+          h2Count: (html.match(/<h2[\s>]/gi) || []).length,
+          h3Count: (html.match(/<h3[\s>]/gi) || []).length,
+        };
+      }
+    } catch (crawlErr) {
+      // Crawl failed — AI will analyze based on URL alone
+    }
+
+    const pageContext = pageData
+      ? `\n\nCrawled page data:\n${JSON.stringify(pageData, null, 2)}`
+      : '\n\n(Could not crawl page — provide general technical SEO guidance for this URL)';
+
+    const completion = await getOpenAI().chat.completions.create({
+      model,
+      messages: [
+        {
+          role: 'system',
+          content: `You are an expert technical SEO auditor for Shopify e-commerce stores. Perform a comprehensive technical SEO audit and provide:
+
+1. **Overall Health Score** (0-100) with letter grade
+2. **Critical Issues** — problems that are actively hurting SEO
+3. **Warnings** — issues that should be addressed soon
+4. **Passed Checks** — things the site does well
+5. **Performance Notes** — page size, load concerns
+6. **Mobile Readiness** — viewport, responsive design signals
+7. **Structured Data** — schema markup assessment
+8. **Recommendations** — prioritized action items (most impactful first)
+
+Be specific with findings. Reference actual data when available. Format with clear markdown headers.`
+        },
+        { role: 'user', content: `Audit this site: ${target}${pageContext}` }
+      ],
+      max_tokens: 1500,
+      temperature: 0.5
+    });
+
+    const auditReport = completion.choices[0]?.message?.content?.trim() || '';
+
+    // Deduct credits
+    if (req.deductCredits) req.deductCredits({ model });
+
+    // Record analytics
+    await db.recordEvent({ type: 'ai-audit', site: target, model });
+
+    res.json({ ok: true, auditReport, pageData });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
-// Analytics endpoints
-router.post('/analytics', (req, res) => {
-	const event = analyticsModel.recordEvent(req.body || {});
-	res.json({ ok: true, event });
+// ── History ──────────────────────────────────────────────────────────────────
+// GET /api/technical-seo-auditor/history
+router.get('/history', async (req, res) => {
+  try { res.json({ ok: true, history: await db.listHistory() }); }
+  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
-router.get('/analytics', (req, res) => {
-	res.json({ ok: true, events: analyticsModel.listEvents(req.query || {}) });
-});
-
-// Import/export endpoints
-router.post('/import', (req, res) => {
-	const { items } = req.body || {};
-	if (!Array.isArray(items)) return res.status(400).json({ ok: false, error: 'items[] required' });
-	db.import(items);
-	res.json({ ok: true, count: db.list().length });
-});
-router.get('/export', (req, res) => {
-	res.json({ ok: true, items: db.list() });
+// POST /api/technical-seo-auditor/history
+router.post('/history', async (req, res) => {
+  try {
+    const entry = await db.addHistory(req.body || {});
+    res.json({ ok: true, entry });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-// Shopify sync endpoints
-router.post('/shopify/sync', (req, res) => {
-	// Integrate with Shopify API in production
-	res.json({ ok: true, message: 'Shopify sync not yet implemented.' });
+// ── Analytics ────────────────────────────────────────────────────────────────
+router.get('/analytics', async (req, res) => {
+  try { res.json({ ok: true, analytics: await db.listAnalytics() }); }
+  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+router.post('/analytics', async (req, res) => {
+  try { res.json({ ok: true, event: await db.recordEvent(req.body || {}) }); }
+  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-// Notifications endpoints
-router.post('/notify', (req, res) => {
-	const { to, message } = req.body || {};
-	if (!to || !message) return res.status(400).json({ ok: false, error: 'to and message required' });
-	notificationModel.send(to, message);
-	res.json({ ok: true });
+// ── Feedback ─────────────────────────────────────────────────────────────────
+router.post('/feedback', async (req, res) => {
+  try {
+    const { feedback } = req.body || {};
+    if (!feedback) return res.status(400).json({ ok: false, error: 'feedback is required' });
+    const entry = await db.saveFeedback({ feedback });
+    res.json({ ok: true, entry });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-// RBAC endpoint
-router.post('/rbac/check', (req, res) => {
-	const { user, action } = req.body || {};
-	const allowed = rbac.check(user, action);
-	res.json({ ok: true, allowed });
+// ── Import / Export ──────────────────────────────────────────────────────────
+router.post('/import', async (req, res) => {
+  try {
+    const { data, items } = req.body || {};
+    const arr = Array.isArray(data) ? data : Array.isArray(items) ? items : null;
+    if (!arr) return res.status(400).json({ ok: false, error: 'data[] or items[] required' });
+    const count = await db.importData(arr);
+    res.json({ ok: true, count });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+router.get('/export', async (req, res) => {
+  try { res.json({ ok: true, history: await db.listHistory() }); }
+  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-// i18n endpoint
-router.get('/i18n', (req, res) => {
-	res.json({ ok: true, i18n });
-});
-
-// Docs endpoint
-router.get('/docs', (req, res) => {
-	res.json({ ok: true, docs: 'Technical SEO Auditor API: CRUD, AI, analytics, import/export, Shopify sync, notifications, RBAC, i18n.' });
-});
-
-// Webhook endpoint
-router.post('/webhook', (req, res) => {
-	webhookModel.handle(req.body || {});
-	res.json({ ok: true });
-});
-
-// Compliance endpoint
-router.get('/compliance', (req, res) => {
-	res.json({ ok: true, compliance: complianceModel.get() });
-});
-
-// Plugin system endpoint
-router.post('/plugin', (req, res) => {
-	pluginSystem.run(req.body || {});
-	res.json({ ok: true });
-});
-
-// Health check endpoint
+// ── Health ───────────────────────────────────────────────────────────────────
 router.get('/health', (req, res) => {
-	res.json({ ok: true, status: 'healthy', timestamp: Date.now() });
+  res.json({ ok: true, tool: 'technical-seo-auditor', ts: new Date().toISOString() });
 });
 
 module.exports = router;

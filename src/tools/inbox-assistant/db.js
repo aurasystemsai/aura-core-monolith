@@ -1,28 +1,22 @@
-// Simple in-memory DB for Inbox Assistant tickets
-let tickets = [];
-let idCounter = 1;
+const storage = require('../../core/storageJson');
+const KEY = 'inbox-assistant';
+
+function load() { return storage.get(KEY, { conversations: [], feedback: [], analytics: [] }); }
+function save(d) { storage.set(KEY, d); }
 
 module.exports = {
-  list: () => tickets,
-  get: (id) => tickets.find(t => t.id == id),
-  create: (data) => {
-    const ticket = { ...data, id: idCounter++ };
-    tickets.push(ticket);
-    return ticket;
+  async listConversations() { return load().conversations; },
+  async addConversation(data) {
+    const d = load(); const item = { ...data, id: Date.now().toString(), createdAt: new Date().toISOString() };
+    d.conversations.push(item); if (d.conversations.length > 500) d.conversations = d.conversations.slice(-500); save(d); return item;
   },
-  update: (id, data) => {
-    const idx = tickets.findIndex(t => t.id == id);
-    if (idx === -1) return null;
-    tickets[idx] = { ...tickets[idx], ...data };
-    return tickets[idx];
+  async saveFeedback(fb) {
+    const d = load(); d.feedback.push({ ...fb, id: Date.now().toString(), createdAt: new Date().toISOString() });
+    if (d.feedback.length > 200) d.feedback = d.feedback.slice(-200); save(d);
   },
-  delete: (id) => {
-    const idx = tickets.findIndex(t => t.id == id);
-    if (idx === -1) return false;
-    tickets.splice(idx, 1);
-    return true;
+  async recordEvent(evt) {
+    const d = load(); d.analytics.push({ ...evt, ts: new Date().toISOString() });
+    if (d.analytics.length > 500) d.analytics = d.analytics.slice(-500); save(d);
   },
-  import: (arr) => { tickets = arr.map((t, i) => ({ ...t, id: idCounter++ })); },
-  export: () => tickets,
-  clear: () => { tickets = []; }
+  async listEvents() { return load().analytics; },
 };

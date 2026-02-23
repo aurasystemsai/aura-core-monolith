@@ -1,5 +1,10 @@
 module.exports = {
   key: "ltv-churn-predictor",
+  meta: {
+    id: 'ltv-churn-predictor',
+    name: 'LTV/Churn Predictor',
+    description: 'AI-powered customer lifetime value prediction and churn risk analysis.',
+  },
 
   async run(input = {}, ctx = {}) {
     const env = (ctx.env && ctx.env.NODE_ENV) || "development";

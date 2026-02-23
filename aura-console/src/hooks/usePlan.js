@@ -1,68 +1,92 @@
 ﻿import { useState, useEffect } from "react";
 import { apiFetch } from "../api";
 
-// Maps tool route IDs → minimum plan required
+// Maps tool route IDs to minimum plan required
+// 4 tiers: free/starter ($0, dashboard only, 10 credits) → growth ($49) → pro ($149) → enterprise ($349)
+// There is NO generous free plan. Unsubscribed users get dashboard + 10 lifetime credits.
 export const TOOL_PLAN = {
-  // Free — everyone can use
-  "product-seo":                          "free",
-  "blog-seo":                             "free",
-  "seo-site-crawler":                     "free",
-  "on-page-seo-engine":                   "free",
+  // ── Starter (free, $0) ── dashboard only, 10 lifetime AI credits
   "dashboard":                            "free",
 
-  // Professional ($99/mo)
-  "ai-content-brief-generator":           "professional",
-  "blog-draft-engine":                    "professional",
-  "weekly-blog-content-engine":           "professional",
-  "abandoned-checkout-winback":           "professional",
-  "review-ugc-engine":                    "professional",
-  "email-automation-builder":             "professional",
-  "internal-link-optimizer":              "professional",
-  "technical-seo-auditor":               "professional",
-  "schema-rich-results-engine":          "professional",
-  "rank-visibility-tracker":             "professional",
-  "content-health-auditor":              "professional",
-  "serp-tracker":                         "professional",
-  "site-audit-health":                    "professional",
-  "image-alt-media-seo":                  "professional",
-  "ai-alt-text-engine":                   "professional",
-  "predictive-analytics-widgets":        "professional",
-  "self-service-analytics":              "professional",
-  "dynamic-pricing-engine":              "professional",
-  "upsell-cross-sell-engine":            "professional",
-  "customer-data-platform":              "professional",
-  "personalization-recommendation-engine": "professional",
-  "brand-mention-tracker":               "professional",
-  "social-media-analytics-listening":    "professional",
-  "content-scoring-optimization":        "professional",
-  "ltv-churn-predictor":                 "professional",
+  // ── Growth ($49/mo) ── core SEO + marketing tools
+  "product-seo":                          "growth",
+  "blog-seo":                             "growth",
+  "seo-site-crawler":                     "growth",
+  "on-page-seo-engine":                   "growth",
+  "blog-draft-engine":                    "growth",
+  "weekly-blog-content-engine":           "growth",
+  "ai-content-brief-generator":           "growth",
+  "content-scoring-optimization":         "growth",
+  "keyword-research-suite":               "growth",
+  "internal-link-optimizer":              "growth",
+  "technical-seo-auditor":                "growth",
+  "schema-rich-results-engine":           "growth",
+  "rank-visibility-tracker":              "growth",
+  "image-alt-media-seo":                  "growth",
+  "local-seo-toolkit":                    "growth",
+  "email-automation-builder":             "growth",
+  "abandoned-checkout-winback":           "growth",
+  "review-ugc-engine":                    "growth",
+  "social-scheduler-content-engine":      "growth",
+  "brand-mention-tracker":                "growth",
+  "dynamic-pricing-engine":               "growth",
+  "inbox-assistant":                      "growth",
+  "ltv-churn-predictor":                  "growth",
+  "finance-autopilot":                    "growth",
+  "inventory-supplier-sync":              "growth",
 
-  "churn-prediction-playbooks":          "professional",
-  "inventory-forecasting":               "professional",
-  "inventory-supplier-sync":             "professional",
-  "finance-autopilot":                   "professional",
-  "inbox-assistant":                      "professional",
-  "inbox-reply-assistant":               "professional",
+  // ── Pro ($149/mo) ── advanced & intelligence tools
+  "backlink-explorer":                    "pro",
+  "link-intersect-outreach":              "pro",
+  "competitive-analysis":                 "pro",
+  "ai-content-image-gen":                 "pro",
+  "automation-templates":                 "pro",
+  "collaboration-approval-workflows":     "pro",
+  "returns-rma-automation":               "pro",
+  "ai-support-assistant":                 "pro",
+  "self-service-portal":                  "pro",
+  "social-media-analytics-listening":     "pro",
+  "creative-automation-engine":           "pro",
+  "brand-intelligence-layer":             "pro",
+  "google-ads-integration":               "pro",
+  "facebook-ads-integration":             "pro",
+  "tiktok-ads-integration":               "pro",
+  "ads-anomaly-guard":                    "pro",
+  "ad-creative-optimizer":                "pro",
+  "omnichannel-campaign-builder":         "pro",
+  "advanced-analytics-attribution":       "pro",
+  "predictive-analytics-widgets":         "pro",
+  "self-service-analytics":               "pro",
+  "auto-insights":                        "pro",
+  "ai-segmentation-engine":               "pro",
+  "upsell-cross-sell-engine":             "pro",
+  "customer-data-platform":               "pro",
+  "personalization-recommendation-engine": "pro",
+  "advanced-personalization-engine":       "pro",
+  "churn-prediction-playbooks":           "pro",
+  "inventory-forecasting":                "pro",
+  "compliance-privacy-suite":             "pro",
 
-  // Enterprise ($299/mo)
-  "advanced-analytics-attribution":      "enterprise",
-  "customer-support-ai":                 "enterprise",
-  "ai-support-assistant":                "enterprise",
-  "loyalty-referral-programs":           "enterprise",
-  "loyalty-referral-program-v2":         "enterprise",
-  "creative-automation-engine":          "enterprise",
-  "brand-intelligence-layer":            "enterprise",
-  "auto-insights":                        "enterprise",
-  "aura-operations-ai":                  "enterprise",
-  "aura-api-sdk":                         "enterprise",
+  // ── Enterprise ($349/mo) ── platform, API, ops
+  "reporting-integrations":               "enterprise",
+  "custom-dashboard-builder":             "enterprise",
+  "scheduled-export":                     "enterprise",
+  "data-warehouse-connector":             "enterprise",
+  "customer-segmentation-engine":         "enterprise",
+  "customer-journey-mapping":             "enterprise",
+  "data-enrichment-suite":                "enterprise",
+  "aura-operations-ai":                   "enterprise",
   "ai-launch-planner":                    "enterprise",
-
+  "aura-api-sdk":                         "enterprise",
+  "webhook-api-triggers":                 "enterprise",
+  "loyalty-referral-programs":            "enterprise",
 };
 
-const PLAN_RANK = { free: 0, professional: 1, enterprise: 2 };
-export const PLAN_LABEL = { free: "Free", professional: "Professional", enterprise: "Enterprise" };
-export const PLAN_PRICE = { free: "$0", professional: "$99/mo", enterprise: "$299/mo" };
-export const PLAN_COLOUR = { free: "#4ade80", professional: "#4f46e5", enterprise: "#a78bfa" };
+const PLAN_RANK = { free: 0, growth: 1, pro: 2, enterprise: 3 };
+export const PLAN_LABEL = { free: "Starter", growth: "Growth", pro: "Pro", enterprise: "Enterprise" };
+export const PLAN_PRICE = { free: "$0", growth: "$49/mo", pro: "$149/mo", enterprise: "$349/mo" };
+export const PLAN_COLOUR = { free: "#71717a", growth: "#38bdf8", pro: "#4f46e5", enterprise: "#a78bfa" };
+export const PLAN_CREDITS = { free: 10, growth: 5000, pro: 25000, enterprise: -1 }; // -1 = unlimited
 
 export function canUseTool(userPlan, toolId) {
   const required = TOOL_PLAN[toolId];

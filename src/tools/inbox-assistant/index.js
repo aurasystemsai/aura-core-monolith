@@ -39,4 +39,5 @@ module.exports = {
       },
     };
   },
+  meta: { id: "inbox-assistant", name: "Inbox Assistant", description: "AI-powered unified inbox for customer communications." },
 };

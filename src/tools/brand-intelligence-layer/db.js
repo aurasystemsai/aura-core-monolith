@@ -1,27 +1,22 @@
-// Simple in-memory DB for brands (replace with persistent DB in production)
-let brands = [];
+const storage = require('../../core/storageJson');
+const KEY = 'brand-intelligence-layer';
+
+function load() { return storage.get(KEY, { items: [], feedback: [], analytics: [] }); }
+function save(d) { storage.set(KEY, d); }
 
 module.exports = {
-  list: () => brands,
-  get: (id) => brands.find(b => b.id === id),
-  create: (data) => {
-    const brand = { ...data, id: Date.now().toString() };
-    brands.push(brand);
-    return brand;
+  async listItems() { return load().items; },
+  async createItem(data) {
+    const d = load(); const item = { ...data, id: Date.now().toString(), createdAt: new Date().toISOString() };
+    d.items.push(item); if (d.items.length > 500) d.items = d.items.slice(-500); save(d); return item;
   },
-  update: (id, data) => {
-    const idx = brands.findIndex(b => b.id === id);
-    if (idx === -1) return null;
-    brands[idx] = { ...brands[idx], ...data };
-    return brands[idx];
+  async saveFeedback(fb) {
+    const d = load(); d.feedback.push({ ...fb, id: Date.now().toString(), createdAt: new Date().toISOString() });
+    if (d.feedback.length > 200) d.feedback = d.feedback.slice(-200); save(d);
   },
-  delete: (id) => {
-    const idx = brands.findIndex(b => b.id === id);
-    if (idx === -1) return false;
-    brands.splice(idx, 1);
-    return true;
+  async recordEvent(evt) {
+    const d = load(); d.analytics.push({ ...evt, ts: new Date().toISOString() });
+    if (d.analytics.length > 500) d.analytics = d.analytics.slice(-500); save(d);
   },
-  import: (arr) => { brands = brands.concat(arr); },
-  export: () => brands,
-  clear: () => { brands = []; }
+  async listEvents() { return load().analytics; },
 };

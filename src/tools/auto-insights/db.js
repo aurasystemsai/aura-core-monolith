@@ -1,11 +1,18 @@
-// Simple in-memory DB for Auto Insights (replace with real DB in production)
-let items = [];
-let idCounter = 1;
+const storage = require('../../core/storageJson');
+const KEY = 'auto-insights';
+
+function load() { return storage.get(KEY, { insights: [], analytics: [] }); }
+function save(d) { storage.set(KEY, d); }
+
 module.exports = {
-  list: () => items,
-  get: id => items.find(i => i.id == id),
-  create: data => { const item = { ...data, id: idCounter++ }; items.push(item); return item; },
-  update: (id, data) => { const idx = items.findIndex(i => i.id == id); if (idx === -1) return null; items[idx] = { ...items[idx], ...data }; return items[idx]; },
-  delete: id => { const idx = items.findIndex(i => i.id == id); if (idx === -1) return false; items.splice(idx, 1); return true; },
-  import: arr => { items = arr.map((i, idx) => ({ ...i, id: idCounter++ })); },
+  async listInsights() { return load().insights; },
+  async addInsight(data) {
+    const d = load(); const item = { ...data, id: Date.now().toString(), createdAt: new Date().toISOString() };
+    d.insights.push(item); if (d.insights.length > 500) d.insights = d.insights.slice(-500); save(d); return item;
+  },
+  async recordEvent(evt) {
+    const d = load(); d.analytics.push({ ...evt, ts: new Date().toISOString() });
+    if (d.analytics.length > 500) d.analytics = d.analytics.slice(-500); save(d);
+  },
+  async listEvents() { return load().analytics; },
 };

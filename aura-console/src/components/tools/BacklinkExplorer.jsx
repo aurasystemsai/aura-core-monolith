@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+﻿import React, { useState, useRef } from "react";
 
 export default function BacklinkExplorer() {
   const [domain, setDomain] = useState("");
@@ -46,7 +46,6 @@ export default function BacklinkExplorer() {
       <button onClick={() => setShowOnboarding(false)} style={{ marginTop: 18, background: "#09090b", color: "#fff", border: "none", borderRadius: 8, padding: "10px 28px", fontWeight: 600, fontSize: 16, cursor: "pointer" }}>Get Started</button>
               </div>
             );
-  }
 
   // Import/export
   const handleImport = e => {
@@ -161,6 +160,4 @@ export default function BacklinkExplorer() {
               </div>
             </div>
           );
-
-
-
+}

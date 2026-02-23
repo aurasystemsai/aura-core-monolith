@@ -1,4 +1,9 @@
 module.exports = {
+  meta: {
+    id: 'rank-visibility-tracker',
+    name: 'Rank & Visibility Tracker',
+    description: 'Track keyword rankings and search visibility across channels with AI-powered analysis.',
+  },
   key: "rank-visibility-tracker",
 
   async run(input = {}, ctx = {}) {

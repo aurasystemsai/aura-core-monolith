@@ -17,140 +17,103 @@
 
 "use strict";
 
-// ------------------------------------------------------
-// SEO + content / planning tools
-// ------------------------------------------------------
+// ==============  SEO & Content  ==============
 const productSeo = require("../tools/product-seo");
 const blogSeo = require("../tools/blog-seo");
-const weeklyBlogContentEngine = require("../tools/weekly-blog-content-engine");
 const blogDraftEngine = require("../tools/blog-draft-engine");
+const weeklyBlogContentEngine = require("../tools/weekly-blog-content-engine");
 const onPageSeoEngine = require("../tools/on-page-seo-engine");
 const technicalSeoAuditor = require("../tools/technical-seo-auditor");
 const schemaRichResultsEngine = require("../tools/schema-rich-results-engine");
 const imageAltMediaSeo = require("../tools/image-alt-media-seo");
 const rankVisibilityTracker = require("../tools/rank-visibility-tracker");
-const aiAltTextEngine = require("../tools/ai-alt-text-engine");
+const seoSiteCrawler = require("../tools/seo-site-crawler");
+const internalLinkOptimizer = require("../tools/internal-link-optimizer");
+const aiContentImageGen = require("../tools/ai-content-image-gen");
 
-// ------------------------------------------------------
-// Lifecycle / retention / automation tools
-// ------------------------------------------------------
+// ==============  Email & Lifecycle  ==============
+const emailAutomationBuilder = require("../tools/email-automation-builder");
 const abandonedCheckoutWinback = require("../tools/abandoned-checkout-winback");
 const returnsRmaAutomation = require("../tools/returns-rma-automation");
 const ltvChurnPredictor = require("../tools/ltv-churn-predictor");
-const emailAutomationBuilder = require("../tools/email-automation-builder");
 const socialSchedulerContentEngine = require("../tools/social-scheduler-content-engine");
 const reviewUgcEngine = require("../tools/review-ugc-engine");
-const klaviyoFlowAutomation = require("../tools/klaviyo-flow-automation");
 
-// ------------------------------------------------------
-// Pricing, finance, operations
-// ------------------------------------------------------
-const dynamicPricingEngine = require("../tools/dynamic-pricing-engine");
-const financeAutopilot = require("../tools/finance-autopilot");
-const dailyCfoPack = require("../tools/daily-cfo-pack");
-const inventorySupplierSync = require("../tools/inventory-supplier-sync");
-const multiChannelOptimizer = require("../tools/multi-channel-optimizer");
-
-// ------------------------------------------------------
-// Support, inbox, assistants
-// ------------------------------------------------------
-const customerSupportAi = require("../tools/customer-support-ai");
+// ==============  Customer Support  ==============
 const inboxAssistant = require("../tools/inbox-assistant");
-const inboxReplyAssistant = require("../tools/inbox-reply-assistant");
 const aiSupportAssistant = require("../tools/ai-support-assistant");
 
-// ------------------------------------------------------
-// Strategy, insights, brand / ops layers
-// ------------------------------------------------------
-const aiLaunchPlanner = require("../tools/ai-launch-planner");
-const autoInsights = require("../tools/auto-insights");
-const brandIntelligenceLayer = require("../tools/brand-intelligence-layer");
-const creativeAutomationEngine = require("../tools/creative-automation-engine");
-const auraOperationsAi = require("../tools/aura-operations-ai");
-
-// Ads, analytics, and new feature tools (actual modules, not stubs)
+// ==============  Ads & Acquisition  ==============
 const googleAdsIntegration = require("../tools/google-ads-integration");
 const facebookAdsIntegration = require("../tools/facebook-ads-integration");
 const tiktokAdsIntegration = require("../tools/tiktok-ads-integration");
 const adsAnomalyGuard = require("../tools/ads-anomaly-guard");
 const adCreativeOptimizer = require("../tools/ad-creative-optimizer");
 const omnichannelCampaignBuilder = require("../tools/omnichannel-campaign-builder");
-const aiSegmentationEngine = require("../tools/ai-segmentation-engine");
-const predictiveAnalyticsWidgets = require("../tools/predictive-analytics-widgets");
-const aiContentImageGen = require("../tools/ai-content-image-gen");
-const selfServiceAnalytics = require("../tools/self-service-analytics");
-const compliancePrivacySuite = require("../tools/compliance-privacy-suite");
 
-// ------------------------------------------------------
-// Platform / orchestration
-// (SDKs like aura-api-sdk should NOT be registered as tools)
-// ------------------------------------------------------
-const workflowOrchestrator = require("../tools/workflow-orchestrator");
+// ==============  Analytics & Intelligence  ==============
+const advancedAnalyticsAttribution = require("../tools/advanced-analytics-attribution");
+const predictiveAnalyticsWidgets = require("../tools/predictive-analytics-widgets");
+const selfServiceAnalytics = require("../tools/self-service-analytics");
+const aiSegmentationEngine = require("../tools/ai-segmentation-engine");
+const autoInsights = require("../tools/auto-insights");
+
+// ==============  Personalization & Revenue  ==============
+const dynamicPricingEngine = require("../tools/dynamic-pricing-engine");
+
+// ==============  Finance & Operations  ==============
+const financeAutopilot = require("../tools/finance-autopilot");
+const inventorySupplierSync = require("../tools/inventory-supplier-sync");
+
+// ==============  Social & Brand  ==============
+const brandIntelligenceLayer = require("../tools/brand-intelligence-layer");
+const creativeAutomationEngine = require("../tools/creative-automation-engine");
+
+// ==============  Platform & Developer  ==============
+const auraOperationsAi = require("../tools/aura-operations-ai");
+const aiLaunchPlanner = require("../tools/ai-launch-planner");
+const compliancePrivacySuite = require("../tools/compliance-privacy-suite");
 const mainSuite = require("../tools/main-suite");
 
 // ------------------------------------------------------
 // Master list – ONE place to register tools.
-// You can require helpers/SDKs elsewhere; only *tools*
-// go in this array.
+// Helpers/SDKs (aura-api-sdk) should NOT be in this array.
+// Scaffold directories without index.js are not registered
+// here but still have frontend UIs and backend dirs.
 // ------------------------------------------------------
 const allTools = [
-  // SEO + content / planning
-  productSeo,
-  blogSeo,
-  weeklyBlogContentEngine,
-  blogDraftEngine,
-  onPageSeoEngine,
-  technicalSeoAuditor,
-  schemaRichResultsEngine,
-  imageAltMediaSeo,
-  rankVisibilityTracker,
-  aiAltTextEngine,
+  // SEO & Content
+  productSeo, blogSeo, blogDraftEngine, weeklyBlogContentEngine,
+  onPageSeoEngine, technicalSeoAuditor, schemaRichResultsEngine,
+  imageAltMediaSeo, rankVisibilityTracker, seoSiteCrawler,
+  internalLinkOptimizer, aiContentImageGen,
 
-  // Lifecycle / retention / automation
-  abandonedCheckoutWinback,
-  returnsRmaAutomation,
-  ltvChurnPredictor,
-  emailAutomationBuilder,
-  socialSchedulerContentEngine,
-  reviewUgcEngine,
-  klaviyoFlowAutomation,
+  // Email & Lifecycle
+  emailAutomationBuilder, abandonedCheckoutWinback, returnsRmaAutomation,
+  ltvChurnPredictor, socialSchedulerContentEngine, reviewUgcEngine,
 
-  // Pricing / finance / operations
+  // Customer Support
+  inboxAssistant, aiSupportAssistant,
+
+  // Ads & Acquisition
+  googleAdsIntegration, facebookAdsIntegration, tiktokAdsIntegration,
+  adsAnomalyGuard, adCreativeOptimizer, omnichannelCampaignBuilder,
+
+  // Analytics & Intelligence
+  advancedAnalyticsAttribution, predictiveAnalyticsWidgets,
+  selfServiceAnalytics, aiSegmentationEngine, autoInsights,
+
+  // Personalization & Revenue
   dynamicPricingEngine,
-  financeAutopilot,
-  dailyCfoPack,
-  inventorySupplierSync,
-  multiChannelOptimizer,
 
-  // Support / inbox / assistants
-  customerSupportAi,
-  inboxAssistant,
-  inboxReplyAssistant,
-  aiSupportAssistant,
+  // Finance & Operations
+  financeAutopilot, inventorySupplierSync,
 
-  // Strategy / insights / brand / ops
-  aiLaunchPlanner,
-  autoInsights,
-  brandIntelligenceLayer,
-  creativeAutomationEngine,
-  auraOperationsAi,
+  // Social & Brand
+  brandIntelligenceLayer, creativeAutomationEngine,
 
-  // Ads, analytics, and orchestration modules (minimal functional handlers)
-  googleAdsIntegration,
-  facebookAdsIntegration,
-  tiktokAdsIntegration,
-  adsAnomalyGuard,
-  adCreativeOptimizer,
-  omnichannelCampaignBuilder,
-  aiSegmentationEngine,
-  predictiveAnalyticsWidgets,
-  aiContentImageGen,
-  selfServiceAnalytics,
-  compliancePrivacySuite,
-
-  // Platform / orchestration
-  workflowOrchestrator,
-  mainSuite,
+  // Platform & Developer
+  auraOperationsAi, aiLaunchPlanner, compliancePrivacySuite, mainSuite,
 ];
 
 // ------------------------------------------------------

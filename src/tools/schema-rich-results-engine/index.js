@@ -4,6 +4,11 @@
 // ===============================================
 
 const key = "schema-rich-results-engine";
+const meta = {
+  id: key,
+  name: 'Schema & Rich Results Engine',
+  description: 'Generate and validate JSON-LD schema markup for Google rich results.',
+};
 
 async function run(input = {}, ctx = {}) {
   const env = ctx.environment || process.env.NODE_ENV || "development";
@@ -38,4 +43,4 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+module.exports = { key, meta, run };

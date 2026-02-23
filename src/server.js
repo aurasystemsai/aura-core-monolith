@@ -45,9 +45,6 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // const lusca = require('lusca');
 const PORT = process.env.PORT || 10000;
 
-// Consolidated suites
-const seoMasterSuiteRouter = require('./tools/seo-master-suite/router');
-
 const express = require('express');
 const app = express();
 // Dynamic CORS for embedded Shopify app
@@ -141,60 +138,57 @@ app.use('/api/advanced-ai', require('./routes/advanced-ai'));
 // --- Register all tool routers (auto-generated, advanced features) ---
 // Apply plan-based access control middleware to premium tools
 const { requireTool } = planAccessControl;
+const { requireCreditsOnMutation } = require('./core/creditMiddleware');
 
 const toolRouters = [
-  // Free tier tools - no middleware
-  { path: '/api/product-seo', router: require('./tools/product-seo/router') },
-  { path: '/api/blog-seo', router: require('./tools/blog-seo/router') },
-  { path: '/api/tools/seo-site-crawler', router: require('./tools/seo-site-crawler/router') },
-  
-  // Professional tier tools - require professional plan
-  { path: '/api/ai-alt-text-engine', router: require('./tools/ai-alt-text-engine/router'), middleware: requireTool('ai-alt-text-engine') },
-  { path: '/api/ai-content-brief-generator', router: require('./tools/ai-content-brief-generator/router'), middleware: requireTool('content-brief-generator') },
-  { path: '/api/weekly-blog-content-engine', router: require('./tools/weekly-blog-content-engine/router'), middleware: requireTool('weekly-blog-content') },
-  { path: '/api/blog-draft-engine', router: require('./tools/blog-draft-engine/router'), middleware: requireTool('blog-draft-engine') },
-  { path: '/api/abandoned-checkout-winback', router: require('./tools/abandoned-checkout-winback/router'), middleware: requireTool('abandoned-checkout') },
-  { path: '/api/review-ugc-engine', router: require('./routes/reviews-ugc-engine'), middleware: requireTool('reviews-ugc') },
-  { path: '/api/email-automation-builder', router: require('./tools/email-automation-builder/router'), middleware: requireTool('email-automation-builder') },
-  { path: '/api/klaviyo-flow-automation', router: require('./tools/klaviyo-flow-automation/router'), middleware: requireTool('klaviyo-flow-automation') },
-  { path: '/api/on-page-seo-engine', router: require('./tools/on-page-seo-engine/router') },
-  { path: '/api/internal-link-optimizer', router: require('./tools/internal-link-optimizer/router'), middleware: requireTool('internal-link-optimizer') },
-  { path: '/api/technical-seo-auditor', router: require('./tools/technical-seo-auditor/router'), middleware: requireTool('technical-seo-auditor') },
-  { path: '/api/schema-rich-results-engine', router: require('./tools/schema-rich-results-engine/router'), middleware: requireTool('schema-rich-results') },
-  { path: '/api/rank-visibility-tracker', router: require('./tools/rank-visibility-tracker/router'), middleware: requireTool('rank-visibility-tracker') },
-  { path: '/api/content-health-auditor', router: require('./tools/content-health-auditor/router'), middleware: requireTool('content-health-auditor') },
-  { path: '/api/social-scheduler-content-engine', router: require('./tools/social-scheduler-content-engine/router'), middleware: requireTool('social-scheduler') },
-  { path: '/api/inbox-assistant', router: require('./tools/inbox-assistant/router'), middleware: requireTool('inbox-assistant') },
-  { path: '/api/inbox-reply-assistant', router: require('./tools/inbox-reply-assistant/router'), middleware: requireTool('inbox-reply-assistant') },
-  
-  // Enterprise tier tools - require enterprise plan
-  { path: '/api/ai-support-assistant', router: require('./tools/ai-support-assistant/router'), middleware: requireTool('ai-support-assistant') },
-  { path: '/api/advanced-analytics-attribution', router: require('./tools/advanced-analytics-attribution/router') },
-  { path: '/api/creative-automation-engine', router: require('./tools/creative-automation-engine/router'), middleware: requireTool('creative-automation-engine') },
-  { path: '/api/workflow-orchestrator', router: require('./tools/workflow-orchestrator/router'), middleware: requireTool('workflow-orchestrator') },
-  { path: '/api/multi-channel-optimizer', router: require('./tools/multi-channel-optimizer/router'), middleware: requireTool('multi-channel-optimizer') },
-  { path: '/api/conditional-logic-automation', router: require('./tools/conditional-logic-automation/router'), middleware: requireTool('conditional-logic-automation') },
-  { path: '/api/ltv-churn-predictor', router: require('./tools/ltv-churn-predictor/router'), middleware: requireTool('ltv-churn-predictor') },
-  { path: '/api/inventory-supplier-sync', router: require('./tools/inventory-supplier-sync/router'), middleware: requireTool('inventory-supplier-sync') },
-  { path: '/api/image-alt-media-seo', router: require('./tools/image-alt-media-seo/router'), middleware: requireTool('image-alt-media-seo') },
-  { path: '/api/daily-cfo-pack', router: require('./tools/daily-cfo-pack/router'), middleware: requireTool('daily-cfo-pack') },
-  { path: '/api/dynamic-pricing-engine', router: require('./tools/dynamic-pricing-engine/router'), middleware: requireTool('dynamic-pricing-engine') },
-  { path: '/api/customer-support-ai', router: require('./tools/customer-support-ai/router'), middleware: requireTool('customer-support-ai') },
-  { path: '/api/finance-autopilot', router: require('./tools/finance-autopilot/router'), middleware: requireTool('finance-autopilot') },
-  { path: '/api/auto-insights', router: require('./tools/auto-insights/router'), middleware: requireTool('auto-insights') },
-  { path: '/api/ai-launch-planner', router: require('./tools/ai-launch-planner/router'), middleware: requireTool('ai-launch-planner') },
-  { path: '/api/aura-api-sdk', router: require('./tools/aura-api-sdk/router'), middleware: requireTool('white-label-api') },
-  { path: '/api/aura-operations-ai', router: require('./tools/aura-operations-ai/router'), middleware: requireTool('aura-operations-ai') },
-  { path: '/api/brand-intelligence-layer', router: require('./tools/brand-intelligence-layer/router'), middleware: requireTool('brand-intelligence-layer') },
-  { path: '/api/main-suite', router: require('./tools/main-suite/router'), middleware: requireTool('main-suite') },
-  { path: '/api/visual-workflow-builder', router: require('./tools/visual-workflow-builder/router'), middleware: requireTool('visual-workflow-builder') },
-  { path: '/api/webhook-api-triggers', router: require('./tools/webhook-api-triggers/router'), middleware: requireTool('webhook-api-triggers') },
+  // Starter tier (free) — dashboard only, all other tools require paid plan
+  // product-seo, blog-seo, seo-site-crawler, on-page-seo-engine moved to Growth
+
+  // Growth tier tools
+  { path: '/api/product-seo', router: require('./tools/product-seo/router'), middleware: requireTool('product-seo'), creditAction: 'seo-scan' },
+  { path: '/api/blog-seo', router: require('./tools/blog-seo/router'), middleware: requireTool('blog-seo'), creditAction: 'seo-analysis' },
+  { path: '/api/tools/seo-site-crawler', router: require('./tools/seo-site-crawler/router'), middleware: requireTool('seo-site-crawler'), creditAction: 'seo-scan' },
+  { path: '/api/on-page-seo-engine', router: require('./tools/on-page-seo-engine/router'), middleware: requireTool('on-page-seo-engine'), creditAction: 'seo-analysis' },
+  { path: '/api/ai-content-brief-generator', router: require('./tools/ai-content-brief-generator/router'), middleware: requireTool('ai-content-brief-generator'), creditAction: 'content-brief' },
+  { path: '/api/weekly-blog-content-engine', router: require('./tools/weekly-blog-content-engine/router'), middleware: requireTool('weekly-blog-content-engine'), creditAction: 'blog-draft' },
+  { path: '/api/blog-draft-engine', router: require('./tools/blog-draft-engine/router'), middleware: requireTool('blog-draft-engine'), creditAction: 'blog-draft' },
+  { path: '/api/abandoned-checkout-winback', router: require('./tools/abandoned-checkout-winback/router'), middleware: requireTool('abandoned-checkout-winback'), creditAction: 'email-gen' },
+  { path: '/api/review-ugc-engine', router: require('./tools/review-ugc-engine/router'), middleware: requireTool('review-ugc-engine'), creditAction: 'generic-ai' },
+  { path: '/api/email-automation-builder', router: require('./tools/email-automation-builder/router'), middleware: requireTool('email-automation-builder'), creditAction: 'email-gen' },
+  { path: '/api/internal-link-optimizer', router: require('./tools/internal-link-optimizer/router'), middleware: requireTool('internal-link-optimizer'), creditAction: 'internal-link' },
+  { path: '/api/technical-seo-auditor', router: require('./tools/technical-seo-auditor/router'), middleware: requireTool('technical-seo-auditor'), creditAction: 'seo-scan' },
+  { path: '/api/schema-rich-results-engine', router: require('./tools/schema-rich-results-engine/router'), middleware: requireTool('schema-rich-results-engine'), creditAction: 'schema-gen' },
+  { path: '/api/rank-visibility-tracker', router: require('./tools/rank-visibility-tracker/router'), middleware: requireTool('rank-visibility-tracker'), creditAction: 'rank-check' },
+  { path: '/api/social-scheduler-content-engine', router: require('./tools/social-scheduler-content-engine/router'), middleware: requireTool('social-scheduler-content-engine'), creditAction: 'social-post' },
+  { path: '/api/inbox-assistant', router: require('./tools/inbox-assistant/router'), middleware: requireTool('inbox-assistant'), creditAction: 'support-reply' },
+  { path: '/api/image-alt-media-seo', router: require('./tools/image-alt-media-seo/router'), middleware: requireTool('image-alt-media-seo'), creditAction: 'alt-text' },
+  { path: '/api/dynamic-pricing-engine', router: require('./tools/dynamic-pricing-engine/router'), middleware: requireTool('dynamic-pricing-engine'), creditAction: 'pricing-optimize' },
+  { path: '/api/ltv-churn-predictor', router: require('./tools/ltv-churn-predictor/router'), middleware: requireTool('ltv-churn-predictor'), creditAction: 'churn-predict' },
+  { path: '/api/inventory-supplier-sync', router: require('./tools/inventory-supplier-sync/router'), middleware: requireTool('inventory-supplier-sync'), creditAction: 'generic-ai' },
+  { path: '/api/finance-autopilot', router: require('./tools/finance-autopilot/router'), middleware: requireTool('finance-autopilot'), creditAction: 'analytics-insight' },
+
+  // Pro tier tools
+  { path: '/api/ai-support-assistant', router: require('./tools/ai-support-assistant/router'), middleware: requireTool('ai-support-assistant'), creditAction: 'ai-support' },
+  { path: '/api/advanced-analytics-attribution', router: require('./tools/advanced-analytics-attribution/router'), middleware: requireTool('advanced-analytics-attribution'), creditAction: 'analytics-insight' },
+  { path: '/api/creative-automation-engine', router: require('./tools/creative-automation-engine/router'), middleware: requireTool('creative-automation-engine'), creditAction: 'ad-copy' },
+  { path: '/api/auto-insights', router: require('./tools/auto-insights/router'), middleware: requireTool('auto-insights'), creditAction: 'analytics-insight' },
+  { path: '/api/brand-intelligence-layer', router: require('./tools/brand-intelligence-layer/router'), middleware: requireTool('brand-intelligence-layer'), creditAction: 'competitive-analysis' },
+
+  // Enterprise tier tools
+  { path: '/api/ai-launch-planner', router: require('./tools/ai-launch-planner/router'), middleware: requireTool('ai-launch-planner'), creditAction: 'campaign-gen' },
+  { path: '/api/aura-api-sdk', router: require('./tools/aura-api-sdk/router'), middleware: requireTool('aura-api-sdk'), creditAction: 'generic-ai' },
+  { path: '/api/aura-operations-ai', router: require('./tools/aura-operations-ai/router'), middleware: requireTool('aura-operations-ai'), creditAction: 'analytics-insight' },
+  { path: '/api/main-suite', router: require('./tools/main-suite/router') },
+  { path: '/api/webhook-api-triggers', router: require('./tools/webhook-api-triggers/router'), middleware: requireTool('webhook-api-triggers'), creditAction: 'generic-ai' },
 ];
-toolRouters.forEach(({ path, router, middleware }) => {
+toolRouters.forEach(({ path, router, middleware, creditAction }) => {
   try {
     console.log(`[Router Registration] ${path}:`, typeof router, Array.isArray(router), router && router.stack ? 'Express Router' : typeof router);
-    if (middleware) {
-      app.use(path, middleware, router);
+    const mws = [];
+    if (middleware) mws.push(middleware);
+    if (creditAction) mws.push(requireCreditsOnMutation(creditAction));
+    if (mws.length > 0) {
+      app.use(path, ...mws, router);
     } else {
       app.use(path, router);
     }
@@ -460,7 +454,8 @@ app.post('/api/product-seo/push-to-shopify', async (req, res) => {
 });
 
 // --- AI Chatbot API (OpenAI-powered, v4 SDK) ---
-app.post('/api/ai/chatbot', async (req, res) => {
+const { requireCredits } = require('./core/creditMiddleware');
+app.post('/api/ai/chatbot', requireCredits('ai-support'), async (req, res) => {
   try {
     const { messages } = req.body;
     if (!Array.isArray(messages) || !messages.length) {
@@ -475,6 +470,7 @@ app.post('/api/ai/chatbot', async (req, res) => {
       temperature: 0.7
     });
     const reply = completion.choices[0]?.message?.content?.trim() || '';
+    if (req.deductCredits) req.deductCredits();
     res.json({ ok: true, reply });
   } catch (err) {
     console.error('[AI Chatbot] Error:', err);
@@ -856,13 +852,6 @@ app.use("/api", makeRoutes);
 // Automation Scheduling API
 app.use("/api/automation", automationRoutes);
 app.use("/automation", automationRoutes);
-
-// AI Alt-Text Engine API
-const aiAltTextEngineRouter = require('./tools/ai-alt-text-engine/router');
-app.use('/api/ai-alt-text-engine', aiAltTextEngineRouter);
-
-// SEO Master Suite API (consolidated SEO tool)
-app.use('/api/seo-master-suite', seoMasterSuiteRouter);
 
 // ---------- HEALTH CHECK ----------
 
@@ -1425,15 +1414,16 @@ app.post("/api/run/:toolId", toolRunHandler);
 
 
 // ---------- ABANDONED CHECKOUT WINBACK: GENERATE MESSAGE ENDPOINT ----------
-app.post('/api/winback/generate-message', async (req, res) => {
+app.post('/api/winback/generate-message', requireCredits('email-gen'), async (req, res) => {
   try {
     const { customerName, cartItems, discountCode, brand, tone, prompt, language } = req.body || {};
     if (!customerName || !Array.isArray(cartItems) || cartItems.length === 0) {
       return res.status(400).json({ ok: false, error: 'customerName and cartItems[] are required' });
     }
     // Use OpenAI integration for winback message generation
-    const openai = require('./tools/abandoned-checkout-winback/openai.js');
-    const result = await openai.generateWinbackMessage({ customerName, cartItems, discountCode, brand, tone, prompt, language });
+    const openaiUtil = require('./tools/abandoned-checkout-winback/openai.js');
+    const result = await openaiUtil.generateWinbackMessage({ customerName, cartItems, discountCode, brand, tone, prompt, language });
+    if (req.deductCredits) req.deductCredits();
     return res.json({ ok: true, message: result });
   } catch (err) {
     console.error('Winback message generation error', err);
@@ -1441,15 +1431,16 @@ app.post('/api/winback/generate-message', async (req, res) => {
   }
 });
 // ---------- RETURNS/RMA AUTOMATION: GENERATE MESSAGE ENDPOINT ----------
-app.post('/api/rma/generate-message', async (req, res) => {
+app.post('/api/rma/generate-message', requireCredits('email-gen'), async (req, res) => {
   try {
     const { customerName, orderItems, reason, brand, tone, prompt, language } = req.body || {};
     if (!customerName || !Array.isArray(orderItems) || orderItems.length === 0 || !reason) {
       return res.status(400).json({ ok: false, error: 'customerName, orderItems[], and reason are required' });
     }
     // Use OpenAI integration for RMA message generation
-    const openai = require('./tools/returns-rma-automation/openai.js');
-    const result = await openai.generateRmaMessage({ customerName, orderItems, reason, brand, tone, prompt, language });
+    const openaiRma = require('./tools/returns-rma-automation/openai.js');
+    const result = await openaiRma.generateRmaMessage({ customerName, orderItems, reason, brand, tone, prompt, language });
+    if (req.deductCredits) req.deductCredits();
     return res.json({ ok: true, message: result });
   } catch (err) {
     console.error('RMA message generation error', err);
@@ -1684,16 +1675,11 @@ app.use((req, res, next) => {
 
 // ---------- START SERVER ----------
 
-const { initABTestingSuiteSocket } = require('./tools/ab-testing-suite/abTestingSuiteSocket');
 const http = require('http');
 
 
 if (require.main === module) {
-  const http = require('http');
   server = http.createServer(app);
-  // WebSocket for /ws/abandoned-checkout-winback removed (not supported in this environment)
-  // Attach other sockets
-  initABTestingSuiteSocket(server);
   server.listen(PORT, () => {
     console.log(
       `[Core] AURA Core API running on port ${PORT}\n` +

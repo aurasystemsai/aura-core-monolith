@@ -4,6 +4,11 @@
 // ===============================================
 
 const key = "technical-seo-auditor";
+const meta = {
+  id: key,
+  name: 'Technical SEO Auditor',
+  description: 'Comprehensive technical SEO health checks with AI-powered audit reports.',
+};
 
 async function run(input = {}, ctx = {}) {
   const env = ctx.environment || process.env.NODE_ENV || "development";
@@ -44,4 +49,4 @@ async function run(input = {}, ctx = {}) {
   };
 }
 
-module.exports = { key, run };
+module.exports = { key, meta, run };

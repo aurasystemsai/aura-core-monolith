@@ -163,6 +163,41 @@ function Msg({ text, type = 'error' }) {
   return <div style={{ background: bg, color: col, border: `1px solid ${col}44`, borderRadius: '6px', padding: '10px 14px', marginBottom: '12px', fontSize: '13px' }}>{text}</div>;
 }
 
+const aiBtn = {
+  background: 'linear-gradient(135deg, #8b5cf6, #6366f1)', color: '#fafafa', border: 'none',
+  borderRadius: '6px', padding: '7px 14px', cursor: 'pointer', fontSize: '13px', fontWeight: 600,
+  display: 'inline-flex', alignItems: 'center', gap: '6px',
+};
+const aiBtnLoading = { ...aiBtn, background: '#3f3f46', cursor: 'wait' };
+const aiBtnDisabled = { ...aiBtn, opacity: 0.5, cursor: 'not-allowed' };
+const aiCreditBadge = { background: '#ffffff22', borderRadius: '4px', padding: '1px 6px', fontSize: '11px', marginLeft: '2px' };
+
+function AIGenButton({ onClick, loading, label = 'AI Generate', credits = 2, disabled, style: sx }) {
+  return (
+    <button
+      style={{ ...(loading ? aiBtnLoading : disabled ? aiBtnDisabled : aiBtn), ...sx }}
+      onClick={onClick}
+      disabled={disabled || loading}
+    >
+      {loading ? '\u23F3' : '\u2728'} {loading ? 'Generating...' : label}
+      <span style={aiCreditBadge}>{credits} cr</span>
+    </button>
+  );
+}
+
+function AIResultCard({ result, onClose, title = 'AI Result' }) {
+  if (!result) return null;
+  return (
+    <div style={{ ...S.card, marginTop: '12px', border: '1px solid #8b5cf644' }}>
+      <div style={{ ...S.row, justifyContent: 'space-between', marginBottom: '8px' }}>
+        <div style={{ color: '#8b5cf6', fontWeight: 600, fontSize: '14px' }}>\u2728 {title}</div>
+        {onClose && <button style={{ ...S.btnGhost, padding: '2px 8px', fontSize: '12px' }} onClick={onClose}>\u2715</button>}
+      </div>
+      <pre style={{ color: '#e4e4e7', fontSize: '13px', whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.5 }}>{typeof result === 'string' ? result : JSON.stringify(result, null, 2)}</pre>
+    </div>
+  );
+}
+
 // ─── CAMPAIGNS ───────────────────────────────────────────────────────────────
 function CampaignsMgmt({ tab }) {
   const [campaigns, setCampaigns] = useState([]);
@@ -173,6 +208,24 @@ function CampaignsMgmt({ tab }) {
   const [segments, setSegments] = useState([]);
   const [personalPrompt, setPersonalPrompt] = useState('');
   const [personalResult, setPersonalResult] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+  const [aiField, setAiField] = useState('');
+
+  async function aiGenerate(type, prompt, field) {
+    setAiLoading(true); setAiResult(null); setAiField(field || type);
+    try {
+      let d;
+      if (type === 'subject') {
+        d = await apiFetch('/ai/subject-lines/generate', { method: 'POST', body: JSON.stringify({ topic: prompt || form.name || 'promotional email', count: 3 }) });
+        setAiResult(d.subjectLines || d.variants || d.suggestions || JSON.stringify(d));
+      } else {
+        d = await apiFetch('/ai/content/generate', { method: 'POST', body: JSON.stringify({ type, prompt: prompt || 'Generate professional email marketing content', tone: 'professional' }) });
+        setAiResult(d.content || d.html || d.text || JSON.stringify(d));
+      }
+    } catch (e) { setAiResult('Error: ' + e.message); }
+    setAiLoading(false);
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -259,20 +312,43 @@ function CampaignsMgmt({ tab }) {
       <div style={S.title}>Create Campaign</div>
       <Msg text={msg} type={msg.includes('rror') ? 'error' : 'ok'} />
       <form onSubmit={createCampaign} style={{ maxWidth:'560px', marginTop:'16px' }}>
-        {[['name','Campaign Name'],['subject','Subject Line'],['fromEmail','From Email'],['fromName','From Name']].map(([k,l]) => (
+        <div style={S.fg}>
+          <label style={S.label}>Campaign Name</label>
+          <div style={S.row}>
+            <input style={{ ...S.input, flex: 1 }} value={form.name} onChange={e => setForm(p=>({...p,name:e.target.value}))} required />
+            <AIGenButton label="AI Name" credits={2} loading={aiLoading && aiField==='name'} onClick={() => aiGenerate('campaign-name', `Suggest 3 creative campaign names for: ${form.subject || 'email marketing campaign'}`, 'name')} />
+          </div>
+        </div>
+        <div style={S.fg}>
+          <label style={S.label}>Subject Line</label>
+          <div style={S.row}>
+            <input style={{ ...S.input, flex: 1 }} value={form.subject} onChange={e => setForm(p=>({...p,subject:e.target.value}))} required />
+            <AIGenButton label="AI Subject" credits={2} loading={aiLoading && aiField==='subject'} onClick={() => aiGenerate('subject', form.name || 'promotional email', 'subject')} />
+          </div>
+        </div>
+        {[['fromEmail','From Email'],['fromName','From Name']].map(([k,l]) => (
           <div key={k} style={S.fg}>
             <label style={S.label}>{l}</label>
             <input style={S.input} value={form[k]} onChange={e => setForm(p=>({...p,[k]:e.target.value}))} required />
           </div>
         ))}
-        <button type="submit" style={S.btnPrimary}>Create Campaign</button>
+        <div style={S.row}>
+          <button type="submit" style={S.btnPrimary}>Create Campaign</button>
+          <AIGenButton label="AI Full Campaign" credits={3} loading={aiLoading && aiField==='full-campaign'} onClick={() => aiGenerate('campaign', `Create a complete email campaign about: ${form.name || form.subject || 'product promotion'}`, 'full-campaign')} />
+        </div>
       </form>
+      {aiResult && aiField && ['name','subject','full-campaign'].includes(aiField) && (
+        <AIResultCard result={aiResult} title={aiField === 'subject' ? 'AI Subject Lines' : aiField === 'name' ? 'AI Campaign Names' : 'AI Campaign Draft'} onClose={() => setAiResult(null)} />
+      )}
     </div>
   );
 
   if (tab === 'templates') return (
     <div>
-      <div style={S.title}>Email Templates</div>
+      <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'16px' }}>
+        <div style={S.title}>Email Templates</div>
+        <AIGenButton label="AI Generate Template" credits={2} loading={aiLoading && aiField==='template'} onClick={() => aiGenerate('template', 'Generate a professional email template for e-commerce promotions', 'template')} />
+      </div>
       <Msg text={msg} type="error" />
       {loading ? <div style={S.muted}>Loading...</div> : (
         <div style={{ ...S.grid3, marginTop:'16px' }}>
@@ -285,12 +361,16 @@ function CampaignsMgmt({ tab }) {
           {!templates.length && <div style={S.muted}>No templates found.</div>}
         </div>
       )}
+      {aiResult && aiField==='template' && <AIResultCard result={aiResult} title="AI Generated Template" onClose={() => setAiResult(null)} />}
     </div>
   );
 
   if (tab === 'sequences') return (
     <div>
-      <div style={S.title}>Email Sequences</div>
+      <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'16px' }}>
+        <div style={S.title}>Email Sequences</div>
+        <AIGenButton label="AI Generate Sequence" credits={3} loading={aiLoading && aiField==='sequence'} onClick={() => aiGenerate('sequence', 'Create a 5-email welcome sequence for a new e-commerce subscriber with optimal timing', 'sequence')} />
+      </div>
       <p style={S.muted}>Multi-email sequences with automated timing.</p>
       <div style={{ ...S.card, marginTop:'16px' }}>
         <div style={S.h2}>Active Sequences</div>
@@ -308,6 +388,7 @@ function CampaignsMgmt({ tab }) {
           </div>
         ))}
       </div>
+      {aiResult && aiField==='sequence' && <AIResultCard result={aiResult} title="AI Generated Sequence" onClose={() => setAiResult(null)} />}
     </div>
   );
 
@@ -368,7 +449,10 @@ function CampaignsMgmt({ tab }) {
       <div>
         <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'16px' }}>
           <div><div style={S.title}>Transactional Emails</div><p style={S.muted}>System-triggered emails with guaranteed delivery — separate from marketing sends.</p></div>
-          <button style={S.btnPrimary}>+ New Template</button>
+          <div style={S.row}>
+            <AIGenButton label="AI Write Template" credits={2} loading={aiLoading && aiField==='transactional'} onClick={() => aiGenerate('transactional', 'Write a professional transactional email template for an e-commerce order confirmation with dynamic placeholders', 'transactional')} />
+            <button style={S.btnPrimary}>+ New Template</button>
+          </div>
         </div>
         <div style={{ ...S.grid4, marginTop:'8px', marginBottom:'16px' }}>
           <StatCard label="Active Templates" value={TRANSACTIONAL.filter(t=>t.status==='active').length} color="#22c55e" />
@@ -390,6 +474,7 @@ function CampaignsMgmt({ tab }) {
             ))}
           </tbody>
         </table>
+        {aiResult && aiField==='transactional' && <AIResultCard result={aiResult} title="AI Transactional Template" onClose={() => setAiResult(null)} />}
       </div>
     );
   }
@@ -448,7 +533,10 @@ function CampaignsMgmt({ tab }) {
       <div>
         <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'16px' }}>
           <div><div style={S.title}>Forms & Popups</div><p style={S.muted}>Build opt-in forms, popups, and interactive widgets to grow your list.</p></div>
-          <button style={S.btnPrimary}>+ New Form</button>
+          <div style={S.row}>
+            <AIGenButton label="AI Generate Form" credits={2} loading={aiLoading && aiField==='form'} onClick={() => aiGenerate('form', 'Generate compelling copy for a newsletter signup popup with headline, subtext, and CTA button text for an e-commerce store', 'form')} />
+            <button style={S.btnPrimary}>+ New Form</button>
+          </div>
         </div>
         <div style={{ ...S.grid4, marginTop:'8px', marginBottom:'16px' }}>
           <StatCard label="Active Forms" value={FORMS.filter(f=>f.status==='active').length} color="#22c55e" />
@@ -477,6 +565,7 @@ function CampaignsMgmt({ tab }) {
             </div>
           ))}
         </div>
+        {aiResult && aiField==='form' && <AIResultCard result={aiResult} title="AI Generated Form Copy" onClose={() => setAiResult(null)} />}
       </div>
     );
   }
@@ -560,7 +649,10 @@ function CampaignsMgmt({ tab }) {
       <div>
         <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'16px' }}>
           <div><div style={S.title}>Landing Pages</div><p style={S.muted}>Build high-converting campaign landing pages — no code required.</p></div>
-          <button style={S.btnPrimary}>+ New Landing Page</button>
+          <div style={S.row}>
+            <AIGenButton label="AI Generate Page" credits={3} loading={aiLoading && aiField==='landing'} onClick={() => aiGenerate('landing-page', 'Generate high-converting landing page copy with headline, subheadline, key benefits, CTA text, and social proof section', 'landing')} />
+            <button style={S.btnPrimary}>+ New Landing Page</button>
+          </div>
         </div>
         <div style={{ ...S.grid4, marginTop:'8px', marginBottom:'16px' }}>
           <StatCard label="Active Pages" value={PAGES.filter(p=>p.status==='published').length} color="#22c55e" />
@@ -597,6 +689,7 @@ function CampaignsMgmt({ tab }) {
             </div>
           </div>
         </div>
+        {aiResult && aiField==='landing' && <AIResultCard result={aiResult} title="AI Landing Page Copy" onClose={() => setAiResult(null)} />}
       </div>
     );
   }
@@ -817,8 +910,13 @@ function CampaignsMgmt({ tab }) {
   if (tab === 'stock-alerts') {
     return (
       <div>
-        <div style={S.h1}>Back-in-Stock & Price Drop Alerts</div>
-        <p style={S.muted}>Automatically notify customers when out-of-stock products return or when items they viewed drop in price.</p>
+        <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'8px' }}>
+          <div>
+            <div style={S.h1}>Back-in-Stock & Price Drop Alerts</div>
+            <p style={S.muted}>Automatically notify customers when out-of-stock products return or when items they viewed drop in price.</p>
+          </div>
+          <AIGenButton label="AI Write Alert Copy" credits={2} loading={aiLoading && aiField==='stock-alert'} onClick={() => aiGenerate('stock-alert', 'Write compelling back-in-stock and price drop email notification copy with urgency elements, product placeholders, and CTA buttons', 'stock-alert')} />
+        </div>
         <div style={S.grid4}>
           <StatCard label="Waitlist Signups" value="3,842" sub="Across 128 products" color="#8b5cf6" />
           <StatCard label="Alerts Sent" value="1,247" sub="Last 30 days" color="#3b82f6" />
@@ -896,6 +994,7 @@ function CampaignsMgmt({ tab }) {
             ))}
           </div>
         </div>
+        {aiResult && aiField==='stock-alert' && <AIResultCard result={aiResult} title="AI Alert Copy" onClose={() => setAiResult(null)} />}
       </div>
     );
   }
@@ -904,8 +1003,13 @@ function CampaignsMgmt({ tab }) {
   if (tab === 'coupon-engine') {
     return (
       <div>
-        <div style={S.h1}>Coupon & Discount Code Engine</div>
-        <p style={S.muted}>Auto-generate unique, single-use discount codes for each email recipient to drive conversions and prevent code sharing.</p>
+        <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'8px' }}>
+          <div>
+            <div style={S.h1}>Coupon & Discount Code Engine</div>
+            <p style={S.muted}>Auto-generate unique, single-use discount codes for each email recipient to drive conversions and prevent code sharing.</p>
+          </div>
+          <AIGenButton label="AI Suggest Strategy" credits={2} loading={aiLoading && aiField==='coupon'} onClick={() => aiGenerate('coupon-strategy', 'Suggest 3 optimal discount strategies for an e-commerce store including discount type, amount, targeting criteria, and expected ROI based on industry best practices', 'coupon')} />
+        </div>
         <div style={S.grid4}>
           <StatCard label="Active Codes" value="12,480" sub="Unique codes generated" color="#8b5cf6" />
           <StatCard label="Redeemed" value="3,240" sub="25.9% redemption rate" color="#22c55e" />
@@ -960,6 +1064,7 @@ function CampaignsMgmt({ tab }) {
             ))}
           </div>
         </div>
+        {aiResult && aiField==='coupon' && <AIResultCard result={aiResult} title="AI Discount Strategy" onClose={() => setAiResult(null)} />}
       </div>
     );
   }
@@ -981,8 +1086,13 @@ function CampaignsMgmt({ tab }) {
     ];
     return (
       <div>
-        <div style={S.title}>Surveys & Polls</div>
-        <p style={S.subtitle}>Collect feedback and preferences directly inside emails with interactive surveys, NPS scores, and quick polls.</p>
+        <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'8px' }}>
+          <div>
+            <div style={S.title}>Surveys & Polls</div>
+            <p style={S.subtitle}>Collect feedback and preferences directly inside emails with interactive surveys, NPS scores, and quick polls.</p>
+          </div>
+          <AIGenButton label="AI Generate Survey" credits={2} loading={aiLoading && aiField==='survey'} onClick={() => aiGenerate('survey', 'Generate 5 effective survey questions for an e-commerce post-purchase feedback form including NPS, product satisfaction, and improvement suggestions', 'survey')} />
+        </div>
         <div style={S.grid4}>
           <StatCard label="Total Responses" value="7,259" color="#8b5cf6" />
           <StatCard label="Active Surveys" value="3" color="#22c55e" />
@@ -1042,6 +1152,7 @@ function CampaignsMgmt({ tab }) {
             ))}
           </div>
         </div>
+        {aiResult && aiField==='survey' && <AIResultCard result={aiResult} title="AI Generated Survey Questions" onClose={() => setAiResult(null)} />}
       </div>
     );
   }
@@ -1346,9 +1457,12 @@ function CampaignsMgmt({ tab }) {
   if (tab === 'referral-program') {
     return (
       <div>
-        <div style={S.card}>
-          <h3 style={S.title}>Referral Program</h3>
-          <p style={S.subtitle}>Grow your list faster with subscriber referral rewards (Beehiiv / Kit / Drip style)</p>
+        <div style={{ ...S.row, justifyContent:'space-between' }}>
+          <div style={S.card}>
+            <h3 style={S.title}>Referral Program</h3>
+            <p style={S.subtitle}>Grow your list faster with subscriber referral rewards (Beehiiv / Kit / Drip style)</p>
+          </div>
+          <AIGenButton label="AI Referral Copy" credits={2} loading={aiLoading && aiField==='referral'} onClick={() => aiGenerate('referral', 'Write referral program email copy with share invite template, reward notification, and milestone celebration emails for an e-commerce referral program', 'referral')} style={{ alignSelf:'flex-start', marginTop:'12px' }} />
         </div>
         <div style={S.grid4}>
           <StatCard label="Active Referrers" value="1,248" color="#22c55e" />
@@ -2092,6 +2206,17 @@ function WorkflowsMgmt({ tab }) {
   const [stepTypes, setStepTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+
+  async function aiGenWorkflow(prompt) {
+    setAiLoading(true); setAiResult(null);
+    try {
+      const d = await apiFetch('/ai/content/generate', { method:'POST', body: JSON.stringify({ type:'workflow', prompt, tone:'professional' }) });
+      setAiResult(d.content || d.text || d.workflow || JSON.stringify(d));
+    } catch(e) { setAiResult('Error: ' + e.message); }
+    setAiLoading(false);
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -2124,8 +2249,10 @@ function WorkflowsMgmt({ tab }) {
     <div>
       <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'16px' }}>
         <div style={S.title}>Workflow Builder</div>
+        <AIGenButton label="AI Generate Workflow" credits={3} loading={aiLoading} onClick={() => aiGenWorkflow('Create a complete e-commerce automation workflow with triggers, conditions, and actions for cart abandonment recovery')} />
       </div>
       <Msg text={msg} type="error" />
+      {aiResult && <AIResultCard result={aiResult} title="AI Generated Workflow" onClose={() => setAiResult(null)} />}
       {loading ? <div style={S.muted}>Loading...</div> : (
         <table style={S.table}>
           <thead><tr>{['Name','Trigger','Status','Runs','Actions'].map(h=><th key={h} style={S.th}>{h}</th>)}</tr></thead>
@@ -2520,8 +2647,13 @@ function WorkflowsMgmt({ tab }) {
   if (tab === 'cart-recovery') {
     return (
       <div>
-        <div style={S.h1}>Abandoned Cart & Browse Recovery</div>
-        <p style={S.muted}>Recover lost revenue with automated cart abandonment and browse abandonment flows.</p>
+        <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'8px' }}>
+          <div>
+            <div style={S.h1}>Abandoned Cart & Browse Recovery</div>
+            <p style={S.muted}>Recover lost revenue with automated cart abandonment and browse abandonment flows.</p>
+          </div>
+          <AIGenButton label="AI Write Recovery Email" credits={2} loading={aiLoading} onClick={() => aiGenWorkflow('Write a compelling cart recovery email sequence with 3 emails: first a friendly reminder (1hr), then urgency with scarcity (24hr), then a discount offer (72hr)')} />
+        </div>
         <div style={S.grid4}>
           <StatCard label="Carts Abandoned" value="4,218" sub="Last 30 days" color="#ef4444" />
           <StatCard label="Carts Recovered" value="842" sub="20.0% recovery rate" color="#22c55e" />
@@ -2598,6 +2730,7 @@ function WorkflowsMgmt({ tab }) {
             <div style={{ color:'#ef4444', fontSize:'12px', marginTop:'10px', fontFamily:'monospace' }}>⏰ Items reserved for 24 more hours</div>
           </div>
         </div>
+        {aiResult && <AIResultCard result={aiResult} title="AI Recovery Email Copy" onClose={() => setAiResult(null)} />}
       </div>
     );
   }
@@ -2705,6 +2838,21 @@ function MultiChannelMgmt({ tab }) {
   const [channels, setChannels] = useState([]);
   const [messages, setMessages] = useState([]);
   const [deliverability, setDeliverability] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+
+  async function aiGenContent(type, prompt) {
+    setAiLoading(true); setAiResult(null);
+    try {
+      const d = await apiFetch('/ai/content/generate', { method:'POST', body: JSON.stringify({ type, prompt, tone:'concise' }) });
+      const text = d.content || d.text || d.html || JSON.stringify(d);
+      if (type === 'sms') setSmsForm(p => ({ ...p, message: (typeof text === 'string' ? text : '').slice(0, 160) }));
+      else if (type === 'push-title') setPushForm(p => ({ ...p, title: typeof text === 'string' ? text : '' }));
+      else if (type === 'push-body') setPushForm(p => ({ ...p, body: typeof text === 'string' ? text : '' }));
+      else setAiResult(text);
+    } catch (e) { setAiResult('Error: ' + e.message); }
+    setAiLoading(false);
+  }
 
   useEffect(() => {
     if (tab === 'webhooks') apiFetch('/settings/webhooks').then(d=>setWebhooks(d.webhooks||d||[])).catch(()=>{});
@@ -2736,7 +2884,13 @@ function MultiChannelMgmt({ tab }) {
       <Msg text={msg} type={msg.includes('rror')?'error':'ok'} />
       <div style={{ maxWidth:'500px', marginTop:'16px' }}>
         <div style={S.fg}><label style={S.label}>Recipient (phone / segment)</label><input style={S.input} value={smsForm.to} onChange={e=>setSmsForm(p=>({...p,to:e.target.value}))} placeholder="+1555..." /></div>
-        <div style={S.fg}><label style={S.label}>Message (160 chars)</label><textarea style={{ ...S.textarea, minHeight:'80px' }} maxLength={160} value={smsForm.message} onChange={e=>setSmsForm(p=>({...p,message:e.target.value}))} /></div>
+        <div style={S.fg}>
+          <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'6px' }}>
+            <label style={{ ...S.label, margin:0 }}>Message (160 chars)</label>
+            <AIGenButton label="AI Write SMS" credits={2} loading={aiLoading} onClick={() => aiGenContent('sms', 'Write a compelling 160-character SMS marketing message for an e-commerce promotion')} />
+          </div>
+          <textarea style={{ ...S.textarea, minHeight:'80px' }} maxLength={160} value={smsForm.message} onChange={e=>setSmsForm(p=>({...p,message:e.target.value}))} />
+        </div>
         <div style={S.muted}>{160-smsForm.message.length} chars remaining</div>
         <button style={{ ...S.btnPrimary, marginTop:'12px' }} onClick={sendSMS}>Send SMS</button>
       </div>
@@ -2748,8 +2902,20 @@ function MultiChannelMgmt({ tab }) {
       <div style={S.title}>Push Notifications</div>
       <Msg text={msg} type={msg.includes('rror')?'error':'ok'} />
       <div style={{ maxWidth:'500px', marginTop:'16px' }}>
-        <div style={S.fg}><label style={S.label}>Title</label><input style={S.input} value={pushForm.title} onChange={e=>setPushForm(p=>({...p,title:e.target.value}))} /></div>
-        <div style={S.fg}><label style={S.label}>Body</label><textarea style={{ ...S.textarea, minHeight:'80px' }} value={pushForm.body} onChange={e=>setPushForm(p=>({...p,body:e.target.value}))} /></div>
+        <div style={S.fg}>
+          <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'6px' }}>
+            <label style={{ ...S.label, margin:0 }}>Title</label>
+            <AIGenButton label="AI Write Title" credits={2} loading={aiLoading} onClick={() => aiGenContent('push-title', 'Write a short, attention-grabbing push notification title for an e-commerce sale')} />
+          </div>
+          <input style={S.input} value={pushForm.title} onChange={e=>setPushForm(p=>({...p,title:e.target.value}))} />
+        </div>
+        <div style={S.fg}>
+          <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'6px' }}>
+            <label style={{ ...S.label, margin:0 }}>Body</label>
+            <AIGenButton label="AI Write Body" credits={2} loading={aiLoading} onClick={() => aiGenContent('push-body', `Write a concise push notification body for: ${pushForm.title || 'e-commerce promotion'}`)} />
+          </div>
+          <textarea style={{ ...S.textarea, minHeight:'80px' }} value={pushForm.body} onChange={e=>setPushForm(p=>({...p,body:e.target.value}))} />
+        </div>
         <div style={S.fg}><label style={S.label}>Segment</label>
           <select style={S.select} value={pushForm.segment} onChange={e=>setPushForm(p=>({...p,segment:e.target.value}))}>
             <option value="all">All Subscribers</option>
@@ -2759,6 +2925,7 @@ function MultiChannelMgmt({ tab }) {
         </div>
         <button style={S.btnPrimary} onClick={sendPush}>Send Push</button>
       </div>
+      {aiResult && <AIResultCard result={aiResult} title="AI Push Content" onClose={() => setAiResult(null)} />}
     </div>
   );
 
@@ -2912,7 +3079,10 @@ function MultiChannelMgmt({ tab }) {
       <div>
         <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'16px' }}>
           <div><div style={S.title}>WhatsApp Business</div><p style={S.muted}>Send transactional and marketing messages via WhatsApp with template approval workflow.</p></div>
-          <button style={S.btnPrimary}>+ New Template</button>
+          <div style={S.row}>
+            <AIGenButton label="AI Write Template" credits={2} loading={aiLoading} onClick={() => aiGenContent('whatsapp', 'Write a WhatsApp Business message template for order confirmation with dynamic variables like customer name, order number, and delivery date')} />
+            <button style={S.btnPrimary}>+ New Template</button>
+          </div>
         </div>
         <div style={{ ...S.grid4, marginTop:'8px', marginBottom:'16px' }}>
           <StatCard label="Approved Templates" value={TEMPLATES.filter(t=>t.status==='approved').length} color="#22c55e" />
@@ -2946,6 +3116,7 @@ function MultiChannelMgmt({ tab }) {
             ))}
           </tbody>
         </table>
+        {aiResult && <AIResultCard result={aiResult} title="AI WhatsApp Template" onClose={() => setAiResult(null)} />}
       </div>
     );
   }
@@ -2962,6 +3133,17 @@ function AnalyticsMgmt({ tab }) {
   const [deliverability, setDeliverability] = useState(null);
   const [msg, setMsg] = useState('');
   const [exportFmt, setExportFmt] = useState('csv');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+
+  async function aiInsights(context) {
+    setAiLoading(true); setAiResult(null);
+    try {
+      const d = await apiFetch('/ai/content/generate', { method:'POST', body: JSON.stringify({ type:'analytics-insights', prompt: context, tone:'analytical' }) });
+      setAiResult(d.content || d.text || JSON.stringify(d));
+    } catch(e) { setAiResult('Error: ' + e.message); }
+    setAiLoading(false);
+  }
 
   useEffect(() => {
     if (tab === 'dashboard') apiFetch('/analytics/overview').then(d=>setOverview(d)).catch(()=>{});
@@ -2973,7 +3155,10 @@ function AnalyticsMgmt({ tab }) {
 
   if (tab === 'dashboard') return (
     <div>
-      <div style={S.title}>Analytics Dashboard</div>
+      <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'8px' }}>
+        <div style={S.title}>Analytics Dashboard</div>
+        <AIGenButton label="AI Insights" credits={1} loading={aiLoading} onClick={() => aiInsights(`Analyze email marketing performance: open rate ${overview?.openRate || 42.3}%, click rate ${overview?.clickRate || 8.7}%, conversion ${overview?.conversionRate || 3.2}%, revenue $${overview?.revenue || 57681}. Provide 5 actionable recommendations to improve performance.`)} />
+      </div>
       <div style={{ ...S.grid4, marginTop:'16px' }}>
         <StatCard label="Open Rate" value={overview ? `${overview.openRate||overview.avgOpenRate||'—'}%` : '42.3%'} color="#22c55e" sub="↑ 5.2% vs last month" />
         <StatCard label="Click Rate" value={overview ? `${overview.clickRate||overview.avgClickRate||'—'}%` : '8.7%'} sub="↑ 2.1% vs last month" />
@@ -2990,6 +3175,7 @@ function AnalyticsMgmt({ tab }) {
           <div style={{ ...S.statNum, color:'#ef4444' }}>{overview ? (overview.unsubscribes||0).toLocaleString() : '142'}</div>
         </div>
       </div>
+      {aiResult && <AIResultCard result={aiResult} title="AI Performance Insights" onClose={() => setAiResult(null)} />}
     </div>
   );
 
@@ -3818,6 +4004,17 @@ function TestingMgmt({ tab }) {
   const [contentVariants, setContentVariants] = useState([]);
   const [contentTopic, setContentTopic] = useState('');
   const [newTest, setNewTest] = useState({ name:'', variants:[] });
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+
+  async function aiGenTest(type) {
+    setAiLoading(true); setAiResult(null);
+    try {
+      const d = await apiFetch('/ai/content/generate', { method:'POST', body: JSON.stringify({ type: 'ab-test', prompt: `Suggest an A/B test configuration for email marketing: ${type}`, tone:'analytical' }) });
+      setAiResult(d.content || d.text || JSON.stringify(d));
+    } catch(e) { setAiResult('Error: ' + e.message); }
+    setAiLoading(false);
+  }
 
   const load = useCallback(async () => {
     try {
@@ -3855,8 +4052,10 @@ function TestingMgmt({ tab }) {
     <div>
       <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'16px' }}>
         <div style={S.title}>A/B Tests</div>
+        <AIGenButton label="AI Suggest Test" credits={2} loading={aiLoading} onClick={() => aiGenTest('subject line and send time optimization')} />
       </div>
       <Msg text={msg} type={msg.includes('rror')?'error':'ok'} />
+      {aiResult && <AIResultCard result={aiResult} title="AI Test Suggestion" onClose={() => setAiResult(null)} />}
       <table style={S.table}>
         <thead><tr>{['Name','Status','Winner Metric','Actions'].map(h=><th key={h} style={S.th}>{h}</th>)}</tr></thead>
         <tbody>
@@ -3881,9 +4080,13 @@ function TestingMgmt({ tab }) {
 
   if (tab === 'multivariate') return (
     <div>
-      <div style={S.title}>Multivariate Testing</div>
+      <div style={{ ...S.row, justifyContent:'space-between', marginBottom:'16px' }}>
+        <div style={S.title}>Multivariate Testing</div>
+        <AIGenButton label="AI Suggest Variables" credits={2} loading={aiLoading} onClick={() => aiGenTest('multivariate test variables and combinations for maximum impact')} />
+      </div>
       <p style={S.muted}>Test multiple variables simultaneously to find the best combination.</p>
       <Msg text={msg} type="error" />
+      {aiResult && <AIResultCard result={aiResult} title="AI Variable Suggestions" onClose={() => setAiResult(null)} />}
       <div style={{ ...S.card, marginTop:'16px' }}>
         <div style={S.h2}>Create Multivariate Test</div>
         <div style={S.fg}><label style={S.label}>Test Name</label><input style={S.input} placeholder="Q1 Launch Optimization" /></div>

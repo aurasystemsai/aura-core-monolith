@@ -9,6 +9,7 @@ const express = require("express");
 const router = express.Router();
 
 const fixQueue = require("../core/fix-queue");
+const { requireCredits } = require("../core/creditMiddleware");
 
 function getUpdatedBy(req) {
   return (
@@ -168,7 +169,7 @@ router.post("/projects/:projectId/fix-queue/dedupe", (req, res) => {
 });
 
 // AUTO-FIX (AI suggestions) single item
-router.post("/projects/:projectId/fix-queue/:id/auto-fix", async (req, res) => {
+router.post("/projects/:projectId/fix-queue/:id/auto-fix", requireCredits('fix-queue-item'), async (req, res) => {
   const projectId = req.params.projectId;
   const id = req.params.id;
 
@@ -180,6 +181,8 @@ router.post("/projects/:projectId/fix-queue/:id/auto-fix", async (req, res) => {
       market,
       updatedBy: getUpdatedBy(req),
     });
+
+    if (req.deductCredits) req.deductCredits();
 
     return res.json({
       ok: true,
@@ -202,6 +205,8 @@ router.post("/projects/:projectId/fix-queue/bulk-auto-fix", (req, res) => {
 
   try {
     const { ids, brand, tone, market, concurrency, delayMs } = req.body || {};
+    // Pass shop for credit deduction in the background worker
+    const shop = req.session?.shop || req.body?.shop || req.query?.shop || req.headers['x-shopify-shop-domain'] || null;
     const result = fixQueue.createBulkAutoFixJob(projectId, ids, {
       brand,
       tone,
@@ -209,6 +214,7 @@ router.post("/projects/:projectId/fix-queue/bulk-auto-fix", (req, res) => {
       concurrency,
       delayMs,
       updatedBy: getUpdatedBy(req),
+      shop,
     });
 
     return res.json({ ok: true, projectId, ...result });

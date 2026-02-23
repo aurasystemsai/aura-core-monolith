@@ -27,33 +27,33 @@ const STEPS = [
 
 const PLANS = [
   {
-    id: 'free',
-    name: 'Free',
-    price: 0,
-    period: 'forever',
-    features: ['5 AI runs/month', 'Basic analytics', '100 products', 'Email support']
+    id: 'growth',
+    name: 'Growth',
+    price: 49,
+    period: 'month',
+    features: ['5,000 AI credits/month', 'All core SEO tools', 'Email & social tools', 'Unlimited products', 'Priority email support']
   },
   {
     id: 'pro',
-    name: 'Professional',
-    price: 99,
+    name: 'Pro',
+    price: 149,
     period: 'month',
     popular: true,
-    features: ['Unlimited AI runs', 'Advanced analytics', 'Unlimited products', 'Priority support', 'API access']
+    features: ['25,000 AI credits/month', 'All Growth tools', 'Ads & analytics suite', 'Personalization engine', 'Priority support']
   },
   {
     id: 'enterprise',
     name: 'Enterprise',
-    price: 299,
+    price: 349,
     period: 'month',
-    features: ['Everything in Pro', 'Dedicated manager', 'Custom integrations', 'SLA guarantee']
+    features: ['Unlimited AI credits', 'All Pro tools', 'API & SDK access', 'Dedicated account manager', '24/7 SLA']
   }
 ];
 
 const OnboardingWizard = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [shopDomain, setShopDomain] = useState('');
-  const [selectedPlan, setSelectedPlan] = useState('free');
+  const [selectedPlan, setSelectedPlan] = useState('growth');
   const [shopifyConnected, setShopifyConnected] = useState(false);
 
   const handleNext = () => {
@@ -243,7 +243,7 @@ const OnboardingWizard = ({ onComplete }) => {
             <div className="step-plan">
               <div className="step-icon">{STEPS[2].icon}</div>
               <h2>Choose Your Plan</h2>
-              <p>Start with Free and upgrade anytime as you grow.</p>
+              <p>All plans include a 7-day free trial. No credit card required to start.</p>
 
               <div className="plans-grid">
                 {PLANS.map((plan) => (

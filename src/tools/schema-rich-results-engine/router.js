@@ -1,132 +1,131 @@
 const express = require('express');
 const OpenAI = require('openai');
 const db = require('./db');
-const analyticsModel = require('./analyticsModel');
-const notificationModel = require('./notificationModel');
-const rbac = require('./rbac');
-const i18n = require('./i18n');
-const webhookModel = require('./webhookModel');
-const complianceModel = require('./complianceModel');
-const pluginSystem = require('./pluginSystem');
 const router = express.Router();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// CRUD endpoints
-router.get('/schemas', (req, res) => {
-	res.json({ ok: true, schemas: db.list() });
-});
-router.get('/schemas/:id', (req, res) => {
-	const schema = db.get(req.params.id);
-	if (!schema) return res.status(404).json({ ok: false, error: 'Not found' });
-	res.json({ ok: true, schema });
-});
-router.post('/schemas', (req, res) => {
-	const schema = db.create(req.body || {});
-	res.json({ ok: true, schema });
-});
-router.put('/schemas/:id', (req, res) => {
-	const schema = db.update(req.params.id, req.body || {});
-	if (!schema) return res.status(404).json({ ok: false, error: 'Not found' });
-	res.json({ ok: true, schema });
-});
-router.delete('/schemas/:id', (req, res) => {
-	const ok = db.delete(req.params.id);
-	if (!ok) return res.status(404).json({ ok: false, error: 'Not found' });
-	res.json({ ok: true });
+let _openai;
+function getOpenAI() {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  return _openai;
+}
+
+// ── AI Analyze — main endpoint the frontend calls ────────────────────────────
+// POST /api/schema-rich-results-engine/ai/analyze
+// Frontend sends { schema }, expects { ok, schemaReport }
+router.post('/ai/analyze', async (req, res) => {
+  try {
+    const { schema, url, type } = req.body || {};
+    if (!schema && !url) return res.status(400).json({ ok: false, error: 'schema or url is required' });
+
+    const model = 'gpt-4o-mini';
+    const context = schema || `URL: ${url}, Type: ${type || 'Product'}`;
+
+    const completion = await getOpenAI().chat.completions.create({
+      model,
+      messages: [
+        {
+          role: 'system',
+          content: `You are a schema.org and structured data expert for Shopify e-commerce stores. Analyze the input and provide:
+
+1. **Schema Assessment** — What structured data exists or is needed
+2. **Generated JSON-LD** — Complete, valid JSON-LD schema markup (wrapped in a code block)
+3. **Rich Results Eligibility** — Which Google rich results this schema qualifies for (Product, FAQ, Breadcrumb, Article, Review, HowTo, etc.)
+4. **Validation Issues** — Any problems with existing schema
+5. **Enhancement Recommendations** — How to improve the schema for better rich results
+6. **Implementation Guide** — Where to place the schema in Shopify (theme.liquid, product template, etc.)
+
+Always generate valid JSON-LD. For Shopify products, include: name, description, image, sku, brand, offers (price, availability, priceCurrency), aggregateRating if applicable.`
+        },
+        { role: 'user', content: context }
+      ],
+      max_tokens: 1500,
+      temperature: 0.5
+    });
+
+    const schemaReport = completion.choices[0]?.message?.content?.trim() || '';
+    if (req.deductCredits) req.deductCredits({ model });
+    await db.recordEvent({ type: 'ai-analyze', model });
+
+    res.json({ ok: true, schemaReport });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
-// AI endpoint: generate schema
+// ── AI Generate — general schema generation ──────────────────────────────────
 router.post('/ai/generate', async (req, res) => {
-	try {
-		const { type, data } = req.body;
-		if (!type || !data) return res.status(400).json({ ok: false, error: 'type and data required' });
-		const prompt = `Generate JSON-LD schema for type ${type} with data: ${JSON.stringify(data)}`;
-		const completion = await openai.chat.completions.create({
-			model: 'gpt-4',
-			messages: [
-				{ role: 'system', content: 'You are a schema.org JSON-LD generator.' },
-				{ role: 'user', content: prompt }
-			],
-			max_tokens: 256
-		});
-		const schema = completion.choices[0]?.message?.content?.trim() || '';
-		res.json({ ok: true, schema });
-	} catch (err) {
-		res.status(500).json({ ok: false, error: err.message });
-	}
+  try {
+    const { type, data, messages, prompt } = req.body || {};
+    const model = 'gpt-4o-mini';
+
+    const chatMessages = messages || [
+      { role: 'system', content: 'You are a schema.org JSON-LD expert for Shopify stores. Generate valid, complete JSON-LD structured data. Always output clean JSON-LD in a code block.' },
+      { role: 'user', content: prompt || `Generate JSON-LD schema for type "${type || 'Product'}" with data: ${JSON.stringify(data || {})}` }
+    ];
+
+    const completion = await getOpenAI().chat.completions.create({
+      model,
+      messages: chatMessages,
+      max_tokens: 1024,
+      temperature: 0.5
+    });
+
+    const reply = completion.choices[0]?.message?.content?.trim() || '';
+    if (req.deductCredits) req.deductCredits({ model });
+
+    res.json({ ok: true, reply, schema: reply });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
-// Analytics endpoints
-router.post('/analytics', (req, res) => {
-	const event = analyticsModel.recordEvent(req.body || {});
-	res.json({ ok: true, event });
+// ── History ──────────────────────────────────────────────────────────────────
+router.get('/history', async (req, res) => {
+  try { res.json({ ok: true, history: await db.listHistory() }); }
+  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
-router.get('/analytics', (req, res) => {
-	res.json({ ok: true, events: analyticsModel.listEvents(req.query || {}) });
-});
-
-// Import/export endpoints
-router.post('/import', (req, res) => {
-	const { items } = req.body || {};
-	if (!Array.isArray(items)) return res.status(400).json({ ok: false, error: 'items[] required' });
-	db.import(items);
-	res.json({ ok: true, count: db.list().length });
-});
-router.get('/export', (req, res) => {
-	res.json({ ok: true, items: db.list() });
+router.post('/history', async (req, res) => {
+  try { res.json({ ok: true, entry: await db.addHistory(req.body || {}) }); }
+  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-// Shopify sync endpoints
-router.post('/shopify/sync', (req, res) => {
-	// Integrate with Shopify API in production
-	res.json({ ok: true, message: 'Shopify sync not yet implemented.' });
+// ── Analytics ────────────────────────────────────────────────────────────────
+router.get('/analytics', async (req, res) => {
+  try { res.json({ ok: true, analytics: await db.listAnalytics() }); }
+  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+router.post('/analytics', async (req, res) => {
+  try { res.json({ ok: true, event: await db.recordEvent(req.body || {}) }); }
+  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-// Notifications endpoints
-router.post('/notify', (req, res) => {
-	const { to, message } = req.body || {};
-	if (!to || !message) return res.status(400).json({ ok: false, error: 'to and message required' });
-	notificationModel.send(to, message);
-	res.json({ ok: true });
+// ── Feedback ─────────────────────────────────────────────────────────────────
+router.post('/feedback', async (req, res) => {
+  try {
+    const { feedback } = req.body || {};
+    if (!feedback) return res.status(400).json({ ok: false, error: 'feedback is required' });
+    res.json({ ok: true, entry: await db.saveFeedback({ feedback }) });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-// RBAC endpoint
-router.post('/rbac/check', (req, res) => {
-	const { user, action } = req.body || {};
-	const allowed = rbac.check(user, action);
-	res.json({ ok: true, allowed });
+// ── Import / Export ──────────────────────────────────────────────────────────
+router.post('/import', async (req, res) => {
+  try {
+    const { data, items } = req.body || {};
+    const arr = Array.isArray(data) ? data : Array.isArray(items) ? items : null;
+    if (!arr) return res.status(400).json({ ok: false, error: 'data[] or items[] required' });
+    const count = await db.importData(arr);
+    res.json({ ok: true, count });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+router.get('/export', async (req, res) => {
+  try { res.json({ ok: true, history: await db.listHistory() }); }
+  catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
-// i18n endpoint
-router.get('/i18n', (req, res) => {
-	res.json({ ok: true, i18n });
-});
-
-// Docs endpoint
-router.get('/docs', (req, res) => {
-	res.json({ ok: true, docs: 'Schema Rich Results Engine API: CRUD, AI, analytics, import/export, Shopify sync, notifications, RBAC, i18n.' });
-});
-
-// Webhook endpoint
-router.post('/webhook', (req, res) => {
-	webhookModel.handle(req.body || {});
-	res.json({ ok: true });
-});
-
-// Compliance endpoint
-router.get('/compliance', (req, res) => {
-	res.json({ ok: true, compliance: complianceModel.get() });
-});
-
-// Plugin system endpoint
-router.post('/plugin', (req, res) => {
-	pluginSystem.run(req.body || {});
-	res.json({ ok: true });
-});
-
-// Health check endpoint
+// ── Health ───────────────────────────────────────────────────────────────────
 router.get('/health', (req, res) => {
-	res.json({ ok: true, status: 'healthy', timestamp: Date.now() });
+  res.json({ ok: true, tool: 'schema-rich-results-engine', ts: new Date().toISOString() });
 });
 
 module.exports = router;

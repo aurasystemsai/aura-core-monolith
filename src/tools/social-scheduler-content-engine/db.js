@@ -1,11 +1,25 @@
-// Simple in-memory DB for Social Scheduler Content Engine (replace with real DB in production)
-let items = [];
-let idCounter = 1;
+const storage = require('../../core/storageJson');
+const KEY = 'social-scheduler-content-engine';
+
+function load() { return storage.get(KEY, { history: [], analytics: [], feedback: [] }); }
+function save(d) { storage.set(KEY, d); }
+
 module.exports = {
-  list: () => items,
-  get: id => items.find(i => i.id == id),
-  create: data => { const item = { ...data, id: idCounter++ }; items.push(item); return item; },
-  update: (id, data) => { const idx = items.findIndex(i => i.id == id); if (idx === -1) return null; items[idx] = { ...items[idx], ...data }; return items[idx]; },
-  delete: id => { const idx = items.findIndex(i => i.id == id); if (idx === -1) return false; items.splice(idx, 1); return true; },
-  import: arr => { items = arr.map((i, idx) => ({ ...i, id: idCounter++ })); },
+  async listHistory() { return load().history; },
+  async addHistory(data) {
+    const d = load(); const item = { ...data, id: Date.now().toString(), createdAt: new Date().toISOString() };
+    d.history.push(item); if (d.history.length > 500) d.history = d.history.slice(-500); save(d); return item;
+  },
+  async listAnalytics() { return load().analytics; },
+  async recordEvent(evt) {
+    const d = load(); d.analytics.push({ ...evt, ts: new Date().toISOString() });
+    if (d.analytics.length > 500) d.analytics = d.analytics.slice(-500); save(d);
+  },
+  async saveFeedback(fb) {
+    const d = load(); d.feedback.push({ ...fb, id: Date.now().toString(), createdAt: new Date().toISOString() });
+    if (d.feedback.length > 200) d.feedback = d.feedback.slice(-200); save(d);
+  },
+  async importData(data) {
+    const d = load(); if (Array.isArray(data)) d.history = d.history.concat(data); save(d);
+  },
 };

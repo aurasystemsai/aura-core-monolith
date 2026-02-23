@@ -10,6 +10,7 @@ const crypto = require("crypto");
 const db = require("./db");
 const isPg = db.type === 'postgres';
 const { fetchPageMeta } = require("./fetchPageMeta");
+const { deductCreditsForShop } = require("./creditMiddleware");
 
 // ---------------------------
 // Helpers
@@ -1258,6 +1259,7 @@ function createBulkAutoFixJob(projectId, ids = [], options = {}) {
     tone: normaliseString(options.tone) || null,
     market: normaliseString(options.market) || null,
     updatedBy: normaliseString(options.updatedBy) || null,
+    shop: normaliseString(options.shop) || null,
 
     // concurrency: keep low to protect OpenAI + your Render CPU
     concurrency: Math.min(Math.max(coerceNumber(options.concurrency, 1), 1), 3),
@@ -1437,6 +1439,12 @@ async function runBulkAutoFixJob(projectId, jobId) {
           suggestedMetaDescription: result.suggestedMetaDescription,
           suggestedH1: result.suggestedH1,
         });
+
+        // Deduct 1 credit per fix-queue item (background job)
+        if (opts.shop) {
+          try { deductCreditsForShop(opts.shop, 'fix-queue-item', { tool: 'fix-queue', itemId }); }
+          catch (_) { /* credit deduction failure should not block the fix */ }
+        }
 
         okCount += 1;
       } catch (e) {

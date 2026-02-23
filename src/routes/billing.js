@@ -5,6 +5,7 @@ const express = require('express');
 const router = express.Router();
 const shopifyBillingService = require('../core/shopifyBillingService');
 const shopTokens = require('../core/shopTokens');
+const creditLedger = require('../core/creditLedger');
 
 // Helper: resolve shop from request, falling back to single stored token
 function resolveShop(req) {
@@ -166,6 +167,91 @@ router.get('/confirm', (req, res) => {
 router.get('/plans', async (req, res) => {
   const plans = shopifyBillingService.listPlans();
   res.json(plans);
+});
+
+/**
+ * Get available credit top-up packs
+ * GET /api/billing/credit-packs
+ */
+router.get('/credit-packs', (req, res) => {
+  res.json({ ok: true, packs: shopifyBillingService.listCreditPacks() });
+});
+
+/**
+ * Purchase a credit top-up pack (one-time Shopify charge)
+ * POST /api/billing/purchase-credits
+ */
+router.post('/purchase-credits', async (req, res) => {
+  try {
+    const shop = resolveShop(req);
+    const { packId } = req.body;
+
+    if (!shop) {
+      return res.status(400).json({ ok: false, error: 'Shop required. Please reconnect your Shopify store.' });
+    }
+    if (!packId) {
+      return res.status(400).json({ ok: false, error: 'Credit pack ID required' });
+    }
+
+    const result = await shopifyBillingService.purchaseCreditPack(shop, packId);
+    res.json({ ok: true, ...result });
+  } catch (error) {
+    console.error('Purchase credits error:', error);
+    res.status(500).json({ ok: false, error: error.message || 'Failed to purchase credits' });
+  }
+});
+
+/**
+ * Get current credit balance
+ * GET /api/billing/credits
+ */
+router.get('/credits', async (req, res) => {
+  try {
+    const shop = resolveShop(req);
+    if (!shop) {
+      return res.json({ ok: true, balance: 10, used: 0, plan_credits: 10, topup_credits: 0 });
+    }
+    const status = creditLedger.getCreditStatus(shop);
+    res.json(status);
+  } catch (error) {
+    console.error('Get credits error:', error);
+    res.json({ ok: true, balance: 10, used: 0, plan_credits: 10, topup_credits: 0 });
+  }
+});
+
+/**
+ * Get credit action costs (so the UI can show cost before confirming)
+ * GET /api/billing/credit-costs
+ * Optionally pass ?model=gpt-4 to see effective costs with model multiplier
+ */
+router.get('/credit-costs', (req, res) => {
+  const model = req.query.model || null;
+  if (model) {
+    // Return effective costs (base × model multiplier)
+    const effective = {};
+    for (const [action, baseCost] of Object.entries(creditLedger.ACTION_COSTS)) {
+      effective[action] = creditLedger.getEffectiveCost(action, model);
+    }
+    res.json({ ok: true, costs: effective, model, multiplier: creditLedger.MODEL_MULTIPLIERS[model] || 1, baseCosts: creditLedger.ACTION_COSTS });
+  } else {
+    res.json({ ok: true, costs: creditLedger.ACTION_COSTS, modelMultipliers: creditLedger.MODEL_MULTIPLIERS });
+  }
+});
+
+/**
+ * Get transaction history for a shop
+ * GET /api/billing/credit-history
+ */
+router.get('/credit-history', (req, res) => {
+  try {
+    const shop = resolveShop(req);
+    if (!shop) return res.json({ ok: true, transactions: [] });
+    const account = creditLedger.getShopAccount(shop);
+    res.json({ ok: true, transactions: (account.transactions || []).slice(-100).reverse() });
+  } catch (error) {
+    console.error('Credit history error:', error);
+    res.json({ ok: true, transactions: [] });
+  }
 });
 
 module.exports = router;
