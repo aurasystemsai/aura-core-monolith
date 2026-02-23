@@ -759,4 +759,185 @@ router.post('/research/score', (req, res) => {
   res.json({ ok: true, ...researchEngine.scoreIntent(req.body || {}) });
 });
 
+/* =========================================================================
+   SERP PREVIEW — compute character counts, truncation, warnings
+   ========================================================================= */
+router.post('/serp/preview', (req, res) => {
+  try {
+    const { title = '', metaDescription = '', url = '' } = req.body || {};
+    const titleLen   = title.length;
+    const descLen    = metaDescription.length;
+
+    let breadcrumb = url;
+    try {
+      const u = new URL(url);
+      breadcrumb = u.hostname + (u.pathname !== '/' ? u.pathname : '');
+    } catch {}
+
+    const warnings = [];
+    if (titleLen > 0 && titleLen < 30)  warnings.push({ field: 'title', type: 'too_short', msg: `Title only ${titleLen} chars — aim for 50-60` });
+    if (titleLen > 60)                  warnings.push({ field: 'title', type: 'too_long',  msg: `Title is ${titleLen} chars — may be truncated in Google (≤60 recommended)` });
+    if (descLen > 0 && descLen < 50)    warnings.push({ field: 'description', type: 'too_short', msg: `Description only ${descLen} chars — aim for 150-160` });
+    if (descLen > 160)                  warnings.push({ field: 'description', type: 'too_long',  msg: `Description is ${descLen} chars — will be truncated (≤160 recommended)` });
+
+    // Pixel-width approximation: avg ~7px/char for Google Roboto 14px
+    const titlePixels = Math.round(titleLen * 6.8);
+    const descPixels  = Math.round(descLen  * 6.15);
+
+    res.json({
+      ok: true, titleLen, descLen, breadcrumb, warnings,
+      titlePixels, descPixels,
+      truncatedTitle: title.slice(0, 60),
+      truncatedDesc:  metaDescription.slice(0, 160),
+      titleOk: titleLen >= 30 && titleLen <= 60,
+      descOk:  descLen  >= 50 && descLen  <= 160,
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   FAQ SCHEMA GENERATOR — build FAQPage JSON-LD from question headings
+   ========================================================================= */
+router.post('/faq-schema/generate', async (req, res) => {
+  try {
+    const { questionHeadings = [], useAI = false, url, model = 'gpt-4o-mini' } = req.body || {};
+    if (!questionHeadings.length) return res.status(400).json({ ok: false, error: 'questionHeadings array is required' });
+
+    let faqs;
+
+    if (useAI) {
+      const openai = getOpenAI();
+      const prompt = `You are an SEO content expert. For the blog post${url ? ` at ${url}` : ''}, write concise 2-3 sentence answers for each FAQ question below. Answers must be factual, helpful, and suitable for a Google featured answer box.\n\nQuestions:\n${questionHeadings.map((h, i) => `${i + 1}. ${h.text}`).join('\n')}\n\nRespond as JSON: {"faqs": [{"question": "string", "answer": "string"}]}`;
+      const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+      faqs = JSON.parse(resp.choices[0].message.content).faqs || [];
+      if (req.deductCredits) req.deductCredits({ model });
+    } else {
+      faqs = questionHeadings.map(h => ({ question: h.text, answer: `[Enter your answer to: "${h.text}"]` }));
+    }
+
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: { '@type': 'Answer', text: f.answer },
+      })),
+    };
+
+    const jsonLd    = JSON.stringify(schema, null, 2);
+    const scriptTag = `<script type="application/ld+json">\n${jsonLd}\n</script>`;
+    res.json({ ok: true, schema, jsonLd, scriptTag, faqs, aiGenerated: useAI });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   BROKEN LINK CHECKER — HEAD-check every link on the page
+   ========================================================================= */
+router.post('/links/check', async (req, res) => {
+  try {
+    const { url, links } = req.body || {};
+    if (!url && (!links || !links.length)) return res.status(400).json({ ok: false, error: 'url or links required' });
+
+    let linksToCheck = links ? [...links] : [];
+
+    if (url && !linksToCheck.length) {
+      // Fetch page and extract all links
+      const fetchMod = (await import('node-fetch')).default;
+      const pageResp = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEO/1.0)' }, timeout: 12000 });
+      const html     = await pageResp.text();
+      const $        = cheerio.load(html);
+      $('a[href]').each((_, el) => {
+        const href = $(el).attr('href');
+        if (!href || /^(#|mailto:|tel:|javascript:)/.test(href)) return;
+        try {
+          const abs  = new URL(href, url).href;
+          const text = $(el).text().trim().slice(0, 80) || href;
+          if (!linksToCheck.find(l => l.url === abs)) linksToCheck.push({ url: abs, text });
+        } catch {}
+      });
+    }
+
+    // Cap at 60 links
+    linksToCheck = linksToCheck.slice(0, 60);
+
+    const checkLink = async (link) => {
+      const start = Date.now();
+      try {
+        const fetchMod = (await import('node-fetch')).default;
+        const r = await fetchMod(link.url, {
+          method: 'HEAD', redirect: 'manual',
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEO/1.0)' },
+          timeout: 8000,
+        });
+        const status = r.status;
+        return {
+          url: link.url, text: link.text, status,
+          ok: status >= 200 && status < 300,
+          redirect: status >= 300 && status < 400,
+          broken: status >= 400,
+          redirectUrl: r.headers.get('location') || null,
+          duration: Date.now() - start,
+        };
+      } catch (err) {
+        return { url: link.url, text: link.text, status: null, ok: false, redirect: false, broken: true, error: err.message, duration: Date.now() - start };
+      }
+    };
+
+    // Check in batches of 10 to avoid hammering
+    const results = [];
+    for (let i = 0; i < linksToCheck.length; i += 10) {
+      const batch = linksToCheck.slice(i, i + 10);
+      results.push(...(await Promise.all(batch.map(checkLink))));
+    }
+
+    const summary = {
+      total:     results.length,
+      ok:        results.filter(r => r.ok).length,
+      redirects: results.filter(r => r.redirect).length,
+      broken:    results.filter(r => r.broken).length,
+    };
+
+    res.json({ ok: true, results, summary });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   LSI / SEMANTIC KEYWORDS — AI suggests related terms (2 credits)
+   ========================================================================= */
+router.post('/keywords/lsi', async (req, res) => {
+  try {
+    const { keyword, url, title, niche, model = 'gpt-4o-mini' } = req.body || {};
+    if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' });
+
+    const openai = getOpenAI();
+    const prompt = `You are an expert SEO content strategist. For the primary keyword "${keyword}"${title ? ` in a blog post titled "${title}"` : ''}${niche ? ` in the ${niche} niche` : ''}, generate 18-22 semantically related (LSI) keywords and phrases that should naturally appear throughout the content to demonstrate topical depth to Google.
+
+Include a mix of: synonyms, related concepts, supporting terminology, common questions, long-tail variations, and entities (people/places/products).
+
+Respond ONLY as JSON:
+{
+  "lsi": [
+    { "keyword": "string", "type": "synonym|related|longtail|question|entity", "priority": "high|medium|low", "usage": "one-line tip on where to use this" }
+  ],
+  "topicClusters": ["cluster name", ...],
+  "contentGaps": ["topic or angle missing from typical content on this keyword"],
+  "tip": "Single actionable optimization tip"
+}`;
+
+    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, keyword, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

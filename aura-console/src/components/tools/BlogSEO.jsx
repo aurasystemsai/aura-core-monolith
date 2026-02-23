@@ -80,6 +80,17 @@ export default function BlogSEO() {
   const [generatedSchema, setGeneratedSchema] = useState(null);
   const [schemaAuthorName, setSchemaAuthorName] = useState("");
   const [schemaPublisherName, setSchemaPublisherName] = useState("");
+  const [showSerp, setShowSerp] = useState(true);
+  const [serpDevice, setSerpDevice] = useState("desktop");
+  const [showBrokenLinks, setShowBrokenLinks] = useState(false);
+  const [brokenLinksResult, setBrokenLinksResult] = useState(null);
+  const [brokenLinksLoading, setBrokenLinksLoading] = useState(false);
+  const [brokenLinksErr, setBrokenLinksErr] = useState("");
+  const [faqSchemaResult, setFaqSchemaResult] = useState(null);
+  const [faqSchemaLoading, setFaqSchemaLoading] = useState(false);
+  const [lsiResult, setLsiResult] = useState(null);
+  const [lsiLoading, setLsiLoading] = useState(false);
+  const [lsiErr, setLsiErr] = useState("");
 
   /* ── Keywords state ── */
   const [seedKw, setSeedKw] = useState("");
@@ -164,6 +175,38 @@ export default function BlogSEO() {
     } catch {}
     setSchemaGenLoading(false);
   }, [scanResult, schemaAuthorName, schemaPublisherName, kwInput]);
+
+  const checkBrokenLinks = useCallback(async () => {
+    if (!scanResult) return;
+    setBrokenLinksLoading(true); setBrokenLinksErr(""); setBrokenLinksResult(null);
+    try {
+      const r = await apiFetch(`${API}/links/check`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: scanResult.url }) });
+      if (!r.ok) throw new Error(r.error || "Link check failed");
+      setBrokenLinksResult(r);
+    } catch (e) { setBrokenLinksErr(e.message); }
+    setBrokenLinksLoading(false);
+  }, [scanResult]);
+
+  const generateFaqSchema = useCallback(async (useAI = false) => {
+    if (!scanResult?.questionHeadings?.length) return;
+    setFaqSchemaLoading(true); setFaqSchemaResult(null);
+    try {
+      const r = await apiFetch(`${API}/faq-schema/generate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ questionHeadings: scanResult.questionHeadings, useAI, url: scanResult.url }) });
+      if (r.ok) setFaqSchemaResult(r);
+    } catch {}
+    setFaqSchemaLoading(false);
+  }, [scanResult]);
+
+  const runLsiKeywords = useCallback(async () => {
+    if (!seedKw.trim()) return;
+    setLsiLoading(true); setLsiErr(""); setLsiResult(null);
+    try {
+      const r = await apiFetch(`${API}/keywords/lsi`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: seedKw.trim(), niche: kwNiche.trim() || undefined }) });
+      if (!r.ok) throw new Error(r.error || "Failed");
+      setLsiResult(r);
+    } catch (e) { setLsiErr(e.message); }
+    setLsiLoading(false);
+  }, [seedKw, kwNiche]);
 
   const runRewrite = useCallback(async (field) => {
     if (!scanResult) return;
@@ -320,6 +363,56 @@ export default function BlogSEO() {
                       <div style={S.catLabel}>{cat} ({v.weight}%)</div>
                     </div>
                   ))}
+                </div>
+
+                {/* SERP Preview */}
+                <div style={S.card}>
+                  <ToggleSection title="🔍 SERP Preview" open={showSerp} toggle={() => setShowSerp(p => !p)} />
+                  {showSerp && (
+                    <div style={{ marginTop: 12 }}>
+                      <div style={{ ...S.row, gap: 8, marginBottom: 14 }}>
+                        {["desktop", "mobile"].map(d => (
+                          <button key={d} style={S.tab(serpDevice === d)} onClick={() => setSerpDevice(d)}>{d === "desktop" ? "🖥 Desktop" : "📱 Mobile"}</button>
+                        ))}
+                      </div>
+                      {/* Google result mock */}
+                      <div style={{ background: "#fff", borderRadius: 10, padding: "16px 20px", maxWidth: serpDevice === "mobile" ? 360 : 620, fontFamily: "Arial, sans-serif" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#e8e8e8", flexShrink: 0 }} />
+                          <div>
+                            <div style={{ fontSize: 12, color: "#202124", fontWeight: 500 }}>{(() => { try { return new URL(scanResult.url).hostname; } catch { return scanResult.url; } })()}</div>
+                            <div style={{ fontSize: 12, color: "#4d5156" }}>{(() => { try { const u = new URL(scanResult.url); return u.hostname + u.pathname; } catch { return "—"; } })()}</div>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: serpDevice === "mobile" ? 16 : 20, color: "#1a0dab", fontWeight: 400, lineHeight: 1.3, marginBottom: 2, textDecoration: "underline", cursor: "pointer" }}>
+                          {(scanResult.title || "").slice(0, 60)}{(scanResult.title || "").length > 60 ? "…" : ""}
+                        </div>
+                        <div style={{ fontSize: 14, color: "#4d5156", lineHeight: 1.57 }}>
+                          {(scanResult.metaDescription || "(no meta description — Google will pull an excerpt)").slice(0, 160)}{(scanResult.metaDescription || "").length > 160 ? "…" : ""}
+                        </div>
+                      </div>
+                      {/* Char count bars */}
+                      <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                        {[
+                          { label: "Title", value: (scanResult.title || "").length, min: 30, max: 60 },
+                          { label: "Meta Description", value: (scanResult.metaDescription || "").length, min: 50, max: 160 },
+                        ].map(({ label, value, min, max }) => {
+                          const pct   = Math.min(100, (value / max) * 100);
+                          const color = value >= min && value <= max ? "#22c55e" : value > max ? "#ef4444" : "#eab308";
+                          return (
+                            <div key={label}>
+                              <div style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 4 }}>{label}: <span style={{ color, fontWeight: 700 }}>{value}</span> / {max} chars</div>
+                              <div style={{ height: 6, background: "#27272a", borderRadius: 3 }}>
+                                <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 3, transition: "width 0.3s" }} />
+                              </div>
+                              {value > max && <div style={{ fontSize: 11, color: "#ef4444", marginTop: 3 }}>⚠️ Truncated — cut {value - max} chars</div>}
+                              {value < min && value > 0 && <div style={{ fontSize: 11, color: "#eab308", marginTop: 3 }}>⚠️ Too short — add {min - value} more chars</div>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* AI Analysis button */}
@@ -545,6 +638,41 @@ export default function BlogSEO() {
                   </div>
                 )}
 
+                {/* FAQ Schema Generator */}
+                {scanResult.questionHeadings?.length > 0 && (
+                  <div style={S.card}>
+                    <div style={S.cardTitle}>📋 FAQPage Schema Generator</div>
+                    <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 12 }}>
+                      {scanResult.questionHeadings.length} question heading{scanResult.questionHeadings.length > 1 ? "s" : ""} detected — generate FAQPage JSON-LD to unlock Google's FAQ rich result in search.
+                    </div>
+                    <div style={{ ...S.row, gap: 8, marginBottom: faqSchemaResult ? 14 : 0 }}>
+                      <button style={S.btn("primary")} onClick={() => generateFaqSchema(true)} disabled={faqSchemaLoading}>
+                        {faqSchemaLoading ? <><span style={S.spinner} /> Generating…</> : "🤖 AI Generate Answers + Schema (1 credit)"}
+                      </button>
+                      <button style={S.btn()} onClick={() => generateFaqSchema(false)} disabled={faqSchemaLoading}>
+                        📄 Structure Only (free)
+                      </button>
+                    </div>
+                    {faqSchemaResult && (
+                      <div style={{ marginTop: 14 }}>
+                        <div style={{ marginBottom: 12 }}>
+                          {faqSchemaResult.faqs.map((f, i) => (
+                            <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", marginBottom: 8 }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: "#e4e4e7", marginBottom: 4 }}>Q: {f.question}</div>
+                              <div style={{ fontSize: 13, color: "#a1a1aa" }}>A: {f.answer}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ ...S.row, gap: 8, marginBottom: 8 }}>
+                          <div style={{ fontSize: 13, color: "#86efac", fontWeight: 600 }}>{faqSchemaResult.aiGenerated ? "✅ AI answers + schema generated" : "✅ Schema structure generated"}</div>
+                          <button style={S.btn("ghost")} onClick={() => navigator.clipboard.writeText(faqSchemaResult.scriptTag)}>📋 Copy</button>
+                        </div>
+                        <pre style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: 14, fontSize: 11, color: "#d4d4d8", overflowX: "auto", whiteSpace: "pre-wrap", maxHeight: 280, overflowY: "auto" }}>{faqSchemaResult.scriptTag}</pre>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Keyword density */}
                 {scanResult.keywordDensity && Object.keys(scanResult.keywordDensity).length > 0 && (
                   <div style={S.card}>
@@ -591,6 +719,46 @@ export default function BlogSEO() {
                       {(scanResult.internalLinkDetails || []).map((l, i) => <div key={i} style={{ fontSize: 12, color: "#93c5fd", marginBottom: 3, wordBreak: "break-all" }}>• {l.text || "(no text)"} → {l.href}</div>)}
                       <div style={{ ...S.heading, marginTop: 12 }}>External Links</div>
                       {(scanResult.externalLinkDetails || []).map((l, i) => <div key={i} style={{ fontSize: 12, color: "#c4b5fd", marginBottom: 3, wordBreak: "break-all" }}>• {l.text || "(no text)"} → {l.href}</div>)}
+                    </div>
+                  )}
+                </div>
+
+                {/* Broken Link Checker */}
+                <div style={{ ...S.card, borderLeft: brokenLinksResult ? (brokenLinksResult.summary.broken > 0 ? "3px solid #ef4444" : "3px solid #22c55e") : undefined }}>
+                  <div style={{ ...S.row, alignItems: "center", marginBottom: brokenLinksResult || brokenLinksErr ? 12 : 0 }}>
+                    <div style={{ ...S.cardTitle, marginBottom: 0 }}>🔗 Broken Link Checker {brokenLinksResult && <span style={{ fontSize: 12, color: "#71717a", fontWeight: 400 }}>— {brokenLinksResult.summary.total} links scanned</span>}</div>
+                    <button style={S.btn(brokenLinksResult ? undefined : "primary")} onClick={checkBrokenLinks} disabled={brokenLinksLoading}>
+                      {brokenLinksLoading ? <><span style={S.spinner} /> Checking…</> : brokenLinksResult ? "🔄 Re-scan" : "🔍 Check All Links"}
+                    </button>
+                  </div>
+                  {brokenLinksErr && <div style={S.err}>{brokenLinksErr}</div>}
+                  {!brokenLinksResult && !brokenLinksLoading && <div style={{ fontSize: 13, color: "#52525b" }}>Scan all links on this post for 404 errors, broken URLs, and redirects.</div>}
+                  {brokenLinksResult && (
+                    <div>
+                      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 12 }}>
+                        <MetaChip label="Total" value={brokenLinksResult.summary.total} />
+                        <MetaChip label="OK" value={brokenLinksResult.summary.ok} color="#22c55e" />
+                        <MetaChip label="Redirects" value={brokenLinksResult.summary.redirects} color="#eab308" />
+                        <MetaChip label="Broken" value={brokenLinksResult.summary.broken} color={brokenLinksResult.summary.broken > 0 ? "#ef4444" : "#22c55e"} />
+                      </div>
+                      <div style={{ maxHeight: 320, overflowY: "auto" }}>
+                        {[...brokenLinksResult.results]
+                          .sort((a, b) => (b.broken ? 2 : b.redirect ? 1 : 0) - (a.broken ? 2 : a.redirect ? 1 : 0))
+                          .map((r, i) => (
+                            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "6px 0", borderBottom: "1px solid #18181b", fontSize: 12 }}>
+                              <span style={S.pill(r.broken ? "high" : r.redirect ? "medium" : "low")}>
+                                {r.status || "ERR"} {r.ok ? "✅" : r.redirect ? "↪️" : "❌"}
+                              </span>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ color: "#93c5fd", wordBreak: "break-all" }}>{r.url}</div>
+                                {r.text && <div style={{ color: "#71717a" }}>"{r.text}"</div>}
+                                {r.redirectUrl && <div style={{ color: "#eab308" }}>→ {r.redirectUrl}</div>}
+                                {r.error && <div style={{ color: "#ef4444" }}>{r.error}</div>}
+                              </div>
+                              <div style={{ color: "#52525b", flexShrink: 0 }}>{r.duration}ms</div>
+                            </div>
+                          ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -784,6 +952,61 @@ export default function BlogSEO() {
                 )}
               </>
             )}
+
+            {/* LSI / Semantic Keywords */}
+            <div style={{ ...S.card, marginTop: 8 }}>
+              <div style={S.cardTitle}>🔀 LSI &amp; Semantic Keywords</div>
+              <div style={{ fontSize: 13, color: "#71717a", marginBottom: 12 }}>AI suggests semantically related terms to weave throughout your post for topical authority. Click any chip to copy.</div>
+              <div style={{ ...S.row, marginBottom: 8, gap: 8 }}>
+                <input style={S.input} placeholder="Primary keyword to expand (e.g. email marketing)" value={seedKw} onChange={e => setSeedKw(e.target.value)} onKeyDown={e => e.key === "Enter" && !lsiLoading && runLsiKeywords()} />
+                <input style={{ ...S.input, maxWidth: 220 }} placeholder="Niche (optional)" value={kwNiche} onChange={e => setKwNiche(e.target.value)} />
+                <button style={S.btn("primary")} onClick={runLsiKeywords} disabled={lsiLoading || !seedKw.trim()}>
+                  {lsiLoading ? <><span style={S.spinner} /> Generating…</> : "✨ Generate LSI (2 credits)"}
+                </button>
+              </div>
+              {lsiErr && <div style={S.err}>{lsiErr}</div>}
+              {lsiLoading && <div style={S.empty}><span style={S.spinner} /><div style={{ marginTop: 12 }}>Generating semantic keywords…</div></div>}
+              {lsiResult && (
+                <div>
+                  {["high", "medium", "low"].map(pri => {
+                    const kws = (lsiResult.lsi || []).filter(k => k.priority === pri);
+                    if (!kws.length) return null;
+                    return (
+                      <div key={pri} style={{ marginBottom: 14 }}>
+                        <div style={S.heading}>{pri === "high" ? "🔴 High Priority" : pri === "medium" ? "🟡 Medium Priority" : "⚪ Supporting Terms"}</div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                          {kws.map((k, i) => (
+                            <div key={i} title={k.usage}
+                              onClick={() => navigator.clipboard.writeText(k.keyword)}
+                              style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "#e4e4e7", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                              <span style={{ ...S.pill("low"), background: "#1e3a5f", fontSize: 10, padding: "1px 6px" }}>{k.type}</span>
+                              {k.keyword}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {lsiResult.topicClusters?.length > 0 && (
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={S.heading}>📦 Topic Clusters to Cover</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {lsiResult.topicClusters.map((c, i) => <span key={i} style={{ ...S.pill("low"), background: "#14532d22", border: "1px solid #14532d", color: "#86efac" }}>{c}</span>)}
+                      </div>
+                    </div>
+                  )}
+                  {lsiResult.contentGaps?.length > 0 && (
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={S.heading}>🕳️ Content Gaps</div>
+                      {lsiResult.contentGaps.map((g, i) => <div key={i} style={{ fontSize: 13, color: "#fbbf24", marginBottom: 3 }}>• {g}</div>)}
+                    </div>
+                  )}
+                  {lsiResult.tip && (
+                    <div style={{ background: "#1e3a5f22", border: "1px solid #1e3a5f", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#93c5fd" }}>💡 {lsiResult.tip}</div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {!kwResearch && !kwLoading && !kwErr && (
               <div style={S.empty}>
