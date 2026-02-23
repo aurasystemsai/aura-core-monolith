@@ -142,10 +142,16 @@ export default function OnPageSEOEngine() {
   const [redirectChainUrl, setRedirectChainUrl] = useState('');
   const [redirectChainLoading, setRedirectChainLoading] = useState(false);
   const [redirectChainResult, setRedirectChainResult] = useState(null);
+  const [redirectChainError, setRedirectChainError] = useState('');
   const [robotsLoading, setRobotsLoading] = useState(false);
   const [robotsResult, setRobotsResult] = useState(null);
+  const [robotsError, setRobotsError] = useState('');
   const [resourcesLoading, setResourcesLoading] = useState(false);
   const [resourcesResult, setResourcesResult] = useState(null);
+  const [resourcesError, setResourcesError] = useState('');
+
+  /* ── Sitemap state ───────────────────────────────────────────────────────── */
+  const [sitemapError, setSitemapError] = useState('');
 
   /* ── Analyzer: crawl a URL ───────────────────────────────────────────────── */
   const crawlPage = useCallback(async () => {
@@ -167,7 +173,7 @@ export default function OnPageSEOEngine() {
     } finally {
       setCrawlLoading(false);
     }
-  }, [url]);
+  }, [url, keywords]);
 
   /* ── AI: Deep analysis ───────────────────────────────────────────────────── */
   const runAiAnalysis = useCallback(async () => {
@@ -228,6 +234,14 @@ export default function OnPageSEOEngine() {
       if (data.ok) setHistory(data.items || []);
     } catch {}
     setHistoryLoading(false);
+  }, []);
+
+  /* ── History: delete item ────────────────────────────────────────────────── */
+  const deleteHistoryItem = useCallback(async (id) => {
+    try {
+      const data = await apiFetch(`/items/${id}`, { method: 'DELETE' });
+      if (data.ok) setHistory(prev => prev.filter(it => it.id !== id));
+    } catch {}
   }, []);
 
   /* ── AI Assistant: chat ──────────────────────────────────────────────────── */
@@ -308,12 +322,13 @@ export default function OnPageSEOEngine() {
     if (!sitemapDomain.trim()) return;
     setSitemapLoading(true);
     setSitemapUrls(null);
+    setSitemapError('');
     try {
       const data = await apiFetch('/sitemap', { method: 'POST', body: JSON.stringify({ domain: sitemapDomain.trim() }) });
       if (!data.ok) throw new Error(data.error || 'Sitemap not found');
       setSitemapUrls(data);
     } catch (err) {
-      setBulkError(err.message);
+      setSitemapError(err.message);
     } finally {
       setSitemapLoading(false);
     }
@@ -342,12 +357,13 @@ export default function OnPageSEOEngine() {
     if (!checkUrl) return;
     setRedirectChainLoading(true);
     setRedirectChainResult(null);
+    setRedirectChainError('');
     try {
       const data = await apiFetch('/redirect-chain', { method: 'POST', body: JSON.stringify({ url: checkUrl }) });
       if (!data.ok) throw new Error(data.error || 'Redirect check failed');
       setRedirectChainResult(data);
     } catch (err) {
-      setLinkCheckError(err.message);
+      setRedirectChainError(err.message);
     } finally {
       setRedirectChainLoading(false);
     }
@@ -358,13 +374,14 @@ export default function OnPageSEOEngine() {
     if (!crawlData?.url) return;
     setRobotsLoading(true);
     setRobotsResult(null);
+    setRobotsError('');
     try {
       const domain = new URL(crawlData.url).hostname;
       const data = await apiFetch('/robots-txt', { method: 'POST', body: JSON.stringify({ domain }) });
       if (!data.ok) throw new Error(data.error || 'Robots.txt fetch failed');
       setRobotsResult(data);
     } catch (err) {
-      setLinkCheckError(err.message);
+      setRobotsError(err.message);
     } finally {
       setRobotsLoading(false);
     }
@@ -375,12 +392,13 @@ export default function OnPageSEOEngine() {
     if (!crawlData?.url) return;
     setResourcesLoading(true);
     setResourcesResult(null);
+    setResourcesError('');
     try {
       const data = await apiFetch('/page-resources', { method: 'POST', body: JSON.stringify({ url: crawlData.url }) });
       if (!data.ok) throw new Error(data.error || 'Resource analysis failed');
       setResourcesResult(data);
     } catch (err) {
-      setLinkCheckError(err.message);
+      setResourcesError(err.message);
     } finally {
       setResourcesLoading(false);
     }
@@ -410,7 +428,7 @@ export default function OnPageSEOEngine() {
       {/* URL Input Bar — always visible */}
       <div style={{ ...S.card, marginBottom: '16px' }}>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <input style={{ ...S.input, flex: 2, minWidth: '240px' }} placeholder="Enter page URL (e.g. https://mystore.com/products/example)" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && crawlPage()} />
+          <input style={{ ...S.input, flex: 2, minWidth: '240px' }} placeholder="Enter page URL (e.g. https://mystore.com/products/example)" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && !crawlLoading && crawlPage()} />
           <input style={{ ...S.input, flex: 1, minWidth: '160px' }} placeholder="Target keywords (optional, comma-separated)" value={keywords} onChange={e => setKeywords(e.target.value)} />
           <button style={S.btn} onClick={crawlPage} disabled={crawlLoading || !url.trim()}>
             {crawlLoading ? 'Crawling…' : '🔍 Analyze Page'}
@@ -425,15 +443,15 @@ export default function OnPageSEOEngine() {
       {tab === 2 && <ContentScoreTab data={crawlData} result={csResult} loading={csLoading} error={csError} onRun={runContentScore} />}
       {tab === 3 && <AIRewriteTab data={crawlData} field={rewriteField} setField={setRewriteField} result={rewriteResult} loading={rewriteLoading} error={rewriteError} onRun={runRewrite} />}
       {tab === 4 && <CompetitorCompareTab urls={compareUrls} setUrls={setCompareUrls} results={compareResults} loading={compareLoading} error={compareError} onRun={runCompare} pageUrl={url} />}
-      {tab === 5 && <HistoryTab items={history} loading={historyLoading} onRefresh={loadHistory} onSelect={u => { setUrl(u); setTab(0); }} />}
+      {tab === 5 && <HistoryTab items={history} loading={historyLoading} onRefresh={loadHistory} onSelect={u => { setUrl(u); setTab(0); }} onDelete={deleteHistoryItem} />}
       {tab === 6 && <AIAssistantTab messages={chatMessages} input={chatInput} setInput={setChatInput} loading={chatLoading} onSend={sendChat} />}
       {tab === 7 && <BulkScanTab bulkUrls={bulkUrls} setBulkUrls={setBulkUrls} bulkResults={bulkResults} bulkLoading={bulkLoading} bulkError={bulkError} onRun={runBulkScan}
-        sitemapDomain={sitemapDomain} setSitemapDomain={setSitemapDomain} sitemapUrls={sitemapUrls} sitemapLoading={sitemapLoading} onDiscoverSitemap={discoverSitemap}
+        sitemapDomain={sitemapDomain} setSitemapDomain={setSitemapDomain} sitemapUrls={sitemapUrls} sitemapLoading={sitemapLoading} sitemapError={sitemapError} onDiscoverSitemap={discoverSitemap}
         onSelectUrl={u => { setUrl(u); setTab(0); }} />}
       {tab === 8 && <LinkHealthTab data={crawlData} linkCheckResults={linkCheckResults} linkCheckLoading={linkCheckLoading} linkCheckError={linkCheckError} onCheckLinks={checkBrokenLinks}
-        redirectChainUrl={redirectChainUrl} setRedirectChainUrl={setRedirectChainUrl} redirectChainResult={redirectChainResult} redirectChainLoading={redirectChainLoading} onCheckRedirect={checkRedirectChain}
-        robotsResult={robotsResult} robotsLoading={robotsLoading} onAnalyzeRobots={analyzeRobots}
-        resourcesResult={resourcesResult} resourcesLoading={resourcesLoading} onAnalyzeResources={analyzeResources} />}
+        redirectChainUrl={redirectChainUrl} setRedirectChainUrl={setRedirectChainUrl} redirectChainResult={redirectChainResult} redirectChainLoading={redirectChainLoading} redirectChainError={redirectChainError} onCheckRedirect={checkRedirectChain}
+        robotsResult={robotsResult} robotsLoading={robotsLoading} robotsError={robotsError} onAnalyzeRobots={analyzeRobots}
+        resourcesResult={resourcesResult} resourcesLoading={resourcesLoading} resourcesError={resourcesError} onAnalyzeResources={analyzeResources} />}
       {tab === 9 && <AccessibilityTab data={crawlData} />}
     </div>
   );
@@ -1396,7 +1414,7 @@ function AIRewriteTab({ data, field, setField, result, loading, error, onRun }) 
 /* ══════════════════════════════════════════════════════════════════════════════
    HISTORY TAB — past analyses
    ══════════════════════════════════════════════════════════════════════════════ */
-function HistoryTab({ items, loading, onRefresh, onSelect }) {
+function HistoryTab({ items, loading, onRefresh, onSelect, onDelete }) {
   // Group by URL to show score trends
   const urlGroups = useMemo(() => {
     const groups = {};
@@ -1506,6 +1524,7 @@ function HistoryTab({ items, loading, onRefresh, onSelect }) {
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
                 {item.score != null && <span style={S.badge(scoreColor(item.score))}>{item.score}/100</span>}
                 {item.url && <button style={S.btnSm} onClick={() => onSelect(item.url)}>Re-analyze</button>}
+                {item.id && onDelete && <button style={{ ...S.btnGhost, fontSize: '12px', color: '#ef4444', borderColor: '#3f3f46' }} onClick={() => onDelete(item.id)} title="Delete">🗑</button>}
               </div>
             </div>
           ))}
@@ -1974,7 +1993,7 @@ function CompetitorCompareTab({ urls, setUrls, results, loading, error, onRun, p
 /* ══════════════════════════════════════════════════════════════════════════════
    BULK SCAN TAB — scan multiple URLs at once with sitemap discovery
    ══════════════════════════════════════════════════════════════════════════════ */
-function BulkScanTab({ bulkUrls, setBulkUrls, bulkResults, bulkLoading, bulkError, onRun, sitemapDomain, setSitemapDomain, sitemapUrls, sitemapLoading, onDiscoverSitemap, onSelectUrl }) {
+function BulkScanTab({ bulkUrls, setBulkUrls, bulkResults, bulkLoading, bulkError, onRun, sitemapDomain, setSitemapDomain, sitemapUrls, sitemapLoading, sitemapError, onDiscoverSitemap, onSelectUrl }) {
   const [sortCol, setSortCol] = useState('score');
   const [sortDir, setSortDir] = useState('desc');
 
@@ -2005,6 +2024,7 @@ function BulkScanTab({ bulkUrls, setBulkUrls, bulkResults, bulkLoading, bulkErro
           </button>
         </div>
 
+        {sitemapError && <p style={{ color: '#ef4444', fontSize: '13px', marginTop: '8px' }}>{sitemapError}</p>}
         {sitemapUrls && (
           <div style={{ marginTop: '14px' }}>
             <div style={S.rowSpread}>
@@ -2464,8 +2484,8 @@ function CWVEstimator({ data }) {
    LINK HEALTH TAB — broken link checker, redirect chain, robots.txt, resources
    ══════════════════════════════════════════════════════════════════════════════ */
 function LinkHealthTab({ data, linkCheckResults, linkCheckLoading, linkCheckError, onCheckLinks,
-  redirectChainUrl, setRedirectChainUrl, redirectChainResult, redirectChainLoading, onCheckRedirect,
-  robotsResult, robotsLoading, onAnalyzeRobots, resourcesResult, resourcesLoading, onAnalyzeResources }) {
+  redirectChainUrl, setRedirectChainUrl, redirectChainResult, redirectChainLoading, redirectChainError, onCheckRedirect,
+  robotsResult, robotsLoading, robotsError, onAnalyzeRobots, resourcesResult, resourcesLoading, resourcesError, onAnalyzeResources }) {
 
   if (!data) return <div style={S.card}><p style={S.muted}>Crawl a page first to use Link Health tools.</p></div>;
 
@@ -2517,6 +2537,7 @@ function LinkHealthTab({ data, linkCheckResults, linkCheckLoading, linkCheckErro
             {redirectChainLoading ? 'Following…' : '🔀 Check Redirects'}
           </button>
         </div>
+        {redirectChainError && <p style={{ color: '#ef4444', fontSize: '13px', marginTop: '8px' }}>{redirectChainError}</p>}
         {redirectChainResult && (
           <div style={{ marginTop: '14px' }}>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
@@ -2552,6 +2573,7 @@ function LinkHealthTab({ data, linkCheckResults, linkCheckLoading, linkCheckErro
           </button>
         </div>
         <div style={S.muted}>Fetch and analyze the robots.txt file — check for blocked paths, missing sitemaps, and crawl restrictions.</div>
+        {robotsError && <p style={{ color: '#ef4444', fontSize: '13px', marginTop: '8px' }}>{robotsError}</p>}
         {robotsResult && (
           <div style={{ marginTop: '14px' }}>
             {!robotsResult.found ? (
@@ -2615,6 +2637,7 @@ function LinkHealthTab({ data, linkCheckResults, linkCheckLoading, linkCheckErro
           </button>
         </div>
         <div style={S.muted}>Break down all CSS, JS, images, fonts, and resource hints on the page — identify third-party bloat and optimization opportunities.</div>
+        {resourcesError && <p style={{ color: '#ef4444', fontSize: '13px', marginTop: '8px' }}>{resourcesError}</p>}
         {resourcesResult && (
           <div style={{ marginTop: '14px' }}>
             <div style={S.grid4}>
