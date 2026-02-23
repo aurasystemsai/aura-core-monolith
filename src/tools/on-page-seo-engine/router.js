@@ -798,6 +798,63 @@ function computeWeightedScore(data) {
   if (data.keywordStuffedHeadings > 50) { addIssue('keywords', 'medium', `Target keyword appears in ${data.keywordStuffedHeadings}% of headings — keyword stuffing in headings hurts SEO (Google Search Essentials, Semrush)`, 8); }
   if (data.keywordOveruseInAlt > 3) { addIssue('keywords', 'medium', `Target keyword found in ${data.keywordOveruseInAlt} image alt text(s) — over-optimizing alt text is a spam signal (Google Search Central)`, Math.min((data.keywordOveruseInAlt - 3) * 3, 10)); }
 
+  // ── ROUND 17: FINAL COMPREHENSIVE SWEEP — 50 new scoring penalties (axe-core 4.10, WCAG 2.2, Lighthouse, Screaming Frog, Semrush, Ahrefs, Backlinko, Google Rich Results Gallery) ──
+
+  // --- Accessibility Enhanced (axe-core 4.10 remaining, Lighthouse, WCAG 2.2) ---
+  if (data.xmlLangMismatch) { addIssue('technical', 'medium', 'xml:lang attribute does not match html lang attribute — these must agree for proper language detection (axe: valid-lang, WCAG 3.1.1)', 5); }
+  if (data.ariaRequiredChildrenMissing > 0) { addIssue('technical', 'high', `${data.ariaRequiredChildrenMissing} ARIA role(s) missing required child elements (e.g. role="list" needs role="listitem") — assistive technology will malfunction (axe: aria-required-children, WCAG 1.3.1)`, Math.min(data.ariaRequiredChildrenMissing * 4, 15)); }
+  if (data.ariaRequiredAttrsMissing > 0) { addIssue('technical', 'high', `${data.ariaRequiredAttrsMissing} ARIA role(s) missing required attributes (e.g. role="checkbox" needs aria-checked) — screen readers cannot convey state (axe: aria-required-attr, WCAG 4.1.2)`, Math.min(data.ariaRequiredAttrsMissing * 4, 15)); }
+  if (data.dialogWithoutName > 0) { addIssue('technical', 'medium', `${data.dialogWithoutName} dialog/alertdialog element(s) without accessible name — add aria-label or aria-labelledby (axe: aria-dialog-name, WCAG 4.1.2)`, Math.min(data.dialogWithoutName * 4, 10)); }
+  if (data.deprecatedAriaAttrs > 0) { addIssue('technical', 'low', `${data.deprecatedAriaAttrs} usage(s) of deprecated ARIA attributes (aria-dropeffect, aria-grabbed) — removed in ARIA 1.2 (W3C WAI-ARIA)`, Math.min(data.deprecatedAriaAttrs * 2, 6)); }
+  if (data.thWithoutScope > 3) { addIssue('content', 'low', `${data.thWithoutScope} <th> element(s) without scope attribute — add scope="col" or scope="row" for table accessibility (WCAG 1.3.1, axe: th-has-data-cells)`, Math.min(data.thWithoutScope, 6)); }
+  if (data.searchLandmarkWithoutLabel > 0) { addIssue('technical', 'low', `${data.searchLandmarkWithoutLabel} search landmark(s) without aria-label — name search regions for screen reader navigation (axe: landmark-unique, WCAG 1.3.6)`, Math.min(data.searchLandmarkWithoutLabel * 2, 6)); }
+  if (data.skipLinkTargetMissing) { addIssue('technical', 'medium', 'Skip navigation link target ID does not exist on page — the skip link will not work (axe: skip-link, WCAG 2.4.1)', 6); }
+  if (data.colorSchemeMetaMissing && data.themeColor) { addIssue('metaTags', 'low', 'Missing color-scheme meta tag — helps browsers apply correct default colors in dark/light mode (web.dev, Lighthouse PWA)', 2); }
+  if (data.labelWithoutControl > 0) { addIssue('technical', 'low', `${data.labelWithoutControl} <label> element(s) with "for" attribute pointing to non-existent ID — label is not associated with any control (axe: label, WCAG 1.3.1)`, Math.min(data.labelWithoutControl * 2, 6)); }
+
+  // --- Content Quality Enhanced (Semrush, Ahrefs, Backlinko, Yoast) ---
+  if (data.duplicateHeadingText > 0) { addIssue('content', 'low', `${data.duplicateHeadingText} heading text(s) repeated on page — use unique, descriptive headings for each section (Semrush, Screaming Frog)`, Math.min(data.duplicateHeadingText * 2, 8)); }
+  if (data.ultraShortHeadings > 0) { addIssue('content', 'low', `${data.ultraShortHeadings} heading(s) with fewer than 3 characters — headings should be descriptive and meaningful (Screaming Frog Content)`, Math.min(data.ultraShortHeadings * 2, 6)); }
+  if (data.keywordNotInFirstParagraph) { addIssue('keywords', 'medium', 'Target keyword not found in first paragraph — include keyword early for relevance signals (Backlinko, Yoast)', 8); }
+  if (data.keywordNotInAnyHeading) { addIssue('keywords', 'medium', 'Target keyword not found in any H2/H3/H4 heading — use keyword in at least one subheading (Yoast, Backlinko)', 6); }
+  if (data.emojiCount > 20) { addIssue('content', 'low', `${data.emojiCount} emoji characters in content — excessive emoji can reduce professional credibility and readability`, Math.min(Math.floor(data.emojiCount / 10), 5)); }
+  if (data.noIntroBeforeFirstHeading && wc > 200) { addIssue('content', 'low', 'Content starts with a heading without introductory paragraph — add an introduction before the first heading for better UX (Semrush)', 3); }
+  if (data.linkDensityRatio > 4 && wc > 100) { addIssue('content', 'medium', `Link density is ${data.linkDensityRatio} links per 100 words — too many links dilute content focus and may appear spammy (Google Spam Policies)`, Math.min(data.linkDensityRatio - 4, 8)); }
+  if (data.noDateIndicatorOnBlog) { addIssue('content', 'low', 'Article-like content (500+ words) with no visible date — add publication/update date for freshness signals and E-E-A-T (Google, Ahrefs)', 3); }
+
+  // --- Meta Tags & Social Enhanced (Open Graph, Twitter Cards) ---
+  if (data.ogVideoMissing) { addIssue('metaTags', 'low', 'Page has <video> element but no og:video meta tag — social shares will not embed the video (Open Graph Protocol)', 4); }
+  if (data.ogImageAltMissing) { addIssue('metaTags', 'low', 'og:image present but og:image:alt missing — add alt text for accessibility on social platforms (Facebook Sharing Best Practices)', 3); }
+  if (data.ogTitleTooLong) { addIssue('metaTags', 'low', `og:title exceeds 90 characters (${decode(data.ogTitle || '').length}) — may be truncated on social platforms (Facebook, LinkedIn)`, 3); }
+  if (data.ogDescriptionTooLong) { addIssue('metaTags', 'low', `og:description exceeds 200 characters (${decode(data.ogDescription || '').length}) — will be truncated on most social platforms`, 3); }
+  if (data.twitterTitleMissing) { addIssue('metaTags', 'low', 'Twitter card declared but twitter:title not set — falls back to og:title or page title which may not be optimal', 2); }
+  if (data.multipleOgType) { addIssue('metaTags', 'medium', 'Multiple og:type declarations found — only one og:type allowed per page (Open Graph Protocol)', 5); }
+  if (data.mixedProtocolOgUrl) { addIssue('metaTags', 'medium', 'og:url uses HTTP but page is served over HTTPS — og:url should match page protocol (Open Graph Protocol)', 5); }
+  if (data.metaRobotsConflict) { addIssue('metaTags', 'high', 'Conflicting robots directives — both "index" and "noindex" present in meta robots tag; behavior is unpredictable (Google Search Central)', 15); }
+
+  // --- Technical SEO Enhanced (Lighthouse, Google Rich Results Gallery, Performance) ---
+  if (data.heroImageNotPreloaded && data.wordCount > 100) { addIssue('technical', 'low', 'No <link rel="preload" as="image"> for hero/above-fold image — preloading the LCP image improves load performance (Lighthouse LCP, web.dev)', 3); }
+  if (data.largeBase64Images > 0) { addIssue('technical', 'medium', `${data.largeBase64Images} base64-encoded image(s) exceed 4KB — large data URIs bloat HTML and bypass caching; use external image files (Lighthouse, web.dev)`, Math.min(data.largeBase64Images * 3, 10)); }
+  if (data.eventSchemaMissingFields) { addIssue('technical', 'medium', `Event schema missing required fields: ${data.eventSchemaMissingFields.join(', ')} — complete for event rich result eligibility (Google Rich Results)`, Math.min(data.eventSchemaMissingFields.length * 3, 10)); }
+  if (data.howToSchemaMissingFields) { addIssue('technical', 'medium', `HowTo schema missing required fields: ${data.howToSchemaMissingFields.join(', ')} — Google requires name and step for HowTo rich results (Google Rich Results)`, Math.min(data.howToSchemaMissingFields.length * 3, 8)); }
+  if (data.conflictingSchemaTypes) { addIssue('technical', 'medium', 'Page has conflicting schema types (e.g. Article + Product) — pages should represent one primary entity type for clear rich result signals (Google Search Central)', 6); }
+  if (data.spaFrameworkDetected) { addIssue('technical', 'medium', 'JavaScript SPA framework detected without SSR/prerender indicators — search engines may have difficulty indexing dynamic content (Google JavaScript SEO)', 8); }
+  if (data.videoWithoutDimensions > 0) { addIssue('technical', 'low', `${data.videoWithoutDimensions} <video> element(s) without width/height — may cause layout shift (CLS) (Lighthouse, web.dev)`, Math.min(data.videoWithoutDimensions * 2, 6)); }
+  if (data.excessiveFontFamilies > 5) { addIssue('technical', 'low', `${data.excessiveFontFamilies} unique font-family declarations in inline styles — excessive font variety slows rendering and increases page weight (web.dev Font Best Practices)`, Math.min(data.excessiveFontFamilies - 5, 4)); }
+  if (data.preloadFontMissingType > 0) { addIssue('technical', 'low', `${data.preloadFontMissingType} font preload(s) missing type attribute — add type="font/woff2" for proper content negotiation (web.dev)`, Math.min(data.preloadFontMissingType * 2, 4)); }
+  if (data.missingBreadcrumbSchema && data.schemaMarkup === 'yes') { addIssue('technical', 'low', 'Page has visual breadcrumb navigation but no BreadcrumbList schema — add structured data for breadcrumb rich results (Google Rich Results)', 3); }
+
+  // --- Links & Images Additional (WCAG, Lighthouse, Sitebulb) ---
+  if (data.linkTitleMatchesAnchor > 0) { addIssue('linksImages', 'low', `${data.linkTitleMatchesAnchor} link(s) have title attribute identical to anchor text — redundant titles annoy screen reader users (WCAG H33, Deque)`, Math.min(data.linkTitleMatchesAnchor * 2, 6)); }
+  if (data.svgWithoutRole > 3) { addIssue('linksImages', 'low', `${data.svgWithoutRole} inline SVG(s) without role attribute — add role="img" for informational or role="presentation" for decorative SVGs (WCAG 1.1.1)`, Math.min(Math.floor(data.svgWithoutRole / 2), 4)); }
+  if (data.pictureSourceWithoutType > 0) { addIssue('linksImages', 'low', `${data.pictureSourceWithoutType} <source> element(s) in <picture> without type attribute — browsers need type to select the correct format (MDN, web.dev)`, Math.min(data.pictureSourceWithoutType * 2, 6)); }
+  if (data.imgSrcsetWithoutSizes > 0) { addIssue('linksImages', 'low', `${data.imgSrcsetWithoutSizes} image(s) with srcset but no sizes attribute — browser cannot determine correct image size to download (Lighthouse, web.dev)`, Math.min(data.imgSrcsetWithoutSizes * 2, 6)); }
+  if (data.adjacentImageTextLink > 0) { addIssue('linksImages', 'low', `${data.adjacentImageTextLink} adjacent image+text link pair(s) go to same URL — combine into a single link for cleaner navigation (Lighthouse, axe: identical-links-same-purpose)`, Math.min(data.adjacentImageTextLink * 2, 6)); }
+  if (data.iframeNotLazy > 2) { addIssue('technical', 'low', `${data.iframeNotLazy} <iframe>(s) without loading="lazy" — lazy-load off-screen iframes to improve page speed (Lighthouse, web.dev)`, Math.min(data.iframeNotLazy, 4)); }
+  if (data.largeSvgInline > 0) { addIssue('technical', 'low', `${data.largeSvgInline} inline SVG(s) over 10KB — externalize large SVGs for browser caching and smaller HTML (web.dev, Sitebulb Performance)`, Math.min(data.largeSvgInline * 2, 6)); }
+  if (data.decorativeImgWithAlt > 0) { addIssue('linksImages', 'low', `${data.decorativeImgWithAlt} decorative image(s) (role="presentation") have non-empty alt text — use alt="" for decorative images (axe: presentation-role-alt, WCAG 1.1.1)`, Math.min(data.decorativeImgWithAlt * 2, 6)); }
+  if (data.noFetchpriorityOnHero) { addIssue('technical', 'low', 'First/hero image missing fetchpriority="high" — setting priority helps the browser load the LCP image faster (Lighthouse, web.dev)', 3); }
+
   // Clamp category scores
   Object.values(categories).forEach(c => { c.score = Math.max(0, Math.min(100, Math.round(c.score))); });
 
@@ -2921,6 +2978,202 @@ router.post('/fetch-page', async (req, res) => {
       return alts.filter(a => a.includes(kw)).length;
     })();
 
+    // ── 42. ROUND 17 — FINAL COMPREHENSIVE SWEEP (Lighthouse, axe-core 4.10, WCAG 2.2, Screaming Frog, Semrush, Ahrefs, Backlinko, Google Rich Results Gallery) ──
+
+    // --- Accessibility Enhanced (axe-core remaining, Lighthouse, WCAG 2.2) ---
+    const xmlLangAttr = (/<html[^>]+xml:lang=["']([^"']+)["']/i.exec(html) || [])[1] || '';
+    const xmlLangMismatch = !!(xmlLangAttr && langTag && xmlLangAttr.toLowerCase().split('-')[0] !== langTag.toLowerCase().split('-')[0]);
+    const ariaRequiredChildrenMissing = (() => {
+      const roleChildMap = { list: 'listitem', tablist: 'tab', tree: 'treeitem', menu: 'menuitem', menubar: 'menuitem', grid: 'row', table: 'row', radiogroup: 'radio', listbox: 'option', feed: 'article' };
+      let v = 0;
+      for (const [role, child] of Object.entries(roleChildMap)) {
+        const matches = html.match(new RegExp(`role=["']${role}["']`, 'gi')) || [];
+        if (matches.length > 0 && !new RegExp(`role=["']${child}["']`, 'i').test(html)) v += matches.length;
+      }
+      return v;
+    })();
+    const ariaRequiredAttrsMissing = (() => {
+      let c = 0;
+      [...html.matchAll(/role=["']checkbox["'][^>]*/gi)].forEach(m => { if (!/aria-checked/i.test(m[0])) c++; });
+      [...html.matchAll(/role=["']slider["'][^>]*/gi)].forEach(m => { if (!/aria-valuenow/i.test(m[0])) c++; });
+      [...html.matchAll(/role=["']combobox["'][^>]*/gi)].forEach(m => { if (!/aria-expanded/i.test(m[0])) c++; });
+      [...html.matchAll(/role=["']scrollbar["'][^>]*/gi)].forEach(m => { if (!/aria-controls/i.test(m[0]) || !/aria-valuenow/i.test(m[0])) c++; });
+      [...html.matchAll(/role=["']heading["'][^>]*/gi)].forEach(m => { if (!/aria-level/i.test(m[0])) c++; });
+      [...html.matchAll(/role=["']meter["'][^>]*/gi)].forEach(m => { if (!/aria-valuenow/i.test(m[0])) c++; });
+      return c;
+    })();
+    const dialogWithoutName = (() => {
+      const dialogs = [...html.matchAll(/<dialog[^>]*>/gi), ...html.matchAll(/<[^>]+role=["'](dialog|alertdialog)["'][^>]*>/gi)];
+      return dialogs.filter(m => !/aria-label(ledby)?/i.test(m[0]) && !/title\s*=/i.test(m[0])).length;
+    })();
+    const deprecatedAriaAttrs = (html.match(/aria-(dropeffect|grabbed)\s*=/gi) || []).length;
+    const thWithoutScope = (() => {
+      const ths = [...html.matchAll(/<th[^>]*>/gi)];
+      return ths.filter(m => !/scope\s*=/i.test(m[0])).length;
+    })();
+    const searchLandmarkWithoutLabel = (() => {
+      const searches = [...html.matchAll(/<[^>]+role=["']search["'][^>]*>/gi), ...html.matchAll(/<search[^>]*>/gi)];
+      return searches.filter(m => !/aria-label(ledby)?/i.test(m[0])).length;
+    })();
+    const skipLinkTargetMissing = (() => {
+      if (!hasSkipLink) return false;
+      const skipMatch = html.match(/<a[^>]+href=["']#([^"']+)["'][^>]*>[^<]*(skip|jump|main)[^<]*/i);
+      if (!skipMatch) return false;
+      const targetId = skipMatch[1];
+      return !new RegExp(`id=["']${targetId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`, 'i').test(html);
+    })();
+    const colorSchemeMetaMissing = !/<meta[^>]+name=["']color-scheme["']/i.test(html);
+    const labelWithoutControl = (() => {
+      const labels = [...html.matchAll(/<label[^>]+for=["']([^"']+)["']/gi)].map(m => m[1]);
+      return labels.filter(id => !new RegExp(`id=["']${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`, 'i').test(html)).length;
+    })();
+
+    // --- Content Quality Enhanced (Semrush, Ahrefs, Backlinko, Yoast) ---
+    const duplicateHeadingText = (() => {
+      const hTexts = [...html.matchAll(/<h[2-6][^>]*>([\s\S]*?)<\/h[2-6]>/gi)]
+        .map(m => m[1].replace(/<[^>]+>/g, '').trim().toLowerCase()).filter(t => t.length > 0);
+      const counts = {};
+      hTexts.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
+      return Object.values(counts).filter(c => c > 1).length;
+    })();
+    const ultraShortHeadings = (() => {
+      return [...html.matchAll(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/gi)]
+        .map(m => m[1].replace(/<[^>]+>/g, '').trim()).filter(t => t.length > 0 && t.length < 3).length;
+    })();
+    const keywordNotInFirstParagraph = (() => {
+      if (!reqKeywords || reqKeywords.length === 0) return false;
+      const kw = reqKeywords[0]?.toLowerCase();
+      if (!kw) return false;
+      const firstP = (html.match(/<p[^>]*>([\s\S]*?)<\/p>/i) || [])[1] || '';
+      const firstPText = firstP.replace(/<[^>]+>/g, '').toLowerCase();
+      return firstPText.length > 20 && !firstPText.includes(kw);
+    })();
+    const keywordNotInAnyHeading = (() => {
+      if (!reqKeywords || reqKeywords.length === 0) return false;
+      const kw = reqKeywords[0]?.toLowerCase();
+      if (!kw) return false;
+      const headings = [...html.matchAll(/<h[2-4][^>]*>([\s\S]*?)<\/h[2-4]>/gi)]
+        .map(m => m[1].replace(/<[^>]+>/g, '').trim().toLowerCase());
+      return headings.length > 0 && !headings.some(h => h.includes(kw));
+    })();
+    const emojiCount = (() => {
+      const emojiRx = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F000}-\u{1FAFF}]/gu;
+      return (visibleText.match(emojiRx) || []).length;
+    })();
+    const noIntroBeforeFirstHeading = (() => {
+      const bodyContent = (html.match(/<body[^>]*>([\s\S]*)/i) || [])[1] || '';
+      const stripped = bodyContent.replace(/<!--[\s\S]*?-->/g, '').replace(/<(script|style|noscript|nav|header)[^>]*>[\s\S]*?<\/\1>/gi, '').trim();
+      const firstContentTag = (stripped.match(/<(h[1-6]|p)\b/i) || [])[1] || '';
+      return /^h[1-6]$/i.test(firstContentTag);
+    })();
+    const linkDensityRatio = wordCount > 50 ? Math.round((totalLinks / wordCount) * 100) : 0;
+    const noDateIndicatorOnBlog = (() => {
+      if (wordCount < 500) return false;
+      const isArticleLike = /<article/i.test(html) || (html.match(/<h[1-6]/gi) || []).length > 3;
+      return isArticleLike && !datePublished && timeElementCount === 0 && !/<time[\s>]/i.test(html);
+    })();
+
+    // --- Meta Tags & Social Enhanced (Open Graph, Twitter Cards, Pinterest) ---
+    const hasVideoElement = (html.match(/<video[\s>]/gi) || []).length > 0;
+    const ogVideoMissing = hasVideoElement && !/<meta[^>]+property=["']og:video/i.test(html);
+    const ogImageAltMissing = !!(ogImage && !/<meta[^>]+property=["']og:image:alt["']/i.test(html));
+    const ogTitleTooLong = !!(ogTitle && decode(ogTitle).length > 90);
+    const ogDescriptionTooLong = !!(ogDescription && decode(ogDescription).length > 200);
+    const twitterTitleMissing = !!(twitterCard && !/<meta[^>]+name=["']twitter:title["']/i.test(html));
+    const multipleOgType = (html.match(/<meta[^>]+property=["']og:type["']/gi) || []).length > 1;
+    const mixedProtocolOgUrl = !!(ogUrl && /^http:\/\//i.test(ogUrl) && /^https:\/\//i.test(finalUrl));
+
+    // --- Technical SEO Enhanced (Lighthouse, Google Rich Results Gallery, Performance) ---
+    const heroImageNotPreloaded = imageCount > 0 && !/<link[^>]+rel=["']preload["'][^>]+as=["']image["']/i.test(html);
+    const largeBase64Images = (() => {
+      const dataUris = [...html.matchAll(/src=["'](data:image\/[^"']+)["']/gi)].map(m => m[1]);
+      return dataUris.filter(d => d.length > 5460).length;
+    })();
+    const eventSchemaMissingFields = (() => {
+      if (!hasEventSchema) return null;
+      const raw = schemaRawData ? JSON.stringify(schemaRawData) : '';
+      const missing = [];
+      if (!/"name"/i.test(raw)) missing.push('name');
+      if (!/"startDate"/i.test(raw)) missing.push('startDate');
+      if (!/"location"/i.test(raw)) missing.push('location');
+      return missing.length > 0 ? missing : null;
+    })();
+    const howToSchemaMissingFields = (() => {
+      if (!hasHowToSchema) return null;
+      const raw = schemaRawData ? JSON.stringify(schemaRawData) : '';
+      const missing = [];
+      if (!/"name"/i.test(raw)) missing.push('name');
+      if (!/"step"/i.test(raw)) missing.push('step');
+      return missing.length > 0 ? missing : null;
+    })();
+    const conflictingSchemaTypes = (() => {
+      if (schemaTypes.length < 2) return false;
+      const types = schemaTypes.map(t => t.replace(/.*\//, ''));
+      const incompatible = [['Article', 'Product'], ['Article', 'Recipe'], ['Product', 'Recipe'], ['Article', 'Event'], ['Product', 'Event']];
+      return incompatible.some(([a, b]) => types.includes(a) && types.includes(b));
+    })();
+    const spaFrameworkDetected = (() => {
+      const hasFw = /(__NEXT_DATA__|__NUXT__|window\.__remixContext|ng-version|data-reactroot|id=["']___gatsby)/i.test(html);
+      if (!hasFw) return false;
+      return !/(<meta[^>]+name=["'](fragment|prerender-status-code)["']|data-server-rendered)/i.test(html);
+    })();
+    const videoWithoutDimensions = (() => {
+      const videos = [...html.matchAll(/<video[^>]*>/gi)];
+      return videos.filter(m => !/\bwidth\s*=/i.test(m[0]) || !/\bheight\s*=/i.test(m[0])).length;
+    })();
+    const metaRobotsConflict = !!(robotsMeta && /noindex/i.test(robotsMeta) && /\bindex\b/i.test(robotsMeta.replace('noindex', '')));
+    const excessiveFontFamilies = (() => {
+      const families = [...html.matchAll(/font-family\s*:\s*["']?([^;"'}\]]+)/gi)].map(m => m[1].trim().toLowerCase().split(',')[0].trim());
+      return new Set(families).size;
+    })();
+    const preloadFontMissingType = (() => {
+      const fontPreloads = [...html.matchAll(/<link[^>]+rel=["']preload["'][^>]+as=["']font["'][^>]*>/gi)];
+      return fontPreloads.filter(m => !/type=/i.test(m[0])).length;
+    })();
+    const missingBreadcrumbSchema = !!(hasBreadcrumbNav && !schemaTypes.some(t => /breadcrumb/i.test(t)));
+
+    // --- Links & Images Additional (WCAG, Lighthouse, Sitebulb) ---
+    const linkTitleMatchesAnchor = (() => {
+      return [...html.matchAll(/<a[^>]+title=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)]
+        .filter(m => {
+          const t = m[1].trim().toLowerCase();
+          const txt = m[2].replace(/<[^>]+>/g, '').trim().toLowerCase();
+          return t === txt && t.length > 0;
+        }).length;
+    })();
+    const svgWithoutRole = (() => {
+      return [...html.matchAll(/<svg[^>]*>/gi)].filter(m => !/role=/i.test(m[0])).length;
+    })();
+    const pictureSourceWithoutType = (() => {
+      let count = 0;
+      [...html.matchAll(/<picture[^>]*>([\s\S]*?)<\/picture>/gi)].forEach(p => {
+        [...p[1].matchAll(/<source[^>]*>/gi)].forEach(s => { if (!/type=/i.test(s[0])) count++; });
+      });
+      return count;
+    })();
+    const imgSrcsetWithoutSizes = (() => {
+      return [...html.matchAll(/<img[^>]+srcset=[^>]*>/gi)].filter(m => !/\bsizes\s*=/i.test(m[0])).length;
+    })();
+    const adjacentImageTextLink = (() => {
+      return [...html.matchAll(/<a[^>]+href=["']([^"']+)["'][^>]*>\s*<img[^>]*>\s*<\/a>\s*<a[^>]+href=["']\1["'][^>]*>[^<]+<\/a>/gi)].length;
+    })();
+    const iframeNotLazy = (() => {
+      return [...html.matchAll(/<iframe[^>]*>/gi)].filter(m => !/loading\s*=\s*["']lazy["']/i.test(m[0]) && /src=/i.test(m[0])).length;
+    })();
+    const largeSvgInline = (() => {
+      return [...html.matchAll(/<svg[^>]*>[\s\S]*?<\/svg>/gi)].filter(s => s[0].length > 10240).length;
+    })();
+    const decorativeImgWithAlt = (() => {
+      return [...html.matchAll(/<img[^>]*>/gi)].filter(m =>
+        /role=["'](presentation|none)["']/i.test(m[0]) && /alt=["'][^"']+["']/i.test(m[0])
+      ).length;
+    })();
+    const noFetchpriorityOnHero = (() => {
+      if (imageCount === 0) return false;
+      const firstImg = html.match(/<img[^>]*>/i);
+      return !!(firstImg && !/fetchpriority/i.test(firstImg[0]) && !/loading=["']lazy["']/i.test(firstImg[0]));
+    })();
+
     const pageData = {
       url: finalUrl, title, metaDescription, h1,
       h1Count, h2Count, h3Count, wordCount, canonicalUrl,
@@ -3080,6 +3333,26 @@ router.post('/fetch-page', async (req, res) => {
       imagesWithEmptySrc, uninformativeAltText, imagesWithOneDimension,
       brokenImageSrc, zeroDimensionImages, redundantAltPhrases,
       duplicateImageSrc, keywordStuffedHeadings, keywordOveruseInAlt,
+      // Round 17 — Accessibility Enhanced
+      xmlLangMismatch, ariaRequiredChildrenMissing, ariaRequiredAttrsMissing,
+      dialogWithoutName, deprecatedAriaAttrs, thWithoutScope,
+      searchLandmarkWithoutLabel, skipLinkTargetMissing, colorSchemeMetaMissing, labelWithoutControl,
+      // Round 17 — Content Quality Enhanced
+      duplicateHeadingText, ultraShortHeadings, keywordNotInFirstParagraph,
+      keywordNotInAnyHeading, emojiCount, noIntroBeforeFirstHeading,
+      linkDensityRatio, noDateIndicatorOnBlog,
+      // Round 17 — Meta Tags & Social Enhanced
+      ogVideoMissing, ogImageAltMissing, ogTitleTooLong, ogDescriptionTooLong,
+      twitterTitleMissing, multipleOgType, mixedProtocolOgUrl,
+      // Round 17 — Technical SEO Enhanced
+      heroImageNotPreloaded, largeBase64Images, eventSchemaMissingFields,
+      howToSchemaMissingFields, conflictingSchemaTypes, spaFrameworkDetected,
+      videoWithoutDimensions, metaRobotsConflict, excessiveFontFamilies,
+      preloadFontMissingType, missingBreadcrumbSchema,
+      // Round 17 — Links & Images Additional
+      linkTitleMatchesAnchor, svgWithoutRole, pictureSourceWithoutType,
+      imgSrcsetWithoutSizes, adjacentImageTextLink, iframeNotLazy,
+      largeSvgInline, decorativeImgWithAlt, noFetchpriorityOnHero,
       fullUrl: finalUrl,
     };
     const scored = computeWeightedScore(pageData);
@@ -3389,6 +3662,26 @@ router.post('/fetch-page', async (req, res) => {
       imagesWithEmptySrc, uninformativeAltText, imagesWithOneDimension,
       brokenImageSrc, zeroDimensionImages, redundantAltPhrases,
       duplicateImageSrc, keywordStuffedHeadings, keywordOveruseInAlt,
+      // Round 17 — Accessibility Enhanced
+      xmlLangMismatch, ariaRequiredChildrenMissing, ariaRequiredAttrsMissing,
+      dialogWithoutName, deprecatedAriaAttrs, thWithoutScope,
+      searchLandmarkWithoutLabel, skipLinkTargetMissing, colorSchemeMetaMissing, labelWithoutControl,
+      // Round 17 — Content Quality Enhanced
+      duplicateHeadingText, ultraShortHeadings, keywordNotInFirstParagraph,
+      keywordNotInAnyHeading, emojiCount, noIntroBeforeFirstHeading,
+      linkDensityRatio, noDateIndicatorOnBlog,
+      // Round 17 — Meta Tags & Social Enhanced
+      ogVideoMissing, ogImageAltMissing, ogTitleTooLong, ogDescriptionTooLong,
+      twitterTitleMissing, multipleOgType, mixedProtocolOgUrl,
+      // Round 17 — Technical SEO Enhanced
+      heroImageNotPreloaded, largeBase64Images, eventSchemaMissingFields,
+      howToSchemaMissingFields, conflictingSchemaTypes, spaFrameworkDetected,
+      videoWithoutDimensions, metaRobotsConflict, excessiveFontFamilies,
+      preloadFontMissingType, missingBreadcrumbSchema,
+      // Round 17 — Links & Images Additional
+      linkTitleMatchesAnchor, svgWithoutRole, pictureSourceWithoutType,
+      imgSrcsetWithoutSizes, adjacentImageTextLink, iframeNotLazy,
+      largeSvgInline, decorativeImgWithAlt, noFetchpriorityOnHero,
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
