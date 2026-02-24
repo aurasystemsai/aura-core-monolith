@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 
 export default function BrandMentionTracker() {
@@ -19,7 +19,7 @@ export default function BrandMentionTracker() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input })
       });
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setMentions(data.mentions || []);
     } catch (err) {
@@ -34,7 +34,7 @@ export default function BrandMentionTracker() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input })
       });
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setSentiment(data.sentiment || []);
     } catch (err) {

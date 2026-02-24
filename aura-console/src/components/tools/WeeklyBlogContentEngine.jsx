@@ -142,7 +142,7 @@ export default function WeeklyBlogContentEngine() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ strategy: "best-of-n", posts: 4, primaryKeyword: plan.posts[0]?.primaryKeyword }),
       });
-      const data = await res.json();
+      const data = res;
       if (!data?.success) throw new Error(data?.error || "Failed to run AI orchestrator");
       setAiRun(data.data);
     } catch (err) {
@@ -158,7 +158,7 @@ export default function WeeklyBlogContentEngine() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ posts: 4, primaryKeyword: plan.posts[0]?.primaryKeyword }),
       });
-      const data = await res.json();
+      const data = res;
       if (!data?.success) throw new Error(data?.error || "Failed to run ensemble");
       setAiRun(data.data);
     } catch (err) {

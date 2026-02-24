@@ -176,7 +176,7 @@ const Credits = ({ plan = 'free' }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ packId: selectedPack }),
       });
-      const data = await res.json();
+      const data = res;
       if (data.ok && data.confirmationUrl) {
         window.open(data.confirmationUrl, '_top');
       } else if (data.ok) {

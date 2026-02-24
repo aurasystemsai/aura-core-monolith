@@ -396,7 +396,7 @@ export default function PredictiveAnalyticsWidgets() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const json = await res.json();
+      const json = res;
       if (!json.ok) throw new Error(json.error || "Failed to run tool");
       const result = json.result || json;
       setData(result);

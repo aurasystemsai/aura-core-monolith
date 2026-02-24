@@ -58,7 +58,7 @@ export default function CreativeAutomationEngine() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ brief })
       });
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setResult(data.result || "No creative generated");
       fetchCreatives();
@@ -79,7 +79,7 @@ export default function CreativeAutomationEngine() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: result })
       });
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       fetchCreatives();
     } catch (err) {
@@ -101,7 +101,7 @@ export default function CreativeAutomationEngine() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ data: JSON.parse(evt.target.result) })
         });
-        const data = await res.json();
+        const data = res;
         if (!data.ok) throw new Error(data.error || "Unknown error");
         setImported(file.name);
         fetchCreatives();

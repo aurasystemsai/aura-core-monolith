@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useRef } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 
@@ -31,7 +31,7 @@ export default function BrandIntelligenceLayer() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input })
       });
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setDashboard(data.dashboard || []);
     } catch (err) {
@@ -47,7 +47,7 @@ export default function BrandIntelligenceLayer() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input })
       });
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setInsights(data.insights || []);
     } catch (err) {

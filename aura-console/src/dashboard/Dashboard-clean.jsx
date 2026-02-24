@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from "react";
+ï»¿import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch, apiFetchJSON } from "../api";
 import { sendCopilotMessage } from "../core/advancedAiClient";
 import IntegrationHealthPanel from "../components/IntegrationHealthPanel";
@@ -53,7 +53,7 @@ const Dashboard = ({ setActiveSection }) => {
         }
         setStats({ products, seoIssues });
       } catch (e) {
-        setStats({ products: '—', seoIssues: '—' });
+        setStats({ products: 'â€”', seoIssues: 'â€”' });
       } finally {
         setLoading(false);
       }
@@ -66,7 +66,7 @@ const Dashboard = ({ setActiveSection }) => {
       try {
         const res = await apiFetchJSON('/api/session');
         if (res.ok) {
-          const data = await res.json();
+          const data = res;
           if (data && data.projectDetails) {
             setShop(data.projectDetails);
           } else {
@@ -138,7 +138,7 @@ const Dashboard = ({ setActiveSection }) => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div>
               <div style={{ color: '#71717a', fontSize: 13, marginBottom: 4 }}>Store</div>
-              <div style={{ color: '#e8f2ff', fontWeight: 700, fontSize: 18 }}>{shop.domain || '—'}</div>
+              <div style={{ color: '#e8f2ff', fontWeight: 700, fontSize: 18 }}>{shop.domain || 'â€”'}</div>
             </div>
             <span style={{ background: '#22d37f', color: '#fff', fontWeight: 700, fontSize: 13, borderRadius: 8, padding: '4px 12px' }}>Active</span>
           </div>
@@ -180,7 +180,7 @@ const Dashboard = ({ setActiveSection }) => {
                   minWidth: 92,
                 }}
               >
-                {copilotLoading ? 'Thinking…' : 'Ask'}
+                {copilotLoading ? 'Thinkingâ€¦' : 'Ask'}
               </button>
             </div>
             {copilotReply && (
@@ -239,8 +239,8 @@ const Dashboard = ({ setActiveSection }) => {
         marginTop: 32,
       }}>
         {[ 
-          { label: 'Products', value: loading ? '...' : (stats.products !== null ? stats.products : '—') },
-          { label: 'SEO Issues', value: loading ? '...' : (stats.seoIssues !== null ? stats.seoIssues : '—') },
+          { label: 'Products', value: loading ? '...' : (stats.products !== null ? stats.products : 'â€”') },
+          { label: 'SEO Issues', value: loading ? '...' : (stats.seoIssues !== null ? stats.seoIssues : 'â€”') },
         ].map((stat) => (
           <div
             key={stat.label}

@@ -31,7 +31,7 @@ function IssueCard({ issue, pageUrl }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ issue, page: pageUrl }),
       });
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Failed to generate fix");
       setSuggestion(data.suggestion);
     } catch (err) {
@@ -174,7 +174,7 @@ export default function SEOSiteCrawler() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ site: input.trim(), keywords }),
       });
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Crawl failed");
       setResult(data.result);
       fetchHistory();
@@ -198,7 +198,7 @@ export default function SEOSiteCrawler() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ data: JSON.parse(evt.target.result) }),
         });
-        const data = await res.json();
+        const data = res;
         if (!data.ok) throw new Error(data.error || "Import failed");
         fetchHistory();
       } catch (err) { setError(err.message); }

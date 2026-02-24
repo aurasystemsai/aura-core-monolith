@@ -36,7 +36,7 @@ export default function UserManagement({ coreUrl }) {
         },
         body: JSON.stringify({ email, password, role })
       });
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error);
       setSuccess('User registered!');
       setEmail('');

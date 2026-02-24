@@ -42,7 +42,7 @@ export default function SocialSchedulerContentEngine() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: input })
       });
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setResponse(data.scheduledContent || "No content scheduled");
       // Save to history
@@ -71,7 +71,7 @@ export default function SocialSchedulerContentEngine() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ data: JSON.parse(evt.target.result) })
         });
-        const data = await res.json();
+        const data = res;
         if (!data.ok) throw new Error(data.error || "Unknown error");
         setImported(file.name);
         fetchHistory();

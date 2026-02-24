@@ -338,7 +338,7 @@ function RecoveryCampaignsTab({ campaigns, setCampaigns }) {
   const createCampaign = async (campaign) => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/campaigns', { method: 'POST', body: JSON.stringify(campaign) });
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setCampaigns([...campaigns, data.campaign]);
       setShowModal(false);
     }
@@ -675,7 +675,7 @@ function ExportImportTab() {
     try {
       const res = await apiFetchJSON(`/api/abandoned-checkout-winback/developer/export?type=${exportType}&format=${exportFormat}`);
       if (res.ok) {
-        const data = await res.json();
+        const data = res;
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -808,7 +808,7 @@ function WebhooksTab() {
   const loadWebhooks = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/developer/webhooks');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setWebhooks(data.webhooks || []);
     }
   };
@@ -939,7 +939,7 @@ function RealTimeDashboardTab() {
   const loadStats = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/apm/metrics/dashboard');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setStats(data.stats || stats);
     }
   };
@@ -1029,7 +1029,7 @@ function ActivityLogTab() {
   const loadActivities = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/collaboration/activity-feed');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setActivities(data.activities || []);
     }
   };
@@ -1070,7 +1070,7 @@ function AlertsTab() {
   const loadAlerts = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/apm/alerts');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setAlerts(data.alerts || []);
     }
   };
@@ -1126,7 +1126,7 @@ function HealthStatusTab() {
   const loadHealth = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/apm/health');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setHealth(data.health || health);
     }
   };
@@ -1168,7 +1168,7 @@ function GeneralSettingsTab() {
   const loadSettings = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/whitelabel/settings');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setSettings(data.settings || settings);
     }
   };
@@ -1215,7 +1215,7 @@ function BrandsTab() {
   const loadBrands = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/whitelabel/brands');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setBrands(data.brands || []);
     }
   };
@@ -1254,7 +1254,7 @@ function TeamsPermissionsTab() {
   const loadTeams = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/collaboration/teams');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setTeams(data.teams || []);
     }
   };
@@ -1304,7 +1304,7 @@ function ComplianceTab() {
   const loadConsent = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/security/gdpr/consent');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setConsent(data.consent || []);
     }
   };
@@ -1350,7 +1350,7 @@ function LocalizationTab() {
   const loadLocales = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/whitelabel/localization');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setLocales(data.locales || []);
     }
   };
@@ -1389,7 +1389,7 @@ function APIKeysTab() {
   const loadApiKeys = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/developer/api-keys');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setApiKeys(data.apiKeys || []);
     }
   };
@@ -1443,7 +1443,7 @@ function RevenueForecastingTab() {
   const loadForecast = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/analytics/revenue-forecast');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setForecast(data.forecast || forecast);
     }
   };
@@ -1488,7 +1488,7 @@ function CLVAnalyticsTab() {
   const loadCLVStats = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/analytics/clv');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setClvStats(data.clv || clvStats);
     }
   };
@@ -1526,7 +1526,7 @@ function CollaborationTab() {
   const loadComments = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/collaboration/comments');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setComments(data.comments || []);
     }
   };
@@ -1568,7 +1568,7 @@ function SecurityCenterTab() {
   const loadAuditLogs = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/security/audit-log');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setAuditLogs(data.logs || []);
     }
   };
@@ -1622,7 +1622,7 @@ function DeveloperPlatformTab() {
   const loadScripts = async () => {
     const res = await apiFetchJSON('/api/abandoned-checkout-winback/developer/custom-scripts');
     if (res.ok) {
-      const data = await res.json();
+      const data = res;
       setScripts(data.scripts || []);
     }
   };

@@ -148,7 +148,7 @@ export default function BlogDraftEngine() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(ideaData),
       });
-      const data = await res.json();
+      const data = res;
       if (data?.success) {
         setIdeas([...ideas, data.data]);
         setShowModal(false);
@@ -165,7 +165,7 @@ export default function BlogDraftEngine() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(briefData),
       });
-      const data = await res.json();
+      const data = res;
       if (data?.success) {
         setBriefs([...briefs, data.data]);
         setShowModal(false);
@@ -219,7 +219,7 @@ export default function BlogDraftEngine() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, primaryKeyword, audience, tone, topics: parseTopics() }),
       });
-      const data = await res.json();
+      const data = res;
       if (!data?.success) throw new Error(data?.error || "Failed to generate draft");
       setDraft(data.data);
       const seoRes = await apiFetchJSON("/api/blog-draft-engine/seo/score", {
@@ -227,7 +227,7 @@ export default function BlogDraftEngine() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, primaryKeyword, topics: parseTopics() }),
       });
-      const seoJson = await seoRes.json();
+      const seoJson = seoRes;
       if (seoJson?.success) setSeo(seoJson.data);
       const distRes = await apiFetchJSON("/api/blog-draft-engine/distribution/readiness");
       const distJson = distRes;
@@ -247,7 +247,7 @@ export default function BlogDraftEngine() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ strategy: "best-of-n", primaryKeyword }),
       });
-      const data = await res.json();
+      const data = res;
       if (!data?.success) throw new Error(data?.error || "Failed to orchestrate");
       setAiRun(data.data);
     } catch (err) {
@@ -263,7 +263,7 @@ export default function BlogDraftEngine() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ primaryKeyword }),
       });
-      const data = await res.json();
+      const data = res;
       if (!data?.success) throw new Error(data?.error || "Failed to ensemble");
       setEnsembleRun(data.data);
     } catch (err) {

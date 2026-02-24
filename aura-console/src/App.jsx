@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from "react";
+ï»¿import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch, apiFetchJSON } from "./api";
 import "./App.css";
 import usePlan, { canUseTool, PLAN_LABEL, PLAN_COLOUR } from "./hooks/usePlan";
@@ -33,7 +33,7 @@ const Onboarding = lazy(() => import("./onboarding/Onboarding.jsx"));
 const Credits = lazy(() => import("./credits/Credits.jsx"));
 const Settings = lazy(() => import("./components/Settings.jsx"));
 
-// Tool components — organized by suite
+// Tool components â€” organized by suite
 const AbandonedCheckoutWinback = lazy(() => import("./components/tools/AbandonedCheckoutWinback.jsx"));
 const CustomerDataPlatform = lazy(() => import("./components/tools/CustomerDataPlatform.jsx"));
 const SelfServicePortal = lazy(() => import("./components/tools/SelfServicePortal.jsx"));
@@ -228,7 +228,7 @@ function App() {
           try {
             const res = await apiFetchJSON('/api/session');
             if (res.ok) {
-              const data = await res.json();
+              const data = res;
               if (data && data.project) {
                 const sanitizedDomain = (data.project.domain || data.project.shopDomain || "").replace(/^https?:\/\//, "").replace(/\/.*$/, "");
                 if (sanitizedDomain) {
@@ -256,7 +256,7 @@ function App() {
   const { plan } = usePlan();
   const [toolInitUrl, setToolInitUrl] = useState(null);
 
-  // Gate navigation — locked tools redirect to Settings
+  // Gate navigation â€” locked tools redirect to Settings
   function setActiveSection(section, url) {
     if (url) setToolInitUrl(url);
     if (!canUseTool(plan, section)) {
@@ -423,14 +423,14 @@ function App() {
       <ChangelogModal open={showChangelog} onClose={() => setShowChangelog(false)} />
       <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
       <div className="app-shell" style={{ flexDirection: 'row' }}>
-        {/* Persistent left sidebar — HubSpot/Semrush/Klaviyo pattern */}
+        {/* Persistent left sidebar â€” HubSpot/Semrush/Klaviyo pattern */}
         <AppSidebar
           activeSection={activeSection}
           setActiveSection={(section, url) => { if (url) setToolInitUrl(url); setActiveSection(section); }}
           plan={plan}
         />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          {/* Slim top bar — brand actions only */}
+          {/* Slim top bar â€” brand actions only */}
           <header className="top-bar-slim">
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {plan && (
@@ -451,7 +451,7 @@ function App() {
           <div className="page-frame fade-in">
             <section className="tool-section">
               {/* Main content routing */}
-              <Suspense fallback={<div className="loading-spinner"><div className="spinner"></div><p>Loading…</p></div>}>
+              <Suspense fallback={<div className="loading-spinner"><div className="spinner"></div><p>Loadingâ€¦</p></div>}>
                 {/* Core sections */}
                 {activeSection === "dashboard" && <Dashboard setActiveSection={(section, url) => { if (url) setToolInitUrl(url); setActiveSection(section); }} />}
                 {activeSection === "all-tools" && <AllTools setActiveSection={setActiveSection} />}

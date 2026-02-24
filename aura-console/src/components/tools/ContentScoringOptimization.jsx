@@ -41,7 +41,7 @@ export default function ContentScoringOptimization() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content })
       });
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setResponse(data.scoreReport || "No report generated");
       // Save to history
@@ -70,7 +70,7 @@ export default function ContentScoringOptimization() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ data: JSON.parse(evt.target.result) })
         });
-        const data = await res.json();
+        const data = res;
         if (!data.ok) throw new Error(data.error || "Unknown error");
         setImported(file.name);
         fetchHistory();

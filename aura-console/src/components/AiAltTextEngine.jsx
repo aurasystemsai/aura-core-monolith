@@ -41,7 +41,7 @@ export default function AiAltTextEngine() {
         method: "POST",
         body: formData
       });
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setBatchResults(data.results || []);
     } catch (err) {
@@ -88,7 +88,7 @@ export default function AiAltTextEngine() {
         },
         body: JSON.stringify(form)
       });
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setResult(data.result || data);
     } catch (err) {

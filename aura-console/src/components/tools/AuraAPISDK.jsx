@@ -35,7 +35,7 @@ export default function AuraAPISDK() {
         headers: { "Content-Type": "application/json" },
         body: method !== "GET" ? body : undefined
       });
-      const data = await res.json();
+      const data = res;
       setResponse(data);
     } catch (err) {
       setError(err.message);

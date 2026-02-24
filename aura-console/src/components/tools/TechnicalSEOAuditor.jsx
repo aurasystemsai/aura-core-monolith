@@ -52,7 +52,7 @@ export default function TechnicalSEOAuditor() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ site: input })
       });
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setResponse(data.auditReport || "No report generated");
       // Save to history
@@ -81,7 +81,7 @@ export default function TechnicalSEOAuditor() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ data: JSON.parse(evt.target.result) })
         });
-        const data = await res.json();
+        const data = res;
         if (!data.ok) throw new Error(data.error || "Unknown error");
         setImported(file.name);
         fetchHistory();
