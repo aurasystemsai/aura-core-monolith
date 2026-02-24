@@ -500,7 +500,7 @@ const Dashboard = ({ setActiveSection }) => {
 				try {
 					const projectRes = await apiFetchJSON(`/api/projects/${projectId}/drafts`);
 					if (projectRes.ok) {
-						const projectData = await projectRes.json();
+						const projectData = projectRes;
 						if (projectData.drafts && Array.isArray(projectData.drafts)) productCount = projectData.drafts.length;
 					}
 				} catch (e) { /* ignore */ }
@@ -530,8 +530,7 @@ const Dashboard = ({ setActiveSection }) => {
 			clearInterval(fakeTimer);
 
 			if (!response.ok) {
-				let errorMsg = 'Unknown error';
-				try { const e = await response.json(); errorMsg = e.error || errorMsg; } catch { errorMsg = response.statusText || `HTTP ${response.status}`; }
+				let errorMsg = response.error || response.statusText || `HTTP ${response.status}` || 'Unknown error';
 				showToast('Scan failed: ' + errorMsg, 'error');
 				setScanningInProgress(false);
 				setShowScanModal(false);
@@ -539,7 +538,7 @@ const Dashboard = ({ setActiveSection }) => {
 				return;
 			}
 
-			const result = await response.json();
+			const result = response;
 
 			if (result.ok) {
 				const scanData = result.result;
@@ -609,13 +608,10 @@ const Dashboard = ({ setActiveSection }) => {
 		async function fetchShop() {
 			try {
 				const res = await apiFetchJSON("/api/session");
-				if (res.ok) {
-					const data = await res.json();
-					if (data && data.projectDetails) {
-						setShop(data.projectDetails);
-					} else {
-						setShop(null);
-					}
+				if (res.ok && res.projectDetails) {
+					setShop(res.projectDetails);
+				} else {
+					setShop(null);
 				}
 			} catch {
 				setShop(null);
