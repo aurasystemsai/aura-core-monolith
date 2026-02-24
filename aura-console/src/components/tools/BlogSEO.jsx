@@ -45,7 +45,7 @@ const S = {
   heading: { fontSize: 13, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 10 },
 };
 
-const TABS = ["Analyzer", "Keywords", "Content+", "Keyword+", "Technical+", "AI Create", "Schema & Links", "SERP & CTR", "Backlinks", "Local SEO", "E-E-A-T & Brand", "Voice & AI Search", "Content Brief", "Bulk Scan", "AI Assistant", "History"];
+const TABS = ["Analyzer", "Keywords", "Content+", "Keyword+", "Technical+", "AI Create", "Schema & Links", "SERP & CTR", "Backlinks", "A/B & Refresh", "Local SEO", "E-E-A-T & Brand", "Voice & AI Search", "Content Brief", "Bulk Scan", "AI Assistant", "History"];
 const FILTER_CATS = ["all", "content", "meta", "technical", "keywords", "structure"];
 const FILTER_SEVS = ["all", "high", "medium", "low"];
 
@@ -305,6 +305,7 @@ export default function BlogSEO() {
 
   const [secondaryKwResult, setSecondaryKwResult] = useState(null);
   const [secondaryKwLoading, setSecondaryKwLoading] = useState(false);
+  const [secondaryKwInput, setSecondaryKwInput] = useState("");
 
   const [voiceSearchResult, setVoiceSearchResult] = useState(null);
   const [voiceSearchLoading, setVoiceSearchLoading] = useState(false);
@@ -323,6 +324,7 @@ export default function BlogSEO() {
 
   const [hreflangResult, setHreflangResult] = useState(null);
   const [hreflangLoading, setHreflangLoading] = useState(false);
+  const [hreflangMarkets, setHreflangMarkets] = useState("");
 
   const [ampResult, setAmpResult] = useState(null);
   const [ampLoading, setAmpLoading] = useState(false);
@@ -387,7 +389,7 @@ export default function BlogSEO() {
   const [productSchemaResult, setProductSchemaResult] = useState(null); const [productSchemaLoading, setProductSchemaLoading] = useState(false);
 
   const [eventName, setEventName] = useState(""); const [eventDate, setEventDate] = useState(""); const [eventLocation, setEventLocation] = useState(""); const [eventOrg, setEventOrg] = useState("");
-  const [eventSchemaResult, setEventSchemaResult] = useState(null); const [eventSchemaLoading, setEventSchemaLoading] = useState(false);
+  const [eventSchemaResult, setEventSchemaResult] = useState(null); const [eventSchemaLoading, setEventSchemaLoading] = useState(false); const [eventSchemaName, setEventSchemaName] = useState(""); const [eventSchemaDate, setEventSchemaDate] = useState(""); const [eventSchemaLocation, setEventSchemaLocation] = useState("");
 
   const [personName, setPersonName] = useState(""); const [personJob, setPersonJob] = useState(""); const [personDesc, setPersonDesc] = useState(""); const [personSameAs, setPersonSameAs] = useState("");
   const [personSchemaResult, setPersonSchemaResult] = useState(null); const [personSchemaLoading, setPersonSchemaLoading] = useState(false);
@@ -438,7 +440,7 @@ export default function BlogSEO() {
 
   /* ── BATCH 4: BACKLINKS ──────────────────────────────────────────────── */
   const [backlinkOppsResult, setBacklinkOppsResult] = useState(null); const [backlinkOppsLoading, setBacklinkOppsLoading] = useState(false); const [backlinkNiche, setBacklinkNiche] = useState("");
-  const [linkGapResult, setLinkGapResult] = useState(null); const [linkGapLoading, setLinkGapLoading] = useState(false); const [linkGapDomain, setLinkGapDomain] = useState(""); const [linkGapComp1, setLinkGapComp1] = useState(""); const [linkGapComp2, setLinkGapComp2] = useState(""); const [linkGapNiche, setLinkGapNiche] = useState("");
+  const [linkGapResult, setLinkGapResult] = useState(null); const [linkGapLoading, setLinkGapLoading] = useState(false); const [linkGapDomain, setLinkGapDomain] = useState(""); const [linkGapComp1, setLinkGapComp1] = useState(""); const [linkGapComp2, setLinkGapComp2] = useState(""); const [linkGapNiche, setLinkGapNiche] = useState(""); const [linkGapCompetitors, setLinkGapCompetitors] = useState("");
   const [outreachResult, setOutreachResult] = useState(null); const [outreachLoading, setOutreachLoading] = useState(false); const [outreachTarget, setOutreachTarget] = useState(""); const [outreachContentTitle, setOutreachContentTitle] = useState(""); const [outreachType, setOutreachType] = useState("guest post");
   const [bestofResult, setBestofResult] = useState(null); const [bestofLoading, setBestofLoading] = useState(false); const [bestofNiche, setBestofNiche] = useState("");
   const [anchorOptResult, setAnchorOptResult] = useState(null); const [anchorOptLoading, setAnchorOptLoading] = useState(false); const [anchorOptKeyword, setAnchorOptKeyword] = useState("");
@@ -486,6 +488,35 @@ export default function BlogSEO() {
   /* ── BATCH 5: KEYWORDS EXTENSIONS ────────────────────────────────────── */
   const [lowDiffResult, setLowDiffResult] = useState(null); const [lowDiffLoading, setLowDiffLoading] = useState(false); const [lowDiffSeed, setLowDiffSeed] = useState(""); const [lowDiffDA, setLowDiffDA] = useState("");
   const [cannibalResult, setCannibalResult] = useState(null); const [cannibalLoading, setCannibalLoading] = useState(false); const [cannibalDomain, setCannibalDomain] = useState("");
+
+  /* ── BATCH 6: SERP & CTR EXTENSIONS ──────────────────────────────────── */
+  const [newsSeoResult, setNewsSeoResult] = useState(null); const [newsSeoLoading, setNewsSeoLoading] = useState(false);
+  const [videoSeoResult, setVideoSeoResult] = useState(null); const [videoSeoLoading, setVideoSeoLoading] = useState(false); const [videoSeoKw, setVideoSeoKw] = useState("");
+  const [entityOptResult, setEntityOptResult] = useState(null); const [entityOptLoading, setEntityOptLoading] = useState(false); const [entityOptKw, setEntityOptKw] = useState(""); const [entityOptName, setEntityOptName] = useState("");
+  const [reviewSchemaResult, setReviewSchemaResult] = useState(null); const [reviewSchemaLoading, setReviewSchemaLoading] = useState(false); const [reviewSchemaProduct, setReviewSchemaProduct] = useState("");
+
+  /* ── BATCH 6: SCHEMA & LINKS EXTENSIONS ──────────────────────────────── */
+  const [redirectAuditResult, setRedirectAuditResult] = useState(null); const [redirectAuditLoading, setRedirectAuditLoading] = useState(false);
+  const [dupContentResult, setDupContentResult] = useState(null); const [dupContentLoading, setDupContentLoading] = useState(false);
+
+  /* ── BATCH 6: BACKLINKS EXTENSIONS ───────────────────────────────────── */
+  const [brokenBacklinksResult, setBrokenBacklinksResult] = useState(null); const [brokenBacklinksLoading, setBrokenBacklinksLoading] = useState(false); const [brokenBacklinksDomain, setBrokenBacklinksDomain] = useState("");
+  const [anchorTextResult, setAnchorTextResult] = useState(null); const [anchorTextLoading, setAnchorTextLoading] = useState(false); const [anchorTextDomain, setAnchorTextDomain] = useState("");
+  const [linkVelocityResult, setLinkVelocityResult] = useState(null); const [linkVelocityLoading, setLinkVelocityLoading] = useState(false); const [linkVelocityDomain, setLinkVelocityDomain] = useState(""); const [linkVelocityRate, setLinkVelocityRate] = useState("");
+
+  /* ── BATCH 6: A/B & REFRESH ──────────────────────────────────────────── */
+  const [abTestResult, setAbTestResult] = useState(null); const [abTestLoading, setAbTestLoading] = useState(false);
+  const [contentRefreshResult, setContentRefreshResult] = useState(null); const [contentRefreshLoading, setContentRefreshLoading] = useState(false);
+  const [titleVariantsResult, setTitleVariantsResult] = useState(null); const [titleVariantsLoading, setTitleVariantsLoading] = useState(false); const [titleVariantsInput, setTitleVariantsInput] = useState(""); const [titleVariantsKw, setTitleVariantsKw] = useState("");
+  const [metaVariantsResult, setMetaVariantsResult] = useState(null); const [metaVariantsLoading, setMetaVariantsLoading] = useState(false); const [metaVariantsKw, setMetaVariantsKw] = useState("");
+  const [bertOptResult, setBertOptResult] = useState(null); const [bertOptLoading, setBertOptLoading] = useState(false); const [bertOptKw, setBertOptKw] = useState("");
+  const [knowledgeGraphResult, setKnowledgeGraphResult] = useState(null); const [knowledgeGraphLoading, setKnowledgeGraphLoading] = useState(false); const [knowledgeGraphEntity, setKnowledgeGraphEntity] = useState(""); const [knowledgeGraphIndustry, setKnowledgeGraphIndustry] = useState("");
+
+  /* ── BATCH 6: TECHNICAL+ FURTHER EXTENSIONS ─────────────────────────── */
+  const [crawlBudgetResult, setCrawlBudgetResult] = useState(null); const [crawlBudgetLoading, setCrawlBudgetLoading] = useState(false);
+  const [clickDepthResult, setClickDepthResult] = useState(null); const [clickDepthLoading, setClickDepthLoading] = useState(false);
+  const [logFileResult, setLogFileResult] = useState(null); const [logFileLoading, setLogFileLoading] = useState(false); const [logSnippet, setLogSnippet] = useState("");
+  const [intlSeoResult, setIntlSeoResult] = useState(null); const [intlSeoLoading, setIntlSeoLoading] = useState(false); const [intlSeoMarkets, setIntlSeoMarkets] = useState("");
 
   /* ── ANALYZER ─────────────────────────────────────────────────────────── */
   const runScan = useCallback(async () => {
@@ -1650,6 +1681,178 @@ export default function BlogSEO() {
     try { const r = await apiFetch(`${API}/keywords/cannibalization-detector`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: cannibalDomain }) }); if (r.ok) setCannibalResult(r); } catch {}
     setCannibalLoading(false);
   }, [cannibalDomain]);
+
+  /* ── BATCH 6: SERP & CTR EXTENSIONS ─────────────────────────────────── */
+  const runNewsSeo = useCallback(async () => {
+    if (!url.trim()) return;
+    setNewsSeoLoading(true); setNewsSeoResult(null);
+    try { const r = await apiFetch(`${API}/serp/news-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setNewsSeoResult(r); } catch {}
+    setNewsSeoLoading(false);
+  }, [url]);
+
+  const runVideoSeo = useCallback(async () => {
+    if (!url.trim() && !videoSeoKw.trim()) return;
+    setVideoSeoLoading(true); setVideoSeoResult(null);
+    try { const r = await apiFetch(`${API}/serp/video-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), videoKeyword: videoSeoKw.trim() }) }); if (r.ok) setVideoSeoResult(r); } catch {}
+    setVideoSeoLoading(false);
+  }, [url, videoSeoKw]);
+
+  const runEntityOpt = useCallback(async () => {
+    if (!entityOptKw.trim() && !entityOptName.trim()) return;
+    setEntityOptLoading(true); setEntityOptResult(null);
+    try { const r = await apiFetch(`${API}/serp/entity-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: entityOptKw, entityName: entityOptName, url: url.trim() }) }); if (r.ok) setEntityOptResult(r); } catch {}
+    setEntityOptLoading(false);
+  }, [entityOptKw, entityOptName, url]);
+
+  const runReviewSchema6 = useCallback(async () => {
+    if (!url.trim() && !reviewSchemaProduct.trim()) return;
+    setReviewSchemaLoading(true); setReviewSchemaResult(null);
+    try { const r = await apiFetch(`${API}/serp/review-schema`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), productName: reviewSchemaProduct }) }); if (r.ok) setReviewSchemaResult(r); } catch {}
+    setReviewSchemaLoading(false);
+  }, [url, reviewSchemaProduct]);
+
+  const runEventSchemaSeo = useCallback(async () => {
+    if (!eventSchemaName.trim()) return;
+    setEventSchemaLoading(true); setEventSchemaResult(null);
+    try { const r = await apiFetch(`${API}/serp/event-schema`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ eventName: eventSchemaName, eventDate: eventSchemaDate, eventLocation: eventSchemaLocation }) }); if (r.ok) setEventSchemaResult(r); } catch {}
+    setEventSchemaLoading(false);
+  }, [eventSchemaName, eventSchemaDate, eventSchemaLocation]);
+
+  /* ── BATCH 6: SCHEMA & LINKS EXTENSIONS ─────────────────────────────── */
+  const runRedirectAudit = useCallback(async () => {
+    if (!url.trim()) return;
+    setRedirectAuditLoading(true); setRedirectAuditResult(null);
+    try { const r = await apiFetch(`${API}/schema/redirect-audit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setRedirectAuditResult(r); } catch {}
+    setRedirectAuditLoading(false);
+  }, [url]);
+
+  const runDupContent = useCallback(async () => {
+    if (!url.trim()) return;
+    setDupContentLoading(true); setDupContentResult(null);
+    try { const r = await apiFetch(`${API}/schema/duplicate-content`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setDupContentResult(r); } catch {}
+    setDupContentLoading(false);
+  }, [url]);
+
+  const runHreflangAdvisor = useCallback(async () => {
+    if (!url.trim()) return;
+    setHreflangLoading(true); setHreflangResult(null);
+    try { const r = await apiFetch(`${API}/schema/hreflang`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), targetMarkets: hreflangMarkets }) }); if (r.ok) setHreflangResult(r); } catch {}
+    setHreflangLoading(false);
+  }, [url, hreflangMarkets]);
+
+  const runMobileSeoAdvisor = useCallback(async () => {
+    if (!url.trim()) return;
+    setMobileSeoLoading(true); setMobileSeoResult(null);
+    try { const r = await apiFetch(`${API}/schema/mobile-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setMobileSeoResult(r); } catch {}
+    setMobileSeoLoading(false);
+  }, [url]);
+
+  /* ── BATCH 6: BACKLINKS EXTENSIONS ──────────────────────────────────── */
+  const runLinkGapV2 = useCallback(async () => {
+    if (!linkGapDomain.trim()) return;
+    setLinkGapLoading(true); setLinkGapResult(null);
+    try { const r = await apiFetch(`${API}/backlinks/link-gap`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: linkGapDomain, competitors: linkGapCompetitors, niche: backlinkNiche }) }); if (r.ok) setLinkGapResult(r); } catch {}
+    setLinkGapLoading(false);
+  }, [linkGapDomain, linkGapCompetitors, backlinkNiche]);
+
+  const runBrokenBacklinks = useCallback(async () => {
+    if (!brokenBacklinksDomain.trim()) return;
+    setBrokenBacklinksLoading(true); setBrokenBacklinksResult(null);
+    try { const r = await apiFetch(`${API}/backlinks/broken-backlinks`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: brokenBacklinksDomain, niche: backlinkNiche }) }); if (r.ok) setBrokenBacklinksResult(r); } catch {}
+    setBrokenBacklinksLoading(false);
+  }, [brokenBacklinksDomain, backlinkNiche]);
+
+  const runAnchorText = useCallback(async () => {
+    if (!anchorTextDomain.trim()) return;
+    setAnchorTextLoading(true); setAnchorTextResult(null);
+    try { const r = await apiFetch(`${API}/backlinks/anchor-text`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: anchorTextDomain, niche: backlinkNiche }) }); if (r.ok) setAnchorTextResult(r); } catch {}
+    setAnchorTextLoading(false);
+  }, [anchorTextDomain, backlinkNiche]);
+
+  const runLinkVelocity = useCallback(async () => {
+    if (!linkVelocityDomain.trim()) return;
+    setLinkVelocityLoading(true); setLinkVelocityResult(null);
+    try { const r = await apiFetch(`${API}/backlinks/link-velocity`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: linkVelocityDomain, currentLinksPerMonth: linkVelocityRate, niche: backlinkNiche }) }); if (r.ok) setLinkVelocityResult(r); } catch {}
+    setLinkVelocityLoading(false);
+  }, [linkVelocityDomain, linkVelocityRate, backlinkNiche]);
+
+  /* ── BATCH 6: A/B & REFRESH ─────────────────────────────────────────── */
+  const runAbTest = useCallback(async () => {
+    if (!url.trim()) return;
+    setAbTestLoading(true); setAbTestResult(null);
+    try { const r = await apiFetch(`${API}/ab/ab-test-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setAbTestResult(r); } catch {}
+    setAbTestLoading(false);
+  }, [url]);
+
+  const runContentRefresh = useCallback(async () => {
+    if (!url.trim()) return;
+    setContentRefreshLoading(true); setContentRefreshResult(null);
+    try { const r = await apiFetch(`${API}/ab/content-refresh`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setContentRefreshResult(r); } catch {}
+    setContentRefreshLoading(false);
+  }, [url]);
+
+  const runTitleVariants = useCallback(async () => {
+    if (!titleVariantsInput.trim() && !titleVariantsKw.trim()) return;
+    setTitleVariantsLoading(true); setTitleVariantsResult(null);
+    try { const r = await apiFetch(`${API}/ab/title-variants`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ currentTitle: titleVariantsInput, keyword: titleVariantsKw }) }); if (r.ok) setTitleVariantsResult(r); } catch {}
+    setTitleVariantsLoading(false);
+  }, [titleVariantsInput, titleVariantsKw]);
+
+  const runMetaVariants = useCallback(async () => {
+    if (!url.trim() && !metaVariantsKw.trim()) return;
+    setMetaVariantsLoading(true); setMetaVariantsResult(null);
+    try { const r = await apiFetch(`${API}/ab/meta-variants`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: metaVariantsKw }) }); if (r.ok) setMetaVariantsResult(r); } catch {}
+    setMetaVariantsLoading(false);
+  }, [url, metaVariantsKw]);
+
+  const runBertOpt = useCallback(async () => {
+    if (!bertOptKw.trim()) return;
+    setBertOptLoading(true); setBertOptResult(null);
+    try { const r = await apiFetch(`${API}/ab/bert-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: bertOptKw, url: url.trim() }) }); if (r.ok) setBertOptResult(r); } catch {}
+    setBertOptLoading(false);
+  }, [bertOptKw, url]);
+
+  const runSecondaryKwFinder = useCallback(async () => {
+    setSecondaryKwLoading(true); setSecondaryKwResult(null);
+    try { const r = await apiFetch(`${API}/ab/secondary-keywords`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ primaryKeyword: secondaryKwInput, url: url.trim() }) }); if (r.ok) setSecondaryKwResult(r); } catch {}
+    setSecondaryKwLoading(false);
+  }, [secondaryKwInput, url]);
+
+  const runKnowledgeGraph = useCallback(async () => {
+    if (!knowledgeGraphEntity.trim()) return;
+    setKnowledgeGraphLoading(true); setKnowledgeGraphResult(null);
+    try { const r = await apiFetch(`${API}/ab/knowledge-graph`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entityName: knowledgeGraphEntity, domain: url.trim(), industry: knowledgeGraphIndustry }) }); if (r.ok) setKnowledgeGraphResult(r); } catch {}
+    setKnowledgeGraphLoading(false);
+  }, [knowledgeGraphEntity, url, knowledgeGraphIndustry]);
+
+  /* ── BATCH 6: TECHNICAL+ FURTHER EXTENSIONS ─────────────────────────── */
+  const runCrawlBudget = useCallback(async () => {
+    if (!url.trim()) return;
+    setCrawlBudgetLoading(true); setCrawlBudgetResult(null);
+    try { const r = await apiFetch(`${API}/technical/crawl-budget`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setCrawlBudgetResult(r); } catch {}
+    setCrawlBudgetLoading(false);
+  }, [url]);
+
+  const runClickDepth = useCallback(async () => {
+    if (!url.trim()) return;
+    setClickDepthLoading(true); setClickDepthResult(null);
+    try { const r = await apiFetch(`${API}/technical/click-depth`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setClickDepthResult(r); } catch {}
+    setClickDepthLoading(false);
+  }, [url]);
+
+  const runLogFile = useCallback(async () => {
+    if (!logSnippet.trim() && !url.trim()) return;
+    setLogFileLoading(true); setLogFileResult(null);
+    try { const r = await apiFetch(`${API}/technical/log-file`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ logSnippet: logSnippet.trim(), domain: url.trim() }) }); if (r.ok) setLogFileResult(r); } catch {}
+    setLogFileLoading(false);
+  }, [logSnippet, url]);
+
+  const runIntlSeo = useCallback(async () => {
+    if (!url.trim() && !intlSeoMarkets.trim()) return;
+    setIntlSeoLoading(true); setIntlSeoResult(null);
+    try { const r = await apiFetch(`${API}/technical/international-seo`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), targetMarkets: intlSeoMarkets }) }); if (r.ok) setIntlSeoResult(r); } catch {}
+    setIntlSeoLoading(false);
+  }, [url, intlSeoMarkets]);
 
   const runRewrite = useCallback(async (field) => {
     if (!scanResult) return;
@@ -4390,6 +4593,89 @@ export default function BlogSEO() {
                 </div>
               )}
             </div>
+
+            {/* Crawl Budget Advisor */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🕷️ Crawl Budget Advisor</div>
+              <div style={S.cardDesc}>Identify crawl wasteage — low-value pages eating crawl budget, robots.txt issues, and query parameter traps.</div>
+              <button style={S.btn("primary")} onClick={runCrawlBudget} disabled={crawlBudgetLoading || !url.trim()}>
+                {crawlBudgetLoading ? <><span style={S.spinner} /> Auditing crawl budget…</> : "Audit Crawl Budget"}
+              </button>
+              {crawlBudgetResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Crawl efficiency: <b style={{ color: crawlBudgetResult.crawlEfficiencyScore >= 70 ? "#4ade80" : "#fbbf24" }}>{crawlBudgetResult.crawlEfficiencyScore}/100</b></span>
+                    <span>Wasted pages: <b style={{ color: "#f87171" }}>{crawlBudgetResult.estimatedWastedBudgetPercent}%</b></span>
+                  </div>
+                  {crawlBudgetResult.robotsTxtIssues?.map((i2, i) => <div key={i} style={{ fontSize: 12, color: "#f87171", padding: "1px 0" }}>⚠️ {i2}</div>)}
+                  {crawlBudgetResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Click Depth Analyzer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🏗️ Click Depth Analyzer</div>
+              <div style={S.cardDesc}>Calculate click depth from homepage and detect pages buried too deep for Googlebot to prioritize them.</div>
+              <button style={S.btn("primary")} onClick={runClickDepth} disabled={clickDepthLoading || !url.trim()}>
+                {clickDepthLoading ? <><span style={S.spinner} /> Analyzing depth…</> : "Analyze Click Depth"}
+              </button>
+              {clickDepthResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>URL depth: <b style={{ color: clickDepthResult.clickDepth <= 3 ? "#4ade80" : "#f87171" }}>{clickDepthResult.clickDepth} levels</b></span>
+                    <span>Status: <b style={{ color: clickDepthResult.depthStatus === "optimal" ? "#4ade80" : "#fbbf24" }}>{clickDepthResult.depthStatus}</b></span>
+                  </div>
+                  {clickDepthResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Log File Analysis Advisor */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>📋 Log File Analysis Advisor</div>
+              <div style={S.cardDesc}>Paste a snippet of your server access log and get a crawl pattern analysis — Googlebot frequency, 404s, slow URLs.</div>
+              <textarea
+                style={{ ...S.input, height: 90, resize: "vertical", fontFamily: "monospace", fontSize: 12, marginBottom: 8 }}
+                placeholder={`Paste access log lines (Googlebot entries)...\n192.168.1.1 - [27/Nov/2025] "GET /page HTTP/1.1" 200 - "Googlebot/2.1"`}
+                value={logSnippet}
+                onChange={e => setLogSnippet(e.target.value)}
+              />
+              <button style={S.btn("primary")} onClick={runLogFile} disabled={logFileLoading || (!logSnippet.trim() && !url.trim())}>
+                {logFileLoading ? <><span style={S.spinner} /> Analyzing logs…</> : "Analyze Log File"}
+              </button>
+              {logFileResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Googlebot visits: <b>{logFileResult.googlebotVisits}</b></span>
+                    <span>404 rate: <b style={{ color: logFileResult.notFoundRate > 5 ? "#f87171" : "#4ade80" }}>{logFileResult.notFoundRate}%</b></span>
+                    <span>Avg response: <b>{logFileResult.avgResponseTime}</b></span>
+                  </div>
+                  {logFileResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* International SEO Advisor */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🌏 International SEO Advisor</div>
+              <div style={S.cardDesc}>Choose the right international structure — ccTLD vs subdirectory vs subdomain — with hreflang implementation checklist.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Target markets (comma-separated, e.g. UK, AU, CA)..." value={intlSeoMarkets} onChange={e => setIntlSeoMarkets(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runIntlSeo} disabled={intlSeoLoading || (!intlSeoMarkets.trim() && !url.trim())}>
+                {intlSeoLoading ? <><span style={S.spinner} /> Analyzing…</> : "Get International SEO Plan"}
+              </button>
+              {intlSeoResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 8 }}>Recommended structure: <b style={{ color: "#818cf8" }}>{intlSeoResult.recommendedStructure}</b></div>
+                  {intlSeoResult.hreflangChecklist?.slice(0, 6).map((item, i) => (
+                    <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>
+                      <span style={{ color: item.status === "✅" ? "#4ade80" : "#f87171" }}>{item.status}</span> {item.item}
+                    </div>
+                  ))}
+                  {intlSeoResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "4px 0" }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
           </>
         )}
 
@@ -4798,6 +5084,106 @@ export default function BlogSEO() {
         )}
 
         {/* ================================================================
+            SCHEMA & LINKS TAB EXTENSIONS (Batch 6)
+            ================================================================ */}
+        {tab === "Schema & Links" && (
+          <>
+            {/* Redirect Chain Auditor */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🔀 Redirect Chain Auditor</div>
+              <div style={S.cardDesc}>Detect and fix redirect chains — every hop loses ~10-15% link equity and wastes crawl budget.</div>
+              <button style={S.btn("primary")} onClick={runRedirectAudit} disabled={redirectAuditLoading || !url.trim()}>
+                {redirectAuditLoading ? <><span style={S.spinner} /> Tracing redirects…</> : "Audit Redirect Chain"}
+              </button>
+              {redirectAuditResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Chain length: <b>{redirectAuditResult.chainLength}</b></span>
+                    <span>Health: <b style={{ color: redirectAuditResult.chainHealthScore >= 80 ? "#4ade80" : "#f87171" }}>{redirectAuditResult.chainHealthScore}/100</b></span>
+                    <span>Priority: <b style={{ color: redirectAuditResult.fixPriority === "immediate" ? "#f87171" : "#fbbf24" }}>{redirectAuditResult.fixPriority}</b></span>
+                  </div>
+                  {redirectAuditResult.detectedChain?.map((hop, i) => (
+                    <div key={i} style={{ padding: "4px 0", borderBottom: "1px solid #27272a", fontSize: 12 }}>
+                      <span style={{ color: hop.status >= 300 && hop.status < 400 ? "#fbbf24" : "#4ade80" }}>{hop.type || hop.error}</span>
+                      <span style={{ color: "#52525b", marginLeft: 8 }}>{hop.url?.slice(0, 60)}</span>
+                    </div>
+                  ))}
+                  {redirectAuditResult.linkEquityLoss && <div style={{ color: "#f87171", marginTop: 6, fontSize: 13 }}>⚠️ Link equity loss: {redirectAuditResult.linkEquityLoss}</div>}
+                  {redirectAuditResult.issues?.map((iss, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {iss.issue} → {iss.fix}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Duplicate Content Detector */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🔁 Duplicate Content Detector</div>
+              <div style={S.cardDesc}>Audit canonical tags, parameter issues, and duplication risks — Google penalises duplicate content.</div>
+              <button style={S.btn("primary")} onClick={runDupContent} disabled={dupContentLoading || !url.trim()}>
+                {dupContentLoading ? <><span style={S.spinner} /> Detecting…</> : "Detect Duplicate Content"}
+              </button>
+              {dupContentResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Risk: <b style={{ color: dupContentResult.duplicateRisk === "high" ? "#f87171" : dupContentResult.duplicateRisk === "medium" ? "#fbbf24" : "#4ade80" }}>{dupContentResult.duplicateRisk?.toUpperCase()}</b></span>
+                    <span>Score: <b>{dupContentResult.duplicateScore}/100</b></span>
+                    <span>Canonical: <b style={{ color: dupContentResult.canonicalStatus?.hasCanonical ? "#4ade80" : "#f87171" }}>{dupContentResult.canonicalStatus?.hasCanonical ? "present" : "MISSING"}</b></span>
+                  </div>
+                  {dupContentResult.canonicalStatus?.recommendation && <div style={{ color: "#93c5fd", marginBottom: 6 }}>💡 {dupContentResult.canonicalStatus.recommendation}</div>}
+                  {dupContentResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Hreflang International SEO */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🌍 Hreflang & International SEO</div>
+              <div style={S.cardDesc}>Audit hreflang tags and get a strategy for targeting multiple countries and languages.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Target markets (e.g. US, UK, DE, FR — optional)..." value={hreflangMarkets} onChange={e => setHreflangMarkets(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runHreflangAdvisor} disabled={hreflangLoading || !url.trim()}>
+                {hreflangLoading ? <><span style={S.spinner} /> Auditing…</> : "Audit Hreflang / International SEO"}
+              </button>
+              {hreflangResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Int'l score: <b style={{ color: hreflangResult.internationalSeoScore >= 70 ? "#4ade80" : "#fbbf24" }}>{hreflangResult.internationalSeoScore}/100</b></span>
+                    <span>Tags found: <b>{hreflangResult.hreflangAudit?.tagCount || 0}</b></span>
+                    <span>x-default: <b style={{ color: hreflangResult.hreflangAudit?.hasXDefaultTag ? "#4ade80" : "#f87171" }}>{hreflangResult.hreflangAudit?.hasXDefaultTag ? "✅" : "❌"}</b></span>
+                  </div>
+                  {hreflangResult.hreflangAudit?.issues?.map((iss, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {iss}</div>)}
+                  {hreflangResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 12, color: "#4ade80", padding: "2px 0" }}>✓ {a}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Mobile SEO Checker */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>📱 Mobile SEO Checker</div>
+              <div style={S.cardDesc}>Check mobile-first indexing readiness — Google uses the mobile version for indexing and ranking.</div>
+              <button style={S.btn("primary")} onClick={runMobileSeoAdvisor} disabled={mobileSeoLoading || !url.trim()}>
+                {mobileSeoLoading ? <><span style={S.spinner} /> Checking mobile…</> : "Check Mobile SEO"}
+              </button>
+              {mobileSeoResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Mobile score: <b style={{ color: mobileSeoResult.mobileScore >= 70 ? "#4ade80" : "#fbbf24" }}>{mobileSeoResult.mobileScore}/100</b></span>
+                    <span style={{ color: mobileSeoResult.mobileFriendlyLabel === "mobile-friendly" ? "#4ade80" : "#f87171" }}>{mobileSeoResult.mobileFriendlyLabel}</span>
+                    <span>Viewport: <b style={{ color: !mobileSeoResult.viewportIssue ? "#4ade80" : "#f87171" }}>{mobileSeoResult.viewportIssue ? "MISSING" : "✅"}</b></span>
+                  </div>
+                  {mobileSeoResult.criticalIssues?.map((iss, i) => (
+                    <div key={i} style={{ padding: "5px 0", borderBottom: "1px solid #27272a" }}>
+                      <span style={{ color: iss.priority === "high" ? "#f87171" : "#fbbf24", fontWeight: 600 }}>{iss.priority?.toUpperCase()}</span>
+                      <span style={{ marginLeft: 8 }}>{iss.issue}</span>
+                      <div style={{ color: "#a1a1aa", fontSize: 12 }}>Fix: {iss.fix}</div>
+                    </div>
+                  ))}
+                  {mobileSeoResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
             SERP & CTR TAB
             ================================================================ */}
         {tab === "SERP & CTR" && (
@@ -5052,6 +5438,117 @@ export default function BlogSEO() {
         )}
 
         {/* ================================================================
+            SERP & CTR TAB EXTENSIONS (Batch 6)
+            ================================================================ */}
+        {tab === "SERP & CTR" && (
+          <>
+            {/* Google News / Discover Optimizer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>📰 Google News & Discover Optimizer</div>
+              <div style={S.cardDesc}>Audit your page for Google News and Discover eligibility — NewsArticle schema, freshness signals, headline optimization.</div>
+              <button style={S.btn("primary")} onClick={runNewsSeo} disabled={newsSeoLoading || !url.trim()}>
+                {newsSeoLoading ? <><span style={S.spinner} /> Auditing for News…</> : "Optimize for Google News/Discover"}
+              </button>
+              {newsSeoResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>News score: <b style={{ color: newsSeoResult.newsEligibilityScore >= 70 ? "#4ade80" : "#fbbf24" }}>{newsSeoResult.newsEligibilityScore}/100</b></span>
+                    <span>Discover: <b style={{ color: newsSeoResult.discoverEligibilityScore >= 70 ? "#4ade80" : "#fbbf24" }}>{newsSeoResult.discoverEligibilityScore}/100</b></span>
+                    <span>AMP: <b>{newsSeoResult.hasAmpLink ? "✅" : "❌"}</b></span>
+                    <span>NewsSchema: <b>{newsSeoResult.hasNewsSchema ? "✅" : "❌"}</b></span>
+                  </div>
+                  {newsSeoResult.headlineOptimization?.improved && <div style={{ background: "#18181b", borderRadius: 6, padding: "8px 12px", marginBottom: 8, fontSize: 13 }}>📰 Better headline: <span style={{ color: "#4ade80" }}>{newsSeoResult.headlineOptimization.improved}</span></div>}
+                  {newsSeoResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Video SEO Optimizer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🎬 Video SEO Rich Results</div>
+              <div style={S.cardDesc}>Optimize for video rich results — VideoObject schema, thumbnail strategy, transcript and chapter markers.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Video keyword (optional — or uses page URL above)..." value={videoSeoKw} onChange={e => setVideoSeoKw(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runVideoSeo} disabled={videoSeoLoading || (!url.trim() && !videoSeoKw.trim())}>
+                {videoSeoLoading ? <><span style={S.spinner} /> Optimizing…</> : "Optimize Video SEO"}
+              </button>
+              {videoSeoResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Rich result score: <b style={{ color: videoSeoResult.videoRichResultScore >= 70 ? "#4ade80" : "#fbbf24" }}>{videoSeoResult.videoRichResultScore}/100</b></span>
+                    <span style={{ color: videoSeoResult.richResultEligibility === "eligible" ? "#4ade80" : "#fbbf24" }}>{videoSeoResult.richResultEligibility}</span>
+                  </div>
+                  {videoSeoResult.videoObjectSchema?.missingFields?.length > 0 && <div style={{ color: "#fbbf24", marginBottom: 6 }}>Missing fields: {videoSeoResult.videoObjectSchema.missingFields.join(", ")}</div>}
+                  {videoSeoResult.pageOptimization?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Entity / Knowledge Graph Optimizer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🧠 Entity & Knowledge Graph Optimizer</div>
+              <div style={S.cardDesc}>Strengthen entity signals for Knowledge Graph inclusion — sameAs links, entity schema, co-occurrence terms.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Target keyword or entity..." value={entityOptKw} onChange={e => setEntityOptKw(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Entity name (brand/person/product — optional)..." value={entityOptName} onChange={e => setEntityOptName(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runEntityOpt} disabled={entityOptLoading || (!entityOptKw.trim() && !entityOptName.trim())}>
+                {entityOptLoading ? <><span style={S.spinner} /> Analyzing entity…</> : "Optimize Entity Signals"}
+              </button>
+              {entityOptResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Entity score: <b style={{ color: entityOptResult.entityScore >= 70 ? "#4ade80" : "#fbbf24" }}>{entityOptResult.entityScore}/100</b></span>
+                    <span>Type: <b>{entityOptResult.entityType}</b></span>
+                  </div>
+                  {entityOptResult.sameAsOpportunities?.map((s, i) => <div key={i} style={{ fontSize: 12, color: "#818cf8" }}>🔗 {s}</div>)}
+                  {entityOptResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Product / Review Schema */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>⭐ Product & Review Schema Optimizer</div>
+              <div style={S.cardDesc}>Get star ratings, price and availability in Google SERPs — requires correct Product + AggregateRating schema.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Product name (optional — or uses page URL above)..." value={reviewSchemaProduct} onChange={e => setReviewSchemaProduct(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runReviewSchema6} disabled={reviewSchemaLoading || (!url.trim() && !reviewSchemaProduct.trim())}>
+                {reviewSchemaLoading ? <><span style={S.spinner} /> Building schema…</> : "Optimize Product/Review Schema"}
+              </button>
+              {reviewSchemaResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 6 }}>Rich results: <b style={{ color: "#4ade80" }}>{reviewSchemaResult.richResultTypes?.join(", ")}</b></div>
+                  <div>Star rating eligibility: <b style={{ color: reviewSchemaResult.starRatingEligibility === "eligible" ? "#4ade80" : "#fbbf24" }}>{reviewSchemaResult.starRatingEligibility}</b></div>
+                  {reviewSchemaResult.currentSchemaIssues?.map((iss, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0", color: "#f87171" }}>⚠️ {iss}</div>)}
+                  {reviewSchemaResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Event Schema Builder */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>📅 Event Schema Builder</div>
+              <div style={S.cardDesc}>Generate Event JSON-LD schema to appear in Google's event rich results and Search.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Event name..." value={eventSchemaName} onChange={e => setEventSchemaName(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Event date (e.g. 2026-06-15T14:00)..." value={eventSchemaDate} onChange={e => setEventSchemaDate(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Location (address or 'Online')..." value={eventSchemaLocation} onChange={e => setEventSchemaLocation(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runEventSchemaSeo} disabled={eventSchemaLoading || !eventSchemaName.trim()}>
+                {eventSchemaLoading ? <><span style={S.spinner} /> Building schema…</> : "Build Event Schema"}
+              </button>
+              {eventSchemaResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  {eventSchemaResult.richResultPreview && (
+                    <div style={{ background: "#18181b", borderRadius: 6, padding: "8px 12px", marginBottom: 8 }}>
+                      <div style={{ fontWeight: 600 }}>📅 {eventSchemaResult.richResultPreview.eventTitle}</div>
+                      <div style={{ color: "#4ade80", fontSize: 13 }}>{eventSchemaResult.richResultPreview.dateDisplay} · {eventSchemaResult.richResultPreview.locationDisplay}</div>
+                    </div>
+                  )}
+                  {eventSchemaResult.commonMistakes?.map((m, i) => <div key={i} style={{ fontSize: 12, color: "#a1a1aa", padding: "2px 0" }}>• {m}</div>)}
+                  {eventSchemaResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>✓ {a}</div>)}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
             BACKLINKS TAB
             ================================================================ */}
         {tab === "Backlinks" && (
@@ -5232,6 +5729,260 @@ export default function BlogSEO() {
                       <span style={{ color: s.importance === "high" ? "#4ade80" : "#facc15", fontSize: 11 }}>{s.importance} priority</span>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+
+            {/* Link Gap Analysis */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🔍 Link Gap Analysis</div>
+              <div style={S.cardDesc}>Find domains that link to your competitors but not to you — prioritized by DR, relevance and link type.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Your domain (e.g. mysite.com)..." value={linkGapDomain} onChange={e => setLinkGapDomain(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Competitor domains (comma-separated)..." value={linkGapCompetitors} onChange={e => setLinkGapCompetitors(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runLinkGapV2} disabled={linkGapLoading || !linkGapDomain.trim()}>
+                {linkGapLoading ? <><span style={S.spinner} /> Analyzing gaps…</> : "Find Link Gaps"}
+              </button>
+              {linkGapResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 8 }}>Your domain: <b>{linkGapResult.yourDomain}</b> · Gap domains found: <b style={{ color: "#4ade80" }}>{linkGapResult.totalGapDomains}</b></div>
+                  {linkGapResult.topLinkGapOpportunities?.slice(0, 6).map((g, i) => (
+                    <div key={i} style={{ padding: "4px 0", borderBottom: "1px solid #27272a", fontSize: 13 }}>
+                      <b>{g.domain}</b> <span style={{ color: "#4ade80" }}>DR {g.estimatedDR}</span> · {g.linkType} · {g.outreachDifficulty} difficulty
+                      <div style={{ color: "#a1a1aa", fontSize: 12 }}>{g.outreachAngle}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Broken Backlink Reclamation */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🔗 Broken Backlink Reclamation</div>
+              <div style={S.cardDesc}>Identify valuable links pointing to 404/redirected URLs on your site so you can redirect or reclaim them.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Your domain (e.g. mysite.com)..." value={brokenBacklinksDomain} onChange={e => setBrokenBacklinksDomain(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runBrokenBacklinks} disabled={brokenBacklinksLoading || !brokenBacklinksDomain.trim()}>
+                {brokenBacklinksLoading ? <><span style={S.spinner} /> Scanning…</> : "Find Broken Backlinks"}
+              </button>
+              {brokenBacklinksResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 8 }}>Broken pages found: <b style={{ color: "#f87171" }}>{brokenBacklinksResult.brokenPagesFound}</b> · Recoverable links: <b style={{ color: "#4ade80" }}>{brokenBacklinksResult.recoverableLinkEquity} equity pts</b></div>
+                  {brokenBacklinksResult.brokenPages?.slice(0, 5).map((p, i) => (
+                    <div key={i} style={{ padding: "4px 0", borderBottom: "1px solid #27272a", fontSize: 13 }}>
+                      <b>{p.brokenUrl}</b>
+                      <div style={{ color: "#4ade80", fontSize: 12 }}>Fix: {p.suggestedRedirectTarget} · {p.redirectType}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Anchor Text Profile Auditor */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>⚓ Anchor Text Profile Auditor</div>
+              <div style={S.cardDesc}>Analyze your inbound anchor text distribution for over-optimization risks, money-anchor patterns and diversity.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Your domain (e.g. mysite.com)..." value={anchorTextDomain} onChange={e => setAnchorTextDomain(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runAnchorText} disabled={anchorTextLoading || !anchorTextDomain.trim()}>
+                {anchorTextLoading ? <><span style={S.spinner} /> Auditing anchors…</> : "Audit Anchor Profile"}
+              </button>
+              {anchorTextResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Health: <b style={{ color: anchorTextResult.overallAnchorHealth === "healthy" ? "#4ade80" : "#fbbf24" }}>{anchorTextResult.overallAnchorHealth}</b></span>
+                    <span>Penalty risk: <b style={{ color: anchorTextResult.penaltyRisk === "low" ? "#4ade80" : "#f87171" }}>{anchorTextResult.penaltyRisk}</b></span>
+                  </div>
+                  {anchorTextResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Link Velocity Analyzer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>📈 Link Velocity Analyzer</div>
+              <div style={S.cardDesc}>Analyze your link acquisition pace — detect spikes, drops, and optimal velocity for sustainable authority building.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Your domain (e.g. mysite.com)..." value={linkVelocityDomain} onChange={e => setLinkVelocityDomain(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Current link acquisition rate (links/month, optional)..." value={linkVelocityRate} onChange={e => setLinkVelocityRate(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runLinkVelocity} disabled={linkVelocityLoading || !linkVelocityDomain.trim()}>
+                {linkVelocityLoading ? <><span style={S.spinner} /> Analyzing velocity…</> : "Analyze Link Velocity"}
+              </button>
+              {linkVelocityResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Current: <b>{linkVelocityResult.currentVelocity} links/mo</b></span>
+                    <span>Status: <b style={{ color: linkVelocityResult.velocityStatus === "healthy" ? "#4ade80" : "#fbbf24" }}>{linkVelocityResult.velocityStatus}</b></span>
+                    <span>Spike risk: <b style={{ color: linkVelocityResult.spikeRisk === "low" ? "#4ade80" : "#f87171" }}>{linkVelocityResult.spikeRisk}</b></span>
+                  </div>
+                  {linkVelocityResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
+            A/B & REFRESH TAB (Batch 6)
+            ================================================================ */}
+        {tab === "A/B & Refresh" && (
+          <>
+            {/* SEO A/B Test Advisor */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🧪 SEO A/B Test Advisor</div>
+              <div style={S.cardDesc}>Generate 8 prioritized SEO A/B test ideas for your page — title, H1, schema, meta, content experiments with expected uplift.</div>
+              <button style={S.btn("primary")} onClick={runAbTest} disabled={abTestLoading || !url.trim()}>
+                {abTestLoading ? <><span style={S.spinner} /> Generating test ideas…</> : "Generate A/B Test Ideas"}
+              </button>
+              {abTestResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 8, color: "#a1a1aa", fontSize: 13 }}>Page type: <b>{abTestResult.pageType}</b> · Tests generated: <b>{abTestResult.testIdeas?.length}</b></div>
+                  {abTestResult.testIdeas?.map((t, i) => (
+                    <div key={i} style={{ padding: "7px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <b>#{i + 1} {t.testName}</b>
+                        <span style={{ background: t.priority === "high" ? "#14532d" : "#422006", borderRadius: 4, padding: "1px 6px", fontSize: 11 }}>{t.priority} priority</span>
+                        <span style={{ color: "#4ade80", fontSize: 12 }}>+{t.estimatedCtrUplift}% CTR</span>
+                      </div>
+                      <div style={{ fontSize: 13, color: "#a1a1aa" }}>{t.hypothesis}</div>
+                      <div style={{ fontSize: 12, color: "#818cf8" }}>Metric: {t.primaryMetric}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Content Refresh Advisor */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🔄 Content Refresh Advisor</div>
+              <div style={S.cardDesc}>Analyze aging content signals and get a prioritized refresh roadmap — outdated stats, new sections, E-E-A-T improvements.</div>
+              <button style={S.btn("primary")} onClick={runContentRefresh} disabled={contentRefreshLoading || !url.trim()}>
+                {contentRefreshLoading ? <><span style={S.spinner} /> Analyzing content…</> : "Get Content Refresh Plan"}
+              </button>
+              {contentRefreshResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Freshness: <b style={{ color: contentRefreshResult.freshnessScore >= 70 ? "#4ade80" : "#fbbf24" }}>{contentRefreshResult.freshnessScore}/100</b></span>
+                    <span>Refresh priority: <b style={{ color: contentRefreshResult.refreshPriority === "urgent" ? "#f87171" : "#4ade80" }}>{contentRefreshResult.refreshPriority}</b></span>
+                    <span>Last updated: <b>{contentRefreshResult.lastModifiedDetected}</b></span>
+                  </div>
+                  {contentRefreshResult.refreshRoadmap?.map((r, i) => (
+                    <div key={i} style={{ padding: "5px 0", borderBottom: "1px solid #27272a", fontSize: 13 }}>
+                      <b>{r.section}</b>: {r.action}
+                      <span style={{ marginLeft: 8, color: "#4ade80", fontSize: 12 }}>+{r.expectedImpact}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Title Tag A/B Variants */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🔤 Title Tag A/B Variants</div>
+              <div style={S.cardDesc}>Generate 8 click-optimized title tag variants with psychological triggers, power words and predicted CTR scores.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Current title tag (or leave blank to use page URL)..." value={titleVariantsInput} onChange={e => setTitleVariantsInput(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Primary keyword..." value={titleVariantsKw} onChange={e => setTitleVariantsKw(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runTitleVariants} disabled={titleVariantsLoading || (!titleVariantsInput.trim() && !url.trim())}>
+                {titleVariantsLoading ? <><span style={S.spinner} /> Generating variants…</> : "Generate Title Variants"}
+              </button>
+              {titleVariantsResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  {titleVariantsResult.variants?.map((v, i) => (
+                    <div key={i} style={{ padding: "5px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{v.title}</div>
+                      <div style={{ display: "flex", gap: 12, fontSize: 12, color: "#a1a1aa", marginTop: 2 }}>
+                        <span>CTR: <span style={{ color: "#4ade80" }}>{v.predictedCtrScore}/100</span></span>
+                        <span>{v.trigger}</span>
+                        <span style={{ color: v.pixelLength > 580 ? "#f87171" : "#4ade80" }}>{v.pixelLength}px</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Meta Description Variants */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>📝 Meta Description A/B Variants</div>
+              <div style={S.cardDesc}>Generate 8 high-CTR meta description variants using emotional triggers, FOMO, curiosity gaps and benefit-led copy.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Primary keyword..." value={metaVariantsKw} onChange={e => setMetaVariantsKw(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runMetaVariants} disabled={metaVariantsLoading || (!metaVariantsKw.trim() && !url.trim())}>
+                {metaVariantsLoading ? <><span style={S.spinner} /> Generating…</> : "Generate Meta Variants"}
+              </button>
+              {metaVariantsResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  {metaVariantsResult.variants?.map((v, i) => (
+                    <div key={i} style={{ padding: "5px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ fontSize: 13 }}>{v.metaDescription}</div>
+                      <div style={{ display: "flex", gap: 10, fontSize: 12, color: "#a1a1aa", marginTop: 2 }}>
+                        <span>CTR: <span style={{ color: "#4ade80" }}>{v.predictedCtrScore}/100</span></span>
+                        <span>{v.trigger}</span>
+                        <span style={{ color: v.characterCount > 160 ? "#f87171" : "#4ade80" }}>{v.characterCount}ch</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* BERT / NLP Semantic Optimizer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🧠 BERT / NLP Semantic Optimizer</div>
+              <div style={S.cardDesc}>Identify semantic gaps and co-occurrence terms that BERT expects for your keyword — improve topical relevance.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Target keyword or topic..." value={bertOptKw} onChange={e => setBertOptKw(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runBertOpt} disabled={bertOptLoading || !bertOptKw.trim()}>
+                {bertOptLoading ? <><span style={S.spinner} /> Analyzing semantics…</> : "Optimize Semantic Relevance"}
+              </button>
+              {bertOptResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Semantic score: <b style={{ color: bertOptResult.semanticRelevanceScore >= 70 ? "#4ade80" : "#fbbf24" }}>{bertOptResult.semanticRelevanceScore}/100</b></span>
+                    <span>Intent match: <b style={{ color: bertOptResult.intentMatchScore >= 70 ? "#4ade80" : "#fbbf24" }}>{bertOptResult.intentMatchScore}/100</b></span>
+                  </div>
+                  {bertOptResult.mustUseTerms?.slice(0, 8).map((t, i) => (
+                    <span key={i} style={{ display: "inline-block", background: "#18181b", border: "1px solid #3f3f46", borderRadius: 4, padding: "2px 8px", fontSize: 12, margin: "2px 4px 2px 0" }}>{t.term} <span style={{ color: "#4ade80", fontSize: 11 }}>({t.frequency}×)</span></span>
+                  ))}
+                  {bertOptResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "4px 0" }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Secondary Keyword Optimizer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🔑 Secondary Keyword Optimizer</div>
+              <div style={S.cardDesc}>Discover 15 secondary and LSI keywords to weave into your content for broader topical coverage and ranking potential.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Primary keyword or topic..." value={secondaryKwInput} onChange={e => setSecondaryKwInput(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runSecondaryKwFinder} disabled={secondaryKwLoading || !secondaryKwInput.trim()}>
+                {secondaryKwLoading ? <><span style={S.spinner} /> Finding keywords…</> : "Find Secondary Keywords"}
+              </button>
+              {secondaryKwResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 8, fontSize: 13, color: "#a1a1aa" }}>Primary: <b style={{ color: "#fff" }}>{secondaryKwResult.primaryKeyword}</b> · {secondaryKwResult.totalKeywordsProvided} keywords found</div>
+                  {secondaryKwResult.secondaryKeywords?.slice(0, 10).map((k, i) => (
+                    <div key={i} style={{ display: "flex", gap: 12, padding: "3px 0", fontSize: 13, borderBottom: "1px solid #27272a" }}>
+                      <b style={{ minWidth: 180 }}>{k.keyword}</b>
+                      <span style={{ color: "#818cf8" }}>{k.type}</span>
+                      <span style={{ color: "#a1a1aa", fontSize: 12 }}>Vol: {k.estimatedMonthlySearches?.toLocaleString()}</span>
+                      <span style={{ color: k.difficultyScore < 40 ? "#4ade80" : "#fbbf24", fontSize: 12 }}>KD {k.difficultyScore}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Knowledge Graph Coverage */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🕸️ Knowledge Graph Coverage</div>
+              <div style={S.cardDesc}>Measure your entity's Knowledge Graph presence — Wikipedia notability, sameAs links, Wikidata, structured data coverage.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Entity name (brand, person, product)..." value={knowledgeGraphEntity} onChange={e => setKnowledgeGraphEntity(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Industry or category (e.g. SaaS, Retail)..." value={knowledgeGraphIndustry} onChange={e => setKnowledgeGraphIndustry(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runKnowledgeGraph} disabled={knowledgeGraphLoading || !knowledgeGraphEntity.trim()}>
+                {knowledgeGraphLoading ? <><span style={S.spinner} /> Checking KG…</> : "Check Knowledge Graph Coverage"}
+              </button>
+              {knowledgeGraphResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>KG score: <b style={{ color: knowledgeGraphResult.knowledgeGraphScore >= 70 ? "#4ade80" : "#fbbf24" }}>{knowledgeGraphResult.knowledgeGraphScore}/100</b></span>
+                    <span>Wikipedia: <b>{knowledgeGraphResult.wikipediaPresence === "present" ? "✅" : "❌"}</b></span>
+                    <span>Wikidata: <b>{knowledgeGraphResult.wikidataPresence === "present" ? "✅" : "❌"}</b></span>
+                  </div>
+                  {knowledgeGraphResult.topActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {a}</div>)}
                 </div>
               )}
             </div>

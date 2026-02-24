@@ -4764,6 +4764,496 @@ router.post('/keywords/cannibalization-detector', async (req, res) => {
   } catch (e) { res.json({ ok: false, error: e.message }); }
 });
 
+/* ─── BATCH 6: SERP & CTR EXTENSIONS ─── */
+
+/* 98. Google News / Discover SEO Optimizer */
+router.post('/serp/news-seo', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Googlebot-News/2.1' }, signal: AbortSignal.timeout(10000) });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+    const title = $('title').text().slice(0, 120);
+    const publishDate = $('meta[property="article:published_time"]').attr('content') || $('time').first().attr('datetime') || 'not found';
+    const hasAmpLink = $('link[rel="amphtml"]').length > 0;
+    const ogType = $('meta[property="og:type"]').attr('content') || '';
+    const hasNewsSchema = html.includes('"NewsArticle"') || html.includes('"Article"');
+    const prompt = `You are a Google News and Discover SEO expert. Audit this page for Google News and Discover eligibility. URL: "${url}", Title: "${title}", Published date meta: "${publishDate}", Has AMP: ${hasAmpLink}, OG type: "${ogType}", Has NewsArticle schema: ${hasNewsSchema}. Key Google News ranking factors: original reporting, timeliness, authority, schema, bylines, publication date. Return JSON: {"newsEligibilityScore":0-100,"discoverEligibilityScore":0-100,"newsIssues":[{"issue":"problem","fix":"solution","priority":"high|medium|low"}],"discoverIssues":[{"issue":"problem","fix":"fix","priority":"high|medium|low"}],"schemaRecommendation":{"type":"NewsArticle|Article","missingFields":["list of missing schema fields"]},"freshnessSignals":{"publishDateFound":${publishDate !== 'not found'},"publishDateValue":"${publishDate}","freshnessScore":0-100},"headlineOptimization":{"current":"${title.slice(0,80)}","issues":["issues with headline"],"improved":"improved version"},"ampRecommendation":"whether and how to implement AMP","topActions":["5 prioritized actions to get into Google News/Discover"],"estimatedImpact":"high|medium|low"}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, url, hasAmpLink, hasNewsSchema, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 99. Video SEO Optimizer */
+router.post('/serp/video-seo', async (req, res) => {
+  try {
+    const { url, videoKeyword } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!url && !videoKeyword) return res.status(400).json({ ok: false, error: 'URL or video keyword required' });
+    let videoContext = { hasVideoSchema: false, hasVideoEmbed: false, title: 'not scraped' };
+    if (url) {
+      try {
+        const fetchMod = (await import('node-fetch')).default;
+        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
+        const html = await r.text();
+        const $ = cheerio.load(html);
+        videoContext.title = $('title').text().slice(0, 100);
+        videoContext.hasVideoSchema = html.includes('"VideoObject"');
+        videoContext.hasVideoEmbed = $('iframe[src*="youtube"], iframe[src*="vimeo"], video').length > 0;
+        videoContext.videoCount = $('iframe[src*="youtube"], iframe[src*="vimeo"], video').length;
+      } catch {}
+    }
+    const prompt = `You are a video SEO expert specializing in video rich results and YouTube-to-web SEO. Optimize for video search: URL: "${url || 'N/A'}", Video keyword: "${videoKeyword || 'N/A'}", Has VideoObject schema: ${videoContext.hasVideoSchema}, Has video embed: ${videoContext.hasVideoEmbed}, Video count on page: ${videoContext.videoCount || 0}. Google shows video rich results for pages with VideoObject schema. Return JSON: {"videoRichResultScore":0-100,"richResultEligibility":"eligible|likely|unlikely","videoObjectSchema":{"missingFields":["list of required/recommended fields missing"],"exampleMarkup":"JSON-LD VideoObject example with the keyword"},"thumbnailStrategy":{"recommendation":"thumbnail best practices","dimensions":"1280x720 preferred"},"transcriptValue":"why and how to add transcript","chapterMarkers":"how to add timestamp chapters for richer snippets","youtubeOptimization":{"titleFormula":"formula for the video title","descriptionStructure":"how to structure description","tagsStrategy":"how to choose tags"},"pageOptimization":["5 on-page changes to support video SEO"],"topActions":["5 actions to get video rich results"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, url, videoKeyword, ...videoContext, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 100. Entity / Knowledge Graph Optimizer */
+router.post('/serp/entity-optimizer', async (req, res) => {
+  try {
+    const { keyword, url, entityName } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!keyword && !entityName) return res.status(400).json({ ok: false, error: 'Keyword or entity name required' });
+    const prompt = `You are a Knowledge Graph and entity SEO specialist. Optimize for entity search and Knowledge Graph inclusion: Keyword: "${keyword || 'N/A'}", Entity name: "${entityName || keyword}", URL context: "${url || 'N/A'}". Google's Knowledge Graph uses entity associations, structured data, Wikipedia/Wikidata, brand signals. Return JSON: {"entityScore":0-100,"entityType":"Person|Organization|Product|Place|Event|Concept","knowledgeGraphGap":{"currentCoverage":"assessment","missingSignals":["signals needed for KG inclusion"]},"entityDefinition":"clear 1-sentence entity definition for schema","samedAsOpportunities":["Wikipedia URL","Wikidata URL","LinkedIn","Crunchbase","official social profiles"],"schemaMarkup":{"type":"the schema type e.g. Organization","keyProperties":{"name":"value","url":"value","description":"value","sameAs":["placeholder URLs"]}},"entityMentionStrategy":["how to build entity prominence through content"],"ngramOptimization":{"entityNgrams":["key phrases Google associates with this entity"],"coOccurrenceTerms":["terms that should co-occur with this entity"]},"topActions":["5 entity SEO actions to strengthen Knowledge Graph presence"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, keyword, entityName, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 101. Product / Review Schema Optimizer */
+router.post('/serp/review-schema', async (req, res) => {
+  try {
+    const { url, productName, category } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!url && !productName) return res.status(400).json({ ok: false, error: 'URL or product name required' });
+    let pageCtx = {};
+    if (url) {
+      try {
+        const fetchMod = (await import('node-fetch')).default;
+        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
+        const html = await r.text();
+        const $ = cheerio.load(html);
+        pageCtx.title = $('title').text().slice(0, 100);
+        pageCtx.hasProduct = html.includes('"Product"');
+        pageCtx.hasReview = html.includes('"Review"') || html.includes('"AggregateRating"');
+        pageCtx.hasPrice = $('[itemprop="price"], [class*="price"]').length > 0;
+      } catch {}
+    }
+    const prompt = `You are a Product and Review schema specialist focused on rich results. Optimize schema for: URL: "${url || 'N/A'}", Product: "${productName || pageCtx.title || 'N/A'}", Category: "${category || 'general'}", Has Product schema: ${pageCtx.hasProduct || false}, Has Review schema: ${pageCtx.hasReview || false}. Google shows star ratings, price, availability in SERPs when schema is correct. Return JSON: {"richResultScore":0-100,"richResultTypes":["star ratings","price","availability","review count"],"currentSchemaIssues":["list of detected issues"],"productSchemaExample":{"complete JSON-LD Product schema with example values"},"reviewSchemaExample":{"complete JSON-LD AggregateRating example"},"validationChecklist":["required fields checklist"],"starRatingEligibility":"eligible|needs review count|needs proper schema","affiliateConsiderations":["special notes for affiliate/review sites"],"topActions":["5 actions to get rich results showing in SERPs"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, url, productName, ...pageCtx, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 102. Event Schema Builder */
+router.post('/serp/event-schema', async (req, res) => {
+  try {
+    const { eventName, eventDate, eventLocation, description, organizer, ticketUrl } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!eventName) return res.status(400).json({ ok: false, error: 'Event name required' });
+    const prompt = `You are an Event schema specialist. Build optimized Event JSON-LD schema for Google rich results. Event name: "${eventName}", Date: "${eventDate || 'TBD'}", Location: "${eventLocation || 'TBD'}", Description: "${description || ''}", Organizer: "${organizer || ''}", Ticket URL: "${ticketUrl || ''}". Return JSON: {"schemaMarkup":"complete JSON-LD Event schema as a string","richResultPreview":{"eventTitle":"${eventName}","dateDisplay":"human-friendly date string","locationDisplay":"${eventLocation || 'TBD'}","ticketsAvailable":${!!ticketUrl}},"requiredFields":["list of required Event schema fields"],"recommendedFields":["additional recommended fields"],"virtualEventNotes":"if online event, how to mark up correctly","validationUrl":"https://search.google.com/test/rich-results","commonMistakes":["5 most common Event schema mistakes"],"topActions":["3 actions to maximize event visibility in Google"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, eventName, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* ─── BATCH 6: SCHEMA & LINKS EXTENSIONS ─── */
+
+/* 103. Redirect Chain Auditor */
+router.post('/schema/redirect-audit', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
+    const chain = [];
+    let current = url;
+    let hops = 0;
+    try {
+      const fetchMod = (await import('node-fetch')).default;
+      while (hops < 6) {
+        const r = await fetchMod(current, { redirect: 'manual', headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(5000) });
+        chain.push({ url: current, status: r.status, type: r.status >= 301 && r.status <= 308 ? `${r.status} redirect` : `${r.status} final` });
+        if (r.status >= 300 && r.status < 400) { current = r.headers.get('location') || ''; hops++; } else break;
+      }
+    } catch (fetchErr) { chain.push({ url: current, error: fetchErr.message }); }
+    const prompt = `You are a redirect and crawl efficiency specialist. Analyze this redirect chain: ${JSON.stringify(chain)}. Original URL: "${url}". Rules: 301 chains lose ~10-15% PageRank per hop, chains >2 hops are problematic, 302s pass no link equity by default, self-referential redirects waste crawl budget. Return JSON: {"chainLength":${chain.length},"chainHealthScore":0-100,"issues":[{"issue":"description","impact":"high|medium|low","fix":"specific fix"}],"linkEquityLoss":"estimated % PageRank loss","crawlBudgetImpact":"impact description","detectedChain":${JSON.stringify(chain)},"fixPriority":"immediate|soon|monitor","fixStrategy":"consolidation approach","topActions":["3 specific actions to fix this redirect situation"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, url, chain, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 104. Duplicate Content Detector */
+router.post('/schema/duplicate-content', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+    const canonical = $('link[rel="canonical"]').attr('href') || null;
+    const noindex = $('meta[name="robots"]').attr('content')?.includes('noindex') || false;
+    const hasCanonical = !!canonical;
+    const canonicalMatchesSelf = canonical === url || canonical === url.replace(/\/$/, '');
+    $('script,style,nav,footer,header').remove();
+    const textContent = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 800);
+    const title = $('title').text().slice(0, 100);
+    const prompt = `You are a duplicate content and canonicalization specialist. Audit this page for duplicate content risks. URL: "${url}", Canonical tag: "${canonical || 'missing'}", Canonical matches self: ${canonicalMatchesSelf}, Is noindexed: ${noindex}, Title: "${title}", Content snippet: "${textContent}". Analyze for: near-duplicate pages, canonicalization issues, parameter URLs, session IDs, faceted navigation, pagination duplication. Return JSON: {"duplicateRisk":"low|medium|high","duplicateScore":0-100,"canonicalStatus":{"hasCanonical":${hasCanonical},"canonicalUrl":"${canonical || 'none'}","isSelfCanonical":${canonicalMatchesSelf},"recommendation":"fix action"},"parameterIssues":{"detected":true/false,"parameters":["any query params found in URL"],"fix":"how to handle"},"thinContentRisk":"none|low|medium|high","paginationIssues":["pagination duplication risks if any"],"nearDuplicateRisks":["content patterns that indicate near-duplicate pages"],"topActions":["5 actions to fix duplicate content risks"],"estimatedImpact":"how fixing this affects rankings"}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, url, canonical, hasCanonical, canonicalMatchesSelf, noindex, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 105. Hreflang International SEO Advisor */
+router.post('/schema/hreflang', async (req, res) => {
+  try {
+    const { url, targetMarkets } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+    const hreflangTags = $('link[hreflang]').map((_, el) => ({ lang: $(el).attr('hreflang'), href: $(el).attr('href') })).get();
+    const langAttribute = $('html').attr('lang') || 'not set';
+    const prompt = `You are an international SEO and hreflang specialist. Audit hreflang implementation and international SEO for: URL: "${url}", Target markets: "${targetMarkets || 'not specified'}", HTML lang attribute: "${langAttribute}", Detected hreflang tags: ${JSON.stringify(hreflangTags)}. Return JSON: {"internationalSeoScore":0-100,"langAttribute":{"current":"${langAttribute}","correct":"correct format","issue":"any issue"},"hreflangAudit":{"tagCount":${hreflangTags.length},"hasXDefaultTag":${hreflangTags.some(t => t.lang === 'x-default')},"issues":["common hreflang mistakes found or general best practices"],"fixedExample":"corrected hreflang tags example"},"ccTLDvsSubdirectory":{"recommendation":"which URL structure for international","pros":["pros"],"cons":["cons"]},"targetMarketStrategy":${JSON.stringify(targetMarkets ? `{"markets":"${targetMarkets}","urlStrategy":"recommended structure","contentConsiderations":["localization tips"]}` : '"specify target markets for custom advice"')},"topActions":["5 international SEO actions"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, url, hreflangTags, langAttribute, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 106. Mobile SEO Checker */
+router.post('/schema/mobile-seo', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
+    const fetchMod = (await import('node-fetch')).default;
+    const mobileUA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1';
+    const r = await fetchMod(url, { headers: { 'User-Agent': mobileUA }, signal: AbortSignal.timeout(10000) });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+    const viewport = $('meta[name="viewport"]').attr('content') || null;
+    const hasViewport = !!viewport;
+    const viewportCorrect = viewport?.includes('width=device-width') || false;
+    const tapTargets = $('a, button').length;
+    const smallFontCount = 0; // simplified - would need CSS parsing
+    const interstitials = $('[class*="popup"], [class*="modal"], [class*="overlay"]').length;
+    const imageCount = $('img').length;
+    const lazyImages = $('img[loading="lazy"]').length;
+    const prompt = `You are a mobile SEO and mobile-first indexing specialist. Google uses mobile-first indexing — mobile version is what gets indexed. Mobile audit for: URL: "${url}", Viewport meta: "${viewport || 'MISSING'}", Viewport correct: ${viewportCorrect}, Tap targets count: ${tapTargets}, Interstitial-like elements: ${interstitials}, Images: ${imageCount} (${lazyImages} lazy), Mobile UA used: yes. Return JSON: {"mobileScore":0-100,"mobileFriendlyLabel":"mobile-friendly|needs work|not mobile-friendly","viewportIssue":${!hasViewport},"criticalIssues":[{"issue":"problem","fix":"fix","priority":"high|medium|low"}],"mobileFirstIndexingChecklist":{"contentParity":"check content matches desktop","structuredData":"check schema is on mobile version","crawlability":"Googlebot-Mobile can access","interstitials":{"risk":${interstitials > 0},"googlePenaltyRisk":"low|medium|high"}},"coreWebVitalsMobile":{"LCP":"note about LCP on mobile","CLS":"CLS mobile specific issues","INP":"interaction delay issues"},"ampAlternative":"whether AMP could help this page type","topActions":["5 mobile SEO improvements ranked by impact"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, url, viewport, hasViewport, viewportCorrect, tapTargets, interstitials, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* ─── BATCH 6: BACKLINKS EXTENSIONS ─── */
+
+/* 107. Link Gap Analysis */
+router.post('/backlinks/link-gap', async (req, res) => {
+  try {
+    const { domain, competitors, niche } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!domain) return res.status(400).json({ ok: false, error: 'Domain required' });
+    const prompt = `You are a link gap analysis specialist (Ahrefs/Semrush methodology). Identify link building gaps for: Domain: "${domain}", Competitors: "${competitors || 'not specified — generate typical competitors for this domain'}", Niche: "${niche || 'general'}". Link gap = sites linking to competitors but not to this domain. Return JSON: {"linkGapScore":0-100,"estimatedGapSize":"number of missed link opportunities","topLinkGapOpportunities":[{"sourceType":"e.g. industry blog, news site, directory","domainAuthority":"typical DA range","linkType":"editorial|directory|resource|guest post","outreachDifficulty":"easy|medium|hard","linkValue":"high|medium|low","howToEarn":"specific tactic to earn this type of link"}],"competitorBacklinkPatterns":["patterns in how competitors earn links"],"quickWinLinks":["5 highest-probability near-term link targets"],"contentTypesForLinks":["content formats that attract links in this niche"],"topActions":["5 ranked link gap closing actions"]}. Provide 10 link gap opportunities.`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, domain, competitors, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 108. Broken Backlink Reclamation */
+router.post('/backlinks/broken-backlinks', async (req, res) => {
+  try {
+    const { domain, niche } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!domain) return res.status(400).json({ ok: false, error: 'Domain required' });
+    const prompt = `You are a broken backlink reclamation specialist. Create a broken link reclamation strategy for: Domain: "${domain}", Niche: "${niche || 'general'}". Broken links (404s with inbound links) are low-hanging fruit — pages that changed URL leave orphaned links pointing to 404s. Return JSON: {"reclamationStrategy":"overall approach","quickWinTypes":["types of broken links easiest to reclaim"],"outreachTemplate":{"subject":"email subject line","body":"3-sentence outreach email body asking to update the broken link"},"brokenLinkTypes":[{"type":"renamed page","likelihood":"high","fix":"301 redirect from old URL","outreach":false},{"type":"deleted content","likelihood":"medium","fix":"recreate content or redirect to best alternative","outreach":true},{"type":"moved resources","likelihood":"high","fix":"set up proper redirects","outreach":false}],"toolsNeeded":["Ahrefs Site Explorer, Screaming Frog, Google Search Console"],"auditProcess":["step 1","step 2","step 3"],"competitorBrokenLinks":"strategy to steal competitor broken backlinks","estimatedMonthly":"typical broken link recovery potential for a site this size","topActions":["5 broken link reclamation actions ranked by ROI"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, domain, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 109. Anchor Text Profile Auditor */
+router.post('/backlinks/anchor-text', async (req, res) => {
+  try {
+    const { domain, niche } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!domain) return res.status(400).json({ ok: false, error: 'Domain required' });
+    const prompt = `You are an anchor text profile analyst. Audit and optimize the anchor text backlink profile for: Domain: "${domain}", Niche: "${niche || 'general'}". Ideal anchor text distribution (Ahrefs data): branded ~40-70%, naked URL ~10-20%, exact match <5%, partial match ~10-20%, generic ~5-15%. Return JSON: {"anchorTextScore":0-100,"penaltyRisk":"low|medium|high","idealDistribution":{"branded":"40-70%","nakedUrl":"10-20%","exactMatch":"<5% target","partialMatch":"10-20%","generic":"5-15%","compound":"5-15%"},"currentIssues":["anchor text problems to fix"],"overOptimizationRisk":"none|low|medium|high","diversificationNeeded":["which anchor types to build more of"],"safetyMeasures":["how to diversify anchor profile safely"],"nextLinks":["recommended anchor texts for next 10 links to build with rationale"],"topActions":["5 anchor text optimization actions"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, domain, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 110. Link Velocity Analyzer */
+router.post('/backlinks/link-velocity', async (req, res) => {
+  try {
+    const { domain, currentLinksPerMonth, niche } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!domain) return res.status(400).json({ ok: false, error: 'Domain required' });
+    const prompt = `You are a link velocity and link building momentum specialist. Analyze and optimize link building velocity for: Domain: "${domain}", Current links/month: "${currentLinksPerMonth || 'unknown'}", Niche: "${niche || 'general'}". Link velocity = rate at which new backlinks are acquired. Unnatural spikes can trigger Penguin. Ideal = consistent natural growth. Return JSON: {"velocityScore":0-100,"velocityStatus":"too slow|healthy|suspicious spike|unknown","naturalGrowthRange":{"minPerMonth":"number","maxPerMonth":"number","basis":"why this range is natural for this niche"},"velocityRisks":["risks of current pattern"],"buildingSchedule":{"week1":{"quantity":0,"types":["link types"]},"week2":{"quantity":0,"types":[]},"month2":{"quantity":0,"types":[]},"ongoing":{"quantity":0,"types":[]}},"diversificationCalendar":["month 1 focus","month 2 focus","month 3 focus"],"spikeMitigation":["what to do if you get a sudden spike"],"competitorVelocityTips":["how to research competitor link velocity"],"topActions":["5 link velocity optimizations"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, domain, currentLinksPerMonth, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* ─── BATCH 6: A/B & REFRESH TAB ─── */
+
+/* 111. SEO A/B Test Advisor */
+router.post('/ab/ab-test-advisor', async (req, res) => {
+  try {
+    const { url, pageType } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+    const title = $('title').text().slice(0, 120);
+    const metaDesc = $('meta[name="description"]').attr('content') || '';
+    const h1 = $('h1').first().text().slice(0, 100);
+    const prompt = `You are an SEO A/B testing specialist. Generate high-impact SEO A/B test ideas for: URL: "${url}", Page type: "${pageType || 'blog post'}", Title: "${title}", Meta: "${metaDesc.slice(0, 150)}", H1: "${h1}". A/B tests proven to move rankings: title tag changes, meta description CTR tests, H1 variations, content structure, internal linking, schema additions, CTA placement. Return JSON: {"highestImpactTests":[{"testName":"test name","element":"what to test","control":"current version","variant":"test version","hypothesis":"why this would improve CTR/rankings","difficulty":"easy|medium|hard","estimatedImpact":"% CTR or ranking improvement","timeToResults":"weeks"}],"statisticalRequirements":{"minimumTraffic":"visits/month needed","testDuration":"weeks","significanceLevel":"95%"},"seoSpecificCaveats":["SEO A/B testing pitfalls to avoid"],"toolsNeeded":["tools for SEO A/B testing"],"topTests":["5 must-do A/B tests for this page type"]}. Include 8 test ideas.`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, url, title, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 112. Content Refresh Advisor */
+router.post('/ab/content-refresh', async (req, res) => {
+  try {
+    const { url, publishDate } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+    const pubDateMeta = $('meta[property="article:modified_time"], meta[property="article:published_time"]').first().attr('content') || publishDate || 'unknown';
+    const title = $('title').text().slice(0, 120);
+    $('script,style,nav,footer,header').remove();
+    const content = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 1500);
+    const wordCount = content.split(' ').length;
+    const prompt = `You are a content refresh and historical optimization specialist. Create a content refresh strategy for: URL: "${url}", Title: "${title}", Published/modified: "${pubDateMeta}", Word count approx: ${wordCount}. Content snippet: "${content.slice(0, 800)}". Semrush's content refresh methodology: update outdated stats, add new sections for new search intent, improve EEAT signals, fix broken links, re-optimize for new keywords, update publish date only if significant changes. Return JSON: {"refreshPriorityScore":0-100,"refreshUrgency":"immediate|within a month|quarterly|not needed","agingSignals":["signs the content is outdated"],"newSectionSuggestions":[{"section":"heading","why":"why to add this section","keywords":["target keywords"]}],"outdatedElements":["specific things likely to be outdated based on content"],"eeatRefreshActions":["how to improve EEAT during refresh"],"internalLinkUpdates":["how to update internal linking after refresh"],"keywordOpportunity":"new search intent opportunities to capture","publishDateStrategy":"when and how to update the date","estimatedRankingGain":"expected improvement after refresh","topActions":["5 refresh actions ranked by impact"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, url, title, pubDateMeta, wordCount, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 113. Title Tag A/B Variants */
+router.post('/ab/title-variants', async (req, res) => {
+  try {
+    const { currentTitle, keyword, pageType } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!currentTitle && !keyword) return res.status(400).json({ ok: false, error: 'Current title or keyword required' });
+    const prompt = `You are a title tag conversion rate optimizer for organic search. Generate high-CTR A/B title tag variants for: Current title: "${currentTitle || 'N/A'}", Target keyword: "${keyword || 'N/A'}", Page type: "${pageType || 'blog post'}". Psychological triggers proven to boost CTR: numbers, curiosity gaps, fear of missing out, specificity, power words, negative framing, benefit-led, question format. Google title tag rules: 50-60 chars ideally, keyword near the front, match search intent. Return JSON: {"currentTitleAnalysis":{"charCount":${(currentTitle || '').length},"keywordPosition":"start|middle|end","estimatedCTR":"low|medium|high","weaknesses":["issues with current title"]},"variants":[{"title":"variant text","chars":0,"psychologicalTrigger":"trigger used","ctrPrediction":"high|medium","bestForIntent":"informational|commercial|transactional","testHypothesis":"why this should outperform"}],"titleFormulas":["formula 1 — e.g. [Number] + [Adjective] + [Keyword] + [Benefit]"],"keywordPlacement":"where to put keyword for best CTR","charOptimum":"55-60 chars for most queries","topVariants":["top 3 recommended variants to test"]}. Generate 8 variants.`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, currentTitle, keyword, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 114. Meta Description A/B Variants */
+router.post('/ab/meta-variants', async (req, res) => {
+  try {
+    const { url, keyword } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!url && !keyword) return res.status(400).json({ ok: false, error: 'URL or keyword required' });
+    let currentMeta = '';
+    let pageTitle = '';
+    if (url) {
+      try {
+        const fetchMod = (await import('node-fetch')).default;
+        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
+        const html = await r.text();
+        const $ = cheerio.load(html);
+        currentMeta = $('meta[name="description"]').attr('content') || '';
+        pageTitle = $('title').text().slice(0, 100);
+      } catch {}
+    }
+    const prompt = `You are a meta description CTR specialist. Create high-CTR meta description A/B variants for: URL: "${url || 'N/A'}", Keyword: "${keyword || 'N/A'}", Current meta: "${currentMeta || 'none set'}", Page title: "${pageTitle}". Meta rules: 150-160 chars, include keyword naturally (it bolds in SERP), end with CTA, emotional hook, specificity. Return JSON: {"currentMetaAnalysis":{"charCount":${currentMeta.length},"hasKeyword":${keyword ? currentMeta.toLowerCase().includes((keyword || '').toLowerCase()) : false},"hasCTA":true/false,"weaknesses":["issues"]},"variants":[{"meta":"variant text","chars":0,"formula":"formula used","emotionalTrigger":"urgency|curiosity|FOMO|trust|benefit","ctrBias":"high|medium","keywordNatural":true/false}],"ctrPrinciples":["5 meta description CTR principles from Google's own studies"],"characterOptimum":"155-160 chars for most queries","boldingStrategy":"how to naturally include the keyword for bolding effect","topVariants":["3 recommended variants"]}. Generate 6 variants.`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, url, keyword, currentMeta, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 115. BERT / NLP Semantic Optimizer */
+router.post('/ab/bert-optimizer', async (req, res) => {
+  try {
+    const { keyword, url } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!keyword) return res.status(400).json({ ok: false, error: 'Keyword required' });
+    let contentSnippet = '';
+    if (url) {
+      try {
+        const fetchMod = (await import('node-fetch')).default;
+        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
+        const html = await r.text();
+        const $ = cheerio.load(html);
+        $('script,style,nav,footer').remove();
+        contentSnippet = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 1200);
+      } catch {}
+    }
+    const prompt = `You are a BERT/NLP semantic optimization specialist. BERT (Google's transformer model) understands natural language context. Optimize content semantically for: Keyword: "${keyword}", Content snippet: "${contentSnippet.slice(0, 600) || 'no URL provided — give general advice'}". BERT processes bidirectional context, understands intent beyond keywords, rewards natural language over keyword stuffing. Return JSON: {"semanticScore":0-100,"bertReadiness":"optimized|needs work|poor","intentAnalysis":{"primaryIntent":"what user really wants","secondaryIntents":["other things users want"],"intentMismatch":"is there a mismatch with current content"},"semanticGaps":["concepts missing that BERT expects for this topic"],"coOccurrenceTerms":["terms that naturally occur with this keyword — BERT co-occurrence signals"],"naturalLanguageIssues":["places where keyword stuffing or unnatural phrasing detected"],"sentenceStructureAdvice":"how to write more naturally for BERT","questionAnswerOpportunities":["conversational Q&A pairs that address the full intent"],"topActions":["5 BERT/NLP semantic optimization actions"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, keyword, url, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 116. Secondary Keyword Optimizer */
+router.post('/ab/secondary-keywords', async (req, res) => {
+  try {
+    const { primaryKeyword, url } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!primaryKeyword) return res.status(400).json({ ok: false, error: 'Primary keyword required' });
+    const prompt = `You are a secondary keyword and LSI optimization specialist. Find and optimize secondary keywords for: Primary keyword: "${primaryKeyword}", URL: "${url || 'N/A'}". Secondary keywords are variations, synonyms, and related terms that help Google understand topical coverage. Ahrefs: pages ranking for 1 keyword also rank for ~1000 related terms on average. Return JSON: {"primaryKeywordAnalysis":{"searchIntent":"informational|commercial|transactional|navigational","contentType":"what format ranks best"},"secondaryKeywords":[{"keyword":"secondary term","type":"synonym|variant|related|subtopic|long-tail","searchVolume":"estimated monthly volume","difficulty":"low|medium|high","placement":"title|intro|heading|body|conclusion|FAQ"}],"lsiKeywords":["10 LSI terms to naturally include"],"coOccurrenceTerms":["terms Google expects to see alongside primary keyword"],"headingOpportunities":["H2/H3 headings that would capture secondary keyword traffic"],"contentExtensions":["additional content sections to rank for secondary terms"],"topActions":["5 secondary keyword implementation actions"]}. Include 15 secondary keywords.`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, primaryKeyword, url, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 117. Knowledge Graph Coverage Checker */
+router.post('/ab/knowledge-graph', async (req, res) => {
+  try {
+    const { entityName, domain, industry } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!entityName) return res.status(400).json({ ok: false, error: 'Entity name required' });
+    const prompt = `You are a Knowledge Graph coverage and entity optimization specialist. Audit Knowledge Graph coverage for: Entity: "${entityName}", Domain: "${domain || 'N/A'}", Industry: "${industry || 'general'}". Google's Knowledge Graph uses: entity mentions, structured data, Wikipedia/Wikidata presence, consistent NAP signals, co-citation patterns, brand search volume. Return JSON: {"kgCoverageScore":0-100,"kgEligibility":"likely listed|partially listed|not listed|unknown","entityStrength":"strong|moderate|weak","coverageGaps":[{"signal":"coverage signal","currentStatus":"present|missing|weak","fix":"how to build this signal"}],"wikiStrategy":{"worthy":"yes|borderline|unlikely","criteria":["Wikipedia notability criteria to meet"],"alternativePages":["Wikidata","Google Business Profile","industry wikis"]},"knowledgePanelTriggers":["what causes a Knowledge Panel to appear"],"coOccurrenceBuilding":["content strategies to build entity co-occurrence"],"sameAsLocations":["authoritative third-party pages to create/claim"],"topActions":["5 Knowledge Graph coverage actions"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, entityName, domain, industry, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* ─── BATCH 6: TECHNICAL+ FURTHER EXTENSIONS ─── */
+
+/* 118. Crawl Budget Advisor */
+router.post('/technical/crawl-budget', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
+    const fetchMod = (await import('node-fetch')).default;
+    let domain = '';
+    try { domain = new URL(url).hostname; } catch {}
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Googlebot' }, signal: AbortSignal.timeout(10000) });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+    const robotsTxtUrl = `${new URL(url).origin}/robots.txt`;
+    let robotsTxt = '';
+    try { const rr = await fetchMod(robotsTxtUrl, { signal: AbortSignal.timeout(5000) }); robotsTxt = (await rr.text()).slice(0, 600); } catch {}
+    const linkCount = $('a[href]').length;
+    const hasNoindex = $('meta[name="robots"]').attr('content')?.includes('noindex') || false;
+    const hasNofollowLinks = $('a[rel*="nofollow"]').length;
+    const queryParamLinks = $('a[href*="?"]').length;
+    const prompt = `You are a crawl budget optimization expert. Analyze crawl budget for: URL: "${url}", Domain: "${domain}", Total links on page: ${linkCount}, Links with query params: ${queryParamLinks}, Nofollow links: ${hasNofollowLinks}, Page has noindex: ${hasNoindex}, Robots.txt snippet: "${robotsTxt.slice(0, 300)}". Crawl budget matters for large sites (1000+ pages), ecommerce, news sites. Google allocates limited crawl rate per domain. Return JSON: {"crawlBudgetScore":0-100,"crawlBudgetRisk":"low|medium|high","siteSize":"estimated site type for crawl budget relevance","crawlWasters":[{"issue":"what is wasting crawl budget","pages":"estimated % of crawl budget wasted","fix":"how to fix","priority":"high|medium|low"}],"robotsTxtOptimization":{"findings":"what the robots.txt tells us","improvements":["4 robots.txt improvements"]},"xmlSitemapTips":["how sitemap affects crawl efficiency"],"crawlRateSignals":["factors that affect how often Googlebot visits"],"logFileValue":"why log file analysis would help this site","topActions":["5 crawl budget optimizations"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, url, domain, linkCount, queryParamLinks, hasNofollowLinks, robotsTxt: robotsTxt.slice(0, 200), ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 119. Click Depth Analyzer */
+router.post('/technical/click-depth', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!url) return res.status(400).json({ ok: false, error: 'URL required' });
+    const urlObj = new URL(url);
+    const pathDepth = urlObj.pathname.split('/').filter(Boolean).length;
+    const subdirs = urlObj.pathname.split('/').filter(Boolean);
+    const prompt = `You are a site architecture and click depth specialist. Analyze click depth for: URL: "${url}", URL path depth: ${pathDepth} levels (${subdirs.join(' > ') || 'root'}). Google's John Mueller: pages more than 3-4 clicks from homepage may get less crawl budget. Optimal: important pages ≤3 clicks from homepage. Return JSON: {"clickDepthScore":0-100,"urlPathDepth":${pathDepth},"depthAssessment":"${pathDepth <= 2 ? 'ideal' : pathDepth === 3 ? 'acceptable' : 'deep'}","issues":["depth-related issues"],"architectureRecommendations":["flat vs deep architecture trade-offs"],"breadcrumbValue":"why breadcrumbs reduce effective click depth","internalLinkStrategy":"how internal links create shortcuts to deep pages","urlStructureRating":"${pathDepth <= 3 ? 'good' : 'too deep'}","improvementOptions":[{"option":"restructuring option","benefit":"seo benefit","effort":"low|medium|high"}],"sitemapMitigation":"how XML sitemaps help deep pages get crawled","topActions":["4 click depth optimization actions"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, url, urlPathDepth: pathDepth, pathSegments: subdirs, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 120. Log File Analysis Advisor */
+router.post('/technical/log-file', async (req, res) => {
+  try {
+    const { logSnippet, domain } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!logSnippet && !domain) return res.status(400).json({ ok: false, error: 'Log snippet or domain required' });
+    const prompt = `You are a server log file SEO analysis expert. Analyze server log data for SEO insights: Domain: "${domain || 'N/A'}", Log snippet (first 1000 chars): "${(logSnippet || '').substring(0, 1000)}". Log file analysis finds: which pages Googlebot actually crawls, crawl frequency patterns, pages never crawled, crawl errors, CSS/JS blocking, slow server responses. Key insight from Semrush research: log files reveal ground truth of how Google sees your site. Return JSON: {"logAnalysisValue":"high|medium|low","keyInsightsToLook":[{"insight":"what to look for","howToFind":"command or filter to apply","seoBenefit":"benefit of this insight"}],"crawlbotPatterns":["patterns in Googlebot behavior to watch for"],"setupGuide":{"nginxCommand":"grep 'Googlebot' access.log | awk '{print $7}' | sort | uniq -c | sort -rn","apacheCommand":"grep 'Googlebot' /var/log/apache2/access.log","cloudflare":"how to get logs from Cloudflare","sampleAnalysis":"${logSnippet ? 'based on provided log' : 'general sample interpretation'}"},"toolsForLogAnalysis":["Semrush Log File Analyzer","Screaming Frog Log Analyzer","JetOctopus","custom grep commands"],"quickWins":["5 quick wins commonly found in log analysis"],"topActions":["5 log file analysis workflow steps"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, domain, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+/* 121. International SEO Advisor */
+router.post('/technical/international-seo', async (req, res) => {
+  try {
+    const { url, targetMarkets } = req.body || {};
+    const model = req.body.model || 'gpt-4o-mini';
+    if (!url && !targetMarkets) return res.status(400).json({ ok: false, error: 'URL or target markets required' });
+    let siteCtx = {};
+    if (url) {
+      try {
+        const fetchMod = (await import('node-fetch')).default;
+        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
+        const html = await r.text();
+        const $ = cheerio.load(html);
+        siteCtx.lang = $('html').attr('lang') || 'not set';
+        siteCtx.hreflangCount = $('link[hreflang]').length;
+        siteCtx.title = $('title').text().slice(0, 100);
+        siteCtx.hasXDefault = html.includes('hreflang="x-default"');
+      } catch {}
+    }
+    const prompt = `You are an international SEO strategy expert. Create an international SEO expansion strategy for: URL: "${url || 'N/A'}", Target markets: "${targetMarkets || 'specify target countries'}", Current HTML lang: "${siteCtx.lang || 'unknown'}", Hreflang count: ${siteCtx.hreflangCount || 0}, Has x-default: ${siteCtx.hasXDefault || false}. Return JSON: {"internationalSeoScore":0-100,"expansionReadiness":"ready|needs preparation|not ready","urlStructureComparison":{"ccTLD":{"example":"de.brand.com or brand.de","pros":["strong geo signal","local trust"],"cons":["separate authority","more expensive"],"bestFor":"large budgets, established brands"},"subdirectory":{"example":"brand.com/de/","pros":["shares domain authority","easier to manage"],"cons":["weaker geo signal"],"bestFor":"most sites — recommended default"},"subdomain":{"example":"de.brand.com","pros":["easy setup"],"cons":["treated as separate site by Google"],"bestFor":"rarely recommended"}},"marketStrategy":{"markets":"${targetMarkets || 'specify'}","priorityOrder":["most to least important markets"],"localDomainNeeds":["which markets benefit from ccTLD"]},"technicalChecklist":["hreflang implementation","x-default tag","geo-targeting in Search Console","local hosting or CDN"],"contentLocalizationVsTranslation":{"recommendation":"localize vs translate — what Google prefers","keyDifferences":["cultural adaptations needed"]},"topActions":["5 international SEO actions to start"]}`;
+    const completion = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const data = JSON.parse(completion.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, url, targetMarkets, ...siteCtx, ...data });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
 module.exports = router;
 
 
