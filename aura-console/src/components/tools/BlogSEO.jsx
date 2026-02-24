@@ -49,95 +49,102 @@ const TABS = ["Analyzer", "Keywords", "Content+", "Keyword+", "Technical+", "AI 
 const FILTER_CATS = ["all", "content", "meta", "technical", "keywords", "structure"];
 const FILTER_SEVS = ["all", "high", "medium", "low"];
 
-/* ── Dashboard sections — group 17 tabs into 8 beginner-friendly cards ─── */
+/* ── Dashboard sections ─────────────────────────────────────────────────── */
+/* level: "beginner" shows in both modes; "advanced" only in advanced mode  */
 const SECTIONS = [
   {
-    id: "Analyze",
-    icon: "🔍",
-    title: "Analyze",
-    desc: "Get a full SEO audit of any blog post — score, issues and AI fix suggestions.",
-    color: "#4f46e5",
-    tabs: ["Analyzer"],
-    tabLabels: { "Analyzer": "Analyzer" },
+    id: "Analyze", icon: "🔍", title: "Analyze a Post",
+    desc: "Get a full SEO score for any blog post. See exactly what to fix and how.",
+    color: "#4f46e5", level: "beginner",
+    tabs: ["Analyzer"], tabLabels: { "Analyzer": "Analyzer" },
   },
   {
-    id: "Keywords",
-    icon: "🎯",
-    title: "Keywords",
-    desc: "Find the best keywords for your store niche and discover content gaps.",
-    color: "#0891b2",
-    tabs: ["Keywords", "Keyword+"],
-    tabLabels: { "Keywords": "Keyword Research", "Keyword+": "More Tools" },
+    id: "Keywords", icon: "🎯", title: "Find Keywords",
+    desc: "Discover the best keywords for your niche. Type your topic and get ideas instantly.",
+    color: "#0891b2", level: "beginner",
+    tabs: ["Keywords", "Keyword+"], tabLabels: { "Keywords": "Keyword Research", "Keyword+": "More Tools" },
   },
   {
-    id: "Write",
-    icon: "✍️",
-    title: "Write",
-    desc: "Let AI generate full blog posts, outlines, intros and content briefs for you.",
-    color: "#059669",
-    tabs: ["AI Create", "Content Brief"],
-    tabLabels: { "AI Create": "AI Generate", "Content Brief": "Content Brief" },
+    id: "Write", icon: "✍️", title: "Write with AI",
+    desc: "Let AI write a full blog post, outline or intro for you. Pick a topic, click generate.",
+    color: "#059669", level: "beginner",
+    tabs: ["AI Create", "Content Brief"], tabLabels: { "AI Create": "AI Generate", "Content Brief": "Content Brief" },
   },
   {
-    id: "Optimize",
-    icon: "📈",
-    title: "Optimize",
-    desc: "Score your existing content and get specific tips to improve it.",
-    color: "#d97706",
-    tabs: ["Content+"],
-    tabLabels: { "Content+": "Optimize" },
+    id: "Optimize", icon: "📈", title: "Improve a Post",
+    desc: "Get specific tips to improve any existing blog post and boost its ranking.",
+    color: "#d97706", level: "beginner",
+    tabs: ["Content+"], tabLabels: { "Content+": "Optimize" },
   },
   {
-    id: "Technical",
-    icon: "⚙️",
-    title: "Technical SEO",
-    desc: "Find and fix technical issues hurting your blog's search rankings.",
-    color: "#7c3aed",
-    tabs: ["Technical+"],
-    tabLabels: { "Technical+": "Technical" },
+    id: "AI Chat", icon: "🤖", title: "Ask AI",
+    desc: "Chat with an SEO expert AI. Ask any question and get instant, tailored advice.",
+    color: "#be185d", level: "beginner",
+    tabs: ["AI Assistant"], tabLabels: { "AI Assistant": "Chat" },
   },
   {
-    id: "Bulk Scan",
-    icon: "📊",
-    title: "Bulk Scan",
-    desc: "Audit multiple blog posts at once instead of one at a time.",
-    color: "#0f766e",
-    tabs: ["Bulk Scan"],
-    tabLabels: { "Bulk Scan": "Bulk Scan" },
+    id: "Bulk Scan", icon: "📊", title: "Scan Multiple Posts",
+    desc: "Audit all your blog posts at once to find which need the most work.",
+    color: "#0f766e", level: "beginner",
+    tabs: ["Bulk Scan"], tabLabels: { "Bulk Scan": "Bulk Scan" },
   },
   {
-    id: "AI Chat",
-    icon: "🤖",
-    title: "AI Assistant",
-    desc: "Chat with an AI SEO expert. Ask anything — get instant advice.",
-    color: "#be185d",
-    tabs: ["AI Assistant"],
-    tabLabels: { "AI Assistant": "Chat" },
+    id: "History", icon: "📁", title: "History",
+    desc: "Browse all your past scans and revisit any previous report.",
+    color: "#475569", level: "beginner",
+    tabs: ["History"], tabLabels: { "History": "History" },
   },
   {
-    id: "History",
-    icon: "📁",
-    title: "History",
-    desc: "Browse and revisit all your past scans and analysis reports.",
-    color: "#475569",
-    tabs: ["History"],
-    tabLabels: { "History": "History" },
+    id: "Technical", icon: "⚙️", title: "Technical SEO",
+    desc: "Diagnose Core Web Vitals, crawl issues, indexing, structured data and speed problems.",
+    color: "#7c3aed", level: "advanced",
+    tabs: ["Technical+"], tabLabels: { "Technical+": "Technical" },
   },
   {
-    id: "Advanced",
-    icon: "🧪",
-    title: "Advanced",
-    desc: "Schema markup, SERP analysis, backlinks, A/B testing, local SEO, E-E-A-T and more.",
-    color: "#374151",
-    badge: "Power users",
-    tabs: ["Schema & Links", "SERP & CTR", "Backlinks", "A/B & Refresh", "Local SEO", "E-E-A-T & Brand", "Voice & AI Search"],
-    tabLabels: { "Schema & Links": "Schema", "SERP & CTR": "SERP", "Backlinks": "Backlinks", "A/B & Refresh": "A/B", "Local SEO": "Local", "E-E-A-T & Brand": "E-E-A-T", "Voice & AI Search": "Voice" },
+    id: "Schema", icon: "🏗️", title: "Schema & Links",
+    desc: "Generate and validate JSON-LD schema markup. Audit redirects, hreflang and duplicate content.",
+    color: "#1d4ed8", level: "advanced",
+    tabs: ["Schema & Links"], tabLabels: { "Schema & Links": "Schema" },
+  },
+  {
+    id: "SERP", icon: "🔎", title: "SERP & CTR",
+    desc: "Optimise for featured snippets, improve click-through rates, video and news SEO.",
+    color: "#0e7490", level: "advanced",
+    tabs: ["SERP & CTR"], tabLabels: { "SERP & CTR": "SERP" },
+  },
+  {
+    id: "Backlinks", icon: "🔗", title: "Backlinks",
+    desc: "Find link gaps, broken backlinks, anchor text opportunities and link velocity.",
+    color: "#b45309", level: "advanced",
+    tabs: ["Backlinks"], tabLabels: { "Backlinks": "Backlinks" },
+  },
+  {
+    id: "AB", icon: "🧪", title: "A/B & Content Refresh",
+    desc: "Test title and meta variants, refresh stale content and optimise for BERT.",
+    color: "#374151", level: "advanced",
+    tabs: ["A/B & Refresh"], tabLabels: { "A/B & Refresh": "A/B" },
+  },
+  {
+    id: "Local", icon: "📍", title: "Local & E-E-A-T",
+    desc: "Local SEO, author authority signals, brand mentions and E-E-A-T scoring.",
+    color: "#065f46", level: "advanced",
+    tabs: ["Local SEO", "E-E-A-T & Brand"], tabLabels: { "Local SEO": "Local SEO", "E-E-A-T & Brand": "E-E-A-T" },
+  },
+  {
+    id: "Voice", icon: "🎙️", title: "Voice & AI Search",
+    desc: "Optimise for voice queries, AI overviews and next-generation search engines.",
+    color: "#6d28d9", level: "advanced",
+    tabs: ["Voice & AI Search"], tabLabels: { "Voice & AI Search": "Voice" },
   },
 ];
 
 export default function BlogSEO() {
   const [tab, setTab] = useState("Analyzer");
   const [section, setSection] = useState(null); // null = home dashboard
+  const [mode, setMode] = useState(() => {
+    try { return localStorage.getItem("blogseo_mode") || "beginner"; } catch { return "beginner"; }
+  });
+  const setModePersist = (m) => { setMode(m); try { localStorage.setItem("blogseo_mode", m); } catch {} };
 
   /* ── Shopify store data (auto-fill) ── */
   const [shopifyArticles, setShopifyArticles] = useState([]);
@@ -2108,35 +2115,109 @@ export default function BlogSEO() {
             ================================================================ */}
         {!section && (
           <>
-            <div style={{ padding: "20px 0 12px" }}>
+            <div style={{ padding: "20px 0 8px" }}>
+
+              {/* ── Shopify connection status ── */}
               {shopifyLoading ? (
-                <div style={{ fontSize: 13, color: "#71717a", marginBottom: 16 }}><span style={S.spinner} /> Loading store data…</div>
+                <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: 13, color: "#71717a", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={S.spinner} /> Loading your store data…
+                </div>
               ) : shopDomain ? (
-                <div style={{ fontSize: 13, color: "#71717a", marginBottom: 20 }}>
-                  🛍️ Connected to <strong style={{ color: "#a1a1aa" }}>{shopDomain}</strong>
-                  {shopifyArticles.length > 0 && <span> · {shopifyArticles.length} blog posts ready</span>}
+                <div style={{ background: "#0c1a0c", border: "1px solid #14532d", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: 13, color: "#86efac", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                  <span>✅ Connected to <strong>{shopDomain}</strong> — {shopifyArticles.length > 0 ? `${shopifyArticles.length} blog posts` : "no blog posts yet"} · {shopifyProducts.length} products ready to use</span>
                 </div>
               ) : (
-                <div style={{ fontSize: 13, color: "#52525b", marginBottom: 20 }}>Connect your Shopify store in Settings to auto-fill all tools.</div>
-              )}
-              <div style={{ fontSize: 14, color: "#71717a", marginBottom: 22 }}>Pick a tool below to get started.</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14 }}>
-                {SECTIONS.map(s => (
-                  <div
-                    key={s.id}
-                    style={{ ...S.card, cursor: "pointer", borderLeft: `3px solid ${s.color}`, position: "relative" }}
-                    onClick={() => { setSection(s.id); setTab(s.tabs[0]); }}
-                  >
-                    <div style={{ fontSize: 26, marginBottom: 10 }}>{s.icon}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 15, fontWeight: 700, color: "#fafafa" }}>{s.title}</span>
-                      {s.badge && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "#27272a", color: "#71717a" }}>{s.badge}</span>}
-                    </div>
-                    <div style={{ fontSize: 13, color: "#71717a", lineHeight: 1.55 }}>{s.desc}</div>
-                    <div style={{ marginTop: 14, fontSize: 12, color: s.color, fontWeight: 600 }}>Open →</div>
+                <div style={{ background: "#1c1007", border: "1px solid #92400e", borderRadius: 10, padding: "14px 18px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#fbbf24", marginBottom: 3 }}>⚠️ Shopify store not connected</div>
+                    <div style={{ fontSize: 12, color: "#d97706" }}>Without a connection, you'll need to manually type URLs and keywords. Connect your store and everything fills in automatically.</div>
                   </div>
-                ))}
+                  <a href="#settings" style={{ ...S.btn("primary"), textDecoration: "none", fontSize: 12, padding: "8px 16px", whiteSpace: "nowrap" }}
+                    onClick={() => { /* navigate to settings if possible */ }}>Connect in Settings →</a>
+                </div>
+              )}
+
+              {/* ── Beginner / Advanced toggle ── */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 2 }}>
+                    {mode === "beginner" ? "👋 Welcome! Pick a tool to get started." : "🛠️ Advanced Mode — all tools"}
+                  </div>
+                  <div style={{ fontSize: 13, color: "#71717a" }}>
+                    {mode === "beginner" ? "Everything is auto-filled from your store — just click and go." : "Full access to all SEO tools including technical, schema and backlink analysis."}
+                  </div>
+                </div>
+                <div style={{ display: "flex", background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: 4, gap: 4, flexShrink: 0 }}>
+                  <button
+                    style={{ padding: "7px 18px", borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none", transition: "all .15s",
+                      background: mode === "beginner" ? "#4f46e5" : "transparent",
+                      color: mode === "beginner" ? "#fff" : "#71717a" }}
+                    onClick={() => setModePersist("beginner")}
+                  >🟢 Beginner</button>
+                  <button
+                    style={{ padding: "7px 18px", borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none", transition: "all .15s",
+                      background: mode === "advanced" ? "#7c3aed" : "transparent",
+                      color: mode === "advanced" ? "#fff" : "#71717a" }}
+                    onClick={() => setModePersist("advanced")}
+                  >⚡ Advanced</button>
+                </div>
               </div>
+
+              {/* ── Section cards ── */}
+              {mode === "beginner" ? (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: 12 }}>
+                  {SECTIONS.filter(s => s.level === "beginner").map(s => (
+                    <div key={s.id} style={{ ...S.card, cursor: "pointer", borderLeft: `4px solid ${s.color}` }}
+                      onClick={() => { setSection(s.id); setTab(s.tabs[0]); }}>
+                      <div style={{ fontSize: 28, marginBottom: 10 }}>{s.icon}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>{s.title}</div>
+                      <div style={{ fontSize: 13, color: "#71717a", lineHeight: 1.55 }}>{s.desc}</div>
+                      <div style={{ marginTop: 14, fontSize: 12, color: s.color, fontWeight: 600 }}>Open →</div>
+                    </div>
+                  ))}
+                  {/* Teaser for advanced mode */}
+                  <div style={{ ...S.card, borderLeft: "4px solid #374151", cursor: "pointer", opacity: 0.7 }}
+                    onClick={() => setModePersist("advanced")}>
+                    <div style={{ fontSize: 28, marginBottom: 10 }}>⚡</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#fafafa", marginBottom: 6 }}>More Tools</div>
+                    <div style={{ fontSize: 13, color: "#71717a", lineHeight: 1.55 }}>Technical SEO, schema, backlinks, A/B testing and more. Switch to Advanced mode to unlock.</div>
+                    <div style={{ marginTop: 14, fontSize: 12, color: "#7c3aed", fontWeight: 600 }}>Switch to Advanced →</div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 10 }}>Beginner Tools</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10, marginBottom: 24 }}>
+                    {SECTIONS.filter(s => s.level === "beginner").map(s => (
+                      <div key={s.id} style={{ ...S.card, cursor: "pointer", borderLeft: `4px solid ${s.color}`, padding: "14px 16px" }}
+                        onClick={() => { setSection(s.id); setTab(s.tabs[0]); }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <span style={{ fontSize: 22 }}>{s.icon}</span>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#fafafa" }}>{s.title}</div>
+                            <div style={{ fontSize: 12, color: "#71717a", marginTop: 2 }}>{s.desc.slice(0, 60)}…</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#7c3aed", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 10 }}>⚡ Advanced Tools</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10 }}>
+                    {SECTIONS.filter(s => s.level === "advanced").map(s => (
+                      <div key={s.id} style={{ ...S.card, cursor: "pointer", borderLeft: `4px solid ${s.color}`, padding: "14px 16px" }}
+                        onClick={() => { setSection(s.id); setTab(s.tabs[0]); }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <span style={{ fontSize: 22 }}>{s.icon}</span>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#fafafa" }}>{s.title}</div>
+                            <div style={{ fontSize: 12, color: "#71717a", marginTop: 2 }}>{s.desc.slice(0, 60)}…</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </>
         )}
