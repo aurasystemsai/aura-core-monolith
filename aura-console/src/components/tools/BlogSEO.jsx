@@ -52,6 +52,13 @@ const FILTER_SEVS = ["all", "high", "medium", "low"];
 export default function BlogSEO() {
   const [tab, setTab] = useState("Analyzer");
 
+  /* ── Shopify store data (auto-fill) ── */
+  const [shopifyArticles, setShopifyArticles] = useState([]);
+  const [shopifyProducts, setShopifyProducts] = useState([]);
+  const [shopDomain, setShopDomain] = useState("");
+  const [shopifyLoading, setShopifyLoading] = useState(false);
+  const [selectedArticleId, setSelectedArticleId] = useState("");
+
   /* ── Analyzer state ── */
   const [url, setUrl] = useState("");
   const [kwInput, setKwInput] = useState("");
@@ -1933,7 +1940,65 @@ export default function BlogSEO() {
 
   useEffect(() => { if (tab === "History") loadHistory(); }, [tab]);
 
-  /* ── Filtered issues ── */
+  /* ── Fetch Shopify store data on mount ── */
+  useEffect(() => {
+    (async () => {
+      setShopifyLoading(true);
+      try {
+        const r = await apiFetch(`${API}/shopify-data`);
+        if (r.ok) {
+          setShopifyArticles(r.articles || []);
+          setShopifyProducts(r.products || []);
+          setShopDomain(r.shop || "");
+          // Auto-populate domain fields from shop domain
+          if (r.shop) {
+            const storeUrl = `https://${r.shop}`;
+            setOrgUrl(prev => prev || storeUrl);
+          }
+        }
+      } catch {}
+      setShopifyLoading(false);
+    })();
+  }, []);
+
+  /* ── Auto-fill all fields from selected Shopify article ── */
+  const handleArticleSelect = useCallback((articleId) => {
+    setSelectedArticleId(articleId);
+    if (!articleId) return;
+    const art = shopifyArticles.find(a => String(a.id) === String(articleId));
+    if (!art) return;
+    const tags = art.tags ? art.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+    const primaryKw = tags[0] || art.title;
+    const extraKws = tags.slice(1).join(', ');
+
+    // Analyzer tab
+    setUrl(art.url);
+    setKwInput(tags.join(', '));
+
+    // Keywords tab — seed from article title, niche from blog
+    setSeedKw(art.title);
+    setKwNiche(art.blogTitle || '');
+
+    // Content Brief tab
+    setBriefTopic(art.title);
+    setBriefPrimary(primaryKw);
+    setBriefSecondary(extraKws);
+
+    // Keyword+ and intent tabs
+    setIntentKeyword(primaryKw);
+    setTopicalKw(primaryKw);
+    setPaaKw(primaryKw);
+    setSecondaryKwInput(art.title);
+
+    // Bulk Scan tab — add article URL
+    setBulkUrls(prev => prev ? prev + '\n' + art.url : art.url);
+
+    // Schema/org tab — use shop domain as org URL
+    if (shopDomain) setOrgUrl(`https://${shopDomain}`);
+    if (!orgName && shopDomain) setOrgName(shopDomain.replace('.myshopify.com', ''));
+  }, [shopifyArticles, shopDomain, orgName]);
+
+
   const issues = scanResult?.scored?.issues || [];
   const filteredIssues = issues.filter(i => (filterCat === "all" || i.cat === filterCat) && (filterSev === "all" || i.sev === filterSev));
 
@@ -1952,6 +2017,62 @@ export default function BlogSEO() {
         <div style={S.tabs}>
           {TABS.map(t => <div key={t} style={S.tab(tab === t)} onClick={() => setTab(t)}>{t}</div>)}
         </div>
+
+        {/* ── SHOPIFY ARTICLE PICKER (auto-fill all fields) ── */}
+        {shopifyLoading ? (
+          <div style={{ padding: "10px 0", color: "#71717a", fontSize: 13 }}><span style={S.spinner} /> Loading store data…</div>
+        ) : shopifyArticles.length > 0 ? (
+          <div style={{ ...S.card, borderColor: "#4f46e5", marginTop: 14, marginBottom: 4 }}>
+            <div style={{ ...S.cardTitle, marginBottom: 8, fontSize: 14 }}>
+              🛍️ Shopify Store&nbsp;
+              <span style={{ fontSize: 12, fontWeight: 400, color: "#a1a1aa" }}>— select a blog post to auto-fill all fields across every tab</span>
+            </div>
+            <div style={S.row}>
+              <select
+                style={{ ...S.input, flex: 2 }}
+                value={selectedArticleId}
+                onChange={e => handleArticleSelect(e.target.value)}
+              >
+                <option value="">— Pick a blog post to auto-fill —</option>
+                {shopifyArticles.map(a => (
+                  <option key={a.id} value={String(a.id)}>[{a.blogTitle}] {a.title}</option>
+                ))}
+              </select>
+              {selectedArticleId && (
+                <button style={S.btn()} onClick={() => { setSelectedArticleId(""); setUrl(""); setKwInput(""); setSeedKw(""); setBriefTopic(""); }}>✕ Clear</button>
+              )}
+            </div>
+            {selectedArticleId && (() => {
+              const art = shopifyArticles.find(a => String(a.id) === selectedArticleId);
+              return art ? (
+                <div style={{ marginTop: 8, fontSize: 12, color: "#a1a1aa", display: "flex", gap: 16, flexWrap: "wrap" }}>
+                  <span>✓ URL auto-filled</span>
+                  {art.tags && <span>✓ Keywords: <span style={{ color: "#d4d4d8" }}>{art.tags}</span></span>}
+                  {art.publishedAt && <span>Published: {new Date(art.publishedAt).toLocaleDateString()}</span>}
+                  {art.author && <span>Author: {art.author}</span>}
+                </div>
+              ) : null;
+            })()}
+            {shopifyProducts.length > 0 && !selectedArticleId && (
+              <div style={{ marginTop: 10, borderTop: "1px solid #27272a", paddingTop: 10 }}>
+                <div style={{ fontSize: 12, color: "#71717a", marginBottom: 6 }}>📦 Or use a product as keyword seed:</div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {shopifyProducts.slice(0, 12).map(p => (
+                    <button
+                      key={p.id}
+                      style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }}
+                      onClick={() => { setSeedKw(p.title); setKwInput(p.title + (p.tags ? ', ' + p.tags : '')); setIntentKeyword(p.title); setTopicalKw(p.title); setPaaKw(p.title); }}
+                    >{p.title}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : shopDomain ? (
+          <div style={{ padding: "8px 0", fontSize: 12, color: "#71717a" }}>
+            🛍️ Connected to <strong style={{ color: "#a1a1aa" }}>{shopDomain}</strong> — no blog posts found yet.
+          </div>
+        ) : null}
 
         {/* ================================================================
             ANALYZER TAB

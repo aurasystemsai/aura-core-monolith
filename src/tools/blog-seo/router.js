@@ -5254,6 +5254,87 @@ router.post('/technical/international-seo', async (req, res) => {
   } catch (e) { res.json({ ok: false, error: e.message }); }
 });
 
+/* ── Shopify Data: pull blog articles + products for auto-fill ──────────── */
+router.get('/shopify-data', async (req, res) => {
+  try {
+    const shopTokens = require('../../core/shopTokens');
+    // Resolve shop from session > header > persisted tokens > env
+    let shop = req.session?.shop
+      || req.headers['x-shopify-shop-domain']
+      || (shopTokens.loadAll ? (() => { const all = shopTokens.loadAll(); const keys = Object.keys(all || {}); return keys.length === 1 ? keys[0] : null; })() : null)
+      || process.env.SHOPIFY_STORE_URL
+      || null;
+
+    if (!shop) return res.json({ ok: true, shop: null, articles: [], products: [], warning: 'No Shopify store connected' });
+
+    const token = shopTokens.getToken
+      ? shopTokens.getToken(shop)
+      : (process.env.SHOPIFY_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_API_TOKEN || null);
+
+    if (!token) return res.json({ ok: true, shop, articles: [], products: [], warning: 'No Shopify token — reconnect your store in Settings' });
+
+    const ver = process.env.SHOPIFY_API_VERSION || '2023-10';
+    const headers = { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' };
+
+    // Fetch blogs
+    const blogsRes = await fetch(`https://${shop}/admin/api/${ver}/blogs.json?limit=10`, { headers });
+    if (!blogsRes.ok) throw new Error(`Shopify blogs fetch failed: ${blogsRes.status}`);
+    const blogsJson = await blogsRes.json();
+    const blogs = blogsJson.blogs || [];
+
+    // Fetch articles for each blog (up to 5 blogs, 100 articles each)
+    let articles = [];
+    for (const blog of blogs.slice(0, 5)) {
+      const artRes = await fetch(
+        `https://${shop}/admin/api/${ver}/blogs/${blog.id}/articles.json?limit=100&fields=id,title,handle,tags,summary_html,published_at,author`,
+        { headers }
+      );
+      if (!artRes.ok) continue;
+      const artJson = await artRes.json();
+      for (const a of (artJson.articles || [])) {
+        articles.push({
+          id: a.id,
+          title: a.title,
+          handle: a.handle,
+          tags: a.tags || '',
+          excerpt: (a.summary_html || '').replace(/<[^>]+>/g, '').slice(0, 220),
+          publishedAt: a.published_at,
+          author: a.author || '',
+          blogId: blog.id,
+          blogHandle: blog.handle,
+          blogTitle: blog.title,
+          url: `https://${shop}/blogs/${blog.handle}/${a.handle}`,
+        });
+      }
+    }
+
+    // Sort by most recent first
+    articles.sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0));
+
+    // Fetch products for keyword seeds (top 50)
+    const prodRes = await fetch(
+      `https://${shop}/admin/api/${ver}/products.json?limit=50&fields=id,title,handle,tags,product_type`,
+      { headers }
+    );
+    let products = [];
+    if (prodRes.ok) {
+      const prodJson = await prodRes.json();
+      products = (prodJson.products || []).map(p => ({
+        id: p.id,
+        title: p.title,
+        handle: p.handle,
+        tags: p.tags || '',
+        type: p.product_type || '',
+      }));
+    }
+
+    res.json({ ok: true, shop, articles, products });
+  } catch (err) {
+    console.error('[blog-seo] /shopify-data error:', err.message);
+    res.json({ ok: true, shop: null, articles: [], products: [], warning: err.message });
+  }
+});
+
 module.exports = router;
 
 
