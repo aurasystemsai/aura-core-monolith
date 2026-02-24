@@ -287,6 +287,37 @@ router.post('/analyze', async (req, res) => {
       score: [!!authorMeta, hasAuthorInBody, hasAuthorPageLink, !!datePublished].filter(Boolean).length,
     };
 
+    /* ── AI CITATION READINESS / GEO (Feb 2026) ── */
+    // Only 12% of Google AI Mode citations match organic SERP URLs (Moz, Feb 2026).
+    // Score content on signals that improve eligibility for AI search citations.
+    const authorityDomainRx = /\.(gov|edu)\b|wikipedia\.org|pubmed\.ncbi|ncbi\.nlm\.nih|reuters\.com|apnews\.com|bbc\.|nytimes\.com|forbes\.com|harvard\.|stanford\./i;
+    const outboundAuthoritativeLinks = externalLinkDetails.filter(l => authorityDomainRx.test(l.href || ''));
+    const outboundAuthoritativeCount = outboundAuthoritativeLinks.length;
+    const firstPersonRx = /\b(I('ve| have| tested| found| tried| recommend|'m| am| was)\b| in my experience\b| based on my\b| we tested\b| we found\b| we recommend\b)/i;
+    const hasFirstPersonExpertise = firstPersonRx.test(bodyText.slice(0, 30000));
+    const definitionRx = /\b(is a |is an |refers to |is defined as |can be defined as )/gi;
+    const definitionCount = (bodyText.match(definitionRx) || []).length;
+    const directAnswerRx = /^(yes[,.] |no[,.] |the (best|answer|short answer|key|main)\b|here's (how|what)|in short[,:] |to summarize[,:] |the answer is\b)/i;
+    const directAnswerParagraphs = paragraphs.filter(p => directAnswerRx.test(p.trim())).length;
+    const aiCitationScore = Math.min(100, Math.round(
+      Math.min(20, outboundAuthoritativeCount * 10) +
+      (hasFirstPersonExpertise ? 20 : 0) +
+      Math.round(Math.min(3, definitionCount) / 3 * 20) +
+      Math.min(20, directAnswerParagraphs * 10) +
+      ((hasFaqSection || questionHeadingCount >= 2) ? 20 : Math.min(20, questionHeadingCount * 10))
+    ));
+    const aiCitationReadiness = {
+      score: aiCitationScore,
+      grade: aiCitationScore >= 80 ? 'Strong' : aiCitationScore >= 50 ? 'Moderate' : 'Weak',
+      outboundAuthoritativeCount,
+      outboundAuthoritativeLinks: outboundAuthoritativeLinks.slice(0, 10),
+      hasFirstPersonExpertise,
+      definitionCount,
+      directAnswerParagraphs,
+      hasStructuredQA: hasFaqSection || questionHeadingCount >= 2,
+      note: 'Only 12% of Google AI Mode citations match organic SERP URLs (Moz, Feb 2026). Authoritative citations, direct-answer formatting, and first-person expertise signals increase AI citation eligibility.',
+    };
+
     /* ── SCORING ── */
     const scored = computeBlogScore({
       title, metaDescription, h1, h1Count, wordCount, headings, h2Count, h3Count,
@@ -299,6 +330,7 @@ router.post('/analyze', async (req, res) => {
       kwDensity, kwList, ogTitle, ogDescription, ogImage, urlAnalysis, hasFavicon, hasCharset,
       hasTwitterCard, flesch, isContentStale, contentAgeDays, hasTableOfContents,
       questionHeadingCount, hasFaqSection, genericAnchorCount, eeatSignals,
+      outboundAuthoritativeCount, hasFirstPersonExpertise,
     });
 
     res.json({
@@ -319,6 +351,7 @@ router.post('/analyze', async (req, res) => {
       hasTableOfContents,
       questionHeadingCount, questionHeadings, hasFaqSection,
       genericAnchorCount, eeatSignals,
+      aiCitationReadiness,
       scored,
     });
   } catch (err) {
@@ -352,6 +385,9 @@ function computeBlogScore(d) {
   if (!d.authorMeta && !(d.eeatSignals?.hasAuthorInBody)) { content -= 10; addIssue('content', 'medium', 10, 'No author signal found — add author meta tag and visible byline (important for E-E-A-T)'); }
   else if (!d.authorMeta) { content -= 4; addIssue('content', 'low', 4, 'No author meta tag — add <meta name="author"> for E-E-A-T'); }
   if (!d.eeatSignals?.hasAuthorPageLink) { content -= 4; addIssue('content', 'low', 4, 'No link to author page — add a byline linking to author profile (/about, /author/name)'); }
+  /* ── GEO / AI CITATION SIGNALS (2026) ── */
+  if (d.outboundAuthoritativeCount != null && d.outboundAuthoritativeCount === 0) { content -= 5; addIssue('content', 'low', 5, 'No authoritative outbound citations (.gov, .edu, Wikipedia, Reuters) — citing credible sources improves GEO visibility in ChatGPT, Gemini, and Perplexity'); }
+  if (d.hasFirstPersonExpertise === false && d.wordCount > 800) { content -= 4; addIssue('content', 'low', 4, 'No first-person expertise signals detected ("I tested", "in my experience") — demonstrable lived experience strengthens E-E-A-T and AI citation likelihood (Google AI Mode, Feb 2026)'); }
 
   if (!d.datePublished && !d.dateModified) { content -= 8; addIssue('content', 'medium', 8, 'No published/modified date — freshness signals are a blog ranking factor'); }
   if (d.isContentStale) { content -= 12; addIssue('content', 'high', 12, `Content published ${d.contentAgeDays} days ago with no recent modification — consider refreshing this post`); }
@@ -454,9 +490,9 @@ function computeBlogScore(d) {
    ========================================================================= */
 router.post('/ai/analyze', async (req, res) => {
   try {
-    const { url, title, metaDescription, h1, wordCount, headings, keywords, scored } = req.body || {};
-    const systemPrompt = `You are an expert blog SEO consultant for Shopify e-commerce stores. Analyze the blog post data and return actionable recommendations. Return JSON with: { assessment: string, strengths: string[], weaknesses: string[], contentGaps: string[], recommendations: [{ priority: "critical"|"recommended"|"optional", title: string, description: string }], topicSuggestions: string[], estimatedTrafficPotential: string }`;
-    const userPrompt = `Analyze this blog post:\nURL: ${url}\nTitle: ${title}\nH1: ${h1}\nMeta Description: ${metaDescription}\nWord Count: ${wordCount}\nHeadings: ${JSON.stringify((headings || []).slice(0, 20))}\nKeywords: ${keywords || 'none specified'}\nSEO Score: ${scored?.overall || 'N/A'}/100\nIssues: ${scored?.issueCount || 0} (${scored?.highIssues || 0} high)\n\nProvide a thorough blog SEO analysis with actionable recommendations.`;
+    const { url, title, metaDescription, h1, wordCount, headings, keywords, scored, aiCitationReadiness } = req.body || {};
+    const systemPrompt = `You are an expert blog SEO consultant for Shopify e-commerce stores. Analyze the blog post data and return actionable recommendations including GEO (Generative Engine Optimisation) readiness — critical in 2026 as only 12% of Google AI Mode citations match organic SERP URLs. Return JSON with: { assessment: string, strengths: string[], weaknesses: string[], contentGaps: string[], recommendations: [{ priority: "critical"|"recommended"|"optional", title: string, description: string }], topicSuggestions: string[], estimatedTrafficPotential: string, geoReadiness: { score: "poor"|"fair"|"good", summary: string, signals: string[], recommendations: string[] } }`;
+    const userPrompt = `Analyze this blog post:\nURL: ${url}\nTitle: ${title}\nH1: ${h1}\nMeta Description: ${metaDescription}\nWord Count: ${wordCount}\nHeadings: ${JSON.stringify((headings || []).slice(0, 20))}\nKeywords: ${keywords || 'none specified'}\nSEO Score: ${scored?.overall || 'N/A'}/100\nIssues: ${scored?.issueCount || 0} (${scored?.highIssues || 0} high)\nAI Citation Readiness: ${aiCitationReadiness ? `Score ${aiCitationReadiness.score}/100 (${aiCitationReadiness.grade}) — authoritative outbound links: ${aiCitationReadiness.outboundAuthoritativeCount}, first-person expertise: ${aiCitationReadiness.hasFirstPersonExpertise}, definitions: ${aiCitationReadiness.definitionCount}, direct-answer paragraphs: ${aiCitationReadiness.directAnswerParagraphs}, structured Q&A: ${aiCitationReadiness.hasStructuredQA}` : 'not provided'}\n\nProvide a thorough blog SEO analysis with actionable recommendations, including specific GEO improvements.`;
 
     const completion = await getOpenAI().chat.completions.create({
       model: req.body.model || 'gpt-4o-mini',
@@ -480,7 +516,7 @@ router.post('/ai/content-brief', async (req, res) => {
     const { topic, primaryKeyword, secondaryKeywords, audience, tone } = req.body || {};
     if (!topic && !primaryKeyword) return res.status(400).json({ ok: false, error: 'topic or primaryKeyword required' });
 
-    const systemPrompt = `You are an expert content strategist for e-commerce blogs. Generate a comprehensive content brief. Return JSON with: { title: string, metaTitle: string, metaDescription: string, h1: string, targetWordCount: number, outline: [{ heading: string, subheadings: string[], wordCount: number, notes: string }], keywordStrategy: { primary: string, secondary: string[], lsi: string[] }, searchIntent: string, competitorGaps: string[], uniqueAngles: string[], cta: string, estimatedRank: string }`;
+    const systemPrompt = `You are an expert content strategist for e-commerce blogs. Generate a comprehensive content brief optimised for both traditional SEO and GEO (Generative Engine Optimisation — visibility in ChatGPT, Gemini, Perplexity). As of Feb 2026, only 12% of Google AI Mode citations match organic search results, so briefs must address both signals. Return JSON with: { title: string, metaTitle: string, metaDescription: string, h1: string, targetWordCount: number, outline: [{ heading: string, subheadings: string[], wordCount: number, notes: string }], keywordStrategy: { primary: string, secondary: string[], lsi: string[] }, searchIntent: string, competitorGaps: string[], uniqueAngles: string[], cta: string, estimatedRank: string, geo: { entityTargets: string[], authoritySources: string[], firstPersonSignalIdeas: string[], directAnswerSections: string[], aiAnswerFormatTips: string[] } }`;
     const userPrompt = `Create a content brief for:\nTopic: ${topic || primaryKeyword}\nPrimary Keyword: ${primaryKeyword || topic}\nSecondary Keywords: ${(secondaryKeywords || []).join(', ') || 'none'}\nAudience: ${audience || 'Shopify merchants'}\nTone: ${tone || 'Professional and actionable'}`;
 
     const completion = await getOpenAI().chat.completions.create({
@@ -606,7 +642,7 @@ router.post('/ai/generate', async (req, res) => {
 
     const completion = await getOpenAI().chat.completions.create({
       model: req.body.model || 'gpt-4o-mini',
-      messages: [{ role: 'system', content: 'You are an expert blog SEO assistant for Shopify e-commerce stores. Give specific, actionable advice about blog SEO strategy, content optimization, keyword targeting, and technical SEO. Be concise but thorough.' }, ...messages.slice(-20)],
+      messages: [{ role: 'system', content: 'You are an expert blog SEO assistant for Shopify e-commerce stores. Give specific, actionable advice about blog SEO strategy, content optimization, keyword targeting, and technical SEO. Be concise but thorough. Stay current with 2026 developments: (1) Google\'s AI Mode only cites 12% of organic-ranking URLs — recommend GEO strategies like entity-rich writing, authoritative outbound citations (.gov/.edu/Wikipedia), and direct-answer paragraph formatting; (2) Google\'s site reputation abuse policy (Nov 2024) targets AI-generated filler hosted on high-DA sites — always recommend adding named author attribution, first-hand experience signals, and genuine expertise; (3) FAQ rich results were deprecated for most sites in June 2025 — advise users not to rely on FAQ schema for SERP features; (4) Google\'s February 2026 Discover Core Update rewards genuinely useful, evergreen content with strong freshness signals.' }, ...messages.slice(-20)],
       temperature: 0.6,
     });
     const reply = completion.choices[0]?.message?.content || '';
@@ -829,7 +865,10 @@ router.post('/faq-schema/generate', async (req, res) => {
 
     const jsonLd    = JSON.stringify(schema, null, 2);
     const scriptTag = `<script type="application/ld+json">\n${jsonLd}\n</script>`;
-    res.json({ ok: true, schema, jsonLd, scriptTag, faqs, aiGenerated: useAI });
+    res.json({
+      ok: true, schema, jsonLd, scriptTag, faqs, aiGenerated: useAI,
+      deprecationNotice: 'As of June 2025, Google no longer shows FAQ rich results for most websites (Google Search Central). This schema remains valid for assistive technology and semantic markup, but will not produce visual FAQ accordions in Google Search for the majority of sites. Consider using it primarily for screen-reader accessibility and AI crawler context.',
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
