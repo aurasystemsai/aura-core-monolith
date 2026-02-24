@@ -12,6 +12,7 @@ const toolsMeta = [
   { id: "schema-rich-results-engine", name: "Schema & Rich Results", description: "Generate and validate structured data for enhanced search listings.", category: "SEO", suite: "seo" },
   { id: "image-alt-media-seo", name: "Image & Media SEO", description: "AI-powered alt text, image optimization, and media SEO.", category: "SEO", suite: "seo" },
   { id: "rank-visibility-tracker", name: "Rank & Visibility Tracker", description: "Track keyword rankings and search visibility over time.", category: "SEO", suite: "seo" },
+  { id: "ai-visibility-tracker", name: "AI Visibility Tracker", description: "Track and optimize your brand's visibility in AI-generated answers, ChatGPT, Perplexity, and Google AI Overviews.", category: "SEO", suite: "seo" },
   { id: "seo-site-crawler", name: "SEO Site Crawler", description: "Crawl your site to find broken links, redirects, and SEO issues.", category: "SEO", suite: "seo" },
   { id: "internal-link-optimizer", name: "Internal Link Optimizer", description: "Discover and implement internal linking opportunities.", category: "SEO", suite: "seo" },
   { id: "ai-content-brief-generator", name: "AI Content Brief Generator", description: "Generate comprehensive content briefs with keyword strategies.", category: "Content", suite: "seo" },

@@ -22,6 +22,7 @@ export const TOOL_PLAN = {
   "technical-seo-auditor":                "growth",
   "schema-rich-results-engine":           "growth",
   "rank-visibility-tracker":              "growth",
+  "ai-visibility-tracker":               "growth",
   "image-alt-media-seo":                  "growth",
   "local-seo-toolkit":                    "growth",
   "email-automation-builder":             "growth",

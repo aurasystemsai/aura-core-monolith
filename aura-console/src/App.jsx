@@ -81,6 +81,7 @@ const PredictiveAnalyticsWidgets = lazy(() => import("./components/tools/Predict
 const ToolScaffold = lazy(() => import("./components/tools/ToolScaffold.jsx"));
 const LoyaltyReferralPrograms = lazy(() => import("./components/tools/LoyaltyReferralPrograms.jsx"));
 const ContentScoringOptimization = lazy(() => import("./components/tools/ContentScoringOptimization.jsx"));
+const AIVisibilityTracker = lazy(() => import("./components/tools/AIVisibilityTracker.jsx"));
 const BacklinkExplorer = lazy(() => import("./components/tools/BacklinkExplorer.jsx"));
 const CompetitiveAnalysis = lazy(() => import("./components/tools/CompetitiveAnalysis.jsx"));
 const KeywordResearchSuite = lazy(() => import("./components/tools/KeywordResearchSuite.jsx"));
@@ -108,6 +109,7 @@ const toolToMainSuiteGroup = {
   "schema-rich-results-engine": "seo",
   "image-alt-media-seo": "seo",
   "rank-visibility-tracker": "seo",
+  "ai-visibility-tracker": "seo",
   "seo-site-crawler": "seo",
   "internal-link-optimizer": "seo",
   "ai-content-brief-generator": "seo",
@@ -506,6 +508,7 @@ function App() {
                 {activeSection === "schema-rich-results-engine" && <SchemaRichResultsEngine />}
                 {(activeSection === "image-alt-media-seo" || activeSection === "ai-alt-text-engine") && <ImageAltMediaSEO />}
                 {activeSection === "rank-visibility-tracker" && <RankVisibilityTracker />}
+                {activeSection === "ai-visibility-tracker" && <AIVisibilityTracker />}
                 {activeSection === "seo-site-crawler" && <SEOSiteCrawler />}
                 {activeSection === "internal-link-optimizer" && <InternalLinkOptimizer />}
                 {activeSection === "ai-content-brief-generator" && <AIContentBriefGenerator />}
