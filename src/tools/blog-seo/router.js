@@ -5374,6 +5374,312 @@ router.get('/shopify-data', async (req, res) => {
   }
 });
 
+/* =========================================================================
+   SHOPIFY BLOG TEMPLATE AUDIT — Shopify-specific SEO checks for blog posts
+   ========================================================================= */
+router.post('/shopify/blog-template-audit', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEO/1.0)' }, timeout: 12000 });
+    if (!r.ok) return res.status(502).json({ ok: false, error: `HTTP ${r.status} fetching URL` });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+
+    const finalUrl = r.url || url;
+    const parsed = new URL(finalUrl);
+    const pathname = parsed.pathname;
+
+    // Check 1: Shopify blog URL structure (/blogs/[handle]/[post])
+    const isShopifyBlogPath = /^\/blogs\/[^/]+\/[^/]+/.test(pathname);
+    const slugParts = pathname.split('/').filter(Boolean);
+
+    // Check 2: Canonical tag — ensure it's not pointing to .myshopify.com
+    const canonicalHref = $('link[rel="canonical"]').attr('href') || '';
+    let canonicalOk = false;
+    let canonicalIssue = 'Missing canonical tag';
+    if (canonicalHref) {
+      try {
+        const canonParsed = new URL(canonicalHref);
+        if (canonParsed.hostname.includes('.myshopify.com') && !parsed.hostname.includes('.myshopify.com')) {
+          canonicalIssue = `Canonical points to .myshopify.com domain (${canonParsed.hostname}) instead of your custom domain. This can suppress custom domain rankings.`;
+        } else if (canonParsed.pathname.split('/').filter(Boolean)[0] !== 'blogs') {
+          canonicalIssue = `Canonical does not point to /blogs/ URL pathway — may cause indexation issues`;
+        } else {
+          canonicalOk = true;
+          canonicalIssue = '';
+        }
+      } catch { canonicalIssue = 'Invalid canonical URL'; }
+    }
+
+    // Check 3: Meta description
+    const metaDesc = $('meta[name="description"]').attr('content') || '';
+    const hasMetaDesc = metaDesc.length >= 50 && metaDesc.length <= 160;
+
+    // Check 4: Title length
+    const title = $('title').text().trim();
+    const titleLengthOk = title.length >= 30 && title.length <= 70;
+
+    // Check 5: H1 present
+    const h1 = $('h1').first().text().trim();
+    const hasH1 = h1.length > 0;
+
+    // Check 6: Missing OG image
+    const ogImage = $('meta[property="og:image"]').attr('content') || '';
+    const hasOgImage = ogImage.length > 0;
+
+    // Check 7: noindex check
+    const robotsMeta = $('meta[name="robots"]').attr('content') || '';
+    const hasNoindex = /noindex/i.test(robotsMeta);
+
+    // Check 8: Article JSON-LD structured data
+    let hasArticleSchema = false;
+    $('script[type="application/ld+json"]').each((_, el) => {
+      try {
+        const d = JSON.parse($(el).html());
+        const arr = Array.isArray(d['@graph']) ? d['@graph'] : [d];
+        if (arr.some(n => ['Article','BlogPosting','NewsArticle'].includes(n['@type']))) hasArticleSchema = true;
+      } catch {}
+    });
+
+    // Check 9: datePublished in schema or meta
+    const datePublishedMeta = $('meta[property="article:published_time"]').attr('content') || $('time[datetime]').attr('datetime') || '';
+    const hasDatePublished = datePublishedMeta.length > 0 || hasArticleSchema;
+
+    // Check 10: Shopify /blogs/ URL structure (no dates, no IDs, correct handle)
+    const slugLastPart = slugParts[slugParts.length - 1] || '';
+    const slugHasDate = /\d{4}-\d{2}-\d{2}/.test(slugLastPart);
+    const slugHasNumbers = /^\d+$/.test(slugLastPart);
+    const slugHasWords = slugLastPart.split('-').filter(w => isNaN(w) && w.length > 1).length >= 2;
+    const slugOk = isShopifyBlogPath && !slugHasDate && !slugHasNumbers && slugHasWords;
+
+    const checks = [
+      { name: 'Shopify /blogs/[handle]/[slug] URL structure', pass: isShopifyBlogPath, value: pathname, tip: 'URL should follow /blogs/[blog-handle]/[post-slug] — avoid numeric IDs or date-based slugs.' },
+      { name: 'SEO-friendly URL slug (descriptive, no dates)', pass: slugOk, value: slugLastPart, tip: 'Use keyword-rich hyphenated slugs. Avoid date stamps or numeric post IDs in the URL.' },
+      { name: 'Canonical tag pointing to custom domain', pass: canonicalOk, value: canonicalHref || 'Missing', tip: canonicalIssue || 'Add <link rel="canonical"> to the page head.' },
+      { name: 'Meta description (50-160 chars)', pass: hasMetaDesc, value: metaDesc ? `${metaDesc.length} chars` : 'Missing', tip: 'Set a unique meta description in Shopify Online Store → Blog Posts → SEO section.' },
+      { name: 'Page title (30-70 chars)', pass: titleLengthOk, value: title ? `"${title.slice(0, 50)}…" (${title.length} chars)` : 'Missing', tip: 'Edit the post SEO title in Shopify — aim for 50-60 characters including primary keyword.' },
+      { name: 'H1 heading present', pass: hasH1, value: h1 ? `"${h1.slice(0, 60)}"` : 'Missing', tip: 'Ensure your blog post title renders as an H1 in your Shopify theme.' },
+      { name: 'OG image (social sharing image)', pass: hasOgImage, value: ogImage ? 'Present' : 'Missing', tip: 'Upload a featured image to your Shopify blog post — this becomes the og:image automatically.' },
+      { name: 'Article or BlogPosting JSON-LD schema', pass: hasArticleSchema, value: hasArticleSchema ? 'Present' : 'Missing', tip: 'Add BlogPosting JSON-LD via a Shopify app or theme snippet. Many Shopify themes omit this by default.' },
+      { name: 'Published date in meta or schema', pass: !!datePublishedMeta, value: datePublishedMeta || 'Not found', tip: 'Add article:published_time meta tag or a <time> element to help Google detect publication date.' },
+      { name: 'Page not noindex', pass: !hasNoindex, value: hasNoindex ? 'noindex DETECTED' : 'Indexed', tip: 'Remove noindex from your Shopify blog post — this prevents Google from indexing it.' },
+    ];
+
+    const passedCount = checks.filter(c => c.pass).length;
+    const score = Math.round((passedCount / checks.length) * 100);
+    const issueCount = checks.filter(c => !c.pass).length;
+
+    res.json({ ok: true, url, score, issueCount, passedCount, total: checks.length, checks, title, h1, metaDesc, isShopifyBlogPath });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   SHOPIFY COLLECTION SEO — SEO audit specific to collection pages
+   ========================================================================= */
+router.post('/shopify/collection-seo', async (req, res) => {
+  try {
+    const { url } = req.body || {};
+    if (!url) return res.status(400).json({ ok: false, error: 'url required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+    const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEO/1.0)' }, timeout: 12000 });
+    if (!r.ok) return res.status(502).json({ ok: false, error: `HTTP ${r.status} fetching URL` });
+    const html = await r.text();
+    const $ = cheerio.load(html);
+    const finalUrl = r.url || url;
+    const parsed = new URL(finalUrl);
+
+    // Check 1: /collections/ URL structure
+    const isCollectionPath = parsed.pathname.startsWith('/collections/');
+    const hasQueryParams = parsed.search.length > 0;
+    const hasSortBy = /sort_by=/i.test(parsed.search);
+    const hasFilterParam = /filter\./i.test(parsed.search);
+
+    // Check 2: Canonical — collection pages with ?sort_by= should canonicalize to base URL
+    const canonicalHref = $('link[rel="canonical"]').attr('href') || '';
+    let canonicalOk = false;
+    let canonicalIssue = 'Missing canonical tag';
+    if (canonicalHref) {
+      try {
+        const canonParsed = new URL(canonicalHref, url);
+        const baseUrl = `${parsed.protocol}//${parsed.host}${parsed.pathname}`;
+        if (canonParsed.href === baseUrl || canonParsed.pathname === parsed.pathname) {
+          canonicalOk = true; canonicalIssue = '';
+        } else {
+          canonicalIssue = `Canonical (${canonicalHref}) doesn't match base collection URL — filter/sort variants may compete.`;
+        }
+      } catch { canonicalIssue = 'Invalid canonical URL'; }
+    }
+
+    // Check 3: Meta description
+    const metaDesc = $('meta[name="description"]').attr('content') || '';
+    const hasMetaDesc = metaDesc.length >= 50;
+
+    // Check 4: H1 heading
+    const h1 = $('h1').first().text().trim();
+    const hasH1 = h1.length > 0;
+
+    // Check 5: Count products on page (thin collection)
+    const productCards = $('[class*="product"], [class*="grid-item"], [data-product-id]').length;
+    const hasSufficientProducts = productCards >= 4;
+
+    // Check 6: OG meta
+    const ogTitle = $('meta[property="og:title"]').attr('content') || '';
+    const hasOgTags = ogTitle.length > 0;
+
+    // Check 7: Pagination — look for rel=next/prev or page-type links
+    const hasPagination = $('link[rel="next"], link[rel="prev"]').length > 0 || $('a[href*="?page="]').length > 0;
+    const paginationCanonicalOk = !hasPagination || canonicalOk;
+
+    // Check 8: noindex
+    const robotsMeta = $('meta[name="robots"]').attr('content') || '';
+    const hasNoindex = /noindex/i.test(robotsMeta);
+
+    // Check 9: Collection description (thin content)
+    const descriptionEl = $('[class*="collection-description"], [class*="collection__description"], .rte').first();
+    const descText = descriptionEl.text().trim();
+    const hasCollectionDescription = descText.split(/\s+/).length >= 30;
+
+    // Check 10: ?sort_by redirect/canonical
+    const sortByParamNeedsCanonical = hasSortBy && !canonicalOk;
+
+    const checks = [
+      { name: 'Shopify /collections/ URL path', pass: isCollectionPath, value: parsed.pathname, tip: 'Collection pages should live at /collections/[handle].' },
+      { name: 'Canonical tag present and correct', pass: canonicalOk, value: canonicalHref || 'Missing', tip: canonicalIssue || 'Collections with sort/filter params need canonical to base URL to prevent duplicate content.' },
+      { name: 'No ?sort_by= without canonical', pass: !sortByParamNeedsCanonical, value: hasSortBy ? '?sort_by param detected without canonical' : 'No sort_by issue', tip: 'Shopify add ?sort_by= to collection URLs — each variant needs a canonical pointing back to the main collection.' },
+      { name: 'Meta description (≥50 chars)', pass: hasMetaDesc, value: metaDesc ? `${metaDesc.length} chars` : 'Missing', tip: 'Add a unique collection meta description in Shopify Admin → Collections → SEO section.' },
+      { name: 'H1 heading (collection name)', pass: hasH1, value: h1 || 'Missing', tip: 'Your theme should render the collection title as an H1. Check your theme liquid files.' },
+      { name: 'Collection description content (≥30 words)', pass: hasCollectionDescription, value: descText ? `${descText.split(/\s+/).length} words` : 'No description', tip: 'Add a rich collection description in Shopify Admin — this provides keyword context and avoids thin content penalties.' },
+      { name: 'Sufficient products on page (≥4 products)', pass: hasSufficientProducts, value: `${productCards} product cards detected`, tip: 'Collections with fewer than 4 products may be flagged as thin. Consider consolidating or expanding the collection.' },
+      { name: 'OG meta tags for social sharing', pass: hasOgTags, value: ogTitle ? 'Present' : 'Missing', tip: 'Add og:title and og:image via theme — ensures rich sharing cards on social media.' },
+      { name: 'Page not noindex', pass: !hasNoindex, value: hasNoindex ? 'noindex DETECTED' : 'Indexed', tip: 'Remove noindex from this collection — some Shopify apps accidentally add noindex to collection pages.' },
+    ];
+
+    const passedCount = checks.filter(c => c.pass).length;
+    const score = Math.round((passedCount / checks.length) * 100);
+    const issueCount = checks.filter(c => !c.pass).length;
+
+    res.json({ ok: true, url, score, issueCount, passedCount, total: checks.length, checks, productCount: productCards, h1, metaDesc, isCollectionPath });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   SHOPIFY PRODUCT ↔ BLOG CROSS-LINK OPTIMIZER — AI suggests links (2 credits)
+   ========================================================================= */
+router.post('/shopify/product-blog-links', async (req, res) => {
+  try {
+    const { productUrl, blogUrl, model = 'gpt-4o-mini' } = req.body || {};
+    if (!productUrl && !blogUrl) return res.status(400).json({ ok: false, error: 'productUrl or blogUrl required' });
+
+    const fetchMod = (await import('node-fetch')).default;
+
+    async function fetchPageContext(url) {
+      if (!url) return null;
+      try {
+        const r = await fetchMod(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AuraSEO/1.0)' }, timeout: 10000 });
+        if (!r.ok) return null;
+        const html = await r.text();
+        const $ = cheerio.load(html);
+        const title = $('title').text().trim() || $('h1').first().text().trim();
+        const desc = $('meta[name="description"]').attr('content') || '';
+        const bodyText = $('body').text().replace(/\s+/g, ' ').slice(0, 1000);
+        return { url, title, desc, bodyText };
+      } catch { return null; }
+    }
+
+    const [productCtx, blogCtx] = await Promise.all([
+      productUrl ? fetchPageContext(productUrl) : Promise.resolve(null),
+      blogUrl ? fetchPageContext(blogUrl) : Promise.resolve(null),
+    ]);
+
+    const openai = getOpenAI();
+    const prompt = `You are a Shopify SEO expert specialising in internal linking strategy between product pages and blog posts.
+
+${productCtx ? `PRODUCT PAGE:\nURL: ${productCtx.url}\nTitle: ${productCtx.title}\nDescription: ${productCtx.desc}\nContent excerpt: ${productCtx.bodyText}` : ''}
+${blogCtx ? `\nBLOG POST:\nURL: ${blogCtx.url}\nTitle: ${blogCtx.title}\nDescription: ${blogCtx.desc}\nContent excerpt: ${blogCtx.bodyText}` : ''}
+
+Generate cross-linking suggestions to build topical authority and drive product discovery:
+1. 3 suggestions for linking from the product page to the blog post (what anchor text to use in the product description to link naturally to the blog post)
+2. 3 suggestions for linking from the blog post to the product page (what anchor text and context sentence to use in the blog body)
+
+Respond ONLY as JSON:
+{
+  "productToBlog": [
+    { "anchorText": "string (3-6 words)", "contextSentence": "sentence where this link fits naturally in product description", "rationale": "why this link adds value" }
+  ],
+  "blogToProduct": [
+    { "anchorText": "string (3-6 words)", "contextSentence": "sentence where this link fits naturally in blog body", "rationale": "why this link drives conversions and builds topical authority" }
+  ],
+  "tip": "One strategic tip about product-blog interlinking for this Shopify store"
+}`;
+
+    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, productUrl, blogUrl, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/* =========================================================================
+   SHOPIFY METAFIELD SEO GENERATOR — AI generates optimised metafield values (2 credits)
+   ========================================================================= */
+router.post('/shopify/metafield-seo', async (req, res) => {
+  try {
+    const { context, type = 'product', model = 'gpt-4o-mini' } = req.body || {};
+    if (!context) return res.status(400).json({ ok: false, error: 'context required' });
+
+    const openai = getOpenAI();
+
+    const typeLabels = {
+      product: 'Shopify product page',
+      collection: 'Shopify collection page',
+      blog_post: 'Shopify blog post',
+      homepage: 'Shopify store homepage',
+    };
+    const label = typeLabels[type] || 'Shopify page';
+
+    const prompt = `You are a Shopify SEO expert. Generate SEO-optimised metafield values for a ${label} based on this context:
+
+${context}
+
+Generate values for these Shopify metafields that are ready to paste directly into Shopify's theme editor or Admin:
+1. seo.title — SEO meta title (50-60 chars, includes primary keyword near the front)
+2. seo.description — SEO meta description (120-155 chars, includes CTA, keyword-rich)
+3. custom.og_title — Open Graph title for social sharing (60-70 chars, engaging)
+4. custom.og_description — OG description (160-180 chars, compelling social copy)
+5. custom.seo_summary — Short SEO-optimised text snippet (100-150 words) for use in collection descriptions, product highlights, or page introductions
+
+Respond ONLY as JSON:
+{
+  "fields": [
+    {
+      "namespace": "seo" or "custom",
+      "key": "metafield key name",
+      "value": "the optimised value",
+      "tip": "brief note on where to add this in Shopify Admin"
+    }
+  ],
+  "note": "One tip on using Shopify metafields for SEO"
+}`;
+
+    const resp = await openai.chat.completions.create({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    if (req.deductCredits) req.deductCredits({ model });
+    res.json({ ok: true, type, ...parsed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
 
 

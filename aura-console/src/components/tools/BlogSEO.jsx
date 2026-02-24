@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+﻿import React, { useState, useRef, useCallback, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 import BackButton from "./BackButton";
 
@@ -45,7 +45,7 @@ const S = {
   heading: { fontSize: 13, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 10 },
 };
 
-const TABS = ["Analyzer", "Keywords", "Content+", "Keyword+", "Technical+", "AI Create", "Schema & Links", "SERP & CTR", "Backlinks", "A/B & Refresh", "Local SEO", "E-E-A-T & Brand", "Voice & AI Search", "Content Brief", "Bulk Scan", "AI Assistant", "History"];
+const TABS = ["Analyzer", "Keywords", "Content+", "Keyword+", "Technical+", "AI Create", "Schema & Links", "SERP & CTR", "Backlinks", "A/B & Refresh", "Local SEO", "E-E-A-T & Brand", "Voice & AI Search", "Content Brief", "Bulk Scan", "AI Assistant", "Shopify SEO", "History"];
 const FILTER_CATS = ["all", "content", "meta", "technical", "keywords", "structure"];
 const FILTER_SEVS = ["all", "high", "medium", "low"];
 
@@ -178,6 +178,27 @@ export default function BlogSEO() {
   const [showFreshness, setShowFreshness] = useState(false);
   const [showEeat, setShowEeat] = useState(false);
   const [showSnippets, setShowSnippets] = useState(false);
+  const [showGeo, setShowGeo] = useState(false);
+
+  /* ── Shopify SEO tab state ── */
+  const [shopifyBlogUrl, setShopifyBlogUrl] = useState("");
+  const [shopifyBlogAudit, setShopifyBlogAudit] = useState(null);
+  const [shopifyBlogAuditLoading, setShopifyBlogAuditLoading] = useState(false);
+  const [shopifyBlogAuditErr, setShopifyBlogAuditErr] = useState("");
+  const [shopifyCollUrl, setShopifyCollUrl] = useState("");
+  const [shopifyCollResult, setShopifyCollResult] = useState(null);
+  const [shopifyCollLoading, setShopifyCollLoading] = useState(false);
+  const [shopifyCollErr, setShopifyCollErr] = useState("");
+  const [shopifyProductUrl, setShopifyProductUrl] = useState("");
+  const [shopifyBlogLinkUrl, setShopifyBlogLinkUrl] = useState("");
+  const [shopifyLinkResult, setShopifyLinkResult] = useState(null);
+  const [shopifyLinkLoading, setShopifyLinkLoading] = useState(false);
+  const [shopifyLinkErr, setShopifyLinkErr] = useState("");
+  const [shopifyMetafieldContext, setShopifyMetafieldContext] = useState("");
+  const [shopifyMetafieldType, setShopifyMetafieldType] = useState("product");
+  const [shopifyMetafieldResult, setShopifyMetafieldResult] = useState(null);
+  const [shopifyMetafieldLoading, setShopifyMetafieldLoading] = useState(false);
+  const [shopifyMetafieldErr, setShopifyMetafieldErr] = useState("");
   const [schemaGenLoading, setSchemaGenLoading] = useState(false);
   const [generatedSchema, setGeneratedSchema] = useState(null);
   const [schemaAuthorName, setSchemaAuthorName] = useState("");
@@ -2596,6 +2617,75 @@ export default function BlogSEO() {
                         </div>
                         <div style={{ fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>
                           E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness) is how Google evaluates content credibility. Strong author signals directly impact ranking for YMYL (Your Money or Your Life) topics.
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* GEO / AI Citation Readiness panel */}
+                {scanResult.aiCitationReadiness && (
+                  <div style={{ ...S.card, borderLeft: `3px solid ${scanResult.aiCitationReadiness.score >= 70 ? "#22c55e" : scanResult.aiCitationReadiness.score >= 40 ? "#eab308" : "#ef4444"}` }}>
+                    <ToggleSection title={`🤖 GEO / AI Citation Readiness — ${scanResult.aiCitationReadiness.score}/100`} open={showGeo} toggle={() => setShowGeo(p => !p)} />
+                    {showGeo && (
+                      <div style={{ marginTop: 14 }}>
+                        <div style={{ fontSize: 12, color: "#a1a1aa", marginBottom: 12 }}>
+                          How likely is this content to be cited by ChatGPT, Perplexity, Claude, and Google AI Overviews? These signals are based on 2025–2026 Generative Engine Optimisation (GEO) research.
+                        </div>
+                        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 14 }}>
+                          <div style={{ ...S.catCard(scanResult.aiCitationReadiness.score), minWidth: 120 }}>
+                            <div style={S.catScore(scanResult.aiCitationReadiness.score)}>{scanResult.aiCitationReadiness.score}</div>
+                            <div style={S.catLabel}>GEO Score</div>
+                            <div style={{ fontSize: 11, color: "#a1a1aa", marginTop: 4 }}>
+                              {scanResult.aiCitationReadiness.score >= 70 ? "AI-Citation Ready" : scanResult.aiCitationReadiness.score >= 40 ? "Needs GEO Work" : "Not Optimised"}
+                            </div>
+                          </div>
+                          <div style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 10, padding: "12px 16px", flex: "1 1 260px" }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                              <div>
+                                <div style={S.metaLabel}>Authoritative Outbound Links</div>
+                                <div style={{ ...S.metaVal, color: scanResult.aiCitationReadiness.authoritativeOutboundCount >= 2 ? "#22c55e" : "#eab308" }}>
+                                  {scanResult.aiCitationReadiness.authoritativeOutboundCount} {scanResult.aiCitationReadiness.authoritativeOutboundCount >= 2 ? "✅" : "⚠️"}
+                                </div>
+                              </div>
+                              <div>
+                                <div style={S.metaLabel}>First-Person Expertise</div>
+                                <div style={{ ...S.metaVal, color: scanResult.aiCitationReadiness.hasFirstPersonExpertise ? "#22c55e" : "#ef4444" }}>
+                                  {scanResult.aiCitationReadiness.hasFirstPersonExpertise ? "✅ Detected" : "❌ Not found"}
+                                </div>
+                              </div>
+                              <div>
+                                <div style={S.metaLabel}>Definition Density</div>
+                                <div style={{ ...S.metaVal, color: scanResult.aiCitationReadiness.definitionDensity >= 1 ? "#22c55e" : "#eab308" }}>
+                                  {scanResult.aiCitationReadiness.definitionDensity} per 1k words
+                                </div>
+                              </div>
+                              <div>
+                                <div style={S.metaLabel}>Direct-Answer Paragraphs</div>
+                                <div style={{ ...S.metaVal, color: scanResult.aiCitationReadiness.directAnswerParagraphs >= 2 ? "#22c55e" : "#ef4444" }}>
+                                  {scanResult.aiCitationReadiness.directAnswerParagraphs} {scanResult.aiCitationReadiness.directAnswerParagraphs >= 2 ? "✅" : "❌"}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          {[
+                            { ok: scanResult.aiCitationReadiness.authoritativeOutboundCount >= 2, label: "≥2 authoritative outbound links (gov, edu, .org, major publishers)", tip: "Link to at least 2 high-authority sources — AI models use citations to verify claims and prefer content that cites credible references." },
+                            { ok: scanResult.aiCitationReadiness.hasFirstPersonExpertise, label: "First-person expertise signals (\"I tested\", \"In my experience\")", tip: "Add first-person experience language — 2025 Google HCU and AI crawlers reward demonstrable expertise over generic summaries." },
+                            { ok: scanResult.aiCitationReadiness.definitionDensity >= 1, label: "Definition density ≥1 per 1,000 words (\"X is defined as…\")", tip: "Include clear definitional sentences — AI models extract and cite definitions heavily in AI Overviews and answer boxes." },
+                            { ok: scanResult.aiCitationReadiness.directAnswerParagraphs >= 2, label: "≥2 direct-answer paragraphs (short, ≤55-word paragraphs)", tip: "Write short, self-contained paragraphs (≤55 words) that answer a question directly — these are the primary candidates for AI-generated citations." },
+                          ].map((sig, i) => (
+                            <div key={i} style={{ background: sig.ok ? "#14532d22" : "#450a0a22", border: `1px solid ${sig.ok ? "#166534" : "#7f1d1d"}`, borderRadius: 8, padding: "10px 12px" }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: sig.ok ? "#86efac" : "#fca5a5", marginBottom: sig.ok ? 0 : 4 }}>
+                                {sig.ok ? "✅" : "❌"} {sig.label}
+                              </div>
+                              {!sig.ok && <div style={{ fontSize: 11, color: "#a1a1aa", marginTop: 4 }}>{sig.tip}</div>}
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ marginTop: 12, fontSize: 12, color: "#71717a", lineHeight: 1.6 }}>
+                          <strong style={{ color: "#a1a1aa" }}>What is GEO?</strong> Generative Engine Optimisation (GEO) is the practice of making content more likely to be cited by AI-powered search engines (ChatGPT Search, Perplexity, Google AI Overviews). Research from Princeton/Georgia Tech (2023) shows authoritative citations, statistics, and first-person expertise are the strongest citation signals.
                         </div>
                       </div>
                     )}
@@ -6890,6 +6980,178 @@ export default function BlogSEO() {
             </div>
           </>
         )}
+
+        {/* ================================================================
+            SHOPIFY SEO TAB
+            ================================================================ */}
+        {tab === "Shopify SEO" && (
+          <>
+            <div style={{ fontSize: 13, color: "#71717a", marginTop: 16, marginBottom: 4 }}>
+              Shopify-specific SEO tools — optimise your blog posts, collection pages, product↔blog cross-links, and metafields directly inside the Shopify ecosystem.
+            </div>
+
+            {/* 1. Shopify Blog Template Audit */}
+            <div style={{ ...S.card, marginTop: 16 }}>
+              <div style={S.cardTitle}>🛍️ Shopify Blog Post Audit</div>
+              <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 10 }}>
+                Detects Shopify-specific SEO issues: canonical conflicts with <code>.myshopify.com</code>, missing blog JSON-LD, duplicate URL variants, and theme-level meta gaps.
+              </div>
+              <div style={S.row}>
+                <input style={S.input} placeholder="https://yourstore.com/blogs/news/post-title" value={shopifyBlogUrl} onChange={e => setShopifyBlogUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && !shopifyBlogAuditLoading && runShopifyBlogAudit()} />
+                <button style={S.btn("primary")} onClick={runShopifyBlogAudit} disabled={shopifyBlogAuditLoading || !shopifyBlogUrl.trim()}>
+                  {shopifyBlogAuditLoading ? <><span style={S.spinner} /> Auditing…</> : "Audit"}
+                </button>
+              </div>
+              {shopifyBlogAuditErr && <div style={S.err}>{shopifyBlogAuditErr}</div>}
+              {shopifyBlogAudit && (
+                <div style={{ marginTop: 14 }}>
+                  <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginBottom: 14 }}>
+                    <MetaChip label="Score" value={shopifyBlogAudit.score} color={shopifyBlogAudit.score >= 75 ? "#22c55e" : shopifyBlogAudit.score >= 50 ? "#eab308" : "#ef4444"} />
+                    <MetaChip label="Issues" value={shopifyBlogAudit.issueCount} color={shopifyBlogAudit.issueCount > 0 ? "#ef4444" : "#22c55e"} />
+                    <MetaChip label="Shopify Checks" value={shopifyBlogAudit.checks?.length ?? 0} />
+                  </div>
+                  {shopifyBlogAudit.checks?.map((c, i) => (
+                    <div key={i} style={{ background: c.pass ? "#14532d22" : "#450a0a22", border: `1px solid ${c.pass ? "#166534" : "#7f1d1d"}`, borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: c.pass ? "#86efac" : "#fca5a5" }}>{c.pass ? "✅" : "❌"} {c.name}</div>
+                      {c.value && <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 3 }}>{c.value}</div>}
+                      {!c.pass && c.tip && <div style={{ fontSize: 12, color: "#71717a", marginTop: 4 }}>💡 {c.tip}</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 2. Collection Page SEO */}
+            <div style={{ ...S.card, marginTop: 16 }}>
+              <div style={S.cardTitle}>🗂️ Collection Page SEO Audit</div>
+              <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 10 }}>
+                Audits a Shopify collection page for missing pagination canonicals, thin content, duplicate <code>?sort_by</code> parameters, and collection-level structured data.
+              </div>
+              <div style={S.row}>
+                <input style={S.input} placeholder="https://yourstore.com/collections/shirts" value={shopifyCollUrl} onChange={e => setShopifyCollUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && !shopifyCollLoading && runShopifyCollSeo()} />
+                <button style={S.btn("primary")} onClick={runShopifyCollSeo} disabled={shopifyCollLoading || !shopifyCollUrl.trim()}>
+                  {shopifyCollLoading ? <><span style={S.spinner} /> Auditing…</> : "Audit"}
+                </button>
+              </div>
+              {shopifyCollErr && <div style={S.err}>{shopifyCollErr}</div>}
+              {shopifyCollResult && (
+                <div style={{ marginTop: 14 }}>
+                  <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginBottom: 14 }}>
+                    <MetaChip label="Score" value={shopifyCollResult.score} color={shopifyCollResult.score >= 75 ? "#22c55e" : shopifyCollResult.score >= 50 ? "#eab308" : "#ef4444"} />
+                    <MetaChip label="Issues" value={shopifyCollResult.issueCount} color={shopifyCollResult.issueCount > 0 ? "#ef4444" : "#22c55e"} />
+                    {shopifyCollResult.productCount != null && <MetaChip label="Products" value={shopifyCollResult.productCount} />}
+                  </div>
+                  {shopifyCollResult.checks?.map((c, i) => (
+                    <div key={i} style={{ background: c.pass ? "#14532d22" : "#450a0a22", border: `1px solid ${c.pass ? "#166534" : "#7f1d1d"}`, borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: c.pass ? "#86efac" : "#fca5a5" }}>{c.pass ? "✅" : "❌"} {c.name}</div>
+                      {c.value && <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 3 }}>{c.value}</div>}
+                      {!c.pass && c.tip && <div style={{ fontSize: 12, color: "#71717a", marginTop: 4 }}>💡 {c.tip}</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 3. Product ↔ Blog Cross-Link Suggestions */}
+            <div style={{ ...S.card, marginTop: 16 }}>
+              <div style={S.cardTitle}>🔗 Product ↔ Blog Cross-Link Optimizer <span style={{ fontSize: 11, color: "#818cf8", marginLeft: 6 }}>AI • 2 credits</span></div>
+              <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 10 }}>
+                Paste a product URL and a blog post URL — AI identifies the best natural cross-linking opportunities between them to build topical authority and drive product discovery.
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <input style={S.input} placeholder="Product URL (e.g. https://yourstore.com/products/blue-shirt)" value={shopifyProductUrl} onChange={e => setShopifyProductUrl(e.target.value)} />
+                <input style={S.input} placeholder="Blog post URL (e.g. https://yourstore.com/blogs/news/how-to-style-shirts)" value={shopifyBlogLinkUrl} onChange={e => setShopifyBlogLinkUrl(e.target.value)} />
+              </div>
+              <div style={{ ...S.row, marginTop: 10 }}>
+                <button style={S.btn("primary")} onClick={runShopifyProductBlogLinks} disabled={shopifyLinkLoading || (!shopifyProductUrl.trim() && !shopifyBlogLinkUrl.trim())}>
+                  {shopifyLinkLoading ? <><span style={S.spinner} /> Analysing…</> : "🤖 Suggest Cross-Links (2 credits)"}
+                </button>
+              </div>
+              {shopifyLinkErr && <div style={S.err}>{shopifyLinkErr}</div>}
+              {shopifyLinkResult && (
+                <div style={{ marginTop: 14 }}>
+                  {shopifyLinkResult.productToBlog && (
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#c4b5fd", marginBottom: 8 }}>Product → Blog (add to product description)</div>
+                      {shopifyLinkResult.productToBlog.map((s, i) => (
+                        <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", marginBottom: 8 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#e4e4e7" }}>Anchor: <code style={{ color: "#93c5fd" }}>{s.anchorText}</code></div>
+                          <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 4 }}>Context: {s.contextSentence}</div>
+                          <div style={{ fontSize: 11, color: "#71717a", marginTop: 4 }}>Why: {s.rationale}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {shopifyLinkResult.blogToProduct && (
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#86efac", marginBottom: 8 }}>Blog → Product (add to blog body)</div>
+                      {shopifyLinkResult.blogToProduct.map((s, i) => (
+                        <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "10px 14px", marginBottom: 8 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#e4e4e7" }}>Anchor: <code style={{ color: "#93c5fd" }}>{s.anchorText}</code></div>
+                          <div style={{ fontSize: 12, color: "#a1a1aa", marginTop: 4 }}>Context: {s.contextSentence}</div>
+                          <div style={{ fontSize: 11, color: "#71717a", marginTop: 4 }}>Why: {s.rationale}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {shopifyLinkResult.tip && (
+                    <div style={{ background: "#1e1b40", border: "1px solid #4f46e5", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#c4b5fd" }}>
+                      💡 {shopifyLinkResult.tip}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* 4. Metafield SEO Generator */}
+            <div style={{ ...S.card, marginTop: 16 }}>
+              <div style={S.cardTitle}>⚙️ Shopify Metafield SEO Generator <span style={{ fontSize: 11, color: "#818cf8", marginLeft: 6 }}>AI • 2 credits</span></div>
+              <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 10 }}>
+                Generate SEO-optimised values for Shopify metafields — custom meta titles, descriptions, OG fields, and SEO-focused product/collection summaries ready to paste into your theme editor.
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+                <select style={{ ...S.input, maxWidth: 200 }} value={shopifyMetafieldType} onChange={e => setShopifyMetafieldType(e.target.value)}>
+                  <option value="product">Product page</option>
+                  <option value="collection">Collection page</option>
+                  <option value="blog_post">Blog post</option>
+                  <option value="homepage">Homepage</option>
+                </select>
+              </div>
+              <textarea
+                style={{ ...S.textarea, minHeight: 90 }}
+                placeholder={`Describe the ${shopifyMetafieldType} — include key details like product name, main feature, target audience, and primary keyword...`}
+                value={shopifyMetafieldContext}
+                onChange={e => setShopifyMetafieldContext(e.target.value)}
+              />
+              <div style={{ ...S.row, marginTop: 10 }}>
+                <button style={S.btn("primary")} onClick={runShopifyMetafield} disabled={shopifyMetafieldLoading || !shopifyMetafieldContext.trim()}>
+                  {shopifyMetafieldLoading ? <><span style={S.spinner} /> Generating…</> : "🤖 Generate Metafield SEO (2 credits)"}
+                </button>
+              </div>
+              {shopifyMetafieldErr && <div style={S.err}>{shopifyMetafieldErr}</div>}
+              {shopifyMetafieldResult && (
+                <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+                  {shopifyMetafieldResult.fields?.map((f, i) => (
+                    <div key={i} style={{ background: "#09090b", border: "1px solid #27272a", borderRadius: 8, padding: "12px 14px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#818cf8", textTransform: "uppercase", letterSpacing: "0.05em" }}>{f.namespace}.{f.key}</div>
+                        <button style={{ ...S.btn("ghost"), fontSize: 11, padding: "2px 8px" }} onClick={() => navigator.clipboard.writeText(f.value)}>📋 Copy</button>
+                      </div>
+                      <div style={{ fontSize: 13, color: "#e4e4e7", lineHeight: 1.6, wordBreak: "break-word" }}>{f.value}</div>
+                      {f.tip && <div style={{ fontSize: 11, color: "#71717a", marginTop: 6 }}>{f.tip}</div>}
+                    </div>
+                  ))}
+                  {shopifyMetafieldResult.note && (
+                    <div style={{ background: "#1e1b40", border: "1px solid #4f46e5", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#c4b5fd" }}>
+                      💡 {shopifyMetafieldResult.note}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
 
         {/* ================================================================
             HISTORY TAB
