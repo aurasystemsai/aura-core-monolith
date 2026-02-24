@@ -45,7 +45,7 @@ const S = {
   heading: { fontSize: 13, fontWeight: 700, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: 10 },
 };
 
-const TABS = ["Analyzer", "Keywords", "Content+", "Keyword+", "Technical+", "AI Create", "Schema & Links", "SERP & CTR", "Backlinks", "Content Brief", "Bulk Scan", "AI Assistant", "History"];
+const TABS = ["Analyzer", "Keywords", "Content+", "Keyword+", "Technical+", "AI Create", "Schema & Links", "SERP & CTR", "Backlinks", "Local SEO", "E-E-A-T & Brand", "Voice & AI Search", "Content Brief", "Bulk Scan", "AI Assistant", "History"];
 const FILTER_CATS = ["all", "content", "meta", "technical", "keywords", "structure"];
 const FILTER_SEVS = ["all", "high", "medium", "low"];
 
@@ -450,6 +450,42 @@ export default function BlogSEO() {
   const [skyscraperResult, setSkyscraperResult] = useState(null); const [skyscraperLoading, setSkyscraperLoading] = useState(false); const [skyscraperKeyword, setSkyscraperKeyword] = useState("");
   const [relunchResult, setRelunchResult] = useState(null); const [relunchLoading, setRelunchLoading] = useState(false); const [relunchKeyword, setRelunchKeyword] = useState("");
   const [semanticEnrichResult, setSemanticEnrichResult] = useState(null); const [semanticEnrichLoading, setSemanticEnrichLoading] = useState(false); const [semanticEnrichKeyword, setSemanticEnrichKeyword] = useState("");
+
+  /* ── BATCH 5: LOCAL SEO ──────────────────────────────────────────────── */
+  const [gbpResult, setGbpResult] = useState(null); const [gbpLoading, setGbpLoading] = useState(false); const [gbpBusiness, setGbpBusiness] = useState(""); const [gbpLocation, setGbpLocation] = useState(""); const [gbpCategory, setGbpCategory] = useState("");
+  const [citationResult, setCitationResult] = useState(null); const [citationLoading, setCitationLoading] = useState(false); const [citationBusiness, setCitationBusiness] = useState(""); const [citationLocation, setCitationLocation] = useState(""); const [citationCategory, setCitationCategory] = useState("");
+  const [localKwResult, setLocalKwResult] = useState(null); const [localKwLoading, setLocalKwLoading] = useState(false); const [localKwService, setLocalKwService] = useState(""); const [localKwCity, setLocalKwCity] = useState("");
+  const [localSchemaResult, setLocalSchemaResult] = useState(null); const [localSchemaLoading, setLocalSchemaLoading] = useState(false); const [localSchemaName, setLocalSchemaName] = useState(""); const [localSchemaAddr, setLocalSchemaAddr] = useState(""); const [localSchemaPhone, setLocalSchemaPhone] = useState("");
+
+  /* ── BATCH 5: E-E-A-T & BRAND ────────────────────────────────────────── */
+  const [eeatResult, setEeatResult] = useState(null); const [eeatLoading, setEeatLoading] = useState(false);
+  const [authorBioResult, setAuthorBioResult] = useState(null); const [authorBioLoading, setAuthorBioLoading] = useState(false); const [authorBioName, setAuthorBioName] = useState(""); const [authorBioNiche, setAuthorBioNiche] = useState(""); const [authorBioCredentials, setAuthorBioCredentials] = useState("");
+  const [brandSignalResult, setBrandSignalResult] = useState(null); const [brandSignalLoading, setBrandSignalLoading] = useState(false); const [brandSignalDomain, setBrandSignalDomain] = useState(""); const [brandSignalName, setBrandSignalName] = useState("");
+  const [expertQuoteResult, setExpertQuoteResult] = useState(null); const [expertQuoteLoading, setExpertQuoteLoading] = useState(false); const [expertQuoteTopic, setExpertQuoteTopic] = useState("");
+  const [trustBuilderResult, setTrustBuilderResult] = useState(null); const [trustBuilderLoading, setTrustBuilderLoading] = useState(false);
+
+  /* ── BATCH 5: VOICE & AI SEARCH ──────────────────────────────────────── */
+  const [voiceOptResult, setVoiceOptResult] = useState(null); const [voiceOptLoading, setVoiceOptLoading] = useState(false); const [voiceOptKeyword, setVoiceOptKeyword] = useState("");
+  const [faqGenResult, setFaqGenResult] = useState(null); const [faqGenLoading, setFaqGenLoading] = useState(false); const [faqGenTopic, setFaqGenTopic] = useState("");
+  const [aiOverviewKeyword, setAiOverviewKeyword] = useState("");
+  const [convKwResult, setConvKwResult] = useState(null); const [convKwLoading, setConvKwLoading] = useState(false); const [convKwTopic, setConvKwTopic] = useState("");
+
+  /* ── BATCH 5: TECHNICAL+ EXTENSIONS ─────────────────────────────────── */
+  const [readingLevelResult, setReadingLevelResult] = useState(null); const [readingLevelLoading, setReadingLevelLoading] = useState(false);
+  const [tfidfResult, setTfidfResult] = useState(null); const [tfidfLoading, setTfidfLoading] = useState(false); const [tfidfKeyword, setTfidfKeyword] = useState("");
+  const [contentLengthResult, setContentLengthResult] = useState(null); const [contentLengthLoading, setContentLengthLoading] = useState(false); const [contentLengthKw, setContentLengthKw] = useState(""); const [contentLengthWc, setContentLengthWc] = useState("");
+  const [pageSpeedResult, setPageSpeedResult] = useState(null); const [pageSpeedLoading, setPageSpeedLoading] = useState(false);
+
+  /* ── BATCH 5: CONTENT+ EXTENSIONS ────────────────────────────────────── */
+  const [topicClusterResult, setTopicClusterResult] = useState(null); const [topicClusterLoading, setTopicClusterLoading] = useState(false); const [topicClusterSeed, setTopicClusterSeed] = useState("");
+  const [visualDivResult, setVisualDivResult] = useState(null); const [visualDivLoading, setVisualDivLoading] = useState(false);
+  const [timeToValueResult, setTimeToValueResult] = useState(null); const [timeToValueLoading, setTimeToValueLoading] = useState(false);
+  const [pruningResult, setPruningResult] = useState(null); const [pruningLoading, setPruningLoading] = useState(false); const [pruningNiche, setPruningNiche] = useState("");
+  const [statsCuratorResult, setStatsCuratorResult] = useState(null); const [statsCuratorLoading, setStatsCuratorLoading] = useState(false); const [statsCuratorNiche, setStatsCuratorNiche] = useState("");
+
+  /* ── BATCH 5: KEYWORDS EXTENSIONS ────────────────────────────────────── */
+  const [lowDiffResult, setLowDiffResult] = useState(null); const [lowDiffLoading, setLowDiffLoading] = useState(false); const [lowDiffSeed, setLowDiffSeed] = useState(""); const [lowDiffDA, setLowDiffDA] = useState("");
+  const [cannibalResult, setCannibalResult] = useState(null); const [cannibalLoading, setCannibalLoading] = useState(false); const [cannibalDomain, setCannibalDomain] = useState("");
 
   /* ── ANALYZER ─────────────────────────────────────────────────────────── */
   const runScan = useCallback(async () => {
@@ -1433,6 +1469,187 @@ export default function BlogSEO() {
     try { const r = await apiFetch(`${API}/content/semantic-enrichment`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim(), keyword: semanticEnrichKeyword || kwInput.trim() }) }); if (r.ok) setSemanticEnrichResult(r); } catch {}
     setSemanticEnrichLoading(false);
   }, [url, semanticEnrichKeyword, kwInput]);
+
+  /* ── BATCH 5: LOCAL SEO ──────────────────────────────────────────────── */
+  const runGbpOptimizer = useCallback(async () => {
+    if (!gbpBusiness.trim()) return;
+    setGbpLoading(true); setGbpResult(null);
+    try { const r = await apiFetch(`${API}/local/gbp-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessName: gbpBusiness, location: gbpLocation, category: gbpCategory }) }); if (r.ok) setGbpResult(r); } catch {}
+    setGbpLoading(false);
+  }, [gbpBusiness, gbpLocation, gbpCategory]);
+
+  const runCitationFinder = useCallback(async () => {
+    if (!citationBusiness.trim()) return;
+    setCitationLoading(true); setCitationResult(null);
+    try { const r = await apiFetch(`${API}/local/citation-finder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessName: citationBusiness, location: citationLocation, category: citationCategory }) }); if (r.ok) setCitationResult(r); } catch {}
+    setCitationLoading(false);
+  }, [citationBusiness, citationLocation, citationCategory]);
+
+  const runLocalKwGen = useCallback(async () => {
+    if (!localKwService.trim() || !localKwCity.trim()) return;
+    setLocalKwLoading(true); setLocalKwResult(null);
+    try { const r = await apiFetch(`${API}/local/local-keyword-gen`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ service: localKwService, city: localKwCity }) }); if (r.ok) setLocalKwResult(r); } catch {}
+    setLocalKwLoading(false);
+  }, [localKwService, localKwCity]);
+
+  const runLocalSchema = useCallback(async () => {
+    if (!localSchemaName.trim()) return;
+    setLocalSchemaLoading(true); setLocalSchemaResult(null);
+    try { const r = await apiFetch(`${API}/local/local-schema`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ businessName: localSchemaName, address: localSchemaAddr, phone: localSchemaPhone }) }); if (r.ok) setLocalSchemaResult(r); } catch {}
+    setLocalSchemaLoading(false);
+  }, [localSchemaName, localSchemaAddr, localSchemaPhone]);
+
+  /* ── BATCH 5: E-E-A-T & BRAND ────────────────────────────────────────── */
+  const runEeatScorer = useCallback(async () => {
+    if (!url.trim()) return;
+    setEeatLoading(true); setEeatResult(null);
+    try { const r = await apiFetch(`${API}/brand/eeat-scorer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setEeatResult(r); } catch {}
+    setEeatLoading(false);
+  }, [url]);
+
+  const runAuthorBio = useCallback(async () => {
+    if (!authorBioName.trim()) return;
+    setAuthorBioLoading(true); setAuthorBioResult(null);
+    try { const r = await apiFetch(`${API}/brand/author-bio`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ authorName: authorBioName, niche: authorBioNiche, credentials: authorBioCredentials }) }); if (r.ok) setAuthorBioResult(r); } catch {}
+    setAuthorBioLoading(false);
+  }, [authorBioName, authorBioNiche, authorBioCredentials]);
+
+  const runBrandSignals = useCallback(async () => {
+    if (!brandSignalDomain.trim()) return;
+    setBrandSignalLoading(true); setBrandSignalResult(null);
+    try { const r = await apiFetch(`${API}/brand/brand-signals`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: brandSignalDomain, brandName: brandSignalName }) }); if (r.ok) setBrandSignalResult(r); } catch {}
+    setBrandSignalLoading(false);
+  }, [brandSignalDomain, brandSignalName]);
+
+  const runExpertQuotes = useCallback(async () => {
+    if (!expertQuoteTopic.trim()) return;
+    setExpertQuoteLoading(true); setExpertQuoteResult(null);
+    try { const r = await apiFetch(`${API}/brand/expert-quotes`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: expertQuoteTopic }) }); if (r.ok) setExpertQuoteResult(r); } catch {}
+    setExpertQuoteLoading(false);
+  }, [expertQuoteTopic]);
+
+  const runTrustBuilder = useCallback(async () => {
+    if (!url.trim()) return;
+    setTrustBuilderLoading(true); setTrustBuilderResult(null);
+    try { const r = await apiFetch(`${API}/brand/trust-builder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setTrustBuilderResult(r); } catch {}
+    setTrustBuilderLoading(false);
+  }, [url]);
+
+  /* ── BATCH 5: VOICE & AI SEARCH ──────────────────────────────────────── */
+  const runVoiceOptimizer = useCallback(async () => {
+    if (!voiceOptKeyword.trim()) return;
+    setVoiceOptLoading(true); setVoiceOptResult(null);
+    try { const r = await apiFetch(`${API}/voice/voice-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: voiceOptKeyword }) }); if (r.ok) setVoiceOptResult(r); } catch {}
+    setVoiceOptLoading(false);
+  }, [voiceOptKeyword]);
+
+  const runFaqGenerator = useCallback(async () => {
+    if (!faqGenTopic.trim()) return;
+    setFaqGenLoading(true); setFaqGenResult(null);
+    try { const r = await apiFetch(`${API}/voice/faq-generator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: faqGenTopic }) }); if (r.ok) setFaqGenResult(r); } catch {}
+    setFaqGenLoading(false);
+  }, [faqGenTopic]);
+
+  const runAiOverviewOptimizer = useCallback(async () => {
+    if (!aiOverviewKeyword.trim()) return;
+    setAiOverviewLoading(true); setAiOverviewResult(null);
+    try { const r = await apiFetch(`${API}/voice/ai-overview-optimizer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: aiOverviewKeyword, url: url.trim() }) }); if (r.ok) setAiOverviewResult(r); } catch {}
+    setAiOverviewLoading(false);
+  }, [aiOverviewKeyword, url]);
+
+  const runConvKeywords = useCallback(async () => {
+    if (!convKwTopic.trim()) return;
+    setConvKwLoading(true); setConvKwResult(null);
+    try { const r = await apiFetch(`${API}/voice/conversational-keywords`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: convKwTopic }) }); if (r.ok) setConvKwResult(r); } catch {}
+    setConvKwLoading(false);
+  }, [convKwTopic]);
+
+  /* ── BATCH 5: TECHNICAL+ EXTENSIONS ─────────────────────────────────── */
+  const runReadingLevel = useCallback(async () => {
+    if (!url.trim()) return;
+    setReadingLevelLoading(true); setReadingLevelResult(null);
+    try { const r = await apiFetch(`${API}/technical/reading-level`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setReadingLevelResult(r); } catch {}
+    setReadingLevelLoading(false);
+  }, [url]);
+
+  const runTfidf = useCallback(async () => {
+    if (!tfidfKeyword.trim()) return;
+    setTfidfLoading(true); setTfidfResult(null);
+    try { const r = await apiFetch(`${API}/technical/tfidf-analyzer`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: tfidfKeyword, url: url.trim() }) }); if (r.ok) setTfidfResult(r); } catch {}
+    setTfidfLoading(false);
+  }, [tfidfKeyword, url]);
+
+  const runContentLength = useCallback(async () => {
+    if (!contentLengthKw.trim()) return;
+    setContentLengthLoading(true); setContentLengthResult(null);
+    try { const r = await apiFetch(`${API}/technical/content-length-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: contentLengthKw, currentWordCount: contentLengthWc }) }); if (r.ok) setContentLengthResult(r); } catch {}
+    setContentLengthLoading(false);
+  }, [contentLengthKw, contentLengthWc]);
+
+  const runCwvAdvisor = useCallback(async () => {
+    if (!url.trim()) return;
+    setCwvLoading(true); setCwvResult(null);
+    try { const r = await apiFetch(`${API}/technical/cwv-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setCwvResult(r); } catch {}
+    setCwvLoading(false);
+  }, [url]);
+
+  const runPageSpeed = useCallback(async () => {
+    if (!url.trim()) return;
+    setPageSpeedLoading(true); setPageSpeedResult(null);
+    try { const r = await apiFetch(`${API}/technical/page-speed-advisor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setPageSpeedResult(r); } catch {}
+    setPageSpeedLoading(false);
+  }, [url]);
+
+  /* ── BATCH 5: CONTENT+ EXTENSIONS ────────────────────────────────────── */
+  const runTopicCluster = useCallback(async () => {
+    if (!topicClusterSeed.trim()) return;
+    setTopicClusterLoading(true); setTopicClusterResult(null);
+    try { const r = await apiFetch(`${API}/content/topic-cluster-builder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ seed: topicClusterSeed }) }); if (r.ok) setTopicClusterResult(r); } catch {}
+    setTopicClusterLoading(false);
+  }, [topicClusterSeed]);
+
+  const runVisualDiv = useCallback(async () => {
+    if (!url.trim()) return;
+    setVisualDivLoading(true); setVisualDivResult(null);
+    try { const r = await apiFetch(`${API}/content/visual-diversity`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setVisualDivResult(r); } catch {}
+    setVisualDivLoading(false);
+  }, [url]);
+
+  const runTimeToValue = useCallback(async () => {
+    if (!url.trim()) return;
+    setTimeToValueLoading(true); setTimeToValueResult(null);
+    try { const r = await apiFetch(`${API}/content/time-to-value`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) }); if (r.ok) setTimeToValueResult(r); } catch {}
+    setTimeToValueLoading(false);
+  }, [url]);
+
+  const runPruning = useCallback(async () => {
+    if (!url.trim() && !pruningNiche.trim()) return;
+    setPruningLoading(true); setPruningResult(null);
+    try { const r = await apiFetch(`${API}/content/content-pruning`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ siteUrl: url.trim(), niche: pruningNiche }) }); if (r.ok) setPruningResult(r); } catch {}
+    setPruningLoading(false);
+  }, [url, pruningNiche]);
+
+  const runStatsCurator = useCallback(async () => {
+    if (!statsCuratorNiche.trim()) return;
+    setStatsCuratorLoading(true); setStatsCuratorResult(null);
+    try { const r = await apiFetch(`${API}/content/statistics-curator`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ niche: statsCuratorNiche }) }); if (r.ok) setStatsCuratorResult(r); } catch {}
+    setStatsCuratorLoading(false);
+  }, [statsCuratorNiche]);
+
+  /* ── BATCH 5: KEYWORDS EXTENSIONS ────────────────────────────────────── */
+  const runLowDiff = useCallback(async () => {
+    if (!lowDiffSeed.trim()) return;
+    setLowDiffLoading(true); setLowDiffResult(null);
+    try { const r = await apiFetch(`${API}/keywords/low-difficulty-finder`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ seedKeyword: lowDiffSeed, siteDA: lowDiffDA }) }); if (r.ok) setLowDiffResult(r); } catch {}
+    setLowDiffLoading(false);
+  }, [lowDiffSeed, lowDiffDA]);
+
+  const runCannibalization = useCallback(async () => {
+    if (!cannibalDomain.trim()) return;
+    setCannibalLoading(true); setCannibalResult(null);
+    try { const r = await apiFetch(`${API}/keywords/cannibalization-detector`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: cannibalDomain }) }); if (r.ok) setCannibalResult(r); } catch {}
+    setCannibalLoading(false);
+  }, [cannibalDomain]);
 
   const runRewrite = useCallback(async (field) => {
     if (!scanResult) return;
@@ -3294,6 +3511,70 @@ export default function BlogSEO() {
         )}
 
         {/* ================================================================
+            KEYWORDS TAB EXTENSIONS (Batch 5)
+            ================================================================ */}
+        {tab === "Keywords" && (
+          <>
+            {/* Low Difficulty Finder */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🎯 Low-Difficulty Keyword Finder</div>
+              <div style={S.cardDesc}>Find quick-win keywords with low competition — ideal for new/low-DA sites (Ahrefs methodology).</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Seed keyword (e.g. SEO tips)..." value={lowDiffSeed} onChange={e => setLowDiffSeed(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Your site DA / domain authority (optional)..." value={lowDiffDA} onChange={e => setLowDiffDA(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runLowDiff} disabled={lowDiffLoading || !lowDiffSeed.trim()}>
+                {lowDiffLoading ? <><span style={S.spinner} /> Finding…</> : "Find Low-Difficulty Keywords"}
+              </button>
+              {lowDiffResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 8, fontWeight: 600 }}>🟢 {lowDiffResult.lowDifficultyKeywords?.length || 0} low-difficulty opportunities found</div>
+                  {lowDiffResult.quickWinStrategy && <div style={{ color: "#4ade80", fontSize: 13, marginBottom: 8 }}>💡 Strategy: {lowDiffResult.quickWinStrategy}</div>}
+                  {lowDiffResult.lowDifficultyKeywords?.map((k, i) => (
+                    <div key={i} style={{ padding: "7px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                        <span style={{ fontWeight: 600 }}>{k.keyword}</span>
+                        <span style={{ background: "#14532d", color: "#4ade80", borderRadius: 4, padding: "1px 6px", fontSize: 11 }}>KD ≤{k.estimatedKD}</span>
+                        <span style={{ background: "#3f3f46", borderRadius: 4, padding: "1px 6px", fontSize: 11 }}>{k.intent}</span>
+                        <span style={{ color: "#a1a1aa", fontSize: 11 }}>{k.estimatedMonthlySearches} searches/mo</span>
+                      </div>
+                      <div style={{ color: "#a1a1aa", fontSize: 12, marginTop: 2 }}>{k.whyEasy}</div>
+                    </div>
+                  ))}
+                  {lowDiffResult.estimatedTrafficPotential && <div style={{ color: "#818cf8", marginTop: 8, fontSize: 13 }}>📈 Potential traffic: {lowDiffResult.estimatedTrafficPotential}</div>}
+                </div>
+              )}
+            </div>
+
+            {/* Cannibalization Detector */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>⚠️ Keyword Cannibalization Detector</div>
+              <div style={S.cardDesc}>Find pages competing for the same intent — hurting each other's rankings (Semrush methodology).</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Your domain (e.g. yoursite.com)..." value={cannibalDomain} onChange={e => setCannibalDomain(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runCannibalization} disabled={cannibalLoading || !cannibalDomain.trim()}>
+                {cannibalLoading ? <><span style={S.spinner} /> Detecting…</> : "Detect Cannibalization"}
+              </button>
+              {cannibalResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Risk: <b style={{ color: cannibalResult.cannibalizationRisk === "high" ? "#f87171" : cannibalResult.cannibalizationRisk === "medium" ? "#fbbf24" : "#4ade80" }}>{cannibalResult.cannibalizationRisk?.toUpperCase()}</b></span>
+                  </div>
+                  {cannibalResult.detectedIssues?.map((issue, i) => (
+                    <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ fontWeight: 600 }}>🔴 {issue.keyword}</div>
+                      <div style={{ color: "#a1a1aa", fontSize: 12 }}>Primary URL: {issue.primaryUrl} · Competing: {issue.secondaryUrls?.join(", ")}</div>
+                    </div>
+                  ))}
+                  {cannibalResult.topActions?.length > 0 && (
+                    <div style={{ marginTop: 8 }}><div style={{ fontWeight: 600, marginBottom: 4 }}>Top actions:</div>
+                      <ul style={{ margin: 0, paddingLeft: 18 }}>{cannibalResult.topActions.map((a, i) => <li key={i} style={{ fontSize: 13 }}>{a}</li>)}</ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
             CONTENT+ TAB (On-page quality)
             ================================================================ */}
         {tab === "Content+" && (
@@ -3605,6 +3886,130 @@ export default function BlogSEO() {
         )}
 
         {/* ================================================================
+            CONTENT+ TAB EXTENSIONS (Batch 5)
+            ================================================================ */}
+        {tab === "Content+" && (
+          <>
+            {/* Topic Cluster Builder */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🌐 Topic Cluster Builder</div>
+              <div style={S.cardDesc}>Plan a pillar page + spoke content hub to build topical authority (Semrush/HubSpot methodology).</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Seed topic (e.g. Email Marketing)..." value={topicClusterSeed} onChange={e => setTopicClusterSeed(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runTopicCluster} disabled={topicClusterLoading || !topicClusterSeed.trim()}>
+                {topicClusterLoading ? <><span style={S.spinner} /> Building cluster…</> : "Build Topic Cluster"}
+              </button>
+              {topicClusterResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>🏛️ Pillar: {topicClusterResult.pillarPage?.title}</div>
+                  <div style={{ color: "#a1a1aa", fontSize: 12, marginBottom: 8 }}>Keyword: {topicClusterResult.pillarPage?.targetKeyword} · {topicClusterResult.pillarPage?.estimatedWordCount} words</div>
+                  {topicClusterResult.clusterPages?.map((p, i) => (
+                    <div key={i} style={{ padding: "5px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <span style={{ fontWeight: 600 }}>{p.title}</span>
+                        <span style={{ background: "#3f3f46", borderRadius: 4, padding: "1px 6px", fontSize: 11 }}>{p.intent}</span>
+                      </div>
+                      <div style={{ color: "#a1a1aa", fontSize: 12 }}>{p.targetKeyword} · {p.wordCount} words</div>
+                    </div>
+                  ))}
+                  {topicClusterResult.clusterMetrics && <div style={{ color: "#818cf8", marginTop: 8 }}>📊 {topicClusterResult.clusterMetrics.totalPages} pages · ~{topicClusterResult.clusterMetrics.totalEstimatedWords?.toLocaleString()} words total · {topicClusterResult.clusterMetrics.timeToPublish}</div>}
+                </div>
+              )}
+            </div>
+
+            {/* Visual Diversity Advisor */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🎨 Visual Diversity Advisor</div>
+              <div style={S.cardDesc}>Audit multimedia and visual variety — diverse visuals reduce bounce rate and improve dwell time.</div>
+              <button style={S.btn("primary")} onClick={runVisualDiv} disabled={visualDivLoading || !url.trim()}>
+                {visualDivLoading ? <><span style={S.spinner} /> Auditing visuals…</> : "Audit Visual Diversity"}
+              </button>
+              {visualDivResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Visual score: <b style={{ color: visualDivResult.visualDiversityScore >= 70 ? "#4ade80" : "#fbbf24" }}>{visualDivResult.visualDiversityScore}/100</b></span>
+                    <span>Images: <b>{visualDivResult.imgCount}</b></span>
+                    <span>Video: <b>{visualDivResult.hasVideo ? "✅" : "❌"}</b></span>
+                  </div>
+                  {visualDivResult.recommendedVisuals?.map((v, i) => (
+                    <div key={i} style={{ padding: "5px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ fontWeight: 600 }}>{v.type}: {v.description}</div>
+                      <div style={{ color: "#a1a1aa", fontSize: 12 }}>{v.placement} · {v.userEngagementBenefit}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Time-to-Value Optimizer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>⚡ Time-to-Value Optimizer</div>
+              <div style={S.cardDesc}>Analyze BLUF/inverted pyramid structure — users should get value above the fold immediately.</div>
+              <button style={S.btn("primary")} onClick={runTimeToValue} disabled={timeToValueLoading || !url.trim()}>
+                {timeToValueLoading ? <><span style={S.spinner} /> Analyzing…</> : "Optimize Time-to-Value"}
+              </button>
+              {timeToValueResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Score: <b style={{ color: timeToValueResult.timeToValueScore >= 70 ? "#4ade80" : "#fbbf24" }}>{timeToValueResult.timeToValueScore}/100</b></span>
+                    <span style={{ color: timeToValueResult.timeToValueLabel === "excellent" ? "#4ade80" : "#fbbf24" }}>{timeToValueResult.timeToValueLabel}</span>
+                    <span>Intro: <b>{timeToValueResult.introLength} words</b></span>
+                  </div>
+                  {timeToValueResult.blufAnalysis?.recommendation && <div style={{ color: "#93c5fd", marginBottom: 6 }}>💡 {timeToValueResult.blufAnalysis.recommendation}</div>}
+                  {timeToValueResult.structureImprovements?.map((s, i) => <div key={i} style={{ padding: "2px 0", fontSize: 13 }}>• {s}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Content Pruning Advisor */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>✂️ Content Pruning Advisor</div>
+              <div style={S.cardDesc}>Identify underperforming content to keep, improve, repurpose or remove — boosts site authority.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Niche (optional, for context)..." value={pruningNiche} onChange={e => setPruningNiche(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runPruning} disabled={pruningLoading || (!url.trim() && !pruningNiche.trim())}>
+                {pruningLoading ? <><span style={S.spinner} /> Analyzing…</> : "Get Pruning Strategy"}
+              </button>
+              {pruningResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ color: "#93c5fd", marginBottom: 8 }}>{pruningResult.pruningStrategy}</div>
+                  <div style={{ fontWeight: 600, marginBottom: 6 }}>Decision Framework:</div>
+                  {Object.entries(pruningResult.decisionFramework || {}).map(([action, details]) => (
+                    <div key={action} style={{ padding: "5px 0", borderBottom: "1px solid #27272a" }}>
+                      <span style={{ fontWeight: 600, textTransform: "capitalize", color: action === "remove" ? "#f87171" : action === "improve" ? "#fbbf24" : action === "keep" ? "#4ade80" : "#818cf8" }}>→ {action}:</span>
+                      <span style={{ marginLeft: 8, color: "#a1a1aa", fontSize: 12 }}>{details.criteria?.join(" · ")}</span>
+                    </div>
+                  ))}
+                  {pruningResult.frequencyRecommendation && <div style={{ color: "#818cf8", marginTop: 8, fontSize: 13 }}>📅 {pruningResult.frequencyRecommendation}</div>}
+                </div>
+              )}
+            </div>
+
+            {/* Statistics Curator */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>📊 Statistics Curator (Linkbait)</div>
+              <div style={S.cardDesc}>Curate industry statistics to create link-worthy content — one of Ahrefs' top easy backlink strategies.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Niche (e.g. Email Marketing, SaaS)..." value={statsCuratorNiche} onChange={e => setStatsCuratorNiche(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runStatsCurator} disabled={statsCuratorLoading || !statsCuratorNiche.trim()}>
+                {statsCuratorLoading ? <><span style={S.spinner} /> Curating stats…</> : "Curate Statistics"}
+              </button>
+              {statsCuratorResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ fontWeight: 600, marginBottom: 4 }}>📰 {statsCuratorResult.contentTitle}</div>
+                  <div style={{ color: "#a1a1aa", fontSize: 12, marginBottom: 8 }}>Backlink potential: <b style={{ color: statsCuratorResult.estimatedBacklinkPotential === "high" ? "#4ade80" : "#fbbf24" }}>{statsCuratorResult.estimatedBacklinkPotential}</b></div>
+                  {statsCuratorResult.statCategories?.map((cat, i) => (
+                    <div key={i} style={{ marginBottom: 8 }}>
+                      <div style={{ fontWeight: 600, color: "#818cf8" }}>{cat.category}</div>
+                      {cat.stats?.map((s, j) => (
+                        <div key={j} style={{ padding: "3px 0", fontSize: 12, color: "#d4d4d8" }}>• {s.stat} <span style={{ color: "#52525b" }}>({s.source})</span></div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
             KEYWORD+ TAB (On-page keywords)
             ================================================================ */}
         {tab === "Keyword+" && (
@@ -3863,6 +4268,125 @@ export default function BlogSEO() {
                   <div>HTTPS: {httpsStatusResult.isHTTPS ? "Yes" : "No"} · Status: {httpsStatusResult.statusCode}</div>
                   {(httpsStatusResult.issues || []).map((it, i) => <div key={i} style={{ color: "#fbbf24" }}>• {it}</div>)}
                   {httpsStatusResult.tip && <div style={{ color: "#93c5fd", marginTop: 6 }}>💡 {httpsStatusResult.tip}</div>}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
+            TECHNICAL+ TAB EXTENSIONS (Batch 5)
+            ================================================================ */}
+        {tab === "Technical+" && (
+          <>
+            {/* Reading Level Analyzer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>📖 Reading Level Analyzer</div>
+              <div style={S.cardDesc}>Analyze Flesch-Kincaid reading level — voice search results average 9th grade; content should be accessible.</div>
+              <button style={S.btn("primary")} onClick={runReadingLevel} disabled={readingLevelLoading || !url.trim()}>
+                {readingLevelLoading ? <><span style={S.spinner} /> Analyzing…</> : "Analyze Reading Level"}
+              </button>
+              {readingLevelResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Grade: <b style={{ color: readingLevelResult.readingLevelLabel === "ideal" ? "#4ade80" : "#fbbf24" }}>{readingLevelResult.fleschKincaidGrade}</b></span>
+                    <span>Level: <b>{readingLevelResult.readingLevel}</b></span>
+                    <span style={{ color: readingLevelResult.readingLevelLabel === "ideal" ? "#4ade80" : "#fbbf24" }}>{readingLevelResult.readingLevelLabel}</span>
+                    <span>Words: <b>{readingLevelResult.wordCount}</b></span>
+                  </div>
+                  {readingLevelResult.simplificationSuggestions?.map((s, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {s}</div>)}
+                  {readingLevelResult.voiceSearchCompatibility && <div style={{ color: "#818cf8", marginTop: 6 }}>🎙️ Voice search: {readingLevelResult.voiceSearchCompatibility}</div>}
+                </div>
+              )}
+            </div>
+
+            {/* TF-IDF Analyzer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🔢 TF-IDF Keyword Analyzer</div>
+              <div style={S.cardDesc}>Analyze keyword density and LSI co-occurrence signals vs. top-ranking competitors.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Target keyword..." value={tfidfKeyword} onChange={e => setTfidfKeyword(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runTfidf} disabled={tfidfLoading || !tfidfKeyword.trim()}>
+                {tfidfLoading ? <><span style={S.spinner} /> Analyzing…</> : "Run TF-IDF Analysis"}
+              </button>
+              {tfidfResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Density: <b style={{ color: tfidfResult.densityLabel === "optimal" ? "#4ade80" : "#fbbf24" }}>{tfidfResult.keywordDensity}%</b></span>
+                    <span style={{ color: tfidfResult.densityLabel === "optimal" ? "#4ade80" : "#fbbf24" }}>{tfidfResult.densityLabel}</span>
+                    <span>Optimal: <b>{tfidfResult.optimalRange}</b></span>
+                    <span>Over-optimization risk: <b style={{ color: tfidfResult.overOptimizationRisk === "high" ? "#f87171" : "#4ade80" }}>{tfidfResult.overOptimizationRisk}</b></span>
+                  </div>
+                  {tfidfResult.lsiKeywordsMissing?.length > 0 && (
+                    <div style={{ marginBottom: 8 }}>Missing LSI terms: <span style={{ color: "#fbbf24" }}>{tfidfResult.lsiKeywordsMissing.slice(0, 8).join(", ")}</span></div>
+                  )}
+                  {tfidfResult.densityRecommendations?.map((r, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {r}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Content Length Advisor */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>📏 Content Length Advisor</div>
+              <div style={S.cardDesc}>Find the optimal word count for your keyword — based on what top-ranking pages use.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Target keyword..." value={contentLengthKw} onChange={e => setContentLengthKw(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Current word count (optional)..." value={contentLengthWc} onChange={e => setContentLengthWc(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runContentLength} disabled={contentLengthLoading || !contentLengthKw.trim()}>
+                {contentLengthLoading ? <><span style={S.spinner} /> Advising…</> : "Get Length Advice"}
+              </button>
+              {contentLengthResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Min: <b>{contentLengthResult.optimalWordCount?.minimum?.toLocaleString()}</b></span>
+                    <span>Recommended: <b style={{ color: "#4ade80" }}>{contentLengthResult.optimalWordCount?.recommended?.toLocaleString()}</b></span>
+                    <span>Max: <b>{contentLengthResult.optimalWordCount?.maximum?.toLocaleString()}</b></span>
+                  </div>
+                  {contentLengthResult.currentGap && <div style={{ color: contentLengthResult.currentGap.assessment === "about right" ? "#4ade80" : "#fbbf24", marginBottom: 6 }}>Gap: {contentLengthResult.currentGap.wordsNeeded > 0 ? `+${contentLengthResult.currentGap.wordsNeeded.toLocaleString()} words needed` : contentLengthResult.currentGap.assessment}</div>}
+                  {contentLengthResult.topicsToInclude?.map((t, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {t}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Core Web Vitals Advisor */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>⚡ Core Web Vitals Advisor</div>
+              <div style={S.cardDesc}>Get LCP, CLS, and INP fix recommendations — CWV is a confirmed Google ranking factor.</div>
+              <button style={S.btn("primary")} onClick={runCwvAdvisor} disabled={cwvLoading || !url.trim()}>
+                {cwvLoading ? <><span style={S.spinner} /> Analyzing CWV…</> : "Analyze Core Web Vitals"}
+              </button>
+              {cwvResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>CWV risk: <b style={{ color: cwvResult.overallCWVRisk === "high" ? "#f87171" : cwvResult.overallCWVRisk === "medium" ? "#fbbf24" : "#4ade80" }}>{cwvResult.overallCWVRisk?.toUpperCase()}</b></span>
+                    <span>Impact: <b>{cwvResult.estimatedRankingImpact}</b></span>
+                  </div>
+                  {Object.entries(cwvResult.cwvTargets || {}).map(([metric, data]) => (
+                    <div key={metric} style={{ padding: "6px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ fontWeight: 600, textTransform: "uppercase" }}>{metric}: <span style={{ color: "#4ade80" }}>{data.target}</span></div>
+                      {data.fixes?.map((f, i) => <div key={i} style={{ fontSize: 12, color: "#d4d4d8" }}>• {f}</div>)}
+                    </div>
+                  ))}
+                  {cwvResult.voiceSearchBonus && <div style={{ color: "#818cf8", marginTop: 6, fontSize: 12 }}>🎙️ {cwvResult.voiceSearchBonus}</div>}
+                </div>
+              )}
+            </div>
+
+            {/* Page Speed Advisor */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🚀 Page Speed Advisor</div>
+              <div style={S.cardDesc}>Get specific page speed fixes — voice search pages load avg 4.6s; faster pages rank better.</div>
+              <button style={S.btn("primary")} onClick={runPageSpeed} disabled={pageSpeedLoading || !url.trim()}>
+                {pageSpeedLoading ? <><span style={S.spinner} /> Analyzing speed…</> : "Analyze Page Speed"}
+              </button>
+              {pageSpeedResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Speed score: <b style={{ color: pageSpeedResult.speedScore >= 70 ? "#4ade80" : "#fbbf24" }}>{pageSpeedResult.speedScore}/100</b></span>
+                    <span>Est. load: <b>{pageSpeedResult.estimatedLoadTime}</b></span>
+                    <span>Scripts: <b>{pageSpeedResult.scriptCount}</b></span>
+                    <span>CSS: <b>{pageSpeedResult.cssCount}</b></span>
+                  </div>
+                  {pageSpeedResult.topSpeedActions?.map((a, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {a}</div>)}
+                  {pageSpeedResult.voiceSearchSpeed && <div style={{ color: "#818cf8", marginTop: 6, fontSize: 12 }}>🎙️ {pageSpeedResult.voiceSearchSpeed}</div>}
                 </div>
               )}
             </div>
@@ -4706,6 +5230,361 @@ export default function BlogSEO() {
                       <div><b>"{s.anchorTextSuggestion}"</b> → {s.targetPageType}</div>
                       <div style={{ color: "#a1a1aa", fontSize: 12 }}>{s.pageDescription} · {s.locationInContent}</div>
                       <span style={{ color: s.importance === "high" ? "#4ade80" : "#facc15", fontSize: 11 }}>{s.importance} priority</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
+            LOCAL SEO TAB (Batch 5)
+            ================================================================ */}
+        {tab === "Local SEO" && (
+          <>
+            {/* Google Business Profile Optimizer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>📍 Google Business Profile Optimizer</div>
+              <div style={S.cardDesc}>Optimize your GBP listing with AI-crafted descriptions, categories, photo strategies, and post ideas.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Business name..." value={gbpBusiness} onChange={e => setGbpBusiness(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Location (city, state)..." value={gbpLocation} onChange={e => setGbpLocation(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Business category (e.g. Plumber, Restaurant)..." value={gbpCategory} onChange={e => setGbpCategory(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runGbpOptimizer} disabled={gbpLoading || !gbpBusiness.trim()}>
+                {gbpLoading ? <><span style={S.spinner} /> Optimizing…</> : "Optimize GBP"}
+              </button>
+              {gbpResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Completeness: <b style={{ color: gbpResult.completenessScore >= 70 ? "#4ade80" : "#fbbf24" }}>{gbpResult.completenessScore}/100</b></span>
+                    <span>Impact: <b>{gbpResult.estimatedImpact}</b></span>
+                    <span>Category: <b>{gbpResult.primaryCategory}</b></span>
+                  </div>
+                  {gbpResult.optimizedDescription && <div style={{ background: "#18181b", borderRadius: 6, padding: "8px 12px", fontSize: 13, marginBottom: 8 }}>{gbpResult.optimizedDescription}</div>}
+                  {gbpResult.quickWins?.map((w, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>✅ {w}</div>)}
+                  {gbpResult.postIdeas?.length > 0 && (
+                    <div style={{ marginTop: 8 }}><div style={{ fontWeight: 600, marginBottom: 4 }}>GBP post ideas:</div>{gbpResult.postIdeas.map((p, i) => <div key={i} style={{ fontSize: 12, padding: "2px 0", color: "#a1a1aa" }}>• {p}</div>)}</div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Citation Finder */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🗂️ Local Citation Finder</div>
+              <div style={S.cardDesc}>Find NAP citation opportunities across directories — consistent citations boost local pack rankings.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Business name..." value={citationBusiness} onChange={e => setCitationBusiness(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Location (city, state)..." value={citationLocation} onChange={e => setCitationLocation(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Category / industry..." value={citationCategory} onChange={e => setCitationCategory(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runCitationFinder} disabled={citationLoading || !citationBusiness.trim()}>
+                {citationLoading ? <><span style={S.spinner} /> Finding…</> : "Find Citation Opportunities"}
+              </button>
+              {citationResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  {citationResult.napConsistencyTips?.map((t, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0", color: "#93c5fd" }}>💡 {t}</div>)}
+                  <div style={{ fontWeight: 600, margin: "8px 0 4px" }}>Top directories ({citationResult.topDirectories?.length || 0} found):</div>
+                  {citationResult.topDirectories?.slice(0, 12).map((d, i) => (
+                    <div key={i} style={{ padding: "5px 0", borderBottom: "1px solid #27272a", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                      <span style={{ fontWeight: 600 }}>{d.name}</span>
+                      <span style={{ background: d.priority === "high" ? "#14532d" : "#3f3f46", color: d.priority === "high" ? "#4ade80" : "#d4d4d8", borderRadius: 4, padding: "1px 6px", fontSize: 11 }}>{d.priority}</span>
+                      <span style={{ color: "#a1a1aa", fontSize: 11 }}>{d.freeOrPaid}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Local Keyword Generator */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>📍 Local Keyword Generator</div>
+              <div style={S.cardDesc}>Generate local keyword variants including city, neighborhood, near me, and voice search queries.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Service (e.g. plumber, SEO agency)..." value={localKwService} onChange={e => setLocalKwService(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="City (e.g. London, New York)..." value={localKwCity} onChange={e => setLocalKwCity(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runLocalKwGen} disabled={localKwLoading || !localKwService.trim() || !localKwCity.trim()}>
+                {localKwLoading ? <><span style={S.spinner} /> Generating…</> : "Generate Local Keywords"}
+              </button>
+              {localKwResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  {localKwResult.primaryKeywords?.length > 0 && (
+                    <div style={{ marginBottom: 8 }}><div style={{ fontWeight: 600, marginBottom: 4 }}>Primary local keywords:</div><div style={{ color: "#4ade80", fontSize: 13 }}>{localKwResult.primaryKeywords.join(" · ")}</div></div>
+                  )}
+                  {localKwResult.nearMeKeywords?.length > 0 && (
+                    <div style={{ marginBottom: 8 }}><div style={{ fontWeight: 600, marginBottom: 4 }}>Near me variants:</div><div style={{ color: "#818cf8", fontSize: 13 }}>{localKwResult.nearMeKeywords.join(" · ")}</div></div>
+                  )}
+                  {localKwResult.voiceSearchQueries?.length > 0 && (
+                    <div><div style={{ fontWeight: 600, marginBottom: 4 }}>Voice search queries:</div>{localKwResult.voiceSearchQueries.map((q, i) => <div key={i} style={{ fontSize: 12, color: "#a1a1aa" }}>🎙️ {q}</div>)}</div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* LocalBusiness Schema Builder */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🏗️ LocalBusiness Schema Builder</div>
+              <div style={S.cardDesc}>Generate LocalBusiness JSON-LD schema to appear in local rich results and Google Maps.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Business name..." value={localSchemaName} onChange={e => setLocalSchemaName(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Address..." value={localSchemaAddr} onChange={e => setLocalSchemaAddr(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Phone number..." value={localSchemaPhone} onChange={e => setLocalSchemaPhone(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runLocalSchema} disabled={localSchemaLoading || !localSchemaName.trim()}>
+                {localSchemaLoading ? <><span style={S.spinner} /> Building schema…</> : "Build LocalBusiness Schema"}
+              </button>
+              {localSchemaResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ marginBottom: 6 }}>Schema type: <b style={{ color: "#818cf8" }}>{localSchemaResult.schemaType}</b></div>
+                  {localSchemaResult.richResultPotential?.map((r, i) => <div key={i} style={{ fontSize: 12, color: "#4ade80" }}>✅ {r}</div>)}
+                  {localSchemaResult.schemaMarkup && (
+                    <div style={{ marginTop: 8 }}>
+                      <div style={{ fontWeight: 600, marginBottom: 4 }}>Generated schema:</div>
+                      <textarea readOnly style={{ ...S.input, height: 120, fontFamily: "monospace", fontSize: 11 }} value={localSchemaResult.schemaMarkup} />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
+            E-E-A-T & BRAND TAB (Batch 5)
+            ================================================================ */}
+        {tab === "E-E-A-T & Brand" && (
+          <>
+            {/* E-E-A-T Scorer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🏅 E-E-A-T Signal Scorer</div>
+              <div style={S.cardDesc}>Audit Experience, Expertise, Authoritativeness & Trustworthiness signals — critical for YMYL content.</div>
+              <button style={S.btn("primary")} onClick={runEeatScorer} disabled={eeatLoading || !url.trim()}>
+                {eeatLoading ? <><span style={S.spinner} /> Scoring E-E-A-T…</> : "Score E-E-A-T Signals"}
+              </button>
+              {eeatResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>E-E-A-T Score: <b style={{ color: eeatResult.eeatScore >= 70 ? "#4ade80" : eeatResult.eeatScore >= 50 ? "#fbbf24" : "#f87171" }}>{eeatResult.eeatScore}/100</b></span>
+                    <span>YMYL Risk: <b style={{ color: eeatResult.ymylRisk === "high" ? "#f87171" : "#fbbf24" }}>{eeatResult.ymylRisk}</b></span>
+                  </div>
+                  {Object.entries(eeatResult.breakdown || {}).map(([dim, data]) => (
+                    <div key={dim} style={{ padding: "6px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <span style={{ fontWeight: 600, textTransform: "capitalize" }}>{dim}</span>
+                        <span style={{ color: data.score >= 70 ? "#4ade80" : "#fbbf24" }}>{data.score}/100</span>
+                      </div>
+                      {data.improvements?.map((imp, i) => <div key={i} style={{ fontSize: 12, color: "#a1a1aa" }}>• {imp}</div>)}
+                    </div>
+                  ))}
+                  {eeatResult.topPriorities?.length > 0 && (
+                    <div style={{ marginTop: 8 }}><div style={{ fontWeight: 600, marginBottom: 4 }}>Top priorities:</div>{eeatResult.topPriorities.map((p, i) => <div key={i} style={{ fontSize: 13 }}>• {p}</div>)}</div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Author Bio Optimizer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>✍️ Author Bio Optimizer</div>
+              <div style={S.cardDesc}>Craft E-E-A-T-optimized author bios in short, medium, and long formats with credential highlights.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Author name..." value={authorBioName} onChange={e => setAuthorBioName(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Niche (e.g. Digital Marketing, Nutrition)..." value={authorBioNiche} onChange={e => setAuthorBioNiche(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Credentials (e.g. 10 years SEO, MBA, published in Forbes)..." value={authorBioCredentials} onChange={e => setAuthorBioCredentials(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runAuthorBio} disabled={authorBioLoading || !authorBioName.trim()}>
+                {authorBioLoading ? <><span style={S.spinner} /> Writing bio…</> : "Optimize Author Bio"}
+              </button>
+              {authorBioResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  {Object.entries(authorBioResult.optimizedBio || {}).map(([len, text]) => (
+                    <div key={len} style={{ marginBottom: 10 }}>
+                      <div style={{ fontWeight: 600, textTransform: "capitalize", marginBottom: 4 }}>{len} bio:</div>
+                      <div style={{ background: "#18181b", borderRadius: 6, padding: "8px 12px", fontSize: 13 }}>{text}</div>
+                    </div>
+                  ))}
+                  {authorBioResult.eeatSignals?.length > 0 && (
+                    <div><div style={{ fontWeight: 600, marginBottom: 4 }}>E-E-A-T signals to include:</div>{authorBioResult.eeatSignals.map((s, i) => <div key={i} style={{ fontSize: 12, color: "#4ade80" }}>✅ {s}</div>)}</div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Brand Signal Audit */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>📣 Brand Signal Audit</div>
+              <div style={S.cardDesc}>Audit brand signals across social presence, branded search, unlinked mentions & knowledge panel eligibility.</div>
+              <input style={{ ...S.input, marginBottom: 6 }} placeholder="Your domain (e.g. yourshop.com)..." value={brandSignalDomain} onChange={e => setBrandSignalDomain(e.target.value)} />
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Brand name (optional)..." value={brandSignalName} onChange={e => setBrandSignalName(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runBrandSignals} disabled={brandSignalLoading || !brandSignalDomain.trim()}>
+                {brandSignalLoading ? <><span style={S.spinner} /> Auditing…</> : "Audit Brand Signals"}
+              </button>
+              {brandSignalResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8 }}>
+                    <span>Brand score: <b style={{ color: brandSignalResult.brandSignalScore >= 70 ? "#4ade80" : "#fbbf24" }}>{brandSignalResult.brandSignalScore}/100</b></span>
+                  </div>
+                  {Object.entries(brandSignalResult.signalCategories || {}).map(([cat, data]) => (
+                    <div key={cat} style={{ padding: "5px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <span style={{ fontWeight: 600, textTransform: "capitalize" }}>{cat.replace(/([A-Z])/g, ' $1').trim()}</span>
+                        {data.score != null && <span style={{ color: data.score >= 70 ? "#4ade80" : "#fbbf24" }}>{data.score}/100</span>}
+                      </div>
+                      {data.improvements?.map((imp, i) => <div key={i} style={{ fontSize: 12, color: "#a1a1aa" }}>• {imp}</div>)}
+                    </div>
+                  ))}
+                  {brandSignalResult.topBrandActions?.length > 0 && (
+                    <div style={{ marginTop: 8 }}><div style={{ fontWeight: 600, marginBottom: 4 }}>Top actions:</div>{brandSignalResult.topBrandActions.map((a, i) => <div key={i} style={{ fontSize: 13 }}>• {a}</div>)}</div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Expert Quote Finder */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>💬 Expert Quote Finder</div>
+              <div style={S.cardDesc}>Find expert quote strategies and outreach sources — adding expert quotes is an Ahrefs top E-E-A-T tactic.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Topic / article subject..." value={expertQuoteTopic} onChange={e => setExpertQuoteTopic(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runExpertQuotes} disabled={expertQuoteLoading || !expertQuoteTopic.trim()}>
+                {expertQuoteLoading ? <><span style={S.spinner} /> Researching…</> : "Find Expert Quotes"}
+              </button>
+              {expertQuoteResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  {expertQuoteResult.outreachSources?.length > 0 && (
+                    <div style={{ marginBottom: 8 }}><div style={{ fontWeight: 600, marginBottom: 4 }}>Outreach sources:</div>{expertQuoteResult.outreachSources.map((s, i) => <div key={i} style={{ fontSize: 13, color: "#4ade80" }}>🔗 {s}</div>)}</div>
+                  )}
+                  {expertQuoteResult.quotePrompts?.length > 0 && (
+                    <div style={{ marginBottom: 8 }}><div style={{ fontWeight: 600, marginBottom: 4 }}>Questions to ask experts:</div>{expertQuoteResult.quotePrompts.map((q, i) => <div key={i} style={{ fontSize: 12, color: "#a1a1aa" }}>• {q}</div>)}</div>
+                  )}
+                  {expertQuoteResult.sampleQuotes?.map((q, i) => <div key={i} style={{ background: "#18181b", borderRadius: 6, padding: "8px 12px", fontSize: 13, marginBottom: 6, fontStyle: "italic" }}>"{q}"</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Trust Builder */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🔒 Trust Builder Audit</div>
+              <div style={S.cardDesc}>Audit trust and credibility signals — security, transparency, social proof, and content quality.</div>
+              <button style={S.btn("primary")} onClick={runTrustBuilder} disabled={trustBuilderLoading || !url.trim()}>
+                {trustBuilderLoading ? <><span style={S.spinner} /> Auditing trust…</> : "Audit Trust Signals"}
+              </button>
+              {trustBuilderResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Trust score: <b style={{ color: trustBuilderResult.trustScore >= 70 ? "#4ade80" : trustBuilderResult.trustScore >= 50 ? "#fbbf24" : "#f87171" }}>{trustBuilderResult.trustScore}/100</b></span>
+                  </div>
+                  {Object.entries(trustBuilderResult.trustSignals || {}).map(([sig, data]) => (
+                    <div key={sig} style={{ padding: "5px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <span style={{ fontWeight: 600, textTransform: "capitalize" }}>{sig.replace(/([A-Z])/g, ' $1').trim()}</span>
+                        <span style={{ background: data.priority === "high" ? "#7f1d1d" : "#27272a", color: data.priority === "high" ? "#fca5a5" : "#d4d4d8", borderRadius: 4, padding: "1px 6px", fontSize: 11 }}>{data.priority}</span>
+                      </div>
+                      {data.missing?.map((m, i) => <div key={i} style={{ fontSize: 12, color: "#fbbf24" }}>⚠️ {m}</div>)}
+                    </div>
+                  ))}
+                  {trustBuilderResult.topTrustActions?.length > 0 && (
+                    <div style={{ marginTop: 8 }}><div style={{ fontWeight: 600, marginBottom: 4 }}>Top actions:</div>{trustBuilderResult.topTrustActions.map((a, i) => <div key={i} style={{ fontSize: 13 }}>• {a}</div>)}</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================================================================
+            VOICE & AI SEARCH TAB (Batch 5)
+            ================================================================ */}
+        {tab === "Voice & AI Search" && (
+          <>
+            {/* Voice Search Optimizer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🎙️ Voice Search Optimizer</div>
+              <div style={S.cardDesc}>Optimize for Google Assistant & smart speakers — 40.7% of voice results come from Featured Snippets (Backlinko study).</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Target keyword..." value={voiceOptKeyword} onChange={e => setVoiceOptKeyword(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runVoiceOptimizer} disabled={voiceOptLoading || !voiceOptKeyword.trim()}>
+                {voiceOptLoading ? <><span style={S.spinner} /> Optimizing…</> : "Optimize for Voice Search"}
+              </button>
+              {voiceOptResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>Voice score: <b style={{ color: voiceOptResult.voiceSearchScore >= 70 ? "#4ade80" : "#fbbf24" }}>{voiceOptResult.voiceSearchScore}/100</b></span>
+                    <span>Snippet opportunity: <b>{voiceOptResult.featuredSnippetOpportunity?.snippetType}</b></span>
+                  </div>
+                  {voiceOptResult.idealAnswer?.text && (
+                    <div style={{ background: "#18181b", borderRadius: 6, padding: "10px 14px", marginBottom: 8 }}>
+                      <div style={{ fontWeight: 600, marginBottom: 4 }}>🎙️ Ideal 29-word voice answer:</div>
+                      <div style={{ fontSize: 13 }}>{voiceOptResult.idealAnswer.text}</div>
+                    </div>
+                  )}
+                  {voiceOptResult.longtailVariants?.map((v, i) => <div key={i} style={{ fontSize: 12, color: "#a1a1aa", padding: "2px 0" }}>🎙️ {v}</div>)}
+                  {voiceOptResult.contentStructureTips?.map((t, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {t}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* FAQ Page Generator */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>❓ FAQ Page Generator</div>
+              <div style={S.cardDesc}>Generate FAQ pages optimized for voice search and Google AI Overviews — 2.68% of voice results come from FAQ pages.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Topic (e.g. Shopify email marketing)..." value={faqGenTopic} onChange={e => setFaqGenTopic(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runFaqGenerator} disabled={faqGenLoading || !faqGenTopic.trim()}>
+                {faqGenLoading ? <><span style={S.spinner} /> Generating FAQs…</> : "Generate FAQ Page"}
+              </button>
+              {faqGenResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ fontWeight: 600, marginBottom: 4 }}>📄 {faqGenResult.pageTitle}</div>
+                  <div style={{ color: "#a1a1aa", fontSize: 12, marginBottom: 8 }}>{faqGenResult.metaDescription}</div>
+                  {faqGenResult.faqs?.slice(0, 10).map((faq, i) => (
+                    <div key={i} style={{ padding: "7px 0", borderBottom: "1px solid #27272a" }}>
+                      <div style={{ fontWeight: 600, fontSize: 13 }}>Q: {faq.question}</div>
+                      <div style={{ color: "#d4d4d8", fontSize: 12, marginTop: 2 }}>A: {faq.answer}</div>
+                      <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                        <span style={{ background: "#3f3f46", borderRadius: 4, padding: "1px 6px", fontSize: 11 }}>{faq.answerType}</span>
+                        {faq.voiceLength && <span style={{ color: "#4ade80", fontSize: 11 }}>✅ voice-ready</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* AI Overview Optimizer */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>🤖 AI Overview Optimizer</div>
+              <div style={S.cardDesc}>Optimize content to appear in Google AI Overviews (SGE), ChatGPT, Perplexity, and other LLM search engines.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Target keyword..." value={aiOverviewKeyword} onChange={e => setAiOverviewKeyword(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runAiOverviewOptimizer} disabled={aiOverviewLoading || !aiOverviewKeyword.trim()}>
+                {aiOverviewLoading ? <><span style={S.spinner} /> Optimizing…</> : "Optimize for AI Overviews"}
+              </button>
+              {aiOverviewResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span>AI readiness: <b style={{ color: aiOverviewResult.aiOverviewScore >= 70 ? "#4ade80" : "#fbbf24" }}>{aiOverviewResult.aiOverviewScore}/100</b></span>
+                    <span style={{ color: aiOverviewResult.aiReadinessLabel === "optimized" ? "#4ade80" : "#fbbf24" }}>{aiOverviewResult.aiReadinessLabel}</span>
+                    <span>Citation worthiness: <b>{aiOverviewResult.citationWorthiness?.score}/100</b></span>
+                  </div>
+                  {aiOverviewResult.optimizedAnswer && (
+                    <div style={{ background: "#18181b", borderRadius: 6, padding: "10px 14px", marginBottom: 8, fontSize: 13 }}>
+                      <div style={{ fontWeight: 600, marginBottom: 4 }}>📝 AI-optimized answer:</div>
+                      {aiOverviewResult.optimizedAnswer}
+                    </div>
+                  )}
+                  {aiOverviewResult.contentStructureTips?.map((t, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0" }}>• {t}</div>)}
+                  {aiOverviewResult.llmOptimizationTips?.map((t, i) => <div key={i} style={{ fontSize: 12, color: "#818cf8", padding: "2px 0" }}>🤖 {t}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* Conversational Keywords */}
+            <div style={S.card}>
+              <div style={S.cardTitle}>💬 Conversational Keyword Generator</div>
+              <div style={S.cardDesc}>Generate natural language, full-sentence voice and AI search queries across Who/What/Where/When/Why/How.</div>
+              <input style={{ ...S.input, marginBottom: 8 }} placeholder="Topic (e.g. Shopify abandoned cart)..." value={convKwTopic} onChange={e => setConvKwTopic(e.target.value)} />
+              <button style={S.btn("primary")} onClick={runConvKeywords} disabled={convKwLoading || !convKwTopic.trim()}>
+                {convKwLoading ? <><span style={S.spinner} /> Generating…</> : "Generate Conversational Keywords"}
+              </button>
+              {convKwResult && (
+                <div style={{ ...S.result, marginTop: 10 }}>
+                  {convKwResult.conversationalKeywords?.length > 0 && (
+                    <div style={{ marginBottom: 8 }}><div style={{ fontWeight: 600, marginBottom: 4 }}>Natural language queries:</div>{convKwResult.conversationalKeywords.map((kw, i) => <div key={i} style={{ fontSize: 13, padding: "2px 0", color: "#d4d4d8" }}>🎙️ {kw}</div>)}</div>
+                  )}
+                  {Object.entries(convKwResult.questionKeywords || {}).map(([qtype, qs]) => (
+                    <div key={qtype} style={{ marginBottom: 6 }}>
+                      <span style={{ fontWeight: 600, textTransform: "capitalize", color: "#818cf8" }}>{qtype}:</span>
+                      <span style={{ color: "#a1a1aa", fontSize: 12, marginLeft: 8 }}>{qs?.join(" · ")}</span>
                     </div>
                   ))}
                 </div>
