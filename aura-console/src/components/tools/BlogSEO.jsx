@@ -49,8 +49,95 @@ const TABS = ["Analyzer", "Keywords", "Content+", "Keyword+", "Technical+", "AI 
 const FILTER_CATS = ["all", "content", "meta", "technical", "keywords", "structure"];
 const FILTER_SEVS = ["all", "high", "medium", "low"];
 
+/* ── Dashboard sections — group 17 tabs into 8 beginner-friendly cards ─── */
+const SECTIONS = [
+  {
+    id: "Analyze",
+    icon: "🔍",
+    title: "Analyze",
+    desc: "Get a full SEO audit of any blog post — score, issues and AI fix suggestions.",
+    color: "#4f46e5",
+    tabs: ["Analyzer"],
+    tabLabels: { "Analyzer": "Analyzer" },
+  },
+  {
+    id: "Keywords",
+    icon: "🎯",
+    title: "Keywords",
+    desc: "Find the best keywords for your store niche and discover content gaps.",
+    color: "#0891b2",
+    tabs: ["Keywords", "Keyword+"],
+    tabLabels: { "Keywords": "Keyword Research", "Keyword+": "More Tools" },
+  },
+  {
+    id: "Write",
+    icon: "✍️",
+    title: "Write",
+    desc: "Let AI generate full blog posts, outlines, intros and content briefs for you.",
+    color: "#059669",
+    tabs: ["AI Create", "Content Brief"],
+    tabLabels: { "AI Create": "AI Generate", "Content Brief": "Content Brief" },
+  },
+  {
+    id: "Optimize",
+    icon: "📈",
+    title: "Optimize",
+    desc: "Score your existing content and get specific tips to improve it.",
+    color: "#d97706",
+    tabs: ["Content+"],
+    tabLabels: { "Content+": "Optimize" },
+  },
+  {
+    id: "Technical",
+    icon: "⚙️",
+    title: "Technical SEO",
+    desc: "Find and fix technical issues hurting your blog's search rankings.",
+    color: "#7c3aed",
+    tabs: ["Technical+"],
+    tabLabels: { "Technical+": "Technical" },
+  },
+  {
+    id: "Bulk Scan",
+    icon: "📊",
+    title: "Bulk Scan",
+    desc: "Audit multiple blog posts at once instead of one at a time.",
+    color: "#0f766e",
+    tabs: ["Bulk Scan"],
+    tabLabels: { "Bulk Scan": "Bulk Scan" },
+  },
+  {
+    id: "AI Chat",
+    icon: "🤖",
+    title: "AI Assistant",
+    desc: "Chat with an AI SEO expert. Ask anything — get instant advice.",
+    color: "#be185d",
+    tabs: ["AI Assistant"],
+    tabLabels: { "AI Assistant": "Chat" },
+  },
+  {
+    id: "History",
+    icon: "📁",
+    title: "History",
+    desc: "Browse and revisit all your past scans and analysis reports.",
+    color: "#475569",
+    tabs: ["History"],
+    tabLabels: { "History": "History" },
+  },
+  {
+    id: "Advanced",
+    icon: "🧪",
+    title: "Advanced",
+    desc: "Schema markup, SERP analysis, backlinks, A/B testing, local SEO, E-E-A-T and more.",
+    color: "#374151",
+    badge: "Power users",
+    tabs: ["Schema & Links", "SERP & CTR", "Backlinks", "A/B & Refresh", "Local SEO", "E-E-A-T & Brand", "Voice & AI Search"],
+    tabLabels: { "Schema & Links": "Schema", "SERP & CTR": "SERP", "Backlinks": "Backlinks", "A/B & Refresh": "A/B", "Local SEO": "Local", "E-E-A-T & Brand": "E-E-A-T", "Voice & AI Search": "Voice" },
+  },
+];
+
 export default function BlogSEO() {
   const [tab, setTab] = useState("Analyzer");
+  const [section, setSection] = useState(null); // null = home dashboard
 
   /* ── Shopify store data (auto-fill) ── */
   const [shopifyArticles, setShopifyArticles] = useState([]);
@@ -1938,7 +2025,7 @@ export default function BlogSEO() {
     setHistory(p => p.filter(h => h.id !== id));
   }, []);
 
-  useEffect(() => { if (tab === "History") loadHistory(); }, [tab]);
+  useEffect(() => { if (tab === "History" || section === "History") loadHistory(); }, [tab, section]);
 
   /* ── Fetch Shopify store data on mount ── */
   useEffect(() => {
@@ -2003,76 +2090,114 @@ export default function BlogSEO() {
   const filteredIssues = issues.filter(i => (filterCat === "all" || i.cat === filterCat) && (filterSev === "all" || i.sev === filterSev));
 
   /* ── RENDER ──────────────────────────────────────────────────────────── */
+  const activeSec = section ? SECTIONS.find(s => s.id === section) : null;
   return (
     <div style={S.page}>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       <div style={S.topBar}>
         <BackButton />
         <span style={S.title}>Blog SEO Engine</span>
+        {activeSec && <><span style={{ color: "#3f3f46", fontSize: 18 }}>›</span><span style={{ ...S.title, fontWeight: 500 }}>{activeSec.icon} {activeSec.title}</span></>}
         <span style={S.badge}>AI-Powered</span>
       </div>
 
       <div style={S.body}>
-        {/* ── TABS ── */}
-        <div style={S.tabs}>
-          {TABS.map(t => <div key={t} style={S.tab(tab === t)} onClick={() => setTab(t)}>{t}</div>)}
-        </div>
 
-        {/* ── SHOPIFY ARTICLE PICKER (auto-fill all fields) ── */}
-        {shopifyLoading ? (
-          <div style={{ padding: "10px 0", color: "#71717a", fontSize: 13 }}><span style={S.spinner} /> Loading store data…</div>
-        ) : shopifyArticles.length > 0 ? (
-          <div style={{ ...S.card, borderColor: "#4f46e5", marginTop: 14, marginBottom: 4 }}>
-            <div style={{ ...S.cardTitle, marginBottom: 8, fontSize: 14 }}>
-              🛍️ Shopify Store&nbsp;
-              <span style={{ fontSize: 12, fontWeight: 400, color: "#a1a1aa" }}>— select a blog post to auto-fill all fields across every tab</span>
-            </div>
-            <div style={S.row}>
-              <select
-                style={{ ...S.input, flex: 2 }}
-                value={selectedArticleId}
-                onChange={e => handleArticleSelect(e.target.value)}
-              >
-                <option value="">— Pick a blog post to auto-fill —</option>
-                {shopifyArticles.map(a => (
-                  <option key={a.id} value={String(a.id)}>[{a.blogTitle}] {a.title}</option>
-                ))}
-              </select>
-              {selectedArticleId && (
-                <button style={S.btn()} onClick={() => { setSelectedArticleId(""); setUrl(""); setKwInput(""); setSeedKw(""); setBriefTopic(""); }}>✕ Clear</button>
+        {/* ================================================================
+            HOME DASHBOARD (section === null)
+            ================================================================ */}
+        {!section && (
+          <>
+            <div style={{ padding: "20px 0 12px" }}>
+              {shopifyLoading ? (
+                <div style={{ fontSize: 13, color: "#71717a", marginBottom: 16 }}><span style={S.spinner} /> Loading store data…</div>
+              ) : shopDomain ? (
+                <div style={{ fontSize: 13, color: "#71717a", marginBottom: 20 }}>
+                  🛍️ Connected to <strong style={{ color: "#a1a1aa" }}>{shopDomain}</strong>
+                  {shopifyArticles.length > 0 && <span> · {shopifyArticles.length} blog posts ready</span>}
+                </div>
+              ) : (
+                <div style={{ fontSize: 13, color: "#52525b", marginBottom: 20 }}>Connect your Shopify store in Settings to auto-fill all tools.</div>
               )}
+              <div style={{ fontSize: 14, color: "#71717a", marginBottom: 22 }}>Pick a tool below to get started.</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14 }}>
+                {SECTIONS.map(s => (
+                  <div
+                    key={s.id}
+                    style={{ ...S.card, cursor: "pointer", borderLeft: `3px solid ${s.color}`, position: "relative" }}
+                    onClick={() => { setSection(s.id); setTab(s.tabs[0]); }}
+                  >
+                    <div style={{ fontSize: 26, marginBottom: 10 }}>{s.icon}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: "#fafafa" }}>{s.title}</span>
+                      {s.badge && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "#27272a", color: "#71717a" }}>{s.badge}</span>}
+                    </div>
+                    <div style={{ fontSize: 13, color: "#71717a", lineHeight: 1.55 }}>{s.desc}</div>
+                    <div style={{ marginTop: 14, fontSize: 12, color: s.color, fontWeight: 600 }}>Open →</div>
+                  </div>
+                ))}
+              </div>
             </div>
-            {selectedArticleId && (() => {
-              const art = shopifyArticles.find(a => String(a.id) === selectedArticleId);
-              return art ? (
-                <div style={{ marginTop: 8, fontSize: 12, color: "#a1a1aa", display: "flex", gap: 16, flexWrap: "wrap" }}>
-                  <span>✓ URL auto-filled</span>
-                  {art.tags && <span>✓ Keywords: <span style={{ color: "#d4d4d8" }}>{art.tags}</span></span>}
-                  {art.publishedAt && <span>Published: {new Date(art.publishedAt).toLocaleDateString()}</span>}
-                  {art.author && <span>Author: {art.author}</span>}
+          </>
+        )}
+
+        {/* ================================================================
+            SECTION VIEW (section !== null)
+            ================================================================ */}
+        {activeSec && (
+          <>
+            {/* ── Section header bar ── */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 0 10px", borderBottom: "1px solid #27272a", marginBottom: 12, flexWrap: "wrap" }}>
+              <button style={{ ...S.btn(), padding: "6px 14px", fontSize: 13 }} onClick={() => setSection(null)}>← All Tools</button>
+              <span style={{ fontSize: 16, fontWeight: 700 }}>{activeSec.icon} {activeSec.title}</span>
+              {/* Sub-tabs: only shown when section has multiple tabs */}
+              {activeSec.tabs.length > 1 && activeSec.tabs.map(t => (
+                <div key={t} style={S.tab(tab === t)} onClick={() => setTab(t)}>{activeSec.tabLabels?.[t] || t}</div>
+              ))}
+            </div>
+
+            {/* ── Shopify article picker ── */}
+            {shopifyArticles.length > 0 && (
+              <div style={{ ...S.card, borderColor: "#4f46e5", marginBottom: 16 }}>
+                <div style={{ ...S.cardTitle, marginBottom: 8, fontSize: 13 }}>
+                  🛍️ Auto-fill from your store&nbsp;
+                  <span style={{ fontSize: 12, fontWeight: 400, color: "#71717a" }}>— pick a post to fill in all fields below</span>
                 </div>
-              ) : null;
-            })()}
-            {shopifyProducts.length > 0 && !selectedArticleId && (
-              <div style={{ marginTop: 10, borderTop: "1px solid #27272a", paddingTop: 10 }}>
-                <div style={{ fontSize: 12, color: "#71717a", marginBottom: 6 }}>📦 Or use a product as keyword seed:</div>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  {shopifyProducts.slice(0, 12).map(p => (
-                    <button
-                      key={p.id}
-                      style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }}
-                      onClick={() => { setSeedKw(p.title); setKwInput(p.title + (p.tags ? ', ' + p.tags : '')); setIntentKeyword(p.title); setTopicalKw(p.title); setPaaKw(p.title); }}
-                    >{p.title}</button>
-                  ))}
+                <div style={S.row}>
+                  <select style={{ ...S.input, flex: 2 }} value={selectedArticleId} onChange={e => handleArticleSelect(e.target.value)}>
+                    <option value="">— Select a blog post —</option>
+                    {shopifyArticles.map(a => (
+                      <option key={a.id} value={String(a.id)}>[{a.blogTitle}] {a.title}</option>
+                    ))}
+                  </select>
+                  {selectedArticleId && (
+                    <button style={S.btn()} onClick={() => { setSelectedArticleId(""); setUrl(""); setKwInput(""); setSeedKw(""); setBriefTopic(""); }}>✕ Clear</button>
+                  )}
                 </div>
+                {selectedArticleId && (() => {
+                  const art = shopifyArticles.find(a => String(a.id) === selectedArticleId);
+                  return art ? (
+                    <div style={{ marginTop: 8, fontSize: 12, color: "#a1a1aa", display: "flex", gap: 16, flexWrap: "wrap" }}>
+                      <span>✓ URL set</span>
+                      {art.tags && <span>✓ Keywords: <span style={{ color: "#d4d4d8" }}>{art.tags}</span></span>}
+                      {art.author && <span>Author: {art.author}</span>}
+                    </div>
+                  ) : null;
+                })()}
+                {shopifyProducts.length > 0 && !selectedArticleId && (
+                  <div style={{ marginTop: 10, borderTop: "1px solid #27272a", paddingTop: 10 }}>
+                    <div style={{ fontSize: 12, color: "#71717a", marginBottom: 6 }}>📦 Or use a product as keyword seed:</div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {shopifyProducts.slice(0, 10).map(p => (
+                        <button key={p.id} style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }}
+                          onClick={() => { setSeedKw(p.title); setKwInput(p.title + (p.tags ? ', ' + p.tags : '')); setIntentKeyword(p.title); setTopicalKw(p.title); setPaaKw(p.title); }}
+                        >{p.title}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        ) : shopDomain ? (
-          <div style={{ padding: "8px 0", fontSize: 12, color: "#71717a" }}>
-            🛍️ Connected to <strong style={{ color: "#a1a1aa" }}>{shopDomain}</strong> — no blog posts found yet.
-          </div>
-        ) : null}
 
         {/* ================================================================
             ANALYZER TAB
@@ -6689,6 +6814,9 @@ export default function BlogSEO() {
                 </div>
               ))}
             </div>
+          </>
+        )}
+
           </>
         )}
       </div>
