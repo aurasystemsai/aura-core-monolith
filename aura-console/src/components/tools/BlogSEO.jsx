@@ -152,6 +152,7 @@ export default function BlogSEO() {
   const [shopDomain, setShopDomain] = useState("");
   const [shopifyLoading, setShopifyLoading] = useState(false);
   const [selectedArticleId, setSelectedArticleId] = useState("");
+  const [selectedProductId, setSelectedProductId] = useState("");
 
   /* ── Analyzer state ── */
   const [url, setUrl] = useState("");
@@ -2058,6 +2059,7 @@ export default function BlogSEO() {
   /* ── Auto-fill all fields from selected Shopify article ── */
   const handleArticleSelect = useCallback((articleId) => {
     setSelectedArticleId(articleId);
+    setSelectedProductId("");
     if (!articleId) return;
     const art = shopifyArticles.find(a => String(a.id) === String(articleId));
     if (!art) return;
@@ -2252,7 +2254,7 @@ export default function BlogSEO() {
                     ))}
                   </select>
                   {selectedArticleId && (
-                    <button style={S.btn()} onClick={() => { setSelectedArticleId(""); setUrl(""); setKwInput(""); setSeedKw(""); setBriefTopic(""); }}>✕ Clear</button>
+                    <button style={S.btn()} onClick={() => { setSelectedArticleId(""); setSelectedProductId(""); setUrl(""); setKwInput(""); setSeedKw(""); setBriefTopic(""); }}>✕ Clear</button>
                   )}
                 </div>
                 {selectedArticleId && (() => {
@@ -2269,12 +2271,37 @@ export default function BlogSEO() {
                   <div style={{ marginTop: 10, borderTop: "1px solid #27272a", paddingTop: 10 }}>
                     <div style={{ fontSize: 12, color: "#71717a", marginBottom: 6 }}>📦 Or use a product as keyword seed:</div>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      {shopifyProducts.slice(0, 10).map(p => (
-                        <button key={p.id} style={{ ...S.btn(), fontSize: 11, padding: "4px 10px" }}
-                          onClick={() => { setSeedKw(p.title); setKwInput(p.title + (p.tags ? ', ' + p.tags : '')); setIntentKeyword(p.title); setTopicalKw(p.title); setPaaKw(p.title); }}
-                        >{p.title}</button>
-                      ))}
+                      {shopifyProducts.slice(0, 10).map(p => {
+                        const isSelected = selectedProductId === p.id;
+                        return (
+                          <button key={p.id}
+                            style={{ ...S.btn(isSelected ? "primary" : undefined), fontSize: 11, padding: "4px 10px", border: isSelected ? "1px solid #a78bfa" : "1px solid #3f3f46", background: isSelected ? "#4c1d95" : "#27272a", color: isSelected ? "#ede9fe" : "#d4d4d8" }}
+                            onClick={() => {
+                              setSelectedProductId(p.id);
+                              setSelectedArticleId("");
+                              setSeedKw(p.title);
+                              setKwInput(p.title + (p.tags ? ', ' + p.tags : ''));
+                              setIntentKeyword(p.title);
+                              setTopicalKw(p.title);
+                              setPaaKw(p.title);
+                              setBriefTopic(p.title);
+                              setBriefPrimary(p.title);
+                              if (shopDomain && p.handle) setUrl(`https://${shopDomain}/products/${p.handle}`);
+                            }}
+                          >{isSelected ? "✓ " : ""}{p.title}</button>
+                        );
+                      })}
                     </div>
+                    {selectedProductId && (() => {
+                      const sp = shopifyProducts.find(p => p.id === selectedProductId);
+                      return sp ? (
+                        <div style={{ marginTop: 8, fontSize: 12, color: "#a1a1aa", display: "flex", gap: 16, flexWrap: "wrap" }}>
+                          <span style={{ color: "#86efac" }}>✓ Keywords seeded from <strong style={{ color: "#bbf7d0" }}>{sp.title}</strong></span>
+                          {sp.tags && <span>Tags: <span style={{ color: "#d4d4d8" }}>{sp.tags}</span></span>}
+                          {shopDomain && sp.handle && <span>URL: <span style={{ color: "#d4d4d8" }}>/{sp.handle}</span></span>}
+                        </div>
+                      ) : null;
+                    })()}
                   </div>
                 )}
               </div>
