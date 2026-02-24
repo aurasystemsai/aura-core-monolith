@@ -2039,12 +2039,12 @@ export default function BlogSEO() {
     (async () => {
       setShopifyLoading(true);
       try {
-        const r = await apiFetch(`${API}/shopify-data`);
-        if (r.ok) {
+        const resp = await apiFetch(`${API}/shopify-data`);
+        if (resp.ok) {
+          const r = await resp.json();
           setShopifyArticles(r.articles || []);
           setShopifyProducts(r.products || []);
           setShopDomain(r.shop || "");
-          // Auto-populate domain fields from shop domain
           if (r.shop) {
             const storeUrl = `https://${r.shop}`;
             setOrgUrl(prev => prev || storeUrl);
