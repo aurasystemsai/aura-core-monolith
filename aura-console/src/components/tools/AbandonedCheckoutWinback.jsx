@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+ï»¿import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { apiFetch, apiFetchJSON } from '../../api';
 import WinbackFeatureCard from './WinbackFeatureCard';
 import WinbackAnalyticsChart from './WinbackAnalyticsChart';
@@ -743,7 +743,7 @@ function APIPlaygroundTab() {
     try {
       const options = method !== 'GET' ? { method, body } : { method };
       const res = await apiFetchJSON(endpoint, options);
-      const data = await res.json();
+      const data = res;
       setResponse(JSON.stringify(data, null, 2));
     } catch (e) {
       setResponse(`Error: ${e.message}`);
@@ -1195,8 +1195,8 @@ function GeneralSettingsTab() {
           <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600 }}>Currency</label>
           <select value={settings.currency} onChange={(e) => setSettings({...settings, currency: e.target.value})} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 400 }}>
             <option value="USD">USD ($)</option>
-            <option value="EUR">EUR (€)</option>
-            <option value="GBP">GBP (£)</option>
+            <option value="EUR">EUR (â‚¬)</option>
+            <option value="GBP">GBP (Â£)</option>
           </select>
         </div>
         <button style={{ background: '#4f46e5', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Save Settings</button>
@@ -1234,7 +1234,7 @@ function BrandsTab() {
           <div key={idx} style={{ background: '#3f3f46', padding: 20, borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontWeight: 700, marginBottom: 4 }}>{brand.name}</div>
-              <div style={{ fontSize: 14, color: '#a1a1aa' }}>Primary: {brand.primaryColor} • Logo: {brand.logoUrl || 'Not set'}</div>
+              <div style={{ fontSize: 14, color: '#a1a1aa' }}>Primary: {brand.primaryColor} â€¢ Logo: {brand.logoUrl || 'Not set'}</div>
             </div>
             <button style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Edit</button>
           </div>
@@ -1369,7 +1369,7 @@ function LocalizationTab() {
           <div key={idx} style={{ background: '#3f3f46', padding: 18, borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontWeight: 700 }}>{locale.name}</div>
-              <div style={{ fontSize: 14, color: '#a1a1aa' }}>Code: {locale.code} • {locale.enabled ? 'Enabled' : 'Disabled'}</div>
+              <div style={{ fontSize: 14, color: '#a1a1aa' }}>Code: {locale.code} â€¢ {locale.enabled ? 'Enabled' : 'Disabled'}</div>
             </div>
             <button style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Edit</button>
           </div>
@@ -1602,7 +1602,7 @@ function SecurityCenterTab() {
             {auditLogs.slice(0, 5).map((log, idx) => (
               <div key={idx} style={{ padding: '10px 0', borderBottom: idx < 4 ? '1px solid #18181b' : 'none' }}>
                 <div style={{ fontWeight: 600 }}>{log.event}</div>
-                <div style={{ color: '#a1a1aa', fontSize: 13 }}>{log.user} • {log.timestamp}</div>
+                <div style={{ color: '#a1a1aa', fontSize: 13 }}>{log.user} â€¢ {log.timestamp}</div>
               </div>
             ))}
           </div>

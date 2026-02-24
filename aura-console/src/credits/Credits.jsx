@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { apiFetch, apiFetchJSON } from '../api';
 import { PLAN_LABEL, PLAN_CREDITS, PLAN_COLOUR } from '../hooks/usePlan';
 
@@ -112,7 +112,7 @@ const Credits = ({ plan = 'free' }) => {
   const loadCredits = useCallback(async () => {
     try {
       const res = await apiFetchJSON('/api/billing/credits');
-      const data = await res.json();
+      const data = res;
       if (data.ok) {
         setBalance(data.balance);
         setUsed(data.used || 0);
@@ -139,7 +139,7 @@ const Credits = ({ plan = 'free' }) => {
     setTxLoading(true);
     try {
       const res = await apiFetchJSON('/api/billing/credit-history');
-      const data = await res.json();
+      const data = res;
       if (data.ok && Array.isArray(data.transactions)) {
         setTransactions(data.transactions);
       }
@@ -150,7 +150,7 @@ const Credits = ({ plan = 'free' }) => {
   const loadCosts = useCallback(async () => {
     try {
       const res = await apiFetchJSON('/api/billing/credit-costs');
-      const data = await res.json();
+      const data = res;
       if (data.ok && data.costs) {
         setCreditCosts(data.costs);
       }

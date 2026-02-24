@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+ï»¿import React, { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 
 const CACHE_KEY = "paw:last-run";
@@ -322,7 +322,7 @@ export default function PredictiveAnalyticsWidgets() {
   const syncCloudTelemetry = async () => {
     try {
       const res = await apiFetchJSON("/api/paw-telemetry");
-      const json = await res.json();
+      const json = res;
       if (json.ok) {
         const remoteEvents = json.events || [];
         setCloudTelemetryCount(remoteEvents.length);
@@ -733,7 +733,7 @@ export default function PredictiveAnalyticsWidgets() {
     }
   };
 
-  const formatTime = (value) => (value ? new Date(value).toLocaleTimeString() : "—");
+  const formatTime = (value) => (value ? new Date(value).toLocaleTimeString() : "â€”");
 
   return (
     <div className={`paw-wrapper ${compact ? "paw-compact" : ""}`}>
@@ -747,18 +747,18 @@ export default function PredictiveAnalyticsWidgets() {
       </div>
 
       <div className="paw-meta-row">
-        <div className="paw-hint">Health: {health.successes} ok / {health.failures} fail · Last latency: {health.lastLatency ? `${Math.round(health.lastLatency)}ms` : "—"}</div>
+        <div className="paw-hint">Health: {health.successes} ok / {health.failures} fail Â· Last latency: {health.lastLatency ? `${Math.round(health.lastLatency)}ms` : "â€”"}</div>
         <button className="paw-button paw-button--ghost" type="button" onClick={recomputeHealth}>
           Refresh health
         </button>
-        <div className="paw-hint">Telemetry events: {telemetryEvents.length} · Cloud: {cloudTelemetryCount}/{cloudTelemetryTotal || cloudTelemetryCount}</div>
+        <div className="paw-hint">Telemetry events: {telemetryEvents.length} Â· Cloud: {cloudTelemetryCount}/{cloudTelemetryTotal || cloudTelemetryCount}</div>
         <button className="paw-button paw-button--ghost" type="button" onClick={syncCloudTelemetry}>
           Sync telemetry
         </button>
         <button className="paw-button paw-button--ghost" type="button" onClick={clearCloudTelemetry}>
           Clear cloud telemetry
         </button>
-        <div className="paw-hint">Success rate: {successRate !== null ? `${successRate}%` : "—"}</div>
+        <div className="paw-hint">Success rate: {successRate !== null ? `${successRate}%` : "â€”"}</div>
         <label className="paw-toggle">
           <input type="checkbox" checked={compact} onChange={(e) => setCompact(e.target.checked)} />
           <span>Compact mode</span>
@@ -780,9 +780,9 @@ export default function PredictiveAnalyticsWidgets() {
 
       <div className="paw-meta-row" aria-label="Telemetry snapshot">
         <div className="paw-hint">Telemetry events: {telemetryStats.total}</div>
-        <div className="paw-hint">Scenario saves: {telemetryStats.scenarioSaves} · presets: {telemetryStats.scenarioPresets} · tunes: {telemetryStats.scenarioTunes}</div>
+        <div className="paw-hint">Scenario saves: {telemetryStats.scenarioSaves} Â· presets: {telemetryStats.scenarioPresets} Â· tunes: {telemetryStats.scenarioTunes}</div>
         <div className="paw-hint">Metric toggles: {telemetryStats.metricToggles}</div>
-        <div className="paw-hint">Last event: {telemetryStats.lastEvent ? new Date(telemetryStats.lastEvent).toLocaleTimeString() : "—"}</div>
+        <div className="paw-hint">Last event: {telemetryStats.lastEvent ? new Date(telemetryStats.lastEvent).toLocaleTimeString() : "â€”"}</div>
         <button className="paw-button paw-button--ghost" type="button" onClick={exportTelemetry} disabled={!telemetryEvents.length}>
           Export telemetry
         </button>
@@ -801,7 +801,7 @@ export default function PredictiveAnalyticsWidgets() {
                 strokeLinecap="round"
               />
             </svg>
-            <div className="paw-hint">Trend: success? / other • / failure ?</div>
+            <div className="paw-hint">Trend: success? / other â€¢ / failure ?</div>
           </div>
         )}
       </div>
@@ -875,7 +875,7 @@ export default function PredictiveAnalyticsWidgets() {
             <option value="returning">Returning</option>
             <option value="sms_engaged">SMS engaged</option>
           </select>
-          {cohortMeta && <div className="paw-hint">{cohortMeta.label} · Lift: {(cohortMeta.lift * 100).toFixed(1)}% · n={cohortMeta.sampleSize}</div>}
+          {cohortMeta && <div className="paw-hint">{cohortMeta.label} Â· Lift: {(cohortMeta.lift * 100).toFixed(1)}% Â· n={cohortMeta.sampleSize}</div>}
         </div>
 
         <div className="paw-field">
@@ -949,10 +949,10 @@ export default function PredictiveAnalyticsWidgets() {
 
         <div className="paw-form-actions">
           <button type="submit" className="paw-button" disabled={loading}>
-            {loading ? "Running…" : "Run predictions"}
+            {loading ? "Runningâ€¦" : "Run predictions"}
           </button>
           <button type="button" className="paw-button paw-button--ghost" onClick={handleTestAlert} disabled={loading || invalidEmails.length > 0}>
-            {loading ? "Sending…" : "Send test alert"}
+            {loading ? "Sendingâ€¦" : "Send test alert"}
           </button>
           <button type="button" className="paw-button paw-button--ghost" onClick={shareSnapshot} disabled={!data}>
             Copy snapshot token
@@ -1045,7 +1045,7 @@ export default function PredictiveAnalyticsWidgets() {
             </button>
           </div>
           <div className="paw-section paw-inline" aria-label="Saved scenarios">
-            <div className="paw-hint">Telemetry: {telemetryStats.total} events · last: {formatTime(telemetryStats.lastEvent)}</div>
+            <div className="paw-hint">Telemetry: {telemetryStats.total} events Â· last: {formatTime(telemetryStats.lastEvent)}</div>
             <div className="paw-inline-input">
               <input
                 placeholder="Save current scenario as..."
@@ -1068,7 +1068,7 @@ export default function PredictiveAnalyticsWidgets() {
                   .map((s) => (
                     <div key={s.name} className="paw-chip-btn paw-chip-btn--inline">
                       <button type="button" className="paw-chip-btn" onClick={() => applySavedScenario(s)}>
-                        {s.name} ({s.demandDelta}%, {s.budgetDelta}%) {s.tag ? `· ${s.tag}` : ""}
+                        {s.name} ({s.demandDelta}%, {s.budgetDelta}%) {s.tag ? `Â· ${s.tag}` : ""}
                       </button>
                       <button
                         type="button"
@@ -1076,7 +1076,7 @@ export default function PredictiveAnalyticsWidgets() {
                         onClick={() => deleteSavedScenario(s.name)}
                         aria-label={`Delete scenario ${s.name}`}
                       >
-                        ×
+                        Ã—
                       </button>
                     </div>
                   ))}
@@ -1113,7 +1113,7 @@ export default function PredictiveAnalyticsWidgets() {
             <div className="paw-badge">Anomalies: {filteredAnomalies.length}</div>
             <div className="paw-badge">Recommendations: {recommended.length}</div>
             <div className="paw-badge">Cohort: {cohort}</div>
-            <div className="paw-badge">Window: {timeframe} · {granularity}</div>
+            <div className="paw-badge">Window: {timeframe} Â· {granularity}</div>
             <button className="paw-button paw-button--ghost" type="button" onClick={copyResultsSummary}>
               Copy summary
             </button>
@@ -1176,7 +1176,7 @@ export default function PredictiveAnalyticsWidgets() {
                     );
                   })}
                 </div>
-                <div className="paw-run-legend">Last {runHistory.length} successful runs · Avg {Math.round(runStats.avg)}ms · Peak {Math.round(runStats.peak)}ms</div>
+                <div className="paw-run-legend">Last {runHistory.length} successful runs Â· Avg {Math.round(runStats.avg)}ms Â· Peak {Math.round(runStats.peak)}ms</div>
                 <div className="paw-actions-row">
                   <button className="paw-button paw-button--ghost" type="button" onClick={exportTelemetry}>
                     Export telemetry JSON
@@ -1340,9 +1340,9 @@ export default function PredictiveAnalyticsWidgets() {
               <div className="paw-section__title">Alert preview ({alertPreview.cadence})</div>
               <div className="paw-alert-body">
                 <div><strong>Subject:</strong> {alertPreview.subject}</div>
-                <div><strong>Recipients:</strong> {(alertPreview.recipients || []).join(", ") || "—"}</div>
+                <div><strong>Recipients:</strong> {(alertPreview.recipients || []).join(", ") || "â€”"}</div>
                 <div className="paw-alert-preview-text">{alertPreview.bodyPreview}</div>
-                <div className="paw-hint">Routing: High ? email {routing.high.email.join(", ") || "—"}, Slack {routing.high.slack.join(", ") || "—"}</div>
+                <div className="paw-hint">Routing: High ? email {routing.high.email.join(", ") || "â€”"}, Slack {routing.high.slack.join(", ") || "â€”"}</div>
               </div>
             </div>
           )}
@@ -1353,7 +1353,7 @@ export default function PredictiveAnalyticsWidgets() {
               <ul className="paw-bullets">
                 {deliveryResults.map((dr, idx) => (
                   <li key={idx}>
-                    {dr.channel ? `${dr.channel}: ` : "webhook: "}{dr.url || dr.recipients?.join(", ") || dr.destinations?.join(", ") || "n/a"} — {dr.status}
+                    {dr.channel ? `${dr.channel}: ` : "webhook: "}{dr.url || dr.recipients?.join(", ") || dr.destinations?.join(", ") || "n/a"} â€” {dr.status}
                     {dr.message ? ` (${dr.message})` : ""}
                   </li>
                 ))}
@@ -1381,7 +1381,7 @@ export default function PredictiveAnalyticsWidgets() {
             <div className="paw-section paw-alert-preview" role="status" aria-live="polite">
               <div className="paw-section__title">Test alert simulated</div>
               <div className="paw-alert-body">
-                <div><strong>Recipients:</strong> {(testAlert.recipients || []).join(", ") || "—"}</div>
+                <div><strong>Recipients:</strong> {(testAlert.recipients || []).join(", ") || "â€”"}</div>
                 <div className="paw-alert-preview-text">{testAlert.note}</div>
               </div>
             </div>
@@ -1397,7 +1397,7 @@ export default function PredictiveAnalyticsWidgets() {
                   .reverse()
                   .map((evt, idx) => (
                     <li key={idx}>
-                      <strong>{evt.event}</strong> at {new Date(evt.at).toLocaleTimeString()} — {evt.payload?.message || `${evt.payload?.latencyMs ? `${Math.round(evt.payload.latencyMs)}ms` : ""}`}
+                      <strong>{evt.event}</strong> at {new Date(evt.at).toLocaleTimeString()} â€” {evt.payload?.message || `${evt.payload?.latencyMs ? `${Math.round(evt.payload.latencyMs)}ms` : ""}`}
                     </li>
                   ))}
               </ul>

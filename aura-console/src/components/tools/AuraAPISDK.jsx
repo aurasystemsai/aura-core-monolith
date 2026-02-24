@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 
 export default function AuraAPISDK() {
@@ -17,7 +17,7 @@ export default function AuraAPISDK() {
   const fetchDocs = async () => {
     try {
       const res = await apiFetchJSON("/api/aura-api-sdk/docs");
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setDocs(data.docs || []);
     } catch (err) {

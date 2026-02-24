@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+ï»¿import React, { useState, useRef, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 
 export default function SchemaRichResultsEngine() {
@@ -17,7 +17,7 @@ export default function SchemaRichResultsEngine() {
   const fetchHistory = async () => {
     try {
       const res = await apiFetchJSON("/api/schema-rich-results-engine/history");
-      const data = await res.json();
+      const data = res;
       if (data.ok) setHistory(data.history || []);
     } catch {}
   };
@@ -25,7 +25,7 @@ export default function SchemaRichResultsEngine() {
   const fetchAnalytics = async () => {
     try {
       const res = await apiFetchJSON("/api/schema-rich-results-engine/analytics");
-      const data = await res.json();
+      const data = res;
       if (data.ok) setAnalytics(data.analytics || []);
     } catch {}
   };
@@ -146,10 +146,10 @@ export default function SchemaRichResultsEngine() {
         {history.map(h => (
           <div key={h.id} style={{ background: "#09090b", borderRadius: 8, padding: "12px 16px", border: "1px solid #27272a", marginBottom: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
-              <span style={{ fontWeight: 700, color: "#e4e4e7" }}>{h.schema ? h.schema.slice(0, 60) + "…" : `Schema #${h.id}`}</span>
+              <span style={{ fontWeight: 700, color: "#e4e4e7" }}>{h.schema ? h.schema.slice(0, 60) + "â€¦" : `Schema #${h.id}`}</span>
               <span style={{ color: "#71717a" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : ""}</span>
             </div>
-            {h.report && <div style={{ fontSize: 13, color: "#a1a1aa" }}>{typeof h.report === "string" ? h.report.slice(0, 200) + (h.report.length > 200 ? "…" : "") : ""}</div>}
+            {h.report && <div style={{ fontSize: 13, color: "#a1a1aa" }}>{typeof h.report === "string" ? h.report.slice(0, 200) + (h.report.length > 200 ? "â€¦" : "") : ""}</div>}
           </div>
         ))}
         </ul>

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef } from "react";
 import BackButton from "./BackButton";
 import { apiFetch, apiFetchJSON } from "../../api";
 
@@ -21,7 +21,7 @@ export default function CreativeAutomationEngine() {
     setError("");
     try {
       const res = await apiFetchJSON("/api/creative-automation-engine/creatives");
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setCreatives(data.creatives || []);
     } catch (err) {
@@ -37,7 +37,7 @@ export default function CreativeAutomationEngine() {
     setError("");
     try {
       const res = await apiFetchJSON("/api/creative-automation-engine/analytics");
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setAnalytics(data.analytics || []);
     } catch (err) {
@@ -188,7 +188,7 @@ export default function CreativeAutomationEngine() {
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: darkMode ? "#e4e4e7" : "#09090b" }}>Creatives</div>
         {creatives.map(c => (
           <div key={c.id} style={{ background: darkMode ? "#09090b" : "#fafafa", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #27272a" }}>
-            <span style={{ fontWeight: 600, color: darkMode ? "#e4e4e7" : "#09090b" }}>{c.content ? c.content.slice(0, 80) + (c.content.length > 80 ? "�" : "") : `Creative #${c.id}`}</span>
+            <span style={{ fontWeight: 600, color: darkMode ? "#e4e4e7" : "#09090b" }}>{c.content ? c.content.slice(0, 80) + (c.content.length > 80 ? "…" : "") : `Creative #${c.id}`}</span>
           </div>
         ))}
       </div>

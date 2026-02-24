@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import "./IntegrationHealthPanel.css";
 import { apiFetch, apiFetchJSON } from "../api";
 
@@ -20,7 +20,7 @@ function IntegrationHealthPanel() {
         INTEGRATIONS.map(async (integration) => {
           try {
             const res = await apiFetchJSON(integration.api, { credentials: "include" });
-            const data = await res.json();
+            const data = res;
             results[integration.id] = data.status || "unknown";
           } catch {
             results[integration.id] = "error";
@@ -67,7 +67,7 @@ function IntegrationHealthPanel() {
               {icon}
               <span className="integration-health-text" style={{ fontSize: 18, fontWeight: 800, letterSpacing: '0.01em' }}>{integration.name}</span>
               <span style={{ marginLeft: 18, fontWeight: 700, fontSize: 16, color: status === 'ok' ? '#4f46e5' : status === 'checking' ? '#ffe066' : '#ff4d4f' }}>
-                {status === "ok" ? "Connected" : status === "checking" ? "Checking�" : "Not Connected"}
+                {status === "ok" ? "Connected" : status === "checking" ? "Checking…" : "Not Connected"}
               </span>
             </div>
           );

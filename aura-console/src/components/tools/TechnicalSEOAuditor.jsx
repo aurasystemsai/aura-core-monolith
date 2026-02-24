@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 
 export default function TechnicalSEOAuditor() {
@@ -28,7 +28,7 @@ export default function TechnicalSEOAuditor() {
   const fetchHistory = async () => {
     try {
       const res = await apiFetchJSON("/api/technical-seo-auditor/history");
-      const data = await res.json();
+      const data = res;
       if (data.ok) setHistory(data.history || []);
     } catch {}
   };
@@ -36,7 +36,7 @@ export default function TechnicalSEOAuditor() {
   const fetchAnalytics = async () => {
     try {
       const res = await apiFetchJSON("/api/technical-seo-auditor/analytics");
-      const data = await res.json();
+      const data = res;
       if (data.ok) setAnalytics(data.analytics || []);
     } catch {}
   };
@@ -114,7 +114,7 @@ export default function TechnicalSEOAuditor() {
     }
   };
 
-  // Share � generate a shareable link to the current report
+  // Share — generate a shareable link to the current report
   const handleShare = () => {
     if (!response) return;
     const url = `${window.location.origin}?tool=technical-seo-auditor&site=${encodeURIComponent(input)}`;

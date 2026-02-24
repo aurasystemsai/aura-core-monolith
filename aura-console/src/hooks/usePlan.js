@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../api";
 
 // Maps tool route IDs to minimum plan required
@@ -106,7 +106,7 @@ export default function usePlan() {
     async function load() {
       try {
         const res = await apiFetchJSON("/api/billing/subscription");
-        const data = await res.json();
+        const data = res;
         setPlan(data.plan_id || "free");
       } catch (_) {
         setPlan("free");

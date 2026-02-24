@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 
 export default function DataWarehouseConnector() {
@@ -15,7 +15,7 @@ export default function DataWarehouseConnector() {
   const fetchDataSources = async () => {
     try {
       const res = await apiFetchJSON("/api/data-warehouse-connector/data-sources");
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setDataSources(data.dataSources || []);
     } catch (err) {
@@ -26,7 +26,7 @@ export default function DataWarehouseConnector() {
   const fetchDashboards = async () => {
     try {
       const res = await apiFetchJSON("/api/data-warehouse-connector/dashboards");
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setDashboards(data.dashboards || []);
     } catch (err) {
@@ -37,7 +37,7 @@ export default function DataWarehouseConnector() {
   const fetchAnalytics = async () => {
     try {
       const res = await apiFetchJSON("/api/data-warehouse-connector/analytics");
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setAnalytics(data.analytics || []);
     } catch (err) {

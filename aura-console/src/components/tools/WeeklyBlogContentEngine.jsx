@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import BackButton from "./BackButton";
 import { apiFetch, apiFetchJSON } from "../../api";
 import "../../weekly-blog/WeeklyBlogContentEngine.css";
@@ -35,7 +35,7 @@ const SAMPLE_BRIEF = {
   title: "Weekly blog cadence for B2B SaaS",
   primaryKeyword: "weekly blog content plan",
   personas: "Content, Demand Gen",
-  compliance: "PII clean · claims pending",
+  compliance: "PII clean Â· claims pending",
   outline: ["Hook", "Framework", "Proof", "CTA"],
 };
 
@@ -81,7 +81,7 @@ function buildPlan(base) {
     const topic = pick(topics, rand);
     const angle = pick(angles, rand);
     const title = `${base.brand || base.niche}: ${topic} (${angle})`;
-    const meta = `${title} — practical steps, benchmarks, and metrics for ${base.audience}.`.slice(0, 150);
+    const meta = `${title} â€” practical steps, benchmarks, and metrics for ${base.audience}.`.slice(0, 150);
     return {
       title,
       metaDescription: meta,
@@ -125,7 +125,7 @@ export default function WeeklyBlogContentEngine() {
     const loadStats = async () => {
       try {
         const res = await apiFetchJSON("/api/weekly-blog-content-engine/stats");
-        const data = await res.json();
+        const data = res;
         if (data?.ok) setStats(data.stats);
       } catch (err) {
         setError(err.message);
@@ -187,7 +187,7 @@ export default function WeeklyBlogContentEngine() {
       <div className="wbe-header">
         <div>
           <h2>Weekly Blog Content Engine</h2>
-          <div className="wbe-subtitle">Research → Calendar → Briefs → Outlines → SEO → Distribution → Collaboration → Performance</div>
+          <div className="wbe-subtitle">Research â†’ Calendar â†’ Briefs â†’ Outlines â†’ SEO â†’ Distribution â†’ Collaboration â†’ Performance</div>
         </div>
         <div className="wbe-actions">
           <BackButton />
@@ -213,7 +213,7 @@ export default function WeeklyBlogContentEngine() {
               {items.map((item) => (
                 <div key={item} className="wbe-tab-chip">
                   <span>{item}</span>
-                  <span>↗</span>
+                  <span>â†—</span>
                 </div>
               ))}
             </div>
@@ -232,7 +232,7 @@ export default function WeeklyBlogContentEngine() {
             <label>Audience<input value={audience} onChange={(e) => setAudience(e.target.value)} /></label>
           </div>
           <div className="wbe-list">
-            <div className="wbe-list-item"><strong>Intent</strong><span>Informational · Benchmarks</span></div>
+            <div className="wbe-list-item"><strong>Intent</strong><span>Informational Â· Benchmarks</span></div>
             <div className="wbe-list-item"><strong>ICP</strong><span>{audience}</span></div>
             <div className="wbe-list-item"><strong>Cadence</strong><span>{cadence}</span></div>
           </div>
@@ -246,7 +246,7 @@ export default function WeeklyBlogContentEngine() {
               <div key={week.label} className="wbe-status-card">
                 <div className="wbe-meta-row"><strong>{week.label}</strong><span className="wbe-tag">{week.posts.length} posts</span></div>
                 {week.posts.map((p) => (
-                  <div key={p.title} className="wbe-tag" style={{ marginTop: 6 }}>{p.title} · {p.status}</div>
+                  <div key={p.title} className="wbe-tag" style={{ marginTop: 6 }}>{p.title} Â· {p.status}</div>
                 ))}
               </div>
             ))}
@@ -272,7 +272,7 @@ export default function WeeklyBlogContentEngine() {
             {SAMPLE_OUTLINE.map((s) => (
               <div key={s.heading} className="wbe-list-item">
                 <strong>{s.heading}</strong>
-                <span>{s.notes} · {s.words} words</span>
+                <span>{s.notes} Â· {s.words} words</span>
               </div>
             ))}
           </div>
@@ -287,7 +287,7 @@ export default function WeeklyBlogContentEngine() {
           <h3>SEO Optimizer</h3>
           <div className="wbe-metrics">
             <div className="metric-pill"><span>Metadata</span>{metadataScore}</div>
-            <div className="metric-pill"><span>Schema</span>Article · FAQ</div>
+            <div className="metric-pill"><span>Schema</span>Article Â· FAQ</div>
             <div className="metric-pill"><span>Density</span>Optimal</div>
             <div className="metric-pill"><span>Links</span>Internal 12</div>
           </div>
@@ -328,7 +328,7 @@ export default function WeeklyBlogContentEngine() {
               </div>
             ))}
           </div>
-          <div className="wbe-activity">Reviewers: Content Lead · Legal · Social · Growth</div>
+          <div className="wbe-activity">Reviewers: Content Lead Â· Legal Â· Social Â· Growth</div>
         </div>
 
         <div className="wbe-card">
@@ -343,11 +343,11 @@ export default function WeeklyBlogContentEngine() {
             {PROVIDERS.map((p) => (
               <div key={p.id} className={`wbe-list-item ${aiRun?.route?.includes(p.id) ? "active" : ""}`}>
                 <strong>{p.name}</strong>
-                <span>Latency: {p.latency} · Strength: {p.strength}</span>
+                <span>Latency: {p.latency} Â· Strength: {p.strength}</span>
               </div>
             ))}
           </div>
-          {aiRun && <div className="wbe-activity">Last run {aiRun.strategy} · Quality {aiRun.qualityScore}</div>}
+          {aiRun && <div className="wbe-activity">Last run {aiRun.strategy} Â· Quality {aiRun.qualityScore}</div>}
         </div>
       </div>
     </div>

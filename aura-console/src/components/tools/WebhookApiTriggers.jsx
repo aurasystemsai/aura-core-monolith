@@ -1,4 +1,4 @@
-
+ï»¿
 import React from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 import BackButton from "./BackButton";
@@ -166,7 +166,7 @@ export default function WebhookApiTriggers() {
         setApis(markOverlap(apisRaw));
       }
       const trashResp = await apiFetchJSON("/api/webhook-api-triggers/trash");
-      const trashData = await trashResp.json();
+      const trashData = trashResp;
       if (trashData.ok) setTrash({ webhooks: trashData.webhooks || [], apis: trashData.apis || [] });
     } catch (err) {
       setError("Failed to load configs");
@@ -182,7 +182,7 @@ export default function WebhookApiTriggers() {
       const data = await resp.json();
       if (data.ok) setAnalytics(data.analytics || []);
       const summaryResp = await apiFetchJSON("/api/webhook-api-triggers/analytics/summary");
-      const summaryData = await summaryResp.json();
+      const summaryData = summaryResp;
       if (summaryData.ok) setAnalyticsSummary(summaryData.summary || {});
     } catch (_err) {
       /* ignore */
@@ -271,7 +271,7 @@ export default function WebhookApiTriggers() {
     const trace = [];
     const record = (status, detail) => trace.push({ status, detail });
 
-    record("pass", `Env ${env.toUpperCase()} · Version ${versionTag || "v1"}`);
+    record("pass", `Env ${env.toUpperCase()} Â· Version ${versionTag || "v1"}`);
 
     if (approvalRequired) {
       if (!approverEmail) {
@@ -879,18 +879,18 @@ export default function WebhookApiTriggers() {
           <div style={{ fontWeight: 700, marginBottom: 6, color: '#fafafa' }}>Webhook Config</div>
           <input value={webhookInput} onChange={e => setWebhookInput(e.target.value)} placeholder="Webhook URL" style={{ width: '100%', fontSize: 15, padding: 10, borderRadius: 10, border: '1px solid #27272a', background: '#18181b', color: '#fafafa', marginBottom: 10 }} />
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button onClick={handleAddWebhook} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 700, cursor: 'pointer' }}>{saving ? 'Saving…' : 'Add Webhook'}</button>
+            <button onClick={handleAddWebhook} style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 700, cursor: 'pointer' }}>{saving ? 'Savingâ€¦' : 'Add Webhook'}</button>
             <button onClick={handleUpdateWebhook} style={{ background: '#f59e0b', color: '#18181b', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>Update Selected</button>
-            {selectedWebhookId && <span style={{ color: '#e4e4e7', fontSize: 13 }}>Editing ID {selectedWebhookId.slice(0, 8)}… · rev {selectedWebhookRevision ?? '—'}</span>}
+            {selectedWebhookId && <span style={{ color: '#e4e4e7', fontSize: 13 }}>Editing ID {selectedWebhookId.slice(0, 8)}â€¦ Â· rev {selectedWebhookRevision ?? 'â€”'}</span>}
           </div>
         </div>
         <div style={{ background: '#18181b', borderRadius: 12, padding: 14, border: '1px solid #27272a' }}>
           <div style={{ fontWeight: 700, marginBottom: 6, color: '#fafafa' }}>API Trigger</div>
           <input value={apiInput} onChange={e => setApiInput(e.target.value)} placeholder="API endpoint" style={{ width: '100%', fontSize: 15, padding: 10, borderRadius: 10, border: '1px solid #27272a', background: '#18181b', color: '#fafafa', marginBottom: 10 }} />
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button onClick={handleAddApi} style={{ background: '#22c55e', color: '#18181b', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>{saving ? 'Saving…' : 'Add API'}</button>
+            <button onClick={handleAddApi} style={{ background: '#22c55e', color: '#18181b', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>{saving ? 'Savingâ€¦' : 'Add API'}</button>
             <button onClick={handleUpdateApi} style={{ background: '#4f46e5', color: '#fafafa', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, cursor: 'pointer' }}>Update Selected</button>
-            {selectedApiId && <span style={{ color: '#e4e4e7', fontSize: 13 }}>Editing ID {selectedApiId.slice(0, 8)}… · rev {selectedApiRevision ?? '—'}</span>}
+            {selectedApiId && <span style={{ color: '#e4e4e7', fontSize: 13 }}>Editing ID {selectedApiId.slice(0, 8)}â€¦ Â· rev {selectedApiRevision ?? 'â€”'}</span>}
           </div>
         </div>
         <div style={{ background: '#18181b', borderRadius: 12, padding: 14, border: '1px solid #27272a' }}>
@@ -967,7 +967,7 @@ export default function WebhookApiTriggers() {
           </div>
           {simulation && (
             <div style={{ marginTop: 6, color: '#a5f3fc' }}>
-              <div>Env: {simulation.env} · Version: {simulation.version}</div>
+              <div>Env: {simulation.env} Â· Version: {simulation.version}</div>
               <div>Planned actions: {simulation.actions.join(', ')}</div>
               {simulation.warnings?.length ? <div style={{ color: '#fbbf24' }}>Warnings: {simulation.warnings.join(', ')}</div> : null}
             </div>
@@ -981,7 +981,7 @@ export default function WebhookApiTriggers() {
                 <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 999, border: '1px solid #27272a', background: preflightStatus.ok ? '#18181b' : '#27272a', color: preflightStatus.ok ? '#22c55e' : preflightStatus.issues ? '#fcd34d' : '#f87171', fontWeight: 800, fontSize: 12 }}>
                   <span style={{ width: 10, height: 10, borderRadius: '50%', background: preflightStatus.ok ? '#22c55e' : preflightStatus.issues ? '#f59e0b' : '#ef4444' }} />
                   <span>{preflightStatus.ok ? 'Preflight pass' : preflightStatus.issues ? `${preflightStatus.issues} issues` : 'Preflight failed'}</span>
-                  {preflightStatus.ts ? <span style={{ color: '#a1a1aa', fontWeight: 600 }}>· {new Date(preflightStatus.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span> : null}
+                  {preflightStatus.ts ? <span style={{ color: '#a1a1aa', fontWeight: 600 }}>Â· {new Date(preflightStatus.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span> : null}
                   <button onClick={() => setShowPreflightPopover(v => !v)} style={{ background: 'transparent', border: 'none', color: '#fafafa', cursor: 'pointer', fontWeight: 800 }}>Trace</button>
                   <button onClick={clearPreflightStatus} style={{ marginLeft: 2, background: 'transparent', border: 'none', color: '#a1a1aa', cursor: 'pointer', fontWeight: 800 }}>Clear</button>
                   <button onClick={downloadPreflightReport} style={{ background: 'transparent', border: 'none', color: '#67e8f9', cursor: 'pointer', fontWeight: 800 }}>Save</button>
@@ -992,7 +992,7 @@ export default function WebhookApiTriggers() {
                       {preflightIssues.length === 0 ? <div style={{ color: '#22c55e' }}>Clear</div> : (
                         <ul style={{ margin: 0, paddingLeft: 16, color: '#fafafa', maxHeight: 160, overflow: 'auto' }}>
                           {preflightIssues.slice(0, 6).map((p, i) => <li key={i}>{p}</li>)}
-                          {preflightIssues.length > 6 && <li style={{ color: '#a1a1aa' }}>…{preflightIssues.length - 6} more</li>}
+                          {preflightIssues.length > 6 && <li style={{ color: '#a1a1aa' }}>â€¦{preflightIssues.length - 6} more</li>}
                         </ul>
                       )}
                       <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -1008,7 +1008,7 @@ export default function WebhookApiTriggers() {
                             {preflightTrace.slice(0, 5).map((t, i) => (
                               <li key={i}>{t.label}: {t.issues?.join('; ')}</li>
                             ))}
-                            {preflightTrace.length > 5 && <li style={{ color: '#a1a1aa' }}>…{preflightTrace.length - 5} more</li>}
+                            {preflightTrace.length > 5 && <li style={{ color: '#a1a1aa' }}>â€¦{preflightTrace.length - 5} more</li>}
                           </ul>
                         </div>
                       )}
@@ -1072,15 +1072,15 @@ export default function WebhookApiTriggers() {
       <div style={{ marginBottom: 20, background: '#18181b', border: '1px solid #27272a', borderRadius: 12, padding: 12 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: '#fafafa' }}>Webhooks</div>
         <div style={{ fontSize: 15, color: '#e4e4e7' }}>
-          {loading ? <span>Loading…</span> : webhooks.length ? (
+          {loading ? <span>Loadingâ€¦</span> : webhooks.length ? (
             <div style={{ display: 'grid', gap: 10 }}>
               {webhooks.map(w => (
                 <div key={w.id} style={{ padding: 12, borderRadius: 10, border: '1px solid #27272a', background: '#18181b' }}>
-                  <div style={{ fontWeight: 700, color: '#fafafa' }}>{w.url || 'Webhook'} <span style={{ color: '#a1a1aa', fontWeight: 500 }}>· {w.env}/{w.version} · {w.status} · rev {w.revision}</span></div>
-                  <div style={{ color: '#e4e4e7', fontSize: 14 }}>Enabled: {w.enabled === false ? 'No' : 'Yes'} · Guardrails: rate {w.guardrails?.rateLimit ?? '—'} req/min, concurrency {w.guardrails?.concurrencyLimit ?? '—'}, circuit breaker {w.guardrails?.circuitBreakerEnabled ? 'on' : 'off'}</div>
-                  <div style={{ color: '#a1a1aa', fontSize: 13 }}>Canary: {w.canaryPercent ?? 0}% · Shadow: {w.shadowMode ? 'on' : 'off'} · Perf budget: {w.performanceBudgetMs || '—'}ms</div>
-                  <div style={{ color: '#a1a1aa', fontSize: 13 }}>IP allow: {(w.ipAllow || []).join(', ') || '—'} · IP deny: {(w.ipDeny || []).join(', ') || '—'}</div>
-                  <div style={{ color: '#a1a1aa', fontSize: 13 }}>Last success: {w.lastSuccessAt || '—'} · Last failure: {w.lastFailureAt || '—'}</div>
+                  <div style={{ fontWeight: 700, color: '#fafafa' }}>{w.url || 'Webhook'} <span style={{ color: '#a1a1aa', fontWeight: 500 }}>Â· {w.env}/{w.version} Â· {w.status} Â· rev {w.revision}</span></div>
+                  <div style={{ color: '#e4e4e7', fontSize: 14 }}>Enabled: {w.enabled === false ? 'No' : 'Yes'} Â· Guardrails: rate {w.guardrails?.rateLimit ?? 'â€”'} req/min, concurrency {w.guardrails?.concurrencyLimit ?? 'â€”'}, circuit breaker {w.guardrails?.circuitBreakerEnabled ? 'on' : 'off'}</div>
+                  <div style={{ color: '#a1a1aa', fontSize: 13 }}>Canary: {w.canaryPercent ?? 0}% Â· Shadow: {w.shadowMode ? 'on' : 'off'} Â· Perf budget: {w.performanceBudgetMs || 'â€”'}ms</div>
+                  <div style={{ color: '#a1a1aa', fontSize: 13 }}>IP allow: {(w.ipAllow || []).join(', ') || 'â€”'} Â· IP deny: {(w.ipDeny || []).join(', ') || 'â€”'}</div>
+                  <div style={{ color: '#a1a1aa', fontSize: 13 }}>Last success: {w.lastSuccessAt || 'â€”'} Â· Last failure: {w.lastFailureAt || 'â€”'}</div>
                   {w.warnings?.length ? (
                     <div style={{ color: '#fbbf24', fontSize: 14 }}>
                       <span style={{ background: '#f59e0b22', border: '1px solid #f59e0b55', borderRadius: 8, padding: '2px 8px', marginRight: 6 }}>At risk</span>
@@ -1105,15 +1105,15 @@ export default function WebhookApiTriggers() {
       <div style={{ marginBottom: 20, background: '#18181b', border: '1px solid #27272a', borderRadius: 12, padding: 12 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: '#fafafa' }}>APIs</div>
         <div style={{ fontSize: 15, color: '#e4e4e7' }}>
-          {loading ? <span>Loading…</span> : apis.length ? (
+          {loading ? <span>Loadingâ€¦</span> : apis.length ? (
             <div style={{ display: 'grid', gap: 10 }}>
               {apis.map(a => (
                 <div key={a.id} style={{ padding: 12, borderRadius: 10, border: '1px solid #27272a', background: '#18181b' }}>
-                  <div style={{ fontWeight: 700, color: '#fafafa' }}>{a.endpoint || 'API'} <span style={{ color: '#a1a1aa', fontWeight: 500 }}>· {a.env}/{a.version} · {a.status} · rev {a.revision}</span></div>
-                  <div style={{ color: '#e4e4e7', fontSize: 14 }}>Enabled: {a.enabled === false ? 'No' : 'Yes'} · Guardrails: rate {a.guardrails?.rateLimit ?? '—'} req/min, concurrency {a.guardrails?.concurrencyLimit ?? '—'}, circuit breaker {a.guardrails?.circuitBreakerEnabled ? 'on' : 'off'}</div>
-                  <div style={{ color: '#a1a1aa', fontSize: 13 }}>Canary: {a.canaryPercent ?? 0}% · Shadow: {a.shadowMode ? 'on' : 'off'} · Perf budget: {a.performanceBudgetMs || '—'}ms</div>
-                  <div style={{ color: '#a1a1aa', fontSize: 13 }}>IP allow: {(a.ipAllow || []).join(', ') || '—'} · IP deny: {(a.ipDeny || []).join(', ') || '—'}</div>
-                  <div style={{ color: '#a1a1aa', fontSize: 13 }}>Last success: {a.lastSuccessAt || '—'} · Last failure: {a.lastFailureAt || '—'}</div>
+                  <div style={{ fontWeight: 700, color: '#fafafa' }}>{a.endpoint || 'API'} <span style={{ color: '#a1a1aa', fontWeight: 500 }}>Â· {a.env}/{a.version} Â· {a.status} Â· rev {a.revision}</span></div>
+                  <div style={{ color: '#e4e4e7', fontSize: 14 }}>Enabled: {a.enabled === false ? 'No' : 'Yes'} Â· Guardrails: rate {a.guardrails?.rateLimit ?? 'â€”'} req/min, concurrency {a.guardrails?.concurrencyLimit ?? 'â€”'}, circuit breaker {a.guardrails?.circuitBreakerEnabled ? 'on' : 'off'}</div>
+                  <div style={{ color: '#a1a1aa', fontSize: 13 }}>Canary: {a.canaryPercent ?? 0}% Â· Shadow: {a.shadowMode ? 'on' : 'off'} Â· Perf budget: {a.performanceBudgetMs || 'â€”'}ms</div>
+                  <div style={{ color: '#a1a1aa', fontSize: 13 }}>IP allow: {(a.ipAllow || []).join(', ') || 'â€”'} Â· IP deny: {(a.ipDeny || []).join(', ') || 'â€”'}</div>
+                  <div style={{ color: '#a1a1aa', fontSize: 13 }}>Last success: {a.lastSuccessAt || 'â€”'} Â· Last failure: {a.lastFailureAt || 'â€”'}</div>
                   {a.warnings?.length ? (
                     <div style={{ color: '#fbbf24', fontSize: 14 }}>
                       <span style={{ background: '#f59e0b22', border: '1px solid #f59e0b55', borderRadius: 8, padding: '2px 8px', marginRight: 6 }}>At risk</span>
@@ -1138,7 +1138,7 @@ export default function WebhookApiTriggers() {
       <div style={{ marginBottom: 24, background: '#18181b', border: '1px solid #27272a', borderRadius: 12, padding: 12 }}>
         <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: '#fafafa' }}>Analytics</div>
         <div style={{ fontSize: 15, color: '#e4e4e7' }}>
-          {analyticsLoading ? <span>Loading analytics…</span> : analytics.length ? (
+          {analyticsLoading ? <span>Loading analyticsâ€¦</span> : analytics.length ? (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 10 }}>
                 {Object.entries(analyticsSummary).map(([k, v]) => (
@@ -1166,7 +1166,7 @@ export default function WebhookApiTriggers() {
                 <ul style={{ margin: 0, paddingLeft: 16, color: '#e4e4e7' }}>
                   {history.slice().reverse().slice(0, 8).map((h, idx) => (
                     <li key={idx} style={{ marginBottom: 4 }}>
-                      rev {h.revision}: {h.changes || 'update'} · {new Date(h.ts).toLocaleString()}
+                      rev {h.revision}: {h.changes || 'update'} Â· {new Date(h.ts).toLocaleString()}
                     </li>
                   ))}
                 </ul>
@@ -1178,7 +1178,7 @@ export default function WebhookApiTriggers() {
                 <ul style={{ margin: 0, paddingLeft: 16, color: '#e4e4e7' }}>
                   {comments.slice().reverse().slice(0, 8).map(c => (
                     <li key={c.id} style={{ marginBottom: 4 }}>
-                      {c.comment} · {new Date(c.ts).toLocaleString()}
+                      {c.comment} Â· {new Date(c.ts).toLocaleString()}
                     </li>
                   ))}
                 </ul>
@@ -1197,13 +1197,13 @@ export default function WebhookApiTriggers() {
         <div style={{ display: 'grid', gap: 10 }}>
           {(trash.webhooks?.length ? trash.webhooks : []).map(t => (
             <div key={t.id} style={{ border: '1px dashed #52525b', borderRadius: 10, padding: 10, color: '#e4e4e7' }}>
-              <div>{t.url || 'Webhook'} · rev {t.revision} · deleted {t.deletedAt}</div>
+              <div>{t.url || 'Webhook'} Â· rev {t.revision} Â· deleted {t.deletedAt}</div>
               <button onClick={() => apiFetch(`/api/webhook-api-triggers/webhooks/${t.id}/restore`, { method: 'POST' }).then(loadData)} style={{ marginTop: 6, background: '#22c55e', color: '#18181b', border: 'none', borderRadius: 8, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Restore</button>
             </div>
           ))}
           {(trash.apis?.length ? trash.apis : []).map(t => (
             <div key={t.id} style={{ border: '1px dashed #52525b', borderRadius: 10, padding: 10, color: '#e4e4e7' }}>
-              <div>{t.endpoint || 'API'} · rev {t.revision} · deleted {t.deletedAt}</div>
+              <div>{t.endpoint || 'API'} Â· rev {t.revision} Â· deleted {t.deletedAt}</div>
               <button onClick={() => apiFetch(`/api/webhook-api-triggers/apis/${t.id}/restore`, { method: 'POST' }).then(loadData)} style={{ marginTop: 6, background: '#22c55e', color: '#18181b', border: 'none', borderRadius: 8, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>Restore</button>
             </div>
           ))}

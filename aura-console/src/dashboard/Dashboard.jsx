@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from "react";
+ï»¿import React, { useState, useEffect, Suspense, lazy } from "react";
 import { apiFetch, apiFetchJSON } from "../api";
 import { sendCopilotMessage } from "../core/advancedAiClient";
 import IntegrationHealthPanel from "../components/IntegrationHealthPanel";
@@ -292,18 +292,18 @@ const Dashboard = ({ setActiveSection }) => {
 							type: "Order",
 						}));
 						setRecentActivity(activities.length > 0 ? activities : [
-							{ icon: "", title: "No recent orders", timestamp: "—", type: "Info" }
+							{ icon: "", title: "No recent orders", timestamp: "â€”", type: "Info" }
 						]);
 					} else {
 						// Fallback to generic activity
 						setRecentActivity([
-							{ icon: "", title: "Awaiting order data", timestamp: "—", type: "Info" }
+							{ icon: "", title: "Awaiting order data", timestamp: "â€”", type: "Info" }
 						]);
 					}
 				} catch (ordersErr) {
 					console.warn("Failed to fetch recent orders:", ordersErr);
 					setRecentActivity([
-						{ icon: "?", title: "Unable to load recent activity", timestamp: "—", type: "Error" }
+						{ icon: "?", title: "Unable to load recent activity", timestamp: "â€”", type: "Error" }
 					]);
 				}
 
@@ -353,12 +353,12 @@ const Dashboard = ({ setActiveSection }) => {
 		} catch (e) {
 			console.error("Failed to fetch dashboard stats:", e);
 			setStats({
-				products: "—",
-				seoIssues: "—",
-				revenue: "—",
-				orders: "—",
-				conversion: "—",
-				visitors: "—",
+				products: "â€”",
+				seoIssues: "â€”",
+				revenue: "â€”",
+				orders: "â€”",
+				conversion: "â€”",
+				visitors: "â€”",
 			});
 		} finally {
 			setLoading(false);
@@ -483,7 +483,7 @@ const Dashboard = ({ setActiveSection }) => {
 
 		try {
 			const sessionRes = await apiFetchJSON('/api/session');
-			const session = await sessionRes.json();
+			const session = sessionRes;
 
 			if (!session.ok || !session.shop) {
 				showToast('Unable to determine shop URL. Please connect your Shopify store in Settings.', 'error');
@@ -786,12 +786,12 @@ const Dashboard = ({ setActiveSection }) => {
 								)}
 								<div>
 									<h2 style={{ color:'#fafafa', fontWeight:800, fontSize:20, margin:0 }}>
-										{scanningInProgress ? 'Scanning your site...' : `Scan Complete — ${crawlResults?.totalIssues || 0} Issues Found`}
+										{scanningInProgress ? 'Scanning your site...' : `Scan Complete â€” ${crawlResults?.totalIssues || 0} Issues Found`}
 									</h2>
 									<p style={{ color:'#a1a1aa', fontSize:13, margin:'3px 0 0 0' }}>
 										{scanningInProgress
-											? `Checking pages for SEO issues — this takes a minute or two`
-											: `${crawlResults?.pagesScanned} pages scanned • ${crawlResults?.high} high • ${crawlResults?.medium} medium • ${crawlResults?.low} low`}
+											? `Checking pages for SEO issues â€” this takes a minute or two`
+											: `${crawlResults?.pagesScanned} pages scanned â€¢ ${crawlResults?.high} high â€¢ ${crawlResults?.medium} medium â€¢ ${crawlResults?.low} low`}
 									</p>
 								</div>
 							</div>
@@ -833,10 +833,10 @@ const Dashboard = ({ setActiveSection }) => {
 									<span style={{ background:'#2d1515', border:'1px solid #e53e3e', color:'#fc8181', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}> {crawlResults.high} High</span>
 									<span style={{ background:'#2d2210', border:'1px solid #f59e0b', color:'#fbbf24', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}> {crawlResults.medium} Medium</span>
 									<span style={{ background:'#1a2315', border:'1px solid #4ade80', color:'#86efac', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}> {crawlResults.low} Low</span>
-									<span style={{ marginLeft:'auto', color:'#52525b', fontSize:13, alignSelf:'center' }}>{crawlResults.pagesScanned} pages scanned • {lastScanTime}</span>
+									<span style={{ marginLeft:'auto', color:'#52525b', fontSize:13, alignSelf:'center' }}>{crawlResults.pagesScanned} pages scanned â€¢ {lastScanTime}</span>
 								</div>
 								{crawlResults.totalIssues === 0 ? (
-									<div style={{ textAlign:'center', padding:'48px 0', color:'#4f46e5', fontSize:16 }}>No SEO issues found — your site looks great!</div>
+									<div style={{ textAlign:'center', padding:'48px 0', color:'#4f46e5', fontSize:16 }}>No SEO issues found â€” your site looks great!</div>
 								) : (
 									<div style={{ display:'flex', flexDirection:'column', gap:8 }}>
 										{crawlResults.issues.map((issue, i) => (
@@ -883,7 +883,7 @@ const Dashboard = ({ setActiveSection }) => {
 						<span style={{ fontSize: 18 }}>{toast.type === 'error' ? '?' : ''}</span>
 						<span>{toast.message}</span>
 						<button onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
-							style={{ marginLeft: "auto", background: "none", border: "none", color: "inherit", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 0 0 8px", opacity: 0.7 }}>×</button>
+							style={{ marginLeft: "auto", background: "none", border: "none", color: "inherit", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 0 0 8px", opacity: 0.7 }}>Ã—</button>
 					</div>
 				))}
 			</div>
@@ -898,7 +898,7 @@ const Dashboard = ({ setActiveSection }) => {
 								Dashboard Overview
 							</h1>
 							<p style={{ fontSize: 14, color: "#a1a1aa", margin: "4px 0 0 0" }}>
-								{shop.name || "My Store"} • {shop.domain || "—"}
+								{shop.name || "My Store"} â€¢ {shop.domain || "â€”"}
 							</p>
 						</div>
 					</div>
@@ -1143,33 +1143,33 @@ const Dashboard = ({ setActiveSection }) => {
 			>
 				<StatCard 
 					label="Total Revenue" 
-					value={stats.revenue || (stats.revenue === "$0" ? "$0" : "—")} 
+					value={stats.revenue || (stats.revenue === "$0" ? "$0" : "â€”")} 
 					icon=""
 					tooltip="Total sales revenue for the selected period"
-					subtitle={(!stats.revenue || stats.revenue === "$0" || stats.revenue === "—") ? "No revenue data available" : null}
+					subtitle={(!stats.revenue || stats.revenue === "$0" || stats.revenue === "â€”") ? "No revenue data available" : null}
 				/>
 				<StatCard 
 					label="Orders" 
-					value={stats.orders !== null && stats.orders !== undefined ? stats.orders : "—"} 
+					value={stats.orders !== null && stats.orders !== undefined ? stats.orders : "â€”"} 
 					icon=""
 					tooltip="Number of orders placed"
 					subtitle={(stats.orders === 0 || stats.orders === null) ? "No orders yet" : null}
 				/>
 				<StatCard 
 					label="Average Order Value" 
-					value={stats.aov || "—"} 
+					value={stats.aov || "â€”"} 
 					icon=""
-					tooltip="Average revenue per order (Revenue ÷ Orders)"
+					tooltip="Average revenue per order (Revenue Ã· Orders)"
 				/>
 				<StatCard 
 					label="Conversion Rate" 
-					value={stats.conversion || "—"} 
+					value={stats.conversion || "â€”"} 
 					icon=""
 					tooltip="Percentage of visitors who made a purchase"
 				/>
 				<StatCard 
 					label="Visitors" 
-					value={stats.visitors || "—"} 
+					value={stats.visitors || "â€”"} 
 					icon=""
 					tooltip="Total store visitors for the selected period"
 					upgradeRequired={stats.visitorsUpgradeRequired}
@@ -1183,13 +1183,13 @@ const Dashboard = ({ setActiveSection }) => {
 				/>
 				<StatCard 
 					label="Products" 
-					value={stats.products !== null ? stats.products : "—"} 
+					value={stats.products !== null ? stats.products : "â€”"} 
 					icon="?"
 					tooltip="Total number of products in your catalog"
 				/>
 				<StatCard 
 					label="SEO Issues" 
-					value={stats.seoIssues !== null ? stats.seoIssues : "—"} 
+					value={stats.seoIssues !== null ? stats.seoIssues : "â€”"} 
 					icon=""
 					tooltip="Number of SEO issues that need attention"
 				/>
@@ -1202,7 +1202,7 @@ const Dashboard = ({ setActiveSection }) => {
 						<div>
 							<h3 style={{ color: "#fafafa", fontWeight: 700, fontSize: 18, margin: 0 }}>SEO Scan Results</h3>
 							<p style={{ color: "#a1a1aa", fontSize: 13, margin: "4px 0 0 0" }}>
-								{crawlResults.pagesScanned} pages scanned • Last scan: {lastScanTime}
+								{crawlResults.pagesScanned} pages scanned â€¢ Last scan: {lastScanTime}
 							</p>
 						</div>
 						<div style={{ display: "flex", gap: 12, alignItems: "center" }}>
@@ -1215,12 +1215,12 @@ const Dashboard = ({ setActiveSection }) => {
 							<span style={{ background: "#1a2315", border: "1px solid #4ade80", color: "#86efac", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
 								 {crawlResults.low} Low
 							</span>
-							<button onClick={() => setCrawlResults(null)} style={{ background: "none", border: "none", color: "#a1a1aa", cursor: "pointer", fontSize: 20, lineHeight: 1 }}>×</button>
+							<button onClick={() => setCrawlResults(null)} style={{ background: "none", border: "none", color: "#a1a1aa", cursor: "pointer", fontSize: 20, lineHeight: 1 }}>Ã—</button>
 						</div>
 					</div>
 					{crawlResults.totalIssues === 0 ? (
 						<div style={{ textAlign: "center", padding: "32px 0", color: "#4f46e5", fontSize: 16 }}>
-							 No SEO issues found — your site looks great!
+							 No SEO issues found â€” your site looks great!
 						</div>
 					) : (
 						<div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 400, overflowY: "auto" }}>
@@ -1566,11 +1566,11 @@ const Dashboard = ({ setActiveSection }) => {
 						title={scanningInProgress ? "Scanning..." : "Run SEO Scan"}
 						description={
 							scanningInProgress && scanRemainingTime > 0
-								? `Time remaining: ${Math.floor(scanRemainingTime / 60)}:${String(scanRemainingTime % 60).padStart(2, '0')} • Analyzing ${stats.products || '...'} products` 
+								? `Time remaining: ${Math.floor(scanRemainingTime / 60)}:${String(scanRemainingTime % 60).padStart(2, '0')} â€¢ Analyzing ${stats.products || '...'} products` 
 								: scanningInProgress 
 									? "Analyzing your site for SEO issues..." 
 									: lastScanTime 
-										? `Scan your store for SEO issues • Last: ${lastScanTime}` 
+										? `Scan your store for SEO issues â€¢ Last: ${lastScanTime}` 
 										: "Scan your entire store for SEO issues"
 						}
 						onClick={runSeoScan}

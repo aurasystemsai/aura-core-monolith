@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+ï»¿import React, { useState, useRef, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 
 export default function CustomDashboardBuilder() {
@@ -211,7 +211,7 @@ export default function CustomDashboardBuilder() {
     const avg = averageLatency();
     if (avg > 0 && avg > perfBudget * 1.2) findings.push({ level: "high", msg: `Performance budget exceeded: avg ${avg}ms vs budget ${perfBudget}ms.` });
     else if (avg > 0 && avg > perfBudget) findings.push({ level: "medium", msg: `Performance at risk: avg ${avg}ms slightly above budget (${perfBudget}ms).` });
-    if (simulatedLoad) findings.push({ level: "low", msg: "Simulated load active — results may spike." });
+    if (simulatedLoad) findings.push({ level: "low", msg: "Simulated load active â€” results may spike." });
     if (!metadata.title || metadata.title.length < 4) findings.push({ level: "low", msg: "Add a descriptive title for accessibility." });
     if (!metadata.owner) findings.push({ level: "low", msg: "Owner missing; clarify accountability." });
     const watchlistMissingTargets = dashboard.filter(w => watchlist.includes(w.id) && !targets[w.id]);
@@ -308,7 +308,7 @@ export default function CustomDashboardBuilder() {
     }
     try {
       const res = await apiFetchJSON("/api/custom-dashboard-builder/widgets");
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setWidgets(data.widgets || []);
     } catch (err) {
@@ -323,7 +323,7 @@ export default function CustomDashboardBuilder() {
     }
     try {
       const res = await apiFetchJSON("/api/custom-dashboard-builder/data-sources");
-      const data = await res.json();
+      const data = res;
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setDataSources(data.dataSources || []);
       const now = Date.now();
@@ -874,7 +874,7 @@ export default function CustomDashboardBuilder() {
         <div style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
           <div>
             <div style={{ fontWeight: 800, color: "#4f46e5" }}>Quality & Guardrails</div>
-            <div style={{ color: "#a1a1aa", fontSize: 13 }}>Complexity score {complexityScore} · Risk: {riskLevel} · {freshnessLabel} · Perf: {perfSummary()}</div>
+            <div style={{ color: "#a1a1aa", fontSize: 13 }}>Complexity score {complexityScore} Â· Risk: {riskLevel} Â· {freshnessLabel} Â· Perf: {perfSummary()}</div>
             {lintFindings.length > 0 && (
               <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap", alignItems: "center" }}>
                 <span style={{ color: "#a1a1aa", fontSize: 12 }}>Lint findings:</span>
@@ -995,7 +995,7 @@ export default function CustomDashboardBuilder() {
             <label style={{ color: "#d4d4d8", fontSize: 13, display: "flex", gap: 6, alignItems: "center" }}>Perf budget (ms)
               <input type="number" min="100" max="2000" value={perfBudget} onChange={e => setPerfBudget(Math.max(50, Number(e.target.value) || 0))} style={{ width: 90, background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 8px" }} />
             </label>
-            <div style={{ color: "#a1a1aa", fontSize: 13 }}>Avg latency: {averageLatency()}ms · {perfSummary()}</div>
+            <div style={{ color: "#a1a1aa", fontSize: 13 }}>Avg latency: {averageLatency()}ms Â· {perfSummary()}</div>
           </div>
           <div style={{ height: 8, background: "#18181b", borderRadius: 6, overflow: "hidden", border: "1px solid #27272a" }}>
             <div style={{ width: `${Math.min(100, Math.max(0, (averageLatency() / (perfBudget || 1)) * 100))}%`, height: "100%", background: averageLatency() <= perfBudget ? "#22c55e" : averageLatency() <= perfBudget * 1.4 ? "#f59e0b" : "#ef4444", transition: "width 0.3s ease" }} />
@@ -1051,11 +1051,11 @@ export default function CustomDashboardBuilder() {
           </div>
         </div>
         {reminderBanner && (
-          <div style={{ background: "#27272a", border: "1px solid #52525b", borderRadius: 12, padding: 12, color: "#fde68a" }}>Reminder: dashboard hasn’t been published in 7+ days.</div>
+          <div style={{ background: "#27272a", border: "1px solid #52525b", borderRadius: 12, padding: 12, color: "#fde68a" }}>Reminder: dashboard hasnâ€™t been published in 7+ days.</div>
         )}
         {slaBreach && watchlist.length > 0 && (
           <div style={{ background: "#2f1114", border: "1px solid #52525b", borderRadius: 12, padding: 12, color: "#fecdd3", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <div>SLA breach simulated for watchlist widgets — route alerts to {escalationTarget || escalationChannel}.</div>
+            <div>SLA breach simulated for watchlist widgets â€” route alerts to {escalationTarget || escalationChannel}.</div>
             <button onClick={() => { setSlaBreach(false); setAuditLog(prev => [{ at: Date.now(), message: "SLA breach cleared" }, ...prev].slice(0, 8)); runLint(); }} style={{ background: "#27272a", color: "#fafafa", border: "1px solid #52525b", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Clear breach</button>
           </div>
         )}
@@ -1095,7 +1095,7 @@ export default function CustomDashboardBuilder() {
             <div style={{ fontWeight: 800, color: "#d4d4d8" }}>Versions</div>
             {versions.map((v, idx) => (
               <div key={idx} style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", color: "#a1a1aa" }}>
-                <span>{v.metadata?.title || "Untitled"} {v.label ? `· ${v.label}` : ""}</span>
+                <span>{v.metadata?.title || "Untitled"} {v.label ? `Â· ${v.label}` : ""}</span>
                 <div style={{ display: "flex", gap: 8 }}>
                   <span>{new Date(v.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                   {v.notes && <span style={{ color: "#d4d4d8", fontSize: 12 }}>Notes: {v.notes}</span>}
@@ -1163,7 +1163,7 @@ export default function CustomDashboardBuilder() {
           <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#d4d4d8" }}>Row height
             <input type="number" min="120" max="480" value={rowHeight} onChange={e => setRowHeight(Number(e.target.value) || 120)} style={{ width: 80, background: "#18181b", color: "#fafafa", border: "1px solid #27272a", borderRadius: 8, padding: "6px 8px" }} /> px
           </label>
-          <div style={{ color: "#a1a1aa", fontSize: 13 }}>Preview: {layoutCols} cols · {rowHeight}px rows</div>
+          <div style={{ color: "#a1a1aa", fontSize: 13 }}>Preview: {layoutCols} cols Â· {rowHeight}px rows</div>
           {watchlist.length > 0 && <div style={{ color: "#7dd3fc", fontSize: 13 }}>Watchlist: {watchlist.length} widget{watchlist.length > 1 ? "s" : ""}</div>}
         </div>
         <div style={{ display: "grid", gap: 8 }}>
@@ -1219,7 +1219,7 @@ export default function CustomDashboardBuilder() {
                   </div>
                   {(comments[w.id] || []).slice(-2).map((c, cidx) => (
                     <div key={cidx} style={{ color: "#a1a1aa", fontSize: 12, background: "#18181b", border: "1px solid #27272a", borderRadius: 8, padding: 6 }}>
-                      {c.text} · {new Date(c.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      {c.text} Â· {new Date(c.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </div>
                   ))}
                 </div>
@@ -1233,7 +1233,7 @@ export default function CustomDashboardBuilder() {
               <button onClick={clearWatchlist} style={{ background: "#27272a", color: "#fafafa", border: "1px solid #52525b", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}>Clear watchlist</button>
             </div>
           )}
-          <div style={{ marginTop: 8, color: "#a1a1aa", fontSize: 12 }}>Keyboard: Enter to add comment · Space to toggle watchlist · Drag to reorder.</div>
+          <div style={{ marginTop: 8, color: "#a1a1aa", fontSize: 12 }}>Keyboard: Enter to add comment Â· Space to toggle watchlist Â· Drag to reorder.</div>
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Data Sources</div>
@@ -1321,7 +1321,7 @@ export default function CustomDashboardBuilder() {
           {quickFixForIssue(error) === "reset" && <button onClick={() => setDashboard([])} style={{ background: "#22c55e", color: "#18181b", border: "none", borderRadius: 8, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>Reset dashboard</button>}
         </div>
       )}
-      {dashboard.length >= 10 && <div style={{ color: "#fbbf24", fontSize: 13, marginBottom: 8 }}>Perf detail: {dashboard.length} widgets — consider splitting dashboards.</div>}
+      {dashboard.length >= 10 && <div style={{ color: "#fbbf24", fontSize: 13, marginBottom: 8 }}>Perf detail: {dashboard.length} widgets â€” consider splitting dashboards.</div>}
 
       {history.length > 0 && (
         <div style={{ marginBottom: 18, background: "#18181b", border: "1px solid #27272a", borderRadius: 12, padding: 12, display: "grid", gap: 8 }}>
@@ -1334,7 +1334,7 @@ export default function CustomDashboardBuilder() {
               <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#18181b", border: "1px solid #27272a", borderRadius: 10, padding: "8px 10px" }}>
                 <div>
                   <div style={{ fontWeight: 700, color: "#fafafa" }}>{h.summary || "Snapshot"}</div>
-                  <div style={{ color: "#a1a1aa", fontSize: 12 }}>{h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "recent"} · {h.env}</div>
+                  <div style={{ color: "#a1a1aa", fontSize: 12 }}>{h.at ? new Date(h.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "recent"} Â· {h.env}</div>
                 </div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   <button onClick={() => restoreSnapshot(h)} style={{ background: "#27272a", color: "#fafafa", border: "1px solid #52525b", borderRadius: 8, padding: "6px 10px", fontWeight: 700, cursor: "pointer" }}>Load</button>

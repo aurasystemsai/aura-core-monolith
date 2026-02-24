@@ -1,4 +1,4 @@
-
+ï»¿
 import React, { useEffect, useMemo, useState } from "react";
 import BackButton from "./BackButton";
 import { apiFetch, apiFetchJSON } from "../../api";
@@ -107,32 +107,32 @@ export default function BlogDraftEngine() {
       switch (activeTab) {
         case "Ideas":
           const ideasRes = await apiFetchJSON("/api/blog-draft-engine/ideation/ideas");
-          const ideasData = await ideasRes.json();
+          const ideasData = ideasRes;
           if (ideasData?.success) setIdeas(ideasData.data || []);
           break;
         case "Briefs":
           const briefsRes = await apiFetchJSON("/api/blog-draft-engine/briefs");
-          const briefsData = await briefsRes.json();
+          const briefsData = briefsRes;
           if (briefsData?.success) setBriefs(briefsData.data || []);
           break;
         case "Drafts":
           const draftsRes = await apiFetchJSON("/api/blog-draft-engine/drafts");
-          const draftsData = await draftsRes.json();
+          const draftsData = draftsRes;
           if (draftsData?.success) setDrafts(draftsData.data || []);
           break;
         case "Tasks":
           const tasksRes = await apiFetchJSON("/api/blog-draft-engine/collaboration/tasks");
-          const tasksData = await tasksRes.json();
+          const tasksData = tasksRes;
           if (tasksData?.success) setTasks(tasksData.data || SAMPLE_TASKS);
           break;
         case "Comments":
           const commentsRes = await apiFetchJSON("/api/blog-draft-engine/collaboration/comments");
-          const commentsData = await commentsRes.json();
+          const commentsData = commentsRes;
           if (commentsData?.success) setComments(commentsData.data || []);
           break;
         case "Audit Logs":
           const logsRes = await apiFetchJSON("/api/blog-draft-engine/monitoring/audit-logs");
-          const logsData = await logsRes.json();
+          const logsData = logsRes;
           if (logsData?.success) setAuditLogs(logsData.data || []);
           break;
       }
@@ -230,7 +230,7 @@ export default function BlogDraftEngine() {
       const seoJson = await seoRes.json();
       if (seoJson?.success) setSeo(seoJson.data);
       const distRes = await apiFetchJSON("/api/blog-draft-engine/distribution/readiness");
-      const distJson = await distRes.json();
+      const distJson = distRes;
       if (distJson?.success) setDistribution(distJson.data);
     } catch (err) {
       setError(err.message);
@@ -556,7 +556,7 @@ export default function BlogDraftEngine() {
             </div>
             {aiRun && (
               <div className="bde-ai-result">
-                <strong>Last Run:</strong> {aiRun.strategy} • Quality: {aiRun.qualityScore}
+                <strong>Last Run:</strong> {aiRun.strategy} â€¢ Quality: {aiRun.qualityScore}
               </div>
             )}
           </div>
@@ -642,7 +642,7 @@ export default function BlogDraftEngine() {
     <div className="bde-shell">
       <div className="bde-header">
         <div>
-          <p className="bde-kicker">World-class · 8 engines · 42 tabs</p>
+          <p className="bde-kicker">World-class Â· 8 engines Â· 42 tabs</p>
           <h2>Blog Draft Engine</h2>
           <div className="bde-subtitle">Ideation ? Briefs ? Outlines ? Draft ? SEO ? Distribution ? Collaboration ? Performance</div>
         </div>
@@ -656,7 +656,7 @@ export default function BlogDraftEngine() {
 
       <div className="bde-badges">
         <span className="bde-pill success">Health: {health?.status || "unknown"}</span>
-        {stats && <span className="bde-pill info">Ideas: {stats.ideas} · Drafts: {stats.drafts}</span>}
+        {stats && <span className="bde-pill info">Ideas: {stats.ideas} Â· Drafts: {stats.drafts}</span>}
         {seo && <span className="bde-pill warning">SEO: {seo.score}</span>}
         {metadataScore > 0 && <span className="bde-pill">Metadata: {metadataScore}</span>}
         <span className="bde-pill muted">42-tab workspace</span>
@@ -691,7 +691,7 @@ export default function BlogDraftEngine() {
           <div className="bde-modal" onClick={(e) => e.stopPropagation()}>
             <div className="bde-modal-header">
               <h3>Create New {modalType.charAt(0).toUpperCase() + modalType.slice(1)}</h3>
-              <button className="bde-modal-close" onClick={() => setShowModal(false)}>×</button>
+              <button className="bde-modal-close" onClick={() => setShowModal(false)}>Ã—</button>
             </div>
             <div className="bde-modal-body">
               {modalType === "idea" && (

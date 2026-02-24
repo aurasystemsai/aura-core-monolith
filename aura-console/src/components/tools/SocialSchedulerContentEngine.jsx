@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 import BackButton from "./BackButton";
 
@@ -18,7 +18,7 @@ export default function SocialSchedulerContentEngine() {
   const fetchHistory = async () => {
     try {
       const res = await apiFetchJSON("/api/social-scheduler-content-engine/history");
-      const data = await res.json();
+      const data = res;
       if (data.ok) setHistory(data.history || []);
     } catch {}
   };
@@ -26,7 +26,7 @@ export default function SocialSchedulerContentEngine() {
   const fetchAnalytics = async () => {
     try {
       const res = await apiFetchJSON("/api/social-scheduler-content-engine/analytics");
-      const data = await res.json();
+      const data = res;
       if (data.ok) setAnalytics(data.analytics || []);
     } catch {}
   };

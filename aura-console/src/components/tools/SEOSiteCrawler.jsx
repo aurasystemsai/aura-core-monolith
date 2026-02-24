@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+ï»¿import React, { useState, useRef, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../../api";
 
 const SEV_COLORS = { high: "#ef4444", medium: "#f59e0b", low: "#22c55e" };
@@ -50,7 +50,7 @@ function IssueCard({ issue, pageUrl }) {
           onClick={handleGenerate}
           disabled={fixing}
           style={{ marginLeft: "auto", background: "#4f46e5", color: "#09090b", border: "none", borderRadius: 6, padding: "3px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
-        >{fixing ? "…" : "Generate Fix"}</button>
+        >{fixing ? "â€¦" : "Generate Fix"}</button>
       </div>
       <div style={{ fontSize: 13, color: "#a1a1aa", lineHeight: 1.5 }}>{issue.detail}</div>
       {issue.fix && (
@@ -137,14 +137,14 @@ export default function SEOSiteCrawler() {
   const fetchHistory = async () => {
     try {
       const res = await apiFetchJSON("/api/seo-site-crawler/history");
-      const data = await res.json();
+      const data = res;
       if (data.ok) setHistory(data.history || []);
     } catch {}
   };
   const fetchAnalytics = async () => {
     try {
       const res = await apiFetchJSON("/api/seo-site-crawler/analytics");
-      const data = await res.json();
+      const data = res;
       if (data.ok) setAnalytics(data.analytics || []);
     } catch {}
   };
@@ -244,7 +244,7 @@ export default function SEOSiteCrawler() {
           {keywords.map(kw => (
             <span key={kw} style={{ background: "#27272a", color: "#4f46e5", borderRadius: 20, padding: "3px 11px 3px 12px", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
               {kw}
-              <button onClick={() => removeKeyword(kw)} style={{ background: "none", border: "none", color: "#a1a1aa", cursor: "pointer", fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
+              <button onClick={() => removeKeyword(kw)} style={{ background: "none", border: "none", color: "#a1a1aa", cursor: "pointer", fontSize: 14, lineHeight: 1, padding: 0 }}>Ã—</button>
             </span>
           ))}
           <input
@@ -253,7 +253,7 @@ export default function SEOSiteCrawler() {
             onKeyDown={onKwKeyDown}
             onBlur={addKeyword}
             style={{ flex: 1, minWidth: 140, background: "none", border: "none", color: "#f4f4f5", fontSize: 13, outline: "none" }}
-            placeholder={keywords.length === 0 ? "e.g. snowboard, winter sports…" : "Add another…"}
+            placeholder={keywords.length === 0 ? "e.g. snowboard, winter sportsâ€¦" : "Add anotherâ€¦"}
           />
         </div>
       </div>
@@ -261,7 +261,7 @@ export default function SEOSiteCrawler() {
       {/* Action Buttons */}
       <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
         <button onClick={handleCrawl} disabled={loading || !input.trim()} style={{ background: loading ? "#52525b" : "#4f46e5", color: "#09090b", border: "none", borderRadius: 8, padding: "11px 26px", fontWeight: 700, fontSize: 15, cursor: loading || !input.trim() ? "not-allowed" : "pointer" }}>
-          {loading ? "Crawling…" : "? Crawl & Analyze"}
+          {loading ? "Crawlingâ€¦" : "? Crawl & Analyze"}
         </button>
         <button onClick={() => fileInputRef.current?.click()} style={{ background: "#fbbf24", color: "#09090b", border: "none", borderRadius: 8, padding: "11px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Import</button>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImport} />

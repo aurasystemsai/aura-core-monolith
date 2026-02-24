@@ -1,4 +1,4 @@
-
+﻿
 
 import React, { useState, useRef, useEffect } from "react";
 import { apiFetch, apiFetchJSON } from "../api";
@@ -22,7 +22,7 @@ export default function AiAltTextEngine() {
   const fetchAnalytics = async () => {
     try {
       const res = await apiFetchJSON("/api/ai-alt-text-engine/analytics");
-      const data = await res.json();
+      const data = res;
       if (data.ok) setAnalytics(data.analytics || []);
     } catch {}
   };
