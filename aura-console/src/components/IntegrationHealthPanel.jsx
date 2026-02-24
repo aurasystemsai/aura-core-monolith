@@ -1,6 +1,6 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./IntegrationHealthPanel.css";
-import { apiFetch } from "../api";
+import { apiFetch, apiFetchJSON } from "../api";
 
 // Only show Shopify integration for health check
 const INTEGRATIONS = [
@@ -19,7 +19,7 @@ function IntegrationHealthPanel() {
       await Promise.all(
         INTEGRATIONS.map(async (integration) => {
           try {
-            const res = await apiFetch(integration.api, { credentials: "include" });
+            const res = await apiFetchJSON(integration.api, { credentials: "include" });
             const data = await res.json();
             results[integration.id] = data.status || "unknown";
           } catch {
@@ -54,7 +54,7 @@ function IntegrationHealthPanel() {
           let icon = null;
           if (status === "ok") {
             statusClass += "integration-health-chip--ok";
-            icon = <span style={{ color: '#4f46e5', fontSize: 28, marginRight: 12 }}>️</span>;
+            icon = <span style={{ color: '#4f46e5', fontSize: 28, marginRight: 12 }}>?</span>;
           } else if (status === "checking") {
             statusClass += "integration-health-chip--loading";
             icon = <span style={{ color: '#ffe066', fontSize: 28, marginRight: 12 }}></span>;
@@ -67,7 +67,7 @@ function IntegrationHealthPanel() {
               {icon}
               <span className="integration-health-text" style={{ fontSize: 18, fontWeight: 800, letterSpacing: '0.01em' }}>{integration.name}</span>
               <span style={{ marginLeft: 18, fontWeight: 700, fontSize: 16, color: status === 'ok' ? '#4f46e5' : status === 'checking' ? '#ffe066' : '#ff4d4f' }}>
-                {status === "ok" ? "Connected" : status === "checking" ? "Checking…" : "Not Connected"}
+                {status === "ok" ? "Connected" : status === "checking" ? "Checking�" : "Not Connected"}
               </span>
             </div>
           );

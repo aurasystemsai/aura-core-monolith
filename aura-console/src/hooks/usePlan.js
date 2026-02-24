@@ -1,14 +1,14 @@
-﻿import { useState, useEffect } from "react";
-import { apiFetch } from "../api";
+import { useState, useEffect } from "react";
+import { apiFetch, apiFetchJSON } from "../api";
 
 // Maps tool route IDs to minimum plan required
-// 4 tiers: free/starter ($0, dashboard only, 10 credits) → growth ($49) → pro ($149) → enterprise ($349)
+// 4 tiers: free/starter ($0, dashboard only, 10 credits) ? growth ($49) ? pro ($149) ? enterprise ($349)
 // There is NO generous free plan. Unsubscribed users get dashboard + 10 lifetime credits.
 export const TOOL_PLAN = {
-  // ── Starter (free, $0) ── dashboard only, 10 lifetime AI credits
+  // -- Starter (free, $0) -- dashboard only, 10 lifetime AI credits
   "dashboard":                            "free",
 
-  // ── Growth ($49/mo) ── core SEO + marketing tools
+  // -- Growth ($49/mo) -- core SEO + marketing tools
   "product-seo":                          "growth",
   "blog-seo":                             "growth",
   "seo-site-crawler":                     "growth",
@@ -35,7 +35,7 @@ export const TOOL_PLAN = {
   "finance-autopilot":                    "growth",
   "inventory-supplier-sync":              "growth",
 
-  // ── Pro ($149/mo) ── advanced & intelligence tools
+  // -- Pro ($149/mo) -- advanced & intelligence tools
   "backlink-explorer":                    "pro",
   "link-intersect-outreach":              "pro",
   "competitive-analysis":                 "pro",
@@ -67,7 +67,7 @@ export const TOOL_PLAN = {
   "inventory-forecasting":                "pro",
   "compliance-privacy-suite":             "pro",
 
-  // ── Enterprise ($349/mo) ── platform, API, ops
+  // -- Enterprise ($349/mo) -- platform, API, ops
   "reporting-integrations":               "enterprise",
   "custom-dashboard-builder":             "enterprise",
   "scheduled-export":                     "enterprise",
@@ -105,7 +105,7 @@ export default function usePlan() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await apiFetch("/api/billing/subscription");
+        const res = await apiFetchJSON("/api/billing/subscription");
         const data = await res.json();
         setPlan(data.plan_id || "free");
       } catch (_) {

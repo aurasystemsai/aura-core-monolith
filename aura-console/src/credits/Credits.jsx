@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { apiFetch } from '../api';
+import { apiFetch, apiFetchJSON } from '../api';
 import { PLAN_LABEL, PLAN_CREDITS, PLAN_COLOUR } from '../hooks/usePlan';
 
 const CREDIT_PACKS = [
@@ -111,7 +111,7 @@ const Credits = ({ plan = 'free' }) => {
 
   const loadCredits = useCallback(async () => {
     try {
-      const res = await apiFetch('/api/billing/credits');
+      const res = await apiFetchJSON('/api/billing/credits');
       const data = await res.json();
       if (data.ok) {
         setBalance(data.balance);
@@ -138,7 +138,7 @@ const Credits = ({ plan = 'free' }) => {
   const loadHistory = useCallback(async () => {
     setTxLoading(true);
     try {
-      const res = await apiFetch('/api/billing/credit-history');
+      const res = await apiFetchJSON('/api/billing/credit-history');
       const data = await res.json();
       if (data.ok && Array.isArray(data.transactions)) {
         setTransactions(data.transactions);
@@ -149,7 +149,7 @@ const Credits = ({ plan = 'free' }) => {
 
   const loadCosts = useCallback(async () => {
     try {
-      const res = await apiFetch('/api/billing/credit-costs');
+      const res = await apiFetchJSON('/api/billing/credit-costs');
       const data = await res.json();
       if (data.ok && data.costs) {
         setCreditCosts(data.costs);
@@ -171,7 +171,7 @@ const Credits = ({ plan = 'free' }) => {
     setError('');
     setSuccess('');
     try {
-      const res = await apiFetch('/api/billing/purchase-credits', {
+      const res = await apiFetchJSON('/api/billing/purchase-credits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ packId: selectedPack }),

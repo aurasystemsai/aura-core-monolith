@@ -1,5 +1,5 @@
-﻿import React, { useState, useRef } from "react";
-import { apiFetch } from "../../api";
+import React, { useState, useRef } from "react";
+import { apiFetch, apiFetchJSON } from "../../api";
 
 export default function BrandMentionTracker() {
   const [input, setInput] = useState("");
@@ -14,7 +14,7 @@ export default function BrandMentionTracker() {
   // Fetch mentions
   const fetchMentions = async () => {
     try {
-      const res = await apiFetch("/api/brand-mention-tracker/mentions", {
+      const res = await apiFetchJSON("/api/brand-mention-tracker/mentions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input })
@@ -29,7 +29,7 @@ export default function BrandMentionTracker() {
   // Fetch sentiment
   const fetchSentiment = async () => {
     try {
-      const res = await apiFetch("/api/brand-mention-tracker/sentiment", {
+      const res = await apiFetchJSON("/api/brand-mention-tracker/sentiment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input })

@@ -1,5 +1,5 @@
-﻿import React, { useState, useRef } from "react";
-import { apiFetch } from "../../api";
+import React, { useState, useRef } from "react";
+import { apiFetch, apiFetchJSON } from "../../api";
 
 export default function AuraAPISDK() {
   const [endpoint, setEndpoint] = useState("");
@@ -16,7 +16,7 @@ export default function AuraAPISDK() {
   // Fetch docs
   const fetchDocs = async () => {
     try {
-      const res = await apiFetch("/api/aura-api-sdk/docs");
+      const res = await apiFetchJSON("/api/aura-api-sdk/docs");
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setDocs(data.docs || []);
@@ -30,7 +30,7 @@ export default function AuraAPISDK() {
     setError("");
     setResponse(null);
     try {
-      const res = await apiFetch(endpoint, {
+      const res = await apiFetchJSON(endpoint, {
         method,
         headers: { "Content-Type": "application/json" },
         body: method !== "GET" ? body : undefined

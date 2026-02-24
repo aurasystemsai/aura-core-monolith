@@ -1,5 +1,5 @@
-﻿import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { apiFetch } from '../../api';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { apiFetch, apiFetchJSON } from '../../api';
 import WinbackFeatureCard from './WinbackFeatureCard';
 import WinbackAnalyticsChart from './WinbackAnalyticsChart';
 
@@ -17,9 +17,9 @@ function AbandonedCheckoutWinbackLegacy() {
     { id: 'manage', label: 'Manage', icon: '', count: 8 },
     { id: 'optimize', label: 'Optimize', icon: '', count: 7 },
     { id: 'advanced', label: 'Advanced', icon: '', count: 6 },
-    { id: 'tools', label: 'Tools', icon: '️', count: 5 },
+    { id: 'tools', label: 'Tools', icon: '?', count: 5 },
     { id: 'monitoring', label: 'Monitoring', icon: '', count: 6 },
-    { id: 'settings', label: 'Settings', icon: '️', count: 6 },
+    { id: 'settings', label: 'Settings', icon: '?', count: 6 },
     { id: 'worldclass', label: 'World-Class', icon: '', count: 6 },
   ];
 
@@ -336,7 +336,7 @@ function RecoveryCampaignsTab({ campaigns, setCampaigns }) {
   const [editingCampaign, setEditingCampaign] = useState(null);
 
   const createCampaign = async (campaign) => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/campaigns', { method: 'POST', body: JSON.stringify(campaign) });
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/campaigns', { method: 'POST', body: JSON.stringify(campaign) });
     if (res.ok) {
       const data = await res.json();
       setCampaigns([...campaigns, data.campaign]);
@@ -673,7 +673,7 @@ function ExportImportTab() {
   const handleExport = async () => {
     setExporting(true);
     try {
-      const res = await apiFetch(`/api/abandoned-checkout-winback/developer/export?type=${exportType}&format=${exportFormat}`);
+      const res = await apiFetchJSON(`/api/abandoned-checkout-winback/developer/export?type=${exportType}&format=${exportFormat}`);
       if (res.ok) {
         const data = await res.json();
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -742,7 +742,7 @@ function APIPlaygroundTab() {
     setResponse('');
     try {
       const options = method !== 'GET' ? { method, body } : { method };
-      const res = await apiFetch(endpoint, options);
+      const res = await apiFetchJSON(endpoint, options);
       const data = await res.json();
       setResponse(JSON.stringify(data, null, 2));
     } catch (e) {
@@ -806,7 +806,7 @@ function WebhooksTab() {
   }, []);
 
   const loadWebhooks = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/developer/webhooks');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/developer/webhooks');
     if (res.ok) {
       const data = await res.json();
       setWebhooks(data.webhooks || []);
@@ -869,7 +869,7 @@ function WebhooksTab() {
 
 function IntegrationsTab() {
   const integrations = [
-    { name: 'Shopify', status: 'connected', icon: '️' },
+    { name: 'Shopify', status: 'connected', icon: '?' },
     { name: 'Klaviyo', status: 'available', icon: '' },
     { name: 'Twilio', status: 'available', icon: '' },
     { name: 'Stripe', status: 'connected', icon: '' },
@@ -937,7 +937,7 @@ function RealTimeDashboardTab() {
   }, []);
 
   const loadStats = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/apm/metrics/dashboard');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/apm/metrics/dashboard');
     if (res.ok) {
       const data = await res.json();
       setStats(data.stats || stats);
@@ -995,22 +995,22 @@ function PerformanceMetricsTab() {
             <tr style={{ borderBottom: '1px solid #18181b' }}>
               <td style={{ padding: 12 }}>Average Response Time</td>
               <td style={{ padding: 12, textAlign: 'right', fontWeight: 700 }}>142ms</td>
-              <td style={{ padding: 12, textAlign: 'right', color: '#22c55e' }}>↓ 5%</td>
+              <td style={{ padding: 12, textAlign: 'right', color: '#22c55e' }}>? 5%</td>
             </tr>
             <tr style={{ borderBottom: '1px solid #18181b' }}>
               <td style={{ padding: 12 }}>API Call Success Rate</td>
               <td style={{ padding: 12, textAlign: 'right', fontWeight: 700 }}>99.7%</td>
-              <td style={{ padding: 12, textAlign: 'right', color: '#22c55e' }}>↑ 0.2%</td>
+              <td style={{ padding: 12, textAlign: 'right', color: '#22c55e' }}>? 0.2%</td>
             </tr>
             <tr style={{ borderBottom: '1px solid #18181b' }}>
               <td style={{ padding: 12 }}>Recovery Email Deliverability</td>
               <td style={{ padding: 12, textAlign: 'right', fontWeight: 700 }}>98.3%</td>
-              <td style={{ padding: 12, textAlign: 'right', color: '#22c55e' }}>↑ 1.1%</td>
+              <td style={{ padding: 12, textAlign: 'right', color: '#22c55e' }}>? 1.1%</td>
             </tr>
             <tr>
               <td style={{ padding: 12 }}>Campaign Conversion Rate</td>
               <td style={{ padding: 12, textAlign: 'right', fontWeight: 700 }}>12.4%</td>
-              <td style={{ padding: 12, textAlign: 'right', color: '#ef4444' }}>↓ 0.8%</td>
+              <td style={{ padding: 12, textAlign: 'right', color: '#ef4444' }}>? 0.8%</td>
             </tr>
           </tbody>
         </table>
@@ -1027,7 +1027,7 @@ function ActivityLogTab() {
   }, []);
 
   const loadActivities = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/collaboration/activity-feed');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/collaboration/activity-feed');
     if (res.ok) {
       const data = await res.json();
       setActivities(data.activities || []);
@@ -1068,7 +1068,7 @@ function AlertsTab() {
   }, []);
 
   const loadAlerts = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/apm/alerts');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/apm/alerts');
     if (res.ok) {
       const data = await res.json();
       setAlerts(data.alerts || []);
@@ -1124,7 +1124,7 @@ function HealthStatusTab() {
   }, []);
 
   const loadHealth = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/apm/health');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/apm/health');
     if (res.ok) {
       const data = await res.json();
       setHealth(data.health || health);
@@ -1166,7 +1166,7 @@ function GeneralSettingsTab() {
   }, []);
 
   const loadSettings = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/whitelabel/settings');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/whitelabel/settings');
     if (res.ok) {
       const data = await res.json();
       setSettings(data.settings || settings);
@@ -1195,8 +1195,8 @@ function GeneralSettingsTab() {
           <label style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 600 }}>Currency</label>
           <select value={settings.currency} onChange={(e) => setSettings({...settings, currency: e.target.value})} style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '10px 14px', fontSize: 15, width: '100%', maxWidth: 400 }}>
             <option value="USD">USD ($)</option>
-            <option value="EUR">EUR (€)</option>
-            <option value="GBP">GBP (£)</option>
+            <option value="EUR">EUR (�)</option>
+            <option value="GBP">GBP (�)</option>
           </select>
         </div>
         <button style={{ background: '#4f46e5', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Save Settings</button>
@@ -1213,7 +1213,7 @@ function BrandsTab() {
   }, []);
 
   const loadBrands = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/whitelabel/brands');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/whitelabel/brands');
     if (res.ok) {
       const data = await res.json();
       setBrands(data.brands || []);
@@ -1234,7 +1234,7 @@ function BrandsTab() {
           <div key={idx} style={{ background: '#3f3f46', padding: 20, borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontWeight: 700, marginBottom: 4 }}>{brand.name}</div>
-              <div style={{ fontSize: 14, color: '#a1a1aa' }}>Primary: {brand.primaryColor} • Logo: {brand.logoUrl || 'Not set'}</div>
+              <div style={{ fontSize: 14, color: '#a1a1aa' }}>Primary: {brand.primaryColor} � Logo: {brand.logoUrl || 'Not set'}</div>
             </div>
             <button style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Edit</button>
           </div>
@@ -1252,7 +1252,7 @@ function TeamsPermissionsTab() {
   }, []);
 
   const loadTeams = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/collaboration/teams');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/collaboration/teams');
     if (res.ok) {
       const data = await res.json();
       setTeams(data.teams || []);
@@ -1302,7 +1302,7 @@ function ComplianceTab() {
   }, []);
 
   const loadConsent = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/security/gdpr/consent');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/security/gdpr/consent');
     if (res.ok) {
       const data = await res.json();
       setConsent(data.consent || []);
@@ -1348,7 +1348,7 @@ function LocalizationTab() {
   }, []);
 
   const loadLocales = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/whitelabel/localization');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/whitelabel/localization');
     if (res.ok) {
       const data = await res.json();
       setLocales(data.locales || []);
@@ -1369,7 +1369,7 @@ function LocalizationTab() {
           <div key={idx} style={{ background: '#3f3f46', padding: 18, borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontWeight: 700 }}>{locale.name}</div>
-              <div style={{ fontSize: 14, color: '#a1a1aa' }}>Code: {locale.code} • {locale.enabled ? 'Enabled' : 'Disabled'}</div>
+              <div style={{ fontSize: 14, color: '#a1a1aa' }}>Code: {locale.code} � {locale.enabled ? 'Enabled' : 'Disabled'}</div>
             </div>
             <button style={{ background: '#18181b', color: '#fafafa', border: '1px solid #3f3f46', borderRadius: 6, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>Edit</button>
           </div>
@@ -1387,7 +1387,7 @@ function APIKeysTab() {
   }, []);
 
   const loadApiKeys = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/developer/api-keys');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/developer/api-keys');
     if (res.ok) {
       const data = await res.json();
       setApiKeys(data.apiKeys || []);
@@ -1441,7 +1441,7 @@ function RevenueForecastingTab() {
   }, []);
 
   const loadForecast = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/analytics/revenue-forecast');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/analytics/revenue-forecast');
     if (res.ok) {
       const data = await res.json();
       setForecast(data.forecast || forecast);
@@ -1486,7 +1486,7 @@ function CLVAnalyticsTab() {
   }, []);
 
   const loadCLVStats = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/analytics/clv');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/analytics/clv');
     if (res.ok) {
       const data = await res.json();
       setClvStats(data.clv || clvStats);
@@ -1524,7 +1524,7 @@ function CollaborationTab() {
   }, []);
 
   const loadComments = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/collaboration/comments');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/collaboration/comments');
     if (res.ok) {
       const data = await res.json();
       setComments(data.comments || []);
@@ -1566,7 +1566,7 @@ function SecurityCenterTab() {
   }, []);
 
   const loadAuditLogs = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/security/audit-log');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/security/audit-log');
     if (res.ok) {
       const data = await res.json();
       setAuditLogs(data.logs || []);
@@ -1602,7 +1602,7 @@ function SecurityCenterTab() {
             {auditLogs.slice(0, 5).map((log, idx) => (
               <div key={idx} style={{ padding: '10px 0', borderBottom: idx < 4 ? '1px solid #18181b' : 'none' }}>
                 <div style={{ fontWeight: 600 }}>{log.event}</div>
-                <div style={{ color: '#a1a1aa', fontSize: 13 }}>{log.user} • {log.timestamp}</div>
+                <div style={{ color: '#a1a1aa', fontSize: 13 }}>{log.user} � {log.timestamp}</div>
               </div>
             ))}
           </div>
@@ -1620,7 +1620,7 @@ function DeveloperPlatformTab() {
   }, []);
 
   const loadScripts = async () => {
-    const res = await apiFetch('/api/abandoned-checkout-winback/developer/custom-scripts');
+    const res = await apiFetchJSON('/api/abandoned-checkout-winback/developer/custom-scripts');
     if (res.ok) {
       const data = await res.json();
       setScripts(data.scripts || []);
@@ -1656,10 +1656,10 @@ function DeveloperPlatformTab() {
       <div style={{ background: '#3f3f46', padding: 24, borderRadius: 10 }}>
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Quick Links</h3>
         <div style={{ display: 'grid', gap: 12 }}>
-          <a href="#" style={{ color: '#4f46e5', textDecoration: 'none', fontSize: 15 }}>→ API Documentation (184 endpoints)</a>
-          <a href="#" style={{ color: '#4f46e5', textDecoration: 'none', fontSize: 15 }}>→ Webhook Configuration</a>
-          <a href="#" style={{ color: '#4f46e5', textDecoration: 'none', fontSize: 15 }}>→ Event Streaming Setup</a>
-          <a href="#" style={{ color: '#4f46e5', textDecoration: 'none', fontSize: 15 }}>→ API Playground</a>
+          <a href="#" style={{ color: '#4f46e5', textDecoration: 'none', fontSize: 15 }}>? API Documentation (184 endpoints)</a>
+          <a href="#" style={{ color: '#4f46e5', textDecoration: 'none', fontSize: 15 }}>? Webhook Configuration</a>
+          <a href="#" style={{ color: '#4f46e5', textDecoration: 'none', fontSize: 15 }}>? Event Streaming Setup</a>
+          <a href="#" style={{ color: '#4f46e5', textDecoration: 'none', fontSize: 15 }}>? API Playground</a>
         </div>
       </div>
     </div>
@@ -3207,7 +3207,7 @@ function AbandonedCheckoutWinback() {
         )}
         {activeSection === 'compliance' && (
           <section aria-label="Compliance">
-            <WinbackFeatureCard title="Compliance Center" description="GDPR/CCPA tools, opt-out, audit logs, data export/delete, and deliverability best practices." icon="️" />
+            <WinbackFeatureCard title="Compliance Center" description="GDPR/CCPA tools, opt-out, audit logs, data export/delete, and deliverability best practices." icon="?" />
             <div style={{ background: '#27272a', color: '#fafafa', borderRadius: 14, boxShadow: '0 2px 8px #0004', padding: 32, marginBottom: 24, marginTop: 18 }}>
               <h3 style={{ fontWeight: 800, fontSize: 22, marginBottom: 18 }}>Compliance Tools</h3>
               <ComplianceSection />
@@ -3216,7 +3216,7 @@ function AbandonedCheckoutWinback() {
         )}
         {activeSection === 'settings' && (
           <section aria-label="Settings">
-            <WinbackFeatureCard title="Settings" description="Configure tool preferences, notification options, and advanced settings. Personalize your winback experience." icon="️" />
+            <WinbackFeatureCard title="Settings" description="Configure tool preferences, notification options, and advanced settings. Personalize your winback experience." icon="?" />
             {/* ...settings code... */}
           </section>
         )}
@@ -3266,7 +3266,7 @@ function CustomSegmentBuilder({ onCreate }) {
     { value: ">", label: ">" },
     { value: "<", label: "<" },
     { value: "=", label: "=" },
-    { value: "!=", label: "≠" },
+    { value: "!=", label: "?" },
     { value: "contains", label: "contains" },
   ];
   const handleRuleChange = (idx, key, val) => {

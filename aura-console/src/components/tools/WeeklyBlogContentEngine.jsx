@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import BackButton from "./BackButton";
-import { apiFetch } from "../../api";
+import { apiFetch, apiFetchJSON } from "../../api";
 import "../../weekly-blog/WeeklyBlogContentEngine.css";
 
 const TAB_GROUPS = {
@@ -124,7 +124,7 @@ export default function WeeklyBlogContentEngine() {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const res = await apiFetch("/api/weekly-blog-content-engine/stats");
+        const res = await apiFetchJSON("/api/weekly-blog-content-engine/stats");
         const data = await res.json();
         if (data?.ok) setStats(data.stats);
       } catch (err) {
@@ -137,7 +137,7 @@ export default function WeeklyBlogContentEngine() {
   const orchestrateRun = async () => {
     setError("");
     try {
-      const res = await apiFetch("/api/weekly-blog-content-engine/ai/orchestrate", {
+      const res = await apiFetchJSON("/api/weekly-blog-content-engine/ai/orchestrate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ strategy: "best-of-n", posts: 4, primaryKeyword: plan.posts[0]?.primaryKeyword }),
@@ -153,7 +153,7 @@ export default function WeeklyBlogContentEngine() {
   const ensembleRun = async () => {
     setError("");
     try {
-      const res = await apiFetch("/api/weekly-blog-content-engine/ai/ensemble", {
+      const res = await apiFetchJSON("/api/weekly-blog-content-engine/ai/ensemble", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ posts: 4, primaryKeyword: plan.posts[0]?.primaryKeyword }),

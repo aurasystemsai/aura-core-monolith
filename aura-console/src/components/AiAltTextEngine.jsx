@@ -1,7 +1,7 @@
-﻿
+
 
 import React, { useState, useRef, useEffect } from "react";
-import { apiFetch } from "../api";
+import { apiFetch, apiFetchJSON } from "../api";
 
 export default function AiAltTextEngine() {
   const [form, setForm] = useState({
@@ -21,7 +21,7 @@ export default function AiAltTextEngine() {
   // Analytics
   const fetchAnalytics = async () => {
     try {
-      const res = await apiFetch("/api/ai-alt-text-engine/analytics");
+      const res = await apiFetchJSON("/api/ai-alt-text-engine/analytics");
       const data = await res.json();
       if (data.ok) setAnalytics(data.analytics || []);
     } catch {}
@@ -37,7 +37,7 @@ export default function AiAltTextEngine() {
     try {
       const formData = new FormData();
       files.forEach(f => formData.append("images", f));
-      const res = await apiFetch("/api/ai-alt-text-engine/batch", {
+      const res = await apiFetchJSON("/api/ai-alt-text-engine/batch", {
         method: "POST",
         body: formData
       });
@@ -81,7 +81,7 @@ export default function AiAltTextEngine() {
     setError("");
     setResult(null);
     try {
-      const res = await apiFetch("/api/run/ai-alt-text-engine", {
+      const res = await apiFetchJSON("/api/run/ai-alt-text-engine", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

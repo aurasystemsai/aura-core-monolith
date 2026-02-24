@@ -1,6 +1,6 @@
-﻿import React, { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import BackButton from "./BackButton";
-import { apiFetch } from "../../api";
+import { apiFetch, apiFetchJSON } from "../../api";
 
 export default function CreativeAutomationEngine() {
   const [brief, setBrief] = useState("");
@@ -20,7 +20,7 @@ export default function CreativeAutomationEngine() {
     setLoading(true);
     setError("");
     try {
-      const res = await apiFetch("/api/creative-automation-engine/creatives");
+      const res = await apiFetchJSON("/api/creative-automation-engine/creatives");
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setCreatives(data.creatives || []);
@@ -36,7 +36,7 @@ export default function CreativeAutomationEngine() {
     setLoading(true);
     setError("");
     try {
-      const res = await apiFetch("/api/creative-automation-engine/analytics");
+      const res = await apiFetchJSON("/api/creative-automation-engine/analytics");
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Unknown error");
       setAnalytics(data.analytics || []);
@@ -53,7 +53,7 @@ export default function CreativeAutomationEngine() {
     setError("");
     setResult("");
     try {
-      const res = await apiFetch("/api/creative-automation-engine/ai/generate", {
+      const res = await apiFetchJSON("/api/creative-automation-engine/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ brief })
@@ -74,7 +74,7 @@ export default function CreativeAutomationEngine() {
     setLoading(true);
     setError("");
     try {
-      const res = await apiFetch("/api/creative-automation-engine/creatives", {
+      const res = await apiFetchJSON("/api/creative-automation-engine/creatives", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: result })
@@ -96,7 +96,7 @@ export default function CreativeAutomationEngine() {
     const reader = new FileReader();
     reader.onload = async evt => {
       try {
-        const res = await apiFetch("/api/creative-automation-engine/import", {
+        const res = await apiFetchJSON("/api/creative-automation-engine/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ data: JSON.parse(evt.target.result) })
@@ -188,7 +188,7 @@ export default function CreativeAutomationEngine() {
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: darkMode ? "#e4e4e7" : "#09090b" }}>Creatives</div>
         {creatives.map(c => (
           <div key={c.id} style={{ background: darkMode ? "#09090b" : "#fafafa", borderRadius: 8, padding: "10px 14px", marginBottom: 8, border: "1px solid #27272a" }}>
-            <span style={{ fontWeight: 600, color: darkMode ? "#e4e4e7" : "#09090b" }}>{c.content ? c.content.slice(0, 80) + (c.content.length > 80 ? "…" : "") : `Creative #${c.id}`}</span>
+            <span style={{ fontWeight: 600, color: darkMode ? "#e4e4e7" : "#09090b" }}>{c.content ? c.content.slice(0, 80) + (c.content.length > 80 ? "�" : "") : `Creative #${c.id}`}</span>
           </div>
         ))}
       </div>

@@ -1,5 +1,5 @@
-﻿import React, { useState, useRef } from "react";
-import { apiFetch } from "../../api";
+import React, { useState, useRef } from "react";
+import { apiFetch, apiFetchJSON } from "../../api";
 
 export default function LTVChurnPredictor() {
   const [input, setInput] = useState("");
@@ -14,7 +14,7 @@ export default function LTVChurnPredictor() {
   // Fetch LTV
   const fetchLtv = async () => {
     try {
-      const res = await apiFetch("/api/ltv-churn-predictor/ltv", {
+      const res = await apiFetchJSON("/api/ltv-churn-predictor/ltv", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input })
@@ -29,7 +29,7 @@ export default function LTVChurnPredictor() {
   // Fetch churn
   const fetchChurn = async () => {
     try {
-      const res = await apiFetch("/api/ltv-churn-predictor/churn", {
+      const res = await apiFetchJSON("/api/ltv-churn-predictor/churn", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input })

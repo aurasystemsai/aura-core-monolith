@@ -1,5 +1,5 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "../../api";
+import React, { useEffect, useMemo, useState } from "react";
+import { apiFetch, apiFetchJSON } from "../../api";
 import Toast from "../Toast";
 import usePlan, { canUseTool, requiredPlanFor, PLAN_LABEL, PLAN_PRICE, PLAN_COLOUR } from "../../hooks/usePlan";
 
@@ -126,7 +126,7 @@ export default function MainSuite({ setActiveSection }) {
   }, [darkMode, activeGroup, sortKey]);
 
   if (loading) {
-    return <div style={{ color: "#fff", padding: 16 }}>Loading Main Suite…</div>;
+    return <div style={{ color: "#fff", padding: 16 }}>Loading Main Suite�</div>;
   }
 
   if (error) {
@@ -167,7 +167,7 @@ export default function MainSuite({ setActiveSection }) {
             fontWeight: 700,
           }}
         >
-          <option value="az">Sort: A → Z</option>
+          <option value="az">Sort: A ? Z</option>
           <option value="status">Sort: New/Beta first</option>
         </select>
         <input
@@ -347,7 +347,7 @@ export default function MainSuite({ setActiveSection }) {
                     <span style={{ fontSize: 24 }}></span>
                     <span style={{ fontSize: 12, fontWeight: 800, color: PLAN_COLOUR[reqPlan] }}>{PLAN_LABEL[reqPlan]} Plan required</span>
                     <span style={{ fontSize: 11, color: "#71717a" }}>from {PLAN_PRICE[reqPlan]}</span>
-                    <span style={{ fontSize: 11, color: "#4f46e5", fontWeight: 700 }}>Upgrade Plan →</span>
+                    <span style={{ fontSize: 11, color: "#4f46e5", fontWeight: 700 }}>Upgrade Plan ?</span>
                   </div>
                 )}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
@@ -369,12 +369,12 @@ export default function MainSuite({ setActiveSection }) {
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: 999, border: `1px solid ${palette.border}`, background: preflightStatuses[m.id].ok ? (darkMode ? "#18181b" : "#e0f2fe") : "#332b17", color: preflightStatuses[m.id].ok ? "#22c55e" : preflightStatuses[m.id].issues ? "#f59e0b" : "#ef4444", fontWeight: 800, fontSize: 11 }}>
                     <span style={{ width: 8, height: 8, borderRadius: "50%", background: preflightStatuses[m.id].ok ? "#22c55e" : preflightStatuses[m.id].issues ? "#f59e0b" : "#ef4444" }} />
                     <span>{preflightStatuses[m.id].ok ? "Pass" : `${preflightStatuses[m.id].issues} issue${preflightStatuses[m.id].issues === 1 ? "" : "s"}`}</span>
-                    {preflightStatuses[m.id].ts ? <span style={{ color: palette.muted, fontWeight: 600 }}>· {new Date(preflightStatuses[m.id].ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span> : null}
+                    {preflightStatuses[m.id].ts ? <span style={{ color: palette.muted, fontWeight: 600 }}>� {new Date(preflightStatuses[m.id].ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span> : null}
                   </div>
                 )}
                 <div style={{ color: palette.muted, fontSize: 13 }}>{m.description}</div>
                 <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 8 }}>
-                  <span style={{ color: palette.primary, fontSize: 12, fontWeight: 800 }}>Launch →</span>
+                  <span style={{ color: palette.primary, fontSize: 12, fontWeight: 800 }}>Launch ?</span>
                   {m.docUrl && (
                     <a
                       href={m.docUrl}
@@ -383,7 +383,7 @@ export default function MainSuite({ setActiveSection }) {
                       style={{ color: palette.accent, fontSize: 12, fontWeight: 700 }}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      Docs ↗
+                      Docs ?
                     </a>
                   )}
                 </div>

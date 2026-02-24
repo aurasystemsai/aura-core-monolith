@@ -1,5 +1,5 @@
-﻿import React, { useState, useEffect } from 'react';
-import { apiFetch } from "../api";
+import React, { useState, useEffect } from 'react';
+import { apiFetch, apiFetchJSON } from "../api";
 
 export default function UserManagement({ coreUrl }) {
   const [users, setUsers] = useState([]);
@@ -29,7 +29,7 @@ export default function UserManagement({ coreUrl }) {
     setError('');
     setSuccess('');
     try {
-      const res = await apiFetch(`${coreUrl}/api/users/register`, {
+      const res = await apiFetchJSON(`${coreUrl}/api/users/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

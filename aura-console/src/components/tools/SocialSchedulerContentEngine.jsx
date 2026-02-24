@@ -1,5 +1,5 @@
-﻿import React, { useState, useRef, useEffect } from "react";
-import { apiFetch } from "../../api";
+import React, { useState, useRef, useEffect } from "react";
+import { apiFetch, apiFetchJSON } from "../../api";
 import BackButton from "./BackButton";
 
 export default function SocialSchedulerContentEngine() {
@@ -17,7 +17,7 @@ export default function SocialSchedulerContentEngine() {
   // Fetch history
   const fetchHistory = async () => {
     try {
-      const res = await apiFetch("/api/social-scheduler-content-engine/history");
+      const res = await apiFetchJSON("/api/social-scheduler-content-engine/history");
       const data = await res.json();
       if (data.ok) setHistory(data.history || []);
     } catch {}
@@ -25,7 +25,7 @@ export default function SocialSchedulerContentEngine() {
   // Fetch analytics
   const fetchAnalytics = async () => {
     try {
-      const res = await apiFetch("/api/social-scheduler-content-engine/analytics");
+      const res = await apiFetchJSON("/api/social-scheduler-content-engine/analytics");
       const data = await res.json();
       if (data.ok) setAnalytics(data.analytics || []);
     } catch {}
@@ -37,7 +37,7 @@ export default function SocialSchedulerContentEngine() {
     setError("");
     setResponse("");
     try {
-      const res = await apiFetch("/api/social-scheduler-content-engine/ai/schedule", {
+      const res = await apiFetchJSON("/api/social-scheduler-content-engine/ai/schedule", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: input })
@@ -66,7 +66,7 @@ export default function SocialSchedulerContentEngine() {
     const reader = new FileReader();
     reader.onload = async evt => {
       try {
-        const res = await apiFetch("/api/social-scheduler-content-engine/import", {
+        const res = await apiFetchJSON("/api/social-scheduler-content-engine/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ data: JSON.parse(evt.target.result) })

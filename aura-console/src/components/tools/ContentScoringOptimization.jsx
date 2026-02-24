@@ -1,5 +1,5 @@
-ï»¿import React, { useState, useRef, useEffect } from "react";
-import { apiFetch } from "../../api";
+import React, { useState, useRef, useEffect } from "react";
+import { apiFetch, apiFetchJSON } from "../../api";
 
 export default function ContentScoringOptimization() {
   const [content, setContent] = useState("");
@@ -16,7 +16,7 @@ export default function ContentScoringOptimization() {
   // Fetch history
   const fetchHistory = async () => {
     try {
-      const res = await apiFetch("/api/content-scoring-optimization/history");
+      const res = await apiFetchJSON("/api/content-scoring-optimization/history");
       const data = await res.json();
       if (data.ok) setHistory(data.history || []);
     } catch {}
@@ -24,7 +24,7 @@ export default function ContentScoringOptimization() {
   // Fetch analytics
   const fetchAnalytics = async () => {
     try {
-      const res = await apiFetch("/api/content-scoring-optimization/analytics");
+      const res = await apiFetchJSON("/api/content-scoring-optimization/analytics");
       const data = await res.json();
       if (data.ok) setAnalytics(data.analytics || []);
     } catch {}
@@ -36,7 +36,7 @@ export default function ContentScoringOptimization() {
     setError("");
     setResponse("");
     try {
-      const res = await apiFetch("/api/content-scoring-optimization/ai/score", {
+      const res = await apiFetchJSON("/api/content-scoring-optimization/ai/score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content })
@@ -65,7 +65,7 @@ export default function ContentScoringOptimization() {
     const reader = new FileReader();
     reader.onload = async evt => {
       try {
-        const res = await apiFetch("/api/content-scoring-optimization/import", {
+        const res = await apiFetchJSON("/api/content-scoring-optimization/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ data: JSON.parse(evt.target.result) })
@@ -146,10 +146,10 @@ export default function ContentScoringOptimization() {
           {history.map(h => (
             <div key={h.id} style={{ background: "#09090b", borderRadius: 8, padding: "12px 16px", border: "1px solid #27272a", marginBottom: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
-                <span style={{ fontWeight: 700, color: "#e4e4e7" }}>{h.content ? h.content.slice(0, 60) + "â€¦" : `Run #${h.id}`}</span>
+                <span style={{ fontWeight: 700, color: "#e4e4e7" }}>{h.content ? h.content.slice(0, 60) + "…" : `Run #${h.id}`}</span>
                 <span style={{ color: "#71717a" }}>{h.createdAt ? new Date(h.createdAt).toLocaleString() : ""}</span>
               </div>
-              {h.report && <div style={{ fontSize: 13, color: "#a1a1aa" }}>{typeof h.report === "string" ? h.report.slice(0, 200) + (h.report.length > 200 ? "â€¦" : "") : ""}</div>}
+              {h.report && <div style={{ fontSize: 13, color: "#a1a1aa" }}>{typeof h.report === "string" ? h.report.slice(0, 200) + (h.report.length > 200 ? "…" : "") : ""}</div>}
             </div>
           ))}
         </ul>

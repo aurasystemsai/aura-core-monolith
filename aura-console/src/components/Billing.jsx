@@ -1,8 +1,8 @@
-﻿// Billing & Subscription Management UI
+// Billing & Subscription Management UI
 // Shopify App Billing integration for plan management
 
 import React, { useState, useEffect } from 'react';
-import { apiFetch } from '../api';
+import { apiFetch, apiFetchJSON } from '../api';
 import { FaCheck, FaDownload, FaSpinner } from 'react-icons/fa';
 
 const PLANS = [
@@ -102,9 +102,9 @@ const Billing = () => {
     setLoading(true);
     try {
       const [subData, invoiceData, usageData] = await Promise.all([
-        apiFetch('/billing/subscription'),
-        apiFetch('/billing/invoices'),
-        apiFetch('/billing/usage')
+        apiFetchJSON('/billing/subscription'),
+        apiFetchJSON('/billing/invoices'),
+        apiFetchJSON('/billing/usage')
       ]);
 
       setSubscription(subData);
@@ -124,7 +124,7 @@ const Billing = () => {
 
     setChangingPlan(true);
     try {
-      const result = await apiFetch('/billing/subscribe', {
+      const result = await apiFetchJSON('/billing/subscribe', {
         method: 'POST',
         body: JSON.stringify({ planId })
       });
@@ -160,9 +160,8 @@ const Billing = () => {
 
   async function downloadInvoice(invoiceId) {
     try {
-      const blob = await apiFetch(`/billing/invoices/${invoiceId}/pdf`, {
-        responseType: 'blob'
-      });
+      const resp = await apiFetch(`/billing/invoices/${invoiceId}/pdf`);
+      const blob = await resp.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -342,7 +341,7 @@ const Billing = () => {
           <div className="modal-content plans-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Choose Your Plan</h2>
-              <button className="close-btn" onClick={() => setShowPlanModal(false)}>×</button>
+              <button className="close-btn" onClick={() => setShowPlanModal(false)}>�</button>
             </div>
             
             <div className="plans-grid">

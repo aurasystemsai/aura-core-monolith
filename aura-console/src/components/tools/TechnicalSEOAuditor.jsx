@@ -1,5 +1,5 @@
-﻿import React, { useState, useRef, useEffect } from "react";
-import { apiFetch } from "../../api";
+import React, { useState, useRef, useEffect } from "react";
+import { apiFetch, apiFetchJSON } from "../../api";
 
 export default function TechnicalSEOAuditor() {
   const [input, setInput] = useState("");
@@ -27,7 +27,7 @@ export default function TechnicalSEOAuditor() {
   // Fetch history
   const fetchHistory = async () => {
     try {
-      const res = await apiFetch("/api/technical-seo-auditor/history");
+      const res = await apiFetchJSON("/api/technical-seo-auditor/history");
       const data = await res.json();
       if (data.ok) setHistory(data.history || []);
     } catch {}
@@ -35,7 +35,7 @@ export default function TechnicalSEOAuditor() {
   // Fetch analytics
   const fetchAnalytics = async () => {
     try {
-      const res = await apiFetch("/api/technical-seo-auditor/analytics");
+      const res = await apiFetchJSON("/api/technical-seo-auditor/analytics");
       const data = await res.json();
       if (data.ok) setAnalytics(data.analytics || []);
     } catch {}
@@ -47,7 +47,7 @@ export default function TechnicalSEOAuditor() {
     setError("");
     setResponse("");
     try {
-      const res = await apiFetch("/api/technical-seo-auditor/ai/audit", {
+      const res = await apiFetchJSON("/api/technical-seo-auditor/ai/audit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ site: input })
@@ -76,7 +76,7 @@ export default function TechnicalSEOAuditor() {
     const reader = new FileReader();
     reader.onload = async evt => {
       try {
-        const res = await apiFetch("/api/technical-seo-auditor/import", {
+        const res = await apiFetchJSON("/api/technical-seo-auditor/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ data: JSON.parse(evt.target.result) })
@@ -114,7 +114,7 @@ export default function TechnicalSEOAuditor() {
     }
   };
 
-  // Share — generate a shareable link to the current report
+  // Share � generate a shareable link to the current report
   const handleShare = () => {
     if (!response) return;
     const url = `${window.location.origin}?tool=technical-seo-auditor&site=${encodeURIComponent(input)}`;

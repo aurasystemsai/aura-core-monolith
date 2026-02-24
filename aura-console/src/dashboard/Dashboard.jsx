@@ -1,5 +1,5 @@
-Ôªøimport React, { useState, useEffect, Suspense, lazy } from "react";
-import { apiFetch } from "../api";
+import React, { useState, useEffect, Suspense, lazy } from "react";
+import { apiFetch, apiFetchJSON } from "../api";
 import { sendCopilotMessage } from "../core/advancedAiClient";
 import IntegrationHealthPanel from "../components/IntegrationHealthPanel";
 
@@ -68,7 +68,7 @@ const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, u
 				<div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#a1a1aa", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
 					{label}
 					{tooltip && (
-						<span title={tooltip} style={{ cursor: "help", fontSize: 12, opacity: 0.7 }}>‚ÑπÔ∏è</span>
+						<span title={tooltip} style={{ cursor: "help", fontSize: 12, opacity: 0.7 }}>??</span>
 					)}
 				</div>
 				<div style={{ fontSize: upgradeRequired ? 18 : 36, fontWeight: 900, color: upgradeRequired ? "#ff9800" : "#fafafa", marginTop: 8 }}>
@@ -82,7 +82,7 @@ const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, u
 				{change && !upgradeRequired && (
 					<div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
 						<span style={{ color: trend === "up" ? "#22d37f" : "#ff4d4f", fontSize: 14, fontWeight: 700 }}>
-							{trend === "up" ? "‚Üë" : "‚Üì"} {change}
+							{trend === "up" ? "?" : "?"} {change}
 						</span>
 						<span style={{ fontSize: 12, color: "#71717a" }}>vs last period</span>
 					</div>
@@ -103,7 +103,7 @@ const StatCard = ({ label, value, change, icon, trend = "up", subtitle = null, u
 								gap: 4
 							}}
 						>
-							Upgrade to Shopify Plus ‚Üí
+							Upgrade to Shopify Plus ?
 						</a>
 					</div>
 				)}
@@ -227,20 +227,20 @@ const Dashboard = ({ setActiveSection }) => {
 			// Fetch real Shopify analytics data
 			try {
 				// Revenue (period-aware in future - for now just current month)
-				const revenueRes = await apiFetch("/api/analytics/revenue");
+				const revenueRes = await apiFetchJSON("/api/analytics/revenue");
 				if (revenueRes.value !== null && revenueRes.value !== undefined) {
 					newStats.revenue = `$${Number(revenueRes.value).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 					newStats.revenueRaw = Number(revenueRes.value);
 				}
 
 				// Orders count
-				const ordersRes = await apiFetch("/api/analytics/orders");
+				const ordersRes = await apiFetchJSON("/api/analytics/orders");
 				if (ordersRes.value !== null && ordersRes.value !== undefined) {
 					newStats.orders = ordersRes.value;
 				}
 
 				// Try to fetch actual traffic/visitor data (only available on Shopify Plus/Advanced)
-				const trafficRes = await apiFetch("/api/analytics/traffic");
+				const trafficRes = await apiFetchJSON("/api/analytics/traffic");
 				if (trafficRes.value !== null && trafficRes.value !== undefined) {
 					// Real traffic data available
 					newStats.visitors = trafficRes.value >= 1000 
@@ -253,7 +253,7 @@ const Dashboard = ({ setActiveSection }) => {
 					newStats.visitorsUpgradeRequired = true;
 				} else {
 					// Fallback: estimate from customers if traffic API not available
-					const customersRes = await apiFetch("/api/analytics/customers");
+					const customersRes = await apiFetchJSON("/api/analytics/customers");
 					if (customersRes.value !== null && customersRes.value !== undefined) {
 						const estimatedVisitors = customersRes.value * 5;
 						newStats.visitors = estimatedVisitors >= 1000 
@@ -283,7 +283,7 @@ const Dashboard = ({ setActiveSection }) => {
 
 				// Fetch recent orders for activity feed
 				try {
-					const ordersDetailRes = await apiFetch("/api/analytics/orders?limit=5&details=true");
+					const ordersDetailRes = await apiFetchJSON("/api/analytics/orders?limit=5&details=true");
 					if (ordersDetailRes.orders && Array.isArray(ordersDetailRes.orders)) {
 						const activities = ordersDetailRes.orders.map((order, idx) => ({
 							icon: "",
@@ -292,24 +292,24 @@ const Dashboard = ({ setActiveSection }) => {
 							type: "Order",
 						}));
 						setRecentActivity(activities.length > 0 ? activities : [
-							{ icon: "", title: "No recent orders", timestamp: "‚Äî", type: "Info" }
+							{ icon: "", title: "No recent orders", timestamp: "ó", type: "Info" }
 						]);
 					} else {
 						// Fallback to generic activity
 						setRecentActivity([
-							{ icon: "", title: "Awaiting order data", timestamp: "‚Äî", type: "Info" }
+							{ icon: "", title: "Awaiting order data", timestamp: "ó", type: "Info" }
 						]);
 					}
 				} catch (ordersErr) {
 					console.warn("Failed to fetch recent orders:", ordersErr);
 					setRecentActivity([
-						{ icon: "Ô∏è", title: "Unable to load recent activity", timestamp: "‚Äî", type: "Error" }
+						{ icon: "?", title: "Unable to load recent activity", timestamp: "ó", type: "Error" }
 					]);
 				}
 
 				// Fetch top products and find underperforming ones
 				try {
-					const productsRes = await apiFetch("/api/product-seo/shopify-products?limit=20");
+					const productsRes = await apiFetchJSON("/api/product-seo/shopify-products?limit=20");
 					if (productsRes && Array.isArray(productsRes)) {
 						setTopProducts(productsRes.slice(0, 5));
 						// Underperforming: products with low price or missing info
@@ -353,12 +353,12 @@ const Dashboard = ({ setActiveSection }) => {
 		} catch (e) {
 			console.error("Failed to fetch dashboard stats:", e);
 			setStats({
-				products: "‚Äî",
-				seoIssues: "‚Äî",
-				revenue: "‚Äî",
-				orders: "‚Äî",
-				conversion: "‚Äî",
-				visitors: "‚Äî",
+				products: "ó",
+				seoIssues: "ó",
+				revenue: "ó",
+				orders: "ó",
+				conversion: "ó",
+				visitors: "ó",
 			});
 		} finally {
 			setLoading(false);
@@ -416,7 +416,7 @@ const Dashboard = ({ setActiveSection }) => {
 		}
 		// Underperforming products
 		if (underperformingProducts.length > 0) {
-			recs.push({ icon: "Ô∏è", text: underperformingProducts.length + " product" + (underperformingProducts.length > 1 ? "s" : "") + " need attention (low price or missing data).", action: "View Products", link: "products" });
+			recs.push({ icon: "?", text: underperformingProducts.length + " product" + (underperformingProducts.length > 1 ? "s" : "") + " need attention (low price or missing data).", action: "View Products", link: "products" });
 		}
 		setRecommendations(recs.slice(0, 3));
 	};
@@ -482,7 +482,7 @@ const Dashboard = ({ setActiveSection }) => {
 		setScanningPage('');
 
 		try {
-			const sessionRes = await apiFetch('/api/session');
+			const sessionRes = await apiFetchJSON('/api/session');
 			const session = await sessionRes.json();
 
 			if (!session.ok || !session.shop) {
@@ -498,7 +498,7 @@ const Dashboard = ({ setActiveSection }) => {
 			let productCount = stats.products || 10;
 			if (projectId) {
 				try {
-					const projectRes = await apiFetch(`/api/projects/${projectId}/drafts`);
+					const projectRes = await apiFetchJSON(`/api/projects/${projectId}/drafts`);
 					if (projectRes.ok) {
 						const projectData = await projectRes.json();
 						if (projectData.drafts && Array.isArray(projectData.drafts)) productCount = projectData.drafts.length;
@@ -521,7 +521,7 @@ const Dashboard = ({ setActiveSection }) => {
 				fakeIdx++;
 			}, 1200);
 
-			const response = await apiFetch('/api/tools/seo-site-crawler/crawl', {
+			const response = await apiFetchJSON('/api/tools/seo-site-crawler/crawl', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ url: shopUrl })
@@ -608,7 +608,7 @@ const Dashboard = ({ setActiveSection }) => {
 	useEffect(() => {
 		async function fetchShop() {
 			try {
-				const res = await apiFetch("/api/session");
+				const res = await apiFetchJSON("/api/session");
 				if (res.ok) {
 					const data = await res.json();
 					if (data && data.projectDetails) {
@@ -786,12 +786,12 @@ const Dashboard = ({ setActiveSection }) => {
 								)}
 								<div>
 									<h2 style={{ color:'#fafafa', fontWeight:800, fontSize:20, margin:0 }}>
-										{scanningInProgress ? 'Scanning your site...' : `Scan Complete ‚Äî ${crawlResults?.totalIssues || 0} Issues Found`}
+										{scanningInProgress ? 'Scanning your site...' : `Scan Complete ó ${crawlResults?.totalIssues || 0} Issues Found`}
 									</h2>
 									<p style={{ color:'#a1a1aa', fontSize:13, margin:'3px 0 0 0' }}>
 										{scanningInProgress
-											? `Checking pages for SEO issues ‚Äî this takes a minute or two`
-											: `${crawlResults?.pagesScanned} pages scanned ‚Ä¢ ${crawlResults?.high} high ‚Ä¢ ${crawlResults?.medium} medium ‚Ä¢ ${crawlResults?.low} low`}
+											? `Checking pages for SEO issues ó this takes a minute or two`
+											: `${crawlResults?.pagesScanned} pages scanned ï ${crawlResults?.high} high ï ${crawlResults?.medium} medium ï ${crawlResults?.low} low`}
 									</p>
 								</div>
 							</div>
@@ -833,10 +833,10 @@ const Dashboard = ({ setActiveSection }) => {
 									<span style={{ background:'#2d1515', border:'1px solid #e53e3e', color:'#fc8181', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}> {crawlResults.high} High</span>
 									<span style={{ background:'#2d2210', border:'1px solid #f59e0b', color:'#fbbf24', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}> {crawlResults.medium} Medium</span>
 									<span style={{ background:'#1a2315', border:'1px solid #4ade80', color:'#86efac', padding:'5px 14px', borderRadius:20, fontSize:13, fontWeight:600 }}> {crawlResults.low} Low</span>
-									<span style={{ marginLeft:'auto', color:'#52525b', fontSize:13, alignSelf:'center' }}>{crawlResults.pagesScanned} pages scanned ‚Ä¢ {lastScanTime}</span>
+									<span style={{ marginLeft:'auto', color:'#52525b', fontSize:13, alignSelf:'center' }}>{crawlResults.pagesScanned} pages scanned ï {lastScanTime}</span>
 								</div>
 								{crawlResults.totalIssues === 0 ? (
-									<div style={{ textAlign:'center', padding:'48px 0', color:'#4f46e5', fontSize:16 }}>No SEO issues found ‚Äî your site looks great!</div>
+									<div style={{ textAlign:'center', padding:'48px 0', color:'#4f46e5', fontSize:16 }}>No SEO issues found ó your site looks great!</div>
 								) : (
 									<div style={{ display:'flex', flexDirection:'column', gap:8 }}>
 										{crawlResults.issues.map((issue, i) => (
@@ -848,7 +848,7 @@ const Dashboard = ({ setActiveSection }) => {
 												<div style={{ flex:1, minWidth:0 }}>
 													<div style={{ color:'#fafafa', fontWeight:600, fontSize:14, display:'flex', alignItems:'center', gap:8 }}>
 														{issue.type}
-														{issue.fix && <span style={{ fontSize:11, color:'#4f46e5', background:'rgba(127,255,212,0.1)', border:'1px solid rgba(127,255,212,0.3)', borderRadius:4, padding:'1px 7px', fontWeight:500 }}>Click to fix ‚Üí</span>}
+														{issue.fix && <span style={{ fontSize:11, color:'#4f46e5', background:'rgba(127,255,212,0.1)', border:'1px solid rgba(127,255,212,0.3)', borderRadius:4, padding:'1px 7px', fontWeight:500 }}>Click to fix ?</span>}
 													</div>
 													<div style={{ color:'#a1a1aa', fontSize:13, marginTop:2 }}>{issue.detail}</div>
 													<div style={{ color:'#52525b', fontSize:12, marginTop:4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{issue.page}</div>
@@ -880,10 +880,10 @@ const Dashboard = ({ setActiveSection }) => {
 						alignItems: "center",
 						gap: 10,
 					}}>
-						<span style={{ fontSize: 18 }}>{toast.type === 'error' ? 'Ô∏è' : ''}</span>
+						<span style={{ fontSize: 18 }}>{toast.type === 'error' ? '?' : ''}</span>
 						<span>{toast.message}</span>
 						<button onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
-							style={{ marginLeft: "auto", background: "none", border: "none", color: "inherit", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 0 0 8px", opacity: 0.7 }}>√ó</button>
+							style={{ marginLeft: "auto", background: "none", border: "none", color: "inherit", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 0 0 8px", opacity: 0.7 }}>◊</button>
 					</div>
 				))}
 			</div>
@@ -898,7 +898,7 @@ const Dashboard = ({ setActiveSection }) => {
 								Dashboard Overview
 							</h1>
 							<p style={{ fontSize: 14, color: "#a1a1aa", margin: "4px 0 0 0" }}>
-								{shop.name || "My Store"} ‚Ä¢ {shop.domain || "‚Äî"}
+								{shop.name || "My Store"} ï {shop.domain || "ó"}
 							</p>
 						</div>
 					</div>
@@ -961,7 +961,7 @@ const Dashboard = ({ setActiveSection }) => {
 							}}
 							title="Refresh Data"
 						>
-							‚Üª
+							?
 						</button>
 						{/* Export CSV Button */}
 						<button
@@ -1070,7 +1070,7 @@ const Dashboard = ({ setActiveSection }) => {
 								gap: 12,
 							}}
 						>
-							<span style={{ fontSize: 20 }}>{alert.type === "danger" ? "" : "Ô∏è"}</span>
+							<span style={{ fontSize: 20 }}>{alert.type === "danger" ? "" : "?"}</span>
 							<span style={{ color: "#fafafa", fontSize: 14, fontWeight: 600 }}>{alert.message}</span>
 						</div>
 					))}
@@ -1143,33 +1143,33 @@ const Dashboard = ({ setActiveSection }) => {
 			>
 				<StatCard 
 					label="Total Revenue" 
-					value={stats.revenue || (stats.revenue === "$0" ? "$0" : "‚Äî")} 
+					value={stats.revenue || (stats.revenue === "$0" ? "$0" : "ó")} 
 					icon=""
 					tooltip="Total sales revenue for the selected period"
-					subtitle={(!stats.revenue || stats.revenue === "$0" || stats.revenue === "‚Äî") ? "No revenue data available" : null}
+					subtitle={(!stats.revenue || stats.revenue === "$0" || stats.revenue === "ó") ? "No revenue data available" : null}
 				/>
 				<StatCard 
 					label="Orders" 
-					value={stats.orders !== null && stats.orders !== undefined ? stats.orders : "‚Äî"} 
+					value={stats.orders !== null && stats.orders !== undefined ? stats.orders : "ó"} 
 					icon=""
 					tooltip="Number of orders placed"
 					subtitle={(stats.orders === 0 || stats.orders === null) ? "No orders yet" : null}
 				/>
 				<StatCard 
 					label="Average Order Value" 
-					value={stats.aov || "‚Äî"} 
+					value={stats.aov || "ó"} 
 					icon=""
-					tooltip="Average revenue per order (Revenue √∑ Orders)"
+					tooltip="Average revenue per order (Revenue ˜ Orders)"
 				/>
 				<StatCard 
 					label="Conversion Rate" 
-					value={stats.conversion || "‚Äî"} 
+					value={stats.conversion || "ó"} 
 					icon=""
 					tooltip="Percentage of visitors who made a purchase"
 				/>
 				<StatCard 
 					label="Visitors" 
-					value={stats.visitors || "‚Äî"} 
+					value={stats.visitors || "ó"} 
 					icon=""
 					tooltip="Total store visitors for the selected period"
 					upgradeRequired={stats.visitorsUpgradeRequired}
@@ -1183,13 +1183,13 @@ const Dashboard = ({ setActiveSection }) => {
 				/>
 				<StatCard 
 					label="Products" 
-					value={stats.products !== null ? stats.products : "‚Äî"} 
-					icon="Ô∏è"
+					value={stats.products !== null ? stats.products : "ó"} 
+					icon="?"
 					tooltip="Total number of products in your catalog"
 				/>
 				<StatCard 
 					label="SEO Issues" 
-					value={stats.seoIssues !== null ? stats.seoIssues : "‚Äî"} 
+					value={stats.seoIssues !== null ? stats.seoIssues : "ó"} 
 					icon=""
 					tooltip="Number of SEO issues that need attention"
 				/>
@@ -1202,7 +1202,7 @@ const Dashboard = ({ setActiveSection }) => {
 						<div>
 							<h3 style={{ color: "#fafafa", fontWeight: 700, fontSize: 18, margin: 0 }}>SEO Scan Results</h3>
 							<p style={{ color: "#a1a1aa", fontSize: 13, margin: "4px 0 0 0" }}>
-								{crawlResults.pagesScanned} pages scanned ‚Ä¢ Last scan: {lastScanTime}
+								{crawlResults.pagesScanned} pages scanned ï Last scan: {lastScanTime}
 							</p>
 						</div>
 						<div style={{ display: "flex", gap: 12, alignItems: "center" }}>
@@ -1215,12 +1215,12 @@ const Dashboard = ({ setActiveSection }) => {
 							<span style={{ background: "#1a2315", border: "1px solid #4ade80", color: "#86efac", padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
 								 {crawlResults.low} Low
 							</span>
-							<button onClick={() => setCrawlResults(null)} style={{ background: "none", border: "none", color: "#a1a1aa", cursor: "pointer", fontSize: 20, lineHeight: 1 }}>√ó</button>
+							<button onClick={() => setCrawlResults(null)} style={{ background: "none", border: "none", color: "#a1a1aa", cursor: "pointer", fontSize: 20, lineHeight: 1 }}>◊</button>
 						</div>
 					</div>
 					{crawlResults.totalIssues === 0 ? (
 						<div style={{ textAlign: "center", padding: "32px 0", color: "#4f46e5", fontSize: 16 }}>
-							 No SEO issues found ‚Äî your site looks great!
+							 No SEO issues found ó your site looks great!
 						</div>
 					) : (
 						<div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 400, overflowY: "auto" }}>
@@ -1248,7 +1248,7 @@ const Dashboard = ({ setActiveSection }) => {
 											{issue.type}
 											{issue.fix && (
 												<span style={{ fontSize: 11, color: "#4f46e5", background: "rgba(127,255,212,0.1)", border: "1px solid rgba(127,255,212,0.3)", borderRadius: 4, padding: "1px 7px", fontWeight: 500 }}>
-													Click to fix ‚Üí
+													Click to fix ?
 												</span>
 											)}
 										</div>
@@ -1502,7 +1502,7 @@ const Dashboard = ({ setActiveSection }) => {
 							}}
 						>
 							<h3 style={{ fontSize: 18, fontWeight: 700, color: "#fafafa", margin: "0 0 20px 0" }}>
-								Ô∏è Needs Attention
+								? Needs Attention
 							</h3>
 							<div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 								{underperformingProducts.map((product, idx) => (
@@ -1518,7 +1518,7 @@ const Dashboard = ({ setActiveSection }) => {
 											borderRadius: 8,
 										}}
 									>
-										<span style={{ fontSize: 20 }}>Ô∏è</span>
+										<span style={{ fontSize: 20 }}>?</span>
 										<div style={{ flex: 1 }}>
 											<div style={{ fontSize: 14, fontWeight: 600, color: "#fafafa", marginBottom: 4 }}>
 												{product.title || "Untitled Product"}
@@ -1566,17 +1566,17 @@ const Dashboard = ({ setActiveSection }) => {
 						title={scanningInProgress ? "Scanning..." : "Run SEO Scan"}
 						description={
 							scanningInProgress && scanRemainingTime > 0
-								? `Time remaining: ${Math.floor(scanRemainingTime / 60)}:${String(scanRemainingTime % 60).padStart(2, '0')} ‚Ä¢ Analyzing ${stats.products || '...'} products` 
+								? `Time remaining: ${Math.floor(scanRemainingTime / 60)}:${String(scanRemainingTime % 60).padStart(2, '0')} ï Analyzing ${stats.products || '...'} products` 
 								: scanningInProgress 
 									? "Analyzing your site for SEO issues..." 
 									: lastScanTime 
-										? `Scan your store for SEO issues ‚Ä¢ Last: ${lastScanTime}` 
+										? `Scan your store for SEO issues ï Last: ${lastScanTime}` 
 										: "Scan your entire store for SEO issues"
 						}
 						onClick={runSeoScan}
 					/>
 					<QuickActionCard
-						icon="Ô∏è"
+						icon="?"
 						title="Generate Content"
 						description="Create AI-powered product descriptions and blog posts"
 						onClick={() => setActiveSection && setActiveSection("tools")}

@@ -1,6 +1,6 @@
-﻿
+
 import React, { useState, useRef } from "react";
-import { apiFetch } from "../../api";
+import { apiFetch, apiFetchJSON } from "../../api";
 
 export default function BrandIntelligenceLayer() {
   const [input, setInput] = useState("");
@@ -26,7 +26,7 @@ export default function BrandIntelligenceLayer() {
   // Fetch dashboard
   const fetchDashboard = async () => {
     try {
-      const res = await apiFetch("/api/brand-intelligence-layer/dashboard", {
+      const res = await apiFetchJSON("/api/brand-intelligence-layer/dashboard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input })
@@ -42,7 +42,7 @@ export default function BrandIntelligenceLayer() {
   // Fetch insights
   const fetchInsights = async () => {
     try {
-      const res = await apiFetch("/api/brand-intelligence-layer/insights", {
+      const res = await apiFetchJSON("/api/brand-intelligence-layer/insights", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ input })
@@ -129,7 +129,7 @@ export default function BrandIntelligenceLayer() {
         <h2 style={{ fontWeight: 800, fontSize: 32, margin: 0 }}>Brand Intelligence Layer</h2>
       </div>
       <div style={{ marginBottom: 10, color: "#a3e635", fontWeight: 600 }}>
-        <span role="img" aria-label="brand">️</span>AI-powered brand analytics, bulk upload, insights, and collaboration.
+        <span role="img" aria-label="brand">?</span>AI-powered brand analytics, bulk upload, insights, and collaboration.
       </div>
       <button onClick={() => setShowOnboarding(true)} style={{ background: "#4f46e5", color: "#f4f4f5", border: "none", borderRadius: 8, padding: "7px 18px", fontWeight: 600, fontSize: 15, cursor: "pointer", marginBottom: 16 }}>{showOnboarding ? "Hide" : "Show"} Onboarding</button>
       {showOnboarding && onboardingContent}

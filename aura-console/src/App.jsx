@@ -1,5 +1,5 @@
-﻿import React, { useState, useEffect, Suspense, lazy } from "react";
-import { apiFetch } from "./api";
+import React, { useState, useEffect, Suspense, lazy } from "react";
+import { apiFetch, apiFetchJSON } from "./api";
 import "./App.css";
 import usePlan, { canUseTool, PLAN_LABEL, PLAN_COLOUR } from "./hooks/usePlan";
 
@@ -33,7 +33,7 @@ const Onboarding = lazy(() => import("./onboarding/Onboarding.jsx"));
 const Credits = lazy(() => import("./credits/Credits.jsx"));
 const Settings = lazy(() => import("./components/Settings.jsx"));
 
-// Tool components — organized by suite
+// Tool components � organized by suite
 const AbandonedCheckoutWinback = lazy(() => import("./components/tools/AbandonedCheckoutWinback.jsx"));
 const CustomerDataPlatform = lazy(() => import("./components/tools/CustomerDataPlatform.jsx"));
 const SelfServicePortal = lazy(() => import("./components/tools/SelfServicePortal.jsx"));
@@ -226,7 +226,7 @@ function App() {
       useEffect(() => {
         async function fetchProject() {
           try {
-            const res = await apiFetch('/api/session');
+            const res = await apiFetchJSON('/api/session');
             if (res.ok) {
               const data = await res.json();
               if (data && data.project) {
@@ -256,7 +256,7 @@ function App() {
   const { plan } = usePlan();
   const [toolInitUrl, setToolInitUrl] = useState(null);
 
-  // Gate navigation — locked tools redirect to Settings
+  // Gate navigation � locked tools redirect to Settings
   function setActiveSection(section, url) {
     if (url) setToolInitUrl(url);
     if (!canUseTool(plan, section)) {
@@ -423,14 +423,14 @@ function App() {
       <ChangelogModal open={showChangelog} onClose={() => setShowChangelog(false)} />
       <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'info' })} />
       <div className="app-shell" style={{ flexDirection: 'row' }}>
-        {/* Persistent left sidebar — HubSpot/Semrush/Klaviyo pattern */}
+        {/* Persistent left sidebar � HubSpot/Semrush/Klaviyo pattern */}
         <AppSidebar
           activeSection={activeSection}
           setActiveSection={(section, url) => { if (url) setToolInitUrl(url); setActiveSection(section); }}
           plan={plan}
         />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          {/* Slim top bar — brand actions only */}
+          {/* Slim top bar � brand actions only */}
           <header className="top-bar-slim">
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {plan && (
@@ -451,7 +451,7 @@ function App() {
           <div className="page-frame fade-in">
             <section className="tool-section">
               {/* Main content routing */}
-              <Suspense fallback={<div className="loading-spinner"><div className="spinner"></div><p>Loading…</p></div>}>
+              <Suspense fallback={<div className="loading-spinner"><div className="spinner"></div><p>Loading�</p></div>}>
                 {/* Core sections */}
                 {activeSection === "dashboard" && <Dashboard setActiveSection={(section, url) => { if (url) setToolInitUrl(url); setActiveSection(section); }} />}
                 {activeSection === "all-tools" && <AllTools setActiveSection={setActiveSection} />}
@@ -496,7 +496,7 @@ function App() {
                 )}
                 {activeSection === "tools" && project && <ToolsList />}
 
-                {/* ── SEO & Content ── */}
+                {/* -- SEO & Content -- */}
                 {activeSection === "product-seo" && <ProductSeoEngine />}
                 {activeSection === "blog-seo" && <BlogSEO />}
                 {activeSection === "blog-draft-engine" && <BlogDraftEngine />}
@@ -516,29 +516,29 @@ function App() {
                 {activeSection === "local-seo-toolkit" && <LocalSEOToolkit />}
                 {activeSection === "competitive-analysis" && <CompetitiveAnalysis />}
 
-                {/* ── Email & Lifecycle ── */}
+                {/* -- Email & Lifecycle -- */}
                 {(activeSection === "email-automation-builder" || activeSection === "klaviyo-flow-automation" || activeSection === "ab-testing-suite" || activeSection === "visual-workflow-builder" || activeSection === "workflow-automation-builder" || activeSection === "workflow-orchestrator" || activeSection === "orchestration" || activeSection === "multi-channel-optimizer" || activeSection === "conditional-logic-automation") && <EmailAutomationBuilder />}
                 {activeSection === "abandoned-checkout-winback" && <AbandonedCheckoutWinback />}
                 {activeSection === "returns-rma-automation" && <ReturnsRMAAutomation />}
                 {activeSection === "automation-templates" && <AutomationTemplates />}
                 {activeSection === "collaboration-approval-workflows" && <CollaborationApprovalWorkflows />}
 
-                {/* ── Customer Support ── */}
+                {/* -- Customer Support -- */}
                 {activeSection === "ai-support-assistant" && <AiSupportAssistant />}
                 {activeSection === "inbox-assistant" && <InboxAssistant />}
                 {activeSection === "review-ugc-engine" && <ReviewUGCEngine />}
                 {activeSection === "self-service-portal" && <SelfServicePortal />}
 
-                {/* ── Social & Brand ── */}
+                {/* -- Social & Brand -- */}
                 {activeSection === "social-scheduler-content-engine" && <SocialSchedulerContentEngine />}
                 {activeSection === "brand-mention-tracker" && <BrandMentionTracker />}
                 {activeSection === "social-media-analytics-listening" && <SocialMediaAnalyticsListening />}
                 {activeSection === "brand-intelligence-layer" && <BrandIntelligenceLayer />}
                 {activeSection === "creative-automation-engine" && <CreativeAutomationEngine />}
 
-                {/* ── Ads & Acquisition ── */}
+                {/* -- Ads & Acquisition -- */}
 
-                {/* ── Analytics & Intelligence ── */}
+                {/* -- Analytics & Intelligence -- */}
                 {activeSection === "advanced-analytics-attribution" && <AdvancedAnalyticsAttribution />}
                 {activeSection === "predictive-analytics-widgets" && <PredictiveAnalyticsWidgets />}
                 {activeSection === "self-service-analytics" && <SelfServiceAnalytics />}
@@ -548,7 +548,7 @@ function App() {
                 {activeSection === "scheduled-export" && <ScheduledExport />}
                 {activeSection === "data-warehouse-connector" && <DataWarehouseConnector />}
 
-                {/* ── Personalization & Revenue ── */}
+                {/* -- Personalization & Revenue -- */}
                 {activeSection === "dynamic-pricing-engine" && <DynamicPricingEngine />}
                 {activeSection === "upsell-cross-sell-engine" && <UpsellCrossSellEngine />}
                 {activeSection === "customer-data-platform" && <CustomerDataPlatform />}
@@ -560,12 +560,12 @@ function App() {
                 {activeSection === "customer-journey-mapping" && <CustomerJourneyMapping />}
                 {activeSection === "data-enrichment-suite" && <DataEnrichmentSuite />}
 
-                {/* ── Finance & Operations ── */}
+                {/* -- Finance & Operations -- */}
                 {activeSection === "finance-autopilot" && <FinanceAutopilot />}
                 {activeSection === "inventory-supplier-sync" && <InventorySupplierSync />}
                 {activeSection === "inventory-forecasting" && <InventoryForecasting />}
 
-                {/* ── Platform & Developer ── */}
+                {/* -- Platform & Developer -- */}
                 {activeSection === "aura-operations-ai" && <AuraOperationsAI />}
                 {activeSection === "ai-launch-planner" && <AiLaunchPlanner />}
                 {activeSection === "aura-api-sdk" && <AuraAPISDK />}

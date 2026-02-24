@@ -1,7 +1,7 @@
-﻿
+
 import React, { useEffect, useMemo, useState } from "react";
 import BackButton from "./BackButton";
-import { apiFetch } from "../../api";
+import { apiFetch, apiFetchJSON } from "../../api";
 import "../../blog-draft/BlogDraftEngine.css";
 
 const TAB_GROUPS = {
@@ -106,32 +106,32 @@ export default function BlogDraftEngine() {
     try {
       switch (activeTab) {
         case "Ideas":
-          const ideasRes = await apiFetch("/api/blog-draft-engine/ideation/ideas");
+          const ideasRes = await apiFetchJSON("/api/blog-draft-engine/ideation/ideas");
           const ideasData = await ideasRes.json();
           if (ideasData?.success) setIdeas(ideasData.data || []);
           break;
         case "Briefs":
-          const briefsRes = await apiFetch("/api/blog-draft-engine/briefs");
+          const briefsRes = await apiFetchJSON("/api/blog-draft-engine/briefs");
           const briefsData = await briefsRes.json();
           if (briefsData?.success) setBriefs(briefsData.data || []);
           break;
         case "Drafts":
-          const draftsRes = await apiFetch("/api/blog-draft-engine/drafts");
+          const draftsRes = await apiFetchJSON("/api/blog-draft-engine/drafts");
           const draftsData = await draftsRes.json();
           if (draftsData?.success) setDrafts(draftsData.data || []);
           break;
         case "Tasks":
-          const tasksRes = await apiFetch("/api/blog-draft-engine/collaboration/tasks");
+          const tasksRes = await apiFetchJSON("/api/blog-draft-engine/collaboration/tasks");
           const tasksData = await tasksRes.json();
           if (tasksData?.success) setTasks(tasksData.data || SAMPLE_TASKS);
           break;
         case "Comments":
-          const commentsRes = await apiFetch("/api/blog-draft-engine/collaboration/comments");
+          const commentsRes = await apiFetchJSON("/api/blog-draft-engine/collaboration/comments");
           const commentsData = await commentsRes.json();
           if (commentsData?.success) setComments(commentsData.data || []);
           break;
         case "Audit Logs":
-          const logsRes = await apiFetch("/api/blog-draft-engine/monitoring/audit-logs");
+          const logsRes = await apiFetchJSON("/api/blog-draft-engine/monitoring/audit-logs");
           const logsData = await logsRes.json();
           if (logsData?.success) setAuditLogs(logsData.data || []);
           break;
@@ -143,7 +143,7 @@ export default function BlogDraftEngine() {
 
   const createIdea = async (ideaData) => {
     try {
-      const res = await apiFetch("/api/blog-draft-engine/ideation/ideas", {
+      const res = await apiFetchJSON("/api/blog-draft-engine/ideation/ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(ideaData),
@@ -160,7 +160,7 @@ export default function BlogDraftEngine() {
 
   const createBrief = async (briefData) => {
     try {
-      const res = await apiFetch("/api/blog-draft-engine/briefs", {
+      const res = await apiFetchJSON("/api/blog-draft-engine/briefs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(briefData),
@@ -214,7 +214,7 @@ export default function BlogDraftEngine() {
     setLoading(true);
     setError("");
     try {
-      const res = await apiFetch("/api/blog-draft-engine/drafts/generate", {
+      const res = await apiFetchJSON("/api/blog-draft-engine/drafts/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, primaryKeyword, audience, tone, topics: parseTopics() }),
@@ -222,14 +222,14 @@ export default function BlogDraftEngine() {
       const data = await res.json();
       if (!data?.success) throw new Error(data?.error || "Failed to generate draft");
       setDraft(data.data);
-      const seoRes = await apiFetch("/api/blog-draft-engine/seo/score", {
+      const seoRes = await apiFetchJSON("/api/blog-draft-engine/seo/score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, primaryKeyword, topics: parseTopics() }),
       });
       const seoJson = await seoRes.json();
       if (seoJson?.success) setSeo(seoJson.data);
-      const distRes = await apiFetch("/api/blog-draft-engine/distribution/readiness");
+      const distRes = await apiFetchJSON("/api/blog-draft-engine/distribution/readiness");
       const distJson = await distRes.json();
       if (distJson?.success) setDistribution(distJson.data);
     } catch (err) {
@@ -242,7 +242,7 @@ export default function BlogDraftEngine() {
   const orchestrate = async () => {
     setError("");
     try {
-      const res = await apiFetch("/api/blog-draft-engine/ai/orchestrate", {
+      const res = await apiFetchJSON("/api/blog-draft-engine/ai/orchestrate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ strategy: "best-of-n", primaryKeyword }),
@@ -258,7 +258,7 @@ export default function BlogDraftEngine() {
   const ensemble = async () => {
     setError("");
     try {
-      const res = await apiFetch("/api/blog-draft-engine/ai/ensemble", {
+      const res = await apiFetchJSON("/api/blog-draft-engine/ai/ensemble", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ primaryKeyword }),
@@ -337,7 +337,7 @@ export default function BlogDraftEngine() {
                         <td>{idea.intentScore || "--"}</td>
                         <td><span className="bde-tag">{idea.status}</span></td>
                         <td>
-                          <button className="bde-icon-btn" onClick={() => deleteItem("idea", idea.id)}>️</button>
+                          <button className="bde-icon-btn" onClick={() => deleteItem("idea", idea.id)}>?</button>
                         </td>
                       </tr>
                     ))
@@ -381,7 +381,7 @@ export default function BlogDraftEngine() {
                         <td>{brief.targetWords || 1500}</td>
                         <td><span className="bde-pill success">{brief.grade || "B"}</span></td>
                         <td>
-                          <button className="bde-icon-btn" onClick={() => deleteItem("brief", brief.id)}>️</button>
+                          <button className="bde-icon-btn" onClick={() => deleteItem("brief", brief.id)}>?</button>
                         </td>
                       </tr>
                     ))
@@ -427,8 +427,8 @@ export default function BlogDraftEngine() {
                         <td>{d.readabilityScore || "--"}</td>
                         <td>v{d.version || 1}</td>
                         <td>
-                          <button className="bde-icon-btn" onClick={() => setSelectedItem(d)}>️</button>
-                          <button className="bde-icon-btn" onClick={() => deleteItem("draft", d.id)}>️</button>
+                          <button className="bde-icon-btn" onClick={() => setSelectedItem(d)}>?</button>
+                          <button className="bde-icon-btn" onClick={() => deleteItem("draft", d.id)}>?</button>
                         </td>
                       </tr>
                     ))
@@ -494,7 +494,7 @@ export default function BlogDraftEngine() {
                     <span>Priority: {task.priority || "Medium"}</span>
                   </div>
                   <div className="bde-task-actions">
-                    <button className="bde-icon-btn" onClick={() => deleteItem("task", task.id)}>️</button>
+                    <button className="bde-icon-btn" onClick={() => deleteItem("task", task.id)}>?</button>
                   </div>
                 </div>
               ))}
@@ -556,7 +556,7 @@ export default function BlogDraftEngine() {
             </div>
             {aiRun && (
               <div className="bde-ai-result">
-                <strong>Last Run:</strong> {aiRun.strategy} • Quality: {aiRun.qualityScore}
+                <strong>Last Run:</strong> {aiRun.strategy} � Quality: {aiRun.qualityScore}
               </div>
             )}
           </div>
@@ -642,9 +642,9 @@ export default function BlogDraftEngine() {
     <div className="bde-shell">
       <div className="bde-header">
         <div>
-          <p className="bde-kicker">World-class · 8 engines · 42 tabs</p>
+          <p className="bde-kicker">World-class � 8 engines � 42 tabs</p>
           <h2>Blog Draft Engine</h2>
-          <div className="bde-subtitle">Ideation → Briefs → Outlines → Draft → SEO → Distribution → Collaboration → Performance</div>
+          <div className="bde-subtitle">Ideation ? Briefs ? Outlines ? Draft ? SEO ? Distribution ? Collaboration ? Performance</div>
         </div>
         <div className="bde-actions">
           <BackButton />
@@ -656,7 +656,7 @@ export default function BlogDraftEngine() {
 
       <div className="bde-badges">
         <span className="bde-pill success">Health: {health?.status || "unknown"}</span>
-        {stats && <span className="bde-pill info">Ideas: {stats.ideas} · Drafts: {stats.drafts}</span>}
+        {stats && <span className="bde-pill info">Ideas: {stats.ideas} � Drafts: {stats.drafts}</span>}
         {seo && <span className="bde-pill warning">SEO: {seo.score}</span>}
         {metadataScore > 0 && <span className="bde-pill">Metadata: {metadataScore}</span>}
         <span className="bde-pill muted">42-tab workspace</span>
@@ -691,7 +691,7 @@ export default function BlogDraftEngine() {
           <div className="bde-modal" onClick={(e) => e.stopPropagation()}>
             <div className="bde-modal-header">
               <h3>Create New {modalType.charAt(0).toUpperCase() + modalType.slice(1)}</h3>
-              <button className="bde-modal-close" onClick={() => setShowModal(false)}>×</button>
+              <button className="bde-modal-close" onClick={() => setShowModal(false)}>�</button>
             </div>
             <div className="bde-modal-body">
               {modalType === "idea" && (
