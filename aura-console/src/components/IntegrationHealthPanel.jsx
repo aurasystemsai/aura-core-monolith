@@ -20,8 +20,7 @@ function IntegrationHealthPanel() {
         INTEGRATIONS.map(async (integration) => {
           try {
             const res = await apiFetchJSON(integration.api, { credentials: "include" });
-            const data = res;
-            results[integration.id] = data.status || "unknown";
+            results[integration.id] = res.connected === true ? "ok" : "error";
           } catch {
             results[integration.id] = "error";
           }

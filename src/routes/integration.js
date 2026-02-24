@@ -1,10 +1,22 @@
 const express = require('express');
 const router = express.Router();
+const shopTokens = require('../core/shopTokens');
 
-// Dummy status checkers for integrations (replace with real logic)
+// Check Shopify connection health
 router.get('/shopify/status', (req, res) => {
-  // TODO: Check Shopify API connectivity for this shop
-  res.json({ status: 'ok' });
+  const shop = req.headers['x-shopify-shop-domain'] || req.query.shop;
+  let connected = false;
+
+  if (shop) {
+    const token = shopTokens.getToken ? shopTokens.getToken(shop) : null;
+    connected = !!token;
+  } else {
+    // No specific shop header — check if any shop is authenticated
+    const all = shopTokens.loadAll ? shopTokens.loadAll() : {};
+    connected = Object.keys(all).length > 0;
+  }
+
+  res.json({ connected, ok: true });
 });
 
 module.exports = router;
